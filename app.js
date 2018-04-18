@@ -25,10 +25,10 @@ app.use(passport.initialize());
 //DATABASE
 const models = require("./models");
 models.sequelize.authenticate().then(() => {
-    console.log('Connected to SQL database:', CONFIG.db_name);
+    console.log('Connected to SQL database:', process.env.DATABASE_URL);
 })
     .catch(err => {
-        console.error('Unable to connect to SQL database:', CONFIG.db_name, err);
+        console.error('Unable to connect to SQL database:', process.env.DATABASE_URL, err);
     });
 if (CONFIG.app === 'dev') {
     models.sequelize.sync();//creates table if they do not already exist
