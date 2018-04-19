@@ -49,7 +49,7 @@ describe('Users', () => {
             })
         });
 
-        it('should fetch all users on GET /users', (done) => {
+        it('should fetch the authorized user on GET /users', (done) => {
     
             chai.request(app)
                 .get('/v1/users')

@@ -1,4 +1,4 @@
-const Company 			    = require('./../models').Company;
+const Company = require('./../models').Company;
 
 let company = async function (req, res, next) {
     let company_id, err, company;
@@ -14,7 +14,7 @@ let company = async function (req, res, next) {
 
     users_array = users.map(obj=>String(obj.user));
 
-    if(!users_array.includes(String(user._id))) return ReE(res, "User does not have permission to read app with id: "+app_id);
+    if(!users_array.includes(String(user._id))) return ReE(res, "User does not have permission to read app with id: " + app_id);
 
     req.company = company;
     next();

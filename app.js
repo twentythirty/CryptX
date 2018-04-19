@@ -1,8 +1,8 @@
 require('./config/config');     //instantiate configuration variables
 require('./global_functions');  //instantiate global functions
 
-console.log("Environment:", CONFIG.app)
-console.log("Process environment: ", process.env.NODE_ENV)
+console.log("App Environment:", CONFIG.app)
+console.log("Resolved NODE_ENV: ", process.env.NODE_ENV)
 
 const express = require('express');
 const logger = require('morgan');
@@ -13,7 +13,7 @@ const v1 = require('./routes/v1');
 
 const app = express();
 
-app.use(logger('dev'));
+app.use(logger(CONFIG.logger_format));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 // app.use(cookieParser());
