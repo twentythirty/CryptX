@@ -13,9 +13,9 @@ const v1 = require('./routes/v1');
 
 const app = express();
 
-logger.token('date', function(){
+logger.token('date', function () {
     return new Date().toString()
-  })
+})
 
 app.use(logger(CONFIG.logger_format));
 app.use(bodyParser.json());
@@ -33,10 +33,17 @@ models.sequelize.authenticate().then(() => {
 })
     .catch(err => {
         console.error('Unable to connect to SQL database:', process.env.DATABASE_URL, err);
+        process.exit(2);
     });
 if (CONFIG.app === 'dev') {
     models.sequelize.sync();//creates table if they do not already exist
 }
+//sync migrations
+require('./migrator');
+console.log('Performing startup migration...');
+migratorPerform();
+
+
 // CORS
 app.use(function (req, res, next) {
     // Website you wish to allow to connect
