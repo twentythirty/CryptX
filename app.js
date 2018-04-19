@@ -13,6 +13,10 @@ const v1 = require('./routes/v1');
 
 const app = express();
 
+logger.token('date', function(){
+    return new Date().toString()
+  })
+
 app.use(logger(CONFIG.logger_format));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
