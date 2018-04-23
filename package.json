@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "start": "NODE_ENV=dev node ./bin/www",
+    "start": "./startup.sh",
     "test": "NODE_ENV=test mocha --timeout 10000"
   },
   "dependencies": {
@@ -31,8 +31,9 @@
     "validator": "^9.2.0"
   },
   "devDependencies": {
-    "mocha": "^2.4.5",
     "chai": "^3.5.0",
-    "chai-http": "^2.0.1"
+    "chai-http": "^2.0.1",
+    "mocha": "^2.4.5",
+    "nodemon": "^1.17.3"
   }
 }
