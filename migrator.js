@@ -19,6 +19,8 @@ var umzug = new Umzug({
         ],
         // The path to the migrations directory.
         path: 'migrations',
+        // The pattern that determines whether or not a file is a migration.
+        pattern: /^\d+[\w-]+\.js$/
     }
 });
 

@@ -1,5 +1,3 @@
-process.env.NODE_ENV = 'test';
-
 let app = require('../app');
 let chai = require('chai');
 let chaiHttp = require('chai-http');
