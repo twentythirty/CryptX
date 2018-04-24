@@ -14,7 +14,7 @@ const path              = require('path');
 require('./../middleware/passport')(passport)
 /* GET home page. */
 router.get('/', function(req, res, next) {
-  res.json({status:"success", message:CONFIG.disclaimer, data:{"version_number":"v1.1.6"}})
+  res.json({status:"success", message:CONFIG.disclaimer, data:{"version_number":"v1.1.5"}})
 });
 
 

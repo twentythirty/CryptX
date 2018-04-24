@@ -2,7 +2,6 @@
     "environments": {
         "test": {
             "scripts": {
-                "test-setup": "cd BE",
                 "test": "npm test"
             }
         }
