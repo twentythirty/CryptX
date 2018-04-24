@@ -22,7 +22,7 @@
     "parse-error": "^0.2.0",
     "passport": "^0.4.0",
     "passport-jwt": "^3.0.0",
-    "pg": "7.4.1",
+    "pg": "^7.4.1",
     "request": "^2.85.0",
     "sequelize": "^4.31.2",
     "sequelize-cli": "^3.0.0",

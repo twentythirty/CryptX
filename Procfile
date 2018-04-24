@@ -1,2 +1,2 @@
-web: npm start
-worker: node jobs/test-worker.js
+web: cd BE; npm start
+worker: cd BE; node jobs/test-worker.js
