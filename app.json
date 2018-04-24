@@ -2,7 +2,8 @@
     "environments": {
         "test": {
             "scripts": {
-                "test": "npm test"
+                "test-setup": "cd BE; npm install",
+                "test": "cd BE; npm test"
             }
         }
     }
