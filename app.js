@@ -28,20 +28,18 @@ app.use(passport.initialize());
 
 //DATABASE
 const models = require("./models");
-models.sequelize.authenticate().then(() => {
-    console.log('Connected to SQL database:', process.env.DATABASE_URL);
-})
-    .catch(err => {
-        console.error('Unable to connect to SQL database:', process.env.DATABASE_URL, err);
-        process.exit(2);
-    });
-if (CONFIG.app === 'dev') {
-    models.sequelize.sync();//creates table if they do not already exist
-}
 //sync migrations
 require('./migrator');
-console.log('Performing startup migration...');
-migratorPerform();
+let dbPromise = models.sequelize.authenticate().then(() => {
+    console.log('Connected to SQL database:', process.env.DATABASE_URL);
+    console.log('Performing startup migration...');
+    return migratorPerform();
+}).then((migrations) => {
+    return migrations;
+}).catch(err => {
+        console.error('Unable prepare RDBMS for app:', process.env.DATABASE_URL, err);
+        process.exit(2);
+});
 
 
 // CORS
@@ -85,3 +83,4 @@ app.use(function (err, req, res, next) {
 });
 
 module.exports = app;
+module.exports.dbPromise = dbPromise;

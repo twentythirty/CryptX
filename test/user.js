@@ -11,8 +11,12 @@ let User = require("../models").User
 describe('Users', () => {
    
     before((done) => {
-        //destroy all previous models
-        User.destroy({ where: {} }).then(() => {
+        //make sure app db is ready
+        app.dbPromise.then((migrations) => {
+            console.log(migrations.map(m => m.file));
+            //destroy all previous models
+            return User.destroy({ where: {} })
+        }).then(() => {
             //create new test users
             return User.bulkCreate([
                 {
