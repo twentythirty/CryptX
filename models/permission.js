@@ -1,5 +1,4 @@
 "use strict";
-let permissions = require("../config/system_permissions");
 
 module.exports = (sequelize, DataTypes) => {
   var Permission = sequelize.define(
