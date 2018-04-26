@@ -45,4 +45,18 @@ process.on('unhandledRejection', error => {
 });
 
 
+//a standard object for defining CryptX models, underscores + no timestamps
+modelProps = function (table_name, table_comment = ''){
+    return {
+        //use underscore parameter and key names
+        underscored: true,
+        // don't add the timestamp attributes (updatedAt, createdAt)
+        timestamps: false,
+        // define the table's name
+        tableName: table_name,
+        comment: table_comment
+      }
+}
+
+
 
