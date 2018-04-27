@@ -1,7 +1,7 @@
 "use strict";
 module.exports = {
   up: (queryInterface, Sequelize) => {
-    console.log(all_roles);
+    
     return queryInterface.bulkInsert(
       "role",
       all_roles.map(role => {

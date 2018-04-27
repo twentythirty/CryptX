@@ -23,6 +23,11 @@ module.exports = {
         type: Sequelize.STRING,
         unique : false,
       },
+      created_timestamp: {
+        type: Sequelize.DATE,
+        allowNull: false,
+        defaultValue: Sequelize.NOW
+      },
       reset_password_token_hash: {
         type: Sequelize.STRING,
         allowNull: true

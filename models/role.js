@@ -15,10 +15,12 @@ module.exports = (sequelize, DataTypes) => {
 
     Role.associate = function(models) {
         Role.belongsToMany(models.Permission, {
-            through: 'role_permission'
+            through: 'role_permission',
+            timestamps: false
         });
         Role.belongsToMany(models.User, {
-            through: 'user_role'
+            through: 'user_role',
+            timestamps: false
         })
     }
 

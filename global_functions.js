@@ -58,5 +58,5 @@ modelProps = function (table_name, table_comment = ''){
       }
 }
 
-
-
+// Load the full build, load this globally.
+_ = require('lodash');
