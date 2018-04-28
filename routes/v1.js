@@ -10,7 +10,7 @@ const passport      	= require('passport');
 const path              = require('path');
 
 
-require('./../middleware/passport')(passport)
+require('./../middleware/check_session')(passport)
 /* GET home page. */
 router.get('/', function(req, res, next) {
   res.json({status:"success", message:CONFIG.disclaimer, data:{"version_number":"v1.1.5"}})

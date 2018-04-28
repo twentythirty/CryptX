@@ -1,4 +1,4 @@
-let app = require('../app');
+let app = require('../../app');
 let chai = require('chai');
 let chaiHttp = require('chai-http');
 let should = chai.should();
@@ -6,37 +6,12 @@ let should = chai.should();
 chai.use(chaiHttp);
 
 
-let User = require("../models").User
+let User = require("../../models").User
 
-describe('Users', () => {
+xdescribe('Users', () => {
    
     before((done) => {
-        //make sure app db is ready
-        app.dbPromise.then((migrations) => {
-            console.log(migrations.map(m => m.file));
-            //destroy all previous models
-            return User.destroy({ where: {} })
-        }).then(() => {
-            //create new test users
-            return User.bulkCreate([
-                {
-                    first: 'TesterA',
-                    last: 'A',
-                    email: 'a@test.com',
-                    phone: null,
-                    password: 'testa'
-                },
-                {
-                    first: 'TesterB',
-                    last: 'B',
-                    email: 'b@test.com',
-                    phone: null,
-                    password: 'testb'
-                }
-            ])
-        }).then(() => {
-            done();
-        });
+       
     });
 
     describe('GET /users', () => {

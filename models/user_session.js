@@ -18,5 +18,15 @@ module.exports = (sequelize, DataTypes) => {
     UserSession.belongsTo(models.User, { as: "user" });
   };
 
+  /**
+   * refresh user session timeout by adding to the expiry time. persists change
+   */
+  UserSession.prototype.touch = function() {
+
+    //JWT_EXPIRATION is measured in seconds
+    this.expiry_timestamp = new Date(this.expiry_timestamp.getTime() + process.env.JWT_EXPIRATION * 1000)
+    this.save();
+  }
+
   return UserSession;
 };
