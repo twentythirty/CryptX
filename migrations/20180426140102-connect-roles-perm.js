@@ -23,6 +23,10 @@ module.exports = {
               {
                 role_id: manager.id,
                 permission_id: PERMISSIONS.ALTER_ROLES
+              },
+              {
+                role_id: manager.id,
+                permission_id: PERMISSIONS.VIEW_USERS
               }
             ]
           )

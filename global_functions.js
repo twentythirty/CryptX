@@ -12,13 +12,22 @@ to = function(promise) {
 
 pe = require("parse-error"); //parses error so you can read error message and handle them accordingly
 
-TE = function(err_message, log) {
+//custom error class
+
+class CryptXError extends Error {
+  constructor(...args) {
+    super(...args);
+    Error.captureStackTrace(this, CryptXError);
+  }
+}
+
+TE = function(err_message, log = false) {
   // TE stands for Throw Error
   if (log === true) {
     console.error(err_message);
   }
 
-  throw new Error(err_message);
+  throw new CryptXError(err_message);
 };
 
 ReE = function(res, err, code) {
@@ -65,15 +74,3 @@ modelProps = function(table_name, table_comment = "") {
 
 // Load the dash, globally.
 _ = require("lodash");
-
-//extension to easily get request ip
-IncomingMessage.prototype.getClientIP = function() {
-  return (
-    (this.headers["x-forwarded-for"] ? this.headers["x-forwarded-for"] : "")
-      .split(",")
-      .pop() ||
-    this.connection.remoteAddress ||
-    this.socket.remoteAddress ||
-    this.connection.socket.remoteAddress
-  );
-};
