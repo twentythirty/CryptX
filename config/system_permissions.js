@@ -21,7 +21,7 @@ all_permissions[PERMISSIONS.ALTER_PERMS] =
 all_permissions[PERMISSIONS.VIEW_USERS] =
   "Permission to view infomration of other system users";
 all_permissions[PERMISSIONS.CREATE_USER] =
-  "Permission to create new ystem users";
+  "Permission to create new system users";
 
 all_roles = Object.values(ROLES);
 
