@@ -2,7 +2,7 @@
 
 let check_permissions = async function(req, res, next) {
   let route = Object.values(ROUTES).find(route => {
-    return route.permissions_mathcer.test(req.path);
+    return route.permissions_matcher.test(req.path);
   });
   console.log("Matched route: %o", route);
 
