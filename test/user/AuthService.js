@@ -7,6 +7,16 @@ const sinon = require("sinon");
 const path = require("path");
 
 describe("AuthService mocking", () => {
+
+    before(done => {
+
+        app.dbPromise.then(migrations => {
+            console.log("Migraitions: %o", migrations);
+            done();
+        })
+
+    });
+
   const AuthService = require("../../services/AuthService");
   const User = require("../../models").User;
   const UserSession = require("../../models").UserSession;

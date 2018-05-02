@@ -68,6 +68,16 @@ let User = require("../../models").User;
 let UserSession = require("../../models").UserSession;
 
 describe("Path Security Model ", () => {
+
+    before(done => {
+
+        app.dbPromise.then(migrations => {
+            console.log(migrations);
+            done();
+        })
+
+    });
+
   it("shall reject secured path requests without Authentication header", () => {
     chai
       .request(app)
