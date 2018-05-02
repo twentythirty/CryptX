@@ -1,6 +1,7 @@
 require('./config/config');     //instantiate configuration variables
 require('./global_functions');  //instantiate global functions
 require("./config/system_permissions"); //instantiate global permissions lists
+require('./config/model_constants'); //instantiate model constants
 
 console.log("App Environment:", CONFIG.app)
 console.log("Resolved NODE_ENV: ", process.env.NODE_ENV)

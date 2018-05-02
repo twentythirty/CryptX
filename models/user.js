@@ -88,7 +88,7 @@ module.exports = (sequelize, DataTypes) => {
     );
   };
 
-  User.prototype.toWeb = function(pw) {
+  User.prototype.toWeb = function() {
     let json = this.toJSON();
     delete json.password;
     return json;
