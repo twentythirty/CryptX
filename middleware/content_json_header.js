@@ -2,7 +2,10 @@
 
 //content type json to all reposnses
 module.exports.content_json = (req, res, next) => {
-    res.setHeader("Content-Type", "application/json");
+    //add json content header in case of success of response
+    if (res.status < 300) {
+        res.setHeader("Content-Type", "application/json");
+    }
 
     next();
 };

@@ -10,7 +10,10 @@ module.exports = (sequelize, DataTypes) => {
             market_cap_usd: DataTypes.DECIMAL,
             daily_volume_usd: DataTypes.DECIMAL,
             market_cap_percentage: DataTypes.DECIMAL,
-            nvt_ratio: DataTypes.DECIMAL
+            nvt_ratio: {
+                type: DataTypes.DECIMAL,
+                allowNull: true
+            }
         },
         modelProps(
             'market_history_detail',

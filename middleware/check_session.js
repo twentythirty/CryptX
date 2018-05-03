@@ -15,7 +15,7 @@ module.exports = function(passport) {
     new JwtStrategy(opts, async function(req, jwt_payload, done) {
       let err, user, session;
       let user_id = jwt_payload.user_id;
-      const token = req.headers["Authorization"];
+      const token = req.headers["authorization"];
       //only valid user payload if the user has a non-expired session
       //for this specific token
       [err, userWithSession] = await to(
