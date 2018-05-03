@@ -41,7 +41,7 @@ module.exports.getMe = getMe;
 
 const getUser = async function(req, res) {
   let user_id = req.params.user_id;
-  let [err, user] = User.findById(user_id);
+  let [err, user] = await to(User.findById(user_id));
 
   if (err) ReE(res, "user with id " + user_id + " not found!", 404);
 

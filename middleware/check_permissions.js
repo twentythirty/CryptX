@@ -9,16 +9,19 @@ let check_permissions = async function(req, res, next) {
   if (route) {
     let user = req.user;
     let reqPermissions = route.required_permissions;
-    let myPermissions = _.flatMap(user.getRoles(), role =>
-      role.getPermissions().map(permission => permission.name)
+    let roles = await user.getRoles();
+    let permissionsLists = await Promise.all(
+      roles.map(role => role.getPermissions())
+    );
+    let myPermissions = _.flatMap(permissionsLists, list =>
+      list.map(permission => permission.id)
     );
 
     //all permissions present, we good
     if (reqPermissions.every(perm => myPermissions.includes(perm))) {
-
-        return next();
+      return next();
     } else {
-        return ReE(res, 'Missing required permissions for path!', 403);
+      return ReE(res, "Missing required permissions for path!", 403);
     }
   }
 
