@@ -17,9 +17,18 @@ module.exports = (sequelize, DataTypes) => {
   );
 
   ActionLog.associate = function(models) {
-    //TODO: associate
-
-
+    ActionLog.belongsTo(models.User, {
+      foreignKey: "performing_user_id",
+      as: "performing_user"
+    });
+    ActionLog.belongsTo(models.UserSession);
+    ActionLog.belongsTo(models.User);
+    ActionLog.belongsTo(models.Permission);
+    ActionLog.belongsTo(models.Role);
+    ActionLog.belongsTo(models.Instrument);
+    ActionLog.belongsTo(models.Exchange);
+    ActionLog.belongsTo(models.ExchangeAccount);
+    ActionLog.belongsTo(models.InvestmentRun);
   };
 
   return ActionLog;
