@@ -36,10 +36,6 @@ module.exports = {
       market_cap_percentage: {
         type: Sequelize.DECIMAL,
         allowNull: false
-      },
-      nvt_ratio: {
-        type: Sequelize.DECIMAL,
-        allowNull: true
       }
     });
   },

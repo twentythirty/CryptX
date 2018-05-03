@@ -16,6 +16,8 @@ INVESTMENT_RUN_STATUSES = [
   "OrdersFilled"
 ];
 
+EXCHANGE_ACCOUNT_TYPES = ["Trading", "Withdrawal"];
+
 RECIPE_RUN_STATUSES = ["New", "Rejected", "Approved"];
 
 RECIPE_ORDER_STATUSES = ["New", "Rejected", "Approved"];
