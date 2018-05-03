@@ -1,8 +1,8 @@
 "use strict";
 
 module.exports = (sequelize, DataTypes) => {
-  var ColdStorageRecipeOrder = sequelize.define(
-    "ColdStorageRecipeOrder",
+  var ColdStorageInvestmentOrder = sequelize.define(
+    "ColdStorageInvestmentOrder",
     {
       //by default join tables remove primary keys
       id: {
@@ -24,5 +24,5 @@ module.exports = (sequelize, DataTypes) => {
     )
   );
 
-  return ColdStorageRecipeOrder;
+  return ColdStorageInvestmentOrder;
 };

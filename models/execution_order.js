@@ -25,7 +25,7 @@ module.exports = (sequelize, DataTypes) => {
     );
 
     ExecutionOrder.associate = function(models) {
-        ExecutionOrder.belongsTo(models.RecipeOrder);
+        ExecutionOrder.belongsTo(models.InvestmentOrder);
         ExecutionOrder.belongsTo(models.Instrument);
     };
 
