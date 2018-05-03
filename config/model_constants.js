@@ -1,8 +1,5 @@
 //constants for data not directly associated with permissions
 
-
-MAX_COINS = 523 //max amount of coins pulled from marketcap source to put into DB
-
 STRATEGY_TYPES = {
   MCI: "Mid Cap Index",
   LCI: "Large Cap Index"

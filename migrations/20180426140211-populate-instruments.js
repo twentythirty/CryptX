@@ -14,18 +14,22 @@ module.exports = {
       .then(resp => {
         const data = resp.data;
         console.log(
-          "Got %s coins in response, taking first %s!",
-          resp.metadata.num_cryptocurrencies, MAX_COINS
+          "Got %s coins in response!",
+          resp.metadata.num_cryptocurrencies
         );
 
-        return queryInterface.bulkInsert("instrument",
-          _.take(data, MAX_COINS).map(coin => {
+        return queryInterface.bulkInsert(
+          "instrument",
+          //returned data might contain duplicate coin symbols
+          //our DB has a UNIQ constraint 
+          //Postgres doesnt support IGNORE CONSTRAINT on bulk inserts
+          Object.values(_.keyBy(data, coin => coin.symbol)).map(coin => {
             return {
               symbol: coin.symbol,
               long_name: coin.name,
-              is_base: (coin.symbol === 'BTC' || coin.symbol === 'ETH'),
+              is_base: coin.symbol === "BTC" || coin.symbol === "ETH",
               tick_size: 0.00001
-            }
+            };
           })
         );
       })
