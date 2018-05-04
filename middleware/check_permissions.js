@@ -14,7 +14,7 @@ let check_permissions = async function(req, res, next) {
       roles.map(role => role.getPermissions())
     );
     let myPermissions = _.flatMap(permissionsLists, list =>
-      list.map(permission => permission.id)
+      list.map(permission => permission.code)
     );
 
     //all permissions present, we good
