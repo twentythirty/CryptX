@@ -41,7 +41,7 @@ router.get(
 );
 router.post(ROUTES.CreateUser.router_string, UserController.create);
 router.post(
-  ROUTES.ChangeUserRole,
+  ROUTES.ChangeUserRole.router_string,
   passport.authenticate("jwt", { session: false }),
   check_permissions,
   UserController.changeUserRole

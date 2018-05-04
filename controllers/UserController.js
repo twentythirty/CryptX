@@ -4,9 +4,8 @@ const authService = require("./../services/AuthService");
 const create = async function(req, res) {
   const body = req.body;
 
-  let err, user, userWithError;
-  [err, userWithError] = await to(authService.createUser(body));
-  [err, user] = userWithError;
+  let err, user;
+  [err, user] = await to(authService.createUser(body));
   if (err) return ReE(res, err, 422);
   return ReS(
     res,

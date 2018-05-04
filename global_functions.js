@@ -21,7 +21,7 @@ class CryptXError extends Error {
   }
 }
 
-TE = function(err_message, log = false) {
+TE = function(err_message, log = (process.env.NODE_END === 'dev')) {
   // TE stands for Throw Error
   if (log === true) {
     console.error(err_message);

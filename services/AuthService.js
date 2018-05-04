@@ -25,8 +25,9 @@ const createUser = async function(userInfo) {
   if (validator.isEmail(email)) {
 
     let [err, user] = await to(User.create(Object.assign(defaults, userInfo)));
-    
-    return [err, user];
+    if (err) TE(err.message)
+
+    return user;
   } else {
     TE("A valid email was not entered.");
   }
@@ -61,6 +62,7 @@ const authUser = async function(credentials, clientIP) {
       ip_address: clientIP
     })
   );
+  if (err) TE(err.message)
 
   return [user, session];
 };
@@ -71,16 +73,20 @@ const changeUserRoles = async function(user_id, new_roles) {
     let [err, user] = await to(User.findById(user_id));
     if (err) TE(err.message)
 
-    let neededRoles, nothing;
+    let neededRoles;
     [err, neededRoles] = await to(Role.findAll({
         where: {
             name: new_roles
         }
     }));
 
-    user.setRoles(neededRoles);
-    [err, nothing] = await to(user.save())
+    if (err) TE(err.message);
 
-    return [err, user];
+    user.setRoles(neededRoles);
+    [err, user] = await to(user.save())
+
+    if (err) TE(err.message);
+
+    return user;
 }
 module.exports.changeUserRoles = changeUserRoles;
