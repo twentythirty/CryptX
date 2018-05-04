@@ -1,10 +1,10 @@
 "use strict";
 module.exports = {
   up: (queryInterface, Sequelize) => {
-    return queryInterface.createTable("symbol_exchange_mapping", {
+    return queryInterface.createTable("instrument_exchange_mapping", {
       external_instrument_id: {
         type: Sequelize.STRING,
-        allowNull: true
+        allowNull: false
       },
       instrument_id: {
         type: Sequelize.INTEGER,
@@ -27,6 +27,6 @@ module.exports = {
     });
   },
   down: (queryInterface, Sequelize) => {
-    return queryInterface.dropTable("symbol_exchange_mapping");
+    return queryInterface.dropTable("instrument_exchange_mapping");
   }
 };

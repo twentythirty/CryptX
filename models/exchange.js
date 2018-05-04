@@ -14,7 +14,7 @@ module.exports = (sequelize, DataTypes) => {
 
   Exchange.associate = function(models) {
     Exchange.belongsToMany(models.Instrument, {
-      through: models.SymbolExchangeMapping
+      through: models.InstrumentExchangeMapping
     });
   };
 

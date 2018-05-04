@@ -2,12 +2,12 @@
 
 module.exports = (sequelize, DataTypes) => {
 
-    var SymbolExchangeMapping = sequelize.define(
-        'SymbolExchangeMapping',
+    var InstrumentExchangeMapping = sequelize.define(
+        'InstrumentExchangeMapping',
         {
             external_instrument_id: {
                 type: DataTypes.STRING,
-                allowNull: true
+                allowNull: false
             }
         },
         modelProps(
@@ -16,5 +16,5 @@ module.exports = (sequelize, DataTypes) => {
         )
     );
 
-    return SymbolExchangeMapping;
+    return InstrumentExchangeMapping;
 };

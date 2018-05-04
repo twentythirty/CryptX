@@ -8,6 +8,11 @@ module.exports = {
         primaryKey: true,
         type: Sequelize.INTEGER
       },
+      account_type: {
+        type: Sequelize.SMALLINT,
+        allowNull: false,
+        unique: false
+      },
       instrument_id: {
         type: Sequelize.INTEGER,
         references: {

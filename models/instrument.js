@@ -7,7 +7,7 @@ module.exports = (sequelize, DataTypes) => {
         {
             symbol: {
                 type: DataTypes.STRING,
-                unique: true,
+                unique: false,
                 allowNull: false
             },
             long_name: DataTypes.STRING,
@@ -27,7 +27,7 @@ module.exports = (sequelize, DataTypes) => {
 
     Instrument.associate = function(models) {
         Instrument.belongsToMany(models.Exchange, {
-            through: models.SymbolExchangeMapping
+            through: models.InstrumentExchangeMapping
         });
     }
 
