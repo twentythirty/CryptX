@@ -5,14 +5,12 @@ module.exports = (sequelize, DataTypes) => {
         'ExecutionOrder',
         {
             status: {
-                type: DataTypes.ENUM,
-                allowNull: false,
-                values: EXECUTION_ORDER_STATUSES
+                type: DataTypes.SMALLINT,
+                allowNull: false
             },
             type: {
-                type: DataTypes.ENUM,
-                allowNull: false,
-                values: EXECUTION_ORDER_TYPES
+                type: DataTypes.SMALLINT,
+                allowNull: false
             },
             total_quantity: DataTypes.DECIMAL,
             placed_timestamp: DataTypes.DATE,

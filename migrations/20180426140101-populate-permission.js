@@ -3,11 +3,11 @@ module.exports = {
   up: (queryInterface, Sequelize) => {
     return queryInterface.bulkInsert(
       "permission",
-      Object.keys(all_permissions).map(key => {
-          return {
-              id: key,
-              name: all_permissions[key]
-          }
+      _.map(all_permissions, (name, code) => {
+        return {
+          code: code,
+          name: name
+        }
       })
     );
   },

@@ -8,9 +8,8 @@ module.exports = (sequelize, DataTypes) => {
             target_instrument_amount: DataTypes.DECIMAL,
             target_instrument_price: DataTypes.DECIMAL,
             status: {
-                type: DataTypes.ENUM,
-                allowNull: false,
-                values: RECIPE_ORDER_STATUSES
+                type: DataTypes.SMALLINT,
+                allowNull: false
             },
             comment: DataTypes.TEXT('medium'),
             placed_timestamp: DataTypes.DATE

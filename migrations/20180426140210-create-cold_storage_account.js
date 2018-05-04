@@ -18,9 +18,8 @@ module.exports = {
         onDelete: "cascade"
       },
       strategy_type: {
-        type: Sequelize.ENUM,
-        allowNull: false,
-        values: Object.keys(STRATEGY_TYPES)
+        type: Sequelize.SMALLINT,
+        allowNull: false
       },
       address: {
         type: Sequelize.TEXT("medium"),

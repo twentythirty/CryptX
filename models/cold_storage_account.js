@@ -5,8 +5,7 @@ module.exports = (sequelize, DataTypes) => {
     "ColdStorageAccount",
     {
       strategy_type: {
-        type: DataTypes.ENUM,
-        values: Object.keys(STRATEGY_TYPES),
+        type: DataTypes.SMALLINT,
         allowNull: false
       },
       address: DataTypes.TEXT("medium")

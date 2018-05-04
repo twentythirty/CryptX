@@ -6,9 +6,8 @@ module.exports = (sequelize, DataTypes) => {
     {
       created_timestamp: DataTypes.DATE,
       status: {
-        type: DataTypes.ENUM,
-        allowNull: false,
-        values: RECIPE_RUN_STATUSES
+        type: DataTypes.SMALLINT,
+        allowNull: false
       },
       comment: {
         type: DataTypes.TEXT("medium"),

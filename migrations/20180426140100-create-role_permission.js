@@ -12,7 +12,7 @@ module.exports = {
         onDelete: "cascade"
       },
       permission_id: {
-        type: 'enum_permission_id',
+        type: Sequelize.INTEGER,
         references: {
           model: 'permission',
           key: 'id'

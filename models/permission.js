@@ -4,10 +4,10 @@ module.exports = (sequelize, DataTypes) => {
   var Permission = sequelize.define(
     "Permission",
     {
-      id: {
-        type: DataTypes.ENUM,
-        primaryKey: true,
-        values: Object.keys(all_permissions)
+      code: {
+        type: DataTypes.STRING,
+        allowNull: false,
+        unique: true
       },
       name: DataTypes.STRING
     },

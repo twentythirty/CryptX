@@ -3,9 +3,15 @@ module.exports = {
   up: (queryInterface, Sequelize) => {
     return queryInterface.createTable('permission', {
       id: {
-        type: Sequelize.ENUM,
+        allowNull: false,
+        autoIncrement: true,
         primaryKey: true,
-        values: Object.keys(all_permissions)
+        type: Sequelize.INTEGER
+      },
+      code: {
+        type: Sequelize.STRING,
+        allowNull: false,
+        unique: true
       },
       name: {
         type: Sequelize.STRING

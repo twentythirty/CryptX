@@ -11,9 +11,8 @@ module.exports = (sequelize, DataTypes) => {
         autoIncrement: true
       },
       status: {
-          type: DataTypes.ENUM,
-          allowNull: false,
-          values: Object.keys(COLD_STORAGE_TRANSFER_STATUSES)
+          type: DataTypes.SMALLINT,
+          allowNull: false
       },
       placed_timestamp: DataTypes.DATE,
       completed_timestamp: DataTypes.DATE

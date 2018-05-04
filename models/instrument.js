@@ -10,7 +10,7 @@ module.exports = (sequelize, DataTypes) => {
                 unique: false,
                 allowNull: false
             },
-            long_name: DataTypes.STRING,
+            long_name: DataTypes.TEXT('medium'),
             is_base: DataTypes.BOOLEAN,
             is_blacklisted: {
                 type: DataTypes.BOOLEAN,

@@ -12,15 +12,13 @@ module.exports = (sequelize, DataTypes) => {
       },
       amount: DataTypes.DECIMAL,
       strategy_type: {
-        type: DataTypes.ENUM,
-        allowNull: false,
-        values: Object.keys(STRATEGY_TYPES)
+        type: DataTypes.SMALLINT,
+        allowNull: false
       },
       is_simulated: DataTypes.BOOLEAN,
       status: {
-        type: DataTypes.ENUM,
-        allowNull: false,
-        values: INVESTMENT_RUN_STATUSES
+        type: DataTypes.SMALLINT,
+        allowNull: false
       }
     },
     modelProps("investment_run", "Investment workflow run")
