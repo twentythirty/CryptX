@@ -5,6 +5,7 @@ let chai = require("chai");
 let should = chai.should();
 const sinon = require("sinon");
 const path = require("path");
+let utils = require('util');
 
 describe("AuthService mocking", () => {
 
@@ -194,13 +195,22 @@ describe("AuthService mocking", () => {
 
       let emails = ["", "a!", "peter", "@", ".@.", "a@", "@here", "maybe@this"];
       let local_model = Object.assign({}, CREATE_MODEL);
-      emails.forEach(mail => {
-        local_model.email = mail;
-        AuthService.createUser(local_model);
-      });
-      chai.expect(AuthService.createUser.alwaysThrew());
+      
+      return Promise.all(emails.map(email => {
+        local_model.email = email;
+        return AuthService.createUser(local_model) // attempting to create user
+        .then(resolved => { // resolves if user email is valid
+          return Promise.resolve([null, email])
+        }).catch(rejected => { // rejects if user email is invalid
+          return Promise.resolve([rejected, null])
+        });
+      })).then(results => {
+        AuthService.createUser.restore();
 
-      AuthService.createUser.restore();
+        chai.expect(results).to.satisfy(results => { // checks if at least one valid email is in the list
+          return results.every(pair => pair[1] == null)
+        }, utils.format('%j', results));
+      });
     });
 
     it("shall create a new user when all is good", () => {
