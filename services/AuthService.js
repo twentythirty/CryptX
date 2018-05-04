@@ -70,10 +70,10 @@ module.exports.authUser = authUser;
 
 const changeUserRoles = async function(user_id, new_roles) {
 
-    let [err, user] = await to(User.findById(user_id));
-    if (err) TE(err.message)
+    let user = await User.findById(user_id);
+    if (!user) TE("User with id " + user_id + " not found!")
 
-    let neededRoles;
+    let err, neededRoles;
     [err, neededRoles] = await to(Role.findAll({
         where: {
             name: new_roles
