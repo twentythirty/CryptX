@@ -61,7 +61,7 @@ describe("AuthService mocking", () => {
       sinon.stub(user, "save").callsFake(() => {
         user.roles = NEW_ROLES;
 
-        return Promise.resolve();
+        return Promise.resolve(user);
       });
 
       return Promise.resolve(user);
@@ -93,9 +93,8 @@ describe("AuthService mocking", () => {
     it("call required DB model during roles change", function() {
       return AuthService.changeUserRoles(USER_ID, NEW_ROLES).then(
         changedUser => {
-          chai.expect(changedUser).to.be.a("array");
-          chai.expect(changedUser.length).to.eq(2);
-          let [err, user] = changedUser;
+          chai.expect(changedUser).to.be.a("object");
+          let user = changedUser;
 
           //user was looked up via supplied id
           chai.expect(User.findById.calledWith(USER_ID));
@@ -206,10 +205,9 @@ describe("AuthService mocking", () => {
 
     it("shall create a new user when all is good", () => {
 
-        return AuthService.createUser(CREATE_MODEL).then((errUser) => {
+        return AuthService.createUser(CREATE_MODEL).then((user) => {
 
-            chai.expect(errUser).to.be.a('array');
-            let [err, user] = errUser;
+            chai.expect(user).to.be.a('object');
 
             chai.expect(user).to.have.property('created_timestamp');
             chai.expect(user.is_active).eq(true);
