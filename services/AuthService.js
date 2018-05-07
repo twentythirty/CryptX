@@ -116,9 +116,11 @@ const changeRolePermissions = async function(role_id, new_perms) {
 }
 module.exports.changeRolePermissions = changeRolePermissions;
 
-const updatePassword = async function (user, old_password, new_password) {
+const updatePassword = async function (user_id, old_password, new_password) {
 
-  let err;
+  let [err, user] = await to(User.findById(user_id));
+  if (err) TE(err.message);
+  
   [err, user] = await to(user.comparePassword(old_password));
   if (err) TE(err.message);
 
@@ -131,7 +133,7 @@ const updatePassword = async function (user, old_password, new_password) {
 }
 module.exports.updatePassword = updatePassword;
 
-const expireSessions = async function (user_id, current_token) {
+const expireOtherSessions = async function (user_id, keep_active_session) {
 
   let err, user_sessions, expiration_timestamp, Sequelize = require('sequelize');
   [err, user_sessions] = await to(UserSession.findAll({
@@ -141,7 +143,7 @@ const expireSessions = async function (user_id, current_token) {
         [Sequelize.Op.gt]: new Date() // greather than now
       },
       token: {
-        [Sequelize.Op.ne]: current_token
+        [Sequelize.Op.ne]: keep_active_session
       }
     }
   }));
@@ -157,4 +159,4 @@ const expireSessions = async function (user_id, current_token) {
 
   return true;
 }
-module.exports.expireSessions = expireSessions;
+module.exports.expireOtherSessions = expireOtherSessions;
