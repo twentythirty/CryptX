@@ -91,6 +91,7 @@ module.exports = (sequelize, DataTypes) => {
   User.prototype.toWeb = function() {
     let json = this.toJSON();
     delete json.password;
+    json.created_timestamp = json.created_timestamp.getTime();
     return json;
   };
 
