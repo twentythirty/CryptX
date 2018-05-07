@@ -1,8 +1,7 @@
 {
   "swagger": "2.0",
   "info": {
-    "description":
-      "This is documentatin for the Node API. For every request you must include in the header: \n `Content-Type: application/json` \n\n <b>Routes with a lock next to them use authorization</b>. In this case, its request-scope JWT tokens in the `Authorization` header coupled with server-side database session persistence. An example secure request would contain the header:\n `Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ...`",
+    "description": "This is documentatin for the Node API. For every request you must include in the header: \n `Content-Type: application/json` \n\n <b>Routes with a lock next to them use authorization</b>. In this case, its request-scope JWT tokens in the `Authorization` header coupled with server-side database session persistence. An example secure request would contain the header:\n `Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ...`",
     "version": "0.0.1",
     "title": "CryptX System",
     "termsOfService": "http://swagger.io/terms/",
@@ -16,8 +15,7 @@
   },
   "host": "cryptx-app-staging.herokuapp.com",
   "basePath": "/v1",
-  "tags": [
-    {
+  "tags": [{
       "name": "user",
       "description": "Creation and authentication"
     },
@@ -32,8 +30,7 @@
       "get": {
         "tags": ["MISC"],
         "summary": "Default route",
-        "description":
-          "The response received when no mathcing route was found for the supplied HTTP verb.\n While the provided example is a `GET`, this will work equally well on all HTTP verbs",
+        "description": "The response received when no mathcing route was found for the supplied HTTP verb.\n While the provided example is a `GET`, this will work equally well on all HTTP verbs",
         "responses": {
           "200": {
             "description": "success",
@@ -50,15 +47,13 @@
         "summary": "Get ifnormation of role by id",
         "description": "Fetch role by id. Requires the `perm_view_roles` permission",
         "produces": ["application/json"],
-        "parameters": [
-          {
-            "name": "role_id",
-            "in": "path",
-            "description": "identifier of role to fetch",
-            "required": true,
-            "type": "integer"
-          }
-        ],
+        "parameters": [{
+          "name": "role_id",
+          "in": "path",
+          "description": "identifier of role to fetch",
+          "required": true,
+          "type": "integer"
+        }],
         "responses": {
           "200": {
             "description": "success",
@@ -67,22 +62,18 @@
             }
           }
         },
-        "security": [
-          {
-            "bearer": []
-          }
-        ]
+        "security": [{
+          "bearer": []
+        }]
       }
     },
     "/roles/{role_id}/change_perms": {
       "post": {
         "tags": ["security"],
         "summary": "Change permissions of role",
-        "description":
-          "Change what permissions go into the role identified by `role_id`. \nRequires the `perm_alter_role_perm` permission",
+        "description": "Change what permissions go into the role identified by `role_id`. \nRequires the `perm_alter_role_perm` permission",
         "produces": ["application/json"],
-        "parameters": [
-          {
+        "parameters": [{
             "name": "role_id",
             "in": "path",
             "description": "identifier of role to change permissions for",
@@ -116,11 +107,9 @@
             "description": "successful operation"
           }
         },
-        "security": [
-          {
-            "bearer": []
-          }
-        ]
+        "security": [{
+          "bearer": []
+        }]
       }
     },
     "/users/login": {
@@ -130,17 +119,15 @@
         "description": "Perform login for specific system user",
         "operationId": "loginUser",
         "produces": ["application/json"],
-        "parameters": [
-          {
-            "in": "body",
-            "name": "body",
-            "description": "Login User",
-            "required": true,
-            "schema": {
-              "$ref": "#/definitions/LoginUserRequest"
-            }
+        "parameters": [{
+          "in": "body",
+          "name": "body",
+          "description": "Login User",
+          "required": true,
+          "schema": {
+            "$ref": "#/definitions/LoginUserRequest"
           }
-        ],
+        }],
         "responses": {
           "200": {
             "description": "successful operation",
@@ -177,29 +164,24 @@
             }
           }
         },
-        "security": [
-          {
-            "bearer": []
-          }
-        ]
+        "security": [{
+          "bearer": []
+        }]
       }
     },
     "/users/{user_id}": {
       "get": {
         "tags": ["user"],
         "summary": "Get information of user by id",
-        "description":
-          "Fetch user by id. Requires the `perm_view_users` permission",
+        "description": "Fetch user by id. Requires the `perm_view_users` permission",
         "produces": ["application/json"],
-        "parameters": [
-          {
-            "name": "user_id",
-            "in": "path",
-            "description": "identifier of user to fetch",
-            "required": true,
-            "type": "integer"
-          }
-        ],
+        "parameters": [{
+          "name": "user_id",
+          "in": "path",
+          "description": "identifier of user to fetch",
+          "required": true,
+          "type": "integer"
+        }],
         "responses": {
           "200": {
             "description": "successful operation",
@@ -214,11 +196,9 @@
             }
           }
         },
-        "security": [
-          {
-            "bearer": []
-          }
-        ]
+        "security": [{
+          "bearer": []
+        }]
       }
     },
     "/users/{user_id}/change_role": {
@@ -227,8 +207,7 @@
         "summary": "Change user roles",
         "description": "Change the roles user has in system",
         "produces": ["application/json"],
-        "parameters": [
-          {
+        "parameters": [{
             "name": "user_id",
             "in": "path",
             "description": "identifier of user to change roles of",
@@ -262,31 +241,65 @@
             "description": "successful operation"
           }
         },
-        "security": [
+        "security": [{
+          "bearer": []
+        }]
+      }
+    },
+    "/users/me/change_password": {
+      "post": {
+        "tags": ["user"],
+        "summary": "Change logged in user password",
+        "description": "Change the password current user uses to login. \nInvalidates all active user sessions except for the current one",
+        "produces": ["application/json"],
+        "parameters": [
           {
-            "bearer": []
+            "in": "body",
+            "name": "body",
+            "description": "New User password",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/UserPassChange"
+            }
           }
-        ]
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "$ref": "#/definitions/ReturnUserResponse"
+            }
+          },
+          "401": {
+            "description": "unauthorized",
+            "schema": {
+              "$ref": "#/definitions/ApiUnauthorizezdResponse"
+            }
+          },
+          "default": {
+            "description": "successful operation"
+          }
+        },
+        "security": [{
+          "bearer": []
+        }]
       }
     },
     "/users/create": {
       "post": {
         "tags": ["user"],
         "summary": "Create a new user",
-        "description":
-          "Create a user from provided data. Does not auto-login created user.",
+        "description": "Create a user from provided data. Does not auto-login created user.",
         "produces": ["application/json"],
-        "parameters": [
-          {
-            "in": "body",
-            "name": "body",
-            "description": "Create User",
-            "required": true,
-            "schema": {
-              "$ref": "#/definitions/CreateUser"
-            }
+        "parameters": [{
+          "in": "body",
+          "name": "body",
+          "description": "Create User",
+          "required": true,
+          "schema": {
+            "$ref": "#/definitions/CreateUser"
           }
-        ],
+        }],
         "responses": {
           "201": {
             "description": "success",
@@ -434,6 +447,19 @@
       "type": "array",
       "items": {
         "type": "string"
+      }
+    },
+    "UserPassChange": {
+      "type": "object",
+      "properties": {
+        "old_password": {
+          "type": "string",
+          "example": "scott"
+        },
+        "new_password": {
+          "type": "string",
+          "example": "tiger"
+        }
       }
     },
     "ReturnRoleResponse": {
