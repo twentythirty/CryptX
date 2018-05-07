@@ -51,10 +51,10 @@ module.exports = (sequelize, DataTypes) => {
     if (user.changed("password")) {
       let salt, hash;
       [err, salt] = await to(bcrypt.genSalt(10));
-      if (err) TE(err.message, true);
+      if (err) TE(err.message);
 
       [err, hash] = await to(bcrypt.hash(user.password, salt));
-      if (err) TE(err.message, true);
+      if (err) TE(err.message);
 
       user.password = hash;
     }

@@ -38,7 +38,7 @@ ROUTES = {
   },
   GetUserInfo: {
     router_string: "/users/:user_id",
-    permissions_matcher: /\users\/\d+/,
+    permissions_matcher: /\users\/\d+$/,
     required_permissions: [PERMISSIONS.VIEW_USERS]
   },
   ChangeUserRole: {

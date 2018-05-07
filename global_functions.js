@@ -1,5 +1,6 @@
 //custom error class
 const CryptXError = require('./errors/CryptXError');
+const util = require('util');
 
 const IncomingMessage = require("http").IncomingMessage;
 
@@ -15,13 +16,13 @@ to = function(promise) {
 
 pe = require("parse-error"); //parses error so you can read error message and handle them accordingly
 
-TE = function(err_message, log = (process.env.NODE_END === 'dev')) {
+TE = function(err_message, ...args) {
   // TE stands for Throw Error
-  if (log === true) {
-    console.error(err_message);
+  if (process.env.NODE_ENV == 'dev') {
+    console.error(err_message, args);
   }
 
-  throw new CryptXError(err_message);
+  throw new CryptXError(util.format(err_message, args));
 };
 
 ReE = function(res, err, code) {
