@@ -44,6 +44,36 @@
         }
       }
     },
+    "roles/{role_id}": {
+      "get": {
+        "tags": ["security"],
+        "summary": "Get ifnormation of role by id",
+        "description": "Fetch role by id. Requires the `perm_view_roles` permission",
+        "produces": ["application/json"],
+        "parameters": [
+          {
+            "name": "role_id",
+            "in": "path",
+            "description": "identifier of role to fetch",
+            "required": true,
+            "type": "integer"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "$ref": "#/definitions/ReturnRoleResponse"
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
     "/roles/{role_id}/change_perms": {
       "post": {
         "tags": ["security"],
@@ -385,6 +415,12 @@
         "name": {
           "type": "string",
           "example": "ROLE_ADMIN"
+        },
+        "permissions": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
         }
       }
     },
