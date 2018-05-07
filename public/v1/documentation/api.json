@@ -1,7 +1,8 @@
 {
   "swagger": "2.0",
   "info": {
-    "description": "This is documentatin for the Node API. For every request you must include in the header: \n `Content-Type: application/json` \n\n <b>Routes with a lock next to them use authorization</b>. In this case, its request-scope JWT tokens in the `Authorization` header coupled with server-side database session persistence. An example secure request would contain the header:\n `Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ...`",
+    "description":
+      "This is documentatin for the Node API. For every request you must include in the header: \n `Content-Type: application/json` \n\n <b>Routes with a lock next to them use authorization</b>. In this case, its request-scope JWT tokens in the `Authorization` header coupled with server-side database session persistence. An example secure request would contain the header:\n `Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ...`",
     "version": "0.0.1",
     "title": "CryptX System",
     "termsOfService": "http://swagger.io/terms/",
@@ -21,42 +22,35 @@
       "description": "Creation and authentication"
     },
     {
-      name: "security",
-      description: "Role and Permission management"
+      "name": "security",
+      "description": "Role and Permission management"
     }
   ],
-  "schemes": [
-    "https"
-  ],
+  "schemes": ["https"],
   "paths": {
     "/": {
       "get": {
-        "tags": [
-          "MISC"],
-          summary: "Default route",
-          description: "The response received when no mathcing route was found for the supplied HTTP verb.\n While the provided example is a `GET`, this will work equally well on all HTTP verbs",
-          responses: {
-            200: {
-              description: "success",
-              schema:
-                {
-                  $ref: '#/definitions/ApiSuccessResponse'
-                }
+        "tags": ["MISC"],
+        "summary": "Default route",
+        "description":
+          "The response received when no mathcing route was found for the supplied HTTP verb.\n While the provided example is a `GET`, this will work equally well on all HTTP verbs",
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "$ref": "#/definitions/ApiSuccessResponse"
             }
-            
           }
+        }
       }
     },
     "/roles/{role_id}/change_perms": {
       "post": {
-        "tags": [
-          "security"
-        ],
+        "tags": ["security"],
         "summary": "Change permissions of role",
-        "description": "Change what permissions go into the role identified by `role_id`. \nRequires the `perm_alter_role_perm` permission",
-        "produces": [
-          "application/json"
-        ],
+        "description":
+          "Change what permissions go into the role identified by `role_id`. \nRequires the `perm_alter_role_perm` permission",
+        "produces": ["application/json"],
         "parameters": [
           {
             "name": "role_id",
@@ -101,15 +95,11 @@
     },
     "/users/login": {
       "post": {
-        "tags": [
-          "user"
-        ],
+        "tags": ["user"],
         "summary": "Authenticate user",
         "description": "Perform login for specific system user",
         "operationId": "loginUser",
-        "produces": [
-          "application/json"
-        ],
+        "produces": ["application/json"],
         "parameters": [
           {
             "in": "body",
@@ -139,14 +129,10 @@
     },
     "/users/me": {
       "get": {
-        "tags": [
-          "user"
-        ],
+        "tags": ["user"],
         "summary": "Return current user",
         "description": "Fetch the user currently logged in with this session.",
-        "produces": [
-          "application/json"
-        ],
+        "produces": ["application/json"],
         "responses": {
           "200": {
             "description": "successful operation",
@@ -166,18 +152,15 @@
             "bearer": []
           }
         ]
-      },
+      }
     },
     "/users/{user_id}": {
       "get": {
-        "tags": [
-          "user"
-          ],
+        "tags": ["user"],
         "summary": "Get information of user by id",
-        "description": "Fetch user by id. Requires the `perm_view_users` permission",
-        "produces": [
-          "application/json"
-        ],
+        "description":
+          "Fetch user by id. Requires the `perm_view_users` permission",
+        "produces": ["application/json"],
         "parameters": [
           {
             "name": "user_id",
@@ -210,14 +193,10 @@
     },
     "/users/{user_id}/change_role": {
       "post": {
-        "tags": [
-          "user"
-        ],
+        "tags": ["user"],
         "summary": "Change user roles",
         "description": "Change the roles user has in system",
-        "produces": [
-          "application/json"
-        ],
+        "produces": ["application/json"],
         "parameters": [
           {
             "name": "user_id",
@@ -262,14 +241,11 @@
     },
     "/users/create": {
       "post": {
-        "tags": [
-          "user"
-        ],
+        "tags": ["user"],
         "summary": "Create a new user",
-        "description": "Create a user from provided data. Does not auto-login created user.",
-        "produces": [
-          "application/json"
-        ],
+        "description":
+          "Create a user from provided data. Does not auto-login created user.",
+        "produces": ["application/json"],
         "parameters": [
           {
             "in": "body",
@@ -312,22 +288,22 @@
     "CreateUser": {
       "type": "object",
       "properties": {
-         "first_name": {
-          type: "string",
-          example: "John"
+        "first_name": {
+          "type": "string",
+          "example": "John"
         },
         "last_name": {
-          type: "string",
-          example: "Doh"
+          "type": "string",
+          "example": "Doh"
         },
         "email": {
-          type: "string",
-          example: "john.doe@cryptx.io"
+          "type": "string",
+          "example": "john.doe@cryptx.io"
         },
         "password": {
           "type": "string",
           "example": "secure-password"
-        },
+        }
       }
     },
     "LoginUserRequest": {
@@ -336,7 +312,7 @@
         "username": {
           "type": "string",
           "example": "tester@cryptx.io"
-          },
+        },
         "password": {
           "type": "string",
           "example": "test"
@@ -365,36 +341,36 @@
       "description": "user details",
       "properties": {
         "id": {
-          type: "number",
-          example: 45
+          "type": "number",
+          "example": 45
         },
         "first_name": {
-          type: "string",
-          example: "John"
+          "type": "string",
+          "example": "John"
         },
         "last_name": {
-          type: "string",
-          example: "Doh"
+          "type": "string",
+          "example": "Doh"
         },
         "email": {
-          type: "string",
-          example: "john.doe@cryptx.io"
+          "type": "string",
+          "example": "john.doe@cryptx.io"
         },
         "created_timestamp": {
-          type: "integer",
-          example: 1525424340810
+          "type": "integer",
+          "example": 1525424340810
         },
         "reset_password_token_hash": {
-          type: "string",
-          example: "79054025255fb1a26e4bc422aef54eb4"
+          "type": "string",
+          "example": "79054025255fb1a26e4bc422aef54eb4"
         },
         "reset_password_token_expiry_timestamp": {
-          type: "integer",
-          example: 1525424340810
+          "type": "integer",
+          "example": 1525424340810
         },
         "is_active": {
-          type: "boolean",
-          example: true
+          "type": "boolean",
+          "example": true
         }
       }
     },
@@ -403,40 +379,38 @@
       "description": "role details",
       "properties": {
         "id": {
-          type: "number",
-          example: 48
+          "type": "number",
+          "example": 48
         },
         "name": {
-          type: "string",
-          example: "ROLE_ADMIN"
+          "type": "string",
+          "example": "ROLE_ADMIN"
         }
       }
     },
     "UserRoles": {
-      type: "array",
+      "type": "array",
       "items": {
-        type: "string"
+        "type": "string"
       }
     },
     "RolePermissions": {
-      type: "array",
-      items:
-        {
-          type: "string"
-        }
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
     },
     "ReturnRoleResponse": {
-      type: "object",
-      properties:
-        {
-          "success": {
-            type: "boolean",
-            example: true
-          },
-          "role": {
-            "$ref": "#/definitions/RoleDetails"
-          }
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean",
+          "example": true
+        },
+        "role": {
+          "$ref": "#/definitions/RoleDetails"
         }
+      }
     },
     "ReturnUserResponse": {
       "type": "object",
@@ -446,7 +420,7 @@
           "example": true
         },
         "user": {
-          "$ref": "#/definitions/UserDetails" 
+          "$ref": "#/definitions/UserDetails"
         }
       }
     },
@@ -471,7 +445,7 @@
         },
         "message": {
           "type": "string",
-          example: "Parcel Pending API"
+          "example": "Parcel Pending API"
         }
       }
     },
