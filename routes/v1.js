@@ -63,6 +63,14 @@ router.post(
   check_permissions,
   SecurityController.changeRolePermissions
 );
+router.get(
+  ROUTES.GetRoleInfo.router_string,
+  passport.authenticate("jwt", {
+    session: false
+  }),
+  check_permissions,
+  SecurityController.getRoleInfo
+);
 
 router.post(
   ROUTES.ChangePassword.router_string,
