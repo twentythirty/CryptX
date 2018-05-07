@@ -2,6 +2,7 @@
 PERMISSIONS = {
   ALTER_ROLES: "perm_alter_user_roles",
   ALTER_PERMS: "perm_alter_role_perm",
+  VIEW_ROLES: "perm_view_roles",
   VIEW_USERS: "perm_view_users",
   CREATE_USER: "perm_create_user"
 };
@@ -18,6 +19,7 @@ all_permissions[PERMISSIONS.ALTER_ROLES] =
   "Permission to change the roles a user has";
 all_permissions[PERMISSIONS.ALTER_PERMS] =
   "Permission to change what permissions are included in a specific role";
+all_permissions[PERMISSIONS.VIEW_ROLES] = "Permission to view information of system user roles";
 all_permissions[PERMISSIONS.VIEW_USERS] =
   "Permission to view infomration of other system users";
 all_permissions[PERMISSIONS.CREATE_USER] =
@@ -46,9 +48,14 @@ ROUTES = {
     permissions_matcher: /\/users\/\d+\/change_role/,
     required_permissions: [PERMISSIONS.VIEW_USERS, PERMISSIONS.ALTER_ROLES]
   },
+  GetRoleInfo: {
+    router_string: "/roles/:role_id",
+    permissions_matcher: /\/roles\/\d+$/,
+    required_permissions: [PERMISSIONS.VIEW_ROLES]
+  },
   ChangeRolePermissions: {
     router_string: "/roles/:role_id/change_perms",
-    permissions_matcher: /\roles\/\d+\/change_perms/,
+    permissions_matcher: /\/roles\/\d+\/change_perms/,
     required_permissions: [PERMISSIONS.ALTER_PERMS]
   },
   CreateUser: {

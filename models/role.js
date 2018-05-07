@@ -3,8 +3,7 @@
 module.exports = (sequelize, DataTypes) => {
 
     var Role = sequelize.define(
-        'Role',
-        {
+        'Role', {
             name: DataTypes.STRING
         },
         modelProps(
@@ -13,7 +12,7 @@ module.exports = (sequelize, DataTypes) => {
         )
     );
 
-    Role.associate = function(models) {
+    Role.associate = function (models) {
         Role.belongsToMany(models.Permission, {
             through: 'role_permission',
             timestamps: false
@@ -22,6 +21,14 @@ module.exports = (sequelize, DataTypes) => {
             through: 'user_role',
             timestamps: false
         })
+    }
+
+    Role.prototype.toWeb = async function () {
+        return {
+            id: this.id,
+            name: this.name,
+            permissions: await (this.getPermissions()).map(p => p.code)
+        }
     }
 
     return Role;
