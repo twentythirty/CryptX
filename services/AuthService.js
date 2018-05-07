@@ -115,3 +115,46 @@ const changeRolePermissions = async function(role_id, new_perms) {
   return role;
 }
 module.exports.changeRolePermissions = changeRolePermissions;
+
+const updatePassword = async function (user, old_password, new_password) {
+
+  let err;
+  [err, user] = await to(user.comparePassword(old_password));
+  if (err) TE(err.message);
+
+  user.password = new_password;
+  [err, user] = await to(user.save());
+  
+  if (err) TE(err.message);
+
+  return user;
+}
+module.exports.updatePassword = updatePassword;
+
+const expireSessions = async function (user_id, current_token) {
+
+  let err, user_sessions, expiration_timestamp, Sequelize = require('sequelize');
+  [err, user_sessions] = await to(UserSession.findAll({
+    where: {
+      user_id: user_id,
+      expiry_timestamp: {
+        [Sequelize.Op.gt]: new Date() // greather than now
+      },
+      token: {
+        [Sequelize.Op.ne]: current_token
+      }
+    }
+  }));
+  if (err) TE(err.message);
+  
+  expiration_timestamp = new Date() - 1;
+  await Promise.all(user_sessions.map(session => {
+    session.expiry_timestamp = expiration_timestamp;
+    return session.save(); 
+  })).catch(error => {
+    TE(error);
+  });
+
+  return true;
+}
+module.exports.expireSessions = expireSessions;

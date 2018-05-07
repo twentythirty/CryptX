@@ -72,6 +72,14 @@ router.get(
   SecurityController.getRoleInfo
 );
 
+router.post(
+  ROUTES.ChangePassword.router_string,
+  passport.authenticate("jwt", {
+    session: false
+  }),
+  UserController.changePassword
+);
+
 router.get(
   "/dash",
   check_permissions,
