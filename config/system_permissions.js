@@ -57,5 +57,10 @@ ROUTES = {
     required_permissions: [
       PERMISSIONS.CREATE_USER
     ]
+  },
+  ChangePassword: {
+    router_string: "/users/me/change_password",
+    permissions_matcher: /\/users\/me\/change_password/,
+    required_permissions: []
   }
 };

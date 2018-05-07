@@ -57,3 +57,19 @@ const changeUserRole = async function(req, res) {
   return ReS(res, { user: user.toWeb() });
 };
 module.exports.changeUserRole = changeUserRole;
+
+
+const changePassword = async function (req, res) {
+  const old_password = req.body.old_password,
+    new_password = req.body.new_password;
+
+  let [err, user] = await to(authService.updatePassword(req.user, old_password, new_password));
+  if (err) return ReE(res, "Old password doesn't match", 403);
+  
+  let status;
+  [err, status] = await to(authService.expireSessions(req.user.id, req.headers.authorization));
+  if (err) return ReE(res, err, 403);
+
+  return ReS(res, { user: user.toWeb() });
+}
+module.exports.changePassword = changePassword;
