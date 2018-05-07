@@ -46,6 +46,11 @@ ROUTES = {
     permissions_matcher: /\/users\/\d+\/change_role/,
     required_permissions: [PERMISSIONS.VIEW_USERS, PERMISSIONS.ALTER_ROLES]
   },
+  ChangeRolePermissions: {
+    router_string: "/roles/:role_id/change_perms",
+    permissions_matcher: /\roles\/\d+\/change_perms/,
+    required_permissions: [PERMISSIONS.ALTER_PERMS]
+  },
   CreateUser: {
     router_string: "/users/create",
     permissions_matcher: /\/users\/create/,

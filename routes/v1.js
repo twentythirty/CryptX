@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 
 const UserController = require("./../controllers/UserController");
+const SecurityController = require('./../controllers/SecurityController');
 const HomeController = require("./../controllers/HomeController");
 
 // const custom 	        = require('./../middleware/custom');
@@ -14,11 +15,13 @@ const content_json = require("../middleware/content_json_header").content_json;
 
 require("./../middleware/check_session")(passport);
 /* GET home page. */
-router.get("/", check_permissions, function(req, res, next) {
+router.get("/", check_permissions, function (req, res, next) {
   res.json({
     status: "success",
     message: CONFIG.disclaimer,
-    data: { version_number: "v1.1.5" }
+    data: {
+      version_number: "v1.1.5"
+    }
   });
 });
 
@@ -30,27 +33,43 @@ router.all("*", content_json);
 router.post(ROUTES.Login.router_string, UserController.login);
 router.get(
   ROUTES.GetMyInfo.router_string,
-  passport.authenticate("jwt", { session: false }),
+  passport.authenticate("jwt", {
+    session: false
+  }),
   UserController.getMe
 );
 router.get(
   ROUTES.GetUserInfo.router_string,
-  passport.authenticate("jwt", { session: false }),
+  passport.authenticate("jwt", {
+    session: false
+  }),
   check_permissions,
   UserController.getUser
 );
 router.post(ROUTES.CreateUser.router_string, UserController.create);
 router.post(
   ROUTES.ChangeUserRole.router_string,
-  passport.authenticate("jwt", { session: false }),
+  passport.authenticate("jwt", {
+    session: false
+  }),
   check_permissions,
   UserController.changeUserRole
+);
+router.post(
+  ROUTES.ChangeRolePermissions.router_string,
+  passport.authenticate("jwt", {
+    session: false
+  }),
+  check_permissions,
+  SecurityController.changeRolePermissions
 );
 
 router.get(
   "/dash",
   check_permissions,
-  passport.authenticate("jwt", { session: false }),
+  passport.authenticate("jwt", {
+    session: false
+  }),
   HomeController.Dashboard
 );
 
