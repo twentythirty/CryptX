@@ -46,6 +46,7 @@ id PK int
 symbol nvarchar UNIQUE # Symbol, e.g. BTC
 long_name nvarchar # User friendly name of the symbol, e.g. Bitcoin
 is_base bool # True - if it is a base currency, False - if not
+is_blockchain_based bool # True - instrument is blockchain based (e.g. Bitcoin), False - instrument is not blockchain based (e.g. fiat currecy)
 
 instrument_status_change
 -
