@@ -144,43 +144,18 @@
         }
       }
     },
-    "/users/me": {
-      "get": {
-        "tags": ["user"],
-        "summary": "Return current user",
-        "description": "Fetch the user currently logged in with this session.",
-        "produces": ["application/json"],
-        "responses": {
-          "200": {
-            "description": "successful operation",
-            "schema": {
-              "$ref": "#/definitions/ReturnUserResponse"
-            }
-          },
-          "401": {
-            "description": "unauthorized - no session",
-            "schema": {
-              "$ref": "#/definitions/ApiUnauthorizezdResponse"
-            }
-          }
-        },
-        "security": [{
-          "bearer": []
-        }]
-      }
-    },
     "/users/{user_id}": {
       "get": {
         "tags": ["user"],
         "summary": "Get information of user by id",
-        "description": "Fetch user by id. Requires the `perm_view_users` permission",
+        "description": "Fetch user by id. Requires the `perm_view_users` permission, unless viewing yourself (the `me` id)",
         "produces": ["application/json"],
         "parameters": [{
           "name": "user_id",
           "in": "path",
-          "description": "identifier of user to fetch",
+          "description": "identifier of user to fetch. (Either a numeric database id or the predefined string `me`)",
           "required": true,
-          "type": "integer"
+          "type": "string"
         }],
         "responses": {
           "200": {
@@ -210,9 +185,9 @@
         "parameters": [{
             "name": "user_id",
             "in": "path",
-            "description": "identifier of user to change roles of",
+            "description": "identifier of user to fetch. (Either a numeric database id or the predefined string `me`)",
             "required": true,
-            "type": "integer"
+            "type": "string"
           },
           {
             "in": "body",
@@ -246,13 +221,19 @@
         }]
       }
     },
-    "/users/me/change_password": {
+    "/users/{user_id}/change_password": {
       "post": {
         "tags": ["user"],
         "summary": "Change logged in user password",
         "description": "Change the password current user uses to login. \nInvalidates all active user sessions except for the current one",
         "produces": ["application/json"],
-        "parameters": [
+        "parameters": [{
+            "name": "user_id",
+            "in": "path",
+            "description": "identifier of user to fetch. (Either a numeric database id or the predefined string `me`)",
+            "required": true,
+            "type": "string"
+          },
           {
             "in": "body",
             "name": "body",
