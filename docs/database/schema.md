@@ -46,7 +46,6 @@ id PK int
 symbol nvarchar UNIQUE # Symbol, e.g. BTC
 long_name nvarchar # User friendly name of the symbol, e.g. Bitcoin
 is_base bool # True - if it is a base currency, False - if not
-tick_size decimal # Determines minimum price change of the instrument
 
 instrument_status_change
 -
@@ -67,6 +66,7 @@ symbol_exchange_mapping # This table determines which instruments are available 
 instrument_id PK int FK >- instrument.id
 exchange_id PK int FK >- exchange.id
 external_instrument_id varchar
+tick_size decimal # Determines minimum price change of the instrument on this exchange
 
 exchange_account # This table defines accounts available on each exchange
 -
