@@ -53,6 +53,8 @@ describe("AuthService mocking", () => {
         roles: []
       });
 
+      sinon.stub(user, "comparePassword").returns(Promise.resolve(user));
+
       sinon.stub(user, "setRoles").callsFake(roles => {
         user.roles = roles;
       });
@@ -129,9 +131,9 @@ describe("AuthService mocking", () => {
         let [user, session] = userSession;
 
         //that User was searched by this email
-        chai.expect(User.findOne.calledWith({ where: { email: EMAIL } }));
+        chai.assert.isTrue(User.findOne.calledWith({ where: { email: EMAIL } }));
         //checked these credentials
-        chai.expect(user.comparePassword.calledWith(PASSWORD));
+        chai.assert.isTrue(user.comparePassword.calledWith(PASSWORD));
         //created session out of him and with provided IP and future date
         chai.expect(UserSession.create.called);
         chai.expect(session.expiry_timestamp).to.be.greaterThan(new Date());
@@ -227,6 +229,92 @@ describe("AuthService mocking", () => {
             chai.expect(user.email).eq(EMAIL);
             chai.expect(user.password).eq(PASSWORD);
         });
+    });
+  });
+
+  describe('and the method updatePassword shall ', function () {
+    it("exist", function() {
+      chai.expect(AuthService.updatePassword).to.exist;
+    });
+
+    it("shall call methods when changing password", function () {
+      let new_password = "newpassword";
+
+      return AuthService.updatePassword(USER_ID, PASSWORD, new_password)
+      .then(result => {
+        let user = result;
+      
+        // check if userFindById was called
+        chai.assert.isTrue(User.findById.calledWith(USER_ID));
+        // check if incorrect old password is rejected
+        chai.assert.isTrue(user.comparePassword.calledWith(PASSWORD));
+        // check if save was called
+        chai.assert.isTrue(user.save.called);
+      });
+    });
+
+    it("change password", function () {
+      let new_password = "newpassword";
+
+      return User.findById(USER_ID)
+      .then(user => {
+        chai.expect(user.password).to.be.not.equal(PASSWORD);
+
+        return AuthService.updatePassword(USER_ID, PASSWORD, new_password)
+      }).then(result => {
+        let user = result;
+
+        chai.expect(user.password).to.be.equal(new_password);
+      });
+    });
+  });
+
+  //expireOtherSessions
+  // check if UserSession.findAll was called
+  describe('and the method expireOtherSessions shall ', function () {
+    it("shall exist", function () {
+      chai.expect(AuthService.expireOtherSessions).to.exist;
+    });
+
+    it("shall expire users sessions", function () {
+
+      let current_session = "This is a session",
+        session_expiry_timestamp = new Date(new Date().getTime() + 1000 * process.env.JWT_EXPIRATION),
+        user_sessions = [],
+        tokens = ["token1", "token2", "token3", "token4"];
+
+      let spy = sinon.stub(UserSession, "findAll").callsFake(options => {
+
+        user_sessions = tokens.map(token_value => new UserSession({
+            user_id: USER_ID,
+            token: token_value,
+            expiry_timestamp: session_expiry_timestamp,
+            ip_address: "0.0.0.0"
+          })
+        );
+
+        user_sessions.forEach(session => {
+          sinon.stub(session, "save").callsFake(() => {
+
+            return Promise.resolve(session);
+          });
+        });
+
+        return Promise.resolve(user_sessions);
+      });
+
+      return AuthService.expireOtherSessions(USER_ID, current_session)
+      .then(result => {
+        
+        chai.assert.isTrue(UserSession.findAll.called);
+
+        user_sessions.forEach(session => {
+          chai.expect(session.expiry_timestamp).to.be.not.equal(session_expiry_timestamp);
+          chai.assert.isTrue(session.save.called, "expected every changed session to be saved");
+        });
+
+        UserSession.findAll.restore();
+      });
     });
   });
 });
