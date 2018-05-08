@@ -84,7 +84,7 @@ instrument_id int FK >- instrument.id
 strategy_type enum # Strategy type for which this account is used. Possible values: Large Cap Index (LCI), Mid Cap Index (MCI)
 address nvarchar # Address that can be used to send the coins to this cold storage account
 
-market_history_detail # This table will contain market history retrieved from Coinmarketcap
+market_history_input # This table will contain market history retrieved from Coinmarketcap
 -
 int FK id
 timestamp timestamp # Timestamp when the information was retrieved
@@ -93,7 +93,14 @@ price_usd decimal # Price of the instrument in USD
 market_cap_usd decimal # Total market capitalization of the instrument in USD
 daily_volume_usd decimal # Total daily volume of the instrument in USD
 market_cap_percentage decimal # Market cap of the instrument as percentage of total capitalization of whole market
-nvt_ratio decimal # Network Value to Transactions ratio, measures the dollar value of cryptoasset transaction activity relative to network value
+
+market_history_calculation
+-
+int FK id
+timestamp timestamp # Timestamp when the information was calculated
+instrument_id FK int FK >- instrument.id # Instrument for which the infromation was retrieved
+type enum # Type of the calculated property. Possible values: 0 - Network Value to Transactions ratio, measures the dollar value of cryptoasset transaction activity relative to network value
+value decimal
 
 investment_run # Investment workflow run
 -
