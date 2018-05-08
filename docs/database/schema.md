@@ -61,7 +61,7 @@ exchange # This table contains exchanges will be used for investing
 id PK int
 name varchar
 
-symbol_exchange_mapping # This table determines which instruments are available on which exchanges
+instrument_exchange_mapping # This table determines which instruments are available on which exchanges
 -
 instrument_id PK int FK >- instrument.id
 exchange_id PK int FK >- exchange.id
