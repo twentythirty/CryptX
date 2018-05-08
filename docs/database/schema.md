@@ -194,4 +194,7 @@ instrument_id int # Instrument which is related to the action
 exchange_id int # Exchange which is related to the action
 exchange_account_id int # Exchange account related to the action
 investment_run_id int # Investment run related to the action
+recipe_run_id int # Recipe run related to the action
+recipe_order_id int # Recipe order related to the action
+execution_order_id int # Execution order related to the action
 details nvarchar # More detailed information about the action
