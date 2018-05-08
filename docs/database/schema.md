@@ -53,6 +53,13 @@ id PK int
 instrument_id int FK >- instrument.id
 coinmarketcap_identifier nvarchar # Identifier in coinmarketcap system
 
+instrument_liquidity_requirement # This table is used to define minimum liquidity requirements for exchanges
+-
+id PK int
+instrument_id int FK >- instrument.id
+minimum_volume decimal # Minimum volume
+periodicity_in_days int
+
 instrument_status_change
 -
 id PK int
