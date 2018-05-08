@@ -124,7 +124,7 @@ recipe_run
 -
 id PK int
 investment_run_id int FK >- investment_run.id
-created_user_id int FK >- user.id # User which initiated the recipe run
+user_created_id int FK >- user.id # User which initiated the recipe run
 created_timestamp timestamp # Time when recipe run was initiated
 status enum # Status of the recipe run: Pending, Rejected, Approved
 comment nvarchar # Comment that should be provided when rejecting the recipe run or the orders generated for it
