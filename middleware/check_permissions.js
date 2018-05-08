@@ -1,5 +1,10 @@
 "use strict";
 
+//test to match only routes that end in "me" or have "me" as id, 
+//not part of other word
+//so users/me and /users/me/do_thing match, /users/meteorite does not
+const pure_me_exp = /\/(me(?!\w+))/;
+
 let check_permissions = async function(req, res, next) {
   let route = Object.values(ROUTES).find(route => {
     return route.permissions_matcher.test(req.path);
@@ -8,7 +13,13 @@ let check_permissions = async function(req, res, next) {
 
   if (route) {
     let user = req.user;
+    //copy of permissions array
     let reqPermissions = route.required_permissions;
+    //mathed "me!"
+    if (pure_me_exp.test(req.path)) {
+      console.log("Matched 'me', skipping personal permissions...")
+      reqPermissions = _.difference(reqPermissions, PERMISSIONS.PERSONAL);
+    }
     let roles = await user.getRoles();
     let permissionsLists = await Promise.all(
       roles.map(role => role.getPermissions())

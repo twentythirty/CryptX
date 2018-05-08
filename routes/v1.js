@@ -32,13 +32,6 @@ router.all("*", content_json);
 //USERS
 router.post(ROUTES.Login.router_string, UserController.login);
 router.get(
-  ROUTES.GetMyInfo.router_string,
-  passport.authenticate("jwt", {
-    session: false
-  }),
-  UserController.getMe
-);
-router.get(
   ROUTES.GetUserInfo.router_string,
   passport.authenticate("jwt", {
     session: false

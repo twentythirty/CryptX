@@ -31,25 +31,24 @@ const login = async function(req, res) {
 };
 module.exports.login = login;
 
-const getMe = async function(req, res) {
-  let user = req.user;
+function resolveUserId(req) {
+  let user_id = req.params.user_id
+  return (user_id === 'me')? req.user.id : user_id
+}
 
-  return ReS(res, { user: user.toWeb() });
-};
-module.exports.getMe = getMe;
 
 const getUser = async function(req, res) {
-  let user_id = req.params.user_id;
-  let user = await User.findById(user_id);
 
-  if (!user) ReE(res, "user with id " + user_id + " not found!", 404);
+  let user = await User.findById(resolveUserId(req));
+
+  if (!user) return ReE(res, "user with id " + user_id + " not found!", 404);
 
   return ReS(res, { user: user.toWeb() });
 };
 module.exports.getUser = getUser;
 
 const changeUserRole = async function(req, res) {
-  const user_id = req.params.user_id;
+  const user_id = resolveUserId(req);
   let [err, user] = await to(authService.changeUserRoles(user_id, req.body));
 
   if (err) return ReE(res, err, 422);
@@ -58,12 +57,11 @@ const changeUserRole = async function(req, res) {
 };
 module.exports.changeUserRole = changeUserRole;
 
-
 const changePassword = async function (req, res) {
   const old_password = req.body.old_password,
     new_password = req.body.new_password;
 
-  let user_id = req.user.id;
+  let user_id = resolveUserId(req);
 
   let [err, user] = await to(authService.updatePassword(user_id, old_password, new_password));
   if (err) return ReE(res, "Old password doesn't match", 403);

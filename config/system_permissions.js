@@ -6,6 +6,11 @@ PERMISSIONS = {
   VIEW_USERS: "perm_view_users",
   CREATE_USER: "perm_create_user"
 };
+//list of permissions that dotn apply to users
+//as long as they are altering themselves
+PERMISSIONS.PERSONAL = [
+  PERMISSIONS.VIEW_USERS
+]
 
 ROLES = {
   ADMIN: "ROLE_ADMIN",
@@ -33,19 +38,14 @@ ROUTES = {
     permissions_matcher: /\/users\/login/,
     required_permissions: []
   },
-  GetMyInfo: {
-    router_string: "/users/me",
-    permissions_matcher: /\/users\/me/,
-    required_permissions: []
-  },
   GetUserInfo: {
     router_string: "/users/:user_id",
-    permissions_matcher: /\users\/\d+$/,
+    permissions_matcher: /\users\/(\d+|me)$/,
     required_permissions: [PERMISSIONS.VIEW_USERS]
   },
   ChangeUserRole: {
     router_string: "/users/:user_id/change_role",
-    permissions_matcher: /\/users\/\d+\/change_role/,
+    permissions_matcher: /\/users\/(\d+|me)\/change_role/,
     required_permissions: [PERMISSIONS.VIEW_USERS, PERMISSIONS.ALTER_ROLES]
   },
   GetRoleInfo: {
@@ -67,7 +67,7 @@ ROUTES = {
   },
   ChangePassword: {
     router_string: "/users/me/change_password",
-    permissions_matcher: /\/users\/me\/change_password/,
-    required_permissions: []
+    permissions_matcher: /\/users\/(\d+|me)\/change_password/,
+    required_permissions: [PERMISSIONS.VIEW_USERS]
   }
 };
