@@ -179,6 +179,7 @@ execution_order_id PK int FK >- execution_order.id # ID of the order for fills o
 status enum # Pending - order was generated internally, but not yet sent, Sent - recipe order was sent to exchange or blockchain (waiting confirmation), Completed - when order reaches its final successful state, Failed - system failed to execute the order
 placed_timestamp timestamp # Time when the order was generated
 completed_timestamp timestamp # Time when the order reached its final state
+cold_storage_account_id int # ID of the cold storage account to which the transfer will be made
 
 action_log
 # This table will log all actions of users and the system itself
