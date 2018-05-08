@@ -6,7 +6,7 @@ const Permission = require('../models').Permission;
 const UserSession = require("../models").UserSession;
 const validator = require("validator");
 
-const createUser = async function(userInfo) {
+const createUser = async function (userInfo) {
   let email = userInfo.email;
 
   if ([
@@ -35,7 +35,7 @@ const createUser = async function(userInfo) {
 };
 module.exports.createUser = createUser;
 
-const authUser = async function(credentials, clientIP) {
+const authUser = async function (credentials, clientIP) {
   //returns token
   if (!credentials.username) TE("Please enter a username to login");
   if (!credentials.password) TE("Please enter a password to login");
@@ -43,7 +43,11 @@ const authUser = async function(credentials, clientIP) {
   let err, user, session;
 
   [err, user] = await to(
-    User.findOne({ where: { email: credentials.username } })
+    User.findOne({
+      where: {
+        email: credentials.username
+      }
+    })
   );
   if (err) TE(err.message);
 
@@ -69,31 +73,31 @@ const authUser = async function(credentials, clientIP) {
 };
 module.exports.authUser = authUser;
 
-const changeUserRoles = async function(user_id, new_roles) {
+const changeUserRoles = async function (user_id, new_roles) {
 
-    let user = await User.findById(user_id);
-    if (!user) TE("User with id %s not found!", user_id)
+  let user = await User.findById(user_id);
+  if (!user) TE("User with id %s not found!", user_id)
 
-    let err, neededRoles;
-    [err, neededRoles] = await to(Role.findAll({
-        where: {
-            name: new_roles
-        }
-    }));
+  let err, neededRoles;
+  [err, neededRoles] = await to(Role.findAll({
+    where: {
+      name: new_roles
+    }
+  }));
 
-    if (err) TE(err.message);
+  if (err) TE(err.message);
 
-    user.setRoles(neededRoles);
-    [err, user] = await to(user.save())
+  user.setRoles(neededRoles);
+  [err, user] = await to(user.save())
 
-    if (err) TE(err.message);
+  if (err) TE(err.message);
 
-    return user;
+  return user;
 }
 module.exports.changeUserRoles = changeUserRoles;
 
 
-const changeRolePermissions = async function(role_id, new_perms) {
+const changeRolePermissions = async function (role_id, new_perms) {
 
   let role = await Role.findById(role_id);
   if (!role) TE('Role with id %s not found!', role_id);
@@ -108,7 +112,7 @@ const changeRolePermissions = async function(role_id, new_perms) {
   if (err) TE(err.message);
 
   role.setPermissions(neededPerms);
-  [err, role] = await to (role.save())
+  [err, role] = await to(role.save())
 
   if (err) TE(err.message);
 
@@ -116,17 +120,43 @@ const changeRolePermissions = async function(role_id, new_perms) {
 }
 module.exports.changeRolePermissions = changeRolePermissions;
 
+const changeUserInfo = async function (user_id, new_info) {
+
+  let err, user = await User.findById(user_id);
+  if (!user) TE("User with id %s not found!", user_id)
+
+  //create object from allowed for editing prop names
+  user = Object.assign(user, _.fromPairs(_.zipWith([
+    'first_name',
+    'last_name',
+    'is_active'
+  ], (prop_name) => {
+    return [
+      prop_name,
+      (new_info[prop_name] != null ?
+      new_info[prop_name] :
+      user[prop_name])
+    ]; //return pairs [[first_name, value],[last_name,value]...]
+  })));
+
+  [err, user] = await to(user.save());
+  if (err) TE(err.message);
+
+  return user;
+}
+module.exports.changeUserInfo = changeUserInfo;
+
 const updatePassword = async function (user_id, old_password, new_password) {
 
-  let [err, user] = await to(User.findById(user_id));
-  if (err) TE(err.message);
-  
+  let err, user = await User.findById(user_id);
+  if (!user) TE("User with id %s not found!", user_id)
+
   [err, user] = await to(user.comparePassword(old_password));
   if (err) TE(err.message);
 
   user.password = new_password;
   [err, user] = await to(user.save());
-  
+
   if (err) TE(err.message);
 
   return user;
@@ -148,11 +178,11 @@ const expireOtherSessions = async function (user_id, keep_active_session) {
     }
   }));
   if (err) TE(err.message);
-  
+
   expiration_timestamp = new Date() - 1;
   await Promise.all(user_sessions.map(session => {
     session.expiry_timestamp = expiration_timestamp;
-    return session.save(); 
+    return session.save();
   })).catch(error => {
     TE(error);
   });
