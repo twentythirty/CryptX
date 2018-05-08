@@ -108,12 +108,17 @@ id PK int
 started_timestamp timestamp # Time when the run was initiated
 updated_timestamp timestamp # Last time when the run was updated
 completed_timestamp timestamp NULLABLE # Timestamp when the run was completed, e.g. reached its terminal state
-amount decimal # Total amount invested in this run
-instrument_id int # Currency in which the investment was denominated
 user_created_id int FK >- user.id # User which initiated the investment run
 strategy_type enum # Large Cap Index (LCI), Mid Cap Index (MCI)
 is_simulated bool # True if investment run is simulated, e.g. will not place real orders
 status enum # Status of the investment run: Initiated, RecipeRun, RecipeApproved, DepositsCompleted, OrdersGenerated, OrdersApproved, OrdersExecuting, OrdersFilled
+
+investment_run_deposit # Funds deposited for investing during single investment run
+-
+id PK int
+investment_run_id int FK >- investment_run.id
+instrument_id int # Currency in which the investment was denominated
+amount decimal # Total amount invested for this instrument
 
 recipe_run
 -
