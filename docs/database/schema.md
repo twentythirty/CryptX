@@ -136,10 +136,8 @@ id PK int
 recipe_run_id int FK >- recipe_run.id
 base_instrument_id int FK >- instrument.id
 target_instrument_id int FK >- instrument.id
-base_instrument_amount decimal # The amount which will be converted from the base currency
-target_instrument_amount decimal # The amount which will be converted to the target currency
 target_exchange_id int FK >- exchange.id # The trading exchange on which trading is suggested acording the recipe run
-target_instrument_price # Price of the target currency
+investment_percentage decimal # Percentage that will be invested this way
 
 order
 -
