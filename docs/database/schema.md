@@ -139,7 +139,7 @@ target_instrument_id int FK >- instrument.id
 target_exchange_id int FK >- exchange.id # The trading exchange on which trading is suggested acording the recipe run
 investment_percentage decimal # Percentage that will be invested this way
 
-order
+recipe_order
 -
 id PK int
 recipe_run_id int FK >- recipe_run.id
@@ -150,14 +150,14 @@ target_instrument_amount decimal # The amount which will be converted to the tar
 target_exchange_id int FK >- exchange.id # The trading exchange on which trading is suggested acording the recipe run
 target_instrument_price # Price of the target currency
 status enum # Pending, Rejected, Approved
-approve_user_id int FK >- user.id # User who approved/rejected the order
-comment nvarchar # Comment that should be provided when rejecting orders
-placed_timestamp timestamp # Time order has been placed
+approve_user_id int FK >- user.id # User who approved/rejected the recipe order
+comment nvarchar # Comment that should be provided when rejecting recipe orders
+placed_timestamp timestamp # Time when recipe order has been placed
 
 execution_order
 -
 id PK int
-order_id int FK >- order.id
+recipe_order_id int FK >- recipe_order.id
 instrument_id int FK >- instrument.id
 status enum # Pending, Placed, FullyFilled, PartiallyFilled, Cancelled, Failed
 type enum # Market, Limit, Stop
@@ -175,8 +175,8 @@ fill_timestamp # Time of the fill
 cold_storage_order
 -
 id PK int
-order_id PK int FK >- order.id # ID of the order for fills of which cold storage is needed
-status enum # Pending - order was generated internally, but not yet sent, Sent - order was sent to exchange or blockchain (waiting confirmation), Completed - when order reaches its final successful state, Failed - system failed to execute the order
+execution_order_id PK int FK >- execution_order.id # ID of the order for fills of which cold storage is needed
+status enum # Pending - order was generated internally, but not yet sent, Sent - recipe order was sent to exchange or blockchain (waiting confirmation), Completed - when order reaches its final successful state, Failed - system failed to execute the order
 placed_timestamp timestamp # Time when the order was generated
 completed_timestamp timestamp # Time when the order reached its final state
 
