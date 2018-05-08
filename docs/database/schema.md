@@ -46,8 +46,16 @@ id PK int
 symbol nvarchar UNIQUE # Symbol, e.g. BTC
 long_name nvarchar # User friendly name of the symbol, e.g. Bitcoin
 is_base bool # True - if it is a base currency, False - if not
-is_blacklisted bool # True - if blacklisted, False - if not
 tick_size decimal # Determines minimum price change of the instrument
+
+instrument_status_change
+-
+id PK int
+timestamp timestamp # Time and date when the change was made
+instrument_id FK >- instrument.id
+user_id int NULLABLE FK >- user.id # User who initiated this action. NULL if initated by the system
+comment nvarchart # Comment that can be provided by the user initiating the status change
+type enum # Type of change: Whitelisting, Blacklisting, Graylisting
 
 exchange # This table contains exchanges will be used for investing
 -
