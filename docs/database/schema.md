@@ -126,7 +126,7 @@ id PK int
 investment_run_id int FK >- investment_run.id
 created_user_id int FK >- user.id # User which initiated the recipe run
 created_timestamp timestamp # Time when recipe run was initiated
-status enum # Status of the recipe run: New, Rejected, Approved
+status enum # Status of the recipe run: Pending, Rejected, Approved
 comment nvarchar # Comment that should be provided when rejecting the recipe run or the orders generated for it
 
 
@@ -151,7 +151,7 @@ base_instrument_amount decimal # The amount which will be converted from the bas
 target_instrument_amount decimal # The amount which will be converted to the target currency
 target_exchange_id int FK >- exchange.id # The trading exchange on which trading is suggested acording the recipe run
 target_instrument_price # Price of the target currency
-status enum # New, Rejected, Approved
+status enum # Pending, Rejected, Approved
 approve_user_id int FK >- user.id # User who approved/rejected the order
 comment nvarchar # Comment that should be provided when rejecting orders
 placed_timestamp timestamp # Time order has been placed
