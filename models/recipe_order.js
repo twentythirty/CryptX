@@ -1,8 +1,8 @@
 'use strict';
 
 module.exports = (sequelize, DataTypes) => {
-    var InvestmentOrder = sequelize.define(
-        'InvestmentOrder',
+    var RecipeOrder = sequelize.define(
+        'RecipeOrder',
         {
             base_instrument_amount: DataTypes.DECIMAL,
             target_instrument_amount: DataTypes.DECIMAL,
@@ -20,30 +20,26 @@ module.exports = (sequelize, DataTypes) => {
         )
     );
 
-    InvestmentOrder.associate = function(models) {
+    RecipeOrder.associate = function(models) {
 
-        InvestmentOrder.belongsTo(models.RecipeRun);
-        InvestmentOrder.belongsTo(models.Instrument, {
+        RecipeOrder.belongsTo(models.RecipeRun);
+        RecipeOrder.belongsTo(models.Instrument, {
             foreignKey: 'base_instrument_id',
             as: 'base_instrument'
         });
-        InvestmentOrder.belongsTo(models.Instrument, {
+        RecipeOrder.belongsTo(models.Instrument, {
             foreignKey: 'target_instrument_id',
             as: 'target_instrument'
         });
-        InvestmentOrder.belongsTo(models.Exchange, {
+        RecipeOrder.belongsTo(models.Exchange, {
             foreignKey: 'target_exchange_id',
             as: 'target_exchange'
         });
-        InvestmentOrder.belongsTo(models.User, {
+        RecipeOrder.belongsTo(models.User, {
             foreignKey: 'approve_user_id',
             as: 'approve_user'
         });
-
-        InvestmentOrder.belongsToMany(models.ColdStorageAccount, {
-            through: models.ColdStorageInvestmentOrder
-        });
     };
 
-    return InvestmentOrder;
+    return RecipeOrder;
 };

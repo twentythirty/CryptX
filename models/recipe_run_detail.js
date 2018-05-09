@@ -4,13 +4,11 @@ module.exports = (sequelize, DataTypes) => {
   var RecipeRunDetail = sequelize.define(
     "RecipeRunDetail",
     {
-      base_instrument_amount: DataTypes.DECIMAL,
-      target_instrument_amount: DataTypes.DECIMAL,
-      target_instrument_price: DataTypes.DECIMAL
+      investment_percentage: DataTypes.DECIMAL
     },
     modelProps(
       "recipe_run_detail",
-      "This table contains detailed information on the running recipe"
+      "This table contains investment percentage information on the running recipe"
     )
   );
 

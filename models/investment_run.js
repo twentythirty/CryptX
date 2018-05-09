@@ -25,7 +25,6 @@ module.exports = (sequelize, DataTypes) => {
   );
 
   InvestmentRun.associate = function(models) {
-    InvestmentRun.belongsTo(models.Instrument);
     InvestmentRun.belongsTo(models.User, {
       foreignKey: "user_created_id",
       as: "user_created"
