@@ -11,7 +11,7 @@ module.exports = (sequelize, DataTypes) => {
             }
         },
         modelProps(
-            'instrument_coinmarketcap_info',
+            'instrument_blockchain',
             'This table stores coinmarketcap.com-specific info about imported instruments'
         )
     );

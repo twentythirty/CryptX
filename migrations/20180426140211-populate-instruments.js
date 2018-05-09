@@ -2,7 +2,7 @@
 
 const req_prom = require("request-promise");
 const Instrument = require('../models').Instrument;
-const InstrumentCoinMarketCapInfo = require('../models').InstrumentCoinMarketCapInfo;
+const InstrumentBlockchain = require('../models').InstrumentBlockchain;
 
 module.exports = {
   up: (queryInterface, Sequelize) => {
@@ -25,13 +25,11 @@ module.exports = {
           return Instrument.create({
             symbol: coin_data.symbol,
             long_name: coin_data.name,
-            is_base: (coin_data.symbol === 'BTC' || coin_data.symbol === 'ETH'),
-            is_blacklisted: false,
-            tick_size: 0.0001
+            is_base: (coin_data.symbol === 'BTC' || coin_data.symbol === 'ETH')
           }).then(instrument => {
-            return InstrumentCoinMarketCapInfo.create({
+            return InstrumentBlockchain.create({
                 instrument_id: instrument.id,
-                coinmarketcap_id: coin_data.id
+                coinmarketcap_identifier: `${coin_data.id}`
               });
           });
         }));
@@ -40,6 +38,16 @@ module.exports = {
   },
   down: (queryInterface, Sequelize) => {
 
-    return queryInterface.bulkDelete('instrument', {})
+    return InstrumentBlockchain.findAll({
+      attributes: ['instrument_id']
+    }).then(blockchain_ids => {
+
+      return queryInterface.bulkDelete('instrument', {
+        where: {
+          id: blockchain_ids
+        }
+      })
+    });
+    
   }
 };
