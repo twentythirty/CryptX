@@ -149,7 +149,7 @@ module.exports.changeUserInfo = changeUserInfo;
 const updatePassword = async function (user_id, old_password, new_password) {
 
   let err, user = await User.findById(user_id);
-  if (!user) TE("User with id %s not found!", user_id)
+  if (!user) TE("User with id %s not found!", user_id);
 
   [err, user] = await to(user.comparePassword(old_password));
   if (err) TE(err.message);
