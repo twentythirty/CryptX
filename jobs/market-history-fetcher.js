@@ -5,6 +5,10 @@ var request_promise = require('request-promise');
 //load configuration relevant to job accessing DB
 var config = require('../config/db-job-config');
 
+//fetch the top N coins info
+const TOP_N = 500;
+const LIMIT = 100;
+
 //once DB is loaded, do the work
 config.dbPromise.then(() => {
     //total market capitalisation. known too early into the process
@@ -14,10 +18,6 @@ config.dbPromise.then(() => {
     scheduler.scheduleJob('fetch-market-history', '0 0 */2 * * *', (date) => {
 
         console.log(`Starting coint market cap ticker fetching at ${date}...`);
-
-        //fetch the top N coins info
-        const TOP_N = 200;
-        const LIMIT = 100;
 
         console.log(`1. Chunking required ${TOP_N} coins to limit ${LIMIT} and fetching all...`);
         //get how many hcunks are reuqired
