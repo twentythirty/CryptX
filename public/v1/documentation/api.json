@@ -221,6 +221,51 @@
         }]
       }
     },
+    "/users/{user_id}/edit": {
+      "post": {
+        "tags": ["user"],
+        "summary": "Change user basic info",
+        "description": "Change the name/active status of user. Other properties ignored, absent are merged",
+        "produces": ["application/json"],
+        "parameters": [{
+            "name": "user_id",
+            "in": "path",
+            "description": "identifier of user to fetch. (Either a numeric database id or the predefined string `me`)",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "in": "body",
+            "name": "body",
+            "description": "New basic user information (all properties except for `first_name`, `last_name` and `is_active` are ignored)",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/UserDetails"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "$ref": "#/definitions/ReturnUserResponse"
+            }
+          },
+          "401": {
+            "description": "unauthorized",
+            "schema": {
+              "$ref": "#/definitions/ApiUnauthorizezdResponse"
+            }
+          },
+          "default": {
+            "description": "successful operation"
+          }
+        },
+        "security": [{
+          "bearer": []
+        }]
+      }
+    },
     "/users/{user_id}/change_password": {
       "post": {
         "tags": ["user"],
