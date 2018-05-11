@@ -85,7 +85,7 @@ const changePassword = async function (req, res) {
   if (err) return ReE(res, "Old password doesn't match", 403);
   
   let status;
-  [err, status] = await to(authService.expireSessions(user_id, req.headers.authorization));
+  [err, status] = await to(authService.expireOtherSessions(user_id, req.headers.authorization));
   if (err) return ReE(res, err, 403);
 
   return ReS(res, { user: user.toWeb() });

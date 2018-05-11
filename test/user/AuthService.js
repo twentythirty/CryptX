@@ -21,8 +21,10 @@ describe("AuthService mocking", () => {
   const AuthService = require("../../services/AuthService");
   const User = require("../../models").User;
   const UserSession = require("../../models").UserSession;
+  const Role = require("../../models").Role;
+  const Permission = require("../../models").Permission;
 
-  let NEW_ROLES = ["1", "2"];
+  let NEW_ROLES = ["ROLE_ADMIN", "ROLE_MANAGER"/* "1", "2" */];
   let USER_ID = 23;
   let F_NAME = "Larry";
   let L_NAME = "Test";
@@ -101,12 +103,12 @@ describe("AuthService mocking", () => {
           let user = changedUser;
 
           //user was looked up via supplied id
-          chai.expect(User.findById.calledWith(USER_ID));
+          chai.assert.isTrue(User.findById.calledWith(USER_ID));
           //user set their roles to DB
-          chai.expect(user.setRoles.calledWith(NEW_ROLES));
+          chai.assert.isTrue(user.setRoles.called);
           //user state was persisted in method
-          chai.expect(user.save.called);
-          //user has new roles in array
+          chai.assert.isTrue(user.save.called);
+          //user has new roles in array          
           chai.expect(user.getRoles()).to.eq(NEW_ROLES);
         }
       );
@@ -230,7 +232,6 @@ describe("AuthService mocking", () => {
         return AuthService.createUser(CREATE_MODEL).then((user) => {
 
             chai.expect(user).to.be.a('object');
-
             chai.expect(user).to.have.property('created_timestamp');
             chai.expect(user.is_active).eq(true);
             chai.expect(user).to.have.property('id');
@@ -381,6 +382,70 @@ describe("AuthService mocking", () => {
         chai.expect(returnedUser.last_name).to.be.equal(L_NAME);
         chai.expect(returnedUser.is_active).to.be.true;
       })
+    });
+  });
+
+  describe("and method changeRolePermission shall", function () {
+    let ROLE_ID = 1;
+    beforeEach(function () {
+      sinon.stub(Role, "findById").callsFake((role_id) => {
+        let role = new Role({
+          id: role_id,
+          name: "role_test"
+        });
+
+        sinon.stub(role, "setPermissions").callsFake(new_perms => {
+          role.permissions = new_perms;
+        });
+
+        sinon.stub(role, "getPermissions").callsFake(() => {
+          return role.permissions;
+        });
+
+        sinon.stub(role, "save").callsFake(() => {
+          return Promise.resolve(role);
+        });
+
+        return role;
+      });
+
+      sinon.spy(Permission, "findAll");
+    });
+
+    afterEach(function () {
+      Role.findById.restore();
+      Permission.findAll.restore();
+    });
+
+    it("exist", function () {
+      chai.expect(AuthService.changeRolePermissions).to.exist;
+    });
+
+    it("call required DB model during roles permission change", function() {
+      let new_permissions = [
+        PERMISSIONS.ALTER_ROLES,
+        PERMISSIONS.ALTER_PERMS,
+        PERMISSIONS.VIEW_ROLES,
+        PERMISSIONS.VIEW_USERS
+      ];
+
+      return AuthService.changeRolePermissions(ROLE_ID, new_permissions).then(
+        changedRole => {
+          chai.expect(changedRole).to.be.a("object");
+          
+          //role was looked up via supplied id
+          chai.assert.isTrue(Role.findById.calledWith(ROLE_ID));
+          // check if setPermissions of role were changed
+          chai.assert(changedRole.setPermissions.called);
+          //role state was persisted in method
+          chai.assert.isTrue(changedRole.save.called);
+          //user has new roles in array
+
+          chai.expect(
+            [...changedRole.getPermissions().map(perm => perm.code)]
+          ).to.deep.equal(new_permissions);
+        }
+      );
     });
   });
 });
