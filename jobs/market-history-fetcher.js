@@ -111,7 +111,7 @@ config.dbPromise.then(() => {
 
                 return {
                     instrument_id: pair.instrument_id,
-                    timestamp: new Date(ticker_data.last_updated * 1000),
+                    timestamp: new Date(tickers.metadata.timestamp * 1000),
                     price_usd: usd_details.price,
                     market_cap_usd: usd_details.market_cap,
                     daily_volume_usd: usd_details.volume_24h,
