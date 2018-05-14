@@ -1,12 +1,19 @@
 'use strict';
 
-const authService = require('../services/AuthService');
-const Role = require('../models').Role;
+const securityService = require('../services/SecurityService');
+
+const createRole = async function (req, res) {
+
+    const new_role = req.body;
+    let [err, role] = await to(securityService.createRole(role));
+
+    return ReS(res, { role: await role.toWeb() });
+};
 
 const changeRolePermissions = async function(req, res) {
 
     const role_id = req.params.role_id;
-    let [err, role] = await to(authService.changeRolePermissions(role_id, req.body));
+    let [err, role] = await to(securityService.changeRolePermissions(role_id, req.body));
 
     if (err) return ReE(res, err, 422);
 

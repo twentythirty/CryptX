@@ -55,6 +55,11 @@ ROUTES = {
     permissions_matcher: /\/users\/(\d+|me)\/change_role/,
     required_permissions: [PERMISSIONS.VIEW_USERS, PERMISSIONS.ALTER_ROLES]
   },
+  CreateRole: {
+    router_string: "/roles/create",
+    permissions_matcher: /\/roles\/\d+$/,
+    required_permissions: [PERMISSIONS.VIEW_ROLES]
+  },
   GetRoleInfo: {
     router_string: "/roles/:role_id",
     permissions_matcher: /\/roles\/\d+$/,
