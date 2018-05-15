@@ -45,6 +45,11 @@ ROUTES = {
     permissions_matcher: /\users\/(\d+|me)$/,
     required_permissions: [PERMISSIONS.VIEW_USERS]
   },
+  GetUsersInfo: {
+    router_string: "/users/all/list",
+    permissions_matcher: /\users\/all\/list/,
+    required_permissions: [PERMISSIONS.VIEW_USERS]
+  },
   ChangeUserInfo: {
     router_string: "/users/:user_id/edit",
     permissions_matcher: /\users\/(\d+|me)\/edit/,

@@ -7,6 +7,7 @@
     "test": "NODE_ENV=test mocha --recursive --timeout 20000"
   },
   "dependencies": {
+    "@sendgrid/mail": "^6.2.1",
     "bcrypt": "^1.0.3",
     "bcrypt-promise": "^2.0.0",
     "body-parser": "~1.18.2",

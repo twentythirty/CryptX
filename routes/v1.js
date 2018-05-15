@@ -3,17 +3,20 @@ const router = express.Router();
 
 const UserController = require("./../controllers/UserController");
 const SecurityController = require('./../controllers/SecurityController');
-const HomeController = require("./../controllers/HomeController");
 
 // const custom 	        = require('./../middleware/custom');
 
 const passport = require("passport");
+require("./../middleware/check_session")(passport);
 const path = require("path");
 const check_permissions = require("../middleware/check_permissions")
   .check_permissions;
 const content_json = require("../middleware/content_json_header").content_json;
+const filter_reducer = require('../middleware/resolve_list_filter').resolve_list_filter;
+const stateless_auth = passport.authenticate("jwt", {
+  session: false
+});
 
-require("./../middleware/check_session")(passport);
 /* GET home page. */
 router.get("/", check_permissions, function (req, res, next) {
   res.json({
@@ -33,17 +36,27 @@ router.all("*", content_json);
 router.post(ROUTES.Login.router_string, UserController.login);
 router.get(
   ROUTES.GetUserInfo.router_string,
-  passport.authenticate("jwt", {
-    session: false
-  }),
+  stateless_auth,
   check_permissions,
   UserController.getUser
 );
+router.get(
+  ROUTES.GetUsersInfo.router_string,
+  stateless_auth,
+  check_permissions,
+  filter_reducer,
+  UserController.getUsers
+);
+router.post(
+  ROUTES.GetUsersInfo.router_string,
+  stateless_auth,
+  check_permissions,
+  filter_reducer,
+  UserController.getUsers
+);
 router.post(
   ROUTES.ChangeUserInfo.router_string,
-  passport.authenticate("jwt", {
-    session: false
-  }),
+  stateless_auth,
   check_permissions,
   UserController.editUser
 );
@@ -74,36 +87,21 @@ router.get(
 )
 router.post(
   ROUTES.ChangeRolePermissions.router_string,
-  passport.authenticate("jwt", {
-    session: false
-  }),
+  stateless_auth,
   check_permissions,
   SecurityController.changeRolePermissions
 );
 router.get(
   ROUTES.GetRoleInfo.router_string,
-  passport.authenticate("jwt", {
-    session: false
-  }),
+  stateless_auth,
   check_permissions,
   SecurityController.getRoleInfo
 );
 
 router.post(
   ROUTES.ChangePassword.router_string,
-  passport.authenticate("jwt", {
-    session: false
-  }),
+  stateless_auth,
   UserController.changePassword
-);
-
-router.get(
-  "/dash",
-  check_permissions,
-  passport.authenticate("jwt", {
-    session: false
-  }),
-  HomeController.Dashboard
 );
 
 //********* API DOCUMENTATION **********

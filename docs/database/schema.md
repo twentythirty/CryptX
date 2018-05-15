@@ -43,9 +43,10 @@ role_id int FK >- role.id
 instrument # Tradable instrument (symbol)
 -
 id PK int
-symbol nvarchar UNIQUE # Symbol, e.g. BTC
+symbol nvarchar # Symbol, e.g. BTC
 long_name nvarchar # User friendly name of the symbol, e.g. Bitcoin
 is_base bool # True - if it is a base currency, False - if not
+is_deposit bool # True - if it is a desposit currency
 
 instrument_blockchain # This mapping will exist for blockchain based instruments, e.g. Bitcoin
 -
@@ -135,12 +136,13 @@ amount decimal # Total amount invested for this instrument
 recipe_run
 -
 id PK int
+created_timestamp timestamp # Time when recipe run was initiated
 investment_run_id int FK >- investment_run.id
 user_created_id int FK >- user.id # User which initiated the recipe run
-created_timestamp timestamp # Time when recipe run was initiated
-status enum # Status of the recipe run: Pending, Rejected, Approved
-comment nvarchar # Comment that should be provided when rejecting the recipe run or the orders generated for it
-
+approval_status enum # Possible statuses are Pending, Approved, Rejected
+approval_user_id int FK >- user.id # User who approved/rejected the recipe run
+approval_timestamp timestamp # Time and date when the user approved this recipe run
+approval_comment nvarchar # Comment that should be provided when approving the recipe run
 
 recipe_run_detail
 -
@@ -151,28 +153,32 @@ target_instrument_id int FK >- instrument.id
 target_exchange_id int FK >- exchange.id # The trading exchange on which trading is suggested acording the recipe run
 investment_percentage decimal # Percentage that will be invested this way
 
+recipe_order_group
+-
+id PK int
+created_timestamp timestamp # Time when recipe order has been placed
+approval_status enum # Possible statuses are Pending, Approved, Rejected
+approval_user_id int FK >- user.id # User who approved/rejected the recipe order group
+approval_timestamp timestamp # Time and date when the user approved this recipe order group
+approval_comment nvarchar # Comment that should be provided when approving the order group
+
 recipe_order
 -
 id PK int
-recipe_run_id int FK >- recipe_run.id
+recipe_order_group_id int FK >- recipe_order_group.id
 base_instrument_id int FK >- instrument.id
 target_instrument_id int FK >- instrument.id
-base_instrument_amount decimal # The amount which will be converted from the base currency
-target_instrument_amount decimal # The amount which will be converted to the target currency
 target_exchange_id int FK >- exchange.id # The trading exchange on which trading is suggested acording the recipe run
-target_instrument_price # Price of the target currency
-status enum # Pending, Rejected, Approved
-approve_user_id int FK >- user.id # User who approved/rejected the recipe order
-comment nvarchar # Comment that should be provided when rejecting recipe orders
-placed_timestamp timestamp # Time when recipe order has been placed
+price # Market price when the recipe order was placed
+status enum # Possible statuses are Pending, Executing, Completed, Rejected (by the user), Cancelled (manual intervention by user), Failed (due to technical issue which does not allow to continue)
 
 execution_order
 -
 id PK int
 recipe_order_id int FK >- recipe_order.id
-instrument_id int FK >- instrument.id
 status enum # Pending, Placed, FullyFilled, PartiallyFilled, Cancelled, Failed
 type enum # Market, Limit, Stop
+price decimal # order price
 total_quantity decimal # Order size
 placed_timestamp # Time the execution order has been placed
 completed_timestamp # Time the execution order was fully filled or cancelled
@@ -180,9 +186,10 @@ completed_timestamp # Time the execution order was fully filled or cancelled
 execution_order_fill
 -
 id PK int
+timestamp # Time of the fill
 execution_order_id int FK >- execution_order.id
-filled_quantity decimal
-fill_timestamp # Time of the fill
+quantity decimal
+price decimal # fill price
 
 cold_storage_order
 -
@@ -211,3 +218,20 @@ recipe_run_id int # Recipe run related to the action
 recipe_order_id int # Recipe order related to the action
 execution_order_id int # Execution order related to the action
 details nvarchar # More detailed information about the action
+
+setting
+# This table will contain system settings (controlled by admins via web interface)
+-
+id PK int
+key string # Key that identifies the setting
+vaue string # Value of the setting
+
+exchange_liquidity_history
+# This table will contain 
+-
+id PK int
+date date # Date for which liquidity was measured
+exchange_id int FK >- exchange.id
+base_instrument_id int FK >- instrument.id
+target_instrument_id int FK >- instrument.id
+volume decimal
