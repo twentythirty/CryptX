@@ -55,20 +55,25 @@ ROUTES = {
     permissions_matcher: /\/users\/(\d+|me)\/change_role/,
     required_permissions: [PERMISSIONS.VIEW_USERS, PERMISSIONS.ALTER_ROLES]
   },
-  CreateRole: {
-    router_string: "/roles/create",
-    permissions_matcher: /\/roles\/\d+$/,
-    required_permissions: [PERMISSIONS.VIEW_ROLES]
-  },
   GetRoleInfo: {
     router_string: "/roles/:role_id",
     permissions_matcher: /\/roles\/\d+$/,
     required_permissions: [PERMISSIONS.VIEW_ROLES]
   },
   ChangeRolePermissions: {
-    router_string: "/roles/:role_id/change_perms",
-    permissions_matcher: /\/roles\/\d+\/change_perms/,
+    router_string: "/roles/:role_id/edit",
+    permissions_matcher: /\/roles\/\d+\/edit/,
     required_permissions: [PERMISSIONS.ALTER_PERMS]
+  },
+  CreateRole: {
+    router_string: "/roles/create",
+    permissions_matcher: /\/roles\/create/,
+    required_permissions: [PERMISSIONS.ALTER_ROLES, PERMISSIONS.VIEW_ROLES]
+  },
+  DeleteRole: {
+    router_string: "/roles/:role_id/delete",
+    permissions_matcher: /\/roles\/\d+\/delete/,
+    required_permissions: [PERMISSIONS.ALTER_ROLES, PERMISSIONS.VIEW_ROLES]
   },
   CreateUser: {
     router_string: "/users/create",

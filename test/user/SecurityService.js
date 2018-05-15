@@ -34,6 +34,7 @@ describe("SecurityService mocking", () => {
 
         sinon.stub(role, "setPermissions").callsFake(new_perms => {
           role.permissions = new_perms;
+          return Promise.resolve(role.permissions);
         });
 
         sinon.stub(role, "getPermissions").callsFake(() => {
@@ -75,8 +76,6 @@ describe("SecurityService mocking", () => {
           chai.assert.isTrue(Role.findById.calledWith(ROLE_ID));
           // check if setPermissions of role were changed
           chai.assert(changedRole.setPermissions.called);
-          //role state was persisted in method
-          chai.assert.isTrue(changedRole.save.called);
           //user has new roles in array
 
           chai.expect(

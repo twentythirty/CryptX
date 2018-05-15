@@ -81,7 +81,7 @@ const changeUserRoles = async function (user_id, new_roles) {
   let err, neededRoles;
   [err, neededRoles] = await to(Role.findAll({
     where: {
-      name: new_roles
+      id: new_roles
     }
   }));
 
