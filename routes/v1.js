@@ -3,7 +3,6 @@ const router = express.Router();
 
 const UserController = require("./../controllers/UserController");
 const SecurityController = require('./../controllers/SecurityController');
-const HomeController = require("./../controllers/HomeController");
 
 // const custom 	        = require('./../middleware/custom');
 
