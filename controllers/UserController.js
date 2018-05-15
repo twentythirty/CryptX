@@ -1,4 +1,6 @@
 const User = require("../models").User;
+const Sequelize = require('../models').Sequelize;
+const Op = Sequelize.Op;
 const authService = require("./../services/AuthService");
 
 const create = async function(req, res) {
@@ -43,6 +45,17 @@ function resolveUserId(req) {
   return (user_id === 'me')? req.user.id : user_id
 }
 
+const getUsers = async function(req, res) {
+
+  console.log('WHERE clause: %o', req.seq_where);
+
+  let users = await User.findAll({
+    where: req.seq_where
+  })
+
+  return ReS(res, { users: users.map(u => u.toWeb()) });
+};
+module.exports.getUsers = getUsers;
 
 const getUser = async function(req, res) {
 
