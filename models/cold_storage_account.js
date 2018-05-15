@@ -18,9 +18,9 @@ module.exports = (sequelize, DataTypes) => {
 
   ColdStorageAccount.associate = function(models) {
     ColdStorageAccount.belongsTo(models.Instrument);
-    ColdStorageAccount.belongsToMany(models.InvestmentOrder, {
-      through: models.ColdStorageInvestmentOrder
-    });
+    ColdStorageAccount.belongsToMany(models.ExecutionOrder, {
+      through: models.ColdStorageOrder
+    })
   };
 
   return ColdStorageAccount;

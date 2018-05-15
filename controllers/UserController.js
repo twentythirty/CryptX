@@ -31,6 +31,13 @@ const login = async function(req, res) {
 };
 module.exports.login = login;
 
+/** 
+ * fetch proper DB-friendly numeric user id from request parameters.
+ * 
+ * 
+ * Simply checks if the passed id is the keyword 'me' and extracts session
+ * user id in that case 
+ * */
 function resolveUserId(req) {
   let user_id = req.params.user_id
   return (user_id === 'me')? req.user.id : user_id
@@ -46,6 +53,17 @@ const getUser = async function(req, res) {
   return ReS(res, { user: user.toWeb() });
 };
 module.exports.getUser = getUser;
+
+const editUser = async function(req, res) {
+  let user_id = resolveUserId(req);
+
+  let [err, user] = await to(authService.changeUserInfo(user_id, req.body));
+
+  if (err) return ReE(res, err, 422);
+
+  return ReS(res, { user: user.toWeb() });
+}
+module.exports.editUser = editUser;
 
 const changeUserRole = async function(req, res) {
   const user_id = resolveUserId(req);
@@ -67,7 +85,7 @@ const changePassword = async function (req, res) {
   if (err) return ReE(res, "Old password doesn't match", 403);
   
   let status;
-  [err, status] = await to(authService.expireSessions(user_id, req.headers.authorization));
+  [err, status] = await to(authService.expireOtherSessions(user_id, req.headers.authorization));
   if (err) return ReE(res, err, 403);
 
   return ReS(res, { user: user.toWeb() });

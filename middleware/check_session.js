@@ -13,7 +13,7 @@ module.exports = function(passport) {
 
   passport.use(
     new JwtStrategy(opts, async function(req, jwt_payload, done) {
-      let err, user, session;
+      let err, user, session, userWithSession;
       let user_id = jwt_payload.user_id;
       const token = req.headers["authorization"];
       //only valid user payload if the user has a non-expired session

@@ -20,14 +20,6 @@ module.exports = {
       is_base: {
         type: Sequelize.BOOLEAN,
         allowNull: false
-      },
-      is_blacklisted: {
-        type: Sequelize.BOOLEAN,
-        allowNull: false,
-        defaultValue: false
-      },
-      tick_size: {
-        type: Sequelize.DECIMAL
       }
     }).then(() => {
 

@@ -8,6 +8,10 @@ module.exports = (sequelize, DataTypes) => {
             external_instrument_id: {
                 type: DataTypes.STRING,
                 allowNull: false
+            },
+            tick_size: {
+                type: DataTypes.DECIMAL,
+                allowNull: false
             }
         },
         modelProps(

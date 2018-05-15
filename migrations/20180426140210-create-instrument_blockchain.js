@@ -1,7 +1,7 @@
 'use strict';
 module.exports = {
   up: (queryInterface, Sequelize) => {
-    return queryInterface.createTable('instrument_coinmarketcap_info', {
+    return queryInterface.createTable('instrument_blockchain', {
       id: {
         allowNull: false,
         autoIncrement: true,
@@ -17,14 +17,23 @@ module.exports = {
         onUpdate: "cascade",
         onDelete: "cascade"
       },
-      coinmarketcap_id: {
+      coinmarketcap_identifier: {
         allowNull: false,
-        unique: true,
-        type: Sequelize.INTEGER
+        unique: false,
+        type: Sequelize.STRING
       }
+    }).then(() => {
+
+      return queryInterface.addIndex(
+        'instrument_blockchain', {
+          fields: ['coinmarketcap_identifier'],
+          name: 'coinmarketcap_id_idx',
+          unique: false
+        }
+      );
     });
   },
   down: (queryInterface, Sequelize) => {
-    return queryInterface.dropTable('instrument_coinmarketcap_info');
+    return queryInterface.dropTable('instrument_blockchain');
   }
 };

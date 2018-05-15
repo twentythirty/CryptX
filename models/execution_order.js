@@ -2,8 +2,7 @@
 
 module.exports = (sequelize, DataTypes) => {
     var ExecutionOrder = sequelize.define(
-        'ExecutionOrder',
-        {
+        'ExecutionOrder', {
             status: {
                 type: DataTypes.SMALLINT,
                 allowNull: false
@@ -22,9 +21,12 @@ module.exports = (sequelize, DataTypes) => {
         )
     );
 
-    ExecutionOrder.associate = function(models) {
-        ExecutionOrder.belongsTo(models.InvestmentOrder);
+    ExecutionOrder.associate = function (models) {
+        ExecutionOrder.belongsTo(models.RecipeOrder);
         ExecutionOrder.belongsTo(models.Instrument);
+        ExecutionOrder.belongsToMany(models.ColdStorageAccount, {
+            through: models.ColdStorageOrder
+        })
     };
 
 

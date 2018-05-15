@@ -1,2 +1,2 @@
 web: npm start
-worker: node jobs/test-worker.js
+fetch_mh: node jobs/market-history-fetcher.js

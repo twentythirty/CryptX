@@ -21,8 +21,10 @@ describe("AuthService mocking", () => {
   const AuthService = require("../../services/AuthService");
   const User = require("../../models").User;
   const UserSession = require("../../models").UserSession;
+  const Role = require("../../models").Role;
+  const Permission = require("../../models").Permission;
 
-  let NEW_ROLES = ["1", "2"];
+  let NEW_ROLES = ["ROLE_ADMIN", "ROLE_MANAGER"/* "1", "2" */];
   let USER_ID = 23;
   let F_NAME = "Larry";
   let L_NAME = "Test";
@@ -47,10 +49,11 @@ describe("AuthService mocking", () => {
     sinon.stub(User, "findById").callsFake(id => {
       var user = new User({
         id: id,
-        first_name: "",
-        last_name: "",
+        first_name: F_NAME,
+        last_name: L_NAME,
         email: EMAIL,
-        roles: []
+        roles: [],
+        is_active: true
       });
 
       sinon.stub(user, "comparePassword").returns(Promise.resolve(user));
@@ -100,12 +103,12 @@ describe("AuthService mocking", () => {
           let user = changedUser;
 
           //user was looked up via supplied id
-          chai.expect(User.findById.calledWith(USER_ID));
+          chai.assert.isTrue(User.findById.calledWith(USER_ID));
           //user set their roles to DB
-          chai.expect(user.setRoles.calledWith(NEW_ROLES));
+          chai.assert.isTrue(user.setRoles.called);
           //user state was persisted in method
-          chai.expect(user.save.called);
-          //user has new roles in array
+          chai.assert.isTrue(user.save.called);
+          //user has new roles in array          
           chai.expect(user.getRoles()).to.eq(NEW_ROLES);
         }
       );
@@ -186,10 +189,19 @@ describe("AuthService mocking", () => {
       );
 
       //apply all partials to service spy
-      partials.forEach(obj => AuthService.createUser(obj));
-      //auth service rejected values
-      chai.expect(AuthService.createUser.alwaysThrew("CryptXError"));
-      AuthService.createUser.restore();
+      return Promise.all(partials.map(obj => AuthService.createUser(obj)
+        .then(result => {
+          return Promise.resolve([null, result])
+        }).catch(err => {
+          return Promise.resolve([err, null])
+        })
+      )).then(results => {
+        AuthService.createUser.restore();
+
+        chai.expect(results).to.satisfy(results => { // checks if all attemps were rejected
+          return results.every(pair => pair[1] == null)
+        }, utils.format('%j', results));
+      });
     });
 
     it("shall reject bad email usernames", () => {
@@ -220,7 +232,6 @@ describe("AuthService mocking", () => {
         return AuthService.createUser(CREATE_MODEL).then((user) => {
 
             chai.expect(user).to.be.a('object');
-
             chai.expect(user).to.have.property('created_timestamp');
             chai.expect(user.is_active).eq(true);
             chai.expect(user).to.have.property('id');
@@ -230,7 +241,7 @@ describe("AuthService mocking", () => {
             chai.expect(user.password).eq(PASSWORD);
         });
     });
-  });
+  }); 
 
   describe('and the method updatePassword shall ', function () {
     it("exist", function() {
@@ -244,7 +255,7 @@ describe("AuthService mocking", () => {
       .then(result => {
         let user = result;
       
-        // check if userFindById was called
+        // check if findById was called
         chai.assert.isTrue(User.findById.calledWith(USER_ID));
         // check if incorrect old password is rejected
         chai.assert.isTrue(user.comparePassword.calledWith(PASSWORD));
@@ -258,19 +269,19 @@ describe("AuthService mocking", () => {
 
       return User.findById(USER_ID)
       .then(user => {
-        chai.expect(user.password).to.be.not.equal(PASSWORD);
+        // assure that password is not new_password yet
+        chai.expect(user.password).to.be.not.equal(new_password);
 
         return AuthService.updatePassword(USER_ID, PASSWORD, new_password)
       }).then(result => {
         let user = result;
-
+        
+        // check if password has changed to new_password
         chai.expect(user.password).to.be.equal(new_password);
       });
     });
   });
 
-  //expireOtherSessions
-  // check if UserSession.findAll was called
   describe('and the method expireOtherSessions shall ', function () {
     it("shall exist", function () {
       chai.expect(AuthService.expireOtherSessions).to.exist;
@@ -305,16 +316,72 @@ describe("AuthService mocking", () => {
 
       return AuthService.expireOtherSessions(USER_ID, current_session)
       .then(result => {
-        
+        // check if findAll was called
         chai.assert.isTrue(UserSession.findAll.called);
 
         user_sessions.forEach(session => {
+          // check if session expiry timestamp was changed
           chai.expect(session.expiry_timestamp).to.be.not.equal(session_expiry_timestamp);
+          // check if date session expiry_timestamp was set is less than current time
+          chai.expect(session.expiry_timestamp).to.be.lessThan(new Date());
+          // check if session save was called
           chai.assert.isTrue(session.save.called, "expected every changed session to be saved");
         });
 
         UserSession.findAll.restore();
       });
+    });
+  });
+
+  describe('and the method changeUserInfo shall ', function () {
+    it("shall exist", function () {
+      chai.expect(AuthService.changeUserInfo).to.exist;
+    });
+
+    it('not change data that can not changed', function () {
+      let new_data = {
+        id: 55,
+        email: "Some@newemail.com"
+      };
+
+      return AuthService.changeUserInfo(USER_ID, new_data)
+      .then(returnedUser => {
+        // check if data that can't be changed is not changed
+        chai.expect(returnedUser.id).to.be.equal(USER_ID);
+        chai.expect(returnedUser.email).to.be.equal(EMAIL);
+        
+        // these model methods should've been called
+        chai.assert.isTrue(User.findById.calledWith(USER_ID));
+        chai.assert.isTrue(returnedUser.save.called);
+      });
+    });
+
+    it('change data that is allowed to be change by method', function () {
+      let new_data = {
+        first_name: "New_Name",
+        last_name: "New_Last_Name",
+        is_active: false
+      };
+
+      return AuthService.changeUserInfo(USER_ID, new_data)
+      .then(returnedUser => {
+        _.toPairs(new_data).map(pair => { // checks if all new data was applied
+          chai.expect(returnedUser[pair[0]]).to.be.equal(pair[1]);
+        });
+      })
+    });
+
+    it('not change values if new data is not supplied', function () {
+      let new_data = {};
+
+      return AuthService.changeUserInfo(USER_ID, new_data)
+      .then(returnedUser => {
+        chai.expect(returnedUser.id).to.be.equal(USER_ID);
+        chai.expect(returnedUser.email).to.be.equal(EMAIL);
+        chai.expect(returnedUser.first_name).to.be.equal(F_NAME);
+        chai.expect(returnedUser.last_name).to.be.equal(L_NAME);
+        chai.expect(returnedUser.is_active).to.be.true;
+      })
     });
   });
 });

@@ -10,14 +10,8 @@ module.exports = (sequelize, DataTypes) => {
                 unique: false,
                 allowNull: false
             },
-            long_name: DataTypes.TEXT('medium'),
-            is_base: DataTypes.BOOLEAN,
-            is_blacklisted: {
-                type: DataTypes.BOOLEAN,
-                allowNull: false,
-                defaultValue: false
-            },
-            tick_size: DataTypes.DECIMAL
+            long_name: DataTypes.STRING,
+            is_base: DataTypes.BOOLEAN
         },
         modelProps(
             'instrument',

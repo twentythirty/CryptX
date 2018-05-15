@@ -6,6 +6,10 @@ module.exports = {
         type: Sequelize.STRING,
         allowNull: false
       },
+      tick_size: {
+        type: Sequelize.DECIMAL,
+        allowNull: false
+      },
       instrument_id: {
         type: Sequelize.INTEGER,
         references: {

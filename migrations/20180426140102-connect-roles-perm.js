@@ -31,7 +31,7 @@ module.exports = {
           [{
               role_id: manager.id,
               permission_id: _.find(all_perms, {
-                code: PERMISSIONS.ALTER_ROLES
+                code: PERMISSIONS.EDIT_USERS
               }).id
             },
             {
