@@ -7,8 +7,9 @@ const Op = Sequelize.Op;
 function to_conj_obj(key, value = {}) {
 
     let key_obj = {};
-    //simple case, value supplied is just a series of vals
-    if (typeof value !== 'object') {
+    //simple case, value supplied is just a series of vals 
+    //array is also an object so thats an extra check
+    if (typeof value !== 'object' || Array.isArray(value)) {
         key_obj[key] = value;
     } else {
         if (!value.expression) {
@@ -60,6 +61,11 @@ function accum_where_col(filters) {
 module.exports = (filter_obj = {}) => {
 
     let final_clause = {};
+
+    //checks if the filter obj is null or undefined
+    if (filter_obj == null) {
+        return final_clause;
+    }
 
     //process special clauses
     ['and', 'or', 'not'].forEach(clause => {
