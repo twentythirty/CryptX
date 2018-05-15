@@ -77,19 +77,30 @@ router.post(
   UserController.createByInvite
 );
 router.post(ROUTES.CreateUser.router_string, UserController.create);
-/* router.post(ROUTES.CreateRole.router_string,
+router.post(
+  ROUTES.ChangeUserRole.router_string,
   passport.authenticate("jwt", {
     session: false
   }),
   check_permissions,
-  SecurityController.create
-); */
-router.post(
-  ROUTES.ChangeUserRole.router_string,
-  stateless_auth,
-  check_permissions,
   UserController.changeUserRole
 );
+router.post(
+  ROUTES.CreateRole.router_string,
+  passport.authenticate("jwt", {
+    session: false
+  }),
+  check_permissions,
+  SecurityController.createRole
+);
+router.get(
+  ROUTES.DeleteRole.router_string,
+  passport.authenticate("jwt", {
+    session: false
+  }),
+  check_permissions,
+  SecurityController.deleteRole
+)
 router.post(
   ROUTES.ChangeRolePermissions.router_string,
   stateless_auth,

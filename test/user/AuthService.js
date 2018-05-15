@@ -24,7 +24,7 @@ describe("AuthService mocking", () => {
   const Role = require("../../models").Role;
   const Permission = require("../../models").Permission;
 
-  let NEW_ROLES = ["ROLE_ADMIN", "ROLE_MANAGER"/* "1", "2" */];
+  let NEW_ROLES = ["1", "2"];
   let USER_ID = 23;
   let F_NAME = "Larry";
   let L_NAME = "Test";

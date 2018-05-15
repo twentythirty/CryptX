@@ -68,10 +68,15 @@ ROUTES = {
     permissions_matcher: /\/users\/all\/list/,
     required_permissions: [PERMISSIONS.VIEW_USERS]
   },
-  CreateRole: {
-    router_string: "/roles/create",
-    permissions_matcher: /\/roles\/\d+$/,
-    required_permissions: [PERMISSIONS.VIEW_ROLES]
+  ChangeUserInfo: {
+    router_string: "/users/:user_id/edit",
+    permissions_matcher: /\users\/(\d+|me)\/edit/,
+    required_permissions: [PERMISSIONS.VIEW_USERS, PERMISSIONS.EDIT_USERS]
+  },
+  ChangeUserRole: {
+    router_string: "/users/:user_id/change_role",
+    permissions_matcher: /\/users\/(\d+|me)\/change_role/,
+    required_permissions: [PERMISSIONS.VIEW_USERS, PERMISSIONS.ALTER_ROLES]
   },
   GetRoleInfo: {
     router_string: "/roles/:role_id",
@@ -79,24 +84,24 @@ ROUTES = {
     required_permissions: [PERMISSIONS.VIEW_ROLES]
   },
   ChangeRolePermissions: {
-    router_string: "/roles/:role_id/change_perms",
-    permissions_matcher: /\/roles\/\d+\/change_perms/,
+    router_string: "/roles/:role_id/edit",
+    permissions_matcher: /\/roles\/\d+\/edit/,
     required_permissions: [PERMISSIONS.ALTER_PERMS]
   },
-  GetUserInfo: {
-    router_string: "/users/:user_id",
-    permissions_matcher: /\/users\/(\d+|me)$/,
-    required_permissions: [PERMISSIONS.VIEW_USERS]
+  CreateRole: {
+    router_string: "/roles/create",
+    permissions_matcher: /\/roles\/create/,
+    required_permissions: [PERMISSIONS.ALTER_ROLES, PERMISSIONS.VIEW_ROLES]
   },
-  ChangeUserInfo: {
-    router_string: "/users/:user_id/edit",
-    permissions_matcher: /\/users\/(\d+|me)\/edit/,
-    required_permissions: [PERMISSIONS.VIEW_USERS, PERMISSIONS.EDIT_USERS]
+  DeleteRole: {
+    router_string: "/roles/:role_id/delete",
+    permissions_matcher: /\/roles\/\d+\/delete/,
+    required_permissions: [PERMISSIONS.ALTER_ROLES, PERMISSIONS.VIEW_ROLES]
   },
-  ChangeUserRole: {
-    router_string: "/users/:user_id/change_role",
-    permissions_matcher: /\/users\/(\d+|me)\/change_role/,
-    required_permissions: [PERMISSIONS.VIEW_USERS, PERMISSIONS.ALTER_ROLES]
+  CreateUser: {
+    router_string: "/users/create",
+    permissions_matcher: /\/users\/create/,
+    required_permissions: [PERMISSIONS.CREATE_USER]
   },
   ChangePassword: {
     router_string: "/users/:user_id/change_password",
