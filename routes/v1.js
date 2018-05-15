@@ -60,6 +60,22 @@ router.post(
   check_permissions,
   UserController.editUser
 );
+router.post(
+  ROUTES.InviteUser.router_string,
+  stateless_auth,
+  check_permissions,
+  UserController.issueInvitation
+);
+//no auth middleware by design. 
+//call made by browser before a user exists
+router.post(
+  ROUTES.InvitationByToken.router_string,
+  UserController.inviteTokenInfo
+);
+router.post(
+  ROUTES.CreateUserByInvite.router_string,
+  UserController.createByInvite
+);
 router.post(ROUTES.CreateUser.router_string, UserController.create);
 /* router.post(ROUTES.CreateRole.router_string,
   passport.authenticate("jwt", {

@@ -35,30 +35,38 @@ all_permissions[PERMISSIONS.CREATE_USER] =
 all_roles = Object.values(ROLES);
 
 ROUTES = {
+  CreateUser: {
+    router_string: "/users/create",
+    permissions_matcher: /\/users\/create/,
+    required_permissions: [PERMISSIONS.CREATE_USER]
+  },
+  InviteUser: {
+    router_string: "/users/invite",
+    permissions_matcher: /\/users\/invite/,
+    required_permissions: [PERMISSIONS.CREATE_USER]
+  },
+  //a route that does not require permissions by deisgn
+  //return invitation info by email token. Called by browser
+  //for somebody who doesnt have a user account yet
+  InvitationByToken: {
+    router_string: "/users/invitation",
+    permissions_matcher: /\/users\/invitation/,
+    required_permissions: []
+  },
+  CreateUserByInvite: {
+    router_string: '/users/create-invited',
+    permissions_matcher: /\/users\/create-invited/,
+    required_permissions: []
+  },
   Login: {
     router_string: "/users/login",
     permissions_matcher: /\/users\/login/,
     required_permissions: []
   },
-  GetUserInfo: {
-    router_string: "/users/:user_id",
-    permissions_matcher: /\users\/(\d+|me)$/,
-    required_permissions: [PERMISSIONS.VIEW_USERS]
-  },
   GetUsersInfo: {
-    router_string: "/users/all/list",
-    permissions_matcher: /\users\/all\/list/,
+    router_string: "/users/all",
+    permissions_matcher: /\/users\/all\/list/,
     required_permissions: [PERMISSIONS.VIEW_USERS]
-  },
-  ChangeUserInfo: {
-    router_string: "/users/:user_id/edit",
-    permissions_matcher: /\users\/(\d+|me)\/edit/,
-    required_permissions: [PERMISSIONS.VIEW_USERS, PERMISSIONS.EDIT_USERS]
-  },
-  ChangeUserRole: {
-    router_string: "/users/:user_id/change_role",
-    permissions_matcher: /\/users\/(\d+|me)\/change_role/,
-    required_permissions: [PERMISSIONS.VIEW_USERS, PERMISSIONS.ALTER_ROLES]
   },
   CreateRole: {
     router_string: "/roles/create",
@@ -75,10 +83,20 @@ ROUTES = {
     permissions_matcher: /\/roles\/\d+\/change_perms/,
     required_permissions: [PERMISSIONS.ALTER_PERMS]
   },
-  CreateUser: {
-    router_string: "/users/create",
-    permissions_matcher: /\/users\/create/,
-    required_permissions: [PERMISSIONS.CREATE_USER]
+  GetUserInfo: {
+    router_string: "/users/:user_id",
+    permissions_matcher: /\/users\/(\d+|me)$/,
+    required_permissions: [PERMISSIONS.VIEW_USERS]
+  },
+  ChangeUserInfo: {
+    router_string: "/users/:user_id/edit",
+    permissions_matcher: /\/users\/(\d+|me)\/edit/,
+    required_permissions: [PERMISSIONS.VIEW_USERS, PERMISSIONS.EDIT_USERS]
+  },
+  ChangeUserRole: {
+    router_string: "/users/:user_id/change_role",
+    permissions_matcher: /\/users\/(\d+|me)\/change_role/,
+    required_permissions: [PERMISSIONS.VIEW_USERS, PERMISSIONS.ALTER_ROLES]
   },
   ChangePassword: {
     router_string: "/users/:user_id/change_password",

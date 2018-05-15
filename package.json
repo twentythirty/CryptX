@@ -32,6 +32,7 @@
     "serve-favicon": "~2.4.5",
     "sinon": "^4.5.0",
     "umzug": "^2.1.0",
+    "uuid": "^3.2.1",
     "validator": "^9.2.0"
   },
   "devDependencies": {
