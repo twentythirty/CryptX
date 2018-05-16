@@ -6,6 +6,7 @@ const Permission = require('../models').Permission;
 const UserSession = require("../models").UserSession;
 const validator = require("validator");
 const Op = require('../models').Sequelize.Op;
+const uuidv4 = require('uuid/v4');
 
 const createUser = async function (userInfo) {
   let email = userInfo.email;
@@ -167,3 +168,50 @@ const expireOtherSessions = async function (user_id, keep_active_session) {
   return true;
 }
 module.exports.expireOtherSessions = expireOtherSessions;
+
+const sendPasswordResetToken = async function (email) {
+
+  let [err, user] = await to(User.findOne({
+    where:{
+      email: email
+    }
+  }));
+
+  if(!user) TE('User not found');
+  if(!user.is_active) TE('User is inactive');
+
+  user.reset_password_token_hash = uuidv4();
+  user.reset_password_token_expiry_timestamp = new Date(
+    new Date().getTime() + (60 * 60 * 1000)
+  );
+  
+  [err, user] = await to(user.save());
+  if(err) TE(err.message);
+
+  return user;
+};
+module.exports.sendPasswordResetToken = sendPasswordResetToken;
+
+const verifyResetTokenValidity = async function (token) {
+
+  let err, user = await User.findOne({
+    where: {
+      reset_password_token_hash: token
+    }
+  });
+
+  if(!user) TE("Password reset token not found");
+
+  if(user.reset_password_token_expiry_timestamp < new Date()) {
+    user.reset_password_token_expiry_timestamp = null;
+    user.reset_password_token_hash = null;
+    
+    [err, user] = await to(user.save());
+    if (err) TE(err.message);
+
+    TE("Password reset token expired");
+  }
+
+  return user;
+}
+module.exports.verifyResetTokenValidity = verifyResetTokenValidity;

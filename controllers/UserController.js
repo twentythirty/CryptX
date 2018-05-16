@@ -180,3 +180,37 @@ const changePassword = async function (req, res) {
   });
 }
 module.exports.changePassword = changePassword;
+
+const sendPasswordResetToken = async function (req, res) {
+  
+  let email = req.body.email;
+  let [err, user] = await to(authService.sendPasswordResetToken(email));
+  if (err) return ReE(res, err, 403);
+  
+  [err, _] = await to(mailUtil.sendMail(
+    email,
+    `Reset your password in CryptX`,
+    mailUtil.passwordResetMailHTML({
+      token: user.reset_password_token_hash,
+      email: user.email,
+      first_name: user.first_name,
+      last_name: user.last_name
+    })
+  ));
+
+  if (err) return ReE(res, err, 422);
+
+  return ReS(res, {message: 'Password reset token created', token: user.reset_password_token_hash });
+}
+module.exports.sendPasswordResetToken = sendPasswordResetToken;
+
+const checkPasswordResetToken = async function (req, res) {
+  
+  let token = req.params.token;
+  let [err, user] = await to(authService.verifyResetTokenValidity(token));
+  
+  if(err) return ReE(res, "Token not valid or expired", 422);
+
+  return ReS(res, {message: 'valid'});
+};
+module.exports.checkPasswordResetToken = checkPasswordResetToken;

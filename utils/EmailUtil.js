@@ -33,6 +33,19 @@ module.exports.invitationMailHTML = (invitation) => {
     `;
 }
 
+const RESET_PASSWORD_BASE_URL = 'https://cryptx-app-staging.heroku.com/v1/reset_password?token=';
+module.exports.passwordResetMailHTML = (details) => {
+
+    return `
+    <p>Hello ${details.first_name} ${details.last_name},
+    <br/>
+    <p>Password reset request was made for your account.</p>
+    <p>To reset you password, please use this link:</p>
+    <p><a href="${RESET_PASSWORD_BASE_URL + details.token}">${RESET_PASSWORD_BASE_URL + details.token}</a></p>
+    <p>This link to reset your password is going to be valid for 24 hours.
+    `;
+}
+
 module.exports.send_grid = send_grid;
 
 module.exports.sendMail = async (to, subject, content, is_html = true) => {

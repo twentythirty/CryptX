@@ -83,6 +83,28 @@ ROUTES = {
     permissions_matcher: /\/users\/(\d+|me)\/change_role/,
     required_permissions: [PERMISSIONS.VIEW_USERS, PERMISSIONS.ALTER_ROLES]
   },
+  CreateUser: {
+    router_string: "/users/create",
+    permissions_matcher: /\/users\/create/,
+    required_permissions: [PERMISSIONS.CREATE_USER]
+  },
+  ChangePassword: {
+    router_string: "/users/:user_id/change_password",
+    permissions_matcher: /\/users\/(\d+|me)\/change_password/,
+    required_permissions: [PERMISSIONS.VIEW_USERS]
+  },
+  SendPasswordResetToken: {
+    router_string: "/send_reset_token",
+    permissions_matcher: /\/send_reset_token/,
+    required_permissions: []
+  },
+  CheckPasswordResetToken: {
+    router_string: "/password_reset/:token",
+    permissions_matcher: /\/password_reset\/\w+/,
+    required_permissions: []
+  },
+
+  // Roles
   GetRoleInfo: {
     router_string: "/roles/:role_id",
     permissions_matcher: /\/roles\/\d+$/,
@@ -107,15 +129,5 @@ ROUTES = {
     router_string: "/roles/:role_id/delete",
     permissions_matcher: /\/roles\/\d+\/delete/,
     required_permissions: [PERMISSIONS.ALTER_ROLES, PERMISSIONS.VIEW_ROLES]
-  },
-  CreateUser: {
-    router_string: "/users/create",
-    permissions_matcher: /\/users\/create/,
-    required_permissions: [PERMISSIONS.CREATE_USER]
-  },
-  ChangePassword: {
-    router_string: "/users/:user_id/change_password",
-    permissions_matcher: /\/users\/(\d+|me)\/change_password/,
-    required_permissions: [PERMISSIONS.VIEW_USERS]
   }
 };

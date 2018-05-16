@@ -79,11 +79,17 @@ router.post(
 router.post(ROUTES.CreateUser.router_string, UserController.create);
 router.post(
   ROUTES.ChangeUserRole.router_string,
-  passport.authenticate("jwt", {
-    session: false
-  }),
+  stateless_auth,
   check_permissions,
   UserController.changeUserRole
+);
+router.post(
+  ROUTES.SendPasswordResetToken.router_string,
+  UserController.sendPasswordResetToken
+);
+router.get(
+  ROUTES.CheckPasswordResetToken.router_string,
+  UserController.checkPasswordResetToken
 );
 
 
