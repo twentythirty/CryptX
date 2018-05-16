@@ -9,14 +9,14 @@ let utils = require('util');
 
 describe("AuthService testing", () => {
 
-    before(done => {
+  before(done => {
 
-        app.dbPromise.then(migrations => {
-            console.log("Migraitions: %o", migrations);
-            done();
-        })
+    app.dbPromise.then(migrations => {
+      console.log("Migraitions: %o", migrations);
+      done();
+    })
 
-    });
+  });
 
   const AuthService = require("../../services/AuthService");
   const User = require("../../models").User;
@@ -32,7 +32,7 @@ describe("AuthService testing", () => {
   let PASSWORD = "test";
   let IP = "0.0.0.0";
 
-  beforeEach(function() {
+  beforeEach(function () {
     //configure user model stubs
     sinon.stub(User, "findOne").callsFake(options => {
       var user = new User({
@@ -79,24 +79,31 @@ describe("AuthService testing", () => {
       return Promise.resolve(new User(options));
     });
   });
-  afterEach(function() {
+  afterEach(function () {
     //restore user model
-    User.findOne.restore();
-    User.findById.restore();
-    UserSession.create.restore();
-    User.create.restore();
+
+    [
+      User.findOne,
+      User.findById,
+      UserSession.create,
+      User.create
+    ].forEach(model => {
+      if (model.restore) {
+        model.restore();
+      }
+    });
   });
 
-  it("the service shall exist", function() {
+  it("the service shall exist", function () {
     chai.expect(AuthService).to.exist;
   });
 
-  describe("and the method changeUserRoles shall", function() {
-    it("exist", function() {
+  describe("and the method changeUserRoles shall", function () {
+    it("exist", function () {
       chai.expect(AuthService.changeUserRoles).to.exist;
     });
 
-    it("call required DB model during roles change", function() {
+    it("call required DB model during roles change", function () {
       return AuthService.changeUserRoles(USER_ID, NEW_ROLES).then(
         changedUser => {
           chai.expect(changedUser).to.be.a("object");
@@ -115,26 +122,29 @@ describe("AuthService testing", () => {
     });
   });
 
-  describe("and the method authUser shall ", function() {
-    it("exist", function() {
+  describe("and the method authUser shall ", function () {
+    it("exist", function () {
       chai.expect(AuthService.authUser).to.exist;
     });
 
-    it("call required DB model during authentication", function() {
-      return AuthService.authUser(
-        {
+    it("call required DB model during authentication", function () {
+      return AuthService.authUser({
           username: EMAIL,
           password: PASSWORD
         },
         IP
-      ).then(function(userSession) {
+      ).then(function (userSession) {
         //test what function returns
         chai.expect(userSession).to.be.a("array");
         chai.expect(userSession.length).to.eq(2);
         let [user, session] = userSession;
 
         //that User was searched by this email
-        chai.assert.isTrue(User.findOne.calledWith({ where: { email: EMAIL } }));
+        chai.assert.isTrue(User.findOne.calledWith({
+          where: {
+            email: EMAIL
+          }
+        }));
         //checked these credentials
         chai.assert.isTrue(user.comparePassword.calledWith(PASSWORD));
         //created session out of him and with provided IP and future date
@@ -146,7 +156,7 @@ describe("AuthService testing", () => {
     });
   });
 
-  describe("and the method createUser shall ", function() {
+  describe("and the method createUser shall ", function () {
     let CREATE_MODEL = {
       first_name: F_NAME,
       last_name: L_NAME,
@@ -161,8 +171,7 @@ describe("AuthService testing", () => {
     it("shall reject partial user data", () => {
       var spy = sinon.spy(AuthService, "createUser");
 
-      let partials = [
-        {},
+      let partials = [{},
         {
           first_name: F_NAME
         },
@@ -182,10 +191,10 @@ describe("AuthService testing", () => {
       //add more partials objects (with 1 key missing)
       partials.concat(
         Array(num_keys)
-          .fill(local_model)
-          .map((model, idx) => {
-            delete model[keys[idx]];
-          })
+        .fill(local_model)
+        .map((model, idx) => {
+          delete model[keys[idx]];
+        })
       );
 
       //apply all partials to service spy
@@ -209,15 +218,15 @@ describe("AuthService testing", () => {
 
       let emails = ["", "a!", "peter", "@", ".@.", "a@", "@here", "maybe@this"];
       let local_model = Object.assign({}, CREATE_MODEL);
-      
+
       return Promise.all(emails.map(email => {
         local_model.email = email;
         return AuthService.createUser(local_model) // attempting to create user
-        .then(resolved => { // resolves if user email is valid
-          return Promise.resolve([null, email])
-        }).catch(rejected => { // rejects if user email is invalid
-          return Promise.resolve([rejected, null])
-        });
+          .then(resolved => { // resolves if user email is valid
+            return Promise.resolve([null, email])
+          }).catch(rejected => { // rejects if user email is invalid
+            return Promise.resolve([rejected, null])
+          });
       })).then(results => {
         AuthService.createUser.restore();
 
@@ -229,22 +238,22 @@ describe("AuthService testing", () => {
 
     it("shall create a new user when all is good", () => {
 
-        return AuthService.createUser(CREATE_MODEL).then((user) => {
+      return AuthService.createUser(CREATE_MODEL).then((user) => {
 
-            chai.expect(user).to.be.a('object');
-            chai.expect(user).to.have.property('created_timestamp');
-            chai.expect(user.is_active).eq(true);
-            chai.expect(user).to.have.property('id');
-            chai.expect(user.first_name).eq(F_NAME);
-            chai.expect(user.last_name).eq(L_NAME);
-            chai.expect(user.email).eq(EMAIL);
-            chai.expect(user.password).eq(PASSWORD);
-        });
+        chai.expect(user).to.be.a('object');
+        chai.expect(user).to.have.property('created_timestamp');
+        chai.expect(user.is_active).eq(true);
+        chai.expect(user).to.have.property('id');
+        chai.expect(user.first_name).eq(F_NAME);
+        chai.expect(user.last_name).eq(L_NAME);
+        chai.expect(user.email).eq(EMAIL);
+        chai.expect(user.password).eq(PASSWORD);
+      });
     });
-  }); 
+  });
 
   describe('and the method updatePassword shall ', function () {
-    it("exist", function() {
+    it("exist", function () {
       chai.expect(AuthService.updatePassword).to.exist;
     });
 
@@ -252,33 +261,33 @@ describe("AuthService testing", () => {
       let new_password = "newpassword";
 
       return AuthService.updatePassword(USER_ID, PASSWORD, new_password)
-      .then(result => {
-        let user = result;
-      
-        // check if findById was called
-        chai.assert.isTrue(User.findById.calledWith(USER_ID));
-        // check if incorrect old password is rejected
-        chai.assert.isTrue(user.comparePassword.calledWith(PASSWORD));
-        // check if save was called
-        chai.assert.isTrue(user.save.called);
-      });
+        .then(result => {
+          let user = result;
+
+          // check if findById was called
+          chai.assert.isTrue(User.findById.calledWith(USER_ID));
+          // check if incorrect old password is rejected
+          chai.assert.isTrue(user.comparePassword.calledWith(PASSWORD));
+          // check if save was called
+          chai.assert.isTrue(user.save.called);
+        });
     });
 
     it("change password", function () {
       let new_password = "newpassword";
 
       return User.findById(USER_ID)
-      .then(user => {
-        // assure that password is not new_password yet
-        chai.expect(user.password).to.be.not.equal(new_password);
+        .then(user => {
+          // assure that password is not new_password yet
+          chai.expect(user.password).to.be.not.equal(new_password);
 
-        return AuthService.updatePassword(USER_ID, PASSWORD, new_password)
-      }).then(result => {
-        let user = result;
-        
-        // check if password has changed to new_password
-        chai.expect(user.password).to.be.equal(new_password);
-      });
+          return AuthService.updatePassword(USER_ID, PASSWORD, new_password)
+        }).then(result => {
+          let user = result;
+
+          // check if password has changed to new_password
+          chai.expect(user.password).to.be.equal(new_password);
+        });
     });
   });
 
@@ -297,12 +306,11 @@ describe("AuthService testing", () => {
       let spy = sinon.stub(UserSession, "findAll").callsFake(options => {
 
         user_sessions = tokens.map(token_value => new UserSession({
-            user_id: USER_ID,
-            token: token_value,
-            expiry_timestamp: session_expiry_timestamp,
-            ip_address: "0.0.0.0"
-          })
-        );
+          user_id: USER_ID,
+          token: token_value,
+          expiry_timestamp: session_expiry_timestamp,
+          ip_address: "0.0.0.0"
+        }));
 
         user_sessions.forEach(session => {
           sinon.stub(session, "save").callsFake(() => {
@@ -315,21 +323,21 @@ describe("AuthService testing", () => {
       });
 
       return AuthService.expireOtherSessions(USER_ID, current_session)
-      .then(result => {
-        // check if findAll was called
-        chai.assert.isTrue(UserSession.findAll.called);
+        .then(result => {
+          // check if findAll was called
+          chai.assert.isTrue(UserSession.findAll.called);
 
-        user_sessions.forEach(session => {
-          // check if session expiry timestamp was changed
-          chai.expect(session.expiry_timestamp).to.be.not.equal(session_expiry_timestamp);
-          // check if date session expiry_timestamp was set is less than current time
-          chai.expect(session.expiry_timestamp).to.be.lessThan(new Date());
-          // check if session save was called
-          chai.assert.isTrue(session.save.called, "expected every changed session to be saved");
+          user_sessions.forEach(session => {
+            // check if session expiry timestamp was changed
+            chai.expect(session.expiry_timestamp).to.be.not.equal(session_expiry_timestamp);
+            // check if date session expiry_timestamp was set is less than current time
+            chai.expect(session.expiry_timestamp).to.be.lessThan(new Date());
+            // check if session save was called
+            chai.assert.isTrue(session.save.called, "expected every changed session to be saved");
+          });
+
+          UserSession.findAll.restore();
         });
-
-        UserSession.findAll.restore();
-      });
     });
   });
 
@@ -345,15 +353,15 @@ describe("AuthService testing", () => {
       };
 
       return AuthService.changeUserInfo(USER_ID, new_data)
-      .then(returnedUser => {
-        // check if data that can't be changed is not changed
-        chai.expect(returnedUser.id).to.be.equal(USER_ID);
-        chai.expect(returnedUser.email).to.be.equal(EMAIL);
-        
-        // these model methods should've been called
-        chai.assert.isTrue(User.findById.calledWith(USER_ID));
-        chai.assert.isTrue(returnedUser.save.called);
-      });
+        .then(returnedUser => {
+          // check if data that can't be changed is not changed
+          chai.expect(returnedUser.id).to.be.equal(USER_ID);
+          chai.expect(returnedUser.email).to.be.equal(EMAIL);
+
+          // these model methods should've been called
+          chai.assert.isTrue(User.findById.calledWith(USER_ID));
+          chai.assert.isTrue(returnedUser.save.called);
+        });
     });
 
     it('change data that is allowed to be change by method', function () {
@@ -364,24 +372,95 @@ describe("AuthService testing", () => {
       };
 
       return AuthService.changeUserInfo(USER_ID, new_data)
-      .then(returnedUser => {
-        _.toPairs(new_data).map(pair => { // checks if all new data was applied
-          chai.expect(returnedUser[pair[0]]).to.be.equal(pair[1]);
-        });
-      })
+        .then(returnedUser => {
+          _.toPairs(new_data).map(pair => { // checks if all new data was applied
+            chai.expect(returnedUser[pair[0]]).to.be.equal(pair[1]);
+          });
+        })
     });
 
     it('not change values if new data is not supplied', function () {
       let new_data = {};
 
       return AuthService.changeUserInfo(USER_ID, new_data)
-      .then(returnedUser => {
-        chai.expect(returnedUser.id).to.be.equal(USER_ID);
-        chai.expect(returnedUser.email).to.be.equal(EMAIL);
-        chai.expect(returnedUser.first_name).to.be.equal(F_NAME);
-        chai.expect(returnedUser.last_name).to.be.equal(L_NAME);
-        chai.expect(returnedUser.is_active).to.be.true;
-      })
+        .then(returnedUser => {
+          chai.expect(returnedUser.id).to.be.equal(USER_ID);
+          chai.expect(returnedUser.email).to.be.equal(EMAIL);
+          chai.expect(returnedUser.first_name).to.be.equal(F_NAME);
+          chai.expect(returnedUser.last_name).to.be.equal(L_NAME);
+          chai.expect(returnedUser.is_active).to.be.true;
+        })
+    });
+  });
+
+  describe('and the method deleteUser shall', () => {
+
+    it("exist", function () {
+      chai.expect(AuthService.deleteUser).to.exist;
+    });
+
+    beforeEach(done => {
+      //need custom stubs of User.findOne for these tests, so best restore before
+      if (User.findOne.restore) {
+        User.findOne.restore();
+      }
+      done();
+    });
+
+    it('change user to not active if they were', done => {
+      //check when found user is active
+      sinon.stub(User, 'findOne').callsFake(options => {
+
+        let user = new User({
+          id: options.where.id,
+          is_active: true
+        });
+
+        sinon.stub(user, 'save').callsFake(() => {
+          return Promise.resolve(user);
+        });
+        return Promise.resolve(user);
+      });
+
+      AuthService.deleteUser(USER_ID).then(user => {
+        try {
+          chai.expect(user).to.be.a('object');
+          chai.expect(user.id).to.eq(USER_ID);
+          chai.assert.isTrue(user.save.called);
+          chai.assert.isFalse(user.is_active);
+          done();
+        } catch (ex) {
+          done(ex);
+        }
+      });
+    });
+
+    it('perform NOOP on users that werent active', () => {
+      //check when found user is already "deleted"
+      sinon.stub(User, 'findOne').callsFake(options => {
+
+        let user = new User({
+          id: options.where.id,
+          is_active: false
+        });
+
+        sinon.stub(user, 'save').callsFake(() => {
+          return Promise.resolve(user);
+        });
+        return Promise.resolve(user);
+      });
+
+      AuthService.deleteUser(USER_ID).then(user => {
+        try {
+          chai.expect(user).to.be.a('object');
+          chai.expect(user.id).to.eq(USER_ID);
+          chai.assert.isTrue(user.save.notCalled);
+          chai.assert.isFalse(user.is_active);
+          done();
+        } catch (ex) {
+          done(ex);
+        }
+      });
     });
   });
 });
