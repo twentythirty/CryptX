@@ -11,7 +11,12 @@ module.exports = (sequelize, DataTypes) => {
                 allowNull: false
             },
             long_name: DataTypes.STRING,
-            is_base: DataTypes.BOOLEAN
+            is_base: DataTypes.BOOLEAN,
+            is_deposit: {
+                type: DataTypes.BOOLEAN,
+                allowNull: false,
+                defaultValue: false
+            }
         },
         modelProps(
             'instrument',

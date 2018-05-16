@@ -11,6 +11,7 @@ module.exports = (sequelize, DataTypes) => {
                 type: DataTypes.SMALLINT,
                 allowNull: false
             },
+            price: DataTypes.DECIMAL,
             total_quantity: DataTypes.DECIMAL,
             placed_timestamp: DataTypes.DATE,
             completed_timestamp: DataTypes.DATE
@@ -23,7 +24,6 @@ module.exports = (sequelize, DataTypes) => {
 
     ExecutionOrder.associate = function (models) {
         ExecutionOrder.belongsTo(models.RecipeOrder);
-        ExecutionOrder.belongsTo(models.Instrument);
         ExecutionOrder.belongsToMany(models.ColdStorageAccount, {
             through: models.ColdStorageOrder
         })

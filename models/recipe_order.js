@@ -4,15 +4,11 @@ module.exports = (sequelize, DataTypes) => {
     var RecipeOrder = sequelize.define(
         'RecipeOrder',
         {
-            base_instrument_amount: DataTypes.DECIMAL,
-            target_instrument_amount: DataTypes.DECIMAL,
-            target_instrument_price: DataTypes.DECIMAL,
+            price: DataTypes.DECIMAL,
             status: {
                 type: DataTypes.SMALLINT,
                 allowNull: false
-            },
-            comment: DataTypes.TEXT('medium'),
-            placed_timestamp: DataTypes.DATE
+            }
         },
         modelProps(
             'recipe_order',
@@ -22,7 +18,7 @@ module.exports = (sequelize, DataTypes) => {
 
     RecipeOrder.associate = function(models) {
 
-        RecipeOrder.belongsTo(models.RecipeRun);
+        RecipeOrder.belongsTo(models.RecipeOrderGroup);
         RecipeOrder.belongsTo(models.Instrument, {
             foreignKey: 'base_instrument_id',
             as: 'base_instrument'
@@ -34,10 +30,6 @@ module.exports = (sequelize, DataTypes) => {
         RecipeOrder.belongsTo(models.Exchange, {
             foreignKey: 'target_exchange_id',
             as: 'target_exchange'
-        });
-        RecipeOrder.belongsTo(models.User, {
-            foreignKey: 'approve_user_id',
-            as: 'approve_user'
         });
     };
 

@@ -4,8 +4,9 @@ module.exports = (sequelize, DataTypes) => {
     var ExecutionOrderFill = sequelize.define(
         'ExecutionOrderFill',
         {
-            filled_quantity: DataTypes.DECIMAL,
-            fill_timestamp: DataTypes.DATE
+            timestamp: DataTypes.DATE,
+            quantity: DataTypes.DECIMAL,
+            price: DataTypes.DECIMAL
         },
         modelProps(
             'execution_order_fill',
