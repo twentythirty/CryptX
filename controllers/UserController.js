@@ -41,7 +41,7 @@ const issueInvitation = async function (req, res) {
   [err, _] = await to(mailUtil.sendMail(
     email,
     `Invitation to CryptX`,
-    mailUtil.invitationMailHTML(first_name, last_name, invitation)
+    mailUtil.invitationMailHTML(invitation)
   ));
 
   if (err){
