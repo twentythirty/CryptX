@@ -102,10 +102,10 @@ router.get(
   SecurityController.deleteRole
 )
 router.post(
-  ROUTES.ChangeRolePermissions.router_string,
+  ROUTES.EditRole.router_string,
   stateless_auth,
   check_permissions,
-  SecurityController.changeRolePermissions
+  SecurityController.editRole
 );
 router.get(
   ROUTES.GetRoleInfo.router_string,

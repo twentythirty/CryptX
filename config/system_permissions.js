@@ -88,7 +88,7 @@ ROUTES = {
     permissions_matcher: /\/roles\/\d+$/,
     required_permissions: [PERMISSIONS.VIEW_ROLES]
   },
-  ChangeRolePermissions: {
+  EditRole: {
     router_string: "/roles/:role_id/edit",
     permissions_matcher: /\/roles\/\d+\/edit/,
     required_permissions: [PERMISSIONS.ALTER_PERMS]

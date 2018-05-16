@@ -12,7 +12,9 @@ const createRole = async function (req, res) {
     let [err, role] = await to(securityService.createRole(role_name));
     if (err) return ReE(res, err, 422);
 
-    [err, role] = await to(securityService.changeRolePermissions(role.id, role_permissions));
+    [err, role] = await to(securityService.editRole(role.id, {
+        permissions: role_permissions
+    }));
     if (err) return ReE(res, err, 422);
 
     return ReS(res, { role: await role.toWeb() });
@@ -20,17 +22,17 @@ const createRole = async function (req, res) {
 module.exports.createRole = createRole;
 
 
-const changeRolePermissions = async function(req, res) {
+const editRole = async function(req, res) {
 
     const role_id = req.params.role_id;
-    let [err, role] = await to(securityService.changeRolePermissions(role_id, req.body));
+    let [err, role] = await to(securityService.editRole(role_id, req.body));
 
     if (err) return ReE(res, err, 422);
 
     return ReS(res, { role: await role.toWeb() });
 };
 
-module.exports.changeRolePermissions = changeRolePermissions;
+module.exports.editRole = editRole;
 
 
 const getRoleInfo = async function(req, res) {
