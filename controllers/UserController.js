@@ -2,6 +2,7 @@ const User = require("../models").User;
 const Sequelize = require('../models').Sequelize;
 const Op = Sequelize.Op;
 const authService = require("./../services/AuthService");
+const inviteService = require('./../services/InvitationService');
 const mailUtil = require('./../utils/EmailUtil');
 
 const create = async function (req, res) {
@@ -30,7 +31,7 @@ const issueInvitation = async function (req, res) {
     role_id
   } = req.body;
 
-  let [err, invitation] = await to(authService.createInvitation(
+  let [err, invitation] = await to(inviteService.createInvitation(
     req.user,
     role_id,
     first_name,
@@ -59,7 +60,7 @@ const inviteTokenInfo = async function (req, res) {
     return ReE(res, `No token found in request params!`, 422);
   }
 
-  let [err, invitation] = await to(authService.getValidInvitation(token));
+  let [err, invitation] = await to(inviteService.getValidInvitation(token));
   if (err) {
     return ReE(res, err, 422);
   }
@@ -72,7 +73,7 @@ const createByInvite = async function(req, res) {
 
   const { invitation_id, password } = req.body;
 
-  let [err, user] = await to(authService.createUserByInvite(invitation_id, password));
+  let [err, user] = await to(inviteService.createUserByInvite(invitation_id, password));
   if (err) {
     return ReE(res, err, 422);
   }
