@@ -46,6 +46,27 @@ describe("Path Security Model ", () => {
       sinon.stub(session, "touch");
       return Promise.resolve(session);
     });
+    sinon.stub(User, 'findOne').callsFake(options => {
+      if(!mockUser.getRoles.restore) {
+        sinon.stub(mockUser, "getRoles").callsFake(() => {
+          return [{
+            id: 55,
+            name: ROLES.ADMIN,
+            getPermissions: function () {
+              return [{
+                  name: PERMISSIONS.ALTER_ROLES
+                },
+                {
+                  name: PERMISSIONS.ALTER_PERMS
+                }
+              ];
+            }
+          }];
+        });
+      }
+
+      return Promise.resolve(mockUser);
+    });
     sinon.stub(User, "findById").callsFake(id => {
       if(!mockUser.getRoles.restore) {
         sinon.stub(mockUser, "getRoles").callsFake(() => {
@@ -71,7 +92,7 @@ describe("Path Security Model ", () => {
   });
 
   afterEach(() => {
-    [UserSession.findOne, User.findById].forEach(func => {
+    [UserSession.findOne, User.findOne, User.findById].forEach(func => {
       if (func.restore) {
         func.restore();
       }

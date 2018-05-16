@@ -145,7 +145,7 @@ const getUser = async function (req, res) {
     }
   });
 
-  if (!user) return ReE(res, "user with id " + user_id + " not found!", 404);
+  if (!user) return ReE(res, "user with id " + req.params.user_id + " not found!", 404);
 
   return ReS(res, {
     user: user.toWeb()
