@@ -117,6 +117,8 @@ const getUsers = async function (req, res) {
     where: req.seq_where
   })
 
+  let retUsers = users.map(u => u.toWeb());
+  
   return ReS(res, {
     users: users.map(u => u.toWeb())
   });

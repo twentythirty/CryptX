@@ -35,12 +35,6 @@ router.all("*", content_json);
 //USERS
 router.post(ROUTES.Login.router_string, UserController.login);
 router.get(
-  ROUTES.GetUserInfo.router_string,
-  stateless_auth,
-  check_permissions,
-  UserController.getUser
-);
-router.get(
   ROUTES.GetUsersInfo.router_string,
   stateless_auth,
   check_permissions,
@@ -53,6 +47,12 @@ router.post(
   check_permissions,
   filter_reducer,
   UserController.getUsers
+);
+router.get(
+  ROUTES.GetUserInfo.router_string,
+  stateless_auth,
+  check_permissions,
+  UserController.getUser
 );
 router.post(
   ROUTES.ChangeUserInfo.router_string,
@@ -85,6 +85,9 @@ router.post(
   check_permissions,
   UserController.changeUserRole
 );
+
+
+// Roles
 router.post(
   ROUTES.CreateRole.router_string,
   passport.authenticate("jwt", {
@@ -106,6 +109,18 @@ router.post(
   stateless_auth,
   check_permissions,
   SecurityController.editRole
+);
+router.get(
+  ROUTES.GetRolesInfo.router_string,
+  stateless_auth,
+  check_permissions,
+  SecurityController.getRoles
+);
+router.post(
+  ROUTES.GetRolesInfo.router_string,
+  stateless_auth,
+  check_permissions,
+  SecurityController.getRoles
 );
 router.get(
   ROUTES.GetRoleInfo.router_string,

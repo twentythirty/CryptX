@@ -88,6 +88,11 @@ ROUTES = {
     permissions_matcher: /\/roles\/\d+$/,
     required_permissions: [PERMISSIONS.VIEW_ROLES]
   },
+  GetRolesInfo: {
+    router_string: "/roles/all",
+    permissions_matcher: /\/roles\/all\/list/,
+    required_permissions: [PERMISSIONS.VIEW_ROLES]
+  },
   EditRole: {
     router_string: "/roles/:role_id/edit",
     permissions_matcher: /\/roles\/\d+\/edit/,

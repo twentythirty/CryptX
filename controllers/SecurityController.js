@@ -47,6 +47,23 @@ const getRoleInfo = async function(req, res) {
 
 module.exports.getRoleInfo = getRoleInfo;
 
+
+const getRoles = async function(req, res) {
+
+    console.log('WHERE clause: %o', req.seq_where);
+
+    let roles = await Role.findAll({
+      where: req.seq_where
+    });
+
+    return ReS(res, {
+      roles: await Promise.all(roles.map(u => u.toWeb()))
+    });
+};
+
+module.exports.getRoles = getRoles;
+
+
 const deleteRole = async function (req, res) {
 
     const role_id = req.params.role_id;
