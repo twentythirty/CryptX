@@ -5,6 +5,7 @@ PERMISSIONS = {
   VIEW_ROLES: "perm_view_roles",
   VIEW_USERS: "perm_view_users",
   EDIT_USERS: "perm_edit_users",
+  DELETE_USER: "perm_delete_users",
   CREATE_USER: "perm_create_user"
 };
 //list of permissions that dotn apply to users
@@ -29,6 +30,8 @@ all_permissions[PERMISSIONS.VIEW_USERS] =
   "Permission to view infomration of other system users";
 all_permissions[PERMISSIONS.EDIT_USERS] =
   "Permission to edit basic user information";
+all_permissions[PERMISSIONS.DELETE_USER] =
+  "Permission to delete users";
 all_permissions[PERMISSIONS.CREATE_USER] =
   "Permission to create new system users";
 
@@ -44,6 +47,11 @@ ROUTES = {
     router_string: "/users/invite",
     permissions_matcher: /\/users\/invite/,
     required_permissions: [PERMISSIONS.CREATE_USER]
+  },
+  DeleteUserInfo: {
+    router_string: "/users/rm/:user_id",
+    permissions_matcher: /\users\/rm\/(\d+|me)$/,
+    required_permissions: [PERMISSIONS.VIEW_USERS, PERMISSIONS.DELETE_USER]
   },
   //a route that does not require permissions by deisgn
   //return invitation info by email token. Called by browser
@@ -65,7 +73,7 @@ ROUTES = {
   },
   GetUserInfo: {
     router_string: "/users/:user_id",
-    permissions_matcher: /\users\/(\d+|me)$/,
+    permissions_matcher: /\/users\/(\d+|me)$/,
     required_permissions: [PERMISSIONS.VIEW_USERS]
   },
   GetUsersInfo: {
@@ -75,7 +83,7 @@ ROUTES = {
   },
   ChangeUserInfo: {
     router_string: "/users/:user_id/edit",
-    permissions_matcher: /\users\/(\d+|me)\/edit/,
+    permissions_matcher: /\/users\/(\d+|me)\/edit/,
     required_permissions: [PERMISSIONS.VIEW_USERS, PERMISSIONS.EDIT_USERS]
   },
   ChangeUserRole: {

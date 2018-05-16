@@ -169,6 +169,26 @@ const expireOtherSessions = async function (user_id, keep_active_session) {
 }
 module.exports.expireOtherSessions = expireOtherSessions;
 
+const deleteUser = async function(user_id) {
+
+  let [err, user] = await to(User.findOne({
+    where: {
+      id: user_id
+    }
+  }));
+  if (err) TE(err);
+  if (!user) TE(`User with id ${user_id} not found!`);
+  //if user already "deleted" - this is a NOOP
+  if (user.is_active) {
+    //"delete" user
+    user.is_active = false;
+    user = await user.save();
+  }
+
+  return user;
+}
+module.exports.deleteUser = deleteUser;
+
 const sendPasswordResetToken = async function (email) {
 
   let [err, user] = await to(User.findOne({

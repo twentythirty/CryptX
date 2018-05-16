@@ -77,6 +77,12 @@ router.post(
   UserController.createByInvite
 );
 router.post(ROUTES.CreateUser.router_string, UserController.create);
+router.delete(
+  ROUTES.DeleteUserInfo.router_string,
+  stateless_auth,
+  check_permissions,
+  UserController.deleteUser
+);
 router.post(
   ROUTES.ChangeUserRole.router_string,
   stateless_auth,
