@@ -45,11 +45,13 @@ const issueInvitation = async function (req, res) {
     mailUtil.invitationMailHTML(invitation)
   ));
 
-  if (err){
+  if (err) {
     return ReE(res, err, 422);
   }
 
-  return ReS(res, {message: `Sent invite to ${email} OK.`});
+  return ReS(res, {
+    message: `Sent invite to ${email} OK.`
+  });
 };
 module.exports.issueInvitation = issueInvitation;
 
@@ -65,20 +67,27 @@ const inviteTokenInfo = async function (req, res) {
     return ReE(res, err, 422);
   }
 
-  return ReS(res, { invitation: invitation.toWeb() });
+  return ReS(res, {
+    invitation: invitation.toWeb()
+  });
 };
 module.exports.inviteTokenInfo = inviteTokenInfo;
 
-const createByInvite = async function(req, res) {
+const createByInvite = async function (req, res) {
 
-  const { invitation_id, password } = req.body;
+  const {
+    invitation_id,
+    password
+  } = req.body;
 
   let [err, user] = await to(inviteService.createUserByInvite(invitation_id, password));
   if (err) {
     return ReE(res, err, 422);
   }
 
-  return ReS(res, { user: user.toWeb() });
+  return ReS(res, {
+    user: user.toWeb()
+  });
 };
 module.exports.createByInvite = createByInvite;
 
@@ -112,6 +121,10 @@ function resolveUserId(req) {
 const getUsers = async function (req, res) {
 
   console.log('WHERE clause: %o', req.seq_where);
+  //only search active users
+  if (!req.seq_where.is_active) {
+    req.seq_where.is_active = true;
+  }
 
   let users = await User.findAll({
     where: req.seq_where
@@ -125,7 +138,12 @@ module.exports.getUsers = getUsers;
 
 const getUser = async function (req, res) {
 
-  let user = await User.findById(resolveUserId(req));
+  let user = await User.findOne({
+    where: {
+      id: resolveUserId(req),
+      is_active: true
+    }
+  });
 
   if (!user) return ReE(res, "user with id " + user_id + " not found!", 404);
 
@@ -178,3 +196,16 @@ const changePassword = async function (req, res) {
   });
 }
 module.exports.changePassword = changePassword;
+
+
+const deleteUser = async function(req, res) {
+  let user_id = resolveUserId(req);
+
+  let [err, user] = await to(authService.deleteUser(user_id));
+  if (err) return ReE(res, err, 422);
+
+  return ReS(res, {
+    user: user.toWeb()
+  });
+}
+module.exports.deleteUser = deleteUser;
