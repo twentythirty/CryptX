@@ -22,7 +22,7 @@ const createInvitation = async function (creator, role_id, first_name, last_name
   
     const one_week_later = new Date();
     one_week_later.setDate(new Date().getDate() + 7);
-    let invitation = new UserInvitation({
+    let [err, invitation] = await to (UserInvitation.create({
       was_used: false,
       token: uuidv4(),
       token_expiry_timestamp: one_week_later,
@@ -31,10 +31,7 @@ const createInvitation = async function (creator, role_id, first_name, last_name
       last_name: last_name,
       email: email,
       role_id: role.id
-    });
-  
-    let err;
-    [err, invitation] = await to(invitation.save());
+    }));
     if (err) TE(err.message);
   
     return invitation;

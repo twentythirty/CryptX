@@ -7,7 +7,7 @@ const sinon = require("sinon");
 const path = require("path");
 let utils = require('util');
 
-describe("AuthService mocking", () => {
+describe("AuthService testing", () => {
 
     before(done => {
 
