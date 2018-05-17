@@ -2,7 +2,7 @@
   "swagger": "2.0",
   "info": {
     "description": "This is documentatin for the Node API. For every request you must include in the header: \n `Content-Type: application/json` \n\n <b>Routes with a lock next to them use authorization</b>. In this case, its request-scope JWT tokens in the `Authorization` header coupled with server-side database session persistence. An example secure request would contain the header:\n `Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ...`",
-    "version": "0.0.1",
+    "version": "0.1.1",
     "title": "CryptX System",
     "termsOfService": "http://swagger.io/terms/",
     "contact": {
@@ -17,11 +17,15 @@
   "basePath": "/v1",
   "tags": [{
       "name": "user",
-      "description": "Creation and authentication"
+      "description": "Creation, authentication and management"
     },
     {
       "name": "security",
-      "description": "Role and Permission management"
+      "description": "Roles and Permissions management"
+    },
+    {
+      "name": "MISC",
+      "description": "Other"
     }
   ],
   "schemes": ["https"],
@@ -29,8 +33,8 @@
     "/": {
       "get": {
         "tags": ["MISC"],
-        "summary": "Default route",
-        "description": "The response received when no mathcing route was found for the supplied HTTP verb.\n While the provided example is a `GET`, this will work equally well on all HTTP verbs",
+        "summary": "Default route (ALL VERBS)",
+        "description": "The response received when no mathcing route was found for the supplied HTTP verb.\n While the provided example is a `GET`, this will **work the same on all HTTP verbs**",
         "responses": {
           "200": {
             "description": "success",
@@ -39,6 +43,34 @@
             }
           }
         }
+      }
+    },
+    "roles/create": {
+      "post": {
+        "tags": ["security"],
+        "summary": "Create a role",
+        "description": "Create a role by provided name and permission codes. Requires the `perm_alter_user_roles` permission and the `perm_view_roles` permission.",
+        "produces": ["application/json"],
+        "parameters": [{
+          "name": "body",
+          "in": "body",
+          "description": "Role creation info",
+          "required": true,
+          "schema": {
+            "$ref": "#/definitions/CreateRole"
+          }
+        }],
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "$ref": "#/definitions/ReturnRoleResponse"
+            }
+          }
+        },
+        "security": [{
+          "bearer": []
+        }]
       }
     },
     "roles/{role_id}": {
@@ -67,26 +99,83 @@
         }]
       }
     },
-    "/roles/{role_id}/change_perms": {
+    "/roles/all": {
+      "get": {
+        "tags": ["security"],
+        "summary": "Get a list of roles",
+        "description": "The list is optionally filtered when using POST. Requires the `perm_view_roles` permission to fetch.",
+        "produces": ["application/json"],
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "schema": {
+              "$ref": "#/definitions/ReturnRolesListResponse"
+            }
+          },
+          "401": {
+            "description": "unauthorized - no session",
+            "schema": {
+              "$ref": "#/definitions/ApiUnauthorizezdResponse"
+            }
+          }
+        },
+        "security": [{
+          "bearer": []
+        }]
+      },
       "post": {
         "tags": ["security"],
-        "summary": "Change permissions of role",
-        "description": "Change what permissions go into the role identified by `role_id`. \nRequires the `perm_alter_role_perm` permission",
+        "summary": "Get a list of roles (filtered)",
+        "description": "The list is optionally filtered when using POST. Requires the `perm_view_roles` permission to fetch.\nAll filter keys optional. `prop_name_x` refers to direct data proeprty names, equivalent to use inside of an `AND` block in most cases. \nAll `value` keys can be numbers, strings or arrays of the two (`Swagger 2.0` too limiting to show this)",
+        "produces": ["application/json"],
+        "parameters": [{
+          "name": "body",
+          "in": "body",
+          "description": "The filter definition to perform on the data set. If absent will assume empty filter and return all data",
+          "required": false,
+          "schema": {
+            "$ref": "#/definitions/EntitiesFilterWithPerms"
+          }
+        }],
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "schema": {
+              "$ref": "#/definitions/ReturnRolesListResponse"
+            }
+          },
+          "401": {
+            "description": "unauthorized - no session",
+            "schema": {
+              "$ref": "#/definitions/ApiUnauthorizezdResponse"
+            }
+          }
+        },
+        "security": [{
+          "bearer": []
+        }]
+      }
+    },
+    "/roles/{role_id}/edit": {
+      "post": {
+        "tags": ["security"],
+        "summary": "Change infomration of role",
+        "description": "Change makes up the role identified by `role_id`. \nRequires the `perm_alter_role_perm` permission",
         "produces": ["application/json"],
         "parameters": [{
             "name": "role_id",
             "in": "path",
             "description": "identifier of role to change permissions for",
             "required": true,
-            "type": "integer"
+            "type": "number"
           },
           {
             "in": "body",
             "name": "body",
-            "description": "New Permissions List",
+            "description": "New Role Information",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/RolePermissions"
+              "$ref": "#/definitions/RoleDetails"
             }
           }
         ],
@@ -102,14 +191,44 @@
             "schema": {
               "$ref": "#/definitions/ApiUnauthorizezdResponse"
             }
-          },
-          "default": {
-            "description": "successful operation"
           }
         },
         "security": [{
           "bearer": []
         }]
+      }
+    },
+    "/roles/{role_id}/delete": {
+      "delete": {
+       "tags": ["security"],
+        "summary": "Delete system role",
+        "description": "Delete information related to role `role_id` in the system. Only allowed if no users are currently using the role. Associated role permissions remain unchanged. Requires the `perm_alter_user_roles` permission.",
+        "produces": ["application/json"],
+        "parameters": [{
+            "name": "role_id",
+            "in": "path",
+            "description": "identifier of role to delete",
+            "required": true,
+            "type": "number"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "$ref": "#/definitions/ApiSuccessResponse"
+            }
+          },
+          "401": {
+            "description": "unauthorized",
+            "schema": {
+              "$ref": "#/definitions/ApiUnauthorizezdResponse"
+            }
+          }
+        },
+        "security": [{
+          "bearer": []
+        }] 
       }
     },
     "/users/login": {
@@ -144,6 +263,94 @@
         }
       }
     },
+    "/send_reset_token": {
+      "post": {
+        "tags": ["user"],
+        "summary": "Send password reset token to email",
+        "description": "Generated password reset info and sends the token with reset link to supplied email.",
+        "produces": ["application/json"],
+        "parameters": [{
+          "in": "body",
+          "name": "body",
+          "description": "Reset password email",
+          "required": true,
+          "schema": {
+            "type": "object",
+            "properties": {
+              "email": {
+                "type": "string",
+                "example": "forgot@password.com"
+              }
+            }
+          }
+        }],
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "schema": {
+              "$ref": "#/definitions/ApiSuccessResponse"
+            }
+          }
+        }
+      }
+    },
+    "password_reset/{token}": {
+      "get": {
+        "tags": ["user"],
+        "summary": "Check password reset token validity",
+        "description": "Called by FE once the user follows the password reset link in their email. If this returns an error, no password reset for them!",
+        "produces": ["application/json"],
+        "parameters": [{
+          "in": "path",
+          "name": "token",
+          "description": "Reset password token",
+          "required": true,
+          "type": "string"
+        }],
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "schema": {
+              "$ref": "#/definitions/ApiSuccessResponse"
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": ["user"],
+        "summary": "Check password reset token validity",
+        "description": "Called by FE once the user follows the password reset link in their email. If this returns an error, no password reset for them!",
+        "produces": ["application/json"],
+        "parameters": [{
+          "in": "path",
+          "name": "token",
+          "description": "Reset password token",
+          "required": true,
+          "type": "string"
+        }, {
+          "in": "body",
+          "name": "body",
+          "description": "New user password",
+          "required": true,
+          "schema": {
+            "type": "object",
+            "properties": {
+              "new_password": {
+                "type": "string"
+              }
+            }
+          }
+        }],
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "schema": {
+              "$ref": "#/definitions/ApiSuccessResponse"
+            }
+          }
+        }
+      }
+    },
     "/users/{user_id}": {
       "get": {
         "tags": ["user"],
@@ -162,6 +369,63 @@
             "description": "successful operation",
             "schema": {
               "$ref": "#/definitions/ReturnUserResponse"
+            }
+          },
+          "401": {
+            "description": "unauthorized - no session",
+            "schema": {
+              "$ref": "#/definitions/ApiUnauthorizezdResponse"
+            }
+          }
+        },
+        "security": [{
+          "bearer": []
+        }]
+      }
+    },
+    "/users/all": {
+      "get": {
+        "tags": ["user"],
+        "summary": "Get a list of users",
+        "description": "The list is optionally filtered when using POST. Requires the `perm_view_users` permission to fetch.",
+        "produces": ["application/json"],
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "schema": {
+              "$ref": "#/definitions/ReturnUsersListResponse"
+            }
+          },
+          "401": {
+            "description": "unauthorized - no session",
+            "schema": {
+              "$ref": "#/definitions/ApiUnauthorizezdResponse"
+            }
+          }
+        },
+        "security": [{
+          "bearer": []
+        }]
+      },
+      "post": {
+        "tags": ["user"],
+        "summary": "Get a list of users (filtered)",
+        "description": "The list is optionally filtered when using POST. Requires the `perm_view_users` permission to fetch.\nAll filter keys optional. `prop_name_x` refers to direct data proeprty names, equivalent to use inside of an `AND` block in most cases. \nAll `value` keys can be numbers, strings or arrays of the two (`Swagger 2.0` too limiting to show this)",
+        "produces": ["application/json"],
+        "parameters": [{
+          "name": "filter",
+          "in": "body",
+          "description": "The filter definition to perform on the data set. If absent will assume empty filter and return all data",
+          "required": false,
+          "schema": {
+            "$ref": "#/definitions/EntitiesFilter"
+          }
+        }],
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "schema": {
+              "$ref": "#/definitions/ReturnUsersListResponse"
             }
           },
           "401": {
@@ -225,7 +489,7 @@
       "post": {
         "tags": ["user"],
         "summary": "Change user basic info",
-        "description": "Change the name/active status of user. Other properties ignored, absent are merged",
+        "description": "Change the name/active status of user. Other properties ignored, absent are merged. Requires the `perm_edit_users` permission.",
         "produces": ["application/json"],
         "parameters": [{
             "name": "user_id",
@@ -311,6 +575,96 @@
         }]
       }
     },
+    "/users/invite": {
+      "post": {
+        "tags": ["user"],
+        "summary": "Invite a new user",
+        "description": "Create an invitation and send it via email. The invitation `token` enforces the supplied user role, first name and last name. Requires the `perm_create_users` permission.",
+        "produces": ["application/json"],
+        "parameters": [{
+          "in": "body",
+          "name": "body",
+          "description": "Create User Invitation",
+          "required": true,
+          "schema": {
+            "$ref": "#/definitions/CreateUserInvitation"
+          }
+        }],
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "$ref": "#/definitions/ReturnInvitationSentOK"
+            }
+          },
+          "401": {
+            "description": "unauthorized",
+            "schema": {
+              "$ref": "#/definitions/ApiUnauthorizezdResponse"
+            }
+          }
+        },
+        "security": [{
+          "bearer": []
+        }]
+      }
+    },
+    "/users/invitation": {
+      "post": {
+        "tags": ["user"],
+        "summary": "Fetch invitation info by token",
+        "description": "Used by the FE app once the user clicks the link with the token in their email. The FE app should then extract that token from the query parameters and send to this endpoint to receive detailed invitation info and fill in the blanks for the user.<br/> This method will also check invitation validity.",
+        "produces": ["application/json"],
+        "parameters": [{
+          "in": "body",
+          "name": "body",
+          "description": "User invitation token",
+          "required": true,
+          "schema": {
+            "type": "object",
+            "properties": {
+              "token": {
+                "type": "string",
+                "example": "3e3b9455-9261-45c1-9aa3-f7e30517b456"
+              }
+            }
+          }
+        }],
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "$ref": "#/definitions/ReturnInvitationResponse"
+            }
+          }
+        }
+      }
+    },
+    "/users/create-invited": {
+      "post": {
+         "tags": ["user"],
+        "summary": "Create a new user by using an invitation object",
+        "description": "Create a user from data in hte identified invitation. The invitation integrity is ensured before the creation takes place. New user does not get auto logged in.",
+        "produces": ["application/json"],
+        "parameters": [{
+          "in": "body",
+          "name": "body",
+          "description": "Create User By Invitation",
+          "required": true,
+          "schema": {
+            "$ref": "#/definitions/CreateUserByInvite"
+          }
+        }],
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "$ref": "#/definitions/ReturnUserResponse"
+            }
+          }
+        }
+      }
+    },
     "/users/create": {
       "post": {
         "tags": ["user"],
@@ -332,18 +686,41 @@
             "schema": {
               "$ref": "#/definitions/ReturnUserResponse"
             }
+          }
+        }
+      }
+    },
+    "/users/rm/{user_id}": {
+      "delete": {
+        "tags": ["user"],
+        "summary": "Delete a user",
+        "description": "_Soft Delete_ a user in the system by setting their `is_active` flag to `false`. Can be used to deactivate yourself as well. Requires the `perm_delete_users` permission.",
+        "produces": ["application/json"],
+        "parameters": [{
+          "in": "path",
+          "name": "user_id",
+          "description": "Identifier of user to delete",
+          "required": true,
+          "type": "number"
+        }],
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "$ref": "#/definitions/ReturnUserResponse"
+            }
           },
           "401": {
             "description": "unauthorized",
             "schema": {
               "$ref": "#/definitions/ApiUnauthorizezdResponse"
             }
-          },
-          "default": {
-            "description": "successful operation"
           }
-        }
-      }
+        },
+        "security": [{
+          "bearer": []
+        }]
+      },
     }
   },
   "securityDefinitions": {
@@ -354,6 +731,98 @@
     }
   },
   "definitions": {
+    "EntitiesFilter": {
+      "description": "Entity filter. Scoped to a `filter` key to easily combine with other POST data.",
+      "type": "object",
+      "properties": {
+        "filter": {  
+          "type": "object",
+          "properties": {
+            "or": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/FilterField"
+              }
+            },
+            "and": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/FilterField"
+              }
+            },
+            "not": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/FilterField"
+              }
+            },
+            "prop_name_X": {
+              "type": "string",
+              "example": "serah|-77..."
+            },
+            "prop_name_1": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": "string"
+                },
+                "expression": {
+                  "type": "string",
+                  "example": "eq|ne|or|and|lt|gte..."
+                }
+              }
+            },
+            "prop_name_2": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "expression": {
+                  "type": "string",
+                  "example": "eq|ne|or|and|lt|gte..."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "EntitiesFilterWithPerms": {
+      "type": "object",
+      "properties": {
+        "filter": {
+          "$ref": "#/definitions/EntitiesFilter"
+        },
+        "has_permissions": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "example": "perm_view_users"
+          }
+        }
+      }
+    },
+    "FilterField": {
+      "type": "object",
+      "properties": {
+        "field": {
+          "type": "string",
+          "example": "id|name|..."
+        },
+        "value": {
+          "type": "string",
+          "example": "5|johny|..."
+        },
+        "expression": {
+          "type": "string",
+          "example": "eq|ne|or|and|lt|gte..."
+        }
+      }
+    },
     "CreateUser": {
       "type": "object",
       "properties": {
@@ -372,6 +841,56 @@
         "password": {
           "type": "string",
           "example": "secure-password"
+        }
+      }
+    },
+    "CreateRole": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "example": "Investment Manager"
+        },
+        "permissions": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "example": "perm_run_investments"
+          }
+        }
+      }
+    },
+    "CreateUserByInvite": {
+      "type": "object",
+      "properties": {
+        "invitation_id": {
+          "type": "number",
+          "example": 884
+        },
+        "password": {
+          "type": "string",
+          "example": "tiger"
+        }
+      }
+    },
+    "CreateUserInvitation": {
+      "type": "object",
+      "properties": {
+        "first_name": {
+          "type": "string",
+          "example": "John"
+        },
+        "last_name": {
+          "type": "string",
+          "example": "Doh"
+        },
+        "email": {
+          "type": "string",
+          "example": "john.doe@notcryptx.io"
+        },
+        "role_id": {
+          "type": "number",
+          "example": 88
         }
       }
     },
@@ -426,7 +945,7 @@
           "example": "john.doe@cryptx.io"
         },
         "created_timestamp": {
-          "type": "integer",
+          "type": "number",
           "example": 1525424340810
         },
         "reset_password_token_hash": {
@@ -434,12 +953,54 @@
           "example": "79054025255fb1a26e4bc422aef54eb4"
         },
         "reset_password_token_expiry_timestamp": {
-          "type": "integer",
+          "type": "number",
           "example": 1525424340810
         },
         "is_active": {
           "type": "boolean",
           "example": true
+        }
+      }
+    },
+    "InvitationDetails": {
+      "type": "object",
+      "description": "invitation detials",
+      "properties": {
+        "id": {
+          "type": "number",
+          "example": 45
+        },
+        "was_used": {
+          "type": "boolean",
+          "example": false
+        },
+        "token": {
+          "type": "string",
+          "example": "2394a0ed-3ede-457e-ad60-324532a1ade0"
+        },
+        "token_expiry_timestamp": {
+          "type": "number",
+          "example": 1525424340810
+        },
+        "email": {
+          "type": "string",
+          "example": "john.doe@cryptx.io"
+        },
+        "first_name": {
+          "type": "string",
+          "example": "John"
+        },
+        "last_name": {
+          "type": "string",
+          "example": "Doh"
+        },
+        "role_id": {
+          "type": "number",
+          "example": 25
+        },
+        "creator_id": {
+          "type": "number",
+          "example": 888
         }
       }
     },
@@ -453,12 +1014,13 @@
         },
         "name": {
           "type": "string",
-          "example": "ROLE_ADMIN"
+          "example": "System Administrator"
         },
         "permissions": {
           "type": "array",
           "items": {
-            "type": "string"
+            "type": "string",
+            "example": "perm_view_users"
           }
         }
       }
@@ -472,7 +1034,8 @@
     "RolePermissions": {
       "type": "array",
       "items": {
-        "type": "string"
+        "type": "string",
+        "example": "perm_view_users"
       }
     },
     "UserPassChange": {
@@ -500,6 +1063,19 @@
         }
       }
     },
+    "ReturnInvitationSentOK": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean",
+          "example": true
+        },
+        "message": {
+          "type": "string",
+          "example": "Send invite to name@mail.com OK"
+        }
+      }
+    },
     "ReturnUserResponse": {
       "type": "object",
       "properties": {
@@ -509,6 +1085,48 @@
         },
         "user": {
           "$ref": "#/definitions/UserDetails"
+        }
+      }
+    },
+    "ReturnInvitationResponse": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean",
+          "example": true
+        },
+        "invitation": {
+          "$ref": "#/definitions/InvitationDetails"
+        }
+      }
+    },
+    "ReturnUsersListResponse": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean",
+          "example": true
+        },
+        "users": {
+          "type" : "array",
+          "items": {
+            "$ref": "#/definitions/UserDetails"
+          }
+        }
+      }
+    },
+    "ReturnRolesListResponse": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean",
+          "example": true
+        },
+        "roles": {
+          "type" : "array",
+          "items": {
+            "$ref": "#/definitions/RoleDetails"
+          }
         }
       }
     },
@@ -533,7 +1151,7 @@
         },
         "message": {
           "type": "string",
-          "example": "Parcel Pending API"
+          "example": "<Some message depending on endpoint context. Not intended for parsing, provides general information to human readers>"
         }
       }
     },
