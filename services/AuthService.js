@@ -238,7 +238,7 @@ module.exports.verifyResetTokenValidity = verifyResetTokenValidity;
 
 const resetPassword = async function (user_id, new_password) {
 
-  if (new_password == null) TE("Please enter password");
+  if (new_password == null || !new_password.length) TE("Please enter password");
 
   let [err, user] = await to(User.findById(user_id));
   
@@ -254,6 +254,6 @@ const resetPassword = async function (user_id, new_password) {
   
   if (err) TE(err.message);
 
-  return err;
+  return user;
 }
 module.exports.resetPassword = resetPassword;

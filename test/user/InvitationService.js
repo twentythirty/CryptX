@@ -161,14 +161,18 @@ describe('InvitationService testing', () => {
             });
 
             inviteService.getValidInvitation(TEST_TOKEN).catch(error => {
-                //was searched
-                chai.assert.isTrue(UserInvitation.findOne.called);
-                //existing user error
-                chai.expect(error.message).to.include(USER_EMAIL);
-                //timestamp changed and saved due to existing user
-                chai.assert.isTrue(invite.save.called);
-                chai.expect(invite.token_expiry_timestamp).is.lessThan(new Date());
-                done();
+                try {
+                    //was searched
+                    chai.assert.isTrue(UserInvitation.findOne.called);
+                    //existing user error
+                    chai.expect(error.message).to.include(USER_EMAIL);
+                    //timestamp changed and saved due to existing user
+                    chai.assert.isTrue(invite.save.called);
+                    chai.expect(invite.token_expiry_timestamp.getTime()).is.lte(new Date().getTime());
+                    done();
+                } catch(ex) {
+                    done(ex);
+                }
             });
         });
     });

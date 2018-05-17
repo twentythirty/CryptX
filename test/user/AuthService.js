@@ -2,10 +2,13 @@
 
 let app = require("../../app");
 let chai = require("chai");
+let chaiAsPromised = require("chai-as-promised");
 let should = chai.should();
 const sinon = require("sinon");
 const path = require("path");
 let utils = require('util');
+
+chai.use(chaiAsPromised);
 
 describe("AuthService testing", () => {
 
@@ -31,6 +34,10 @@ describe("AuthService testing", () => {
   let EMAIL = "test@mock.io";
   let PASSWORD = "test";
   let IP = "0.0.0.0";
+  let RESET_TOKEN = "password-reset-token";
+  let RESET_TOKEN_EXPIRY = new Date(
+    new Date().getTime() + 3600000
+  );
 
   beforeEach(function () {
     //configure user model stubs
@@ -39,10 +46,14 @@ describe("AuthService testing", () => {
         id: USER_ID,
         first_name: "",
         last_name: "",
-        email: options.where.email
+        email: options.where.email,
+        reset_password_token_hash: RESET_TOKEN,
+        reset_password_token_expiry_timestamp: RESET_TOKEN_EXPIRY,
+        is_active: true
       });
       sinon.stub(user, "comparePassword").returns(Promise.resolve(user));
       sinon.stub(user, "getJWT").returns("Bearer test-jwt");
+      sinon.stub(user, "save").returns(Promise.resolve(user));
 
       return Promise.resolve(user);
     });
@@ -53,6 +64,9 @@ describe("AuthService testing", () => {
         last_name: L_NAME,
         email: EMAIL,
         roles: [],
+        password: PASSWORD,
+        reset_password_token_hash: RESET_TOKEN,
+        reset_password_token_expiry_timestamp: RESET_TOKEN_EXPIRY,
         is_active: true
       });
 
@@ -461,6 +475,104 @@ describe("AuthService testing", () => {
           done(ex);
         }
       });
+    });
+  });
+
+  describe('and the method sendPasswordResetToken shall', function () {
+
+    it('exist', () => {
+      chai.expect(AuthService.sendPasswordResetToken).to.exist;
+    });
+
+    it('call required DB model methods, update token and its expiry', () => {
+      return AuthService.sendPasswordResetToken(EMAIL).then(user => {
+        chai.assert.isTrue(User.findOne.called);
+        chai.expect(user.reset_password_token_hash).to.be.not.equal(RESET_TOKEN);
+        chai.expect(user.reset_password_token_expiry_timestamp).to.be.not.equal(RESET_TOKEN_EXPIRY);
+        chai.expect(user.reset_password_token_expiry_timestamp).to.be.greaterThan(new Date());
+        chai.assert.isTrue(user.save.called);
+      })
+    });
+
+    it('throw error if user is not active', () => {
+
+      if(User.findOne.restore)
+        User.findOne.restore();
+
+      sinon.stub(User, "findOne").callsFake(options => {
+        let user = new User({
+          id: options.where.id,
+          is_active: false
+        });
+        sinon.stub(user, "save").returns(Promise.resolve(user));
+
+        return Promise.resolve(user);
+      });
+
+      return chai.assert.isRejected(AuthService.sendPasswordResetToken(USER_ID));
+    });
+  });
+
+  describe('and the method verifyResetTokenValidity shall', function () {
+
+    it('exist', () => {
+      chai.expect(AuthService.verifyResetTokenValidity).to.exist;
+    });
+
+    it('shall return user object if everything is good', () => {
+      return AuthService.verifyResetTokenValidity(RESET_TOKEN).then(user => {
+        chai.expect(
+          user.reset_password_token_hash
+        ).to.be.equal(RESET_TOKEN);
+
+        chai.expect(
+          user.reset_password_token_expiry_timestamp
+        ).to.be.equal(RESET_TOKEN_EXPIRY);
+
+      });
+    });
+
+    it('shall reject if token is expired', () => {
+      if(User.findOne.restore)
+        User.findOne.restore();
+      
+      sinon.stub(User, "findOne").callsFake((options) => {
+        let user = new User({
+          reset_password_token_hash: options.where.reset_password_token_hash,
+          reset_password_token_expiry_timestamp: new Date().getTime() - 10000
+        });
+
+        sinon.stub(user, "save").returns(Promise.resolve(user));
+
+        return Promise.resolve(user);
+      })
+
+      return chai.assert.isRejected(AuthService.verifyResetTokenValidity(RESET_TOKEN));
+    });
+  });
+
+  describe('and the method resetPassword shall', function () {
+
+    it('exist', () => {
+      chai.expect(AuthService.resetPassword).to.exist;
+    });
+
+    it('shall update password', () => {
+      let new_pwd = "a_new_password";
+      return AuthService.resetPassword(USER_ID, new_pwd).then(user => {
+        // check if needed method called
+        chai.assert.isTrue(User.findById.calledWith(USER_ID));
+        chai.assert.isTrue(user.save.called);
+
+        // check if values match the expectations
+        chai.expect(user.reset_password_token_expiry_timestamp).to.be.null;
+        chai.expect(user.reset_password_token_hash).to.be.null;
+        chai.expect(user.password).to.be.equal(new_pwd);
+      });
+    });
+
+    it('shall reject if no password was supplied', () => {
+      return chai.assert.isRejected(AuthService.resetPassword(USER_ID, ''));
     });
   });
 });
