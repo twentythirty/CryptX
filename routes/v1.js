@@ -66,8 +66,9 @@ router.post(
   check_permissions,
   UserController.issueInvitation
 );
+
 //no auth middleware by design. 
-//call made by browser before a user exists
+//calls made by browser before a user exists
 router.post(
   ROUTES.InvitationByToken.router_string,
   UserController.inviteTokenInfo
@@ -77,6 +78,8 @@ router.post(
   UserController.createByInvite
 );
 router.post(ROUTES.CreateUser.router_string, UserController.create);
+//----------------------------------------------
+
 router.delete(
   ROUTES.DeleteUserInfo.router_string,
   stateless_auth,
@@ -89,6 +92,9 @@ router.post(
   check_permissions,
   UserController.changeUserRole
 );
+
+//no auth middleware by design. 
+//calls made by browser when user cant login
 router.post(
   ROUTES.SendPasswordResetToken.router_string,
   UserController.sendPasswordResetToken
@@ -101,22 +107,28 @@ router.post(
   ROUTES.ResetPassword.router_string,
   UserController.resetPassword
 );
+//----------------------------------------------
+
+router.post(
+  ROUTES.ChangePassword.router_string,
+  stateless_auth,
+  check_permissions,
+  UserController.changePassword
+);
 
 
-// Roles
+
+
+//ROLES
 router.post(
   ROUTES.CreateRole.router_string,
-  passport.authenticate("jwt", {
-    session: false
-  }),
+  stateless_auth,
   check_permissions,
   SecurityController.createRole
 );
-router.get(
+router.delete(
   ROUTES.DeleteRole.router_string,
-  passport.authenticate("jwt", {
-    session: false
-  }),
+  stateless_auth,
   check_permissions,
   SecurityController.deleteRole
 )
@@ -145,12 +157,6 @@ router.get(
   stateless_auth,
   check_permissions,
   SecurityController.getRoleInfo
-);
-
-router.post(
-  ROUTES.ChangePassword.router_string,
-  stateless_auth,
-  UserController.changePassword
 );
 
 //********* API DOCUMENTATION **********
