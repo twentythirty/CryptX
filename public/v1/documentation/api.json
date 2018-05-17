@@ -720,7 +720,7 @@
         "security": [{
           "bearer": []
         }]
-      },
+      }
     }
   },
   "securityDefinitions": {
