@@ -106,7 +106,7 @@ ROUTES = {
     permissions_matcher: /\/send_reset_token/,
     required_permissions: []
   },
-  CheckPasswordResetToken: {
+  ResetPassword: {
     router_string: "/password_reset/:token",
     permissions_matcher: /\/password_reset\/\w+/,
     required_permissions: []

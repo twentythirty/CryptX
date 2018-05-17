@@ -202,7 +202,7 @@ const sendPasswordResetToken = async function (email) {
 
   user.reset_password_token_hash = uuidv4();
   user.reset_password_token_expiry_timestamp = new Date(
-    new Date().getTime() + (60 * 60 * 1000)
+    new Date().getTime() + (24 * 60 * 60 * 1000)
   );
   
   [err, user] = await to(user.save());
@@ -235,3 +235,25 @@ const verifyResetTokenValidity = async function (token) {
   return user;
 }
 module.exports.verifyResetTokenValidity = verifyResetTokenValidity;
+
+const resetPassword = async function (user_id, new_password) {
+
+  if (new_password == null) TE("Please enter password");
+
+  let [err, user] = await to(User.findById(user_id));
+  
+  if (err) TE(err.message);
+
+  Object.assign(user, {
+    password: new_password,
+    reset_password_token_hash: null,
+    reset_password_token_expiry_timestamp: null,
+  });
+
+  [err, user] = await to(user.save());
+  
+  if (err) TE(err.message);
+
+  return err;
+}
+module.exports.resetPassword = resetPassword;

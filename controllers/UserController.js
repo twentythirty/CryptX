@@ -184,6 +184,8 @@ const changePassword = async function (req, res) {
   const old_password = req.body.old_password,
     new_password = req.body.new_password;
 
+  if (!isNaN(req.params.user_id)) return ReE(res, 'You can only change your own password', 403);
+
   let user_id = resolveUserId(req);
 
   let [err, user] = await to(authService.updatePassword(user_id, old_password, new_password));
@@ -216,7 +218,7 @@ const sendPasswordResetToken = async function (req, res) {
   
   let email = req.body.email;
   let [err, user] = await to(authService.sendPasswordResetToken(email));
-  if (err) return ReE(res, err, 403);
+  if (err) return ReE(res, err, 404);
   
   [err, _] = await to(mailUtil.sendMail(
     email,
@@ -231,7 +233,7 @@ const sendPasswordResetToken = async function (req, res) {
 
   if (err) return ReE(res, err, 422);
 
-  return ReS(res, {message: 'Password reset token created', token: user.reset_password_token_hash });
+  return ReS(res, {message: 'Password reset token created'});
 }
 module.exports.sendPasswordResetToken = sendPasswordResetToken;
 
@@ -240,8 +242,23 @@ const checkPasswordResetToken = async function (req, res) {
   let token = req.params.token;
   let [err, user] = await to(authService.verifyResetTokenValidity(token));
   
-  if(err) return ReE(res, "Token not valid or expired", 422);
+  if(err) return ReE(res, "Token not valid or expired", 404);
 
   return ReS(res, {message: 'valid'});
 };
 module.exports.checkPasswordResetToken = checkPasswordResetToken;
+
+const resetPassword = async function (req, res) {
+
+  let token = req.params.token,
+    password = req.body.new_password;
+
+  let [err, user] = await to(authService.verifyResetTokenValidity(token));
+  if (err) return ReE(res, "Token not valid or expired", 404);
+
+  [err, user] = await to(authService.resetPassword(user.id, password));
+  if (err) return ReE(res, err, 422);
+
+  return ReS(res, {message: 'Password successfully changed'});
+};
+module.exports.resetPassword = resetPassword;

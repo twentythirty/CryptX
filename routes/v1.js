@@ -94,8 +94,12 @@ router.post(
   UserController.sendPasswordResetToken
 );
 router.get(
-  ROUTES.CheckPasswordResetToken.router_string,
+  ROUTES.ResetPassword.router_string,
   UserController.checkPasswordResetToken
+);
+router.post(
+  ROUTES.ResetPassword.router_string,
+  UserController.resetPassword
 );
 
 
