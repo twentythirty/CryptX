@@ -130,12 +130,14 @@ router.get(
   ROUTES.GetRolesInfo.router_string,
   stateless_auth,
   check_permissions,
+  filter_reducer,
   SecurityController.getRoles
 );
 router.post(
   ROUTES.GetRolesInfo.router_string,
   stateless_auth,
   check_permissions,
+  filter_reducer,
   SecurityController.getRoles
 );
 router.get(

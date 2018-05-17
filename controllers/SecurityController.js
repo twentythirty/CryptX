@@ -4,6 +4,7 @@ const securityService = require('../services/SecurityService');
 const Role = require('../models').Role;
 const Permission = require('../models').Permission;
 const sequelize = require('sequelize');
+const Op = sequelize.Op;
 
 const createRole = async function (req, res) {
     const role_name = req.body.name,
@@ -49,12 +50,23 @@ module.exports.getRoleInfo = getRoleInfo;
 
 
 const getRoles = async function(req, res) {
-
+    let hasPermissions = req.body.has_permissions;
+    
     console.log('WHERE clause: %o', req.seq_where);
 
-    let roles = await Role.findAll({
-      where: req.seq_where
-    });
+    let query = {
+        where: req.seq_where
+    };
+
+    if (hasPermissions != null)
+        query.include =  {
+            model: Permission,
+            where: {
+                code: { [Op.in]: hasPermissions }
+            }
+        };
+
+    let roles = await Role.findAll(query);
 
     return ReS(res, {
       roles: await Promise.all(roles.map(u => u.toWeb()))
