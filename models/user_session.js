@@ -24,7 +24,7 @@ module.exports = (sequelize, DataTypes) => {
   UserSession.prototype.touch = function() {
 
     //JWT_EXPIRATION is measured in seconds
-    this.expiry_timestamp = new Date(this.expiry_timestamp.getTime() + process.env.JWT_EXPIRATION * 1000)
+    this.expiry_timestamp = new Date(new Date().getTime() + process.env.JWT_EXPIRATION * 1000)
     this.save();
   }
 
