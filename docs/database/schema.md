@@ -40,7 +40,7 @@ user_role # This table maps users to roles that are enabled for them
 user_id int FK >- user.id
 role_id int FK >- role.id
 
-instrument # Tradable instrument (symbol)
+asset # Tradable asset (symbol)
 -
 id PK int
 symbol nvarchar # Symbol, e.g. BTC
@@ -48,11 +48,17 @@ long_name nvarchar # User friendly name of the symbol, e.g. Bitcoin
 is_base bool # True - if it is a base currency, False - if not
 is_deposit bool # True - if it is a desposit currency
 
-instrument_blockchain # This mapping will exist for blockchain based instruments, e.g. Bitcoin
+asset_blockchain # This mapping will exist for blockchain based instruments, e.g. Bitcoin
 -
 id PK int
-instrument_id int FK >- instrument.id
+asset_id int FK >- asset.id
 coinmarketcap_identifier nvarchar # Identifier in coinmarketcap system
+
+instrument # Tradable instrument
+-
+id PK int
+base_asset_id int FK >- asset.id # Base asset in a traded pair, e.g. "EUR" in instrument "EURUSD"
+target_asset_id int FK >- asset.id # Second asset in a traded pair, e.g. "USD" in instrument "EURUSD"
 
 instrument_liquidity_requirement # This table is used to define minimum liquidity requirements for exchanges
 -
@@ -61,11 +67,11 @@ instrument_id int FK >- instrument.id
 minimum_volume decimal # Minimum volume
 periodicity_in_days int
 
-instrument_status_change
+asset_status_change
 -
 id PK int
 timestamp timestamp # Time and date when the change was made
-instrument_id FK >- instrument.id
+asset_id FK >- asset.id
 user_id int NULLABLE FK >- user.id # User who initiated this action. NULL if initated by the system
 comment nvarchart # Comment that can be provided by the user initiating the status change
 type enum # Type of change: Whitelisting, Blacklisting, Graylisting
@@ -86,32 +92,45 @@ exchange_account # This table defines accounts available on each exchange
 -
 id PK int
 exchange_id int FK >- exchange.id # Exchange on which the account is based
-instrument_id int FK >- instrument.id # Instrument in which acount is denominated
+asset_id int FK >- asset.id # Asset in which acount is denominated
 account_type enum
 external_identifier varchar # External identifier of the account, e.g. account's address
 
 cold_storage_account # This table defines accounts available for cold storage of cryptocurrencies
 -
 id PK int
-instrument_id int FK >- instrument.id
+asset_id int FK >- asset.id
 strategy_type enum # Strategy type for which this account is used. Possible values: Large Cap Index (LCI), Mid Cap Index (MCI)
 address nvarchar # Address that can be used to send the coins to this cold storage account
 
-market_history_input # This table will contain market history retrieved from Coinmarketcap
+asset_market_capitalization # This table will contain market history retrieved from Coinmarketcap
 -
 int FK id
 timestamp timestamp # Timestamp when the information was retrieved
-instrument_id FK int FK >- instrument.id # Instrument for which the infromation was retrieved
-price_usd decimal # Price of the instrument in USD
-market_cap_usd decimal # Total market capitalization of the instrument in USD
-daily_volume_usd decimal # Total daily volume of the instrument in USD
-market_cap_percentage decimal # Market cap of the instrument as percentage of total capitalization of whole market
+asset_id FK int FK >- asset.id # Asset for which the infromation was retrieved
+capitalization_usd decimal # Total market capitalization of the asset in USD
+market_share_percentage decimal # Market cap of the asset as percentage of total capitalization of whole market
+
+instrument_market_data
+-
+id FK int
+timestamp timestamp
+instrument_id int FK >- instrument.id
+exchange_id int FK >- exchange.id
+type enum # Ask/bid
+open_price decimal
+high_price decimal
+low_price decimal
+close_price decimal
+periodicity enum # 1440 - daily
+volume decimal
+source enum # 0 - Coinmarketcap, 1 - Exchange
 
 market_history_calculation
 -
 int FK id
 timestamp timestamp # Timestamp when the information was calculated
-instrument_id FK int FK >- instrument.id # Instrument for which the infromation was retrieved
+asset_id FK int FK >- asset.id # Asset for which the infromation was retrieved
 type enum # Type of the calculated property. Possible values: 0 - Network Value to Transactions ratio, measures the dollar value of cryptoasset transaction activity relative to network value
 value decimal
 
@@ -130,8 +149,8 @@ investment_run_deposit # Funds deposited for investing during single investment 
 -
 id PK int
 investment_run_id int FK >- investment_run.id
-instrument_id int # Currency in which the investment was denominated
-amount decimal # Total amount invested for this instrument
+asset_id int FK >- asset.id # Currency in which the investment was denominated
+amount decimal # Total amount invested for this asset
 
 recipe_run
 -
@@ -148,8 +167,8 @@ recipe_run_detail
 -
 id PK int
 recipe_run_id int FK >- recipe_run.id
-base_instrument_id int FK >- instrument.id
-target_instrument_id int FK >- instrument.id
+base_asset_id int FK >- asset.id
+target_asset_id int FK >- asset.id
 target_exchange_id int FK >- exchange.id # The trading exchange on which trading is suggested acording the recipe run
 investment_percentage decimal # Percentage that will be invested this way
 
@@ -166,10 +185,9 @@ recipe_order
 -
 id PK int
 recipe_order_group_id int FK >- recipe_order_group.id
-base_instrument_id int FK >- instrument.id
-target_instrument_id int FK >- instrument.id
-target_exchange_id int FK >- exchange.id # The trading exchange on which trading is suggested acording the recipe run
-price # Market price when the recipe order was placed
+instrument_id int FK >- instrument.id
+side enum # Buy = 0 / Sell = 1
+price decimal # Market price when the recipe order was placed
 status enum # Possible statuses are Pending, Executing, Completed, Rejected (by the user), Cancelled (manual intervention by user), Failed (due to technical issue which does not allow to continue)
 
 execution_order
@@ -210,6 +228,7 @@ user_session_id int # User session during which the action was performed
 user_id int # Another user who was affected by the action
 permission_id int # Permission which is related to the action
 role_id int # Role which is related to the action
+asset_id int # Asset which is related to the action
 instrument_id int # Instrument which is related to the action
 exchange_id int # Exchange which is related to the action
 exchange_account_id int # Exchange account related to the action
@@ -226,12 +245,11 @@ id PK int
 key string # Key that identifies the setting
 vaue string # Value of the setting
 
-exchange_liquidity_history
-# This table will contain 
+instrument_liquidity_history
+# This table will contain liquidity history of tradable instruments
 -
 id PK int
 date date # Date for which liquidity was measured
 exchange_id int FK >- exchange.id
-base_instrument_id int FK >- instrument.id
-target_instrument_id int FK >- instrument.id
+instrument_id int FK >- instrument.id
 volume decimal
