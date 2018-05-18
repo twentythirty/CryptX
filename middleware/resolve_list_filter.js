@@ -10,6 +10,8 @@ module.exports.resolve_list_filter = (req, res, next) => {
             req.seq_where = filter_resolve(
                 typeof req.body.filter === 'object' ? req.body.filter : {}
             )
+        } else {
+            req.seq_where = {};
         }
     } else {
         req.seq_where = {};

@@ -1,4 +1,5 @@
 const User = require("../models").User;
+const Role = require("../models").Role;
 const Sequelize = require('../models').Sequelize;
 const Op = Sequelize.Op;
 const authService = require("./../services/AuthService");
@@ -142,7 +143,8 @@ const getUser = async function (req, res) {
     where: {
       id: resolveUserId(req),
       is_active: true
-    }
+    },
+    include: [Role]
   });
 
   if (!user) return ReE(res, "user with id " + req.params.user_id + " not found!", 404);

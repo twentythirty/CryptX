@@ -92,6 +92,12 @@ module.exports = (sequelize, DataTypes) => {
     let json = this.toJSON();
     delete json.password;
     json.created_timestamp = json.created_timestamp.getTime();
+
+    if (json.Roles) {
+      json.roles = json.Roles;
+      delete json.Roles;
+    }
+    
     return json;
   };
 
