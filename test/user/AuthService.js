@@ -449,7 +449,7 @@ describe("AuthService testing", () => {
       });
     });
 
-    it('perform NOOP on users that werent active', () => {
+    it('perform NOOP on users that werent active', (done) => {
       //check when found user is already "deleted"
       sinon.stub(User, 'findOne').callsFake(options => {
 

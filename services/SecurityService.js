@@ -46,7 +46,7 @@ const editRole = async function (role_id, updated_role) {
 		let missingPerms = _.difference(
 			updated_role.permissions, neededPerms.map(perm => perm.code)
 		);
-		if (missingPerms.length) TE("Couldn't find permissions: %s", missingPerms);
+		if (missingPerms.length) console.error("Couldn't find permissions: %s", missingPerms);
 		
 		let assoc;
 		[err, assoc] = await to(role.setPermissions(neededPerms)); // waits until role and permission associations are written into DB.
