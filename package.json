@@ -11,6 +11,8 @@
     "bcrypt": "^1.0.3",
     "bcrypt-promise": "^2.0.0",
     "body-parser": "~1.18.2",
+    "cctx": "^1.0.1",
+    "ccxt": "^1.14.43",
     "chai-as-promised": "^7.1.1",
     "cookie-parser": "~1.4.3",
     "debug": "~2.6.9",
