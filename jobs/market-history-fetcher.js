@@ -8,7 +8,7 @@ const LIMIT = 100;
 var LATEST_TMC = 0;
 
 
-module.exports.SCHEDULE = '0 * * * * *';
+module.exports.SCHEDULE = '0 0 */2 * * *';
 module.exports.NAME = 'FETCH_MH';
 module.exports.JOB_BODY = async (config) => {
 
