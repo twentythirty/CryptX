@@ -7,6 +7,7 @@ module.exports = (sequelize, DataTypes) => {
         {
             timestamp: DataTypes.DATE,
             capitalization_usd: DataTypes.DECIMAL,
+            daily_volume_usd: DataTypes.DECIMAL,
             market_share_percentage: DataTypes.DECIMAL
         },
         modelProps(
