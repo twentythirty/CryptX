@@ -8,10 +8,10 @@ module.exports = {
         primaryKey: true,
         type: Sequelize.INTEGER
       },
-      instrument_id: {
+      asset_id: {
         type: Sequelize.INTEGER,
         references: {
-          model: "instrument",
+          model: "asset",
           key: "id"
         },
         onUpdate: "cascade",

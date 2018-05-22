@@ -1,47 +1,34 @@
-"use strict";
+'use strict';
 module.exports = {
   up: (queryInterface, Sequelize) => {
-    return queryInterface.createTable("instrument_status_change", {
+    return queryInterface.createTable('instrument', {
       id: {
         allowNull: false,
         autoIncrement: true,
         primaryKey: true,
         type: Sequelize.INTEGER
       },
-      instrument_id: {
+      base_asset_id: {
         type: Sequelize.INTEGER,
         references: {
-          model: "instrument",
+          model: "asset",
           key: "id"
         },
         onUpdate: "cascade",
         onDelete: "cascade"
       },
-      timestamp: {
-        type: Sequelize.DATE,
-        allowNull: false,
-        defaultValue: Sequelize.NOW
-      },
-      user_id: {
+      target_asset_id: {
         type: Sequelize.INTEGER,
         references: {
-          model: "user",
+          model: "asset",
           key: "id"
         },
         onUpdate: "cascade",
         onDelete: "cascade"
-      },
-      comment: {
-        type: Sequelize.TEXT('medium'),
-        allowNull: true
-      },
-      type: {
-        type: Sequelize.SMALLINT,
-        allowNull: false
       }
     });
   },
   down: (queryInterface, Sequelize) => {
-    return queryInterface.dropTable("instrument_status_change");
+    return queryInterface.dropTable('instrument');
   }
 };

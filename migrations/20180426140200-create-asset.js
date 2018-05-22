@@ -1,7 +1,7 @@
 'use strict';
 module.exports = {
   up: (queryInterface, Sequelize) => {
-    return queryInterface.createTable('instrument', {
+    return queryInterface.createTable('asset', {
       id: {
         allowNull: false,
         autoIncrement: true,
@@ -20,19 +20,24 @@ module.exports = {
       is_base: {
         type: Sequelize.BOOLEAN,
         allowNull: false
+      },
+      is_deposit: {
+        type: Sequelize.BOOLEAN,
+        allowNull: false,
+        defaultValue: false
       }
     }).then(() => {
 
       return queryInterface.addIndex(
-        'instrument', {
+        'asset', {
           fields: ['symbol'],
-          name: 'instrument_symbols_idx',
+          name: 'asset_symbols_idx',
           unique: false
         }
       );
     });
   },
   down: (queryInterface, Sequelize) => {
-    return queryInterface.dropTable('instrument');
+    return queryInterface.dropTable('asset');
   }
 };

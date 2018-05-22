@@ -3,32 +3,31 @@
 module.exports = (sequelize, DataTypes) => {
 
     var Instrument = sequelize.define(
-        'Instrument',
-        {
-            symbol: {
-                type: DataTypes.STRING,
-                unique: false,
-                allowNull: false
-            },
-            long_name: DataTypes.STRING,
-            is_base: DataTypes.BOOLEAN,
-            is_deposit: {
-                type: DataTypes.BOOLEAN,
+        'Instrument', {
+            id: {
                 allowNull: false,
-                defaultValue: false
+                autoIncrement: true,
+                primaryKey: true,
+                type: DataTypes.INTEGER
             }
         },
         modelProps(
             'instrument',
-            'Tradable instrument (symbol)'
+            'This table describes trading pairs used in exchanges'
         )
     );
 
     Instrument.associate = function(models) {
-        Instrument.belongsToMany(models.Exchange, {
-            through: models.InstrumentExchangeMapping
+
+        Instrument.belongsTo(models.Asset, {
+            as: 'base_asset',
+            through: 'base_asset_id'
         });
-    }
+        Instrument.belongsTo(models.Asset, {
+            as: 'target_asset',
+            through: 'target_asset_id'
+        });
+    };
 
     return Instrument;
 };

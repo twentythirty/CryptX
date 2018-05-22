@@ -17,16 +17,7 @@ module.exports = {
         onUpdate: "cascade",
         onDelete: "cascade"
       },
-      base_instrument_id: {
-        type: Sequelize.INTEGER,
-        references: {
-          model: "instrument",
-          key: "id"
-        },
-        onUpdate: "cascade",
-        onDelete: "cascade"
-      },
-      target_instrument_id: {
+      instrument_id: {
         type: Sequelize.INTEGER,
         references: {
           model: "instrument",
@@ -44,37 +35,12 @@ module.exports = {
         onUpdate: "cascade",
         onDelete: "cascade"
       },
-      base_instrument_amount: {
-        type: Sequelize.DECIMAL,
-        allowNull: false
-      },
-      target_instrument_amount: {
-        type: Sequelize.DECIMAL,
-        allowNull: false
-      },
-      target_instrument_price: {
-        type: Sequelize.DECIMAL,
+      side: {
+        type: Sequelize.SMALLINT,
         allowNull: false
       },
       status: {
         type: Sequelize.SMALLINT,
-        allowNull: false
-      },
-      approve_user_id: {
-        type: Sequelize.INTEGER,
-        references: {
-          model: "user",
-          key: "id"
-        },
-        onUpdate: "cascade",
-        onDelete: "cascade"
-      },
-      comment: {
-        type: Sequelize.TEXT('medium'),
-        allowNull: false
-      },
-      placed_timestamp: {
-        type: Sequelize.DATE,
         allowNull: false
       }
     });

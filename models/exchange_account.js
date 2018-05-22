@@ -16,7 +16,7 @@ module.exports = (sequelize, DataTypes) => {
 
      ExchangeAccount.associate = function(models) {
         ExchangeAccount.belongsTo(models.Exchange);
-        ExchangeAccount.belongsTo(models.Instrument);
+        ExchangeAccount.belongsTo(models.Asset);
      };
 
 

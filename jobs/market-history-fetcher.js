@@ -78,7 +78,7 @@ config.dbPromise.then(() => {
             return Promise.all([
                 Promise.resolve(tmc),
                 Promise.resolve(tickers_flat),
-                config.models.InstrumentBlockchain.findAll({
+                config.models.AssetBlockchain.findAll({
                     attributes: ['instrument_id', 'coinmarketcap_identifier'],
                     where: {
                         coinmarketcap_identifier: Object.keys(tickers_flat.data)
@@ -122,7 +122,7 @@ config.dbPromise.then(() => {
 
             console.log(`5. persisting ${data_objects.length} observations...`);
 
-            return config.models.MarketHistoryInput.bulkCreate(data_objects);
+            return config.models.AssetMarketCapitalization.bulkCreate(data_objects);
         }).then(() => {
 
             console.log('Pulling market history finished!')

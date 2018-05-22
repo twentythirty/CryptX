@@ -25,6 +25,7 @@ module.exports = (sequelize, DataTypes) => {
     ActionLog.belongsTo(models.User);
     ActionLog.belongsTo(models.Permission);
     ActionLog.belongsTo(models.Role);
+    ActionLog.belongsTo(models.Asset);
     ActionLog.belongsTo(models.Instrument);
     ActionLog.belongsTo(models.Exchange);
     ActionLog.belongsTo(models.ExchangeAccount);

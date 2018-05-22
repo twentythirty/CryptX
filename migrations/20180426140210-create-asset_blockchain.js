@@ -1,17 +1,17 @@
 'use strict';
 module.exports = {
   up: (queryInterface, Sequelize) => {
-    return queryInterface.createTable('instrument_blockchain', {
+    return queryInterface.createTable('asset_blockchain', {
       id: {
         allowNull: false,
         autoIncrement: true,
         primaryKey: true,
         type: Sequelize.INTEGER
       },
-      instrument_id: {
+      asset_id: {
         type: Sequelize.INTEGER,
         references: {
-          model: "instrument",
+          model: "asset",
           key: "id"
         },
         onUpdate: "cascade",
@@ -25,7 +25,7 @@ module.exports = {
     }).then(() => {
 
       return queryInterface.addIndex(
-        'instrument_blockchain', {
+        'asset_blockchain', {
           fields: ['coinmarketcap_identifier'],
           name: 'coinmarketcap_id_idx',
           unique: false
@@ -34,6 +34,6 @@ module.exports = {
     });
   },
   down: (queryInterface, Sequelize) => {
-    return queryInterface.dropTable('instrument_blockchain');
+    return queryInterface.dropTable('asset_blockchain');
   }
 };

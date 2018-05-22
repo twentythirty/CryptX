@@ -58,6 +58,11 @@ EXECUTION_ORDER_TYPES = {
   Stop: 73
 };
 
+ORDER_SIDES = {
+  BUY: 999,
+  SELL: 888
+}
+
 COLD_STORAGE_ORDER_STATUSES = {
   Pending: 51, //"order was generated internally, but not yet sent",
   Sent: 52, //"order wassent to exchange or blockchain (waiting confirmation)",

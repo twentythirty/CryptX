@@ -2,25 +2,23 @@
 
 module.exports = (sequelize, DataTypes) => {
 
-    var MarketHistoryInput = sequelize.define(
-        'MarketHistoryInput',
+    var AssetMarketCapitalization = sequelize.define(
+        'AssetMarketCapitalization',
         {
             timestamp: DataTypes.DATE,
-            price_usd: DataTypes.DECIMAL,
-            market_cap_usd: DataTypes.DECIMAL,
-            daily_volume_usd: DataTypes.DECIMAL,
-            market_cap_percentage: DataTypes.DECIMAL
+            capitalization_usd: DataTypes.DECIMAL,
+            market_share_percentage: DataTypes.DECIMAL
         },
         modelProps(
-            'market_history_input',
+            'asset_market_capitalization',
             'This table will contain market history retrieved from Coinmarketcap'
         )
     );
 
-    MarketHistoryInput.associate = function(models) {
-        MarketHistoryInput.belongsTo(models.Instrument);
+    AssetMarketCapitalization.associate = function(models) {
+        AssetMarketCapitalization.belongsTo(models.Asset);
     };
 
 
-    return MarketHistoryInput;
+    return AssetMarketCapitalization;
 };

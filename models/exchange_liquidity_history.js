@@ -2,31 +2,24 @@
 
 module.exports = (sequelize, DataTypes) => {
 
-    var ExchangeLiquidityHistory = sequelize.define(
-        'ExchangeLiquidityHistory',
+    var InstrumentLiquidityHistory = sequelize.define(
+        'InstrumentLiquidityHistory',
         {
             date: DataTypes.DATE,
             volume: DataTypes.DECIMAL
         },
         modelProps(
-            'exchange_liquidity_history',
+            'instrument_liquidity_history',
             'This table contains history of currency pair liquidity in exchange'
         )
     );
 
-    ExchangeLiquidityHistory.associate = function(models) {
+    InstrumentLiquidityHistory.associate = function(models) {
 
-        ExchangeLiquidityHistory.belongsTo(models.Exchange);
-        ExchangeLiquidityHistory.belongsTo(models.Instrument, {
-            as: 'base_instrument',
-            foreignKey: 'base_instrument_id'
-        });
-        ExchangeLiquidityHistory.belongsTo(models.Instrument, {
-            as: 'target_instrument',
-            foreignKey: 'target_instrument_id'
-        });
+        InstrumentLiquidityHistory.belongsTo(models.Exchange);
+        InstrumentLiquidityHistory.belongsTo(models.Instrument);
     };
     
 
-    return ExchangeLiquidityHistory;
+    return InstrumentLiquidityHistory;
 };

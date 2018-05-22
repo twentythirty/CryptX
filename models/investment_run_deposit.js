@@ -10,7 +10,7 @@ module.exports = (sequelize, DataTypes) => {
   );
 
   InvestmentRunDeposit.associate = function(models) {
-    InvestmentRunDeposit.belongsTo(models.Instrument);
+    InvestmentRunDeposit.belongsTo(models.Asset);
     InvestmentRunDeposit.belongsTo(models.InvestmentRun);
   };
 

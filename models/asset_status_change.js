@@ -2,8 +2,8 @@
 
 module.exports = (sequelize, DataTypes) => {
 
-    var InstrumentStatusChange = sequelize.define(
-        'InstrumentStatusChange', {
+    var AssetStatusChange = sequelize.define(
+        'AssetStatusChange', {
             timestamp: DataTypes.DATE,
             comment: {
                 type: DataTypes.TEXT('medium'),
@@ -12,16 +12,16 @@ module.exports = (sequelize, DataTypes) => {
             type: DataTypes.SMALLINT
         },
         modelProps(
-            'instrument_status_change',
+            'asset_status_change',
             'This table describes changes that ocurred to instrument availability'
         )
     );
 
-    InstrumentStatusChange.associate = function(models) {
+    AssetStatusChange.associate = function(models) {
 
-        InstrumentStatusChange.belongsTo(models.Instrument);
-        InstrumentStatusChange.belongsTo(models.User);
+        AssetStatusChange.belongsTo(models.Asset);
+        AssetStatusChange.belongsTo(models.User);
     };
 
-    return InstrumentStatusChange;
+    return AssetStatusChange;
 };

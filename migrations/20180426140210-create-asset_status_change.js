@@ -1,17 +1,12 @@
 "use strict";
 module.exports = {
   up: (queryInterface, Sequelize) => {
-    return queryInterface.createTable("exchange_account", {
+    return queryInterface.createTable("asset_status_change", {
       id: {
         allowNull: false,
         autoIncrement: true,
         primaryKey: true,
         type: Sequelize.INTEGER
-      },
-      account_type: {
-        type: Sequelize.SMALLINT,
-        allowNull: false,
-        unique: false
       },
       asset_id: {
         type: Sequelize.INTEGER,
@@ -22,22 +17,31 @@ module.exports = {
         onUpdate: "cascade",
         onDelete: "cascade"
       },
-      exchange_id: {
+      timestamp: {
+        type: Sequelize.DATE,
+        allowNull: false,
+        defaultValue: Sequelize.NOW
+      },
+      user_id: {
         type: Sequelize.INTEGER,
         references: {
-          model: "exchange",
+          model: "user",
           key: "id"
         },
         onUpdate: "cascade",
         onDelete: "cascade"
       },
-      external_identifier: {
-        type: Sequelize.STRING,
+      comment: {
+        type: Sequelize.TEXT('medium'),
         allowNull: true
+      },
+      type: {
+        type: Sequelize.SMALLINT,
+        allowNull: false
       }
     });
   },
   down: (queryInterface, Sequelize) => {
-    return queryInterface.dropTable("exchange_account");
+    return queryInterface.dropTable("asset_status_change");
   }
 };

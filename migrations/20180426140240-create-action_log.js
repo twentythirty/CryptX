@@ -57,6 +57,15 @@ module.exports = {
         onUpdate: "NO ACTION",
         onDelete: "NO ACTION"
       },
+      asset_id: {
+        type: Sequelize.INTEGER,
+        references: {
+          model: "asset",
+          key: "id"
+        },
+        onUpdate: "NO ACTION",
+        onDelete: "NO ACTION"
+      },
       instrument_id: {
         type: Sequelize.INTEGER,
         references: {

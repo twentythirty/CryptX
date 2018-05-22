@@ -16,7 +16,7 @@ module.exports = (sequelize, DataTypes) => {
     );
 
     MarketHistoryCalculation.associate = function(models) {
-        MarketHistoryCalculation.belongsTo(models.Instrument);
+        MarketHistoryCalculation.belongsTo(models.Asset);
     };
 
 

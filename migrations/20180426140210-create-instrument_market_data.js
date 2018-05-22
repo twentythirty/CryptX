@@ -1,7 +1,7 @@
 "use strict";
 module.exports = {
   up: (queryInterface, Sequelize) => {
-    return queryInterface.createTable("market_history_input", {
+    return queryInterface.createTable("instrument_market_data", {
       id: {
         allowNull: false,
         autoIncrement: true,
@@ -21,25 +21,26 @@ module.exports = {
         onUpdate: "cascade",
         onDelete: "cascade"
       },
-      price_usd: {
+      exchange_id: {
+        type: Sequelize.INTEGER,
+        references: {
+          model: "exchange",
+          key: "id"
+        },
+        onUpdate: "cascade",
+        onDelete: "cascade"
+      },
+      ask_price: {
         type: Sequelize.DECIMAL,
         allowNull: false
       },
-      market_cap_usd: {
-        type: Sequelize.DECIMAL,
-        allowNull: false
-      },
-      daily_volume_usd: {
-        type: Sequelize.DECIMAL,
-        allowNull: false
-      },
-      market_cap_percentage: {
+      bid_price: {
         type: Sequelize.DECIMAL,
         allowNull: false
       }
     });
   },
   down: (queryInterface, Sequelize) => {
-    return queryInterface.dropTable("market_history_input");
+    return queryInterface.dropTable("instrument_market_data");
   }
 };

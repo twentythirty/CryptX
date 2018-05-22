@@ -1,7 +1,7 @@
 "use strict";
 module.exports = {
   up: (queryInterface, Sequelize) => {
-    return queryInterface.createTable("market_history_calculation", {
+    return queryInterface.createTable("asset_market_capitalization", {
       id: {
         allowNull: false,
         autoIncrement: true,
@@ -21,17 +21,21 @@ module.exports = {
         onUpdate: "cascade",
         onDelete: "cascade"
       },
-      type: {
-        type: Sequelize.SMALLINT,
+      capitalization_usd: {
+        type: Sequelize.DECIMAL,
         allowNull: false
       },
-      value: {
+      market_share_percentage: {
+        type: Sequelize.DECIMAL,
+        allowNull: false
+      },
+      daily_volume_usd: {
         type: Sequelize.DECIMAL,
         allowNull: false
       }
     });
   },
   down: (queryInterface, Sequelize) => {
-    return queryInterface.dropTable("market_history_calculation");
+    return queryInterface.dropTable("asset_market_capitalization");
   }
 };

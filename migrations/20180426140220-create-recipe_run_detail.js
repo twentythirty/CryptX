@@ -17,19 +17,19 @@ module.exports = {
         onUpdate: "cascade",
         onDelete: "cascade"
       },
-      base_instrument_id: {
+      base_asset_id: {
         type: Sequelize.INTEGER,
         references: {
-          model: "instrument",
+          model: "asset",
           key: "id"
         },
         onUpdate: "cascade",
         onDelete: "cascade"
       },
-      target_instrument_id: {
+      target_asset_id: {
         type: Sequelize.INTEGER,
         references: {
-          model: "instrument",
+          model: "asset",
           key: "id"
         },
         onUpdate: "cascade",

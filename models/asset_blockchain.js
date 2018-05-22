@@ -1,8 +1,8 @@
 'use strict';
 
 module.exports = (sequelize, DataTypes) => {
-    var InstrumentBlockchain = sequelize.define(
-        'InstrumentBlockchain',
+    var AssetBlockchain = sequelize.define(
+        'AssetBlockchain',
         {
             coinmarketcap_identifier: {
                 type: DataTypes.STRING,
@@ -11,14 +11,14 @@ module.exports = (sequelize, DataTypes) => {
             }
         },
         modelProps(
-            'instrument_blockchain',
+            'asset_blockchain',
             'This table stores coinmarketcap.com-specific info about imported instruments'
         )
     );
 
-    InstrumentBlockchain.associate = function(models) {
-        InstrumentBlockchain.belongsTo(models.Instrument);
+    AssetBlockchain.associate = function(models) {
+        AssetBlockchain.belongsTo(models.Asset);
     }
 
-    return InstrumentBlockchain;
+    return AssetBlockchain;
 };

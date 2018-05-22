@@ -15,12 +15,12 @@ module.exports = (sequelize, DataTypes) => {
   RecipeRunDetail.associate = function(models) {
     RecipeRunDetail.belongsTo(models.RecipeRun);
     RecipeRunDetail.belongsTo(models.Instrument, {
-      foreignKey: "base_instrument_id",
-      as: "base_instrument"
+      foreignKey: "base_asset_id",
+      as: "base_asset"
     });
     RecipeRunDetail.belongsTo(models.Instrument, {
-      foreignKey: "target_instrument_id",
-      as: "target_instrumen"
+      foreignKey: "target_asset_id",
+      as: "target_asset"
     });
     RecipeRunDetail.belongsTo(models.Exchange, {
       foreignKey: "target_exchange_id",
