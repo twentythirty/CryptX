@@ -12,17 +12,20 @@ const this_filename = path.basename(__filename);
 
 /**
  * Holds imported JOB files from this directory
- * Imported jobs need to export a SCHEDULE cron string and 
+ * 
+ * 
+ * Imported jobs need to export a SCHEDULE cron string and
  * a JOB_BODY (CONFIG, Date) => Any function.
- * Jobs will be identified by NAME (default - filename sans js)
+ * 
+ * Jobs will be identified by NAME (default - filename sans .js)
  */
 let runnable_jobs = {};
 
 fs.readdirSync(__dirname).filter(filename => {
     //allow files that are NOT
 
-    //config dotFiles
     return (
+        //config dotFiles
         filename.indexOf('.') != 0 &&
         //this file
         (filename !== this_filename) &&
