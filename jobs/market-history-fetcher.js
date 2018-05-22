@@ -8,7 +8,7 @@ const LIMIT = 100;
 var LATEST_TMC = 0;
 
 
-module.exports.SCHEDULE = '0 0 */2 * * *';
+module.exports.SCHEDULE = '0 * * * * *';
 module.exports.NAME = 'FETCH_MH';
 module.exports.JOB_BODY = async (config) => {
 
@@ -105,7 +105,7 @@ module.exports.JOB_BODY = async (config) => {
             const usd_details = ticker_data.quotes.USD;
 
             return {
-                asset_id: pair.instrument_id,
+                asset_id: pair.asset_id,
                 timestamp: new Date(tickers.metadata.timestamp * 1000),
                 capitalization_usd: usd_details.market_cap,
                 daily_volume_usd: usd_details.volume_24h,
