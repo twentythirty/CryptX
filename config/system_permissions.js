@@ -6,7 +6,9 @@ PERMISSIONS = {
   VIEW_USERS: "perm_view_users",
   EDIT_USERS: "perm_edit_users",
   DELETE_USER: "perm_delete_users",
-  CREATE_USER: "perm_create_user"
+  CREATE_USER: "perm_create_user",
+  VIEW_ASSETS: "perm_view_assets",
+  CHANGE_ASSET_STATUS: "perm_change_asset_status"
 };
 //list of permissions that dotn apply to users
 //as long as they are altering themselves
@@ -27,13 +29,17 @@ all_permissions[PERMISSIONS.ALTER_PERMS] =
 all_permissions[PERMISSIONS.VIEW_ROLES] =
   "Permission to view information of system user roles";
 all_permissions[PERMISSIONS.VIEW_USERS] =
-  "Permission to view infomration of other system users";
+  "Permission to view information of other system users";
 all_permissions[PERMISSIONS.EDIT_USERS] =
   "Permission to edit basic user information";
 all_permissions[PERMISSIONS.DELETE_USER] =
   "Permission to delete users";
 all_permissions[PERMISSIONS.CREATE_USER] =
   "Permission to create new system users";
+all_permissions[PERMISSIONS.VIEW_ASSETS] =
+  "Permission to view assets available on the system";
+all_permissions[PERMISSIONS.CHANGE_ASSET_STATUS] =
+  "Permission to blacklist/whitelist assets";
 
 all_roles = Object.values(ROLES);
 
@@ -137,5 +143,22 @@ ROUTES = {
     router_string: "/roles/:role_id/delete",
     permissions_matcher: /\/roles\/\d+\/delete/,
     required_permissions: [PERMISSIONS.ALTER_ROLES, PERMISSIONS.VIEW_ROLES]
+  },
+
+  // Assets
+  GetAssetInfo: {
+    router_string: "/assets/:asset_id",
+    permissions_matcher: /\/assets\/\d+$/,
+    required_permissions: [PERMISSIONS.VIEW_ASSETS]
+  },
+  GetAssets: {
+    router_string: "/assets/",
+    permissions_matcher: /\/assets\/\d+$/,
+    required_permissions: [PERMISSIONS.VIEW_ASSETS]
+  },
+  ChangeAssetStatus: {
+    router_string: "/assets/:asset_id/change_status",
+    permissions_matcher: /\/assets\/\d+\/change_status$/,
+    required_permissions: [PERMISSIONS.VIEW_ASSETS, PERMISSIONS.CHANGE_ASSET_STATUS]
   }
 };

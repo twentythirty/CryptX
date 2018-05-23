@@ -3,6 +3,7 @@ const router = express.Router();
 
 const UserController = require("./../controllers/UserController");
 const SecurityController = require('./../controllers/SecurityController');
+const AssetController = require('./../controllers/AssetController');
 
 // const custom 	        = require('./../middleware/custom');
 
@@ -157,6 +158,27 @@ router.get(
   stateless_auth,
   check_permissions,
   SecurityController.getRoleInfo
+);
+
+
+// ASSETS
+router.get(
+  ROUTES.GetAssetInfo.router_string,
+  stateless_auth,
+  check_permissions,
+  AssetController.getAsset
+);
+router.get(
+  ROUTES.GetAssets.router_string,
+  stateless_auth,
+  check_permissions,
+  AssetController.getAssets
+);
+router.post(
+  ROUTES.ChangeAssetStatus.router_string,
+  stateless_auth,
+  check_permissions,
+  AssetController.changeAssetStatus
 );
 
 //********* API DOCUMENTATION **********

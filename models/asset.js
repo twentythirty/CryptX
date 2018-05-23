@@ -28,6 +28,7 @@ module.exports = (sequelize, DataTypes) => {
         Asset.belongsToMany(models.Exchange, {
             through: models.InstrumentExchangeMapping
         });
+        Asset.hasMany(models.AssetStatusChange);
     }
 
     return Asset;
