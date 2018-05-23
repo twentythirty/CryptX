@@ -58,8 +58,8 @@ typings/
 # dotenv environment variables file
 .env
 
-# additional explanatory text files
-*.txt
+# additional explanatory info files
+info/
 
 ### VisualStudioCode ###
 .vscode/*
