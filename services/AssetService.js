@@ -61,8 +61,18 @@ const getWhitelisted = async function () {
 };
 module.exports.getWhitelisted = getWhitelisted;
 
+/**
+ * Returns a list of assets (currency data objects) that currently represent the provided strategy type for investment runs
+ * Only checks whitelisted coins.
+ * @param {a value from the STRATEGY_TYPES enumeration described in model_constants.js} strategy_type 
+ */
+const getStrategyAssets = async function (strategy_type) {
 
-const getIndex = async function (type) {
+  //check for valid strategy type
+  if (!Object.values(STRATEGY_TYPES).includes(strategy_type)) {
+    TE(`Unknown strategy type ${strategy_type}!`);
+  }
+
   // get assets that aren't blacklisted, sorted by marketcap average of 7 days
   let [err, assets] = await to(sequelize.query(`
     SELECT asset.id, asset.symbol, asset.long_name, asset.is_base, asset.is_deposit, 
@@ -76,7 +86,7 @@ const getIndex = async function (type) {
       WHERE
       (
         (SELECT 
-          CASE type WHEN 400 THEN true ELSE false END
+          CASE type WHEN ${INSTRUMENT_STATUS_CHANGES.Whitelisting} THEN true ELSE false END
           FROM asset_status_change
           WHERE asset_id=asset.id
           ORDER BY timestamp DESC
@@ -87,13 +97,9 @@ const getIndex = async function (type) {
     AND is_base=false
     GROUP BY asset.id, asset.symbol, asset.long_name, asset.is_base, asset.is_deposit
     ORDER BY avg_share DESC
-    LIMIT 70
+    LIMIT ${INDEX_CAP_TOTAL}
     `,
     {
-      replacements: {
-        type: INSTRUMENT_STATUS_CHANGES.Whitelisting
-      },
-      /* model: Asset, */
       type: sequelize.QueryTypes.SELECT
     }
   ));
@@ -104,11 +110,12 @@ const getIndex = async function (type) {
     return totalMarketShare <= LCI_MARKETSHARE_PRC;
   });
 
-  if (type == 'lci')
+  if (type == STRATEGY_TYPES.LCI) {
     return lci;
+  }
 
   let mci = assets.slice(lci.length, lci.length+INDEX_MCI_CAP);
 
   return mci;
 };
-module.exports.getIndex = getIndex;
+module.exports.getStrategyAssets = getStrategyAssets;

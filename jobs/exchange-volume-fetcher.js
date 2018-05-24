@@ -35,7 +35,7 @@ module.exports.JOB_BODY = async (config) => {
 
                 const fetcher = new ccxt[exchange.api_id]();
 
-                //promise pairs made of arrays where [exchange, fetched-data]
+                //promise pairs made of arrays where [exchange, [mapping, fetched-data]]
                 return Promise.all([
                     Promise.resolve(exchange),
                     Promise.all(_.map(mappings, mapping => {
