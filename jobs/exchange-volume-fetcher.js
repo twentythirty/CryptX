@@ -1,9 +1,9 @@
 'use strict';
 const ccxt = require('ccxt');
 
-//run once every 10 minutes
-module.exports.SCHEDULE = '*/10 * * * *';
-module.exports.NAME = 'EXCH_ASK_BID';
+//run once per day at midnight
+module.exports.SCHEDULE = '0 0 * * *';
+module.exports.NAME = 'EXCH_VOL24';
 
 module.exports.JOB_BODY = async (config) => {
 
@@ -31,7 +31,7 @@ module.exports.JOB_BODY = async (config) => {
 
             return Promise.all(_.map(exchanges_with_mappings, exchange => {
                 const mappings = associatedMappings[exchange.id];
-                console.log(`Building price fetcher for ${exchange.name} with ${mappings.length} mappings...`);
+                console.log(`Building volume fetcher for ${exchange.name} with ${mappings.length} mappings...`);
 
                 const fetcher = new ccxt[exchange.api_id]();
 
@@ -39,12 +39,12 @@ module.exports.JOB_BODY = async (config) => {
                 return Promise.all([
                     Promise.resolve(exchange),
                     Promise.all(_.map(mappings, mapping => {
-                        console.log(`Fetching data for ${exchange.name} on symbol ${mapping.external_instrument_id}...`);
+                        console.log(`Fetching volume for ${exchange.name} on symbol ${mapping.external_instrument_id}...`);
 
                         //promise pairs made of arrays where [symbol mapping, fetched-data]
                         return Promise.all([
                             Promise.resolve(mapping),
-                            fetcher.fetch_order_book(mapping.external_instrument_id)
+                            fetcher.fetch_ticker(mapping.external_instrument_id)
                         ]);
                     }))
                 ])
@@ -59,14 +59,13 @@ module.exports.JOB_BODY = async (config) => {
                         return {
                             exchange_id: symbol_mapping.exchange_id,
                             instrument_id: symbol_mapping.instrument_id,
-                            timestamp: market_data.timestamp? new Date(market_data.timestamp) : new Date(),
-                            ask_price: market_data.asks[0][0],
-                            bid_price: market_data.bids[0][0]
+                            date: market_data.timestamp? new Date(market_data.timestamp) : new Date(),
+                            volume: market_data.baseVolume
                         }
                     });
                 });
 
-                return config.models.sequelize.queryInterface.bulkInsert('instrument_market_data', records);
+                return config.models.sequelize.queryInterface.bulkInsert('instrument_liquidity_history', records);
             });
         });
     });
