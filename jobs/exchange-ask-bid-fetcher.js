@@ -2,7 +2,7 @@
 const ccxt = require('ccxt');
 
 //run once every 10 minutes
-module.exports.SCHEDULE = '* */10 * * * *';
+module.exports.SCHEDULE = '*/10 * * * *';
 module.exports.NAME = 'EXCH_ASK_BID';
 
 module.exports.JOB_BODY = async (config) => {
