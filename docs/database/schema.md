@@ -59,6 +59,7 @@ instrument # Tradable instrument
 id PK int
 base_asset_id int FK >- asset.id # Base asset in a traded pair, e.g. "EUR" in instrument "EURUSD"
 target_asset_id int FK >- asset.id # Second asset in a traded pair, e.g. "USD" in instrument "EURUSD"
+symbol string
 
 instrument_liquidity_requirement # This table is used to define minimum liquidity requirements for exchanges
 -
@@ -102,6 +103,7 @@ id PK int
 asset_id int FK >- asset.id
 strategy_type enum # Strategy type for which this account is used. Possible values: Large Cap Index (LCI), Mid Cap Index (MCI)
 address nvarchar # Address that can be used to send the coins to this cold storage account
+custodian string # Custodian of the cold storage account
 
 asset_market_capitalization # This table will contain market history retrieved from Coinmarketcap
 -
@@ -117,14 +119,8 @@ id FK int
 timestamp timestamp
 instrument_id int FK >- instrument.id
 exchange_id int FK >- exchange.id
-type enum # Ask/bid
-open_price decimal
-high_price decimal
-low_price decimal
-close_price decimal
-periodicity enum # 1440 - daily
-volume decimal
-source enum # 0 - Coinmarketcap, 1 - Exchange
+ask_price decimal
+bid_price decimal
 
 market_history_calculation
 -
@@ -176,6 +172,7 @@ recipe_order_group
 -
 id PK int
 created_timestamp timestamp # Time when recipe order has been placed
+recipe_run_id int FK >- recipe_run.id
 approval_status enum # Possible statuses are Pending, Approved, Rejected
 approval_user_id int FK >- user.id # User who approved/rejected the recipe order group
 approval_timestamp timestamp # Time and date when the user approved this recipe order group
@@ -194,22 +191,27 @@ execution_order
 -
 id PK int
 recipe_order_id int FK >- recipe_order.id
-status enum # Pending, Placed, FullyFilled, PartiallyFilled, Cancelled, Failed
+instrument_id int FK >- instrument.id
+exchange_id int FK >- exchange.id
+external_identifier string # Order ID given by the exchange
+side enum # Buy = 0 / Sell = 1
 type enum # Market, Limit, Stop
 price decimal # order price
 total_quantity decimal # Order size
-placed_timestamp # Time the execution order has been placed
-completed_timestamp # Time the execution order was fully filled or cancelled
+status enum # Pending, Placed, FullyFilled, PartiallyFilled, Cancelled, Failed
+placed_timestamp timestamp # Time the execution order has been placed
+completed_timestamp timestamp # Time the execution order was fully filled or cancelled
+time_in_force timestamp NULLABLE # time till when order should be active on exchange. NULL if order is Good Till Cancelled
 
 execution_order_fill
 -
 id PK int
-timestamp # Time of the fill
+timestamp timestamp # Time of the fill
 execution_order_id int FK >- execution_order.id
 quantity decimal
 price decimal # fill price
 
-cold_storage_order
+cold_storage_transfer
 -
 id PK int
 execution_order_id PK int FK >- execution_order.id # ID of the order for fills of which cold storage is needed
@@ -249,7 +251,8 @@ instrument_liquidity_history
 # This table will contain liquidity history of tradable instruments
 -
 id PK int
-date date # Date for which liquidity was measured
+timestamp_from date # Timestamp from which liquidity was measured
+timestamp_to date # Timestamp till which liquidity was measured
 exchange_id int FK >- exchange.id
 instrument_id int FK >- instrument.id
 volume decimal
