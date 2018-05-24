@@ -7,7 +7,7 @@ const User = require('../models').User;
 const sequelize = require('../models').sequelize;
 
 const changeStatus = async function (asset_id, new_status, user_id) {
-  
+
   if (!_.valuesIn(INSTRUMENT_STATUS_CHANGES).includes(new_status.type))
     TE("Provided bad asset status");
 
@@ -45,15 +45,13 @@ const getWhitelisted = async function () {
         LIMIT 1)
       OR
       NOT EXISTS (SELECT true FROM asset_status_change WHERE asset_id = asset.id)
-    `,
-    {
-      replacements: {
-        type: INSTRUMENT_STATUS_CHANGES.Whitelisting
-      },
-      model: Asset,
-      type: sequelize.QueryTypes.SELECT
-    }
-  ));
+    `, {
+    replacements: {
+      type: INSTRUMENT_STATUS_CHANGES.Whitelisting
+    },
+    model: Asset,
+    type: sequelize.QueryTypes.SELECT
+  }));
 
   if (err) TE(err.message);
 
@@ -64,7 +62,7 @@ module.exports.getWhitelisted = getWhitelisted;
 /**
  * Returns a list of assets (currency data objects) that currently represent the provided strategy type for investment runs
  * Only checks whitelisted coins.
- * @param {a value from the STRATEGY_TYPES enumeration described in model_constants.js} strategy_type 
+ * @param strategy_type a value from the STRATEGY_TYPES enumeration described in model_constants.js 
  */
 const getStrategyAssets = async function (strategy_type) {
 
@@ -98,12 +96,10 @@ const getStrategyAssets = async function (strategy_type) {
     GROUP BY asset.id, asset.symbol, asset.long_name, asset.is_base, asset.is_deposit
     ORDER BY avg_share DESC
     LIMIT ${INDEX_CAP_TOTAL}
-    `,
-    {
-      type: sequelize.QueryTypes.SELECT
-    }
-  ));
-  
+    `, {
+    type: sequelize.QueryTypes.SELECT
+  }));
+
   let totalMarketShare = 0;
   let lci = _.remove(assets.slice(0, INDEX_LCI_CAP), function (coin) {
     totalMarketShare += parseFloat(coin.avg_share);
@@ -114,7 +110,7 @@ const getStrategyAssets = async function (strategy_type) {
     return lci;
   }
 
-  let mci = assets.slice(lci.length, lci.length+INDEX_MCI_CAP);
+  let mci = assets.slice(lci.length, lci.length + INDEX_MCI_CAP);
 
   return mci;
 };
