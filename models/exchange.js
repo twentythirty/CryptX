@@ -4,7 +4,8 @@ module.exports = (sequelize, DataTypes) => {
   var Exchange = sequelize.define(
     "Exchange",
     {
-      name: DataTypes.STRING
+      name: DataTypes.STRING,
+      api_id: DataTypes.STRING
     },
     modelProps(
       "exchange",

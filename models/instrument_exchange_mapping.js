@@ -15,7 +15,7 @@ module.exports = (sequelize, DataTypes) => {
             }
         },
         modelProps(
-            'symbol_exchange_mapping',
+            'instrument_exchange_mapping',
             'This table determines which instruments are available on which exchange'
         )
     );
