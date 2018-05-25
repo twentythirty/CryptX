@@ -3,7 +3,8 @@
 module.exports = (sequelize, DataTypes) => {
     var ExecutionOrder = sequelize.define(
         'ExecutionOrder', {
-            status: {
+            external_identifier: DataTypes.STRING,
+            side: {
                 type: DataTypes.SMALLINT,
                 allowNull: false
             },
@@ -13,8 +14,16 @@ module.exports = (sequelize, DataTypes) => {
             },
             price: DataTypes.DECIMAL,
             total_quantity: DataTypes.DECIMAL,
+            status: {
+                type: DataTypes.SMALLINT,
+                allowNull: false
+            },
             placed_timestamp: DataTypes.DATE,
-            completed_timestamp: DataTypes.DATE
+            completed_timestamp: DataTypes.DATE,
+            time_in_force: {
+                type: DataTypes.DATE,
+                allowNull: true
+            }
         },
         modelProps(
             'execution_order',
@@ -24,8 +33,10 @@ module.exports = (sequelize, DataTypes) => {
 
     ExecutionOrder.associate = function (models) {
         ExecutionOrder.belongsTo(models.RecipeOrder);
+        ExecutionOrder.belongsTo(models.Instrument);
+        ExecutionOrder.belongsTo(models.Exchange);
         ExecutionOrder.belongsToMany(models.ColdStorageAccount, {
-            through: models.ColdStorageOrder
+            through: models.ColdStorageTransfer
         })
     };
 

@@ -1,8 +1,8 @@
 "use strict";
 
 module.exports = (sequelize, DataTypes) => {
-  var ColdStorageOrder = sequelize.define(
-    "ColdStorageOrder",
+  var ColdStorageTransfer = sequelize.define(
+    "ColdStorageTransfer",
     {
       //by default join tables remove primary keys
       id: {
@@ -18,10 +18,10 @@ module.exports = (sequelize, DataTypes) => {
       completed_timestamp: DataTypes.DATE
     },
     modelProps(
-      "cold_storage_order",
+      "cold_storage_transfer",
       "This table connects cold storage accounts with recipe orders that deposit into them"
     )
   );
 
-  return ColdStorageOrder;
+  return ColdStorageTransfer;
 };

@@ -5,7 +5,8 @@ module.exports = (sequelize, DataTypes) => {
     var InstrumentLiquidityHistory = sequelize.define(
         'InstrumentLiquidityHistory',
         {
-            date: DataTypes.DATE,
+            timestamp_from: DataTypes.DATE,
+            timestamp_to: DataTypes.DATE,
             volume: DataTypes.DECIMAL
         },
         modelProps(
