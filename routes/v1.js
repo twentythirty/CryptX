@@ -4,6 +4,7 @@ const router = express.Router();
 const UserController = require("./../controllers/UserController");
 const SecurityController = require('./../controllers/SecurityController');
 const AssetController = require('./../controllers/AssetController');
+const InvestmentController = require('./../controllers/InvestmentController');
 
 // const custom 	        = require('./../middleware/custom');
 
@@ -179,6 +180,34 @@ router.post(
   stateless_auth,
   check_permissions,
   AssetController.changeAssetStatus
+);
+
+
+// Investment
+router.post(
+  ROUTES.CreateInvestment.router_string,
+  stateless_auth,
+  check_permissions,
+  InvestmentController.createInvestmentRun
+);
+router.get(
+  ROUTES.GetInvestments.router_string,
+  stateless_auth,
+  check_permissions,
+  filter_reducer,
+  InvestmentController.getInvestmentRuns
+);
+router.get(
+  ROUTES.GetInvestment.router_string,
+  stateless_auth,
+  check_permissions,
+  InvestmentController.getInvestmentRun
+);
+router.post(
+  ROUTES.ApproveRecipeRun.router_string,
+  stateless_auth,
+  check_permissions,
+  InvestmentController.changeRecipeRunStatus
 );
 
 //********* API DOCUMENTATION **********

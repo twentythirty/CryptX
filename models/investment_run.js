@@ -10,7 +10,6 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.DATE,
         allowNull: true
       },
-      amount: DataTypes.DECIMAL,
       strategy_type: {
         type: DataTypes.SMALLINT,
         allowNull: false

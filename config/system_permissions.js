@@ -8,7 +8,10 @@ PERMISSIONS = {
   DELETE_USER: "perm_delete_users",
   CREATE_USER: "perm_create_user",
   VIEW_ASSETS: "perm_view_assets",
-  CHANGE_ASSET_STATUS: "perm_change_asset_status"
+  CHANGE_ASSET_STATUS: "perm_change_asset_status",
+  VIEW_INVESTMENT_RUN: "perm_view_investment_run",
+  CREATE_INVESTMENT_RUN: "perm_create_investment_run",
+  APPROVE_RECIPE_RUN: "perm_approve_recipe_run"
 };
 //list of permissions that dotn apply to users
 //as long as they are altering themselves
@@ -40,6 +43,12 @@ all_permissions[PERMISSIONS.VIEW_ASSETS] =
   "Permission to view assets available on the system";
 all_permissions[PERMISSIONS.CHANGE_ASSET_STATUS] =
   "Permission to blacklist/whitelist assets";
+all_permissions[PERMISSIONS.VIEW_INVESTMENT_RUN] =
+  "Permission to view investment runs";
+all_permissions[PERMISSIONS.CREATE_INVESTMENT_RUN] =
+  "Permission to create investment runs";
+all_permissions[PERMISSIONS.APPROVE_RECIPE_RUN] =
+  "Permission to approve/reject investment recipes";
 
 all_roles = Object.values(ROLES);
 
@@ -160,5 +169,27 @@ ROUTES = {
     router_string: "/assets/:asset_id/change_status",
     permissions_matcher: /\/assets\/\d+\/change_status$/,
     required_permissions: [PERMISSIONS.VIEW_ASSETS, PERMISSIONS.CHANGE_ASSET_STATUS]
+  },
+
+  // Investment
+  CreateInvestment: {
+    router_string: "/investments/create",
+    permissions_matcher: /\/investment\/create$/,
+    required_permissions: [PERMISSIONS.CREATE_INVESTMENT_RUN, PERMISSIONS.VIEW_INVESTMENT_RUN]
+  },
+  GetInvestment: {
+    router_string: "/investments/:investment_id",
+    permissions_matcher: /\/investmentd\/\d+$/,
+    required_permissions: [PERMISSIONS.VIEW_INVESTMENT_RUN]
+  },
+  GetInvestments: {
+    router_string: "/investments/all",
+    permissions_matcher: /\/investmentd\/all$/,
+    required_permissions: [PERMISSIONS.VIEW_INVESTMENT_RUN]
+  },
+  ApproveRecipeRun: {
+    router_string: "/recipe/:recipe_id/approve",
+    permissions_matcher: /recipe\/\d+\/approve$/,
+    required_permissions: [PERMISSIONS.VIEW_INVESTMENT_RUN, PERMISSIONS.APPROVE_RECIPE_RUN]
   }
 };
