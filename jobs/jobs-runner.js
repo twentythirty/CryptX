@@ -64,9 +64,9 @@ config.dbPromise.then(() => {
             const start = date;
             const log = logger_maker(job_name);
             log(`Job start at ${date}`);
-            //run job body with passed config object
+            //run job body with passed config object and job-specific logger
             const result = await loaded_job.JOB_BODY(config, log, date);
-            log(`Job finish at ${date} (result: ${result}).\nJob took ${new Date().getTime() - start.getTime()}ms`);
+            log(`Job finish at ${date} (result: ${result}). Job took ${new Date().getTime() - start.getTime()}ms`);
         });
     });
 });
