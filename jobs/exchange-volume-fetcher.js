@@ -2,7 +2,7 @@
 const ccxt = require('ccxt');
 
 //run once per day at midnight
-module.exports.SCHEDULE = '0 0 * * *';
+module.exports.SCHEDULE = '0 * * * * *';
 module.exports.NAME = 'EXCH_VOL24';
 
 module.exports.JOB_BODY = async (config) => {
@@ -55,11 +55,14 @@ module.exports.JOB_BODY = async (config) => {
                 const records = _.flatMap(data, ([exchange, markets_data]) => {
 
                     return _.map(markets_data, ([symbol_mapping, market_data]) => {
+                        
+                        const data_timestamp_to = market_data.timestamp? new Date(market_data.timestamp) : new Date();
 
                         return {
                             exchange_id: symbol_mapping.exchange_id,
                             instrument_id: symbol_mapping.instrument_id,
-                            date: market_data.timestamp? new Date(market_data.timestamp) : new Date(),
+                            timestamp_to: data_timestamp_to,
+                            timestamp_from: new Date(data_timestamp_to.getTime() - 1000 * 60 * 60 * 24),
                             volume: market_data.baseVolume
                         }
                     });
