@@ -5,13 +5,13 @@ const ccxt = require('ccxt');
 module.exports.SCHEDULE = '0 0 * * *';
 module.exports.NAME = 'EXCH_VOL24';
 
-module.exports.JOB_BODY = async (config) => {
+module.exports.JOB_BODY = async (config, log) => {
 
-    console.log('1. Fetch all active exchanges...');
+    log('1. Fetch all active exchanges...');
 
     return config.models.Exchange.findAll().then(exchanges => {
 
-        console.log(`2. Fetch associated exchange mappings for ${exchanges.length} exchanges...`);
+        log(`2. Fetch associated exchange mappings for ${exchanges.length} exchanges...`);
 
         return Promise.all([
             Promise.resolve(exchanges),
@@ -22,7 +22,7 @@ module.exports.JOB_BODY = async (config) => {
             })
         ]).then(data => {
 
-            console.log(`3. Build CCXT connectors and fetch associated symbols info`);
+            log(`3. Build CCXT connectors and fetch associated symbols info`);
 
             const [exchanges, mappings] = data;
 
@@ -31,7 +31,7 @@ module.exports.JOB_BODY = async (config) => {
 
             return Promise.all(_.map(exchanges_with_mappings, exchange => {
                 const mappings = associatedMappings[exchange.id];
-                console.log(`Building volume fetcher for ${exchange.name} with ${mappings.length} mappings...`);
+                log(`Building volume fetcher for ${exchange.name} with ${mappings.length} mappings...`);
 
                 const fetcher = new ccxt[exchange.api_id]();
 
@@ -39,7 +39,7 @@ module.exports.JOB_BODY = async (config) => {
                 return Promise.all([
                     Promise.resolve(exchange),
                     Promise.all(_.map(mappings, mapping => {
-                        console.log(`Fetching volume for ${exchange.name} on symbol ${mapping.external_instrument_id}...`);
+                        log(`Fetching volume for ${exchange.name} on symbol ${mapping.external_instrument_id}...`);
 
                         //promise pairs made of arrays where [symbol mapping, fetched-data]
                         return Promise.all([
@@ -50,7 +50,7 @@ module.exports.JOB_BODY = async (config) => {
                 ])
             })).then(data => {
 
-                console.log(`4. Saving fetched results...`);
+                log(`4. Saving fetched results...`);
 
                 const records = _.flatMap(data, ([exchange, markets_data]) => {
 

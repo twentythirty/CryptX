@@ -22,7 +22,7 @@ module.exports.JOB_BODY = async (config) => {
 
     const sequelize = config.models.sequelize;
 
-    console.log(`1. Checking for valid date ranges on coins...`);
+    log(`1. Checking for valid date ranges on coins...`);
 
     return sequelize.query(`
         SELECT asset_id,
@@ -40,7 +40,7 @@ module.exports.JOB_BODY = async (config) => {
         type: sequelize.QueryTypes.SELECT
     }).then(results => {
 
-        console.log(`2.Filtering down to coins with enough data for NVT...`);
+        log(`2.Filtering down to coins with enough data for NVT...`);
 
         const good_asset_ids = _.filter(results,
             obj => obj.old_enough
@@ -54,7 +54,7 @@ module.exports.JOB_BODY = async (config) => {
             `);
         } else {
 
-            console.log(`3. Executing nested averages query fo fetch per-coin NVT for ${good_asset_ids.length} coins...`);
+            log(`3. Executing nested averages query fo fetch per-coin NVT for ${good_asset_ids.length} coins...`);
 
             const days_seq = _.map(Array(NVT_MA_DAYS), (_, idx) => idx);
             const good_assets_string = good_asset_ids.toString();
@@ -78,7 +78,7 @@ module.exports.JOB_BODY = async (config) => {
                 type: sequelize.QueryTypes.SELECT
             }).then(results => {
 
-                console.log(`4. Saving ${results.length} results...`);
+                log(`4. Saving ${results.length} results...`);
 
                 //insert all in one query
                 sequelize.queryInterface.bulkInsert('market_history_calculation',

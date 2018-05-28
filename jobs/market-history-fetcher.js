@@ -12,7 +12,7 @@ module.exports.SCHEDULE = '0 0 */2 * * *';
 module.exports.NAME = 'FETCH_MH';
 module.exports.JOB_BODY = async (config) => {
 
-    console.log(`1. Chunking required ${TOP_N} coins to limit ${LIMIT} and fetching all...`);
+    log(`1. Chunking required ${TOP_N} coins to limit ${LIMIT} and fetching all...`);
     //get how many hcunks are reuqired
     const chunks = Math.floor(TOP_N / LIMIT);
     if (TOP_N % LIMIT) {
@@ -24,7 +24,7 @@ module.exports.JOB_BODY = async (config) => {
         starts.push(1 + i * LIMIT);
     }
 
-    console.log(`2. Fetching TMC and other metadata...`);
+    log(`2. Fetching TMC and other metadata...`);
 
     //transmute starts to urls and make async requests
     return Promise.all([
@@ -49,7 +49,7 @@ module.exports.JOB_BODY = async (config) => {
 
         const tmc = data.quotes.USD.total_market_cap;
 
-        console.log(`
+        log(`
                 Active currencies: ${data.active_cryptocurrencies},
                 BTC dominance: ${data.bitcoin_percentage_of_market_cap}%,
                 Total Market Cap: ${tmc}
@@ -57,7 +57,7 @@ module.exports.JOB_BODY = async (config) => {
                 Last updated: ${new Date(data.last_updated * 1000)}
             `);
 
-        console.log(`3. Flatteninig tickers and fetching reuqired DB coin ids...`)
+        log(`3. Flatteninig tickers and fetching reuqired DB coin ids...`)
 
         //smooth out tickers data
         const tickers_flat = (tickers[0] && tickers[0].data) ? tickers[0] : {
@@ -66,7 +66,7 @@ module.exports.JOB_BODY = async (config) => {
         for (var i = 1; i < tickers.length; i++) {
             tickers_flat.data = Object.assign(tickers_flat.data, tickers[i].data);
         }
-        console.log(`discovered tickers with ${Object.keys(tickers_flat.data).length} data points`);
+        log(`discovered tickers with ${Object.keys(tickers_flat.data).length} data points`);
 
         //fetch instrument ids
         return Promise.all([
@@ -81,7 +81,7 @@ module.exports.JOB_BODY = async (config) => {
         ])
     }).then(data => {
 
-        console.log(`4. Putting ids to tickers...`);
+        log(`4. Putting ids to tickers...`);
 
         const [tmc, tickers, coin_asset_ids] = data;
 
@@ -93,7 +93,7 @@ module.exports.JOB_BODY = async (config) => {
 
             const pair = key_assets[id];
             if (!pair) {
-                console.log(`Rejected ticker data ${ticker_data} because id ${id} has no associated blockchain instrument!`);
+                log(`Rejected ticker data ${ticker_data} because id ${id} has no associated blockchain instrument!`);
                 return false;
             }
             return true;
@@ -114,11 +114,11 @@ module.exports.JOB_BODY = async (config) => {
         });
     }).then(data_objects => {
 
-        console.log(`5. persisting ${data_objects.length} observations...`);
+        log(`5. persisting ${data_objects.length} observations...`);
 
         return config.models.AssetMarketCapitalization.bulkCreate(data_objects);
     }).then(() => {
 
-        console.log('Pulling market history finished!')
+        log('Pulling market history finished!')
     });
 };

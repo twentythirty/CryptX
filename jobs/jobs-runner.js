@@ -46,6 +46,14 @@ fs.readdirSync(__dirname).filter(filename => {
 });
 
 
+//create individual logging pipes that let the jobs use name prefix
+const logger_maker = (job_name) => {
+
+    return (message, ...args) => {
+        console.log(`[JOB.${job_name}]: ${message}`, ...args)
+    }
+}
+
 //once DB is loaded, load the jobs
 config.dbPromise.then(() => {
 
@@ -54,10 +62,11 @@ config.dbPromise.then(() => {
         console.log(`Scheduling ${job_name} for ${loaded_job.SCHEDULE}`);
         scheduler.scheduleJob(job_name, loaded_job.SCHEDULE, async (date) => {
             const start = date;
-            console.log(`[JOB.${job_name}]: Job start at ${date}`);
+            const log = logger_maker(job_name);
+            log(`Job start at ${date}`);
             //run job body with passed config object
-            const result = await loaded_job.JOB_BODY(config, date);
-            console.log(`[JOB.${job_name}]: Job finish at ${date} (result: ${result}).\nJob took ${new Date().getTime() - start.getTime()}ms`);
+            const result = await loaded_job.JOB_BODY(config, log, date);
+            log(`Job finish at ${date} (result: ${result}).\nJob took ${new Date().getTime() - start.getTime()}ms`);
         });
     });
 });
