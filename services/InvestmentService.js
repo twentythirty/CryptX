@@ -81,8 +81,8 @@ const createRecipeRun = async function (user_id, investment_run_id, strategy_typ
     assets.map(asset => {
       return RecipeRunDetail.create({
         recipe_run_id: recipe_run.id,
-        base_asset_id: asset.base_asset_id,
-        target_asset_id: asset.id,
+        transaction_asset_id: asset.transaction_asset_id,
+        quote_asset_id: asset.id,
         target_exchange_id: asset.exchange_id,
         investment_percentage: asset.investment_percentage
       });

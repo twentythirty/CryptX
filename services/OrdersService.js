@@ -14,10 +14,10 @@ const InstrumentMarketData = require('../models').InstrumentMarketData;
 const sameAssets = (obj1, obj2) => {
 
     return (
-        (obj1.base_asset_id == obj2.base_asset_id &&
-            obj1.target_asset_id == obj2.target_asset_id) ||
-        (obj1.target_asset_id == obj2.base_asset_id &&
-            obj1.base_asset_id == obj2.target_asset_id)
+        (obj1.transaction_asset_id == obj2.transaction_asset_id &&
+            obj1.quote_asset_id == obj2.quote_asset_id) ||
+        (obj1.quote_asset_id == obj2.transaction_asset_id &&
+            obj1.transaction_asset_id == obj2.quote_asset_id)
     )
 }
 
@@ -45,15 +45,15 @@ const generateApproveRecipeOrders = async (recipe_run_id) => {
     //fetch all asset ids involved in this venture
     // (to more concisely fetch involved instruments)
     const asset_ids = _.uniq(_.flatMap(recipe_run_details, recipe_run_detail => {
-        return [recipe_run_detail.base_asset_id, recipe_run_detail.target_asset_id]
+        return [recipe_run_detail.transaction_asset_id, recipe_run_detail.quote_asset_id]
     }));
 
     //fetch all instruments corresponding to detail assets
     //map them by instrument id
     const instruments_by_id = _.keyBy(await Instrument.findAll({
         where: {
-            base_asset_id: asset_ids,
-            target_asset_id: asset_ids
+            transaction_asset_id: asset_ids,
+            quote_asset_id: asset_ids
         }
     }), 'id');
 
@@ -95,7 +95,7 @@ const generateApproveRecipeOrders = async (recipe_run_id) => {
         //for assets of recipe on exchange of recipe
         const market_data = marketDataKeyForRunDetail(market_data_keys, recipe_run_detail);
         //is there a deposit in the currency we wish to sell
-        const deposit = investment_deposits[recipe_run_detail.base_asset_id];
+        const deposit = investment_deposits[recipe_run_detail.transaction_asset_id];
 
         //if either is missing, this is a bad recipe detail and will be ignored
         if (market_data && deposit) {
@@ -105,7 +105,7 @@ const generateApproveRecipeOrders = async (recipe_run_id) => {
             WARN: Skipping recipe run detail due to missing info! 
             Recipe run detail id: ${recipe_run_detail.id}
             Detail exchange id: ${recipe_run_detail.exchange_id}
-            Detail proposed trade: ${recipe_run_detail.base_asset_id}->${recipe_run_detail.target_asset_id}
+            Detail proposed trade: ${recipe_run_detail.transaction_asset_id}->${recipe_run_detail.quote_asset_id}
             Detail percentage: ${recipe_run_detail.investment_percentage}\n`);
             return false;
         }
@@ -130,14 +130,14 @@ const generateApproveRecipeOrders = async (recipe_run_id) => {
         const market_data_key = marketDataKeyForRunDetail(market_data_keys, recipe_run_detail);
         //if the market data and recipe run detail use the same base currency
         //then we use the bid price and make a buy order
-        const buy_order = recipe_run_detail.base_asset_id == market_data_key[0].base_asset_id;
+        const buy_order = recipe_run_detail.transaction_asset_id == market_data_key[0].transaction_asset_id;
         //get correct price/order side
         const price = (buy_order ? market_data.bid_price : market_data.ask_price);
         const side = buy_order ? ORDER_SIDES.Buy : ORDER_SIDES.Sell;
 
         const market_data = grouped_market_data[market_data_key][0];
         //get deposit in base currency
-        const deposit = investment_deposits[recipe_run_detail.base_asset_id];
+        const deposit = investment_deposits[recipe_run_detail.transaction_asset_id];
         //total amount to spend on this currency
         const spend_amount = recipe_run_detail.investment_percentage * deposit.amount;
         //amount of currency to buy

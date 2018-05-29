@@ -85,12 +85,12 @@ const getStrategyAssets = async function (strategy_type, exclude_from_index = []
           ilh.exchange_id,
           ilh.avg_vol,
           i.id,
-        i.base_asset_id,
+        i.transaction_asset_id,
           ilh.min_vol,
         (100 / (SUM(avg(cap.market_share_percentage)) OVER ()) * avg(cap.market_share_percentage)) as investment_percentage
 
     FROM asset
-    INNER JOIN instrument AS i ON i.target_asset_id=asset.id
+    INNER JOIN instrument AS i ON i.quote_asset_id=asset.id
 
     LEFT JOIN
       ( SELECT inlh.instrument_id AS instrument_id,
