@@ -36,6 +36,8 @@ let dbPromise = models.sequelize.authenticate().then(() => {
     console.log('Performing startup migration...');
     return migratorPerform();
 }).then((migrations) => {
+    let syncPermissions = require('./config/sync_permissions');
+    syncPermissions();
     return migrations;
 }).catch(err => {
         console.error('Unable prepare RDBMS for app:', process.env.DATABASE_URL, err);
