@@ -18,7 +18,7 @@ const dailyNVTTemplate = (dayFrom, asset_ids_string) => {
     `
 };
 
-module.exports.JOB_BODY = async (config) => {
+module.exports.JOB_BODY = async (config, log) => {
 
     const sequelize = config.models.sequelize;
 

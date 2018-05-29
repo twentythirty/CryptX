@@ -10,7 +10,7 @@ var LATEST_TMC = 0;
 
 module.exports.SCHEDULE = '0 0 */2 * * *';
 module.exports.NAME = 'FETCH_MH';
-module.exports.JOB_BODY = async (config) => {
+module.exports.JOB_BODY = async (config, log) => {
 
     log(`1. Chunking required ${TOP_N} coins to limit ${LIMIT} and fetching all...`);
     //get how many hcunks are reuqired
