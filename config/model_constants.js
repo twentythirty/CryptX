@@ -37,11 +37,20 @@ RECIPE_RUN_STATUSES = {
   Approved: 43
 };
 
-RECIPE_ORDER_STATUSES = {
+RECIPE_ORDER_GROUP_STATUSES = {
   Pending: 81,
   Rejected: 82,
   Approved: 83
 };
+
+RECIPE_ORDER_STATUSES = {
+  Pending: 51,
+  Executing: 52,
+  Completed: 53,
+  Rejected: 54, // (by the user)
+  Cancelled: 55, // (manual intervention by user)
+  Failed: 56 // (due to technical issue which does not allow to continue)
+}
 
 EXECUTION_ORDER_STATUSES = {
   Pending: 61,
@@ -59,8 +68,8 @@ EXECUTION_ORDER_TYPES = {
 };
 
 ORDER_SIDES = {
-  BUY: 999,
-  SELL: 888
+  Buy: 999,
+  Sell: 888
 }
 
 COLD_STORAGE_ORDER_STATUSES = {

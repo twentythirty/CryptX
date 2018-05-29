@@ -38,7 +38,7 @@ module.exports = {
               },
               approval_timestamp: {
                   type: Sequelize.DATE,
-                  allowNull: false
+                  allowNull: true
               },
               approval_comment: {
                   type: Sequelize.TEXT('medium'),
