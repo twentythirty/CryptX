@@ -57,8 +57,8 @@ coinmarketcap_identifier nvarchar # Identifier in coinmarketcap system
 instrument # Tradable instrument
 -
 id PK int
-base_asset_id int FK >- asset.id # Base asset in a traded pair, e.g. "EUR" in instrument "EURUSD"
-target_asset_id int FK >- asset.id # Second asset in a traded pair, e.g. "USD" in instrument "EURUSD"
+transaction_asset_id int FK >- asset.id # Transaction asset in a traded pair, e.g. "EUR" in instrument "EURUSD"
+quote_asset_id int FK >- asset.id # Quote asset in a traded pair, e.g. "USD" in instrument "EURUSD"
 symbol string
 
 instrument_liquidity_requirement # This table is used to define minimum liquidity requirements for exchanges
@@ -103,7 +103,7 @@ id PK int
 asset_id int FK >- asset.id
 strategy_type enum # Strategy type for which this account is used. Possible values: Large Cap Index (LCI), Mid Cap Index (MCI)
 address nvarchar # Address that can be used to send the coins to this cold storage account
-custodian string # Custodian of the cold storage account
+custodian enum # Custodian of the cold storage account
 
 asset_market_capitalization # This table will contain market history retrieved from Coinmarketcap
 -
@@ -163,8 +163,8 @@ recipe_run_detail
 -
 id PK int
 recipe_run_id int FK >- recipe_run.id
-base_asset_id int FK >- asset.id
-target_asset_id int FK >- asset.id
+transaction_asset_id int FK >- asset.id
+quote_asset_id int FK >- asset.id
 target_exchange_id int FK >- exchange.id # The trading exchange on which trading is suggested acording the recipe run
 investment_percentage decimal # Percentage that will be invested this way
 
@@ -185,6 +185,7 @@ recipe_order_group_id int FK >- recipe_order_group.id
 instrument_id int FK >- instrument.id
 side enum # Buy = 0 / Sell = 1
 price decimal # Market price when the recipe order was placed
+quantity decimal # Size of the order
 status enum # Possible statuses are Pending, Executing, Completed, Rejected (by the user), Cancelled (manual intervention by user), Failed (due to technical issue which does not allow to continue)
 
 execution_order
