@@ -34,6 +34,16 @@ const marketDataKeyForRunDetail = (market_data_keys, recipe_run_detail) => {
 
 const generateApproveRecipeOrders = async (recipe_run_id) => {
 
+    //cehck if there already is a set of recipe orders for this recipe, by querying group
+    const existing_group = await RecipeOrderGroup.findOne({
+        where: {
+            recipe_run_id: recipe_run_id
+        }
+    });
+    if (existing_group) {
+        TE(`Recipe run ${recipe_run_id} already has a generated orders group ${existing_group.id}, cant generate more!`);
+    }
+
     const recipe_run = await RecipeRun.findById(recipe_run_id);
 
     //fetch all individual recipe run details

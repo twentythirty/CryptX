@@ -2,6 +2,7 @@
 
 const InvestmentRun = require('../models').InvestmentRun;
 const investmentService = require('../services/InvestmentService');
+const OrdersService = require('../services/OrdersService');
 
 const createInvestmentRun = async function (req, res) {
   let err, investment_run = {}, recipe_run;
@@ -59,8 +60,12 @@ const changeRecipeRunStatus = async function (req, res) {
   let [err, recipe_run] = await to(investmentService.changeRecipeRunStatus(
     user_id, recipe_id, status, comment
   ));
-
   if (err) return ReE(res, err.message, 422);
+
+  //if the recipe run is approved, try generate orders out of it
+  if (status === RECIPE_RUN_STATUSES.Approved) {
+    OrdersService.generateApproveRecipeOrders(recipe_run.id);
+  }
 
   return ReS(res, {
     recipe_run: recipe_run

@@ -197,6 +197,14 @@ router.get(
   filter_reducer,
   InvestmentController.getInvestmentRuns
 );
+//get filtered investments
+router.post(
+  ROUTES.GetInvestments.router_string,
+  stateless_auth,
+  check_permissions,
+  filter_reducer,
+  InvestmentController.getInvestmentRuns
+);
 router.get(
   ROUTES.GetInvestment.router_string,
   stateless_auth,
