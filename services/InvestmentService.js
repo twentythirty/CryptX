@@ -116,8 +116,8 @@ const createRecipeRun = async function (user_id, investment_run_id) {
       
       return RecipeRunDetail.create({
         recipe_run_id: recipe_run.id,
-        base_asset_id: action.base_asset_id,
-        target_asset_id: action.target_asset_id,
+        transaction_asset_id: action.transaction_asset_id,
+        quote_asset_id: action.quote_asset_id,
         target_exchange_id: action.exchange_id,
         investment_percentage: asset.investment_percentage
       });
@@ -168,17 +168,17 @@ const generateRecipeDetails = async function (strategy_type) {
       TE('None of instruments for asset %s fulfill liquidity requirements', asset.symbol);
 
     asset.possible_actions = asset.possible_actions.map((instrument) => {
-      let is_sell = instrument.base_asset_id!=asset.id;
+      let is_sell = instrument.transaction_asset_id!=asset.id;
       
       // get base asset price in usd
       let base_asset, base_asset_usd_price;
       if (base_asset = base_assets.find(ba => ba.id==(
-        is_sell ? instrument.base_asset_id : instrument.target_asset_id
+        is_sell ? instrument.transaction_asset_id : instrument.quote_asset_id
       )))
         base_asset_usd_price = base_asset.USD;
       else
         TE("Didn't find base asset with id",
-          is_sell ? instrument.base_asset_id : instrument.target_asset_id
+          is_sell ? instrument.transaction_asset_id : instrument.quote_asset_id
         );
 
       /* To find cheapest way to purchase asset first find out the price of asset in USD

@@ -24,12 +24,12 @@ module.exports = (sequelize, DataTypes) => {
     Instrument.associate = function(models) {
 
         Instrument.belongsTo(models.Asset, {
-            as: 'base_asset',
-            through: 'base_asset_id'
+            as: 'transaction_asset',
+            through: 'transaction_asset_id'
         });
         Instrument.belongsTo(models.Asset, {
-            as: 'target_asset',
-            through: 'target_asset_id'
+            as: 'quote_asset',
+            through: 'quote_asset_id'
         });
     };
 

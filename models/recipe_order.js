@@ -5,6 +5,7 @@ module.exports = (sequelize, DataTypes) => {
         'RecipeOrder',
         {
             price: DataTypes.DECIMAL,
+            quantity: DataTypes.DECIMAL,
             side: {
                 type: DataTypes.SMALLINT,
                 allowNull: false

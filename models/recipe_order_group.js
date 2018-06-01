@@ -10,7 +10,10 @@ module.exports = (sequelize, DataTypes) => {
                 type: DataTypes.SMALLINT,
                 allowNull: false
             },
-            approval_timestamp: DataTypes.DATE,
+            approval_timestamp: {
+                type: DataTypes.DATE,
+                allowNull: true
+            },
             approval_comment: DataTypes.TEXT('medium')
         },
         modelProps(

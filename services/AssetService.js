@@ -136,8 +136,8 @@ const getAssetInstruments = async function (asset_id) {
   let err, instruments;
   [err, instruments] = await to(sequelize.query(`
     SELECT i.id as instrument_id,
-      i.base_asset_id,
-      i.target_asset_id,
+      i.transaction_asset_id,
+      i.quote_asset_id,
       ilh.exchange_id,
       ilh.avg_vol as average_volume,
       ilh.min_vol as min_volume_requirement,
@@ -163,7 +163,7 @@ const getAssetInstruments = async function (asset_id) {
       WHERE imdd.instrument_id=ilh.instrument_id
       AND imdd.exchange_id=ilh.exchange_id
       ORDER BY timestamp DESC LIMIT 1)
-    WHERE i.base_asset_id=${asset_id} OR i.target_asset_id=${asset_id}  
+    WHERE i.transaction_asset_id=${asset_id} OR i.quote_asset_id=${asset_id}  
     `, {
       type: sequelize.QueryTypes.SELECT
     })

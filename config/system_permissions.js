@@ -179,12 +179,12 @@ ROUTES = {
   },
   GetInvestment: {
     router_string: "/investments/:investment_id",
-    permissions_matcher: /\/investmentd\/\d+$/,
+    permissions_matcher: /\/investments\/\d+$/,
     required_permissions: [PERMISSIONS.VIEW_INVESTMENT_RUN]
   },
   GetInvestments: {
     router_string: "/investments/all",
-    permissions_matcher: /\/investmentd\/all$/,
+    permissions_matcher: /\/investments\/all$/,
     required_permissions: [PERMISSIONS.VIEW_INVESTMENT_RUN]
   },
   ApproveRecipeRun: {

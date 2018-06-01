@@ -9,7 +9,10 @@ module.exports = (sequelize, DataTypes) => {
         allowNull: false
       },
       address: DataTypes.TEXT("medium"),
-      custodian: DataTypes.STRING
+      custodian: {
+        type: DataTypes.SMALLINT,
+        allowNull: false
+      }
     },
     modelProps(
       "cold_storage_account",

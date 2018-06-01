@@ -9,11 +9,11 @@ INSTRUMENT_STATUS_CHANGES = {
   Whitelisting: 400,
   Blacklisting: 401,
   Graylisting: 402
-}
+};
 
 MARKET_HISTORY_CALCULATION_TYPES = {
   NVT: 0 //Network Value to Transactions ratio, measures the dollar value of cryptoasset transaction activity relative to network value
-}
+};
 
 INVESTMENT_RUN_STATUSES = {
   Initiated: 301,
@@ -37,10 +37,19 @@ RECIPE_RUN_STATUSES = {
   Approved: 43
 };
 
-RECIPE_ORDER_STATUSES = {
+RECIPE_ORDER_GROUP_STATUSES = {
   Pending: 81,
   Rejected: 82,
   Approved: 83
+};
+
+RECIPE_ORDER_STATUSES = {
+  Pending: 51,
+  Executing: 52,
+  Completed: 53,
+  Rejected: 54, // (by the user)
+  Cancelled: 55, // (manual intervention by user)
+  Failed: 56 // (due to technical issue which does not allow to continue)
 };
 
 EXECUTION_ORDER_STATUSES = {
@@ -59,13 +68,17 @@ EXECUTION_ORDER_TYPES = {
 };
 
 ORDER_SIDES = {
-  BUY: 999,
-  SELL: 888
-}
+  Buy: 999,
+  Sell: 888
+};
 
 COLD_STORAGE_ORDER_STATUSES = {
   Pending: 51, //"order was generated internally, but not yet sent",
   Sent: 52, //"order wassent to exchange or blockchain (waiting confirmation)",
   Completed: 53, //"when order reaches its final successful state",
   Failed: 54 //"system failed to execute the order"
+};
+
+CUSTODIANS = {
+
 };
