@@ -81,28 +81,9 @@ const getStrategyAssets = async function (strategy_type, exclude_from_index = []
           asset.long_name,
           asset.is_base,
           asset.is_deposit,
-          avg(cap.market_share_percentage) AS avg_share,
-          ilh.exchange_id,
-          ilh.avg_vol,
-          i.id,
-        i.base_asset_id,
-          ilh.min_vol,
-        (100 / (SUM(avg(cap.market_share_percentage)) OVER ()) * avg(cap.market_share_percentage)) as investment_percentage
+          avg(cap.market_share_percentage) AS avg_share
 
     FROM asset
-    INNER JOIN instrument AS i ON i.target_asset_id=asset.id
-
-    LEFT JOIN
-      ( SELECT inlh.instrument_id AS instrument_id,
-              inlh.exchange_id AS exchange_id,
-              avg(inlh.volume) avg_vol,
-                                ilr.minimum_volume AS min_vol
-      FROM instrument_liquidity_history AS inlh
-      INNER JOIN instrument_liquidity_requirement AS ilr ON ilr.instrument_id=inlh.instrument_id
-      WHERE inlh.timestamp_to >= NOW() - (ilr.periodicity_in_days * interval '1 day')
-      GROUP BY inlh.instrument_id,
-                inlh.exchange_id,
-                ilr.minimum_volume ) AS ilh ON ilh.instrument_id=i.id
     INNER JOIN
       ( SELECT *
       FROM asset_market_capitalization AS c
@@ -116,18 +97,14 @@ const getStrategyAssets = async function (strategy_type, exclude_from_index = []
             (SELECT TRUE
               FROM asset_status_change
               WHERE asset_id = asset.id) )
-        AND ilh.avg_vol > ilh.min_vol
+        AND is_base=false
         ${exclude_string}
 
     GROUP BY asset.id,
             asset.symbol,
             asset.long_name,
             asset.is_base,
-            asset.is_deposit,
-            i.id,
-            ilh.min_vol,
-            ilh.exchange_id,
-            ilh.avg_vol
+            asset.is_deposit
     ORDER BY avg_share DESC LIMIT ${INDEX_CAP_TOTAL}`, {
     type: sequelize.QueryTypes.SELECT
   }));
@@ -149,3 +126,51 @@ const getStrategyAssets = async function (strategy_type, exclude_from_index = []
   return mci;
 };
 module.exports.getStrategyAssets = getStrategyAssets;
+
+
+/** Finds all possible ways to acquire asset. Returns all instruments and exchanges,
+ * with volume and lastest ask&bid prices.
+ * @param asset_id id of asset to find instruments for
+ */
+const getAssetInstruments = async function (asset_id) {
+  let err, instruments;
+  [err, instruments] = await to(sequelize.query(`
+    SELECT i.id as instrument_id,
+      i.base_asset_id,
+      i.target_asset_id,
+      ilh.exchange_id,
+      ilh.avg_vol as average_volume,
+      ilh.min_vol as min_volume_requirement,
+      imd.ask_price,
+      imd.bid_price
+    FROM instrument as i
+    -- only leave instruments satisfying liquidity requirements
+    LEFT JOIN
+      ( SELECT inlh.instrument_id AS instrument_id,
+          inlh.exchange_id AS exchange_id,
+          avg(inlh.volume) avg_vol,
+          ilr.minimum_volume AS min_vol
+        FROM instrument_liquidity_history AS inlh
+        INNER JOIN instrument_liquidity_requirement AS ilr ON ilr.instrument_id=inlh.instrument_id
+        WHERE inlh.timestamp_to >= NOW() - (ilr.periodicity_in_days * interval '1 day')
+        GROUP BY inlh.instrument_id,
+                  inlh.exchange_id,
+                  ilr.minimum_volume ) AS ilh ON ilh.instrument_id=i.id
+    -- add newest ask and bid price
+    JOIN instrument_market_data as imd ON imd.id=(
+      SELECT id
+      FROM instrument_market_data as imdd
+      WHERE imdd.instrument_id=ilh.instrument_id
+      AND imdd.exchange_id=ilh.exchange_id
+      ORDER BY timestamp DESC LIMIT 1)
+    WHERE i.base_asset_id=${asset_id} OR i.target_asset_id=${asset_id}  
+    `, {
+      type: sequelize.QueryTypes.SELECT
+    })
+  );
+
+  if (err) TE(err.message);
+
+  return instruments;
+};
+module.exports.getAssetInstruments = getAssetInstruments;

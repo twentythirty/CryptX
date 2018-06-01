@@ -191,5 +191,15 @@ ROUTES = {
     router_string: "/recipe/:recipe_id/approve",
     permissions_matcher: /recipe\/\d+\/approve$/,
     required_permissions: [PERMISSIONS.VIEW_INVESTMENT_RUN, PERMISSIONS.APPROVE_RECIPE_RUN]
+  },
+  CreateNewRecipeRun: {
+    router_string: "/investments/:investment_id/create_recipe",
+    permissions_matcher: /investmentss\/\d+\/create_recipe$/,
+    required_permissions: [PERMISSIONS.CREATE_INVESTMENT_RUN]
+  },
+  CreateDeposit: {
+    router_string: "/investments/:investment_id/deposit",
+    permissions_matcher: /investmentss\/\d+\/deposit$/,
+    required_permissions: [PERMISSIONS.CREATE_INVESTMENT_RUN]
   }
 };

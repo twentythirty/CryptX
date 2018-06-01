@@ -209,6 +209,20 @@ router.post(
   check_permissions,
   InvestmentController.changeRecipeRunStatus
 );
+router.post(
+  ROUTES.CreateNewRecipeRun.router_string,
+  stateless_auth,
+  check_permissions,
+  InvestmentController.createRecipeRun
+);
+
+router.post(
+  ROUTES.CreateDeposit.router_string,
+  stateless_auth,
+  check_permissions,
+  InvestmentController.addDeposit
+);
+
 
 //********* API DOCUMENTATION **********
 router.use(

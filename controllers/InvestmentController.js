@@ -2,6 +2,7 @@
 
 const InvestmentRun = require('../models').InvestmentRun;
 const investmentService = require('../services/InvestmentService');
+const DepositService = require('../services/DepositService');
 
 const createInvestmentRun = async function (req, res) {
   let err, investment_run = {}, recipe_run;
@@ -12,7 +13,6 @@ const createInvestmentRun = async function (req, res) {
   [err, investment_run] = await to(
     investmentService.createInvestmentRun(req.user.id, strategy_type, is_simulated)
   );
-
   if (err) return ReE(res, err, 422);
 
   [err, recipe_run] = await to(
@@ -21,10 +21,26 @@ const createInvestmentRun = async function (req, res) {
   if (err) return ReE(res, err, 422);
 
   return ReS(res, {
-    investment_run: investment_run
+    investment_run: investment_run,
+    recipe: recipe_run
   })
 };
 module.exports.createInvestmentRun = createInvestmentRun;
+
+const createRecipeRun = async function (req, res) {
+
+  let investment_run_id = req.params.investment_id,
+
+  [err, recipe_run] = await to(
+    investmentService.createRecipeRun(req.user.id, investment_run_id)
+  );
+  if (err) return ReE(res, err, 422);
+
+  return ReS(res, {
+    recipe_run: recipe_run
+  })
+};
+module.exports.createRecipeRun = createRecipeRun;
 
 const getInvestmentRun = async function (req, res) {
   
@@ -67,3 +83,18 @@ const changeRecipeRunStatus = async function (req, res) {
   })
 };
 module.exports.changeRecipeRunStatus = changeRecipeRunStatus;
+
+const addDeposit = async function (req, res) {
+
+  let investment_run_id = req.params.investment_id,
+    asset_id = req.body.asset_id,
+    amount = req.body.amount;
+
+  let [err, deposit] = await to(DepositService.saveDeposit(investment_run_id, asset_id, amount));
+  if (err) return ReE(res, err.message);
+
+  return ReS(res, {
+    deposit
+  });
+}
+module.exports.addDeposit = addDeposit;
