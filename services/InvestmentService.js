@@ -7,7 +7,8 @@ const User = require('../models').User;
 const Instrument = require('../models').Instrument;
 const InstrumentMarketData = require('../models').InstrumentMarketData;
 const Asset = require('../models').Asset;
-const AssetService = require('../services/AssetService');
+const AssetService = require('./AssetService');
+const OrdersService = require('./OrdersService');
 const Op = require('sequelize').Op;
 const sequelize = require('../models').sequelize;
 
@@ -227,6 +228,8 @@ const changeRecipeRunStatus = async function (user_id, recipe_run_id, status_con
   
   if (!recipe_run) TE("Recipe run not found");
 
+  const old_status = recipe_run.approval_status;
+
   Object.assign(recipe_run, {
     approval_status: status_constant,
     approval_user_id: user_id,
@@ -236,6 +239,11 @@ const changeRecipeRunStatus = async function (user_id, recipe_run_id, status_con
 
   [err, recipe_run] = await to(recipe_run.save());
   if (err) TE(err.message);
+
+  //approving recipe run that was not approved before, try generate orders async
+  if (status_constant == RECIPE_RUN_STATUSES.Approved && old_status !== status_constant) {
+    OrdersService.generateApproveRecipeOrders(recipe_run.id);
+  }
 
   return recipe_run;
 };
