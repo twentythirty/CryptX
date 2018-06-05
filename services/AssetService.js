@@ -97,7 +97,6 @@ const getStrategyAssets = async function (strategy_type, exclude_from_index = []
             (SELECT TRUE
               FROM asset_status_change
               WHERE asset_id = asset.id) )
-        AND is_base=false
         ${exclude_string}
 
     GROUP BY asset.id,
@@ -174,3 +173,54 @@ const getAssetInstruments = async function (asset_id) {
   return instruments;
 };
 module.exports.getAssetInstruments = getAssetInstruments;
+
+const getBaseAssetPrices = async function () {
+  let [err, prices] = await to(sequelize.query(`
+  SELECT prices.symbol as symbol, AVG(prices.price) as price
+  FROM
+  (
+    SELECT assetBuy.symbol as symbol, imd1.ask_price as price, imd1.timestamp as timestamp
+    FROM asset as a1
+    JOIN instrument i ON i.quote_asset_id=a1.id
+    JOIN asset as assetBuy ON assetBuy.id=i.transaction_asset_id
+    JOIN instrument_exchange_mapping as iem1 ON iem1.instrument_id=i.id
+    JOIN instrument_market_data imd1 ON imd1.id=(
+        SELECT id FROM instrument_market_data imdd 
+        WHERE imdd.instrument_id=i.id
+          AND imdd.exchange_id=iem1.exchange_id
+        ORDER BY timestamp DESC
+        LIMIT 1
+      )
+    WHERE a1.symbol='USD'
+      AND assetBuy.is_base=true
+    GROUP BY assetBuy.symbol, imd1.ask_price, imd1.timestamp
+    
+    UNION 
+    
+    SELECT assetSell.symbol as symbol, (1 / imd2.bid_price) as price, imd2.timestamp as timestamp
+    FROM asset as a2
+    JOIN instrument i ON i.transaction_asset_id=a2.id
+    JOIN asset as assetSell ON assetSell.id=i.quote_asset_id
+    JOIN instrument_exchange_mapping as iem2 ON iem2.instrument_id=i.id
+    JOIN instrument_market_data imd2 ON imd2.id=(
+        SELECT id FROM instrument_market_data imdd 
+        WHERE imdd.instrument_id=i.id
+          AND imdd.exchange_id=iem2.exchange_id
+        ORDER BY timestamp DESC
+        LIMIT 1
+      )
+    WHERE a2.symbol='USD'
+    AND assetSell.is_base=true
+    GROUP BY assetSell.symbol, imd2.bid_price, imd2.timestamp
+  ) as prices
+  WHERE prices.timestamp >= NOW() - interval '15 minutes'
+  GROUP BY prices.symbol
+  `, {
+    type: sequelize.QueryTypes.SELECT
+  }));
+
+  if (err) TE(err.message);
+
+  return prices;
+}
+module.exports.getBaseAssetPrices = getBaseAssetPrices;
