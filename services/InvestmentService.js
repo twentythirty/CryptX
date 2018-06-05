@@ -145,10 +145,18 @@ const generateRecipeDetails = async function (strategy_type) {
       is_base: true
     }
   })).map(asset => asset.toJSON());
-  base_assets[0].USD = 7576.56;
-  base_assets[1].USD = 572.82;
 
-  // check if assets meet liquidity requirements
+  let prices;
+  [err, prices] = await to(AssetService.getBaseAssetPrices());
+  if (err) TE(err.message);
+  if (!prices) TE('No base asset prices in USD found');
+
+  base_assets.map((a) => {
+    let price = prices.find(b => a.symbol == b.symbol).price;
+    a.USD = parseFloat(price);
+  });
+
+  // get all the ways to acquire assets
   let possible_actions;
   [err, possible_actions] = await to(Promise.all(
     assets.map((asset) => {
@@ -161,21 +169,36 @@ const generateRecipeDetails = async function (strategy_type) {
   _.zipWith(assets, possible_actions, (a, b) => a.possible_actions = b);
 
   assets.map(asset => {
+    if (asset.is_base) {
+      asset.suggested_action = asset.possible_actions[0];
+      if (asset.id != asset.suggested_action.quote_asset_id)
+        [asset.suggested_action.quote_asset_id, asset.suggested_action.transaction_asset_id] =
+        [asset.suggested_action.transaction_asset_id, asset.suggested_action.quote_asset_id];
+      return ;
+    }
+    /* Return empty object is there is no ways found to get asset.
+      Asset may be greylisted if it is not tradeable on any exchanges. */
     if (typeof asset.possible_actions === 'undefined' || !asset.possible_actions)
       return {};
 
+    /* Cancel recipe generation if asset doesn't meet minimum volume requirements */
     if (asset.possible_actions.length &&
         asset.possible_actions.every((a) => a.average_volume < a.min_volume_requirement))
       TE('None of instruments for asset %s fulfill liquidity requirements', asset.symbol);
-
+    
+    // calculate asset price in usd when buying through certain insturment/exchange
     asset.possible_actions = asset.possible_actions.map((instrument) => {
       let is_sell = instrument.transaction_asset_id!=asset.id;
+      // flip assets if it's a sell
+      if (!is_sell) {
+        [instrument.transaction_asset_id, instrument.quote_asset_id] =
+          [instrument.quote_asset_id, instrument.transaction_asset_id];
+      }
+      let base_asset_id = instrument.transaction_asset_id;
       
       // get base asset price in usd
       let base_asset, base_asset_usd_price;
-      if (base_asset = base_assets.find(ba => ba.id==(
-        is_sell ? instrument.transaction_asset_id : instrument.quote_asset_id
-      )))
+      if (base_asset = base_assets.find(ba => ba.id==base_asset_id)) 
         base_asset_usd_price = base_asset.USD;
       else
         TE("Didn't find base asset with id",
@@ -185,32 +208,31 @@ const generateRecipeDetails = async function (strategy_type) {
       /* To find cheapest way to purchase asset first find out the price of asset in USD
        if it would be acquired this way. If it's a sell position, then invert price of
        bid order. */
-      instrument.cost_usd = base_asset_usd_price * ( is_sell ? 
+      let cost_usd = base_asset_usd_price * ( is_sell ? 
         1 / instrument.bid_price :
         instrument.ask_price);
 
       Object.assign(instrument, {
-        is_sell
+        is_sell,
+        cost_usd
       });
       return instrument;
     });
 
     // find cheapest way to acquire asset
-    asset.suggested_action = _.minBy(
-      asset.possible_actions,
-      'cost_usd'
-    );
+    asset.suggested_action = _.minBy(asset.possible_actions, 'cost_usd');
   });
-    
+
 
   // calculate investment percentage based on market share
   let total_marketshare = 0;
-  assets.filter(a => typeof a.suggested_action!=="undefined")
+  assets = assets.filter(a => typeof a.suggested_action!=="undefined" || a.is_base)
     .map((asset) => {
       total_marketshare += parseFloat(asset.avg_share);
       return asset;
     }).map(asset => {
       asset.investment_percentage = (100 / total_marketshare) * asset.avg_share;
+      return asset;
     });
 
   return assets;
