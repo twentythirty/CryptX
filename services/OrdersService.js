@@ -112,8 +112,6 @@ const generateApproveRecipeOrders = async (recipe_run_id) => {
         const deposit = investment_deposits[recipe_run_detail.quote_asset_id];
 
         //if either is missing, this is a bad recipe detail and will be ignored
-        console.log(market_data);
-        console.log(deposit);
         if (market_data && deposit) {
             return true;
         } else {
