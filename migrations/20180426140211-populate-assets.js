@@ -41,6 +41,21 @@ module.exports = {
           });
         });
       }));
+    }).then(assets_blockchain => {
+      //bring focus back to assets
+      return Asset.findAll()
+    }).then(assets => {
+      //insert the 2 basic instruments - exchange dollars for base tokens
+      const usd = _.find(assets, asset => asset.symbol === 'USD');
+      const base_assets = _.filter(assets, 'is_base');
+
+      return queryInterface.bulkInsert('instrument', _.map(base_assets, base_asset => {
+
+        return {
+          base_asset_id: base_asset.id,
+          target_asset_id: usd.id
+        }
+      }));
     });
   },
   down: (queryInterface, Sequelize) => {

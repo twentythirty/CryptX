@@ -1,6 +1,6 @@
 'use strict';
 
-const Instrument = require('../models').Instrument;
+const sequelize = require('../models').sequelize;
 const Asset = require('../models').Asset;
 
 module.exports = {
@@ -9,8 +9,10 @@ module.exports = {
             type: Sequelize.STRING
         }).then(done => {
             //add symbols to existing instrument rows
-            //by fetching them all...
-            return Instrument.findAll()
+            //by all instruments (done in generic SELECT because model props changes since then)
+            return sequelize.query(`SELECT * FROM instrument`, {
+                type: sequelize.QueryTypes.SELECT
+            })
         }).then(instruments => {
             //...finding the relevant assets...
             return Promise.all([
@@ -27,13 +29,18 @@ module.exports = {
             const [instruments, assets] = data;
             const assets_map = _.keyBy(assets, 'id');
 
-            return Promise.all(_.map(instruments, instrument => {
+            const symbol_updates = _.map(instruments, instrument => {
 
                 const base_asset = assets_map[instrument.base_asset_id];
                 const target_asset = assets_map[instrument.target_asset_id];
-                instrument.symbol = `${base_asset.symbol}/${target_asset.symbol}`;
+                const symbol = `${base_asset.symbol}/${target_asset.symbol}`;
 
-                return instrument.save();
+                return {id: instrument.id, symbol: symbol};
+            })
+
+            return Promise.all(_.map(symbol_updates, symbol_update => {
+                //bulkUpdate doesnt support updating many values for many rows, but we cant use the model, so do this inefficiently
+                return queryInterface.bulkUpdate('instrument', { symbol: symbol_update.symbol }, { id: symbol_update.id });
             }));
         });
     },
