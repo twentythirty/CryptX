@@ -110,9 +110,15 @@ const getStrategyAssets = async function (strategy_type, exclude_from_index = []
 
   if (err) TE(err.message);
 
+  assets.map(a => {
+    Object.assign(a, {
+      avg_share: parseFloat(a.avg_share),
+    });
+  });
+
   let totalMarketShare = 0;
   let lci = _.remove(assets.slice(0, INDEX_LCI_CAP), function (coin) {
-    totalMarketShare += parseFloat(coin.avg_share);
+    totalMarketShare += coin.avg_share;
     return totalMarketShare <= LCI_MARKETSHARE_PRC;
   });
 
@@ -170,6 +176,15 @@ const getAssetInstruments = async function (asset_id) {
 
   if (err) TE(err.message);
 
+  instruments.map(i => {
+    Object.assign(i, {
+      average_volume: parseFloat(i.average_volume),
+      min_volume_requirement: parseFloat(i.min_volume_requirement),
+      ask_price: parseFloat(i.ask_price),
+      bid_price: parseFloat(i.bid_price)
+    });
+  });
+
   return instruments;
 };
 module.exports.getAssetInstruments = getAssetInstruments;
@@ -213,13 +228,21 @@ const getBaseAssetPrices = async function () {
     AND assetSell.is_base=true
     GROUP BY assetSell.symbol, imd2.bid_price, imd2.timestamp
   ) as prices
-  WHERE prices.timestamp >= NOW() - interval '15 minutes'
+  WHERE prices.timestamp >= NOW() - interval '15 days'
   GROUP BY prices.symbol
   `, {
     type: sequelize.QueryTypes.SELECT
   }));
 
   if (err) TE(err.message);
+
+  if (!prices.length) TE('No base asset prices in USD for past 15 minutes found!');
+
+  prices.map(p => {
+    Object.assign(p, {
+      price: parseFloat(p.price),
+    });
+  });
 
   return prices;
 }

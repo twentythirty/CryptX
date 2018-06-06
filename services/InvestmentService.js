@@ -86,26 +86,25 @@ const createRecipeRun = async function (user_id, investment_run_id) {
     }
   });
 
-  if (recipe_run) TE("This investment run already has recipe pending approval");
+  if (recipe_run) TE("There is already recipe run pending approval");
 
-  [err, investment_run] = await to(changeInvestmentRunStatus(
-    investment_run_id, 
+  [err, investment_run] = await to(this.changeInvestmentRunStatus(
+    investment_run_id,
     INVESTMENT_RUN_STATUSES.RecipeRun
   ));
   if (err) TE(err.message);
 
-  [err, recipe_run_detail] = await to(generateRecipeDetails(investment_run.strategy_type));
+  [err, recipe_run_detail] = await to(this.generateRecipeDetails(investment_run.strategy_type));
   if (err) TE(err.message);
 
-  recipe_run = new RecipeRun({
+  [err, recipe_run] = await to(RecipeRun.create({
     created_timestamp: new Date(),
     investment_run_id,
     user_created_id: user_id,
     approval_status: RECIPE_RUN_STATUSES.Pending,
     approval_comment: '',
-  });
+  }));
 
-  [err, recipe_run] = await to(recipe_run.save());
   if (err) TE(err.message);
 
   // fill recipe_run_details with results from generateRecipeDetails
@@ -140,20 +139,22 @@ const generateRecipeDetails = async function (strategy_type) {
   [err, assets] = await to(AssetService.getStrategyAssets(strategy_type));
   if (err) TE(err.message);
 
-  let base_assets = (await Asset.findAll({
+  let base_assets = await Asset.findAll({
     where: {
       is_base: true
     }
-  })).map(asset => asset.toJSON());
+  })
+  if (typeof base_assets==="undefined" || !base_assets || !base_assets.length)
+    TE("Couln't find base assets");
+  base_assets.map(asset => asset.toJSON());
 
   let prices;
   [err, prices] = await to(AssetService.getBaseAssetPrices());
   if (err) TE(err.message);
-  if (!prices) TE('No base asset prices in USD found');
 
   base_assets.map((a) => {
     let price = prices.find(b => a.symbol == b.symbol).price;
-    a.USD = parseFloat(price);
+    a.USD = price;
   });
 
   // get all the ways to acquire assets
@@ -178,19 +179,18 @@ const generateRecipeDetails = async function (strategy_type) {
     }
     /* Return empty object is there is no ways found to get asset.
       Asset may be greylisted if it is not tradeable on any exchanges. */
-    if (typeof asset.possible_actions === 'undefined' || !asset.possible_actions)
+    if (typeof asset.possible_actions === 'undefined' || !asset.possible_actions.length)
       return {};
 
     /* Cancel recipe generation if asset doesn't meet minimum volume requirements */
-    if (asset.possible_actions.length &&
-        asset.possible_actions.every((a) => a.average_volume < a.min_volume_requirement))
-      TE('None of instruments for asset %s fulfill liquidity requirements', asset.symbol);
+    asset.possible_actions = asset.possible_actions.filter(a => a.average_volume >= a.min_volume_requirement);
+    if (!asset.possible_actions.length) TE('None of instruments for asset %s fulfill liquidity requirements', asset.symbol);
     
     // calculate asset price in usd when buying through certain insturment/exchange
     asset.possible_actions = asset.possible_actions.map((instrument) => {
-      let is_sell = instrument.transaction_asset_id!=asset.id;
+      let is_sell = instrument.transaction_asset_id==asset.id;
       // flip assets if it's a sell
-      if (!is_sell) {
+      if (is_sell) {
         [instrument.transaction_asset_id, instrument.quote_asset_id] =
           [instrument.quote_asset_id, instrument.transaction_asset_id];
       }
@@ -228,7 +228,7 @@ const generateRecipeDetails = async function (strategy_type) {
   let total_marketshare = 0;
   assets = assets.filter(a => typeof a.suggested_action!=="undefined" || a.is_base)
     .map((asset) => {
-      total_marketshare += parseFloat(asset.avg_share);
+      total_marketshare += asset.avg_share;
       return asset;
     }).map(asset => {
       asset.investment_percentage = (100 / total_marketshare) * asset.avg_share;
@@ -237,6 +237,7 @@ const generateRecipeDetails = async function (strategy_type) {
 
   return assets;
 };
+module.exports.generateRecipeDetails = generateRecipeDetails;
 
 const changeRecipeRunStatus = async function (user_id, recipe_run_id, status_constant, comment) {
   // check for valid recipe run status
