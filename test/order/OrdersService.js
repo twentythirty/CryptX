@@ -11,12 +11,13 @@ chai.use(chaiAsPromised);
 const OrdersService = require('../../services/OrdersService');
 const RecipeRun = require('../../models').RecipeRun;
 const RecipeRunDetail = require('../../models').RecipeRunDetail;
-const InvestmentRunDeposit = require('../../models').InvestmentRunDeposit;
 const RecipeOrderGroup = require('../../models').RecipeOrderGroup;
 const RecipeOrder = require('../../models').RecipeOrder;
 const Instrument = require('../../models').Instrument;
+const Asset = require('../../models').Asset;
 const InstrumentExchangeMapping = require('../../models').InstrumentExchangeMapping;
 const InstrumentMarketData = require('../../models').InstrumentMarketData;
+const CCXTUtils = require('../../utils/CCXTUtils');
 
 const TEST_RECIPE_RUN = {
 
@@ -40,6 +41,19 @@ const TEST_INSTRUMENTS = [{
 ];
 const TEST_EXCHANGE_IDS = [34, 57, 89, 99, 7, 33];
 const TEST_ASSET_IDS = _.uniq(_.flatMap(TEST_INSTRUMENTS, instrument => [instrument.transaction_asset_id, instrument.quote_asset_id]));
+const TEST_ASSETS = _.uniq(_.flatMap(TEST_INSTRUMENTS, instrument => {
+    const symbol_parts = instrument.symbol.split('/');
+    return [
+        {
+            id: instrument.transaction_asset_id,
+            symbol: symbol_parts[0]
+        },
+        {
+            id: instrument.quote_asset_id,
+            symbol: symbol_parts[1]
+        }
+    ]
+}), 'id');
 const TEST_RECIPE_RUN_DETAILS = _.map(TEST_EXCHANGE_IDS, exchange_id => {
     const assets_no_quote = _.filter(TEST_ASSET_IDS, id => id !== QUOTE_ASSET_ID);
     const assets_pair = [QUOTE_ASSET_ID, assets_no_quote[_.random(assets_no_quote.length - 1)]];
@@ -79,12 +93,7 @@ const TEST_INSTRUMENT_MARKET_DATA = _.flatMap(_.map(TEST_EXCHANGE_IDS, exchange_
     })              
 }));
 
-// change deposit to fail test
-const TEST_INVESTMENT_DEPOSITS = [{
-    investment_run_id: TEST_RECIPE_RUN.investment_run_id,
-    asset_id: QUOTE_ASSET_ID,
-    amount: _.random(85.7)
-}];
+
 
 
 describe('OrdersService testing', () => {
@@ -107,6 +116,10 @@ describe('OrdersService testing', () => {
 
                 return Promise.resolve(TEST_INSTRUMENTS);
             });
+            sinon.stub(Asset, 'findAll').callsFake(options => {
+
+                return Promise.resolve(TEST_ASSETS);
+            });
             sinon.stub(InstrumentExchangeMapping, 'findAll').callsFake(options => {
 
                 return Promise.resolve(TEST_EXCHNAGE_MAPPINGS);
@@ -115,10 +128,6 @@ describe('OrdersService testing', () => {
 
                 return Promise.resolve(TEST_INSTRUMENT_MARKET_DATA);
             });
-            sinon.stub(InvestmentRunDeposit, 'findAll').callsFake(options => {
-
-                return Promise.resolve(TEST_INVESTMENT_DEPOSITS);
-            });
             sinon.stub(RecipeOrderGroup, 'create').callsFake(options => {
 
                 return Promise.resolve(new RecipeOrderGroup(options));
@@ -126,6 +135,20 @@ describe('OrdersService testing', () => {
             sinon.stub(RecipeOrder, 'create').callsFake(options => {
 
                 return Promise.resolve(new RecipeOrder(options));
+            });
+            sinon.stub(CCXTUtils, 'getConnector').callsFake(data => {
+
+                return Promise.resolve({
+                    fetchBalance: async () => {
+                        
+                        return {
+                            free: _.zipObject(
+                                _.map(TEST_ASSETS, 'symbol'),
+                                Array(TEST_ASSETS.length).fill().map(ignore => _.random(0.1, 500, true))
+                            )
+                        }
+                    }
+                });
             });
 
             done();
@@ -137,11 +160,12 @@ describe('OrdersService testing', () => {
             RecipeRun.findById,
             RecipeRunDetail.findAll,
             Instrument.findAll,
+            Asset.findAll,
             InstrumentExchangeMapping.findAll,
             InstrumentMarketData.findAll,
-            InvestmentRunDeposit.findAll,
             RecipeOrderGroup.create,
-            RecipeOrder.create
+            RecipeOrder.create,
+            CCXTUtils.getConnector
         ].forEach(model => {
 
             if (model.restore) {
@@ -191,32 +215,53 @@ describe('OrdersService testing', () => {
                 return Promise.resolve(null);
             });
             //make all deposits of bad currency to reject all mappings
-            const BAD_INVESTMENT_DEPOSITS = _.map(TEST_INVESTMENT_DEPOSITS, deposit => {
+            CCXTUtils.getConnector.restore();
+            sinon.stub(CCXTUtils, 'getConnector').callsFake(exchange => {
 
-                const copy = Object.assign({}, deposit);
-                copy.asset_id = QUOTE_ASSET_ID * 2;
-
-                return copy;
-            })
-            InvestmentRunDeposit.findAll.restore();
-            sinon.stub(InvestmentRunDeposit, 'findAll').callsFake(options => {
-
-                return Promise.resolve(BAD_INVESTMENT_DEPOSITS);
+                return Promise.resolve({
+                    fetchBalance: async () => {
+                        return {
+                            free: {}
+                        }
+                    }
+                })
             });
 
             return OrdersService.generateApproveRecipeOrders(TEST_RECIPE_RUN.id).then(fulfilled => {
 
-                InvestmentRunDeposit.findAll.restore();
-                sinon.stub(InvestmentRunDeposit, 'findAll').callsFake(options => {
-                    return Promise.resolve(TEST_INVESTMENT_DEPOSITS);
+                CCXTUtils.getConnector.restore();
+                sinon.stub(CCXTUtils, 'getConnector').callsFake(data => {
+
+                    return Promise.resolve({
+                        fetchBalance: async () => {
+                            
+                            return {
+                                free: _.zipObject(
+                                    _.map(TEST_ASSETS, 'symbol'),
+                                    Array(TEST_ASSETS.length).fill().map(ignore => _.random(0.1, 500, true))
+                                )
+                            }
+                        }
+                    });
                 });
                 RecipeOrderGroup.findOne.restore();
                 done(new Error("Orders service should have rejected empty valid orders!"));
             }, rejected => {
 
-                InvestmentRunDeposit.findAll.restore();
-                sinon.stub(InvestmentRunDeposit, 'findAll').callsFake(options => {
-                    return Promise.resolve(TEST_INVESTMENT_DEPOSITS);
+                CCXTUtils.getConnector.restore();
+                sinon.stub(CCXTUtils, 'getConnector').callsFake(data => {
+
+                    return Promise.resolve({
+                        fetchBalance: async () => {
+                            
+                            return {
+                                free: _.zipObject(
+                                    _.map(TEST_ASSETS, 'symbol'),
+                                    Array(TEST_ASSETS.length).fill().map(ignore => _.random(0.1, 500, true))
+                                )
+                            }
+                        }
+                    });
                 });
                 RecipeOrderGroup.findOne.restore();
                 done();

@@ -3,12 +3,13 @@
 
 const RecipeRun = require('../models').RecipeRun;
 const RecipeRunDetail = require('../models').RecipeRunDetail;
-const InvestmentRunDeposit = require('../models').InvestmentRunDeposit;
 const RecipeOrderGroup = require('../models').RecipeOrderGroup;
 const RecipeOrder = require('../models').RecipeOrder;
 const Instrument = require('../models').Instrument;
+const Asset = require('../models').Asset;
 const InstrumentExchangeMapping = require('../models').InstrumentExchangeMapping;
 const InstrumentMarketData = require('../models').InstrumentMarketData;
+const CCXTUtils = require('../utils/CCXTUtils');
 
 
 const sameAssets = (obj1, obj2) => {
@@ -19,6 +20,75 @@ const sameAssets = (obj1, obj2) => {
         (obj1.quote_asset_id == obj2.transaction_asset_id &&
             obj1.transaction_asset_id == obj2.quote_asset_id)
     )
+}
+
+/**
+ * Returns current available funds on exchanges of supplied identifiers.
+ * data is returned in the format of
+ * 
+ * {
+ *  [exchange_id]: {
+ *    [asset_id]: [money],
+ *    [asset_id]: [money],
+ *  ...
+ *  }
+ * }
+ * @param exchange_ids Identifiers of exchanges to get balance for. should be a list
+ */
+const fetch_exchange_deposits = async (exchange_ids) => {
+
+    //fetch all connectors, in [exchange_id, connector] pairs
+    return Promise.all(_.map(exchange_ids,
+        exchange_id => Promise.all([
+            Promise.resolve(exchange_id),
+            CCXTUtils.getConnector(exchange_id)
+        ]))).then(connectors => {
+
+        //fetch balance for users on exchanges in pairs [exchange_id, balance_data]
+        return Promise.all(_.map(connectors, connector_data => {
+            const [exchange_id, connector] = connector_data;
+            return Promise.all([
+                Promise.resolve(exchange_id),
+                connector.fetchBalance()
+            ])
+        }));
+    }).then(balances_data => {
+        //aprticipating asset symbols of deposits
+        const deposit_symbols = _.flatMap(balances_data, balance_data => {
+            const [exchange_id, balance] = balance_data;
+            return Object.keys(balance.free);
+        });
+
+        //structure next promise into list of one element being same balances/exchanges pairs, 
+        //second element beign all assets that have deposit in exchange
+        return Promise.all([
+            Promise.resolve(balances_data),
+            Asset.findAll({
+                where: {
+                    symbol: deposit_symbols
+                }
+            })
+        ]);
+    }).then(ex_balance_assets => {
+
+        const [balance_data, assets] = ex_balance_assets;
+        const symbol_lookup = _.keyBy(assets, 'symbol');
+
+        //finally, turn balances into a mapping of exchanges
+        //where each key is exchange id and data is 
+        //mapping of money amount for asset id
+        return _.fromPairs(_.map(balance_data, ([exchange_id, balance_info]) => {
+            const symbols = Object.keys(balance_info.free);
+            const symbol_ids = _.map(symbols, s => symbol_lookup[s].id);
+            const balances = _.map(symbols, s => balance_info.free[s]);
+
+            //build up same mapping as balance.free, but with asset ids instead of symbols
+            const asset_sum = _.zipObject(symbol_ids, balances);
+
+            //associate mapping with exchanges
+            return [exchange_id, asset_sum]
+        }));
+    });
 }
 
 const marketDataKeyForRunDetail = (market_data_keys, instruments_by_id, recipe_run_detail) => {
@@ -95,12 +165,8 @@ const generateApproveRecipeOrders = async (recipe_run_id) => {
         return [market_data.instrument_id, market_data.exchange_id]
     });
 
-    //investment run deposits, mapped by currency deposit was made in
-    const investment_deposits = _.keyBy(await InvestmentRunDeposit.findAll({
-        where: {
-            investment_run_id: recipe_run.investment_run_id
-        }
-    }), 'asset_id');
+    //fetch balance info from exchanges
+    const exchange_deposits = await fetch_exchange_deposits(_.map(recipe_run_details, 'target_exchange_id'));
 
     //filter out recipe run detailes where we dont have the info
     const market_data_keys = Object.keys(grouped_market_data);
@@ -109,14 +175,18 @@ const generateApproveRecipeOrders = async (recipe_run_id) => {
         //for assets of recipe on exchange of recipe
         const market_data = marketDataKeyForRunDetail(market_data_keys, instruments_by_id, recipe_run_detail);
         //is there a deposit in the currency we wish to sell
-        const deposit = investment_deposits[recipe_run_detail.quote_asset_id];
+        const deposit = exchange_deposits[recipe_run_detail.target_exchange_id];
+        //deposit is valid if there is money of the quote asset
+        const deposit_valid = (deposit != null &&
+            deposit[recipe_run_detail.quote_asset_id] != null &&
+            deposit[recipe_run_detail.quote_asset_id] > 0.0);
 
         //if either is missing, this is a bad recipe detail and will be ignored
-        if (market_data && deposit) {
+        if (market_data && deposit_valid) {
             return true;
         } else {
             console.log(`
-            WARN: Skipping recipe run detail due to missing info! 
+            WARN: Skipping recipe run detail due to missing info/no deposit! 
             Recipe run detail id: ${recipe_run_detail.id}
             Detail exchange id: ${recipe_run_detail.target_exchange_id}
             Detail proposed trade: ${recipe_run_detail.transaction_asset_id}/${recipe_run_detail.quote_asset_id}
@@ -150,9 +220,9 @@ const generateApproveRecipeOrders = async (recipe_run_id) => {
         const price = (buy_order ? market_data.bid_price : market_data.ask_price);
         const side = buy_order ? ORDER_SIDES.Buy : ORDER_SIDES.Sell;
         //get deposit in base currency
-        const deposit = investment_deposits[recipe_run_detail.quote_asset_id];
+        const deposit = exchange_deposits[recipe_run_detail.target_exchange_id][recipe_run_detail.quote_asset_id];
         //total amount to spend on this currency
-        const spend_amount = recipe_run_detail.investment_percentage * deposit.amount;
+        const spend_amount = recipe_run_detail.investment_percentage * deposit;
         //amount of currency to buy
         const qnty = spend_amount / price;
 
