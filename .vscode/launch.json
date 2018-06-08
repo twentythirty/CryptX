@@ -22,7 +22,7 @@
         "999999",
         "--colors",
         "--recursive",
-        "${workspaceFolder}/test"
+        "${workspaceFolder}/back-end/test"
       ],
       "internalConsoleOptions": "openOnSessionStart"
     },
