@@ -6,8 +6,8 @@
   },
   "apps": [
     {
-      "root": "src",
-      "outDir": "dist",
+      "root": "front-end/src",
+      "outDir": "front-end/dist",
       "assets": [
         "assets",
         "favicon.ico"
