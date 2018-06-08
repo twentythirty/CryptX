@@ -1,5 +1,5 @@
 'use strict';
-const CCXTUtils = require('../utils/CCXTUtils');
+const ccxt = require('ccxt');
 
 //run once every 10 minutes
 module.exports.SCHEDULE = '*/10 * * * *';
@@ -33,7 +33,7 @@ module.exports.JOB_BODY = async (config, log) => {
                 const mappings = associatedMappings[exchange.id];
                 log(`Building price fetcher for ${exchange.name} with ${mappings.length} mappings...`);
 
-                const fetcher = CCXTUtils.getConnector(exchange);
+                const fetcher = new ccxt[exchange.api_id]();
 
                 //promise pairs made of arrays where [exchange, [mapping, fetched-data]]
                 return Promise.all([
