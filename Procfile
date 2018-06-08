@@ -1,2 +1,2 @@
 web: npm start
-jobs: node jobs/jobs-runner.js
+jobs: node back-end/jobs/jobs-runner.js
