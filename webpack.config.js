@@ -11,6 +11,7 @@ const postcssImports = require('postcss-import');
 
 const { NoEmitOnErrorsPlugin, SourceMapDevToolPlugin, NamedModulesPlugin } = require('webpack');
 const { NamedLazyChunksWebpackPlugin, BaseHrefWebpackPlugin, PostcssCliResources } = require('@angular/cli/plugins/webpack');
+const { optimize } = require('webpack');
 const { CommonsChunkPlugin } = require('webpack').optimize;
 const { AngularCompilerPlugin } = require('@ngtools/webpack');
 
@@ -119,7 +120,8 @@ const postcssPlugins = function (loader) {
 
 
 
-module.exports = {
+/* module.exports */
+let configuration = {
   "resolve": {
     "extensions": [
       ".ts",
@@ -514,3 +516,33 @@ module.exports = {
     }
   }
 };
+
+// find out how to check for environment on dev
+if (process.env.NODE_ENV=='production') {
+  configuration.plugins.push(
+    new optimize.UglifyJsPlugin({
+      beautify: false,
+      output: {
+        comments: false
+      },
+      mangle: {
+        screw_ie8: true
+      },
+      compress: {
+        screw_ie8: true,
+        warnings: false,
+        conditionals: true,
+        unused: true,
+        comparisons: true,
+        sequences: true,
+        dead_code: true,
+        evaluate: true,
+        if_return: true,
+        join_vars: true,
+        negate_iife: false
+      }
+    })
+  );
+}
+
+module.exports = configuration;
