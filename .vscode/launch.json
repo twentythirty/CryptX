@@ -8,7 +8,7 @@
       "type": "node",
       "request": "launch",
       "name": "Launch Jobs",
-      "program": "${workspaceFolder}/jobs/jobs-runner.js"
+      "program": "${workspaceFolder}/back-end/jobs/jobs-runner.js"
     },
     {
       "type": "node",
@@ -22,7 +22,7 @@
         "999999",
         "--colors",
         "--recursive",
-        "${workspaceFolder}/test"
+        "${workspaceFolder}/back-end/test"
       ],
       "internalConsoleOptions": "openOnSessionStart"
     },
