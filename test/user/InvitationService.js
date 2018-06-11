@@ -111,9 +111,9 @@ describe('InvitationService testing', () => {
             inviteService.createInvitation({}, NO_ROLE_ID, '', '', NO_USER_MAIL).should.be.rejected;
         });
 
-        it('save a valid invitation', done => {
+        it('save a valid invitation', (done) => {
 
-            return inviteService.createInvitation({
+            inviteService.createInvitation({
                 id: 9
             }, ROLE_ID, FIRST_NAME, LAST_NAME, NO_USER_MAIL).then(invitation => {
                 try {
@@ -129,10 +129,9 @@ describe('InvitationService testing', () => {
                     chai.expect(invitation.email).to.eq(NO_USER_MAIL);
                     //this was saved
                     sinon.assert.called(UserInvitation.create);
-
                     done();
                 } catch (ex) {
-                    done(ex);
+                    throw ex;
                 }
             });
         });

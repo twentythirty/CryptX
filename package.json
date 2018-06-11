@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "start": "./startup.sh",
-    "test": "NODE_ENV=test mocha --recursive --timeout 20000"
+    "test": "NODE_ENV=test mocha --recursive --timeout 20000 --exit"
   },
   "dependencies": {
     "@sendgrid/mail": "^6.2.1",
@@ -41,7 +41,7 @@
   "devDependencies": {
     "chai": "^3.5.0",
     "chai-http": "^2.0.1",
-    "mocha": "^2.4.5",
+    "mocha": "^4.0.0",
     "nodemon": "^1.17.3"
   }
 }

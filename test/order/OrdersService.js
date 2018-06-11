@@ -8,7 +8,7 @@ const sinon = require("sinon");
 
 chai.use(chaiAsPromised);
 
-const OrdersService = require('../../services/OrdersService');
+const ordersService = require('../../services/OrdersService');
 const RecipeRun = require('../../models').RecipeRun;
 const RecipeRunDetail = require('../../models').RecipeRunDetail;
 const RecipeOrderGroup = require('../../models').RecipeOrderGroup;
@@ -177,13 +177,13 @@ describe('OrdersService testing', () => {
     })
 
     it("the service shall exist", function () {
-        chai.expect(OrdersService).to.exist;
+        chai.expect(ordersService).to.exist;
     });
 
     describe("and the method generateApproveRecipeOrders shall", () => {
 
         it("exist", function () {
-            chai.expect(OrdersService.generateApproveRecipeOrders).to.exist;
+            chai.expect(ordersService.generateApproveRecipeOrders).to.exist;
         });
 
         it("shall reject generating a second set of orders when a group exists", (done) => {
@@ -195,11 +195,11 @@ describe('OrdersService testing', () => {
                 })
             });
 
-            return OrdersService.generateApproveRecipeOrders(TEST_RECIPE_RUN.id).then(
+            ordersService.generateApproveRecipeOrders(TEST_RECIPE_RUN.id).then(
                 fullfillment => {
 
                     RecipeOrderGroup.findOne.restore();
-                    done(new Error("should have been rejected!"));
+                    throw new Error("should have been rejected!");
                 }, rejection => {
 
                     RecipeOrderGroup.findOne.restore();
@@ -207,7 +207,7 @@ describe('OrdersService testing', () => {
                 });
         });
 
-        it("shall reject generating a set of orders when no good recipes were made", done => {
+        it("shall reject generating a set of orders when no good recipes were made", (done) => {
 
             //ensure method call not rejected due to existing RecipeOrderGroup
             sinon.stub(RecipeOrderGroup, 'findOne').callsFake(options => {
@@ -227,7 +227,7 @@ describe('OrdersService testing', () => {
                 })
             });
 
-            return OrdersService.generateApproveRecipeOrders(TEST_RECIPE_RUN.id).then(fulfilled => {
+            ordersService.generateApproveRecipeOrders(TEST_RECIPE_RUN.id).then(fulfilled => {
 
                 CCXTUtils.getConnector.restore();
                 sinon.stub(CCXTUtils, 'getConnector').callsFake(data => {
@@ -245,7 +245,7 @@ describe('OrdersService testing', () => {
                     });
                 });
                 RecipeOrderGroup.findOne.restore();
-                done(new Error("Orders service should have rejected empty valid orders!"));
+                throw new Error("Orders service should have rejected empty valid orders!");
             }, rejected => {
 
                 CCXTUtils.getConnector.restore();
@@ -268,14 +268,14 @@ describe('OrdersService testing', () => {
             });
         });
 
-        it('shall generate a list of recipe orders if all is good', done => {
+        it('shall generate a list of recipe orders if all is good', (done) => {
             //ensure method call not rejected due to existing RecipeOrderGroup
             sinon.stub(RecipeOrderGroup, 'findOne').callsFake(options => {
 
                 return Promise.resolve(null);
             });
 
-            return OrdersService.generateApproveRecipeOrders(TEST_RECIPE_RUN.id).then(response => {
+            ordersService.generateApproveRecipeOrders(TEST_RECIPE_RUN.id).then(response => {
                 
                 chai.expect(response).is.a('array', "orders need to be returned as an array!");
                 response.forEach(recipe_order => {
@@ -290,7 +290,7 @@ describe('OrdersService testing', () => {
             }, rejected => {
 
                 RecipeOrderGroup.findOne.restore();
-                done(rejected);
+                throw rejected;
             })
         });
     });
