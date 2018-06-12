@@ -6,7 +6,11 @@ module.exports = (sequelize, DataTypes) => {
         'Setting',
         {
             key: DataTypes.STRING,
-            value: DataTypes.STRING
+            value: DataTypes.STRING,
+            type: {
+                type: DataTypes.SMALLINT,
+                allowNull: false
+            }
         },
         modelProps(
             'setting',

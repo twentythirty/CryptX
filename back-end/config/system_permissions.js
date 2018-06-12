@@ -11,7 +11,9 @@ PERMISSIONS = {
   CHANGE_ASSET_STATUS: "perm_change_asset_status",
   VIEW_INVESTMENT_RUN: "perm_view_investment_run",
   CREATE_INVESTMENT_RUN: "perm_create_investment_run",
-  APPROVE_RECIPE_RUN: "perm_approve_recipe_run"
+  APPROVE_RECIPE_RUN: "perm_approve_recipe_run",
+  CHANGE_SETTING_VALUES: "perm_change_settings",
+  VIEW_SETTING_VALUES: "perm_view_settings"
 };
 //list of permissions that dotn apply to users
 //as long as they are altering themselves
@@ -49,6 +51,10 @@ all_permissions[PERMISSIONS.CREATE_INVESTMENT_RUN] =
   "Permission to create investment runs";
 all_permissions[PERMISSIONS.APPROVE_RECIPE_RUN] =
   "Permission to approve/reject investment recipes";
+all_permissions[PERMISSIONS.CHANGE_SETTING_VALUES] =
+  "Permission to edit system setting values";  
+all_permissions[PERMISSIONS.VIEW_SETTING_VALUES] =
+  "Permission to view system setting values";  
 
 all_roles = Object.values(ROLES);
 
@@ -189,17 +195,29 @@ ROUTES = {
   },
   ApproveRecipeRun: {
     router_string: "/recipe/:recipe_id/approve",
-    permissions_matcher: /recipe\/\d+\/approve$/,
+    permissions_matcher: /\/recipe\/\d+\/approve$/,
     required_permissions: [PERMISSIONS.VIEW_INVESTMENT_RUN, PERMISSIONS.APPROVE_RECIPE_RUN]
   },
   CreateNewRecipeRun: {
     router_string: "/investments/:investment_id/create_recipe",
-    permissions_matcher: /investments\/\d+\/create_recipe$/,
+    permissions_matcher: /\/investments\/\d+\/create_recipe$/,
     required_permissions: [PERMISSIONS.CREATE_INVESTMENT_RUN]
   },
   CreateDeposit: {
     router_string: "/investments/:investment_id/deposit",
-    permissions_matcher: /investments\/\d+\/deposit$/,
+    permissions_matcher: /\/investments\/\d+\/deposit$/,
     required_permissions: [PERMISSIONS.CREATE_INVESTMENT_RUN]
+  },
+
+  // System settings
+  ChangeSettingValues: {
+    router_string: "/settings/:setting_id",
+    permissions_matcher: /\/settings\/\d+$/,
+    required_permissions: [PERMISSIONS.CHANGE_SETTING_VALUES]
+  },
+  ViewSettingValues: {
+    router_string: "/settings",
+    permissions_matcher: /\/settings$/,
+    required_permissions: [PERMISSIONS.VIEW_SETTING_VALUES]
   }
 };

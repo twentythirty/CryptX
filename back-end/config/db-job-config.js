@@ -2,7 +2,6 @@ require('./config');     //instantiate configuration variables
 require("./system_permissions"); //instantiate global permissions lists
 require('./model_constants'); //instantiate model constants
 require('./../global_functions'); //global functions for model defs
-require('./workflow_constants');
 
 //DATABASE
 const models = require("./../models");
@@ -13,6 +12,8 @@ let dbPromise = models.sequelize.authenticate().then(() => {
     console.log('Performing startup migration...');
     return migratorPerform();
 }).then((migrations) => {
+    let workflowConstants = require('./workflow_constants');
+    workflowConstants.refreshSettingValues();
     return migrations;
 }).catch(err => {
         console.error('Unable prepare RDBMS for app:', process.env.DATABASE_URL, err);

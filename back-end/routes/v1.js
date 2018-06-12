@@ -5,6 +5,7 @@ const UserController = require("./../controllers/UserController");
 const SecurityController = require('./../controllers/SecurityController');
 const AssetController = require('./../controllers/AssetController');
 const InvestmentController = require('./../controllers/InvestmentController');
+const SystemController = require('./../controllers/SystemController');
 
 // const custom 	        = require('./../middleware/custom');
 
@@ -231,6 +232,19 @@ router.post(
   InvestmentController.addDeposit
 );
 
+// System Settings
+router.post(
+  ROUTES.ChangeSettingValues.router_string,
+  stateless_auth,
+  check_permissions,
+  SystemController.changeSettingValue
+);
+router.get(
+  ROUTES.ViewSettingValues.router_string,
+  stateless_auth,
+  check_permissions,
+  SystemController.getAllSettings
+);
 
 //********* API DOCUMENTATION **********
 router.use(

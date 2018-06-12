@@ -2,7 +2,6 @@ require('./config/config');     //instantiate configuration variables
 require('./global_functions');  //instantiate global functions
 require("./config/system_permissions"); //instantiate global permissions lists
 require('./config/model_constants'); //instantiate model constants
-require('./config/workflow_constants');
 
 console.log("App Environment:", CONFIG.app)
 console.log("Resolved NODE_ENV: ", process.env.NODE_ENV)
@@ -38,6 +37,8 @@ let dbPromise = models.sequelize.authenticate().then(() => {
 }).then((migrations) => {
     let syncPermissions = require('./config/sync_permissions');
     syncPermissions();
+    let workflowConstants = require('./config/workflow_constants');
+    workflowConstants.refreshSettingValues();
     return migrations;
 }).catch(err => {
         console.error('Unable prepare RDBMS for app:', process.env.DATABASE_URL, err);

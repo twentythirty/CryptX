@@ -82,3 +82,10 @@ COLD_STORAGE_ORDER_STATUSES = {
 CUSTODIANS = {
 
 };
+
+SETTING_DATA_TYPES = {
+  Integer: 130,
+  Float: 131,
+  String: 132,
+  Boolean: 133
+};

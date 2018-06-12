@@ -10,7 +10,7 @@ const changeStatus = async function (asset_id, new_status, user_id) {
 
   if (!_.valuesIn(INSTRUMENT_STATUS_CHANGES).includes(new_status.type))
     TE("Provided bad asset status");
-
+  
   let [err, asset] = await to(Asset.findById(asset_id));
   if (!asset) TE("Asset not found");
   let user = await User.findById(user_id);
@@ -104,7 +104,7 @@ const getStrategyAssets = async function (strategy_type, exclude_from_index = []
             asset.long_name,
             asset.is_base,
             asset.is_deposit
-    ORDER BY avg_share DESC LIMIT ${INDEX_CAP_TOTAL}`, {
+    ORDER BY avg_share DESC LIMIT ${SYSTEM_SETTINGS.INDEX_LCI_CAP + SYSTEM_SETTINGS.INDEX_MCI_CAP}`, {
     type: sequelize.QueryTypes.SELECT
   }));
 
@@ -117,16 +117,21 @@ const getStrategyAssets = async function (strategy_type, exclude_from_index = []
   });
 
   let totalMarketShare = 0;
-  let lci = _.remove(assets.slice(0, INDEX_LCI_CAP), function (coin) {
+  // selects all assets before threshold MARKETCAP_LIMIT_PERCENT, total marketshare sum of assets
+  let assets_selected = assets.reduce((acc, coin) => {
     totalMarketShare += coin.avg_share;
-    return totalMarketShare <= LCI_MARKETSHARE_PRC;
-  });
+    if(totalMarketShare <= SYSTEM_SETTINGS.MARKETCAP_LIMIT_PERCENT)
+      acc.push(coin);
+    return acc;
+  }, []);
+
+  let lci = assets_selected.slice(0, SYSTEM_SETTINGS.INDEX_LCI_CAP);
 
   if (strategy_type == STRATEGY_TYPES.LCI) {
     return lci;
   }
 
-  let mci = assets.slice(lci.length, lci.length + INDEX_MCI_CAP);
+  let mci = assets_selected.slice(lci.length, lci.length + SYSTEM_SETTINGS.INDEX_MCI_CAP);
 
   return mci;
 };
@@ -143,13 +148,14 @@ const getAssetInstruments = async function (asset_id) {
     SELECT i.id as instrument_id,
       i.transaction_asset_id,
       i.quote_asset_id,
-      ilh.exchange_id,
+      imp.exchange_id,
       ilh.avg_vol as average_volume,
       ilh.min_vol as min_volume_requirement,
       imd.ask_price,
       imd.bid_price
     FROM instrument as i
     -- only leave instruments satisfying liquidity requirements
+    JOIN instrument_exchange_mapping AS imp ON imp.instrument_id=i.id
     LEFT JOIN
       ( SELECT inlh.instrument_id AS instrument_id,
           inlh.exchange_id AS exchange_id,
@@ -165,10 +171,10 @@ const getAssetInstruments = async function (asset_id) {
     JOIN instrument_market_data as imd ON imd.id=(
       SELECT id
       FROM instrument_market_data as imdd
-      WHERE imdd.instrument_id=ilh.instrument_id
-      AND imdd.exchange_id=ilh.exchange_id
+      WHERE imdd.instrument_id=i.id
+      AND imdd.exchange_id=imp.exchange_id
       ORDER BY timestamp DESC LIMIT 1)
-    WHERE i.transaction_asset_id=${asset_id} OR i.quote_asset_id=${asset_id}  
+    WHERE i.transaction_asset_id=${asset_id} OR i.quote_asset_id=${asset_id}
     `, {
       type: sequelize.QueryTypes.SELECT
     })

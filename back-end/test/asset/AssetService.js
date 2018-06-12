@@ -26,7 +26,9 @@ describe('AssetService testing', () => {
 
 
   describe('and method getStrategyAssets shall', function () {
-    let assets = [...Array(100)].map((value, index) => ({
+    let assets = [
+        ...Array(500)
+      ].map((value, index) => ({
       id: index,
       avg_share: 1
     }));
@@ -55,12 +57,12 @@ describe('AssetService testing', () => {
       ]).should.eventually.satisfy((assets) => {
         let [lci, mci] = assets;
 
-        return lci.length == INDEX_LCI_CAP &&
-          mci.length == INDEX_MCI_CAP &&
+        return lci.length == SYSTEM_SETTINGS.INDEX_LCI_CAP &&
+          mci.length == SYSTEM_SETTINGS.INDEX_MCI_CAP &&
           !lci.some(lci_asset => { // check if they don't contain same assets
             return mci.map(mci_asset => mci_asset.id).includes(lci_asset.id);
           });
       }, "Doesn't return correct number of assets");
-    }); 
+    });
   });
 });
