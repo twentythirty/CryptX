@@ -44,7 +44,10 @@ module.exports.JOB_BODY = async (config, log) => {
                         //promise pairs made of arrays where [symbol mapping, fetched-data]
                         return Promise.all([
                             Promise.resolve(mapping),
-                            fetcher.fetch_order_book(mapping.external_instrument_id)
+                            //wrap exchange promise into a promise that returns empty array if broken
+                            Promise.resolve(fetcher.fetch_order_book(mapping.external_instrument_id)).catch(err => {
+                                return []
+                            })
                         ]);
                     }))
                 ])

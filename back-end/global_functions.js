@@ -69,3 +69,19 @@ modelProps = function(table_name, table_comment = "") {
 
 // Load the dash, globally.
 _ = require("lodash");
+
+
+
+//adapted from https://stackoverflow.com/a/42304596
+// settle all promises.  For rejeted promises, return a specific rejectVal that is
+// distinguishable from your successful return values (often null or 0 or "" or {})
+Promise.settle_all = (default_val, promises) => {
+  //fulfill al promises but wrapped
+  return Promise.all(promises.map(p => {
+    //wrap actual promise in promise that returns default value if rejected and goes through
+    return Promise.resolve(p).catch(err => {
+      //return defaul on reject
+      return default_val;
+    });
+  }));
+}
