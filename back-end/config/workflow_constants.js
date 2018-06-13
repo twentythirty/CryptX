@@ -47,10 +47,15 @@ module.exports.parseValue = parseValue;
  */
 const refreshSettingValues = async () => {
     let settings = await SettingService.getAllSettings();
-
+    //try parse settings from DB, use default in case of error
     if (settings.length)
         settings.map(setting => {
-            SYSTEM_SETTINGS[setting.key] = this.parseValue(setting.value, setting.type);
+            try {
+                SYSTEM_SETTINGS[setting.key] = this.parseValue(setting.value, setting.type);
+            } catch(err) {
+                SYSTEM_SETTINGS[settings.key] = DEFAULT_SETTINGS[setting.key];
+            }
+
         });
     else
         TE("Couldn't get settings values");
