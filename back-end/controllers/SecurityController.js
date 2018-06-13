@@ -79,7 +79,10 @@ module.exports.getRoles = getRoles;
 const getAllPermissions = async function(req, res) {
     //categories with permissions info preloaded
     const permissions_categories = await PermissionsCategory.findAll({
-        include: [Permission]
+        include: [Permission],
+        order: [
+            ['id', 'ASC']
+        ]
     });
 
     return ReS(res, {
