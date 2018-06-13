@@ -161,6 +161,12 @@ router.get(
   check_permissions,
   SecurityController.getRoleInfo
 );
+router.get(
+  ROUTES.GetAllPermissions.router_string,
+  stateless_auth,
+  check_permissions,
+  SecurityController.getAllPermissions
+);
 
 
 // ASSETS

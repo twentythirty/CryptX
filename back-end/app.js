@@ -1,5 +1,5 @@
-require('./config/config');     //instantiate configuration variables
-require('./global_functions');  //instantiate global functions
+require('./config/config'); //instantiate configuration variables
+require('./global_functions'); //instantiate global functions
 require("./config/system_permissions"); //instantiate global permissions lists
 require('./config/model_constants'); //instantiate model constants
 
@@ -21,7 +21,9 @@ logger.token('date', function () {
 
 app.use(logger(CONFIG.logger_format));
 app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyParser.urlencoded({
+    extended: false
+}));
 
 //Passport
 app.use(passport.initialize());
@@ -36,13 +38,13 @@ let dbPromise = models.sequelize.authenticate().then(() => {
     return migratorPerform();
 }).then((migrations) => {
     let syncPermissions = require('./config/sync_permissions');
-    syncPermissions();
+    return syncPermissions();
+}).then(done_perm => {
     let workflowConstants = require('./config/workflow_constants');
-    workflowConstants.refreshSettingValues();
-    return migrations;
+    return workflowConstants.refreshSettingValues();
 }).catch(err => {
-        console.error('Unable prepare RDBMS for app:', process.env.DATABASE_URL, err);
-        process.exit(2);
+    console.error('Unable prepare RDBMS for app:', process.env.DATABASE_URL, err);
+    process.exit(2);
 });
 
 
@@ -64,8 +66,12 @@ app.use(function (req, res, next) {
 app.use('/v1', v1);
 
 app.use('/', function (req, res) {
-    res.statusCode = 200;//send the appropriate status code
-    res.json({ status: "success", message: CONFIG.disclaimer, data: {} })
+    res.statusCode = 200; //send the appropriate status code
+    res.json({
+        status: "success",
+        message: CONFIG.disclaimer,
+        data: {}
+    })
 });
 
 // catch 404 and forward to error handler

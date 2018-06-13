@@ -19,6 +19,31 @@ PERMISSIONS = {
 //as long as they are altering themselves
 PERMISSIONS.PERSONAL = [PERMISSIONS.VIEW_USERS, PERMISSIONS.EDIT_USERS];
 
+PERMISSIONS_CATEGORIES = {
+  INVESTMENT_RUN: "Investment run",
+  ORDERS: "Orders",
+  RECIPE_RUN: "Recipe run",
+  OTHER: "Other groups"
+};
+
+CATEGORY_TO_PERM_ASSOC = {
+  [PERMISSIONS_CATEGORIES.INVESTMENT_RUN]: [
+    PERMISSIONS.VIEW_INVESTMENT_RUN,
+    PERMISSIONS.CREATE_INVESTMENT_RUN
+  ],
+  [PERMISSIONS_CATEGORIES.ORDERS]: [
+    
+  ],
+  [PERMISSIONS_CATEGORIES.RECIPE_RUN]: [
+    PERMISSIONS.APPROVE_RECIPE_RUN
+  ]
+}
+//fill other category with remaining permissions
+CATEGORY_TO_PERM_ASSOC[PERMISSIONS_CATEGORIES.OTHER] = _.difference(
+  Object.values(PERMISSIONS),
+  _.flatMap(Object.values(CATEGORY_TO_PERM_ASSOC))
+)
+
 ROLES = {
   ADMIN: "ROLE_ADMIN",
   MANAGER: "ROLE_MANAGER",
@@ -52,9 +77,9 @@ all_permissions[PERMISSIONS.CREATE_INVESTMENT_RUN] =
 all_permissions[PERMISSIONS.APPROVE_RECIPE_RUN] =
   "Permission to approve/reject investment recipes";
 all_permissions[PERMISSIONS.CHANGE_SETTING_VALUES] =
-  "Permission to edit system setting values";  
+  "Permission to edit system setting values";
 all_permissions[PERMISSIONS.VIEW_SETTING_VALUES] =
-  "Permission to view system setting values";  
+  "Permission to view system setting values";
 
 all_roles = Object.values(ROLES);
 
@@ -158,6 +183,12 @@ ROUTES = {
     router_string: "/roles/:role_id/delete",
     permissions_matcher: /\/roles\/\d+\/delete/,
     required_permissions: [PERMISSIONS.ALTER_ROLES, PERMISSIONS.VIEW_ROLES]
+  },
+
+  GetAllPermissions: {
+    router_string: "/permissions/list",
+    permissions_matcher: /\/permissions\/list/,
+    required_permissions: [PERMISSIONS.VIEW_ROLES]
   },
 
   // Assets

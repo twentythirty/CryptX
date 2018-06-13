@@ -3,6 +3,7 @@
 const securityService = require('../services/SecurityService');
 const Role = require('../models').Role;
 const Permission = require('../models').Permission;
+const PermissionsCategory = require('../models').PermissionsCategory;
 const sequelize = require('sequelize');
 const Op = sequelize.Op;
 
@@ -74,6 +75,32 @@ const getRoles = async function(req, res) {
 };
 
 module.exports.getRoles = getRoles;
+
+const getAllPermissions = async function(req, res) {
+    //categories with permissions info preloaded
+    const permissions_categories = await PermissionsCategory.findAll({
+        include: [Permission]
+    });
+
+    return ReS(res, {
+        total: permissions_categories.length,
+        data: _.map(permissions_categories, permission_cat => {
+            
+            return {
+                id: permission_cat.id,
+                name: permission_cat.name,
+                permissions: _.map(permission_cat.Permissions, perm => {
+                    return {
+                        id: perm.id,
+                        code: perm.code,
+                        name: perm.name
+                    };
+                })
+            };
+        })
+    });
+}
+module.exports.getAllPermissions = getAllPermissions;
 
 
 const deleteRole = async function (req, res) {
