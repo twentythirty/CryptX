@@ -1,7 +1,7 @@
 require('./config');     //instantiate configuration variables
+require('./../global_functions'); //global functions for model defs
 require("./system_permissions"); //instantiate global permissions lists
 require('./model_constants'); //instantiate model constants
-require('./../global_functions'); //global functions for model defs
 
 //DATABASE
 const models = require("./../models");

@@ -54,19 +54,45 @@ const logger_maker = (job_name) => {
     }
 }
 
-//once DB is loaded, load the jobs
-config.dbPromise.then(() => {
+let one_off_list = [];
 
-    console.log(`scheduling ${Object.keys(runnable_jobs).length} jobs...`);
-    _.forEach(runnable_jobs, (loaded_job, job_name) => {
-        console.log(`Scheduling ${job_name} for ${loaded_job.SCHEDULE}`);
-        scheduler.scheduleJob(job_name, loaded_job.SCHEDULE, async (date) => {
-            const start = date;
-            const log = logger_maker(job_name);
-            log(`Job start at ${date}`);
-            //run job body with passed config object and job-specific logger
-            const result = await loaded_job.JOB_BODY(config, log, date);
-            log(`Job finish at ${date} (result: ${result}). Job took ${new Date().getTime() - start.getTime()}ms`);
+if (process.argv[2] != null) {
+    one_off_list = process.argv[2].trim().split(',').map(job_name => job_name.trim());
+}
+
+if (one_off_list) {
+    //run one-off tasks, ignore schedules
+    config.dbPromise.then(() => {
+
+        const allowed_jobs = _.pickBy(runnable_jobs, (job, name) => {
+            return one_off_list.includes(name)
+        });
+        console.log(`running ${Object.keys(allowed_jobs).length} jobs...`);
+        _.forEach(allowed_jobs, (job, name) => {
+            const log = logger_maker(name);
+            let start = new Date();
+            log(`Job start at ${start}`);
+            job.JOB_BODY(config, log).then(done => {
+                log(`Job finish at ${new Date()} (result: ${done}). Job took ${new Date().getTime() - start.getTime()}ms`);
+            });
         });
     });
-});
+} else {
+    //run jobs by schedule
+    //once DB is loaded, load the jobs
+    config.dbPromise.then(() => {
+    
+        console.log(`scheduling ${Object.keys(runnable_jobs).length} jobs...`);
+        _.forEach(runnable_jobs, (loaded_job, job_name) => {
+            console.log(`Scheduling ${job_name} for ${loaded_job.SCHEDULE}`);
+            scheduler.scheduleJob(job_name, loaded_job.SCHEDULE, async (date) => {
+                const start = date;
+                const log = logger_maker(job_name);
+                log(`Job start at ${date}`);
+                //run job body with passed config object and job-specific logger
+                const result = await loaded_job.JOB_BODY(config, log, date);
+                log(`Job finish at ${date} (result: ${result}). Job took ${new Date().getTime() - start.getTime()}ms`);
+            });
+        });
+    });
+}
