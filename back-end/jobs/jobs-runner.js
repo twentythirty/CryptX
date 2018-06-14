@@ -62,20 +62,23 @@ if (process.argv[2] != null) {
 
 if (one_off_list) {
     //run one-off tasks, ignore schedules
+    const allowed_jobs = _.pickBy(runnable_jobs, (job, name) => {
+        return one_off_list.includes(name)
+    });
+    const all_start = new Date();
     config.dbPromise.then(() => {
-
-        const allowed_jobs = _.pickBy(runnable_jobs, (job, name) => {
-            return one_off_list.includes(name)
-        });
         console.log(`running ${Object.keys(allowed_jobs).length} jobs...`);
-        _.forEach(allowed_jobs, (job, name) => {
+        return Promise.all(_.map(allowed_jobs, (job, name) => {
             const log = logger_maker(name);
             let start = new Date();
             log(`Job start at ${start}`);
-            job.JOB_BODY(config, log).then(done => {
+            return job.JOB_BODY(config, log).then(done => {
                 log(`Job finish at ${new Date()} (result: ${done}). Job took ${new Date().getTime() - start.getTime()}ms`);
             });
-        });
+        }));
+    }).then(done => {
+        console.log(`All ${Object.keys(allowed_jobs).length} jobs done!\nTotal time: ${new Date().getTime() - all_start.getTime()}ms`);
+        process.exit(0);
     });
 } else {
     //run jobs by schedule
