@@ -81,7 +81,7 @@ const getAllPermissions = async function(req, res) {
     const permissions_categories = await PermissionsCategory.findAll({
         include: [Permission],
         order: [
-            ['id', 'ASC']
+            ['order_idx', 'ASC']
         ]
     });
 

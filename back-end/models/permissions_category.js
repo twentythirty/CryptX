@@ -7,6 +7,10 @@ module.exports = (sequelize, DataTypes) => {
         name: {
             type: DataTypes.STRING,
             allowNull: false
+        },
+        order_idx: {
+          type: DataTypes.SMALLINT,
+          allowNull: true
         }
       },
       modelProps(
