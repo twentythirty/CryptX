@@ -56,11 +56,11 @@ const logger_maker = (job_name) => {
 
 let one_off_list = [];
 
-if (process.argv[2] != null) {
+if (process.argv[2] != null && process.argv[2].trim()) {
     one_off_list = process.argv[2].trim().split(',').map(job_name => job_name.trim());
 }
 
-if (one_off_list) {
+if (one_off_list.length > 0) {
     //run one-off tasks, ignore schedules
     const allowed_jobs = _.pickBy(runnable_jobs, (job, name) => {
         return one_off_list.includes(name)
