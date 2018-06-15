@@ -103,7 +103,7 @@ id PK int
 asset_id int FK >- asset.id
 strategy_type enum # Strategy type for which this account is used. Possible values: Large Cap Index (LCI), Mid Cap Index (MCI)
 address nvarchar # Address that can be used to send the coins to this cold storage account
-custodian enum # Custodian of the cold storage account
+custodian string # Custodian of the cold storage account
 
 asset_market_capitalization # This table will contain market history retrieved from Coinmarketcap
 -
@@ -140,13 +140,20 @@ user_created_id int FK >- user.id # User which initiated the investment run
 strategy_type enum # Large Cap Index (LCI), Mid Cap Index (MCI)
 is_simulated bool # True if investment run is simulated, e.g. will not place real orders
 status enum # Status of the investment run: Initiated, RecipeRun, RecipeApproved, DepositsCompleted, OrdersGenerated, OrdersApproved, OrdersExecuting, OrdersFilled
+deposit_usd decimal # Total deposits invested during this investment run
 
-investment_run_deposit # Funds deposited for investing during single investment run
+recipe_run_deposit # Funds deposited for investing during single investment run
 -
 id PK int
-investment_run_id int FK >- investment_run.id
+creation_timestamp timestamp # Time when deposit was planned
+recipe_run_id int FK >- recipe_run.id
 asset_id int FK >- asset.id # Currency in which the investment was denominated
-amount decimal # Total amount invested for this asset
+planned_amount decimal # Total amount invested for this asset
+actual_amount decimal # Actual amount that was deposited
+depositor_user_id int FK >- user.id # Depositor who made the deposit
+completion_timestamp timestamp # Time when deposit was completed
+target_exchange_account_id int FK >- exchange.id # Exchange account to which deposit will be made
+status enum # Status of the deposit. Possible values: PENDING, COMPLETED
 
 recipe_run
 -
@@ -155,9 +162,9 @@ created_timestamp timestamp # Time when recipe run was initiated
 investment_run_id int FK >- investment_run.id
 user_created_id int FK >- user.id # User which initiated the recipe run
 approval_status enum # Possible statuses are Pending, Approved, Rejected
-approval_user_id int FK >- user.id # User who approved/rejected the recipe run
-approval_timestamp timestamp # Time and date when the user approved this recipe run
-approval_comment nvarchar # Comment that should be provided when approving the recipe run
+approval_user_id int NULLABLE FK >- user.id # User who approved/rejected the recipe run
+approval_timestamp timestamp NULLABLE # Time and date when the user approved this recipe run
+approval_comment nvarchar NULLABLE # Comment that should be provided when approving the recipe run
 
 recipe_run_detail
 -
@@ -215,11 +222,13 @@ price decimal # fill price
 cold_storage_transfer
 -
 id PK int
-execution_order_id PK int FK >- execution_order.id # ID of the order for fills of which cold storage is needed
+recipe_run_order_id PK int FK >- recipe_order.id # ID of the recipe order for cold storage is needed
 status enum # Pending - order was generated internally, but not yet sent, Sent - recipe order was sent to exchange or blockchain (waiting confirmation), Completed - when order reaches its final successful state, Failed - system failed to execute the order
 placed_timestamp timestamp # Time when the order was generated
 completed_timestamp timestamp # Time when the order reached its final state
 cold_storage_account_id int # ID of the cold storage account to which the transfer will be made
+asset_id int FK >- asset.id # Asset for which cold storage transfer will be made
+amount decimal # Amount that will be transfered
 
 action_log
 # This table will log all actions of users and the system itself
@@ -247,6 +256,7 @@ setting
 id PK int
 key string # Key that identifies the setting
 vaue string # Value of the setting
+type enum # Type of the setting: e.g. string, integer, etc.
 
 instrument_liquidity_history
 # This table will contain liquidity history of tradable instruments
