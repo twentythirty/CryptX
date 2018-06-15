@@ -78,11 +78,6 @@ const changeRecipeRunStatus = async function (req, res) {
   ));
   if (err) return ReE(res, err.message, 422);
 
-  //if the recipe run is approved, try generate orders out of it
-  if (status === RECIPE_RUN_STATUSES.Approved) {
-    OrdersService.generateApproveRecipeOrders(recipe_run.id);
-  }
-
   return ReS(res, {
     recipe_run: recipe_run
   })

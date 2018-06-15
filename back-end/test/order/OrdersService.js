@@ -28,7 +28,8 @@ describe('OrdersService testing', () => {
 
         id: 435,
         investment_run_id: 37,
-        approval_user_id: 11
+        approval_user_id: 11,
+        approval_status: RECIPE_RUN_STATUSES.Approved
     };
     const QUOTE_ASSET_ID = 801;
     const TEST_INSTRUMENTS = [{

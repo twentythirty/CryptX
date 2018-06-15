@@ -2,6 +2,7 @@
 
 const RecipeOrderGroup = require('../models').RecipeOrderGroup;
 const RecipeOrder = require('../models').RecipeOrder;
+const RecipeRun = require('../models').RecipeRun;
 const ordersService = require('../services/OrdersService');
 
 const getOrdersGroup = async (req, res) => {
@@ -47,3 +48,27 @@ const changeOrdersGroupStatus = async (req, res) => {
     }, 200);
 };
 module.exports.changeOrdersGroupStatus = changeOrdersGroupStatus;
+
+const generateRecipeRunOrders = async (req, res) => {
+
+    const recipe_run_id = req.params.recipe_run_id;
+
+    const recipe_run = await RecipeRun.findById(recipe_run_id);
+    if (recipe_run == null) {
+
+        return ReE(res, `Recipe run with id ${recipe_run_id} not found!`, 404);
+    }
+    if (recipe_run.approval_status != RECIPE_RUN_STATUSES.Approved) {
+
+        return ReE(res, `Recipe run ${recipe_run_id} in invalid state! Should be approved but was ${recipe_run.approval_status}.`, 422);
+    }
+
+    let [err, result] = await to(ordersService.generateApproveRecipeOrders(recipe_run_id))
+
+    if (err) {
+        return ReE(res, err, 422);
+    }
+
+    return ReS(res, result, 200);
+};
+module.exports.generateRecipeRunOrders = generateRecipeRunOrders;

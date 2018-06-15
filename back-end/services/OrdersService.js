@@ -116,6 +116,10 @@ const generateApproveRecipeOrders = async (recipe_run_id) => {
 
     const recipe_run = await RecipeRun.findById(recipe_run_id);
 
+    if (recipe_run.approval_status != RECIPE_RUN_STATUSES.Approved) {
+        TE(`Recipe run ${recipe_run_id} was not approved! was ${recipe_run.approval_status}.`);
+    }
+
     //fetch all individual recipe run details
     const recipe_run_details = await RecipeRunDetail.findAll({
         where: {
