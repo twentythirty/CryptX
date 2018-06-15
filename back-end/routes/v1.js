@@ -5,6 +5,7 @@ const UserController = require("./../controllers/UserController");
 const SecurityController = require('./../controllers/SecurityController');
 const AssetController = require('./../controllers/AssetController');
 const InvestmentController = require('./../controllers/InvestmentController');
+const OrdersController = require('./../controllers/OrdersController');
 const SystemController = require('./../controllers/SystemController');
 
 // const custom 	        = require('./../middleware/custom');
@@ -230,6 +231,20 @@ router.post(
   check_permissions,
   InvestmentController.createRecipeRun
 );
+
+router.get(
+  ROUTES.GetRecipeOrders.router_string,
+  stateless_auth,
+  check_permissions,
+  OrdersController.getOrdersGroup
+);
+router.post(
+  ROUTES.AlterOrdersGroup.router_string,
+  stateless_auth,
+  check_permissions,
+  OrdersController.changeOrdersGroupStatus
+);
+
 
 router.post(
   ROUTES.CreateDeposit.router_string,

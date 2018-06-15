@@ -12,6 +12,8 @@ PERMISSIONS = {
   VIEW_INVESTMENT_RUN: "perm_view_investment_run",
   CREATE_INVESTMENT_RUN: "perm_create_investment_run",
   APPROVE_RECIPE_RUN: "perm_approve_recipe_run",
+  VIEW_ORDERS: "perm_view_orders",
+  ALTER_ORDERS: "perm_alter_orders",
   CHANGE_SETTING_VALUES: "perm_change_settings",
   VIEW_SETTING_VALUES: "perm_view_settings"
 };
@@ -32,7 +34,8 @@ CATEGORY_TO_PERM_ASSOC = {
     PERMISSIONS.CREATE_INVESTMENT_RUN
   ],
   [PERMISSIONS_CATEGORIES.ORDERS]: [
-    
+    PERMISSIONS.VIEW_ORDERS,
+    PERMISSIONS.ALTER_ORDERS
   ],
   [PERMISSIONS_CATEGORIES.RECIPE_RUN]: [
     PERMISSIONS.APPROVE_RECIPE_RUN
@@ -76,6 +79,10 @@ all_permissions[PERMISSIONS.CREATE_INVESTMENT_RUN] =
   "Permission to create investment runs";
 all_permissions[PERMISSIONS.APPROVE_RECIPE_RUN] =
   "Permission to approve/reject investment recipes";
+all_permissions[PERMISSIONS.VIEW_ORDERS] = 
+  "Permission to view orders of recipe runs in groups";
+all_permissions[PERMISSIONS.ALTER_ORDERS] = 
+  "Permission to alter the status of a group or recipe orders";
 all_permissions[PERMISSIONS.CHANGE_SETTING_VALUES] =
   "Permission to edit system setting values";
 all_permissions[PERMISSIONS.VIEW_SETTING_VALUES] =
@@ -228,6 +235,16 @@ ROUTES = {
     router_string: "/recipe/:recipe_id/approve",
     permissions_matcher: /\/recipe\/\d+\/approve$/,
     required_permissions: [PERMISSIONS.VIEW_INVESTMENT_RUN, PERMISSIONS.APPROVE_RECIPE_RUN]
+  },
+  GetRecipeOrders: {
+    router_string: "/orders/of_recipe/:recipe_run_id",
+    permissions_matcher: /\/orders\/of_recipe\/d+$/,
+    required_permissions: [PERMISSIONS.VIEW_ORDERS]
+  },
+  AlterOrdersGroup: {
+    router_string: "/orders/:order_group_id/alter",
+    permissions_matcher: /\/orders\/d+\/alter$/,
+    required_permissions: [PERMISSIONS.VIEW_ORDERS, PERMISSIONS.ALTER_ORDERS]
   },
   CreateNewRecipeRun: {
     router_string: "/investments/:investment_id/create_recipe",

@@ -241,3 +241,72 @@ const generateApproveRecipeOrders = async (recipe_run_id) => {
     return results;
 }
 module.exports.generateApproveRecipeOrders = generateApproveRecipeOrders;
+
+
+const changeRecipeOrderGroupStatus = async (user_id, order_group_id, status, comment = null) => {
+
+    if (user_id == null || order_group_id == null) {
+        TE(`Can't alter recipe order group with null user_id or null order_group_id!`);
+    }
+    if (!Object.values(RECIPE_ORDER_GROUP_STATUSES).includes(status)) {
+        TE(`Supplied status ${status} is not within allowed statuses of recipe order!`);
+    }
+    if ((status == RECIPE_ORDER_GROUP_STATUSES.Approved || status == RECIPE_ORDER_GROUP_STATUSES.Rejected) &&
+        comment == null) {
+        TE(`Must provide comment when approving or rejecting recipe orders group!`);
+    }
+
+    const recipe_order_group = await RecipeOrderGroup.findById(order_group_id);
+    if (recipe_order_group == null) {
+        TE(`Recipe order group for id ${recipe_order_group_id} was not found!`);
+    }
+
+    //status already same, low warning and exist as NOOP
+    if (recipe_order_group.approval_status == status) {
+        console.warn(`Recipe Order Group ${order_group_id} already has status ${status}! exiting...`);
+        return recipe_order_group;
+    }
+
+    let update_group_promise = Promise.resolve(recipe_order_group).then(recipe_order_group => {
+
+        //change recipe order group properties due to approval
+        Object.assign(recipe_order_group, {
+            approval_status: status,
+            approval_user_id: user_id,
+            approval_timestamp: new Date(),
+            approval_comment: (comment != null) ? comment : recipe_order_group.approval_comment
+        });
+
+        return recipe_order_group.save();
+    });
+
+    //if the group is being rejected, have to reject all the orders as well
+    if (status == RECIPE_ORDER_GROUP_STATUSES.Rejected) {
+
+        update_group_promise = update_group_promise.then(recipe_order_group => {
+            return Promise.all([
+                Promise.resolve(recipe_order_group),
+                recipe_order_group.getRecipeOrders()
+            ]);
+        }).then(orders_data => {
+            let [recipe_order_group, recipe_orders] = orders_data;
+            //broadcast approval to all recipe orders in group
+            return Promise.all([
+                Promise.resolve(recipe_order_group),
+                Promise.all(recipe_orders.map(recipe_order => {
+                    recipe_order.status = RECIPE_ORDER_STATUSES.Rejected;
+                    return recipe_order.save();
+                }))
+            ]);
+        });
+    }
+
+    let [err, results] = await to(update_group_promise);
+
+    if (err) {
+        TE(err);
+    }
+
+    return results;
+};
+module.exports.changeRecipeOrderGroupStatus = changeRecipeOrderGroupStatus;
