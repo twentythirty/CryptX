@@ -30,13 +30,13 @@ const createInvestmentRun = async function (user_id, strategy_type, is_simulated
   });
 
   // only let to run one investment of the same strategy and mode
-  /* if (investment_run) {
+  if (investment_run) {
     let message = `Investment with ${strategy_type} strategy and ${
       is_simulated ? 'simulated' : 'real investment'
     } mode already created`;
 
     TE(message);
-  } */
+  }
 
   [err, investment_run] = await to(InvestmentRun.create({
     strategy_type: strategy_type,
