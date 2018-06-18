@@ -153,7 +153,7 @@ let configuration = {
       "./front-end/src/polyfills.ts"
     ],
     "styles": [
-      "./front-end/src/styles.css"
+      "./front-end/src/styles.scss"
     ]
   },
   "output": {
@@ -186,7 +186,7 @@ let configuration = {
       },
       {
         "exclude": [
-          path.join(process.cwd(), "front-end/src/styles.css")
+          path.join(process.cwd(), "front-end/src/styles.scss")
         ],
         "test": /\.css$/,
         "use": [
@@ -205,7 +205,7 @@ let configuration = {
       },
       {
         "exclude": [
-          path.join(process.cwd(), "front-end/src/styles.css")
+          path.join(process.cwd(), "front-end/src/styles.scss")
         ],
         "test": /\.scss$|\.sass$/,
         "use": [
@@ -232,7 +232,7 @@ let configuration = {
       },
       {
         "exclude": [
-          path.join(process.cwd(), "front-end/src/styles.css")
+          path.join(process.cwd(), "front-end/src/styles.scss")
         ],
         "test": /\.less$/,
         "use": [
@@ -257,7 +257,7 @@ let configuration = {
       },
       {
         "exclude": [
-          path.join(process.cwd(), "front-end/src/styles.css")
+          path.join(process.cwd(), "front-end/src/styles.scss")
         ],
         "test": /\.styl$/,
         "use": [
@@ -283,7 +283,7 @@ let configuration = {
       },
       {
         "include": [
-          path.join(process.cwd(), "front-end/src/styles.css")
+          path.join(process.cwd(), "front-end/src/styles.scss")
         ],
         "test": /\.css$/,
         "use": [
@@ -303,7 +303,7 @@ let configuration = {
       },
       {
         "include": [
-          path.join(process.cwd(), "front-end/src/styles.css")
+          path.join(process.cwd(), "front-end/src/styles.scss")
         ],
         "test": /\.scss$|\.sass$/,
         "use": [
@@ -331,7 +331,7 @@ let configuration = {
       },
       {
         "include": [
-          path.join(process.cwd(), "front-end/src/styles.css")
+          path.join(process.cwd(), "front-end/src/styles.scss")
         ],
         "test": /\.less$/,
         "use": [
@@ -357,7 +357,7 @@ let configuration = {
       },
       {
         "include": [
-          path.join(process.cwd(), "front-end/src/styles.css")
+          path.join(process.cwd(), "front-end/src/styles.scss")
         ],
         "test": /\.styl$/,
         "use": [

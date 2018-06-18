@@ -1,0 +1,27 @@
+<div class="login-wrapper">
+  <div class="login-form">
+    <div class="login-logo">
+      Logo place holder
+    </div>
+    <form (ngSubmit)="functionName">
+      <p>
+        <label for="user">User name</label>
+        <br>
+        <input [(ngModel)]="username" name="user" type="text">
+      </p>
+      <p>
+        <label for="pwd">Password</label>
+        <br> 
+        <input [(ngModel)]="password" name="pwd" type="password">
+      </p>
+      <p>
+        {{ status }}
+      </p>
+
+      <button (click)="authenticate()">Login</button>
+      <br>
+      <a (click)="forgotPassword()">Forgot password?</a>
+    </form>
+    {{ authService.permissions }}
+  </div>
+</div>
