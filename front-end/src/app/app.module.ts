@@ -5,28 +5,28 @@ import { HttpClientModule }   from '@angular/common/http';
 import { HTTP_INTERCEPTORS } from '@angular/common/http';
 
 import { AppComponent } from './app.component';
-import { LoginComponent } from './views/login/login.component';
-import { DashboardComponent } from './views/dashboard/dashboard.component';
 import { NavigationComponent } from './shared/components/navigation/navigation.component';
 
 import { AuthService } from './services/auth/auth.service';
 
 import { PreRequestAuthInterceptor, PostRequestAuthInterceptor } from './config/http/auth.http.insterceptor';
 import { AppRoutingModule } from './config/routes/routes';
+import { LoginModule } from './modules/login/login.component';
+import { DashboardModule } from './modules/dashboard/dashboard.component';
 import { AuthGuard } from './config/routes/route-auth.guard';
 import { PermissionGuard } from './config/routes/route-permission.guard';
 
 @NgModule({
   declarations: [
     AppComponent,
-    LoginComponent,
     NavigationComponent,
-    DashboardComponent
   ],
   imports: [
     BrowserModule,
     FormsModule,
     HttpClientModule,
+    LoginModule,
+    DashboardModule,
     AppRoutingModule
   ],
   providers: [
@@ -49,7 +49,7 @@ import { PermissionGuard } from './config/routes/route-permission.guard';
 export class AppModule { 
 
   constructor (private authService: AuthService) {
-    //this.authService.checkAuth();
+    this.authService.checkAuth();
   }
   
 }

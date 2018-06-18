@@ -2,8 +2,8 @@ import { NgModule } from '@angular/core';
 import { RouterModule, Routes, CanActivate } from '@angular/router';
 
 
-import { LoginComponent } from '../../views/login/login.component';
-import { DashboardComponent } from '../../views/dashboard/dashboard.component';
+import { LoginComponent } from '../../modules/login/login.component';
+import { DashboardComponent } from '../../modules/dashboard/dashboard.component';
 import { AuthGuard } from './route-auth.guard';
 import { PermissionGuard } from './route-permission.guard';
 

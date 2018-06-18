@@ -1,6 +1,7 @@
-import { Component, OnInit } from '@angular/core';
+import { NgModule, Component, OnInit } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import {Router} from '@angular/router';
+import { Router } from '@angular/router';
+import { FormsModule }   from '@angular/forms';
 
 import { AuthService } from '../../services/auth/auth.service';
 
@@ -43,3 +44,16 @@ export class LoginComponent implements OnInit {
     console.log("Trigger password reset");
   }
 }
+
+@NgModule({
+  declarations: [
+    LoginComponent
+  ],
+  imports: [
+    FormsModule
+  ],
+  providers: [
+    AuthService
+  ]
+})
+export class LoginModule { }

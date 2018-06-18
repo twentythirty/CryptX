@@ -15,7 +15,8 @@
   },
   "host": "cryptx-app-staging.herokuapp.com",
   "basePath": "/v1",
-  "tags": [{
+  "tags": [
+    {
       "name": "user",
       "description": "Creation, authentication and management"
     },
@@ -28,13 +29,17 @@
       "description": "Other"
     }
   ],
-  "schemes": ["https"],
+  "schemes": [
+    "https"
+  ],
   "paths": {
     "/": {
       "get": {
-        "tags": ["MISC"],
+        "tags": [
+          "MISC"
+        ],
         "summary": "Default route (ALL VERBS)",
-        "description": "The response received when no mathcing route was found for the supplied HTTP verb.\n While the provided example is a `GET`, this will **work the same on all HTTP verbs**",
+        "description": "response received when no mathcing route was found for the supplied HTTP verb. While the provided example is a `GET`, this will **work the same on all HTTP verbs**",
         "responses": {
           "200": {
             "description": "success",
@@ -45,21 +50,27 @@
         }
       }
     },
-    "roles/create": {
+    "/roles/create": {
       "post": {
-        "tags": ["security"],
+        "tags": [
+          "security"
+        ],
         "summary": "Create a role",
         "description": "Create a role by provided name and permission codes. Requires the `perm_alter_user_roles` permission and the `perm_view_roles` permission.",
-        "produces": ["application/json"],
-        "parameters": [{
-          "name": "body",
-          "in": "body",
-          "description": "Role creation info",
-          "required": true,
-          "schema": {
-            "$ref": "#/definitions/CreateRole"
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "description": "Role creation info",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/CreateRole"
+            }
           }
-        }],
+        ],
         "responses": {
           "200": {
             "description": "success",
@@ -68,24 +79,32 @@
             }
           }
         },
-        "security": [{
-          "bearer": []
-        }]
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
       }
     },
-    "roles/{role_id}": {
+    "/roles/{role_id}": {
       "get": {
-        "tags": ["security"],
+        "tags": [
+          "security"
+        ],
         "summary": "Get ifnormation of role by id",
         "description": "Fetch role by id. Requires the `perm_view_roles` permission",
-        "produces": ["application/json"],
-        "parameters": [{
-          "name": "role_id",
-          "in": "path",
-          "description": "identifier of role to fetch",
-          "required": true,
-          "type": "integer"
-        }],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "role_id",
+            "in": "path",
+            "description": "identifier of role to fetch",
+            "required": true,
+            "type": "integer"
+          }
+        ],
         "responses": {
           "200": {
             "description": "success",
@@ -94,17 +113,23 @@
             }
           }
         },
-        "security": [{
-          "bearer": []
-        }]
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
       }
     },
     "/roles/all": {
       "get": {
-        "tags": ["security"],
+        "tags": [
+          "security"
+        ],
         "summary": "Get a list of roles",
         "description": "The list is optionally filtered when using POST. Requires the `perm_view_roles` permission to fetch.",
-        "produces": ["application/json"],
+        "produces": [
+          "application/json"
+        ],
         "responses": {
           "200": {
             "description": "successful operation",
@@ -119,24 +144,32 @@
             }
           }
         },
-        "security": [{
-          "bearer": []
-        }]
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
       },
       "post": {
-        "tags": ["security"],
+        "tags": [
+          "security"
+        ],
         "summary": "Get a list of roles (filtered)",
         "description": "The list is optionally filtered when using POST. Requires the `perm_view_roles` permission to fetch.\nAll filter keys optional. `prop_name_x` refers to direct data proeprty names, equivalent to use inside of an `AND` block in most cases. \nAll `value` keys can be numbers, strings or arrays of the two (`Swagger 2.0` too limiting to show this)",
-        "produces": ["application/json"],
-        "parameters": [{
-          "name": "body",
-          "in": "body",
-          "description": "The filter definition to perform on the data set. If absent will assume empty filter and return all data",
-          "required": false,
-          "schema": {
-            "$ref": "#/definitions/EntitiesFilterWithPerms"
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "description": "The filter definition to perform on the data set. If absent will assume empty filter and return all data",
+            "required": false,
+            "schema": {
+              "$ref": "#/definitions/EntitiesFilterWithPerms"
+            }
           }
-        }],
+        ],
         "responses": {
           "200": {
             "description": "successful operation",
@@ -151,18 +184,25 @@
             }
           }
         },
-        "security": [{
-          "bearer": []
-        }]
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
       }
     },
     "/roles/{role_id}/edit": {
       "post": {
-        "tags": ["security"],
+        "tags": [
+          "security"
+        ],
         "summary": "Change infomration of role",
         "description": "Change makes up the role identified by `role_id`. \nRequires the `perm_alter_role_perm` permission",
-        "produces": ["application/json"],
-        "parameters": [{
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
             "name": "role_id",
             "in": "path",
             "description": "identifier of role to change permissions for",
@@ -193,18 +233,25 @@
             }
           }
         },
-        "security": [{
-          "bearer": []
-        }]
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
       }
     },
     "/roles/{role_id}/delete": {
       "delete": {
-       "tags": ["security"],
+        "tags": [
+          "security"
+        ],
         "summary": "Delete system role",
         "description": "Delete information related to role `role_id` in the system. Only allowed if no users are currently using the role. Associated role permissions remain unchanged. Requires the `perm_alter_user_roles` permission.",
-        "produces": ["application/json"],
-        "parameters": [{
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
             "name": "role_id",
             "in": "path",
             "description": "identifier of role to delete",
@@ -226,27 +273,35 @@
             }
           }
         },
-        "security": [{
-          "bearer": []
-        }] 
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
       }
     },
     "/users/login": {
       "post": {
-        "tags": ["user"],
+        "tags": [
+          "user"
+        ],
         "summary": "Authenticate user",
         "description": "Perform login for specific system user",
         "operationId": "loginUser",
-        "produces": ["application/json"],
-        "parameters": [{
-          "in": "body",
-          "name": "body",
-          "description": "Login User",
-          "required": true,
-          "schema": {
-            "$ref": "#/definitions/LoginUserRequest"
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "description": "Login User",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/LoginUserRequest"
+            }
           }
-        }],
+        ],
         "responses": {
           "200": {
             "description": "successful operation",
@@ -265,25 +320,31 @@
     },
     "/send_reset_token": {
       "post": {
-        "tags": ["user"],
+        "tags": [
+          "user"
+        ],
         "summary": "Send password reset token to email",
         "description": "Generated password reset info and sends the token with reset link to supplied email.",
-        "produces": ["application/json"],
-        "parameters": [{
-          "in": "body",
-          "name": "body",
-          "description": "Reset password email",
-          "required": true,
-          "schema": {
-            "type": "object",
-            "properties": {
-              "email": {
-                "type": "string",
-                "example": "forgot@password.com"
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "description": "Reset password email",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "email": {
+                  "type": "string",
+                  "example": "forgot@password.com"
+                }
               }
             }
           }
-        }],
+        ],
         "responses": {
           "200": {
             "description": "successful operation",
@@ -294,19 +355,25 @@
         }
       }
     },
-    "password_reset/{token}": {
+    "/password_reset/{token}": {
       "get": {
-        "tags": ["user"],
+        "tags": [
+          "user"
+        ],
         "summary": "Check password reset token validity",
         "description": "Called by FE once the user follows the password reset link in their email. If this returns an error, no password reset for them!",
-        "produces": ["application/json"],
-        "parameters": [{
-          "in": "path",
-          "name": "token",
-          "description": "Reset password token",
-          "required": true,
-          "type": "string"
-        }],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "token",
+            "description": "Reset password token",
+            "required": true,
+            "type": "string"
+          }
+        ],
         "responses": {
           "200": {
             "description": "successful operation",
@@ -317,30 +384,37 @@
         }
       },
       "post": {
-        "tags": ["user"],
+        "tags": [
+          "user"
+        ],
         "summary": "Check password reset token validity",
         "description": "Called by FE once the user follows the password reset link in their email. If this returns an error, no password reset for them!",
-        "produces": ["application/json"],
-        "parameters": [{
-          "in": "path",
-          "name": "token",
-          "description": "Reset password token",
-          "required": true,
-          "type": "string"
-        }, {
-          "in": "body",
-          "name": "body",
-          "description": "New user password",
-          "required": true,
-          "schema": {
-            "type": "object",
-            "properties": {
-              "new_password": {
-                "type": "string"
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "token",
+            "description": "Reset password token",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "in": "body",
+            "name": "body",
+            "description": "New user password",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "new_password": {
+                  "type": "string"
+                }
               }
             }
           }
-        }],
+        ],
         "responses": {
           "200": {
             "description": "successful operation",
@@ -353,17 +427,23 @@
     },
     "/users/{user_id}": {
       "get": {
-        "tags": ["user"],
+        "tags": [
+          "user"
+        ],
         "summary": "Get information of user by id",
         "description": "Fetch user by id. Requires the `perm_view_users` permission, unless viewing yourself (the `me` id)",
-        "produces": ["application/json"],
-        "parameters": [{
-          "name": "user_id",
-          "in": "path",
-          "description": "identifier of user to fetch. (Either a numeric database id or the predefined string `me`)",
-          "required": true,
-          "type": "string"
-        }],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "user_id",
+            "in": "path",
+            "description": "identifier of user to fetch. (Either a numeric database id or the predefined string `me`)",
+            "required": true,
+            "type": "string"
+          }
+        ],
         "responses": {
           "200": {
             "description": "successful operation",
@@ -378,17 +458,23 @@
             }
           }
         },
-        "security": [{
-          "bearer": []
-        }]
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
       }
     },
     "/users/all": {
       "get": {
-        "tags": ["user"],
+        "tags": [
+          "user"
+        ],
         "summary": "Get a list of users",
         "description": "The list is optionally filtered when using POST. Requires the `perm_view_users` permission to fetch.",
-        "produces": ["application/json"],
+        "produces": [
+          "application/json"
+        ],
         "responses": {
           "200": {
             "description": "successful operation",
@@ -403,24 +489,32 @@
             }
           }
         },
-        "security": [{
-          "bearer": []
-        }]
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
       },
       "post": {
-        "tags": ["user"],
+        "tags": [
+          "user"
+        ],
         "summary": "Get a list of users (filtered)",
         "description": "The list is optionally filtered when using POST. Requires the `perm_view_users` permission to fetch.\nAll filter keys optional. `prop_name_x` refers to direct data proeprty names, equivalent to use inside of an `AND` block in most cases. \nAll `value` keys can be numbers, strings or arrays of the two (`Swagger 2.0` too limiting to show this)",
-        "produces": ["application/json"],
-        "parameters": [{
-          "name": "filter",
-          "in": "body",
-          "description": "The filter definition to perform on the data set. If absent will assume empty filter and return all data",
-          "required": false,
-          "schema": {
-            "$ref": "#/definitions/EntitiesFilter"
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "filter",
+            "in": "body",
+            "description": "The filter definition to perform on the data set. If absent will assume empty filter and return all data",
+            "required": false,
+            "schema": {
+              "$ref": "#/definitions/EntitiesFilter"
+            }
           }
-        }],
+        ],
         "responses": {
           "200": {
             "description": "successful operation",
@@ -435,18 +529,25 @@
             }
           }
         },
-        "security": [{
-          "bearer": []
-        }]
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
       }
     },
     "/users/{user_id}/change_role": {
       "post": {
-        "tags": ["user"],
+        "tags": [
+          "user"
+        ],
         "summary": "Change user roles",
         "description": "Change the roles user has in system",
-        "produces": ["application/json"],
-        "parameters": [{
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
             "name": "user_id",
             "in": "path",
             "description": "identifier of user to fetch. (Either a numeric database id or the predefined string `me`)",
@@ -480,18 +581,25 @@
             "description": "successful operation"
           }
         },
-        "security": [{
-          "bearer": []
-        }]
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
       }
     },
     "/users/{user_id}/edit": {
       "post": {
-        "tags": ["user"],
+        "tags": [
+          "user"
+        ],
         "summary": "Change user basic info",
         "description": "Change the name/active status of user. Other properties ignored, absent are merged. Requires the `perm_edit_users` permission.",
-        "produces": ["application/json"],
-        "parameters": [{
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
             "name": "user_id",
             "in": "path",
             "description": "identifier of user to fetch. (Either a numeric database id or the predefined string `me`)",
@@ -525,18 +633,25 @@
             "description": "successful operation"
           }
         },
-        "security": [{
-          "bearer": []
-        }]
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
       }
     },
     "/users/{user_id}/change_password": {
       "post": {
-        "tags": ["user"],
+        "tags": [
+          "user"
+        ],
         "summary": "Change logged in user password",
         "description": "Change the password current user uses to login. \nInvalidates all active user sessions except for the current one",
-        "produces": ["application/json"],
-        "parameters": [{
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
             "name": "user_id",
             "in": "path",
             "description": "identifier of user to fetch. (Either a numeric database id or the predefined string `me`)",
@@ -570,26 +685,34 @@
             "description": "successful operation"
           }
         },
-        "security": [{
-          "bearer": []
-        }]
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
       }
     },
     "/users/invite": {
       "post": {
-        "tags": ["user"],
+        "tags": [
+          "user"
+        ],
         "summary": "Invite a new user",
         "description": "Create an invitation and send it via email. The invitation `token` enforces the supplied user role, first name and last name. Requires the `perm_create_users` permission.",
-        "produces": ["application/json"],
-        "parameters": [{
-          "in": "body",
-          "name": "body",
-          "description": "Create User Invitation",
-          "required": true,
-          "schema": {
-            "$ref": "#/definitions/CreateUserInvitation"
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "description": "Create User Invitation",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/CreateUserInvitation"
+            }
           }
-        }],
+        ],
         "responses": {
           "200": {
             "description": "success",
@@ -604,32 +727,40 @@
             }
           }
         },
-        "security": [{
-          "bearer": []
-        }]
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
       }
     },
     "/users/invitation": {
       "post": {
-        "tags": ["user"],
+        "tags": [
+          "user"
+        ],
         "summary": "Fetch invitation info by token",
         "description": "Used by the FE app once the user clicks the link with the token in their email. The FE app should then extract that token from the query parameters and send to this endpoint to receive detailed invitation info and fill in the blanks for the user.<br/> This method will also check invitation validity.",
-        "produces": ["application/json"],
-        "parameters": [{
-          "in": "body",
-          "name": "body",
-          "description": "User invitation token",
-          "required": true,
-          "schema": {
-            "type": "object",
-            "properties": {
-              "token": {
-                "type": "string",
-                "example": "3e3b9455-9261-45c1-9aa3-f7e30517b456"
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "description": "User invitation token",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "token": {
+                  "type": "string",
+                  "example": "3e3b9455-9261-45c1-9aa3-f7e30517b456"
+                }
               }
             }
           }
-        }],
+        ],
         "responses": {
           "200": {
             "description": "success",
@@ -642,19 +773,25 @@
     },
     "/users/create-invited": {
       "post": {
-         "tags": ["user"],
+        "tags": [
+          "user"
+        ],
         "summary": "Create a new user by using an invitation object",
         "description": "Create a user from data in hte identified invitation. The invitation integrity is ensured before the creation takes place. New user does not get auto logged in.",
-        "produces": ["application/json"],
-        "parameters": [{
-          "in": "body",
-          "name": "body",
-          "description": "Create User By Invitation",
-          "required": true,
-          "schema": {
-            "$ref": "#/definitions/CreateUserByInvite"
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "description": "Create User By Invitation",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/CreateUserByInvite"
+            }
           }
-        }],
+        ],
         "responses": {
           "200": {
             "description": "success",
@@ -667,19 +804,25 @@
     },
     "/users/create": {
       "post": {
-        "tags": ["user"],
+        "tags": [
+          "user"
+        ],
         "summary": "Create a new user",
         "description": "Create a user from provided data. Does not auto-login created user.",
-        "produces": ["application/json"],
-        "parameters": [{
-          "in": "body",
-          "name": "body",
-          "description": "Create User",
-          "required": true,
-          "schema": {
-            "$ref": "#/definitions/CreateUser"
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "description": "Create User",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/CreateUser"
+            }
           }
-        }],
+        ],
         "responses": {
           "201": {
             "description": "success",
@@ -692,17 +835,23 @@
     },
     "/users/rm/{user_id}": {
       "delete": {
-        "tags": ["user"],
+        "tags": [
+          "user"
+        ],
         "summary": "Delete a user",
         "description": "_Soft Delete_ a user in the system by setting their `is_active` flag to `false`. Can be used to deactivate yourself as well. Requires the `perm_delete_users` permission.",
-        "produces": ["application/json"],
-        "parameters": [{
-          "in": "path",
-          "name": "user_id",
-          "description": "Identifier of user to delete",
-          "required": true,
-          "type": "number"
-        }],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "user_id",
+            "description": "Identifier of user to delete",
+            "required": true,
+            "type": "number"
+          }
+        ],
         "responses": {
           "200": {
             "description": "success",
@@ -717,9 +866,11 @@
             }
           }
         },
-        "security": [{
-          "bearer": []
-        }]
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
       }
     }
   },
@@ -735,7 +886,7 @@
       "description": "Entity filter. Scoped to a `filter` key to easily combine with other POST data.",
       "type": "object",
       "properties": {
-        "filter": {  
+        "filter": {
           "type": "object",
           "properties": {
             "or": {
@@ -921,6 +1072,13 @@
         },
         "user": {
           "$ref": "#/definitions/UserDetails"
+        },
+        "permissions": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "List of permissions user has"
         }
       }
     },
@@ -1108,7 +1266,7 @@
           "example": true
         },
         "users": {
-          "type" : "array",
+          "type": "array",
           "items": {
             "$ref": "#/definitions/UserDetails"
           }
@@ -1123,7 +1281,7 @@
           "example": true
         },
         "roles": {
-          "type" : "array",
+          "type": "array",
           "items": {
             "$ref": "#/definitions/RoleDetails"
           }
