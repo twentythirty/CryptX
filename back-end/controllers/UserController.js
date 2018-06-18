@@ -1,5 +1,6 @@
 const User = require("../models").User;
 const Role = require("../models").Role;
+const Permission = require("../models").Permission;
 const Sequelize = require('../models').Sequelize;
 const Op = Sequelize.Op;
 const authService = require("./../services/AuthService");
@@ -155,6 +156,35 @@ const getUser = async function (req, res) {
   });
 };
 module.exports.getUser = getUser;
+
+const getUserPermissions = async function (req, res) {
+
+  let user_id = req.user.id;
+
+  let user = await User.findOne({
+    where: {
+      id: user_id
+    },
+    include: [{
+      model: Role,
+      include: Permission
+    }]
+  });
+
+  if (!user) return ReE(res, "user with id " + req.params.user_id + " not found!", 404);
+
+  let perms = _.flatMap(user.Roles.map(role => {
+    
+    return role.Permissions.map(permission => {
+      return permission.code;
+    });
+  }));
+
+  return ReS(res, {
+    permissions: perms
+  });
+};
+module.exports.getUserPermissions = getUserPermissions;
 
 const editUser = async function (req, res) {
   let user_id = resolveUserId(req);

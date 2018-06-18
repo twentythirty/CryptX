@@ -1,6 +1,7 @@
 import { BrowserModule } from '@angular/platform-browser';
 import { NgModule } from '@angular/core';
 import { FormsModule }   from '@angular/forms';
+import { Router }   from '@angular/router';
 import { HttpClientModule }   from '@angular/common/http';
 import { HTTP_INTERCEPTORS } from '@angular/common/http';
 
@@ -48,8 +49,11 @@ import { PermissionGuard } from './config/routes/route-permission.guard';
 })
 export class AppModule { 
 
-  constructor (private authService: AuthService) {
-    this.authService.checkAuth();
+  constructor (private authService: AuthService, private router: Router) {
+    this.authService.checkAuth().subscribe(status => {
+      console.log("Status of login", status);
+      // checking auth
+    });
   }
   
 }

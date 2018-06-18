@@ -64,6 +64,12 @@ router.post(
   check_permissions,
   UserController.editUser
 );
+router.get(
+  ROUTES.GetMyPermissions.router_string,
+  stateless_auth,
+  check_permissions,
+  UserController.getUserPermissions
+);
 router.post(
   ROUTES.InviteUser.router_string,
   stateless_auth,

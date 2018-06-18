@@ -124,6 +124,11 @@ ROUTES = {
     permissions_matcher: /\/users\/login/,
     required_permissions: []
   },
+  GetMyPermissions: {
+    router_string: "/users/me/permissions",
+    permissions_matcher: /\/users\/me\/permissions/,
+    required_permissions: [PERMISSIONS.VIEW_USERS]
+  },
   GetUserInfo: {
     router_string: "/users/:user_id",
     permissions_matcher: /\/users\/(\d+|me)$/,
@@ -173,7 +178,7 @@ ROUTES = {
   },
   GetRolesInfo: {
     router_string: "/roles/all",
-    permissions_matcher: /\/roles\/all\/list/,
+    permissions_matcher: /\/roles\/all/,
     required_permissions: [PERMISSIONS.VIEW_ROLES]
   },
   EditRole: {

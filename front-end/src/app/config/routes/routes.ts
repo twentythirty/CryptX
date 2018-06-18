@@ -13,8 +13,8 @@ const routes: Routes = [
   { 
     path: 'dashboard', 
     component: DashboardComponent,
-    canActivate: [AuthGuard, PermissionGuard],
-    data: { requiredPermission: 'VIEW_INVESTMENT_RUN'}
+    canActivate: [AuthGuard/* , PermissionGuard */]/* ,
+    data: { requiredPermission: 'VIEW_INVESTMENT_RUN'} */ // restrict route to be accessed with certain permissions
   },
   { path: '', redirectTo: 'login', pathMatch: 'full'}
 ];

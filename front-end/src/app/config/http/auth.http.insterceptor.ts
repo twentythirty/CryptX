@@ -43,6 +43,13 @@ export class PostRequestAuthInterceptor implements HttpInterceptor {
       if (err instanceof HttpErrorResponse) {
         if (err.status === 401) // if returns error code unauthorized
           this.authService.deauthorize();
+
+        if (err.status === 403) {
+          console.log("User didn't have permissions needed");
+          this.authService.refreshPermissions().subscribe(data => {
+            // do something with permission renewed permission data
+          });
+        }
       }
     });
   }
