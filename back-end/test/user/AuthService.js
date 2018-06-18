@@ -51,6 +51,24 @@ describe("AuthService testing", () => {
         reset_password_token_expiry_timestamp: RESET_TOKEN_EXPIRY,
         is_active: true
       });
+      user.toJSON();
+      user.Roles = [{
+        id: 1,
+        name: "Admin",
+        Permissions: [{
+          id: 1,
+          code: "perm_some_code",
+          name: "Permission to log in"
+        }]
+      },{
+        id: 1,
+        name: "Manager",
+        Permissions: [{
+          id: 1,
+          code: "perm_another_code",
+          name: "Permission to log out"
+        }]
+      }]
       sinon.stub(user, "comparePassword").returns(Promise.resolve(user));
       sinon.stub(user, "getJWT").returns("Bearer test-jwt");
       sinon.stub(user, "save").returns(Promise.resolve(user));
@@ -150,14 +168,18 @@ describe("AuthService testing", () => {
       ).then(function (userSession) {
         //test what function returns
         chai.expect(userSession).to.be.a("array");
-        chai.expect(userSession.length).to.eq(2);
-        let [user, session] = userSession;
+        chai.expect(userSession.length).to.eq(3);
+        let [user, perms, session] = userSession;
 
-        //that User was searched by this email
+        //that User was searched by this email, and with required models included
         chai.assert.isTrue(User.findOne.calledWith({
           where: {
             email: EMAIL
-          }
+          },
+          include: [{
+            model: Role,
+            include: [Permission]
+          }]
         }));
         //checked these credentials
         chai.assert.isTrue(user.comparePassword.calledWith(PASSWORD));
@@ -166,6 +188,13 @@ describe("AuthService testing", () => {
         chai.expect(session.expiry_timestamp).to.be.greaterThan(new Date());
         chai.expect(session.ip_address).to.be.eq(IP);
         chai.expect(session.user_id).to.be.eq(USER_ID);
+
+        // permissions should be array of strings
+        chai.expect(perms).to.be.Array;
+        chai.expect(perms.length).to.be.eq(2);
+        chai.expect(perms).to.satisfy(permissions => {
+          return permissions.every(p => chai.expect(p).to.be.string);
+        });
       });
     });
   });
