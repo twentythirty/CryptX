@@ -51,7 +51,6 @@ export class AppModule {
 
   constructor (private authService: AuthService, private router: Router) {
     this.authService.checkAuth().subscribe(status => {
-      console.log("Status of login", status);
       // checking auth
     });
   }

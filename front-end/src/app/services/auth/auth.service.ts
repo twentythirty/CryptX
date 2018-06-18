@@ -2,9 +2,9 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Router } from '@angular/router';
 
-import { Observable, } from 'rxjs';
+import { Observable } from 'rxjs';
 import { of } from 'rxjs/observable/of';
-import { catchError, map, tap, delay } from 'rxjs/operators';
+import { catchError, map, tap } from 'rxjs/operators';
 
 import { User } from '../../shared/models/user';
 import PERMISSIONS from '../../config/permissions';
@@ -83,7 +83,6 @@ export class AuthService {
   }
 
   deauthorize () {
-    console.log('Deauthorize called --------------');
     localStorage.removeItem('token');
     localStorage.removeItem('user');
     localStorage.removeItem('permissions');
@@ -91,23 +90,32 @@ export class AuthService {
     delete this.permissions;
   }
 
-  checkAuth() {
+  /** Checks if user is logged in by sending JWT token, also makes separate request
+   * to receive users permissions. */
+  checkAuth(): Observable<any> {
     let token = this.getToken();
     if (!token) return Observable.of(false);
 
-    return this.http.get<any>('/api/v1/users/me').pipe(
-      tap((response) => {
-        if (response.success) {
-          this.setUser(response.user);
-        }
-        this.authChecked = true;
-        return response.success;
-      }),
-      catchError(error => {
-        this.deauthorize();
-        this.router.navigate(['login']);
-        return of(`Bad Promise: `, error);
-      })
+    return Observable.forkJoin(
+      this.http.get<any>('/api/v1/users/me').pipe(
+        tap((response) => {
+          if (response.success) {
+            this.setUser(response.user);
+          }
+          this.authChecked = true;
+        }),
+        catchError(error => {
+          this.deauthorize();
+          this.router.navigate(['login']);
+          return of(`Bad Promise: `, error);
+        })
+      ),
+      this.http.get<any>('/api/v1/users/me/permissions').pipe(
+        tap(response => {
+          if (response.success)
+            this.setPermissions(response.permissions);
+        })
+      )
     );
   }
 

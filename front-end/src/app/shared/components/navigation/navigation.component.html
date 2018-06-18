@@ -1,5 +1,5 @@
 <div class="topbar">
-  Navigation component  
+  Navigation component
   <nav>
     <a href="#" *ngIf="checkPerm('VIEW_INVESTMENT_RUN')">Dashboard</a>
     <a href="#" *ngIf="checkPerm('ALTER_PERMS')">Recipe Runs</a>
@@ -8,5 +8,6 @@
     <a href="#" *ngIf="checkPerm('VIEW_ROLES')">Role Management</a>
     <a href="#" *ngIf="checkPerm('VIEW_SETTING_VALUES')">Setting Management</a>
   </nav>
+  <button (click)="logout()">Logout</button>
 </div>
 
