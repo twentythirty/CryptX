@@ -30,13 +30,13 @@ const createInvestmentRun = async function (user_id, strategy_type, is_simulated
   });
 
   // only let to run one investment of the same strategy and mode
-  if (investment_run) {
+  /* if (investment_run) {
     let message = `Investment with ${strategy_type} strategy and ${
       is_simulated ? 'simulated' : 'real investment'
     } mode already created`;
 
     TE(message);
-  }
+  } */
 
   [err, investment_run] = await to(InvestmentRun.create({
     strategy_type: strategy_type,
@@ -183,7 +183,10 @@ const generateRecipeDetails = async function (strategy_type) {
       return {};
 
     /* Cancel recipe generation if asset doesn't meet minimum volume requirements */
-    asset.possible_actions = asset.possible_actions.filter(a => a.average_volume >= a.min_volume_requirement);
+    asset.possible_actions = asset.possible_actions.filter(a =>
+      !a.min_volume_requirement // if doesn't have liquidity requirement set
+      || a.average_volume >= a.min_volume_requirement // or passes liquidity history
+    );
     if (!asset.possible_actions.length) TE('None of instruments for asset %s fulfill liquidity requirements', asset.symbol);
     
     // calculate asset price in usd when buying through certain insturment/exchange

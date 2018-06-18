@@ -48,7 +48,11 @@ const authUser = async function (credentials, clientIP) {
     User.findOne({
       where: {
         email: credentials.username
-      }
+      },
+      include: [{
+        model: Role,
+        include: [Permission]
+      }]
     })
   );
   if (err) TE(err.message);
@@ -70,8 +74,15 @@ const authUser = async function (credentials, clientIP) {
     })
   );
   if (err) TE(err.message)
-
-  return [user, session];
+  
+  let perms = _.flatMap(user.Roles.map(role => {
+    
+    return role.Permissions.map(permission => {
+      return permission.code;
+    });
+  }));
+  
+  return [user, perms, session];
 };
 module.exports.authUser = authUser;
 
