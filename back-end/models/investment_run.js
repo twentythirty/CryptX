@@ -18,6 +18,10 @@ module.exports = (sequelize, DataTypes) => {
       status: {
         type: DataTypes.SMALLINT,
         allowNull: false
+      },
+      deposit_usd: {
+        type: DataTypes.DECIMAL,
+        allowNull: false
       }
     },
     modelProps("investment_run", "Investment workflow run")

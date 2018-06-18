@@ -31,6 +31,11 @@ EXCHANGE_ACCOUNT_TYPES = {
   Withdrawal: 202
 };
 
+RECIPE_RUN_DEPOSIT_STATUSES = {
+  Pending: 150,
+  Completed: 151
+};
+
 RECIPE_RUN_STATUSES = {
   Pending: 41,
   Rejected: 42,

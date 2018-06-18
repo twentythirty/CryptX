@@ -10,7 +10,7 @@ module.exports = (sequelize, DataTypes) => {
       },
       address: DataTypes.TEXT("medium"),
       custodian: {
-        type: DataTypes.SMALLINT,
+        type: DataTypes.STRING,
         allowNull: false
       }
     },
@@ -22,9 +22,6 @@ module.exports = (sequelize, DataTypes) => {
 
   ColdStorageAccount.associate = function(models) {
     ColdStorageAccount.belongsTo(models.Asset);
-    ColdStorageAccount.belongsToMany(models.ExecutionOrder, {
-      through: models.ColdStorageTransfer
-    })
   };
 
   return ColdStorageAccount;

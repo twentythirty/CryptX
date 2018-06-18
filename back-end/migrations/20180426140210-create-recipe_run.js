@@ -36,7 +36,7 @@ module.exports = {
       },
       comment: {
         type: Sequelize.TEXT('medium'),
-        allowNull: false
+        allowNull: true
       }
     });
   },
