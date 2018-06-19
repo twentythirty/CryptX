@@ -233,6 +233,7 @@ const generateApproveRecipeOrders = async (recipe_run_id) => {
         return RecipeOrder.create({
             recipe_order_group_id: orders_group.id,
             instrument_id: market_data.instrument_id,
+            target_exchange_id: recipe_run_detail.target_exchange_id,
             price: price,
             quantity: qnty,
             side: side,

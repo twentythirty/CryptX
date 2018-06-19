@@ -25,6 +25,10 @@ module.exports = (sequelize, DataTypes) => {
 
         RecipeOrder.belongsTo(models.RecipeOrderGroup);
         RecipeOrder.belongsTo(models.Instrument);
+        RecipeOrder.belongsTo(models.Exchange, {
+            foreignKey: 'target_exchange_id',
+            as: 'target_exchange'
+        });
     };
 
     return RecipeOrder;
