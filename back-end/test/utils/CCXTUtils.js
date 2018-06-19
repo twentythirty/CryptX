@@ -32,9 +32,9 @@ describe('CCXTUtils', () => {
         chai.expect(CCXTUtils.getConnector).to.exist;
     });
 
-    it('shall return the same exchange for all valid argument types', done => {
+    it('shall return the same exchange for all valid argument types', () => {
 
-        CCXTUtils.getConnector(test_exchange.api_id).then(connector => {
+        return CCXTUtils.getConnector(test_exchange.api_id).then(connector => {
 
             chai.expect(connector).to.not.be.null;
             test_connector = connector;
@@ -48,8 +48,6 @@ describe('CCXTUtils', () => {
         }).then(connector => {
 
             chai.expect(connector).to.eq(test_connector);
-
-            done();
         });
     });
 
