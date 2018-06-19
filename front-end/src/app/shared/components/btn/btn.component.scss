@@ -1,0 +1,17 @@
+:host() button {
+  background: #00c351;
+  border: 0;
+  border-radius: 100px;
+  font-size: 13px;  
+  padding: 10px 30px;
+  color: #fff;
+  text-transform: uppercase;
+  font-weight: 700;
+  font-family: arial;
+  box-shadow: 0 3px 15px #00c351;
+
+  &.big {
+    padding: 15px 35px;
+    box-shadow: 0 3px 15px #00c351;
+  }
+}

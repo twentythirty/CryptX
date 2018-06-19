@@ -5,6 +5,8 @@ import { FormsModule }   from '@angular/forms';
 
 import { AuthService } from '../../services/auth/auth.service';
 
+import { BtnComponent } from '../../shared/components/btn/btn.component';
+
 @Component({
   selector: 'app-login',
   templateUrl: './login.component.html',
@@ -47,7 +49,8 @@ export class LoginComponent implements OnInit {
 
 @NgModule({
   declarations: [
-    LoginComponent
+    LoginComponent,
+    BtnComponent
   ],
   imports: [
     FormsModule

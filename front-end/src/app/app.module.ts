@@ -20,7 +20,7 @@ import { PermissionGuard } from './config/routes/route-permission.guard';
 @NgModule({
   declarations: [
     AppComponent,
-    NavigationComponent,
+    NavigationComponent
   ],
   imports: [
     BrowserModule,
