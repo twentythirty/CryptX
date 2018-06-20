@@ -67,7 +67,7 @@ const refreshSettingValues = async () => {
   if (settings.length)
       settings.map(setting => {
           try {
-              SYSTEM_SETTINGS[setting.key] = this.parseValue(setting.value, setting.type);
+              SYSTEM_SETTINGS[setting.key] = parseValue(setting.value, setting.type);
           } catch(err) {
               console.error(`Error parsing DB setting at ${setting.key}: ${err}. Using default value ${DEFAULT_SETTINGS[setting.key]}...`)
               SYSTEM_SETTINGS[settings.key] = DEFAULT_SETTINGS[setting.key];
