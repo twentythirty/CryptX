@@ -71,6 +71,16 @@ modelProps = function(table_name, table_comment = "") {
 _ = require("lodash");
 
 
+/**
+ * Standard clamp function used to control value ranges.
+ * If given a value that is smaller than min, will return min
+ * If given a value larger than max, will return max
+ * Otherwise will return value.
+ * All parameters need to be numeric.
+ */
+clamp = (value, min = value, max = value) => {
+  return Math.max(min, Math.min(value, max))
+}
 
 //adapted from https://stackoverflow.com/a/42304596
 // settle all promises.  For rejeted promises, return a specific rejectVal that is

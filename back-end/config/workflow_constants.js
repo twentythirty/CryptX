@@ -1,4 +1,6 @@
-/* Default values, a backup if for some reason we don't get any from database */
+/**
+ *  Default values, a backup if for some reason we don't get any from database 
+ */
 DEFAULT_SETTINGS = {
     /* Maximum marketshare percentage for LCI. Total marketshare of coins
     in LCI index should not go over this value */
@@ -6,9 +8,24 @@ DEFAULT_SETTINGS = {
 
     /* Maximum sizes of coins in indexes */
     INDEX_LCI_CAP: 20,
-    INDEX_MCI_CAP: 50
-};
+    INDEX_MCI_CAP: 50,
 
+    /** Base trade amounts in base currencies. These amounts are guidelines for
+     *  the trading volume a new execution order will tend towards
+     * in cases when a recipe order specifies to trade more than this.
+     * Actual values will be `TRADE_BASE_FUZZYNESS` fuzzy */
+    BASE_BTC_TRADE: 0.005,
+    BASE_ETH_TRADE: 0.5,
+
+    /**
+     * Amount of randomization to apply to a base value in either direction (-fuzzy; +fuzzy).
+     * Uses 0 to 1 ranging, with 1 being 100%
+     */
+    TRADE_BASE_FUZYNESS: 0.15,
+};
+/**
+ * Actual system-used active database settings values
+ */
 SYSTEM_SETTINGS = Object.assign({}, DEFAULT_SETTINGS);
 
 //KEYS for various exchanges

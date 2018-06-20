@@ -29,7 +29,8 @@ module.exports = {
             onDelete: 'cascade'
         }).then(done => {
             return queryInterface.addColumn('execution_order', 'external_identifier', {
-                type: Sequelize.STRING
+                type: Sequelize.STRING,
+                allowNull: true
             })
         }).then(done => {
 
@@ -39,7 +40,8 @@ module.exports = {
         }).then(done => {
 
             return queryInterface.addColumn('execution_order', 'time_in_force', {
-                type: Sequelize.DATE
+                type: Sequelize.DATE,
+                allowNull: true
             })
         })
     },

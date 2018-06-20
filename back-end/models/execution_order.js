@@ -3,7 +3,10 @@
 module.exports = (sequelize, DataTypes) => {
     var ExecutionOrder = sequelize.define(
         'ExecutionOrder', {
-            external_identifier: DataTypes.STRING,
+            external_identifier: {
+                type: DataTypes.STRING,
+                allowNull: true
+            },
             side: {
                 type: DataTypes.SMALLINT,
                 allowNull: false
@@ -18,8 +21,14 @@ module.exports = (sequelize, DataTypes) => {
                 type: DataTypes.SMALLINT,
                 allowNull: false
             },
-            placed_timestamp: DataTypes.DATE,
-            completed_timestamp: DataTypes.DATE,
+            placed_timestamp: {
+                type: DataTypes.DATE,
+                allowNull: true
+            },
+            completed_timestamp: {
+                type: DataTypes.DATE,
+                allowNull: true
+            },
             time_in_force: {
                 type: DataTypes.DATE,
                 allowNull: true

@@ -40,11 +40,11 @@ module.exports = {
       },
       placed_timestamp: {
         type: Sequelize.DATE,
-        allowNull: false
+        allowNull: true
       },
       completed_timestamp: {
         type: Sequelize.DATE,
-        allowNull: false
+        allowNull: true
       }
     });
   },
