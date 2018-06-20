@@ -15,7 +15,8 @@
   },
   "host": "cryptx-app-staging.herokuapp.com",
   "basePath": "/api/v1",
-  "tags": [{
+  "tags": [
+    {
       "name": "user",
       "description": "Creation, authentication and management"
     },
@@ -59,15 +60,17 @@
         "produces": [
           "application/json"
         ],
-        "parameters": [{
-          "name": "body",
-          "in": "body",
-          "description": "Role creation info",
-          "required": true,
-          "schema": {
-            "$ref": "#/definitions/CreateRole"
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "description": "Role creation info",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/CreateRole"
+            }
           }
-        }],
+        ],
         "responses": {
           "200": {
             "description": "success",
@@ -76,9 +79,11 @@
             }
           }
         },
-        "security": [{
-          "bearer": []
-        }]
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
       }
     },
     "/roles/{role_id}": {
@@ -91,13 +96,15 @@
         "produces": [
           "application/json"
         ],
-        "parameters": [{
-          "name": "role_id",
-          "in": "path",
-          "description": "identifier of role to fetch",
-          "required": true,
-          "type": "integer"
-        }],
+        "parameters": [
+          {
+            "name": "role_id",
+            "in": "path",
+            "description": "identifier of role to fetch",
+            "required": true,
+            "type": "integer"
+          }
+        ],
         "responses": {
           "200": {
             "description": "success",
@@ -106,9 +113,11 @@
             }
           }
         },
-        "security": [{
-          "bearer": []
-        }]
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
       }
     },
     "/roles/all": {
@@ -135,9 +144,11 @@
             }
           }
         },
-        "security": [{
-          "bearer": []
-        }]
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
       },
       "post": {
         "tags": [
@@ -148,15 +159,17 @@
         "produces": [
           "application/json"
         ],
-        "parameters": [{
-          "name": "body",
-          "in": "body",
-          "description": "The filter definition to perform on the data set. If absent will assume empty filter and return all data",
-          "required": false,
-          "schema": {
-            "$ref": "#/definitions/EntitiesFilterWithPerms"
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "description": "The filter definition to perform on the data set. If absent will assume empty filter and return all data",
+            "required": false,
+            "schema": {
+              "$ref": "#/definitions/EntitiesFilterWithPerms"
+            }
           }
-        }],
+        ],
         "responses": {
           "200": {
             "description": "successful operation",
@@ -171,9 +184,11 @@
             }
           }
         },
-        "security": [{
-          "bearer": []
-        }]
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
       }
     },
     "/roles/{role_id}/edit": {
@@ -186,7 +201,8 @@
         "produces": [
           "application/json"
         ],
-        "parameters": [{
+        "parameters": [
+          {
             "name": "role_id",
             "in": "path",
             "description": "identifier of role to change permissions for",
@@ -217,9 +233,11 @@
             }
           }
         },
-        "security": [{
-          "bearer": []
-        }]
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
       }
     },
     "/permissions/list": {
@@ -246,9 +264,11 @@
             }
           }
         },
-        "security": [{
-          "bearer": []
-        }]
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
       }
     },
     "/roles/{role_id}/delete": {
@@ -261,13 +281,15 @@
         "produces": [
           "application/json"
         ],
-        "parameters": [{
-          "name": "role_id",
-          "in": "path",
-          "description": "identifier of role to delete",
-          "required": true,
-          "type": "number"
-        }],
+        "parameters": [
+          {
+            "name": "role_id",
+            "in": "path",
+            "description": "identifier of role to delete",
+            "required": true,
+            "type": "number"
+          }
+        ],
         "responses": {
           "200": {
             "description": "success",
@@ -282,9 +304,11 @@
             }
           }
         },
-        "security": [{
-          "bearer": []
-        }]
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
       }
     },
     "/users/login": {
@@ -298,15 +322,17 @@
         "produces": [
           "application/json"
         ],
-        "parameters": [{
-          "in": "body",
-          "name": "body",
-          "description": "Login User",
-          "required": true,
-          "schema": {
-            "$ref": "#/definitions/LoginUserRequest"
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "description": "Login User",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/LoginUserRequest"
+            }
           }
-        }],
+        ],
         "responses": {
           "200": {
             "description": "successful operation",
@@ -333,21 +359,23 @@
         "produces": [
           "application/json"
         ],
-        "parameters": [{
-          "in": "body",
-          "name": "body",
-          "description": "Reset password email",
-          "required": true,
-          "schema": {
-            "type": "object",
-            "properties": {
-              "email": {
-                "type": "string",
-                "example": "forgot@password.com"
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "description": "Reset password email",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "email": {
+                  "type": "string",
+                  "example": "forgot@password.com"
+                }
               }
             }
           }
-        }],
+        ],
         "responses": {
           "200": {
             "description": "successful operation",
@@ -368,13 +396,15 @@
         "produces": [
           "application/json"
         ],
-        "parameters": [{
-          "in": "path",
-          "name": "token",
-          "description": "Reset password token",
-          "required": true,
-          "type": "string"
-        }],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "token",
+            "description": "Reset password token",
+            "required": true,
+            "type": "string"
+          }
+        ],
         "responses": {
           "200": {
             "description": "successful operation",
@@ -393,7 +423,8 @@
         "produces": [
           "application/json"
         ],
-        "parameters": [{
+        "parameters": [
+          {
             "in": "path",
             "name": "token",
             "description": "Reset password token",
@@ -435,13 +466,15 @@
         "produces": [
           "application/json"
         ],
-        "parameters": [{
-          "name": "user_id",
-          "in": "path",
-          "description": "identifier of user to fetch. (Either a numeric database id or the predefined string `me`)",
-          "required": true,
-          "type": "string"
-        }],
+        "parameters": [
+          {
+            "name": "user_id",
+            "in": "path",
+            "description": "identifier of user to fetch. (Either a numeric database id or the predefined string `me`)",
+            "required": true,
+            "type": "string"
+          }
+        ],
         "responses": {
           "200": {
             "description": "successful operation",
@@ -456,9 +489,11 @@
             }
           }
         },
-        "security": [{
-          "bearer": []
-        }]
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
       }
     },
     "/users/all": {
@@ -485,9 +520,11 @@
             }
           }
         },
-        "security": [{
-          "bearer": []
-        }]
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
       },
       "post": {
         "tags": [
@@ -498,15 +535,17 @@
         "produces": [
           "application/json"
         ],
-        "parameters": [{
-          "name": "filter",
-          "in": "body",
-          "description": "The filter definition to perform on the data set. If absent will assume empty filter and return all data",
-          "required": false,
-          "schema": {
-            "$ref": "#/definitions/EntitiesFilter"
+        "parameters": [
+          {
+            "name": "filter",
+            "in": "body",
+            "description": "The filter definition to perform on the data set. If absent will assume empty filter and return all data",
+            "required": false,
+            "schema": {
+              "$ref": "#/definitions/EntitiesFilter"
+            }
           }
-        }],
+        ],
         "responses": {
           "200": {
             "description": "successful operation",
@@ -521,9 +560,11 @@
             }
           }
         },
-        "security": [{
-          "bearer": []
-        }]
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
       }
     },
     "/users/{user_id}/change_role": {
@@ -536,7 +577,8 @@
         "produces": [
           "application/json"
         ],
-        "parameters": [{
+        "parameters": [
+          {
             "name": "user_id",
             "in": "path",
             "description": "identifier of user to fetch. (Either a numeric database id or the predefined string `me`)",
@@ -570,9 +612,11 @@
             "description": "successful operation"
           }
         },
-        "security": [{
-          "bearer": []
-        }]
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
       }
     },
     "/users/{user_id}/edit": {
@@ -581,11 +625,12 @@
           "user"
         ],
         "summary": "Change user basic info",
-        "description": "Change the name/active status of user. Other properties ignored, absent are merged. Requires the `perm_edit_users` permission.",
+        "description": "Change the name/active status of user and password if supplied. To change password, old password must be supplied also. Other properties ignored, absent are merged. Requires the `perm_edit_users` permission.",
         "produces": [
           "application/json"
         ],
-        "parameters": [{
+        "parameters": [
+          {
             "name": "user_id",
             "in": "path",
             "description": "identifier of user to fetch. (Either a numeric database id or the predefined string `me`)",
@@ -595,10 +640,10 @@
           {
             "in": "body",
             "name": "body",
-            "description": "New basic user information (all properties except for `first_name`, `last_name` and `is_active` are ignored)",
+            "description": "New basic user information (all properties except for `first_name`, `last_name`, `is_active` and `new_password` are ignored)",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/UserDetails"
+              "$ref": "#/definitions/UserChangeInfo"
             }
           }
         ],
@@ -619,9 +664,11 @@
             "description": "successful operation"
           }
         },
-        "security": [{
-          "bearer": []
-        }]
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
       }
     },
     "/users/{user_id}/change_password": {
@@ -634,7 +681,8 @@
         "produces": [
           "application/json"
         ],
-        "parameters": [{
+        "parameters": [
+          {
             "name": "user_id",
             "in": "path",
             "description": "identifier of user to fetch. (Either a numeric database id or the predefined string `me`)",
@@ -668,9 +716,11 @@
             "description": "successful operation"
           }
         },
-        "security": [{
-          "bearer": []
-        }]
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
       }
     },
     "/users/invite": {
@@ -683,15 +733,17 @@
         "produces": [
           "application/json"
         ],
-        "parameters": [{
-          "in": "body",
-          "name": "body",
-          "description": "Create User Invitation",
-          "required": true,
-          "schema": {
-            "$ref": "#/definitions/CreateUserInvitation"
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "description": "Create User Invitation",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/CreateUserInvitation"
+            }
           }
-        }],
+        ],
         "responses": {
           "200": {
             "description": "success",
@@ -706,9 +758,11 @@
             }
           }
         },
-        "security": [{
-          "bearer": []
-        }]
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
       }
     },
     "/users/invitation": {
@@ -721,21 +775,23 @@
         "produces": [
           "application/json"
         ],
-        "parameters": [{
-          "in": "body",
-          "name": "body",
-          "description": "User invitation token",
-          "required": true,
-          "schema": {
-            "type": "object",
-            "properties": {
-              "token": {
-                "type": "string",
-                "example": "3e3b9455-9261-45c1-9aa3-f7e30517b456"
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "description": "User invitation token",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "token": {
+                  "type": "string",
+                  "example": "3e3b9455-9261-45c1-9aa3-f7e30517b456"
+                }
               }
             }
           }
-        }],
+        ],
         "responses": {
           "200": {
             "description": "success",
@@ -756,15 +812,17 @@
         "produces": [
           "application/json"
         ],
-        "parameters": [{
-          "in": "body",
-          "name": "body",
-          "description": "Create User By Invitation",
-          "required": true,
-          "schema": {
-            "$ref": "#/definitions/CreateUserByInvite"
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "description": "Create User By Invitation",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/CreateUserByInvite"
+            }
           }
-        }],
+        ],
         "responses": {
           "200": {
             "description": "success",
@@ -785,15 +843,17 @@
         "produces": [
           "application/json"
         ],
-        "parameters": [{
-          "in": "body",
-          "name": "body",
-          "description": "Create User",
-          "required": true,
-          "schema": {
-            "$ref": "#/definitions/CreateUser"
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "description": "Create User",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/CreateUser"
+            }
           }
-        }],
+        ],
         "responses": {
           "201": {
             "description": "success",
@@ -814,13 +874,15 @@
         "produces": [
           "application/json"
         ],
-        "parameters": [{
-          "in": "path",
-          "name": "user_id",
-          "description": "Identifier of user to delete",
-          "required": true,
-          "type": "number"
-        }],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "user_id",
+            "description": "Identifier of user to delete",
+            "required": true,
+            "type": "number"
+          }
+        ],
         "responses": {
           "200": {
             "description": "success",
@@ -835,9 +897,11 @@
             }
           }
         },
-        "security": [{
-          "bearer": []
-        }]
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
       }
     }
   },
@@ -1084,6 +1148,32 @@
         "is_active": {
           "type": "boolean",
           "example": true
+        }
+      }
+    },
+    "UserChangeInfo": {
+      "type": "object",
+      "description": "changeable user information",
+      "properties": {
+        "first_name": {
+          "type": "string",
+          "example": "John"
+        },
+        "last_name": {
+          "type": "string",
+          "example": "Doh"
+        },
+        "is_active": {
+          "type": "boolean",
+          "example": true
+        },
+        "old_password": {
+          "type": "string",
+          "example": "scott"
+        },
+        "new_password": {
+          "type": "string",
+          "example": "tiger"
         }
       }
     },

@@ -3,7 +3,7 @@
     <div class="login-logo">
       Logo place holder
     </div>
-    <form (ngSubmit)="functionName">
+    <form (ngSubmit)="authenticate()">
       <p>
         <label for="user">User name</label>
         <br>
@@ -18,10 +18,14 @@
         {{ status }}
       </p>
 
-      <app-btn (click)="authenticate()" big="true">Login</app-btn>
+      <app-btn type="submit" big="true">Login</app-btn>
       <br>
-      <a (click)="forgotPassword()">Forgot password?</a>
+      <a (click)="showPassReset()">Forgot password?</a>
     </form>
-    {{ authService.permissions }}
   </div>
+
+  <app-modal *ngIf="showPasswordReset" (close)="hidePassReset()">
+    <input [(ngModel)]="reset_email" type="text">
+    <button (click)="requestPasswordReset()">Send</button>
+  </app-modal>
 </div>

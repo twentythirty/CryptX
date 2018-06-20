@@ -10,6 +10,7 @@ import { Router } from '@angular/router';
   styleUrls: ['./navigation.component.scss']
 })
 export class NavigationComponent implements OnInit {
+  showUserMenu: boolean = false;
 
   constructor(private authService: AuthService, private router: Router) { }
 
@@ -17,11 +18,19 @@ export class NavigationComponent implements OnInit {
   }
 
   checkPerm (perm_code) {
-    return this.authService.hasPermission(perm_code);
+    return this.authService.hasPermissions(perm_code);
+  }
+
+  canViewDashboard () {
+    return this.authService.hasPermissions(['VIEW_INVESTMENT_RUN']);
   }
 
   logout () {
     this.authService.deauthorize();
     this.router.navigate(['login']);
+  }
+
+  toggleUserMenu () {
+    this.showUserMenu = !this.showUserMenu;
   }
 }
