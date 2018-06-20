@@ -1,5 +1,3 @@
-const SettingService = require('../services/SettingService');
-
 /* Default values, a backup if for some reason we don't get any from database */
 DEFAULT_SETTINGS = {
     /* Maximum marketshare percentage for LCI. Total marketshare of coins
@@ -12,56 +10,6 @@ DEFAULT_SETTINGS = {
 };
 
 SYSTEM_SETTINGS = Object.assign({}, DEFAULT_SETTINGS);
-
-/** Is used to parse values depending on what their data type is defined by constant
- * in SETTING_DATA_TYPES variable
- */
-const parseValue = function (value, type) {
-    let parsedValue;
-    switch (type) {
-        case SETTING_DATA_TYPES.Integer:
-            parsedValue = parseInt(value, 10);
-            break;
-        case SETTING_DATA_TYPES.Float: 
-            parsedValue = parseFloat(value);
-            break;
-        case SETTING_DATA_TYPES.String:
-            parsedValue = value;
-            break;
-        case SETTING_DATA_TYPES.Boolean:
-            if (String(a) == "true")
-                parsedValue = true;
-            else
-                parsedValue = false;
-            break;
-        default: 
-            parsedValue = value;
-    }
-
-    return parsedValue;
-};
-module.exports.parseValue = parseValue;
-
-/** Takes values from DB table Setting and defines them in global SYSTEM_SETTING variable.
- *  This function should be called after editing values of system settings.
- */
-const refreshSettingValues = async () => {
-    let settings = await SettingService.getAllSettings();
-    //try parse settings from DB, use default in case of error
-    if (settings.length)
-        settings.map(setting => {
-            try {
-                SYSTEM_SETTINGS[setting.key] = this.parseValue(setting.value, setting.type);
-            } catch(err) {
-                console.error(`Error parsing DB setting at ${setting.key}: ${err}. Using default value ${DEFAULT_SETTINGS[setting.key]}...`)
-                SYSTEM_SETTINGS[settings.key] = DEFAULT_SETTINGS[setting.key];
-            }
-
-        });
-    else
-        TE("Couldn't get settings values");
-};
-module.exports.refreshSettingValues = refreshSettingValues;
 
 //KEYS for various exchanges
 EXCHANGE_KEYS = {
