@@ -59,7 +59,10 @@ describe('Execution Order generator job', () => {
     };
 
     before(done => {
-        done();
+        app.dbPromise.then(migrations => {
+            console.log('Migrations: %o', migrations);
+            done();
+        });
     });
 
     const TEST_PENDING_ORDER_BASE = {
