@@ -5,7 +5,6 @@ import { Observable } from 'rxjs';
 import 'rxjs/add/operator/do';
 
 import { AuthService } from '../../services/auth/auth.service';
-import { inject } from '@angular/core/testing';
 
 @Injectable()
 export class PreRequestAuthInterceptor implements HttpInterceptor {

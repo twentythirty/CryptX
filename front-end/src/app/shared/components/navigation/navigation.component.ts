@@ -21,10 +21,6 @@ export class NavigationComponent implements OnInit {
     return this.authService.hasPermissions(perm_code);
   }
 
-  canViewDashboard () {
-    return this.authService.hasPermissions(['VIEW_INVESTMENT_RUN']);
-  }
-
   logout () {
     this.authService.deauthorize();
     this.router.navigate(['login']);

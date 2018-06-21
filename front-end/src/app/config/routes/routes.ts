@@ -20,7 +20,7 @@ const routes: Routes = [
     canActivate: [AuthGuard, /* PermissionGuard */]/* ,
     data: { requiredPermission: ['VIEW_INVESTMENT_RUN']} */ // restrict route to be accessed with certain permissions
   },
-  { path: '', redirectTo: 'login', pathMatch: 'full'}
+  { path: '', redirectTo: 'dashboard', pathMatch: 'full'}
 ];
 
 @NgModule({

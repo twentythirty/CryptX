@@ -1,5 +1,5 @@
 import { BrowserModule } from '@angular/platform-browser';
-import { NgModule } from '@angular/core';
+import { NgModule, APP_INITIALIZER } from '@angular/core';
 import { FormsModule }   from '@angular/forms';
 import { Router }   from '@angular/router';
 import { HttpClientModule }   from '@angular/common/http';
@@ -11,6 +11,7 @@ import { NavigationComponent } from './shared/components/navigation/navigation.c
 import { AuthService } from './services/auth/auth.service';
 
 import { PreRequestAuthInterceptor, PostRequestAuthInterceptor } from './config/http/auth.http.insterceptor';
+import { appInitialization } from './config/app-initialization';
 import { AppRoutingModule } from './config/routes/routes';
 import { AuthModule } from './modules/auth/auth.module';
 import { DashboardModule } from './modules/dashboard/dashboard.component';
@@ -32,6 +33,12 @@ import { PermissionGuard } from './config/routes/route-permission.guard';
   ],
   providers: [
     {
+      provide: APP_INITIALIZER,
+      useFactory: appInitialization,
+      multi: true,
+      deps: [ AuthService ]
+    },
+    {
       provide: HTTP_INTERCEPTORS,
       useClass: PreRequestAuthInterceptor,
       multi: true
@@ -50,9 +57,7 @@ import { PermissionGuard } from './config/routes/route-permission.guard';
 export class AppModule { 
 
   constructor (private authService: AuthService, private router: Router) {
-    this.authService.checkAuth().subscribe(status => {
-      // checking auth
-    });
+    
   }
   
 }
