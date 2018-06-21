@@ -17,10 +17,12 @@ import { ModalComponent } from '../../../shared/components/modal/modal.component
 export class LoginComponent implements OnInit {
   username:string = '';
   password:string = '';
-  status = '';
-  touched = false;
-  showPasswordReset = false;
-  reset_email = '';
+  status: string = '';
+  touched: boolean = false;
+  showPasswordReset: boolean = false;
+  reset_email: string = '';
+  password_reset_sent: boolean = false;
+  password_reset_status: string = '';
 
   constructor(private authService: AuthService, private router: Router) { }
 
@@ -59,7 +61,9 @@ export class LoginComponent implements OnInit {
 
   requestPasswordReset() {
     this.authService.requestPasswordReset(this.reset_email).subscribe(response => {
-      console.log(response);
+      this.password_reset_sent = true;
+    }, error => {
+      this.password_reset_status = error.error.error;
     });
   }
 }

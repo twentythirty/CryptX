@@ -11,7 +11,7 @@
       </p>
       <p>
         <label for="pwd">Password</label>
-        <br> 
+        <br>
         <input [(ngModel)]="password" name="pwd" type="password">
       </p>
       <p>
@@ -25,14 +25,22 @@
   </div>
 
   <app-modal *ngIf="showPasswordReset" (close)="hidePassReset()">
-    <p>Please enter your Email.<br>We will contact you soon</p>
-    <form>
-      <p>
-        <label for="email">Email</label>
-        <br>
-        <input [(ngModel)]="reset_email" name="email" type="text">
-      </p>
-      <button (click)="requestPasswordReset()">Send</button>
-    </form>
+    <div *ngIf="!password_reset_sent">
+      <form>
+        <p>Please enter your Email.
+          <br>We will contact you soon</p>
+        <p>
+          <label for="email">Email</label>
+          <br>
+          <input [(ngModel)]="reset_email" name="email" type="text">
+        </p>
+        <p>{{ password_reset_status }}</p>
+        <button (click)="requestPasswordReset()">Send</button>
+      </form>
+    </div>
+    <div *ngIf="password_reset_sent">
+      Email sent.
+      <br>Please check you inbox.
+    </div>
   </app-modal>
 </div>
