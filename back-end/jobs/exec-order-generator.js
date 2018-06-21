@@ -18,7 +18,7 @@ const get_order_sold_symbol = (order) => {
         case ORDER_SIDES.Sell:
             return tx_symbol;
         default:
-            TE(`Unkown order side ${order.side} on order ${order}`);
+            TE(`Unkown order side ${order.side} on order ` + "%o", order);
     }
 };
 
@@ -45,19 +45,19 @@ module.exports.JOB_BODY = async (config, log) => {
         },
         include: [Instrument]
     }).then(pending_orders => {
-        log(`Analyzing ${pending_orders.length} pending orders...`)
+        log(`1. Analyzing ${pending_orders.length} pending orders...`)
         return Promise.all(
             _.map(pending_orders, pending_order => {
 
                 const sold_symbol = get_order_sold_symbol(pending_order);
                 const base_trade_amount = trade_base[sold_symbol];
                 if (base_trade_amount == null) {
-                    log(`ERROR: no base trade recorded for currency symbol ${sold_symbol}! Setting order status to ${RECIPE_ORDER_STATUSES.Failed}...`)
+                    log(`[ERROR.2A]: no base trade recorded for currency symbol ${sold_symbol}! Setting order status to ${RECIPE_ORDER_STATUSES.Failed}...`);
                     pending_order.status = RECIPE_ORDER_STATUSES.Failed;
                     return pending_order.save();
                 }
                 const fuzzy_trade_amount = base_trade_amount * (1 + (_.random(-fuzzyness, fuzzyness, true)));
-                log(`using fuzzy ${sold_symbol} amount ${fuzzy_trade_amount} for execution of order ${pending_order.id}`)
+                log(`2b. using fuzzy ${sold_symbol} amount ${fuzzy_trade_amount} for execution of order ${pending_order.id}...`);
 
                 return Promise.all([
                     Promise.resolve(fuzzy_trade_amount),
@@ -81,7 +81,7 @@ module.exports.JOB_BODY = async (config, log) => {
                     if (unfilled_execution != null) {
                         //if execution order failed, lets fail the order as well
                         const new_order_status = unfilled_execution.status != EXECUTION_ORDER_STATUSES.Failed ? RECIPE_ORDER_STATUSES.Executing : RECIPE_ORDER_STATUSES.Failed;
-                        log(`Found execution order ${unfilled_execution.id} with status ${unfilled_execution.status} for pending order ${pending_order.id}! Changing status to ${new_order_status} and moving on...`);
+                        log(`[WARN.3A]: Found execution order ${unfilled_execution.id} with status ${unfilled_execution.status} for pending order ${pending_order.id}! Changing status to ${new_order_status} and moving on...`);
                         //if there are still unfufilled execution orders 
                         //then we change status of order to in progress and exit
                         pending_order.status = new_order_status;
@@ -93,6 +93,7 @@ module.exports.JOB_BODY = async (config, log) => {
                     const fulfilled_executions = _.filter(execution_orders, order => order.status == EXECUTION_ORDER_STATUSES.FullyFilled);
                     const realized_total = _.sumBy(fulfilled_executions, 'total_quantity');
                     if (realized_total >= pending_order.quantity) {
+                        log(`[WARN.3B]: Current fulfilled execution order total ${realized_total} covers recipe order quantity ${pending_order.quantity}. Setting order status to ${RECIPE_ORDER_STATUSES.Completed}...`);
                         //if the order has been fulfilled, lets mark it as such
                         pending_order.status = RECIPE_ORDER_STATUSES.Completed;
                         return pending_order.save();
@@ -100,7 +101,7 @@ module.exports.JOB_BODY = async (config, log) => {
                     //next total is either the fuzze amount or remainder of unfufilled order quantity, whichever is smaller
                     const next_total = clamp(fuzzy_trade_amount, Number.MIN_VALUE, pending_order.quantity - realized_total);
                     const next_total_price = pending_order.price * (next_total / pending_order.quantity);
-                    log(`Current fulfilled recipe order total is ${realized_total}, adding another ${next_total}...`);
+                    log(`3c. Current fulfilled recipe order total is ${realized_total}, adding another ${next_total}...`);
 
                     //create next pending execution order and save it
                     return ExecutionOrder.create({
