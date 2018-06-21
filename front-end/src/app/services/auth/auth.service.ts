@@ -44,16 +44,30 @@ export class AuthService {
     return !!this.user;
   }
 
-  hasPermission(permission_code): boolean {
-    if (!this.permissions)
+  hasPermissions(perm_keys: Array<string>): boolean {
+    console.log("checking perms");
+    console.log("Has permissions", this.permissions, perm_keys,
+    perm_keys.every(
+      perm_key => this.permissions.includes(PERMISSIONS[perm_key])
+    ));
+    if (perm_keys.length && !this.permissions.length) {
+      console.log("first check fail");
       return false;
+    }
 
-    if (!PERMISSIONS.hasOwnProperty(permission_code)) {
+      console.log("checking perms 2");
+    if (perm_keys.some(perm_key => !PERMISSIONS.hasOwnProperty(perm_key))) {
       console.error("Inexistant permission code supplied");
       return false;
     }
 
-    return this.permissions.includes(PERMISSIONS[permission_code]);
+    console.log("Has permissions", this.permissions, perm_keys,
+    perm_keys.every(
+      perm_key => this.permissions.includes(PERMISSIONS[perm_key])
+    ));
+    return perm_keys.every(
+      perm_key => this.permissions.includes(PERMISSIONS[perm_key])
+    );
   };
 
   setToken (token) {
@@ -129,6 +143,30 @@ export class AuthService {
       }),
       catchError(error => {
         return of(`Bad Promise: `, error);
+      })
+    );
+  }
+
+  requestPasswordReset(email: string) {
+    return this.http.post<any>('/api/v1/send_reset_token', {
+      email
+    });
+  }
+
+  checkResetTokenValidity (reset_token: string) {
+    return this.http.get<any>('/api/v1/password_reset/' + reset_token);
+  }
+
+  resetPassword (reset_token: string, new_password: string) {
+    return this.http.post<any>('/api/v1/password_reset/' + reset_token, {
+      new_password
+    });
+  }
+
+  changeInfo (new_info: Object) {
+    return this.http.post<any>('/api/v1/users/me/edit', new_info).pipe(
+      tap(response => {
+        this.user = response.user;
       })
     );
   }

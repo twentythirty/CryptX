@@ -128,6 +128,13 @@ const changeUserInfo = async function (user_id, new_info) {
     ]; //return pairs [[first_name, value],[last_name,value]...]
   })));
 
+  // attempt to change password if new_password is supplied.
+  if (new_info.new_password) {
+    [err, user] = await to(this.updatePassword(user.id, new_info.old_password, new_info.new_password));
+    
+    if (err) TE(err.message);
+  }
+
   [err, user] = await to(user.save());
   if (err) TE(err.message);
 
@@ -136,6 +143,9 @@ const changeUserInfo = async function (user_id, new_info) {
 module.exports.changeUserInfo = changeUserInfo;
 
 const updatePassword = async function (user_id, old_password, new_password) {
+
+  if (!old_password || !new_password)
+    TE("Please supply old and new passwords to change your password");
 
   let err, user = await User.findById(user_id);
   if (!user) TE("User with id %s not found!", user_id);

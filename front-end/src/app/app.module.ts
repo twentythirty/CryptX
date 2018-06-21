@@ -12,7 +12,7 @@ import { AuthService } from './services/auth/auth.service';
 
 import { PreRequestAuthInterceptor, PostRequestAuthInterceptor } from './config/http/auth.http.insterceptor';
 import { AppRoutingModule } from './config/routes/routes';
-import { LoginModule } from './modules/login/login.component';
+import { AuthModule } from './modules/auth/auth.module';
 import { DashboardModule } from './modules/dashboard/dashboard.component';
 import { AuthGuard } from './config/routes/route-auth.guard';
 import { PermissionGuard } from './config/routes/route-permission.guard';
@@ -26,7 +26,7 @@ import { PermissionGuard } from './config/routes/route-permission.guard';
     BrowserModule,
     FormsModule,
     HttpClientModule,
-    LoginModule,
+    AuthModule,
     DashboardModule,
     AppRoutingModule
   ],

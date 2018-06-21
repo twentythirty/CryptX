@@ -11,7 +11,7 @@ export class PermissionGuard implements CanActivate {
   canActivate(route: ActivatedRouteSnapshot): boolean {
     const expectedPermissions = route.data.requiredPermission;
     
-    if (!this.authService.hasPermission(expectedPermissions)) {
+    if (!this.authService.hasPermissions(expectedPermissions)) {
       return false;
     }
     return true;
