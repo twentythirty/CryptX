@@ -10,7 +10,11 @@ export class ModalComponent {
 
   constructor() { }
 
-  closeModal () {
+  closeModal (e) {
     this.close.emit(null);
+  }
+
+  ignore(e) {
+    e.stopPropagation();
   }
 }

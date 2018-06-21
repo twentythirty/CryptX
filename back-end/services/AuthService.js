@@ -75,13 +75,6 @@ const authUser = async function (credentials, clientIP) {
   );
   if (err) TE(err.message)
   
-  let perms = _.flatMap(user.Roles.map(role => {
-    
-    return role.Permissions.map(permission => {
-      return permission.code;
-    });
-  }));
-  
   return [user, perms, session];
 };
 module.exports.authUser = authUser;
@@ -114,6 +107,15 @@ const changeUserInfo = async function (user_id, new_info) {
   let err, user = await User.findById(user_id);
   if (!user) TE("User with id %s not found!", user_id)
 
+  // attempt to change password if new_password is supplied.
+  if (new_info.new_password) {
+    [err, user] = await to(this.updatePassword(
+      user.id, new_info.old_password, new_info.new_password
+    ));
+    
+    if (err) TE(err.message);
+  }
+  
   //create object from allowed for editing prop names
   user = Object.assign(user, _.fromPairs(_.zipWith([
     'first_name',
@@ -127,13 +129,6 @@ const changeUserInfo = async function (user_id, new_info) {
         user[prop_name])
     ]; //return pairs [[first_name, value],[last_name,value]...]
   })));
-
-  // attempt to change password if new_password is supplied.
-  if (new_info.new_password) {
-    [err, user] = await to(this.updatePassword(user.id, new_info.old_password, new_info.new_password));
-    
-    if (err) TE(err.message);
-  }
 
   [err, user] = await to(user.save());
   if (err) TE(err.message);

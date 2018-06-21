@@ -25,7 +25,14 @@
   </div>
 
   <app-modal *ngIf="showPasswordReset" (close)="hidePassReset()">
-    <input [(ngModel)]="reset_email" type="text">
-    <button (click)="requestPasswordReset()">Send</button>
+    <p>Please enter your Email.<br>We will contact you soon</p>
+    <form>
+      <p>
+        <label for="email">Email</label>
+        <br>
+        <input [(ngModel)]="reset_email" name="email" type="text">
+      </p>
+      <button (click)="requestPasswordReset()">Send</button>
+    </form>
   </app-modal>
 </div>

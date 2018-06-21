@@ -99,11 +99,10 @@ const login = async function (req, res) {
   [err, userWithSession] = await to(authService.authUser(req.body, req.ip));
   if (err) return ReE(res, err, 422);
 
-  [user, perms, session] = userWithSession;
+  [user, session] = userWithSession;
 
   return ReS(res, {
     token: session.token,
-    permissions: perms,
     user: user.toWeb()
   });
 };
