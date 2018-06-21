@@ -88,14 +88,17 @@ module.exports = (sequelize, DataTypes) => {
     );
   };
 
-  User.prototype.toWeb = function() {
+  User.prototype.toWeb = function(send_roles = true) {
     let json = this.toJSON();
     delete json.password;
     json.created_timestamp = json.created_timestamp.getTime();
 
     if (json.Roles) {
-      json.roles = json.Roles;
+      if (send_roles){
+        json.roles = Object.assign({}, json.Roles);
+      } 
       delete json.Roles;
+      
     }
     
     return json;

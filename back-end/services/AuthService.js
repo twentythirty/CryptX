@@ -75,6 +75,13 @@ const authUser = async function (credentials, clientIP) {
   );
   if (err) TE(err.message)
   
+  let perms = _.flatMap(user.Roles.map(role => {
+    
+    return role.Permissions.map(permission => {
+      return permission.code;
+    });
+  }));
+
   return [user, perms, session];
 };
 module.exports.authUser = authUser;
