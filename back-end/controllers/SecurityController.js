@@ -55,10 +55,8 @@ const getRoles = async function(req, res) {
     
     console.log('WHERE clause: %o', req.seq_where);
 
-    let query = {
-        where: req.seq_where
-    };
-
+    let query = req.seq_query;
+    
     if (hasPermissions != null)
         query.include =  {
             model: Permission,
@@ -67,10 +65,14 @@ const getRoles = async function(req, res) {
             }
         };
 
-    let roles = await Role.findAll(query);
+    let [err, result] = await to(Role.findAndCountAll(query));
+    if (err) TE(err.message);
+    
+    let { rows: roles, count } = result;
 
     return ReS(res, {
-      roles: await Promise.all(roles.map(u => u.toWeb()))
+      roles: await Promise.all(roles.map(u => u.toWeb())),
+      count
     });
 };
 

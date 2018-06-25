@@ -970,6 +970,33 @@
               }
             }
           }
+        },
+        "limit": {
+          "type": "integer",
+          "description": "How many rows to output",
+          "example": 10
+        },
+        "offset": {
+          "type": "integer",
+          "description": "How many rows to skip",
+          "example": 20
+        },
+        "order": {
+          "type": "array",
+          "description": "Set order to return results in. Can sort by multiple properties. Property \"by\" specifies property/values to sort by, and \"order\" specifies in what order that property should be sorted (asc - ascending / desc - descending)",
+          "items": {
+            "type": "object",
+            "properties": {
+              "by": {
+                "type": "string",
+                "example": "first_name"
+              },
+              "order": {
+                "type": "string",
+                "example": "asc|desc"
+              }
+            }
+          }
         }
       }
     },

@@ -129,12 +129,14 @@ const getUsers = async function (req, res) {
     req.seq_where.is_active = true;
   }
 
-  let users = await User.findAll({
-    where: req.seq_where
-  })
+  let [err, result] = await to(User.findAndCountAll(req.seq_query));
+  if (err) ReE(res, err.message, 422);
+
+  let { rows: users, count } = result;
   
   return ReS(res, {
-    users: users.map(u => u.toWeb())
+    users: users.map(u => u.toWeb()),
+    count
   });
 };
 module.exports.getUsers = getUsers;

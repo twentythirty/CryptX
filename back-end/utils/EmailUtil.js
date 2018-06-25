@@ -33,7 +33,7 @@ module.exports.invitationMailHTML = (invitation) => {
     `;
 }
 
-const RESET_PASSWORD_BASE_URL = 'https://cryptx-app-staging.heroku.com/v1/reset_password?token=';
+const RESET_PASSWORD_BASE_URL = 'https://cryptx-app-staging.heroku.com/#/password_reset?token=';
 module.exports.passwordResetMailHTML = (details) => {
 
     return `
