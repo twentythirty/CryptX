@@ -57,6 +57,15 @@ module.exports.JOB_BODY = async (config, log) => {
 
                 const records = _.flatMap(data, ([exchange, markets_data]) => {
 
+                    /* Sometimes for some reason market_data is empty and set to array.
+                    Filtering out results that don't have needed properties
+                    to avoid errors when assigning asks and bids values. */
+                    markets_data = markets_data.filter(
+                        ([symbol_mapping, market_data]) => !Array.isArray(market_data) &&
+                        market_data.hasOwnProperty('asks') &&
+                        market_data.hasOwnProperty('bids')
+                    );
+
                     return _.map(markets_data, ([symbol_mapping, market_data]) => {
 
                         return {

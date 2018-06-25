@@ -251,6 +251,35 @@ router.post(
   OrdersController.changeOrdersGroupStatus
 );
 
+router.get(
+  ROUTES.GetRecipeRuns.router_string,
+  stateless_auth,
+  check_permissions,
+  filter_reducer,
+  InvestmentController.getRecipeRuns
+);
+router.post(
+  ROUTES.GetRecipeRuns.router_string,
+  stateless_auth,
+  check_permissions,
+  filter_reducer,
+  InvestmentController.getRecipeRuns
+);
+router.get(
+  ROUTES.GetRecipeRun.router_string,
+  stateless_auth,
+  check_permissions,
+  filter_reducer,
+  InvestmentController.getRecipeRun
+);
+router.get(
+  ROUTES.GetRecipeRunDetails.router_string,
+  stateless_auth,
+  check_permissions,
+  filter_reducer,
+  InvestmentController.getRecipeRunDetails
+);
+
 
 router.post(
   ROUTES.CreateDeposit.router_string,

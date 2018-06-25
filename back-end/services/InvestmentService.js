@@ -12,7 +12,7 @@ const OrdersService = require('./OrdersService');
 const Op = require('sequelize').Op;
 const sequelize = require('../models').sequelize;
 
-const createInvestmentRun = async function (user_id, strategy_type, is_simulated = true) {
+const createInvestmentRun = async function (user_id, strategy_type, is_simulated = true, deposit_usd) {
   // check for valid strategy type
   if (!Object.values(STRATEGY_TYPES).includes(parseInt(strategy_type, 10))) {
     TE(`Unknown strategy type ${strategy_type}!`);
@@ -44,7 +44,8 @@ const createInvestmentRun = async function (user_id, strategy_type, is_simulated
     user_created_id: user_id,
     started_timestamp: new Date,
     updated_timestamp: new Date,
-    status: INVESTMENT_RUN_STATUSES.Initiated
+    status: INVESTMENT_RUN_STATUSES.Initiated,
+    deposit_usd: deposit_usd
   }));
   if (err) TE(err.message);
 

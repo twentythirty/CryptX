@@ -1,7 +1,7 @@
 'use strict';
 var request_promise = require('request-promise');
 
-module.exports.SCHEDULE = '0 1 */2 * * *';
+module.exports.SCHEDULE = '0 */10 * * * * *';
 module.exports.NAME = 'CALC_MH';
 
 const NVT_MA_DAYS = 7;
@@ -80,6 +80,11 @@ module.exports.JOB_BODY = async (config, log) => {
 
                 log(`4. Saving ${results.length} results...`);
 
+                if (!results.length) {
+                    log(`There are ${results.length} entries to insert, skipping insert...`);
+                    return;
+                }
+                
                 //insert all in one query
                 sequelize.queryInterface.bulkInsert('market_history_calculation',
                     _.map(results, obj => {

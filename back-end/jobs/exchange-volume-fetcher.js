@@ -57,6 +57,11 @@ module.exports.JOB_BODY = async (config, log) => {
 
                 const records = _.flatMap(data, ([exchange, markets_data]) => {
 
+                    // filter out empty market_data.baseVolume, there's no need to save to DB
+                    markets_data = markets_data.filter(
+                        ([symbol_mapping, market_data]) => market_data.baseVolume != null
+                    );
+
                     return _.map(markets_data, ([symbol_mapping, market_data]) => {
                         
                         const data_timestamp_to = market_data.timestamp? new Date(market_data.timestamp) : new Date();

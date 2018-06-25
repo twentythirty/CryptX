@@ -1002,10 +1002,12 @@
     },
     "EntitiesFilterWithPerms": {
       "type": "object",
-      "properties": {
-        "filter": {
+      "allOf": [
+        {
           "$ref": "#/definitions/EntitiesFilter"
-        },
+        }
+      ],
+      "properties": {
         "has_permissions": {
           "type": "array",
           "items": {
@@ -1354,6 +1356,10 @@
           "items": {
             "$ref": "#/definitions/UserDetails"
           }
+        },
+        "count": {
+          "type": "string",
+          "example": 26
         }
       }
     },
@@ -1369,6 +1375,10 @@
           "items": {
             "$ref": "#/definitions/RoleDetails"
           }
+        },
+        "count": {
+          "type": "string",
+          "example": 26
         }
       }
     },

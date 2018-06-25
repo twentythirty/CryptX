@@ -236,9 +236,24 @@ ROUTES = {
     permissions_matcher: /\/investments\/all$/,
     required_permissions: [PERMISSIONS.VIEW_INVESTMENT_RUN]
   },
+  GetRecipeRun: {
+    router_string: "/recipes/:recipe_id",
+    permissions_matcher: /\/recipes\/\d+$/,
+    required_permissions: [PERMISSIONS.VIEW_INVESTMENT_RUN]
+  },
+  GetRecipeRuns: {
+    router_string: "/recipes/all",
+    permissions_matcher: /\/recipes\/all$/,
+    required_permissions: [PERMISSIONS.VIEW_INVESTMENT_RUN]
+  },
+  GetRecipeRunDetails: {
+    router_string: "/recipes/:recipe_id/details",
+    permissions_matcher: /\/recipes\/\d+\/details$/,
+    required_permissions: [PERMISSIONS.VIEW_INVESTMENT_RUN]
+  },
   ApproveRecipeRun: {
-    router_string: "/recipe/:recipe_id/approve",
-    permissions_matcher: /\/recipe\/\d+\/approve$/,
+    router_string: "/recipes/:recipe_id/approve",
+    permissions_matcher: /\/recipes\/\d+\/approve$/,
     required_permissions: [PERMISSIONS.VIEW_INVESTMENT_RUN, PERMISSIONS.APPROVE_RECIPE_RUN]
   },
   GetRecipeOrders: {
