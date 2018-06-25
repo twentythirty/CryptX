@@ -9,6 +9,7 @@ import { AppComponent } from './app.component';
 import { NavigationComponent } from './shared/components/navigation/navigation.component';
 
 import { AuthService } from './services/auth/auth.service';
+import { RolesService } from './services/roles/roles.service';
 
 import { PreRequestAuthInterceptor, PostRequestAuthInterceptor } from './config/http/auth.http.insterceptor';
 import { appInitialization } from './config/app-initialization';
@@ -17,11 +18,13 @@ import { AuthModule } from './modules/auth/auth.module';
 import { DashboardModule } from './modules/dashboard/dashboard.component';
 import { AuthGuard } from './config/routes/route-auth.guard';
 import { PermissionGuard } from './config/routes/route-permission.guard';
+import { RolesModule } from './modules/roles/roles.component';
+import { RolesAddModule } from './modules/roles-add/roles-add.component';
 
 @NgModule({
   declarations: [
     AppComponent,
-    NavigationComponent
+    NavigationComponent,
   ],
   imports: [
     BrowserModule,
@@ -29,7 +32,9 @@ import { PermissionGuard } from './config/routes/route-permission.guard';
     HttpClientModule,
     AuthModule,
     DashboardModule,
-    AppRoutingModule
+    RolesModule,
+    RolesAddModule,
+    AppRoutingModule,
   ],
   providers: [
     {
@@ -50,7 +55,8 @@ import { PermissionGuard } from './config/routes/route-permission.guard';
     },
     AuthService,
     AuthGuard,
-    PermissionGuard
+    PermissionGuard,
+    RolesService
   ],
   bootstrap: [AppComponent]
 })

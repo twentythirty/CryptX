@@ -1,0 +1,28 @@
+<div>
+  <app-data-table
+    [dataSource]="rolesDataSource"
+    [columnsToShow]="rolesColumnsToShow"
+    [orderBy]="rolesRequestData.order"
+    (setOrderBy)="onSetOrderBy($event)"
+  >
+    <tr
+      *ngFor="let item of rolesDataSource.body"
+      [routerLink]="['/roles/edit', item.id]"
+    >
+      <td *ngFor="let index of rolesColumnsToShow">
+        {{item[index]}}
+      </td>
+    </tr>
+  </app-data-table>
+
+  <app-pagination
+    (goPage)="goToPage($event)"
+    (goNext)="onNext()"
+    (goPrev)="onPrev()"
+    (goFirst)="onFirst()"
+    (goLast)="onLast($event)"
+    [count]="rolesCount"
+    [perPage]="rolesPageSize"
+    [page]="rolesPage"
+  ></app-pagination>
+</div>
