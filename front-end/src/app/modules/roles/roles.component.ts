@@ -2,7 +2,7 @@ import { NgModule, Component, OnInit } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 import { RouterModule } from '@angular/router';
 
-import { PaginationComponent } from '../../shared/components/Pagination/Pagination.component';
+import { PaginationComponent } from '../../shared/components/pagination/pagination.component';
 import { DataTableComponent } from '../../shared/components/data-table/data-table.component';
 
 import { RolesService } from '../../services/roles/roles.service';
