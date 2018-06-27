@@ -349,6 +349,28 @@
         }
       }
     },
+    "/users/login/check": {
+      "get": {
+        "tags": [
+          "user"
+        ],
+        "summary": "Get user info and needed information",
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "schema": {
+              "$ref": "#/definitions/AuthCheckResponse"
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "schema": {
+              "$ref": "#/definitions/ApiUnauthorizezdResponse"
+            }
+          }
+        }
+      }
+    },
     "/send_reset_token": {
       "post": {
         "tags": [
@@ -913,6 +935,32 @@
     }
   },
   "definitions": {
+    "AuthCheckResponse": {
+      "description": "User, his permissions, and model constants information that will be used to change number values to user friendly values.",
+      "type": "object",
+      "properties": {
+        "user": {
+          "$ref": "#/definitions/UserDetails"
+        },
+        "permissions": {
+          "$ref": "#/definitions/PermissionsList"
+        },
+        "modal_constants": {
+          "$ref": "#/definitions/ModelConstants"
+        },
+        "success": {
+          "type": "boolean",
+          "example": true
+        }
+      }
+    },
+    "PermissionsList": {
+      "description": "List of permissions user has. Some of the values might repeat.",
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
     "EntitiesFilter": {
       "description": "Entity filter. Scoped to a `filter` key to easily combine with other POST data.",
       "type": "object",
@@ -1134,11 +1182,24 @@
           "$ref": "#/definitions/UserDetails"
         },
         "permissions": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          },
-          "description": "List of permissions user has"
+          "$ref": "#/definitions/PermissionsList"
+        },
+        "model_constants": {
+          "$ref": "#/definitions/ModelConstants"
+        }
+      }
+    },
+    "ModelConstants": {
+      "type": "object",
+      "properties": {
+        "CONSTANT_CATEGORY": {
+          "type": "object",
+          "properties": {
+            "ConstantName": {
+              "type": "number",
+              "example": 10
+            }
+          }
         }
       }
     },

@@ -1,4 +1,6 @@
 import { NgModule, Component, OnInit } from '@angular/core';
+import { ModelConstantsService } from '../../services/model-constants/model-constants.service';
+import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-dashboard',
@@ -6,8 +8,7 @@ import { NgModule, Component, OnInit } from '@angular/core';
   styleUrls: ['./dashboard.component.scss']
 })
 export class DashboardComponent implements OnInit {
-
-  constructor() { }
+  constructor(private modelConstants: ModelConstantsService) { }
 
   ngOnInit() {
   }
@@ -18,7 +19,9 @@ export class DashboardComponent implements OnInit {
   declarations: [
     DashboardComponent
   ],
-  imports: [],
+  imports: [
+    CommonModule // enables json pipe
+  ],
   providers: []
 })
 export class DashboardModule { }

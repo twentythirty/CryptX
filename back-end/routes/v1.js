@@ -302,6 +302,14 @@ router.get(
   SystemController.getAllSettings
 );
 
+// Route to check auth and get values front-end needs
+router.get(
+  ROUTES.CheckAuth.router_string,
+  stateless_auth,
+  check_permissions,
+  UserController.checkAuth
+);
+
 //********* API DOCUMENTATION **********
 router.use(
   "/docs/api.json",

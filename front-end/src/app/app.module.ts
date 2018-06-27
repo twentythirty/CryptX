@@ -10,6 +10,7 @@ import { NavigationComponent } from './shared/components/navigation/navigation.c
 
 import { AuthService } from './services/auth/auth.service';
 import { RolesService } from './services/roles/roles.service';
+import { ModelConstantsService } from './services/model-constants/model-constants.service';
 
 import { PreRequestAuthInterceptor, PostRequestAuthInterceptor } from './config/http/auth.http.insterceptor';
 import { appInitialization } from './config/app-initialization';
@@ -56,7 +57,8 @@ import { RolesAddModule } from './modules/roles-add/roles-add.component';
     AuthService,
     AuthGuard,
     PermissionGuard,
-    RolesService
+    RolesService,
+    ModelConstantsService
   ],
   bootstrap: [AppComponent]
 })

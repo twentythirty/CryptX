@@ -9,11 +9,14 @@ import { catchError, map, tap } from 'rxjs/operators';
 import { User } from '../../shared/models/user';
 import PERMISSIONS from '../../config/permissions';
 
+import { ModelConstantsService } from '../model-constants/model-constants.service';
+
 export class LoginReponse {
   success: boolean
   token: string
   permissions: Array<string>
   user: User
+  model_constants: Object
 }
 
 @Injectable()
@@ -23,7 +26,7 @@ export class AuthService {
   authChecked:boolean = false;
   baseUrl: string = 'api/v1/';
 
-  constructor(private http: HttpClient) { }
+  constructor(private http: HttpClient, private modelConstants: ModelConstantsService) { }
 
   authenticate(username: string, password: string) {
     return this.http.post<LoginReponse>(this.baseUrl + 'users/login', {
@@ -34,6 +37,7 @@ export class AuthService {
         this.setToken(data.token);
         this.setUser(data.user);
         this.setPermissions(data.permissions);
+        this.modelConstants.setConstants(data.model_constants);
       }
     });
   }
@@ -86,18 +90,14 @@ export class AuthService {
     if (!token) return Observable.of(false);
 
     return Observable.forkJoin(
-      this.http.get<any>(this.baseUrl + 'users/me').pipe(
+      this.http.get<any>(this.baseUrl + 'users/login/check').pipe(
         tap((response) => {
           if (response.success) {
             this.setUser(response.user);
+            this.setPermissions(response.permissions);
+            this.modelConstants.setConstants(response.model_constants);
           }
           this.authChecked = true;
-        })
-      ),
-      this.http.get<any>(this.baseUrl + 'users/me/permissions').pipe(
-        tap(response => {
-          if (response.success)
-            this.setPermissions(response.permissions);
         })
       )
     );
