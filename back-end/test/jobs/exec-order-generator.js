@@ -176,7 +176,7 @@ describe('Execution Order generator job', () => {
         });
         sinon.stub(ExecutionOrder, 'findAll').callsFake(options => {
             const fills_num = _.random(1, 9, false);
-            return Promise.resolve(_.map(Array(fills_num).fill(PENDING_ORDER_QNTY / fills_num), (qnty, idx) => {
+            return Promise.resolve(_.map(Array(fills_num).fill(PENDING_ORDER_QNTY / (fills_num - 1)), (qnty, idx) => {
                 return Object.assign({}, TEST_FILLED_EXECUTION_ORDER, {
                     id: TEST_FILLED_EXECUTION_ORDER.id + (idx * 7),
                     total_quantity: qnty
