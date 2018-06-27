@@ -6,6 +6,7 @@ const Op = Sequelize.Op;
 const authService = require("./../services/AuthService");
 const inviteService = require('./../services/InvitationService');
 const mailUtil = require('./../utils/EmailUtil');
+const model_constants = require('../config/model_constants');
 
 const create = async function (req, res) {
   const body = req.body;
@@ -105,6 +106,7 @@ const login = async function (req, res) {
   return ReS(res, {
     token: session.token,
     permissions: perms,
+    model_constants: model_constants,
     user: user.toWeb(false)
   });
 };
@@ -297,3 +299,35 @@ const resetPassword = async function (req, res) {
   return ReS(res, {message: 'Password successfully changed'});
 };
 module.exports.resetPassword = resetPassword;
+
+/* Is used to get data needed in front-end if user is logged in. */
+const checkAuth = async function (req, res) {
+
+  let user_id = req.user.id;
+  let user = await User.findOne({
+    where: {
+      id: user_id,
+      is_active: true
+    },
+    include: {
+      model: Role,
+      include: Permission
+    }
+  });
+
+  if (!user) return ReE(res, "user with id " + req.params.user_id + " not found!", 404);
+
+  let perms = _.flatMap(user.Roles.map(role => {
+    
+    return role.Permissions.map(permission => {
+      return permission.code;
+    });
+  }));
+
+  return ReS(res, {
+    user: user.toWeb(),
+    model_constants,
+    permissions: perms
+  });
+};
+module.exports.checkAuth = checkAuth;

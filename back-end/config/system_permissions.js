@@ -287,5 +287,11 @@ ROUTES = {
     router_string: "/settings",
     permissions_matcher: /\/settings$/,
     required_permissions: [PERMISSIONS.VIEW_SETTING_VALUES]
-  }
+  },
+
+  CheckAuth: {
+    router_string: "/users/login/check",
+    permissions_matcher: /\/users\/login\/check$/,
+    required_permissions: [PERMISSIONS.VIEW_USERS]
+  },
 };

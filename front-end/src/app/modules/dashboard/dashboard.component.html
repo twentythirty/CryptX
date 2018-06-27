@@ -1,3 +1,13 @@
 <p>
   dashboard works!
+  <br><br>
+  This is just a demonstration of how getting model constants works in FE(visible in files only):<br>
+  Getting name:
+  {{ modelConstants.getName('RECIPE_RUN_STATUSES', 43) }}
+  <br>
+  Getting all names in group:
+  {{ modelConstants.getNames('RECIPE_RUN_STATUSES') }}
+  <br>
+  Getting whole group:
+  {{ this.modelConstants.getGroup('RECIPE_RUN_STATUSES') | json }}
 </p>
