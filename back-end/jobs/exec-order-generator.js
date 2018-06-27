@@ -23,7 +23,7 @@ const get_order_sold_symbol = (order) => {
 };
 
 //every day, every 5 minutes
-module.exports.SCHEDULE = "0 5 * * * *";
+module.exports.SCHEDULE = "0 */5 * * * *";
 module.exports.NAME = "GEN_EXEC_OR";
 module.exports.JOB_BODY = async (config, log) => {
     //reference shortcuts
