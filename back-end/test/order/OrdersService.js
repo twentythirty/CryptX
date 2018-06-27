@@ -10,7 +10,9 @@ chai.use(chaiAsPromised);
 
 const ordersService = require('../../services/OrdersService');
 const RecipeRun = require('../../models').RecipeRun;
+const RecipeRunDeposit = require('../../models').RecipeRunDeposit;
 const RecipeRunDetail = require('../../models').RecipeRunDetail;
+const ExchangeAccount = require('../../models').ExchangeAccount;
 const RecipeOrderGroup = require('../../models').RecipeOrderGroup;
 const RecipeOrder = require('../../models').RecipeOrder;
 const Instrument = require('../../models').Instrument;
@@ -47,6 +49,14 @@ describe('OrdersService testing', () => {
     ];
     const TEST_EXCHANGE_IDS = [34, 57, 89, 99, 7, 33];
     const TEST_ASSET_IDS = _.uniq(_.flatMap(TEST_INSTRUMENTS, instrument => [instrument.transaction_asset_id, instrument.quote_asset_id]));
+    const TEST_EXCHANGE_ACCOUNT_IDS = [45, 1421, 32532, 351, 123412, 1341];
+    const TEST_EXCHANGE_ACCOUNTS = _.map(TEST_EXCHANGE_ACCOUNT_IDS, (account_id, idx) => {
+        return {
+            id: account_id,
+            exchange_id: TEST_EXCHANGE_IDS[idx],
+            asset_id: TEST_ASSET_IDS[_.random(0, TEST_ASSET_IDS.length, false)]
+        }
+    });
     const TEST_ASSETS = _.uniq(_.flatMap(TEST_INSTRUMENTS, instrument => {
         const symbol_parts = instrument.symbol.split('/');
         return [{
@@ -156,6 +166,24 @@ describe('OrdersService testing', () => {
                         }
                     });
                 });
+                sinon.stub(RecipeRunDeposit, 'findAll').callsFake(options => {
+
+                    return Promise.resolve(
+                        _.flatMap(_.map(TEST_ASSET_IDS, asset_id => {
+                            return _.map(TEST_EXCHANGE_ACCOUNT_IDS, exchange_account_id => {
+                                return new RecipeRunDeposit({
+                                    target_exchange_account_id: exchange_account_id,
+                                    asset_id: asset_id,
+                                    recipe_run_id: TEST_RECIPE_RUN.id,
+                                    actual_amount: _.random(0, 500, true)
+                                })
+                            })
+                        }))
+                    )
+                });
+                sinon.stub(ExchangeAccount, 'findAll').callsFake(options => {
+                    return Promise.resolve(TEST_EXCHANGE_ACCOUNTS);
+                });
 
                 done();
             });
@@ -215,53 +243,48 @@ describe('OrdersService testing', () => {
                 return Promise.resolve(null);
             });
             //make all deposits of bad currency to reject all mappings
-            CCXTUtils.getConnector.restore();
-            sinon.stub(CCXTUtils, 'getConnector').callsFake(exchange => {
-
-                return Promise.resolve({
-                    fetchBalance: async () => {
-                        return {
-                            free: {}
-                        }
-                    }
-                })
+            RecipeRunDeposit.findAll.restore();
+            sinon.stub(RecipeRunDeposit, 'findAll').callsFake(options => {
+                return Promise.resolve([])
             });
 
             ordersService.generateApproveRecipeOrders(TEST_RECIPE_RUN.id).then(fulfilled => {
 
-                CCXTUtils.getConnector.restore();
-                sinon.stub(CCXTUtils, 'getConnector').callsFake(data => {
+                RecipeRunDeposit.findAll.restore();
+                sinon.stub(RecipeRunDeposit, 'findAll').callsFake(options => {
 
-                    return Promise.resolve({
-                        fetchBalance: async () => {
-
-                            return {
-                                free: _.zipObject(
-                                    _.map(TEST_ASSETS, 'symbol'),
-                                    Array(TEST_ASSETS.length).fill().map(ignore => _.random(0.1, 500, true))
-                                )
-                            }
-                        }
-                    });
+                    return Promise.resolve(
+                        _.flatMap(_.map(TEST_ASSET_IDS, asset_id => {
+                            return _.map(TEST_EXCHANGE_ACCOUNT_IDS, exchange_account_id => {
+                                return new RecipeRunDeposit({
+                                    target_exchange_account_id: exchange_account_id,
+                                    asset_id: asset_id,
+                                    recipe_run_id: TEST_RECIPE_RUN.id,
+                                    actual_amount: _.random(0, 500, true)
+                                })
+                            })
+                        }))
+                    )
                 });
                 RecipeOrderGroup.findOne.restore();
                 throw new Error("Orders service should have rejected empty valid orders!");
             }, rejected => {
 
-                CCXTUtils.getConnector.restore();
-                sinon.stub(CCXTUtils, 'getConnector').callsFake(data => {
+                RecipeRunDeposit.findAll.restore();
+                sinon.stub(RecipeRunDeposit, 'findAll').callsFake(options => {
 
-                    return Promise.resolve({
-                        fetchBalance: async () => {
-
-                            return {
-                                free: _.zipObject(
-                                    _.map(TEST_ASSETS, 'symbol'),
-                                    Array(TEST_ASSETS.length).fill().map(ignore => _.random(0.1, 500, true))
-                                )
-                            }
-                        }
-                    });
+                    return Promise.resolve(
+                        _.flatMap(_.map(TEST_ASSET_IDS, asset_id => {
+                            return _.map(TEST_EXCHANGE_ACCOUNT_IDS, exchange_account_id => {
+                                return new RecipeRunDeposit({
+                                    target_exchange_account_id: exchange_account_id,
+                                    asset_id: asset_id,
+                                    recipe_run_id: TEST_RECIPE_RUN.id,
+                                    actual_amount: _.random(0, 500, true)
+                                })
+                            })
+                        }))
+                    )
                 });
                 RecipeOrderGroup.findOne.restore();
                 done();
