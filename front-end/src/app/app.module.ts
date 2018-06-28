@@ -19,8 +19,7 @@ import { AuthModule } from './modules/auth/auth.module';
 import { DashboardModule } from './modules/dashboard/dashboard.component';
 import { AuthGuard } from './config/routes/route-auth.guard';
 import { PermissionGuard } from './config/routes/route-permission.guard';
-import { RolesModule } from './modules/roles/roles.component';
-import { RolesAddModule } from './modules/roles-add/roles-add.component';
+import { RolesModule } from './modules/roles/roles.module';
 
 @NgModule({
   declarations: [
@@ -34,7 +33,6 @@ import { RolesAddModule } from './modules/roles-add/roles-add.component';
     AuthModule,
     DashboardModule,
     RolesModule,
-    RolesAddModule,
     AppRoutingModule,
   ],
   providers: [

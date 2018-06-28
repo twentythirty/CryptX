@@ -1,25 +1,20 @@
 <div class="pagination" *ngIf="count > 0">
-  <!-- <div>
-    <div>count: {{count}}</div>
-    <div>page: {{page}}</div>
-  </div> -->
-
   <button
     (click)="onFirst()"
-    [disabled]="page === 1"
-    [ngClass]="{ 'disabled': page === 1 }"
+    [disabled]="page == 1"
+    [ngClass]="{ 'disabled': page == 1 }"
   >First</button>
 
   <button
     (click)="onPrev()"
-    [disabled]="page === 1"
-    [ngClass]="{ 'disabled': page === 1 }"
+    [disabled]="page == 1"
+    [ngClass]="{ 'disabled': page == 1 }"
   >&lt;</button>
 
   <button
     *ngFor="let pageNum of getPages()"
     (click)="onPage(pageNum)"
-    [ngClass]="{ 'active': pageNum === page }"
+    [ngClass]="{ 'active': pageNum == page }"
   >{{ pageNum }}</button>
 
   <button

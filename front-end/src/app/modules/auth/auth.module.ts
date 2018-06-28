@@ -8,8 +8,7 @@ import { BrowserModule } from '@angular/platform-browser';
 import { AuthService } from '../../services/auth/auth.service';
 
 import { LoginComponent } from './login/login.component';
-import { BtnComponent } from '../../shared/components/btn/btn.component';
-import { ModalComponent } from '../../shared/components/modal/modal.component';
+import { SharedModule } from '../../shared/components/shared.module';
 import { PasswordResetComponent } from './password-reset/password-reset.component';
 import { EditInfoComponent } from './edit-info/edit-info.component';
 import { AcceptInviteComponent } from './accept-invite/accept-invite.component';
@@ -18,8 +17,6 @@ import { InviteService } from './accept-invite/invite.service';
 @NgModule({
   declarations: [
     LoginComponent,
-    BtnComponent,
-    ModalComponent,
     PasswordResetComponent,
     EditInfoComponent,
     AcceptInviteComponent
@@ -29,7 +26,8 @@ import { InviteService } from './accept-invite/invite.service';
     ReactiveFormsModule,
     CommonModule,
     BrowserModule,
-    RouterModule
+    RouterModule,
+    SharedModule,
   ],
   providers: [
     AuthService,

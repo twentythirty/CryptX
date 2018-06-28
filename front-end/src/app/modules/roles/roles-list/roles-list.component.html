@@ -1,4 +1,19 @@
 <div>
+  <div>
+    <div>
+      <h1>Roles</h1>
+      <span class="roles-count">{{rolesCount}}</span>
+    </div>
+
+    <div>
+      <app-btn
+        [routerLink]="['/roles/add']"
+      >
+        Add role
+      </app-btn>
+    </div>
+  </div>
+
   <app-data-table
     [dataSource]="rolesDataSource"
     [columnsToShow]="rolesColumnsToShow"
@@ -16,11 +31,6 @@
   </app-data-table>
 
   <app-pagination
-    (goPage)="goToPage($event)"
-    (goNext)="onNext()"
-    (goPrev)="onPrev()"
-    (goFirst)="onFirst()"
-    (goLast)="onLast($event)"
     [count]="rolesCount"
     [perPage]="rolesPageSize"
     [page]="rolesPage"

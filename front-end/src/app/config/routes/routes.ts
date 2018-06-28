@@ -8,8 +8,8 @@ import { LoginComponent } from '../../modules/auth/login/login.component';
 import { PasswordResetComponent } from '../../modules/auth/password-reset/password-reset.component';
 import { DashboardComponent } from '../../modules/dashboard/dashboard.component';
 import { EditInfoComponent } from '../../modules/auth/edit-info/edit-info.component';
-import { RolesComponent } from '../../modules/roles/roles.component';
-import { RolesAddComponent } from '../../modules/roles-add/roles-add.component';
+import { RolesAddComponent } from '../../modules/roles/roles-add/roles-add.component';
+import { RolesListComponent } from '../../modules/roles/roles-list/roles-list.component';
 import { AcceptInviteComponent } from '../../modules/auth/accept-invite/accept-invite.component';
 
 const routes: Routes = [
@@ -25,7 +25,12 @@ const routes: Routes = [
   },
   {
     path: 'roles',
-    component: RolesComponent,
+    component: RolesListComponent,
+    canActivate: [AuthGuard]
+  },
+  {
+    path: 'roles/add',
+    component: RolesAddComponent,
     canActivate: [AuthGuard]
   },
   {
