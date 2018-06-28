@@ -29,6 +29,7 @@ module.exports.JOB_BODY = async (config, log) => {
     //reference shortcuts
     const models = config.models;
     const RecipeOrder = models.RecipeOrder;
+    const RecipeOrderGroup = models.RecipeOrderGroup;
     const ExecutionOrder = models.ExecutionOrder;
     const Instrument = models.Instrument;
 
@@ -39,9 +40,16 @@ module.exports.JOB_BODY = async (config, log) => {
     };
     const fuzzyness = SYSTEM_SETTINGS.TRADE_BASE_FUZYNESS;
 
+    const approved_groups_ids = _.map(await RecipeOrderGroup.findAll({
+        where: {
+            approval_status: RECIPE_ORDER_GROUP_STATUSES.Approved
+        }
+    }), 'id');
+
     return RecipeOrder.findAll({
         where: {
-            status: RECIPE_ORDER_STATUSES.Pending
+            status: RECIPE_ORDER_STATUSES.Pending,
+            recipe_order_group_id: approved_groups_ids
         },
         include: [Instrument]
     }).then(pending_orders => {

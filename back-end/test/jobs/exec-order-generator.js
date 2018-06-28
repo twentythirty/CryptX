@@ -11,6 +11,7 @@ chai.use(chaiAsPromised);
 const execOrderGenerator = require('../../jobs/exec-order-generator');
 
 const RecipeOrder = require('../../models').RecipeOrder;
+const RecipeOrderGroup = require('../../models').RecipeOrderGroup;
 const Instrument = require('../../models').Instrument;
 const ExecutionOrder = require('../../models').ExecutionOrder;
 
@@ -53,6 +54,7 @@ describe('Execution Order generator job', () => {
     let stubbed_config = {
         models: {
             RecipeOrder: RecipeOrder,
+            RecipeOrderGroup: RecipeOrderGroup,
             ExecutionOrder: ExecutionOrder,
             Instrument: Instrument
         }
@@ -61,8 +63,18 @@ describe('Execution Order generator job', () => {
     before(done => {
         app.dbPromise.then(migrations => {
             console.log('Migrations: %o', migrations);
+
+            sinon.stub(RecipeOrderGroup, 'findAll').callsFake(options => {
+                return Promise.resolve([]);
+            });
             done();
         });
+    });
+
+    after(done => {
+
+        RecipeOrderGroup.findAll.restore();
+        done();
     });
 
     const TEST_PENDING_ORDER_BASE = {
