@@ -1,0 +1,44 @@
+<div>
+  <div *ngIf="!done">
+    <div *ngIf="token.validityChecked">
+      <div *ngIf="!token.isValid">
+        {{ message }}
+      </div>
+      <div *ngIf="token.isValid">
+        <p>
+          Hello, {{ invitationInfo.first_name }} {{ invitationInfo.last_name }}!
+          <br>
+          To be able to use CryptX you have to set up you account.
+          <br>
+          All you have to do in enter your password.  
+          </p>
+        
+        <form [formGroup]="userInfoForm" (ngSubmit)="fulfillInvitation()">
+          <p>
+            <label for="pwd">New password</label>
+            <br>
+            <input name="pwd" type="password"
+              formControlName="password"
+              required>
+          </p>
+          <p>
+            <label for="pwd_repeat">Repeat new password</label>
+            <br>
+            <input name="pwd_repeat" type="password"
+              formControlName="password_repeat" 
+              required>
+          </p>
+          <p>{{ message }}</p>
+          
+          <button type="submit">Sign up</button>
+        </form>
+      </div>
+    </div>
+  </div>
+  <div *ngIf="done">
+    You've set up your account! 
+    <br>
+    You can now login 
+    <button routerLink="/login" md-button>Go to login page</button>
+  </div>
+</div>

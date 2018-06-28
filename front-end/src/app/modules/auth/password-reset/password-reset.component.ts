@@ -1,9 +1,9 @@
 import { Component, OnInit } from '@angular/core';
-import { Router, RouterLink } from '@angular/router';
-
-import { ActivatedRoute } from '@angular/router';
+import { Router, RouterLink, ActivatedRoute } from '@angular/router';
 
 import { AuthService } from '../../../services/auth/auth.service';
+import { TokenCheck } from '../models/tokenCheck';
+import { tap } from 'rxjs/operators';
 
 class Passwords {
   new_password: string = '';
@@ -16,30 +16,33 @@ class Passwords {
   styleUrls: ['./password-reset.component.scss']
 })
 export class PasswordResetComponent implements OnInit {
-  token: string;
+  token: TokenCheck = new TokenCheck();
   pass: Passwords = {
     new_password: '',
     repeat_repeat: ''
   };
   status: string = '';
-  tokenIsValid: boolean = true;
   done: boolean = false;
 
   constructor(private authService: AuthService, private route: ActivatedRoute) { }
 
   ngOnInit() {
     this.route.queryParams.subscribe(params => {
-      this.token = params.token;
+      this.token.value = params.token;
       this.checkResetTokenValidity();
     });
   }
 
   checkResetTokenValidity () {
     this.status = '';
-    this.authService.checkResetTokenValidity(this.token).subscribe(data => {
-      this.tokenIsValid = true;
+    this.authService.checkResetTokenValidity(this.token.value).pipe(
+      tap(data => {
+        this.token.validityChecked = true;
+      })
+    ).subscribe(data => {
+      this.token.isValid = true;
     }, error => {
-      this.tokenIsValid = false;
+      this.token.isValid = false;
       this.status = error.error.error;
     });
   }
@@ -55,10 +58,9 @@ export class PasswordResetComponent implements OnInit {
       return false;
     }
 
-    this.authService.resetPassword(this.token, this.pass.new_password)
+    this.authService.resetPassword(this.token.value, this.pass.new_password)
     .subscribe(response => {
       this.done = true;
-      console.log("Success", response);
     }, error => {
       this.status = error.error.error;
     });

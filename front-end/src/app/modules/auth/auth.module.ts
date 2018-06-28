@@ -1,7 +1,7 @@
 import { NgModule, Component, OnInit } from '@angular/core';
 
 import { RouterModule } from '@angular/router';
-import { FormsModule }   from '@angular/forms';
+import { FormsModule, ReactiveFormsModule }   from '@angular/forms';
 import { CommonModule } from '@angular/common'; 
 import { BrowserModule } from '@angular/platform-browser';
 
@@ -12,6 +12,8 @@ import { BtnComponent } from '../../shared/components/btn/btn.component';
 import { ModalComponent } from '../../shared/components/modal/modal.component';
 import { PasswordResetComponent } from './password-reset/password-reset.component';
 import { EditInfoComponent } from './edit-info/edit-info.component';
+import { AcceptInviteComponent } from './accept-invite/accept-invite.component';
+import { InviteService } from './accept-invite/invite.service';
 
 @NgModule({
   declarations: [
@@ -19,16 +21,19 @@ import { EditInfoComponent } from './edit-info/edit-info.component';
     BtnComponent,
     ModalComponent,
     PasswordResetComponent,
-    EditInfoComponent
+    EditInfoComponent,
+    AcceptInviteComponent
   ],
   imports: [
     FormsModule,
+    ReactiveFormsModule,
     CommonModule,
     BrowserModule,
     RouterModule
   ],
   providers: [
-    AuthService
+    AuthService,
+    InviteService
   ]
 })
 export class AuthModule { }

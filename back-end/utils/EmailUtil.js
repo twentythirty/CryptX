@@ -3,6 +3,8 @@
 const send_grid = require('@sendgrid/mail')
 send_grid.setApiKey(process.env.SENDGRID_API_KEY);
 
+const BASE_URL = 'https://cryptx-app-staging.herokuapp.com';
+
 /**
  * This link leads email readers to a URL of the Angular FE application.
  * 
@@ -16,7 +18,7 @@ send_grid.setApiKey(process.env.SENDGRID_API_KEY);
  * and the ID of the invitation that corresponds to this token, ensuring a bit of obfuscation from
  * short-term sniffers.
  */
-const INVITE_BASE_URL = 'https://cryptx-app-staging.heroku.com/v1/users/invite?token='
+const INVITE_BASE_URL = `${BASE_URL}/#/invitation?token=`
 
 module.exports.invitationMailHTML = (invitation) => {
 
@@ -33,7 +35,7 @@ module.exports.invitationMailHTML = (invitation) => {
     `;
 }
 
-const RESET_PASSWORD_BASE_URL = 'https://cryptx-app-staging.heroku.com/#/password_reset?token=';
+const RESET_PASSWORD_BASE_URL = `${BASE_URL}/#/password_reset?token=`;
 module.exports.passwordResetMailHTML = (details) => {
 
     return `

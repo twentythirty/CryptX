@@ -67,20 +67,3 @@ export class LoginComponent implements OnInit {
     });
   }
 }
-
-@NgModule({
-  declarations: [
-    LoginComponent,
-    BtnComponent,
-    ModalComponent
-  ],
-  imports: [
-    FormsModule,
-    CommonModule,
-    BrowserModule
-  ],
-  providers: [
-    AuthService
-  ]
-})
-export class AuthModule { }

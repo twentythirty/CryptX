@@ -1,6 +1,8 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes, CanActivate } from '@angular/router';
 
+import { AuthGuard } from './route-auth.guard';
+import { PermissionGuard } from './route-permission.guard';
 
 import { LoginComponent } from '../../modules/auth/login/login.component';
 import { PasswordResetComponent } from '../../modules/auth/password-reset/password-reset.component';
@@ -8,12 +10,12 @@ import { DashboardComponent } from '../../modules/dashboard/dashboard.component'
 import { EditInfoComponent } from '../../modules/auth/edit-info/edit-info.component';
 import { RolesComponent } from '../../modules/roles/roles.component';
 import { RolesAddComponent } from '../../modules/roles-add/roles-add.component';
-import { AuthGuard } from './route-auth.guard';
-import { PermissionGuard } from './route-permission.guard';
+import { AcceptInviteComponent } from '../../modules/auth/accept-invite/accept-invite.component';
 
 const routes: Routes = [
-  { path: 'login', component: LoginComponent},
+  { path: 'login', component: LoginComponent },
   { path: 'password_reset', component: PasswordResetComponent },
+  { path: 'invitation', component: AcceptInviteComponent },
   { path: 'change_my_info', component: EditInfoComponent, canActivate: [AuthGuard] },
   {
     path: 'dashboard',
