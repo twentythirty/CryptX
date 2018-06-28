@@ -108,11 +108,14 @@ module.exports.JOB_BODY = async (config, log) => {
                     }
                     //next total is either the fuzze amount or remainder of unfufilled order quantity, whichever is smaller
                     const next_total = clamp(fuzzy_trade_amount, Number.MIN_VALUE, pending_order.quantity - realized_total);
-                    const next_total_price = pending_order.price * (next_total / pending_order.quantity);
+                    const next_total_price = pending_order.price * next_total;
                     log(`3c. Current fulfilled recipe order total is ${realized_total}, adding another ${next_total}...`);
-
+                    //set pending order status as no longer pending
+                    pending_order.status = RECIPE_ORDER_STATUSES.Executing;
                     //create next pending execution order and save it
-                    return ExecutionOrder.create({
+                    return Promise.all([
+                        pending_order.save(),
+                        ExecutionOrder.create({
                         side: pending_order.side,
                         type: EXECUTION_ORDER_TYPES.Market,
                         total_quantity: next_total,
@@ -121,7 +124,7 @@ module.exports.JOB_BODY = async (config, log) => {
                         instrument_id: pending_order.instrument_id,
                         exchange_id: pending_order.target_exchange_id,
                         price: next_total_price
-                    });
+                    })]);
                 });
             })
         );

@@ -260,7 +260,7 @@ describe('Execution Order generator job', () => {
             return Promise.resolve(options);
         });
 
-        return execOrderGenerator.JOB_BODY(stubbed_config, console.log).then(execution_orders => {
+        return execOrderGenerator.JOB_BODY(stubbed_config, console.log).then(orders_and_execution_orders => {
 
             restoreSymbols(
                 RecipeOrder.findAll,
@@ -268,7 +268,10 @@ describe('Execution Order generator job', () => {
                 ExecutionOrder.create
             );
 
-            const [line_order, whole_order] = execution_orders;
+            const [parent_and_line_order, parent_and_whole_order] = orders_and_execution_orders;
+
+            const [parent_line, line_order] = parent_and_line_order;
+            const [parent_whole, whole_order] = parent_and_whole_order;
 
             chai.assert.isDefined(line_order);
             chai.assert.isDefined(whole_order);
@@ -276,6 +279,12 @@ describe('Execution Order generator job', () => {
             //returned execution orders with correct initial status
             chai.expect(line_order.status).to.eq(EXECUTION_ORDER_STATUSES.Pending);
             chai.expect(whole_order.status).to.eq(EXECUTION_ORDER_STATUSES.Pending);
+
+            //parent orders expected ot become executing
+            chai.expect(parent_line.status).to.eq(RECIPE_ORDER_STATUSES.Executing);
+            chai.expect(parent_whole.status).to.eq(RECIPE_ORDER_STATUSES.Executing);
+
+            const execution_orders = [line_order, whole_order];
 
             //common data was written in correctly
             _.forEach(execution_orders, (order, idx) => {
