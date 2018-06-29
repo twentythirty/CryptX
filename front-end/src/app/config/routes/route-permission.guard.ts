@@ -12,6 +12,7 @@ export class PermissionGuard implements CanActivate {
     const expectedPermissions = route.data.requiredPermission;
     
     if (!this.authService.hasPermissions(expectedPermissions)) {
+      this.router.navigate(['dashboard']); // if doesn't have needed permissions, redirect to page
       return false;
     }
     return true;

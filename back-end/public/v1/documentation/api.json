@@ -992,6 +992,10 @@
             },
             "prop_name_1": {
               "type": "object",
+              "required": [
+                "value",
+                "expression"
+              ],
               "properties": {
                 "value": {
                   "type": "string"
@@ -999,6 +1003,10 @@
                 "expression": {
                   "type": "string",
                   "example": "eq|ne|or|and|lt|gte..."
+                },
+                "type": {
+                  "type": "string",
+                  "example": "timestamp|date|number|string"
                 }
               }
             },
@@ -1067,6 +1075,11 @@
     },
     "FilterField": {
       "type": "object",
+      "required": [
+        "field",
+        "value",
+        "expression"
+      ],
       "properties": {
         "field": {
           "type": "string",
@@ -1079,6 +1092,11 @@
         "expression": {
           "type": "string",
           "example": "eq|ne|or|and|lt|gte..."
+        },
+        "type": {
+          "type": "string",
+          "example": "timestamp|date|number|string",
+          "description": "Specifies what type of value is given for filtering. If you want to send timestamp, you have to send type timestamp, otherwise it back-end will use timestamp as string to compare agains dates."
         }
       }
     },

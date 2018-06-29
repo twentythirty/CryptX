@@ -7,6 +7,10 @@ const Op = Sequelize.Op;
 function to_conj_obj(key, value = {}) {
 
     let key_obj = {};
+
+   /*  if (value.type) {
+        value.value = parseDataType(value.type, value.value);
+    } */
     //simple case, value supplied is just a series of vals 
     //array is also an object so thats an extra check
     if (typeof value !== 'object' || Array.isArray(value)) {
@@ -83,4 +87,24 @@ module.exports = (filter_obj = {}) => {
     }
     
     return final_clause;
+}
+
+function parseDataType(data_type, value) {
+    let parsed_value;
+
+    switch (data_type) {
+        case 'timestamp':
+            parsed_value = new Date(parseInt(value));
+            break;
+        case 'date':
+            parsed_value = new Date(value);
+            break;
+        case 'number':
+            parsed_value = parseFloat(value);
+            break;
+        case 'string':
+        default: parsed_value = value;
+    }
+
+    return parsed_value;
 }

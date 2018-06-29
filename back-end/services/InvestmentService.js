@@ -42,8 +42,8 @@ const createInvestmentRun = async function (user_id, strategy_type, is_simulated
     strategy_type: strategy_type,
     is_simulated: is_simulated,
     user_created_id: user_id,
-    started_timestamp: new Date,
-    updated_timestamp: new Date,
+    started_timestamp: new Date(),
+    updated_timestamp: new Date(),
     status: INVESTMENT_RUN_STATUSES.Initiated,
     deposit_usd: deposit_usd
   }));
