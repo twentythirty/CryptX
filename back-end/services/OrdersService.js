@@ -213,7 +213,7 @@ const generateApproveRecipeOrders = async (recipe_run_id) => {
         //get deposit in base currency
         const deposit = exchange_deposits[recipe_run_detail.target_exchange_id][recipe_run_detail.quote_asset_id];
         //amount of currency to buy
-        const qnty = deposit / price;
+        const qnty = Decimal(deposit).div(Decimal(price)).toNumber();
 
         return RecipeOrder.create({
             recipe_order_group_id: orders_group.id,
