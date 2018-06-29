@@ -8,7 +8,8 @@ import { PaginationComponent } from './pagination/pagination.component';
 import { ContentBlockComponent } from './content-block/content-block.component';
 import { CheckboxComponent } from './checkbox/checkbox.component';
 import { ButtonCheckboxComponent } from './button-checkbox/button-checkbox.component';
-import { FormActionBarComponent } from './form-action-bar/form-action-bar.component'
+import { FormActionBarComponent } from './form-action-bar/form-action-bar.component';
+import { ConfirmComponent } from './confirm/confirm.component'
 
 @NgModule({
     imports: [
@@ -23,6 +24,7 @@ import { FormActionBarComponent } from './form-action-bar/form-action-bar.compon
         CheckboxComponent,
         ButtonCheckboxComponent,
         FormActionBarComponent,
+        ConfirmComponent,
     ],
     exports: [
         BtnComponent,
@@ -33,6 +35,7 @@ import { FormActionBarComponent } from './form-action-bar/form-action-bar.compon
         CheckboxComponent,
         ButtonCheckboxComponent,
         FormActionBarComponent,
+        ConfirmComponent,
     ]
 })
 export class SharedModule {}

@@ -1,4 +1,4 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, Input, Output, EventEmitter } from '@angular/core';
 
 @Component({
   selector: 'app-btn',
@@ -8,4 +8,9 @@ import { Component, Input, OnInit } from '@angular/core';
 export class BtnComponent {
   @Input('big') big: boolean;
 
+  @Output() onClick = new EventEmitter<void>();
+
+  emitClick() {
+    this.onClick.emit();
+  }
 }

@@ -30,10 +30,31 @@
 </app-content-block>
 
 <app-form-action-bar>
-  <div center>
+  <div left *ngIf="roleId">
+    <button
+      [disabled]="loading"
+      (click)="showDeleteConfirm = true"
+    >Delete</button>
+  </div>
+  
+  <div center *ngIf="!roleId">
     <button
       [disabled]="loading"
       (click)="addRole()"
     >Add role</button>
   </div>
+
+  <div right *ngIf="roleId">
+    <button
+      [disabled]="loading"
+      (click)="saveRole()"
+    >Save changes</button>
+  </div>
 </app-form-action-bar>
+
+<app-confirm
+  *ngIf="showDeleteConfirm"
+  message="Are you sure you want delete this role?"
+  (onReject)="closeDeleteConfirm()"
+  (onConfirm)="deleteRole()"
+></app-confirm>

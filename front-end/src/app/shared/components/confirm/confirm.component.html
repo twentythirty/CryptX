@@ -1,0 +1,13 @@
+<app-modal
+  (close)="handleReject()"
+>
+  <div>{{ message }}</div>
+  <div>
+    <app-btn
+      (onClick)="handleReject()"
+    >Cancel</app-btn>
+    <app-btn
+      (onClick)="handleConfirm()"
+    >Confirm</app-btn>
+  </div>
+</app-modal>

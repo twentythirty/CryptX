@@ -58,7 +58,7 @@ export class RolesListComponent implements OnInit {
   getAllRoles(): void {
     this.rolesService.getAllRoles(this.rolesRequestData).subscribe(res => {
       this.rolesDataSource.body = res.roles;
-      this.rolesCount = 75;//res.count;
+      this.rolesCount = res.count;
     });
   }
 

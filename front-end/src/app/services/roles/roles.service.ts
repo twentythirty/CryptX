@@ -6,6 +6,7 @@ import { Observable } from 'rxjs';
 import { Role } from '../../shared/models/role';
 import { RolesAllRequestData } from '../../shared/models/api/rolesAllRequestData';
 import { RolesPermissionsResultData } from '../../shared/models/api/rolesPermissionsResultData';
+import { RoleResultData } from '../../shared/models/api/roleResultData';
 
 export class RolesAllResponse {
   success: boolean
@@ -36,6 +37,10 @@ export class RolesService {
     return this.http.get<RolesPermissionsResultData>(this.baseUrl + 'permissions/list');
   }
 
+  getRole(roleId: number) {
+    return this.http.get<RoleResultData>(this.baseUrl + 'roles/' + roleId);
+  }
+
   createRole(role: Role) {
     return this.http.post<RolesCreateResponse>(this.baseUrl + 'roles/create', role)
     .do(data => {
@@ -43,6 +48,19 @@ export class RolesService {
         return data.role;
       }
     });
+  }
+
+  editRole(role: Role) {
+    return this.http.post<RolesCreateResponse>(this.baseUrl + 'roles/' + role.id + '/edit', role)
+    .do(data => {
+      if (data.success) {
+        return data.role;
+      }
+    });
+  }
+
+  deleteRole(roleId: number) {
+    return this.http.delete(this.baseUrl + 'roles/' + roleId + '/delete');
   }
 
 }
