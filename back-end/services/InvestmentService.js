@@ -213,7 +213,7 @@ const generateRecipeDetails = async function (strategy_type) {
        if it would be acquired this way. If it's a sell position, then invert price of
        bid order. */
       let cost_usd = base_asset_usd_price * ( is_sell ? 
-        1 / instrument.bid_price :
+        Decimal(1).div(Decimal(instrument.bid_price)).toNumber() :
         instrument.ask_price);
 
       Object.assign(instrument, {
@@ -235,7 +235,7 @@ const generateRecipeDetails = async function (strategy_type) {
       total_marketshare += asset.avg_share;
       return asset;
     }).map(asset => {
-      asset.investment_percentage = (100 / total_marketshare) * asset.avg_share;
+      asset.investment_percentage = Decimal(100).div(Decimal(total_marketshare)).mul(Decimal(asset.avg_share)).toNumber();
       return asset;
     });
 

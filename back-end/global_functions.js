@@ -69,7 +69,8 @@ modelProps = function(table_name, table_comment = "") {
 
 // Load the dash, globally.
 _ = require("lodash");
-
+//globally load decimals
+Decimal = require('decimal.js');
 
 /**
  * Standard clamp function used to control value ranges.

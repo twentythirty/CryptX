@@ -83,9 +83,11 @@ describe('Execution Order generator job', () => {
     }
     const PENDING_ORDER_IDS = [488, 512]; //ids for testing various pending orders
     const PENDING_ORDER_QNTY = 2.0;
+    const PENDING_ORDER_PRICE = _.random();
     const TEST_SYMBOL_PENDING_ORDER_BASE = Object.assign({}, TEST_PENDING_ORDER_BASE, {
         id: PENDING_ORDER_IDS[0],
         quantity: PENDING_ORDER_QNTY,
+        price: PENDING_ORDER_PRICE,
         instrument: {
             symbol: 'LTC/BTC'
         },

@@ -64,7 +64,7 @@ module.exports.JOB_BODY = async (config, log) => {
                     pending_order.status = RECIPE_ORDER_STATUSES.Failed;
                     return pending_order.save();
                 }
-                const fuzzy_trade_amount = base_trade_amount * (1 + (_.random(-fuzzyness, fuzzyness, true)));
+                const fuzzy_trade_amount = Decimal(base_trade_amount).mul(Decimal(1 + (_.random(-fuzzyness, fuzzyness, true)))).toNumber();
                 log(`2b. using fuzzy ${sold_symbol} amount ${fuzzy_trade_amount} for execution of order ${pending_order.id}...`);
 
                 return Promise.all([
@@ -99,7 +99,13 @@ module.exports.JOB_BODY = async (config, log) => {
                     //if there are none or all existing ones are fulfilled/cancelled - generate new execution order,
                     //with traded value close to fuzyness but capped to remainder of order amount
                     const fulfilled_executions = _.filter(execution_orders, order => order.status == EXECUTION_ORDER_STATUSES.FullyFilled);
-                    const realized_total = _.sumBy(fulfilled_executions, 'total_quantity');
+                    //sum of realzied total, as decimals for accuracy
+                    const realized_total =
+                        _.map(fulfilled_executions, 'total_quantity')
+                        .map(qty => Decimal(qty))
+                        .reduce((acc, current) => acc.plus(current), Decimal(0))
+                        .toNumber();
+
                     if (realized_total >= pending_order.quantity) {
                         log(`[WARN.3B]: Current fulfilled execution order total ${realized_total} covers recipe order quantity ${pending_order.quantity}. Setting order status to ${RECIPE_ORDER_STATUSES.Completed}...`);
                         //if the order has been fulfilled, lets mark it as such
@@ -107,8 +113,8 @@ module.exports.JOB_BODY = async (config, log) => {
                         return pending_order.save();
                     }
                     //next total is either the fuzze amount or remainder of unfufilled order quantity, whichever is smaller
-                    const next_total = clamp(fuzzy_trade_amount, Number.MIN_VALUE, pending_order.quantity - realized_total);
-                    const next_total_price = pending_order.price * next_total;
+                    const next_total = clamp(fuzzy_trade_amount, Number.MIN_VALUE, Decimal(pending_order.quantity).minus(Decimal(realized_total)).toNumber());
+                    const next_total_price = Decimal(pending_order.price).mul(Decimal(next_total)).toNumber();
                     log(`3c. Current fulfilled recipe order total is ${realized_total}, adding another ${next_total}...`);
                     //set pending order status as no longer pending
                     pending_order.status = RECIPE_ORDER_STATUSES.Executing;
@@ -116,15 +122,16 @@ module.exports.JOB_BODY = async (config, log) => {
                     return Promise.all([
                         pending_order.save(),
                         ExecutionOrder.create({
-                        side: pending_order.side,
-                        type: EXECUTION_ORDER_TYPES.Market,
-                        total_quantity: next_total,
-                        status: EXECUTION_ORDER_STATUSES.Pending,
-                        recipe_order_id: pending_order.id,
-                        instrument_id: pending_order.instrument_id,
-                        exchange_id: pending_order.target_exchange_id,
-                        price: next_total_price
-                    })]);
+                            side: pending_order.side,
+                            type: EXECUTION_ORDER_TYPES.Market,
+                            total_quantity: next_total,
+                            status: EXECUTION_ORDER_STATUSES.Pending,
+                            recipe_order_id: pending_order.id,
+                            instrument_id: pending_order.instrument_id,
+                            exchange_id: pending_order.target_exchange_id,
+                            price: next_total_price
+                        })
+                    ]);
                 });
             })
         );
