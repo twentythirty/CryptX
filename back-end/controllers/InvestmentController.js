@@ -50,7 +50,10 @@ module.exports.createRecipeRun = createRecipeRun;
 const getInvestmentRun = async function (req, res) {
   
   let investment_run_id = req.params.investment_id;
-  let [err, investment_run] = await to(InvestmentRun.findById(investment_run_id));
+  let [err, investment_run] = await to(InvestmentRun.findById(investment_run_id,
+  {
+    include: RecipeRun
+  }));
 
   if (err) return ReE(res, err.message, 422);
 
