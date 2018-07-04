@@ -1,0 +1,46 @@
+<div class="login-wrapper">
+  <div class="login-form">
+    <div class="login-logo">
+      Logo place holder
+    </div>
+    <form (ngSubmit)="authenticate()">
+      <p>
+        <label for="user">User name</label>
+        <br>
+        <input [(ngModel)]="username" name="user" type="text">
+      </p>
+      <p>
+        <label for="pwd">Password</label>
+        <br>
+        <input [(ngModel)]="password" name="pwd" type="password">
+      </p>
+      <p>
+        {{ status }}
+      </p>
+
+      <app-btn type="submit" big="true">Login</app-btn>
+      <br>
+      <a (click)="showPassReset()">Forgot password?</a>
+    </form>
+  </div>
+
+  <app-modal *ngIf="showPasswordReset" (close)="hidePassReset()">
+    <div *ngIf="!password_reset_sent">
+      <form>
+        <p>Please enter your Email.
+          <br>We will contact you soon</p>
+        <p>
+          <label for="email">Email</label>
+          <br>
+          <input [(ngModel)]="reset_email" name="email" type="text">
+        </p>
+        <p>{{ password_reset_status }}</p>
+        <button (click)="requestPasswordReset()">Send</button>
+      </form>
+    </div>
+    <div *ngIf="password_reset_sent">
+      Email sent.
+      <br>Please check your inbox.
+    </div>
+  </app-modal>
+</div>

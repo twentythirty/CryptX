@@ -1,0 +1,60 @@
+<app-content-block
+  heading="Enter role information"
+>
+  <label>Role name</label>
+  <input type="text" [(ngModel)]="role.name">
+</app-content-block>
+
+<app-content-block
+  heading="Permissions"
+>
+  <div *ngFor="let permBlock of permissionsMap.data; let i = index">
+    <h3>{{ permBlock.name }}</h3>
+
+    <app-button-checkbox
+      [value]="i"
+      [checked]="permissionsBlocksCheckboxMap[i]"
+      labelTrue="Selected"
+      labelFalse="Select all"
+      (onToggle)="onPermissionBlockToggle($event)"
+    ></app-button-checkbox>
+
+    <app-checkbox
+      *ngFor="let perm of permBlock.permissions"
+      [value]="perm.code"
+      [label]="perm.name"
+      [checked]="permissionsCheckboxMap[perm.code]"
+      (onToggle)="onPermissionToggle($event)"
+    ></app-checkbox>
+  </div>
+</app-content-block>
+
+<app-form-action-bar>
+  <div left *ngIf="roleId">
+    <button
+      [disabled]="loading"
+      (click)="showDeleteConfirm = true"
+    >Delete</button>
+  </div>
+  
+  <div center *ngIf="!roleId">
+    <button
+      [disabled]="loading"
+      (click)="addRole()"
+    >Add role</button>
+  </div>
+
+  <div right *ngIf="roleId">
+    <button
+      [disabled]="loading"
+      (click)="saveRole()"
+    >Save changes</button>
+  </div>
+</app-form-action-bar>
+
+<app-confirm
+  *ngIf="showDeleteConfirm"
+  message="Are you sure you want delete this role?"
+  (onReject)="closeDeleteConfirm()"
+  (onConfirm)="deleteRole()"
+></app-confirm>

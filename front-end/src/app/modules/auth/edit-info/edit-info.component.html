@@ -1,0 +1,28 @@
+<div>
+  <form *ngIf="doneLoading" (ngSubmit)="updateInfo()">
+    <p>
+      <label for="first_name">First name</label>
+      <br>
+      <input [(ngModel)]="user_info.first_name" name="first_name" type="text">
+    </p>
+    <p>
+      <label for="last_name">Last name</label>
+      <br>
+      <input [(ngModel)]="user_info.last_name" name="last_name" type="text">
+    </p>
+    <p>
+      <label for="old_password">Old password</label>
+      <br>
+      <input [(ngModel)]="user_info.old_password" name="old_password" type="text">
+    </p>
+    <p>
+      <label for="new_password">New password</label>
+      <br>
+      <input [(ngModel)]="user_info.new_password" name="new_password" type="text">
+    </p>
+
+    <p>{{ message }}</p>
+
+    <button type="submit">Change information</button>
+  </form>
+</div>

@@ -1,0 +1,26 @@
+label {
+    position: relative;
+    display: block;
+    padding: 10px 5px;
+    border: 1px solid black;
+    cursor: pointer;
+
+    &.checked {
+        border-color: #999;
+
+        &:after {
+            display: inline-block;
+            content: '\2714';
+            position: absolute;
+            right: 0;
+            top: 0;
+            bottom: 0;
+            height: 19px;
+            margin: auto;
+        }
+    }
+
+    input {
+        display: none;
+    }
+}

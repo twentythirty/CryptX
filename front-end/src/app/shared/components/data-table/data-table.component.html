@@ -1,0 +1,27 @@
+<table>
+  <thead *ngIf="dataSource.header.length > 0">
+    <tr>
+      <th *ngFor="let item of dataSource.header">
+        <button
+          [ngClass]="'table-order-button'"
+          (click)="isColumnSortable( item ) && onSetOrderBy( item.column )"
+        >
+          {{item.name}}
+          <ng-container *ngIf="isColumnSortable( item ) && isColumnOrdered( item.column )">
+            <span [ngClass]="{ 'dcaret': isColumnASC( item.column ), 'ucaret': isColumnDESC( item.column ) }"></span>
+          </ng-container>
+        </button>
+      </th>
+    </tr>
+  </thead>
+
+  <ng-content></ng-content>
+
+  <tfoot *ngIf="dataSource.footer.length > 0">
+    <tr>
+      <td *ngFor="let item of dataSource.footer">
+        {{item}}
+      </td>
+    </tr>
+  </tfoot>
+</table>

@@ -1,0 +1,14 @@
+<label [class.checked]="checked">
+  <input
+    type="checkbox"
+    [value]="value"
+    [checked]="checked"
+    (change)="handleToggle()"
+  >
+  <ng-container *ngIf="checked">
+    {{ labelTrue }}
+  </ng-container>
+  <ng-container *ngIf="!checked">
+    {{ labelFalse }}
+  </ng-container>
+</label>

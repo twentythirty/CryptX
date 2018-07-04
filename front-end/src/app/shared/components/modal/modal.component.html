@@ -1,0 +1,10 @@
+<div class="overlay" (click)="closeModal()">
+  <div class="wrapper" (click)="ignore($event)">
+    <div class="modal-close-btn">
+      <button (click)="closeModal()">X</button>
+    </div>
+    <div class="modal-body">
+      <ng-content></ng-content>
+    </div>
+  </div>
+</div>
