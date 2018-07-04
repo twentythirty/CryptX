@@ -26,7 +26,7 @@ DEFAULT_SETTINGS = {
 /**
  * Actual system-used active database settings values
  */
-SYSTEM_SETTINGS = Object.assign({}, DEFAULT_SETTINGS);
+SYSTEM_SETTINGS = {};
 
 //KEYS for various exchanges
 EXCHANGE_KEYS = {
