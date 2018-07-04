@@ -77,8 +77,10 @@ module.exports.JOB_BODY = async (config, log) => {
                         }
                     });
                 });
-
-                return config.models.sequelize.queryInterface.bulkInsert('instrument_market_data', records);
+                if (records.length > 0)
+                    return config.models.sequelize.queryInterface.bulkInsert('instrument_market_data', records);
+                else 
+                    return "No records inserted!";
             });
         });
     });
