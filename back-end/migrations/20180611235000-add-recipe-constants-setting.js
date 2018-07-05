@@ -20,7 +20,7 @@ module.exports = {
     return queryInterface.bulkDelete('setting', {
       where: {
         key: [
-          'MARKETSHARE_PERCENT',
+          'MARKETCAP_LIMIT_PERCENT',
           'INDEX_LCI_CAP',
           'INDEX_MCI_CAP'
         ]
