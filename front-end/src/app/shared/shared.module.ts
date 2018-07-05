@@ -17,6 +17,7 @@ import { DataTableFilterComponent } from './components/data-table-filter/data-ta
 
 import { FilterPipe } from './pipes/filter.pipe';
 import { DataTableCommonManagerComponent } from './components/data-table-common-manager/data-table-common-manager.component';
+import { ButtonBackComponent } from './components/button-back/button-back.component';
 
 @NgModule({
     imports: [
@@ -37,6 +38,7 @@ import { DataTableCommonManagerComponent } from './components/data-table-common-
         DataTableFilterComponent,
         FilterPipe,
         DataTableCommonManagerComponent,
+        ButtonBackComponent,
     ],
     exports: [
         BtnComponent,
@@ -51,6 +53,7 @@ import { DataTableCommonManagerComponent } from './components/data-table-common-
         DataTableFilterComponent,
         FilterPipe,
         DataTableCommonManagerComponent,
+        ButtonBackComponent,
     ]
 })
 export class SharedModule {}
