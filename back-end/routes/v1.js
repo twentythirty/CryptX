@@ -178,16 +178,24 @@ router.get(
 
 // ASSETS
 router.get(
+  ROUTES.GetAssets.router_string,
+  stateless_auth,
+  check_permissions,
+  filter_reducer,
+  AssetController.getAssets
+);
+router.post(
+  ROUTES.GetAssets.router_string,
+  stateless_auth,
+  check_permissions,
+  filter_reducer,
+  AssetController.getAssets
+);
+router.get(
   ROUTES.GetAssetInfo.router_string,
   stateless_auth,
   check_permissions,
   AssetController.getAsset
-);
-router.get(
-  ROUTES.GetAssets.router_string,
-  stateless_auth,
-  check_permissions,
-  AssetController.getAssets
 );
 router.post(
   ROUTES.ChangeAssetStatus.router_string,
