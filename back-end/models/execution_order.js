@@ -32,6 +32,10 @@ module.exports = (sequelize, DataTypes) => {
             time_in_force: {
                 type: DataTypes.DATE,
                 allowNull: true
+            },
+            failed_attempts: {
+                type: DataTypes.INTEGER,
+                allowNull: false
             }
         },
         modelProps(
