@@ -1,0 +1,17 @@
+.filter {
+    border: 1px solid #000;
+
+    .filter-header {
+        border-bottom: 1px solid #000;
+
+        .header-default {
+            display: flex;
+            justify-content: space-between;
+        }
+    }
+
+    .filter-footer {
+        border-top: 1px solid #000;
+    }
+
+}

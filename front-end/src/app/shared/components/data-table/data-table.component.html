@@ -1,23 +1,33 @@
 <table>
-  <thead *ngIf="dataSource.header.length > 0">
+  <thead *ngIf="dataSource.header?.length > 0">
     <tr>
       <th *ngFor="let item of dataSource.header">
         <button
-          [ngClass]="'table-order-button'"
-          (click)="isColumnSortable( item ) && onSetOrderBy( item.column )"
+          class="table-order-button"
+          (click)="filterMap[item.column] = !filterMap[item.column]"
         >
           {{item.name}}
-          <ng-container *ngIf="isColumnSortable( item ) && isColumnOrdered( item.column )">
-            <span [ngClass]="{ 'dcaret': isColumnASC( item.column ), 'ucaret': isColumnDESC( item.column ) }"></span>
-          </ng-container>
+          <span
+            [class.ucaret]="filterMap[item.column]"
+            [class.dcaret]="!filterMap[item.column]"
+          ></span>
         </button>
+
+        <app-data-table-filter
+          [hidden]="!item.filter || !filterMap[item.column]"
+          [column]="item.column"
+          [type]="item.filter.type"
+          [sortable]="item.filter.sortable"
+          [rowData]="item.filter.rowData"
+          (onFilter)="onSetFilter($event); filterMap[item.column] = !filterMap[item.column]"
+        ></app-data-table-filter>
       </th>
     </tr>
   </thead>
 
   <ng-content></ng-content>
 
-  <tfoot *ngIf="dataSource.footer.length > 0">
+  <tfoot *ngIf="dataSource.footer?.length > 0">
     <tr>
       <td *ngFor="let item of dataSource.footer">
         {{item}}

@@ -8,7 +8,7 @@ import { BrowserModule } from '@angular/platform-browser';
 import { AuthService } from '../../services/auth/auth.service';
 
 import { LoginComponent } from './login/login.component';
-import { SharedModule } from '../../shared/components/shared.module';
+import { SharedModule } from '../../shared/shared.module';
 import { PasswordResetComponent } from './password-reset/password-reset.component';
 import { EditInfoComponent } from './edit-info/edit-info.component';
 import { AcceptInviteComponent } from './accept-invite/accept-invite.component';

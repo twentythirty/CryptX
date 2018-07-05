@@ -1,33 +1,25 @@
 enum Expression {
-    'eq', 'ne', 'or', 'and', 'lt', 'gte'
+    'eq', 'ne', 'or', 'and', 'lt', 'lte', 'gt', 'gte', 'like', 'in'
 }
 
 export interface RolesAllRequestData {
     filter?: {
-        or?: [{
-            field: String
+        or?: Array<{
+            field: string
             value: any
-            expression: Expression
-        }]
-        and?: [{
-            field: String
+            expression: string
+        }>
+        and?: Array<{
+            field: string
             value: any
-            expression: Expression
-        }]
-        not?: [{
-            field: String
+            expression: string
+        }>
+        not?: Array<{
+            field: string
             value: any
-            expression: Expression
-        }]
-        prop_name_X?: any
-        prop_name_1?: {
-            value: String
-            expression: Expression
-        }
-        prop_name_2?: {
-            value: Array<String>
-            expression: Expression
-        }
+            expression: string
+        }>
+        [key: string]: any
     }
     limit: number
     offset: number

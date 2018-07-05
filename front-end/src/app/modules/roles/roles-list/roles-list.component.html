@@ -17,8 +17,7 @@
   <app-data-table
     [dataSource]="rolesDataSource"
     [columnsToShow]="rolesColumnsToShow"
-    [orderBy]="rolesRequestData.order"
-    (setOrderBy)="onSetOrderBy($event)"
+    (setFilter)="onSetFilter($event)"
   >
     <tr
       *ngFor="let item of rolesDataSource.body"
@@ -31,8 +30,8 @@
   </app-data-table>
 
   <app-pagination
-    [count]="rolesCount"
-    [perPage]="rolesPageSize"
-    [page]="rolesPage"
+    [count]="count"
+    [perPage]="pageSize"
+    [page]="page"
   ></app-pagination>
 </div>
