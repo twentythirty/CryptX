@@ -90,7 +90,7 @@ module.exports.JOB_BODY = async (config, log) => {
         _.map(orders_with_data, (order_with_data) => {
           
           let [order, investment_run, instrument_exchange_map, exchange_info] = order_with_data;
-          console.log(investment_run);
+          log(investment_run);
           let exchange = new ccxt[exchange_info.api_id]();
           
           /* As we have two different ways to acquire an asset (buying and selling),
@@ -111,7 +111,7 @@ module.exports.JOB_BODY = async (config, log) => {
               break;
             case EXECUTION_ORDER_TYPES.Stop:
               order_type = 'stop';
-              console.log("--- CCXT doesn't have stop orders. They are ignored for now...");
+              log("--- CCXT doesn't have stop orders. They are ignored for now...");
               exchange_supports_order_type = false;
               break;
             default:
@@ -119,7 +119,7 @@ module.exports.JOB_BODY = async (config, log) => {
           }
 
           if (order_type != "market") {
-            console.log("Only market orders can be created at the moment");
+            log("Only market orders can be created at the moment");
             return Promise.resolve(order);
           }
           
@@ -136,17 +136,19 @@ module.exports.JOB_BODY = async (config, log) => {
           }
 
           if (!exchange_supports_order_type) {
-            console.log(`Order type ${ order.type } is not supported by ${ order.exchange_id } exchange`);
+            log(`Order type ${ order.type } is not supported by ${ order.exchange_id } exchange`);
             return order_with_data;
           }
 
-          if (order.type == EXECUTION_ORDER_TYPES.Limit && !order.price)
-            console.log("Limit orders require price and this execution order doesn't have it.");
+          if (order.type == EXECUTION_ORDER_TYPES.Limit && !order.price) {
+            log("Limit orders require price and this execution order doesn't have it.");
+            return order_with_data;
+          }
 
           if (investment_run.is_simulated || !send_orders)
-            return Promise.resolve(console.log(`Prevented from sending order: createOrder(${instrument_exchange_map.external_instrument_id}, ${order_type}, ${order_execution_side}, ${order.total_quantity}[, ${order.price}[, params]])`));
+            return Promise.resolve(log(`Prevented from sending order: createOrder(${instrument_exchange_map.external_instrument_id}, ${order_type}, ${order_execution_side}, ${order.total_quantity}[, ${order.price}[, params]])`));
           else {
-            console.log(`Executing: createOrder(${instrument_exchange_map.external_instrument_id}, ${order_type}, ${order_execution_side}, ${order.total_quantity}[, ${order.price}[, params]])`);
+            log(`Executing: createOrder(${instrument_exchange_map.external_instrument_id}, ${order_type}, ${order_execution_side}, ${order.total_quantity}[, ${order.price}[, params]])`);
             
             return exchange.createOrder(instrument_exchange_map.external_instrument_id, order_type, order_execution_side, order.total_quantity, order.price, {
               test: true
@@ -167,6 +169,10 @@ module.exports.JOB_BODY = async (config, log) => {
               return Promise.resolve(order_with_data);
             }).catch((err) => { // order placing failed. Perform actions below.
               order.failed_attempts++; // increment failed attempts counter
+              if (order.failed_attempts >= SYSTEM_SETTINGS.EXEC_ORD_FAIL_TOLERANCE) {
+                log(`Setting status of execution order ${order.id} to Failed because it has reached failed send threshold (actual: ${order.failed_attempts}, allowed: ${SYSTEM_SETTINGS.EXEC_ORD_FAIL_TOLERANCE})!`);
+                order.status = EXECUTION_ORDER_STATUSES.Failed;
+              }
               order.save();
 
               return Promise.resolve(order_with_data);
