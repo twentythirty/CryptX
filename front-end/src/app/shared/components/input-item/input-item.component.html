@@ -1,0 +1,30 @@
+<div class="form-group">
+    <label>
+        <span>
+            <ng-content></ng-content>
+        </span>
+
+        <ng-container *ngIf="select">
+            <select
+                [(ngModel)]="value"
+                (change)="onChange($event)"
+            >
+                <option *ngFor="let item of items" [value]="item">{{ item }}</option>
+            </select>
+        </ng-container>
+
+        <ng-container *ngIf="!select">
+            <input
+                [(ngModel)]="value"
+                class="form-control"
+                (blur)="onBlur()"
+                (change)="onChange($event)"
+                (keyup)="onChange($event)"
+            >
+        </ng-container>
+        
+        <div *ngIf="invalid">
+            Error
+        </div>
+    </label>
+</div>

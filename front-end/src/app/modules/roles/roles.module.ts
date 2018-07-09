@@ -1,7 +1,7 @@
 import { NgModule } from '@angular/core';
 
 import { RouterModule } from '@angular/router';
-import { FormsModule }   from '@angular/forms';
+import { FormsModule, ReactiveFormsModule }   from '@angular/forms';
 import { CommonModule } from '@angular/common'; 
 import { BrowserModule } from '@angular/platform-browser';
 import { SharedModule } from '../../shared/shared.module';
@@ -23,6 +23,7 @@ import { RolesAddComponent } from './roles-add/roles-add.component';
     BrowserModule,
     RouterModule,
     SharedModule,
+    ReactiveFormsModule,
   ],
   providers: [
     RolesService
