@@ -5,6 +5,7 @@ const Role = require("../models").Role;
 const UserInvitation = require('../models').UserInvitation;
 const Op = require('../models').Sequelize.Op;
 const uuidv4 = require('uuid/v4');
+const validator = require('validator');
 
 const createInvitation = async function (creator, role_id, first_name, last_name, email) {
 
@@ -19,6 +20,9 @@ const createInvitation = async function (creator, role_id, first_name, last_name
     //check if role is for real
     const role = await Role.findById(role_id);
     if (!role) TE(`Role with ID ${role_id} not found!`);
+
+    if (!validator.isEmail(email))
+        TE(`Please enter valid email adress`);
 
     const one_week_later = new Date();
     one_week_later.setDate(new Date().getDate() + 7);
