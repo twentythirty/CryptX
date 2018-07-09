@@ -25,7 +25,14 @@ const remove_cols_recur = (queryInterface, table_name, cols) => {
 };
 module.exports.remove_cols_recur = remove_cols_recur;
 
-
+/**
+ * Create configured migration file object for a specific set of settings keys and types
+ * keys correspond to those in the DEFAULT_SETTINGS object
+ * 
+ * migration configures itself to only insert missing settings by first checking existing ones.
+ * @param  settings_keys 
+ * @param  settings_types 
+ */
 const migration_for_settings = (settings_keys, settings_types) => {
 
     //transform settings to array of forms [[key,val,type], ...]
@@ -40,6 +47,7 @@ const migration_for_settings = (settings_keys, settings_types) => {
             ]
         }
     );
+    //use existing settings to check for duplicates and not insert them (otherwise PG throws error)
     const Setting = require('../models').Setting;
     return {
         up: (queryInterface, Sequelize) => {
