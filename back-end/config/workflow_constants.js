@@ -4,7 +4,7 @@
 DEFAULT_SETTINGS = {
     /* Maximum marketshare percentage for LCI. Total marketshare of coins
     in LCI index should not go over this value */
-    MARKETCAP_LIMIT_PERCENT: 90,
+    MARKETCAP_LIMIT_PERCENT: 90.0,
 
     /* Maximum sizes of coins in indexes */
     INDEX_LCI_CAP: 20,
@@ -22,6 +22,11 @@ DEFAULT_SETTINGS = {
      * Uses 0 to 1 ranging, with 1 being 100%
      */
     TRADE_BASE_FUZYNESS: 0.15,
+    /**
+     * Max number of exexcution order fails tolerated.
+     * When this threshold is reached by a specific execution order, it will no longer be placed on exchanges and marked as failed
+     */
+    EXEC_ORD_FAIL_TOLERANCE: 5
 };
 /**
  * Actual system-used active database settings values

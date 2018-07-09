@@ -1,21 +1,6 @@
 'use strict';
 
-const remove_cols_recur = (queryInterface, cols) => {
-    //guard against empty collection
-    if (!cols || cols.length == 0) {
-        return null;
-    }
-
-    //process first col in collection
-    return queryInterface.removeColumn('execution_order', _.head(cols)).then(done => {
-        //recur on remaining cols in the async
-        if (_.tail(cols).length == 0) {
-            return done;
-        } else {
-            return remove_cols_recur(queryInterface, _.tail(cols));
-        }
-    });
-};
+const mu = require('../utils/MigrationUtil');
 
 module.exports = {
     up: (queryInterface, Sequelize) => {
@@ -46,7 +31,7 @@ module.exports = {
         })
     },
     down: (queryInterface, Sequelize) => {
-        return remove_cols_recur(queryInterface, [
+        return mu.remove_cols_recur(queryInterface, [
             'time_in_force',
             'side',
             'external_identifier',
