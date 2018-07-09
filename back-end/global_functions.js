@@ -19,10 +19,15 @@ pe = require("parse-error"); //parses error so you can read error message and ha
 TE = function(err_message, ...args) {
   // TE stands for Throw Error
   if (process.env.NODE_ENV == 'dev') {
-    console.error(err_message, args);
+    if (args.length)
+      console.error(err_message, args);
+    else
+      console.error(err_message);
   }
 
-  throw new CryptXError(util.format(err_message, args));
+  const formatted_error = args.length? util.format(err_message, args) : util.format(err_message);
+
+  throw new CryptXError(formatted_error);
 };
 
 ReE = function(res, err, code) {
