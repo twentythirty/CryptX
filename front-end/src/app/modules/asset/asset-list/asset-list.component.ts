@@ -50,7 +50,7 @@ export class AssetListComponent extends DataTableCommonManagerComponent implemen
   }
 
   getAllData(): void {
-    this.assetService.getAllAssets().subscribe(
+    this.assetService.getAllAssets(this.requestData).subscribe(
       (res: AssetsAllResponse) => {
         this.assetsDataSource.body = res.assets;
         this.count = res.count
