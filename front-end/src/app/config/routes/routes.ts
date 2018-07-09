@@ -15,6 +15,9 @@ import { UsersInfoComponent } from '../../modules/users/users-info/users-info.co
 import { UsersAddComponent } from '../../modules/users/users-add/users-add.component';
 import { AcceptInviteComponent } from '../../modules/auth/accept-invite/accept-invite.component';
 
+import { AssetListComponent } from '../../modules/asset/asset-list/asset-list.component';
+import { AssetViewComponent } from '../../modules/asset/asset-view/asset-view.component';
+
 const routes: Routes = [
   { path: 'login', component: LoginComponent },
   { path: 'password_reset', component: PasswordResetComponent },
@@ -62,7 +65,31 @@ const routes: Routes = [
     canActivate: [AuthGuard]
   },
 
-  { path: '', redirectTo: 'login', pathMatch: 'full'}
+  {
+    path: 'assets',
+    component: AssetListComponent,
+    canActivate: [AuthGuard, PermissionGuard],
+    data: { requiredPermission: ['CHANGE_ASSET_STATUS']}
+  },
+  {
+    path: 'assets/view/:assetId',
+    component: AssetViewComponent,
+    canActivate: [AuthGuard, PermissionGuard],
+    data: { requiredPermission: ['CHANGE_ASSET_STATUS']}
+  },
+
+  /**
+   * Lazy loaded modules
+   */
+  // {
+  //   path: 'assets',
+  //   loadChildren: '../../modules/asset/asset.module#AssetModule',
+  //   canActivate: [AuthGuard /* PermissionGuard */]/* ,
+  //   data: { requiredPermission: ['CHANGE_ASSET_STATUS']} */ // restrict route to be accessed with certain permissions
+  // },
+
+  { path: '', redirectTo: 'login', pathMatch: 'full'},
+  { path: '**', redirectTo: 'login', pathMatch: 'full'}
 ];
 
 @NgModule({

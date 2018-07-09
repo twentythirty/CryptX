@@ -19,11 +19,14 @@ import { FilterPipe } from './pipes/filter.pipe';
 import { DataTableCommonManagerComponent } from './components/data-table-common-manager/data-table-common-manager.component';
 import { ButtonBackComponent } from './components/button-back/button-back.component';
 import { PageHeadingComponent } from './components/page-heading/page-heading.component';
+import { RouterModule } from '@angular/router';
+import { BrowserModule } from '@angular/platform-browser';
 
 @NgModule({
     imports: [
         CommonModule,
         FormsModule,
+        RouterModule,
         Ng2FlatpickrModule,
     ],
     declarations: [
@@ -57,6 +60,7 @@ import { PageHeadingComponent } from './components/page-heading/page-heading.com
         DataTableCommonManagerComponent,
         ButtonBackComponent,
         PageHeadingComponent,
+        FormsModule
     ]
 })
 export class SharedModule {}

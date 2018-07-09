@@ -9,7 +9,8 @@
     "test": "NODE_ENV=test mocha --recursive --timeout 20000 --exit back-end/test",
     "test-frontend": "karma start ./front-end/karma.conf.js",
     "test-e2e": "protractor ./front-end/protractor.conf.js",
-    "pretest-e2e": "webdriver-manager update --standalone false --gecko false --quiet"
+    "pretest-e2e": "webdriver-manager update --standalone false --gecko false --quiet",
+    "ng": "ng"
   },
   "dependencies": {
     "@angular/animations": "^5.2.0",
