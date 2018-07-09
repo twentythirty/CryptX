@@ -1,0 +1,22 @@
+<div>
+  <div>
+    <div>
+      <h1>Cryptocurrencies</h1>
+      <span class="assets-count">{{ count }}</span>
+    </div>
+  </div>
+
+  <app-data-table
+    [dataSource]="assetsDataSource"
+    [columnsToShow]="assetsColumnsToShow"
+    (setFilter)="onSetFilter($event)">
+    <tr *ngFor="let item of assetsDataSource.body"
+    [routerLink]="['/assets/view', item.id]">
+      <td *ngFor="let index of assetsColumnsToShow">
+        {{ item[index] }}
+      </td>
+    </tr>
+  </app-data-table>
+
+  <app-pagination [count]="count" [perPage]="pageSize" [page]="page"></app-pagination>
+</div>

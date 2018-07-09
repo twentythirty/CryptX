@@ -39,6 +39,16 @@ const routes: Routes = [
     canActivate: [AuthGuard]
   },
 
+  /**
+   * Lazy loaded modules
+   */
+  {
+    path: 'assets',
+    loadChildren: '../../modules/asset/asset.module#AssetModule',
+    canActivate: [AuthGuard /* PermissionGuard */]/* ,
+    data: { requiredPermission: ['CHANGE_ASSET_STATUS']} */ // restrict route to be accessed with certain permissions
+  },
+
   { path: '', redirectTo: 'login', pathMatch: 'full'}
 ];
 
