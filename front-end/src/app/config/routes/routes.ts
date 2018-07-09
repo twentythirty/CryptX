@@ -16,6 +16,7 @@ import { UsersAddComponent } from '../../modules/users/users-add/users-add.compo
 import { AcceptInviteComponent } from '../../modules/auth/accept-invite/accept-invite.component';
 
 import { AssetListComponent } from '../../modules/asset/asset-list/asset-list.component';
+import { AssetViewComponent } from '../../modules/asset/asset-view/asset-view.component';
 
 const routes: Routes = [
   { path: 'login', component: LoginComponent },
@@ -67,7 +68,14 @@ const routes: Routes = [
   {
     path: 'assets',
     component: AssetListComponent,
-    canActivate: [AuthGuard]
+    canActivate: [AuthGuard, PermissionGuard],
+    data: { requiredPermission: ['CHANGE_ASSET_STATUS']}
+  },
+  {
+    path: 'assets/view/:assetId',
+    component: AssetViewComponent,
+    canActivate: [AuthGuard, PermissionGuard],
+    data: { requiredPermission: ['CHANGE_ASSET_STATUS']}
   },
 
   /**
