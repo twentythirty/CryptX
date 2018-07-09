@@ -96,7 +96,7 @@ module.exports.JOB_BODY = async (config, log) => {
                 exchange_supports_order_type = true;
               break;
             case EXECUTION_ORDER_TYPES.Stop:
-              console.log("--- CCXT doesn't have stop orders. They are ignored for now...");
+              log("--- CCXT doesn't have stop orders. They are ignored for now...");
               //order_type_identifier = 'market';
               break;
             default:
@@ -116,15 +116,15 @@ module.exports.JOB_BODY = async (config, log) => {
           }
   
           if (!exchange_supports_order_type) 
-            console.log(`Order type ${ order.type } is not supported by ${ order.exchange_id } exchange`);
+            log(`Order type ${ order.type } is not supported by ${ order.exchange_id } exchange`);
           else {
             if (order.type == EXECUTION_ORDER_TYPES.Limit && !order.price)
-              console.log("Limit orders require price and this execution order doesn't have it.");
+              log("Limit orders require price and this execution order doesn't have it.");
   
             if (!send_orders)
-              console.log(`Prevented from sending order: createOrder(${instrument_exchange_map.external_instrument_id}, ${order_type}, ${order_execution_side}, ${order.total_quantity}[, ${order.price}[, params]])`);
+              log(`Prevented from sending order: createOrder(${instrument_exchange_map.external_instrument_id}, ${order_type}, ${order_execution_side}, ${order.total_quantity}[, ${order.price}[, params]])`);
             else {
-              console.log(`Executing: createOrder(${instrument_exchange_map.external_instrument_id}, ${order_type}, ${order_execution_side}, ${order.total_quantity}[, ${order.price}[, params]])`);
+              log(`Executing: createOrder(${instrument_exchange_map.external_instrument_id}, ${order_type}, ${order_execution_side}, ${order.total_quantity}[, ${order.price}[, params]])`);
              
               
               return exchange.createOrder(instrument_exchange_map.external_instrument_id, order_type, order_execution_side, order.total_quantity, order.price, {
@@ -146,6 +146,10 @@ module.exports.JOB_BODY = async (config, log) => {
                 return Promise.resolve(order_with_data);
               }).catch((err) => { // order placing failed. Perform actions below.
                 order.failed_attempts++; // increment failed attempts counter
+                if (order.failed_attempts > SYSTEM_SETTINGS.EXEC_ORD_FAIL_TOLERANCE) {
+                  log(`Setting status of execution order ${order.id} to Failed because it has reached failed send threshold (actual: ${order.failed_attempts}, allowed: ${SYSTEM_SETTINGS.EXEC_ORD_FAIL_TOLERANCE})!`);
+                  order.status = EXECUTION_ORDER_STATUSES.Failed;
+                }
                 order.save();
 
                 return Promise.resolve(order_with_data);
