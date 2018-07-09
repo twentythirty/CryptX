@@ -10,6 +10,7 @@ import { NavigationComponent } from './shared/components/navigation/navigation.c
 
 import { AuthService } from './services/auth/auth.service';
 import { RolesService } from './services/roles/roles.service';
+import { UsersService } from './services/users/users.service';
 import { ModelConstantsService } from './services/model-constants/model-constants.service';
 
 import { PreRequestAuthInterceptor, PostRequestAuthInterceptor } from './config/http/auth.http.insterceptor';
@@ -20,8 +21,11 @@ import { DashboardModule } from './modules/dashboard/dashboard.component';
 import { AuthGuard } from './config/routes/route-auth.guard';
 import { PermissionGuard } from './config/routes/route-permission.guard';
 import { RolesModule } from './modules/roles/roles.module';
+import { UsersModule } from './modules/users/users.module';
 import { AssetModule } from './modules/asset/asset.module';
 import { AssetService } from './services/asset/asset.service';
+
+
 
 @NgModule({
   declarations: [
@@ -35,6 +39,7 @@ import { AssetService } from './services/asset/asset.service';
     AuthModule,
     DashboardModule,
     RolesModule,
+    UsersModule,
     AssetModule,  // TODO: Remove this when moving to lazy loaded modules
     AppRoutingModule,
   ],
@@ -60,6 +65,7 @@ import { AssetService } from './services/asset/asset.service';
     PermissionGuard,
     RolesService,
     AssetService,
+    UsersService,
     ModelConstantsService
   ],
   bootstrap: [AppComponent]

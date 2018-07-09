@@ -33,10 +33,10 @@ const issueInvitation = async function (req, res) {
     email,
     role_id
   } = req.body;
-
+  
   let [err, invitation] = await to(inviteService.createInvitation(
     req.user,
-    role_id,
+    role_id[0],
     first_name,
     last_name,
     email));
@@ -127,10 +127,6 @@ function resolveUserId(req) {
 const getUsers = async function (req, res) {
 
   console.log('WHERE clause: %o', req.seq_where);
-  //only search active users
-  if (!req.seq_where.is_active) {
-    req.seq_where.is_active = true;
-  }
 
   let [err, result] = await to(User.findAndCountAll(req.seq_query));
   if (err) ReE(res, err.message, 422);
@@ -149,7 +145,7 @@ const getUser = async function (req, res) {
   let user = await User.findOne({
     where: {
       id: resolveUserId(req),
-      is_active: true
+      //is_active: true
     },
     include: [Role]
   });

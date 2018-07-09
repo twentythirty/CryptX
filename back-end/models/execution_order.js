@@ -53,6 +53,17 @@ module.exports = (sequelize, DataTypes) => {
         })
     };
 
+    ExecutionOrder.prototype.isActive = function() {
+
+        const is_active = _.reduce([
+            EXECUTION_ORDER_STATUSES.Pending,
+            EXECUTION_ORDER_STATUSES.Placed,
+            EXECUTION_ORDER_STATUSES.PartiallyFilled
+        ], (accum, val) => accum || this.status == val, false)
+
+        return is_active;
+    }
+
 
     return ExecutionOrder;
 };

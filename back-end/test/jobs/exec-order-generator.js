@@ -14,7 +14,8 @@ const RecipeOrder = require('../../models').RecipeOrder;
 const RecipeOrderGroup = require('../../models').RecipeOrderGroup;
 const Instrument = require('../../models').Instrument;
 const ExecutionOrder = require('../../models').ExecutionOrder;
-
+const ExecutionOrderFill = require('../../models').ExecutionOrderFill;
+const InstrumentExchangeMapping = require('../../models').InstrumentExchangeMapping;
 
 /**
  * Attempts to call the `restore` method on the provided symbols (method specified by `sinon`) 
@@ -56,7 +57,9 @@ describe('Execution Order generator job', () => {
             RecipeOrder: RecipeOrder,
             RecipeOrderGroup: RecipeOrderGroup,
             ExecutionOrder: ExecutionOrder,
-            Instrument: Instrument
+            Instrument: Instrument,
+            ExecutionOrderFill: ExecutionOrderFill,
+            InstrumentExchangeMapping: InstrumentExchangeMapping
         }
     };
 
@@ -95,9 +98,10 @@ describe('Execution Order generator job', () => {
         target_exchange_id: 77
     });
     const EXECUTION_ORDER_IDS = [7845, 3248, 6314, 1111];
-    const TEST_FAILED_EXECUTION_ORDER = {
+    
+    const TEST_PENDING_EXECUTION_ORDER = {
         id: EXECUTION_ORDER_IDS[0],
-        status: EXECUTION_ORDER_STATUSES.Failed
+        status: EXECUTION_ORDER_STATUSES.Pending
     }
     const TEST_PARTIAL_EXECUTION_ORDER = {
         id: EXECUTION_ORDER_IDS[1],
@@ -117,15 +121,14 @@ describe('Execution Order generator job', () => {
         chai.expect(execOrderGenerator.JOB_BODY).to.exist;
     });
 
-    it("shall fail pending recipe order with invalid sale currency", () => {
-
+    it("shall skip pending recipe order with invalid sale currency", () => {
+        let empty_order = Object.assign({
+            Instrument: {
+                symbol: 'XRP/LTC'
+            }
+        }, TEST_PENDING_ORDER_BASE);
         sinon.stub(RecipeOrder, 'findAll').callsFake(options => {
 
-            let empty_order = Object.assign({
-                Instrument: {
-                    symbol: 'XRP/LTC'
-                }
-            }, TEST_PENDING_ORDER_BASE);
             stubSave(empty_order);
             return Promise.resolve([empty_order]);
         });
@@ -134,12 +137,15 @@ describe('Execution Order generator job', () => {
 
             restoreSymbols(RecipeOrder.findAll);
 
-            const [failed_recipe] = processed_recipes;
-            chai.expect(failed_recipe.status).to.eq(RECIPE_ORDER_STATUSES.Failed);
+            const [failed_recipe, execution_orders] = processed_recipes;
+            
+            chai.expect(failed_recipe).to.deep.equal(empty_order, "Order should not have changed!");
+            //should not ahve generated any new execution orders!
+            chai.expect(execution_orders).to.be.undefined;
         });
     });
 
-    it("shall shift pending recipe orders with bad execution order states", () => {
+    it("shall skip pending recipe orders with bad execution order states", () => {
 
         sinon.stub(RecipeOrder, 'findAll').callsFake(options => {
 
@@ -153,9 +159,9 @@ describe('Execution Order generator job', () => {
         sinon.stub(ExecutionOrder, 'findAll').callsFake(options => {
             switch (options.where.recipe_order_id) {
                 case PENDING_ORDER_IDS[0]:
-                    return Promise.resolve([TEST_FAILED_EXECUTION_ORDER]);
+                    return Promise.resolve([new ExecutionOrder(TEST_PENDING_EXECUTION_ORDER)]);
                 case PENDING_ORDER_IDS[1]:
-                    return Promise.resolve([TEST_PARTIAL_EXECUTION_ORDER]);
+                    return Promise.resolve([new ExecutionOrder(TEST_PARTIAL_EXECUTION_ORDER)]);
                 default:
                     return Promise.resolve([]);
             }
@@ -173,12 +179,15 @@ describe('Execution Order generator job', () => {
             chai.assert.isDefined(failed_order);
             chai.assert.isDefined(marked_order);
 
-            chai.expect(failed_order.status).to.eq(RECIPE_ORDER_STATUSES.Failed, `Status was not Failed for failed order ${failed_order.id}`);
-            chai.expect(marked_order.status).to.eq(RECIPE_ORDER_STATUSES.Executing, `Status was not Executing for partial order ${marked_order.id}`);
+            chai.expect(failed_order).is.not.a('array');
+            chai.expect(marked_order).is.not.a('array');
+
+            chai.expect(failed_order.status).to.eq(TEST_SYMBOL_PENDING_ORDER_BASE.status, `Status changed for ${failed_order.id}`);
+            chai.expect(marked_order.status).to.eq(TEST_PENDING_ORDER_BASE.status, `Status changed for ${marked_order.id}`);
         });
     });
 
-    it("shall finish a pending order if fulfilled execution orders cover its initial quantity", () => {
+    it("shall skip pending orders if the corresponding exchange/instrument mapping pair is missing", () => {
 
         sinon.stub(RecipeOrder, 'findAll').callsFake(options => {
 
@@ -188,12 +197,54 @@ describe('Execution Order generator job', () => {
             stubSave(pending_order2);
             return Promise.resolve([pending_order2]);
         });
-        sinon.stub(ExecutionOrder, 'findAll').callsFake(options => {
+        sinon.stub(ExecutionOrder, 'findAll').callsFake(options => Promise.resolve([]));
+        sinon.stub(InstrumentExchangeMapping, 'find').callsFake(options => {
+            return Promise.resolve(new InstrumentExchangeMapping(options.where))
+        });
+        sinon.stub(ExecutionOrderFill, 'findAll').callsFake(options => {
+            return Promise.resolve([])
+        });
+
+        return execOrderGenerator.JOB_BODY(stubbed_config, console.log).then(orders => {
+
+            restoreSymbols(
+                RecipeOrder.findAll,
+                ExecutionOrder.findAll,
+                InstrumentExchangeMapping.find,
+                ExecutionOrderFill.findAll
+            );
+
+            const [recipe_order] = orders;
+
+            chai.assert.isDefined(recipe_order);
+
+            chai.expect(recipe_order).is.not.a('array');
+
+            chai.expect(recipe_order.status).to.eq(TEST_SYMBOL_PENDING_ORDER_BASE.status, `Status changed for ${recipe_order.id}`);
+        });
+    });
+
+    it("shall skip a pending order if execution order fills cover its initial quantity", () => {
+
+        sinon.stub(RecipeOrder, 'findAll').callsFake(options => {
+
+            let pending_order2 = Object.assign({}, TEST_SYMBOL_PENDING_ORDER_BASE, {
+                id: PENDING_ORDER_IDS[1]
+            });
+            stubSave(pending_order2);
+            return Promise.resolve([pending_order2]);
+        });
+        sinon.stub(InstrumentExchangeMapping, 'find').callsFake(options => {
+            return Promise.resolve(new InstrumentExchangeMapping(Object.assign(options.where, {
+                tick_size: 0.5
+            })))
+        });
+        sinon.stub(ExecutionOrderFill, 'findAll').callsFake(options => {
             const fills_num = _.random(1, 9, false);
             return Promise.resolve(_.map(Array(fills_num).fill(PENDING_ORDER_QNTY / (fills_num - 1)), (qnty, idx) => {
-                return Object.assign({}, TEST_FILLED_EXECUTION_ORDER, {
-                    id: TEST_FILLED_EXECUTION_ORDER.id + (idx * 7),
-                    total_quantity: qnty
+                return new ExecutionOrderFill({
+                    quantity: qnty,
+                    id: idx
                 });
             }))
         });
@@ -202,13 +253,16 @@ describe('Execution Order generator job', () => {
 
             restoreSymbols(
                 RecipeOrder.findAll,
-                ExecutionOrder.findAll
+                InstrumentExchangeMapping.find,
+                ExecutionOrderFill.findAll
             );
 
             chai.expect(orders.length).to.eq(1);
             const [finished_order] = orders;
 
-            chai.expect(finished_order.status).to.eq(RECIPE_ORDER_STATUSES.Completed);
+            chai.expect(finished_order).to.not.be.a('array');
+
+            chai.expect(finished_order.status).to.eq(TEST_SYMBOL_PENDING_ORDER_BASE.status, "Order status chagned!");
         });
     });
 
@@ -239,16 +293,16 @@ describe('Execution Order generator job', () => {
                     const half_qnty = (PENDING_ORDER_QNTY / 2);
 
                     //check that cancelled order be ignored
-                    const cancelled_order = Object.assign({}, TEST_CANCELLED_EXECUTION_ORDER, {
+                    const cancelled_order = new ExecutionOrder(Object.assign({}, TEST_CANCELLED_EXECUTION_ORDER, {
                         total_quantity: half_qnty
-                    });
+                    }));
                     return Promise.resolve(
                         _.concat(
                             _.map(Array(fills_num).fill(half_qnty / fills_num), (qnty, idx) => {
-                                return Object.assign({}, TEST_FILLED_EXECUTION_ORDER, {
+                                return new ExecutionOrder(Object.assign({}, TEST_FILLED_EXECUTION_ORDER, {
                                     id: TEST_FILLED_EXECUTION_ORDER.id + (idx * 7),
                                     total_quantity: qnty
-                                });
+                                }));
                             }),
                             cancelled_order
                         )
@@ -261,13 +315,23 @@ describe('Execution Order generator job', () => {
 
             return Promise.resolve(options);
         });
+        sinon.stub(InstrumentExchangeMapping, 'find').callsFake(options => {
+            return Promise.resolve(new InstrumentExchangeMapping(Object.assign(options.where, {
+                tick_size: SYSTEM_SETTINGS.BASE_BTC_TRADE / 3
+            })))
+        });
+        sinon.stub(ExecutionOrderFill, 'findAll').callsFake(options => {
+            return Promise.resolve([]);
+        });
 
         return execOrderGenerator.JOB_BODY(stubbed_config, console.log).then(orders_and_execution_orders => {
 
             restoreSymbols(
                 RecipeOrder.findAll,
                 ExecutionOrder.findAll,
-                ExecutionOrder.create
+                ExecutionOrder.create,
+                ExecutionOrderFill.findAll,
+                InstrumentExchangeMapping.find
             );
 
             const [parent_and_line_order, parent_and_whole_order] = orders_and_execution_orders;
@@ -283,8 +347,8 @@ describe('Execution Order generator job', () => {
             chai.expect(whole_order.status).to.eq(EXECUTION_ORDER_STATUSES.Pending);
 
             //parent orders expected ot become executing
-            chai.expect(parent_line.status).to.eq(RECIPE_ORDER_STATUSES.Executing);
-            chai.expect(parent_whole.status).to.eq(RECIPE_ORDER_STATUSES.Executing);
+            chai.expect(parent_line.status).to.eq(TEST_SYMBOL_PENDING_ORDER_BASE.status, "recipe order status changed!");
+            chai.expect(parent_whole.status).to.eq(TEST_SYMBOL_PENDING_ORDER_BASE.status, "recipe order status changed!");
 
             const execution_orders = [line_order, whole_order];
 

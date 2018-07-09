@@ -12,12 +12,14 @@ const ccxt = require('ccxt');
 
 const execOrderPlacer = require('../../jobs/exchange-order-placer');
 
+const sequelize = require('../../models').sequelize;
 const RecipeOrder = require('../../models').RecipeOrder;
 const RecipeOrderGroup = require('../../models').RecipeOrderGroup;
 const Instrument = require('../../models').Instrument;
 const ExecutionOrder = require('../../models').ExecutionOrder;
 const InstrumentExchangeMapping = require('../../models').InstrumentExchangeMapping;
 const Exchange = require('../../models').Exchange;
+const InvestmentRun = require('../../models').InvestmentRun;
 
 
 describe("Execution Order Placer job", () => {
@@ -29,9 +31,11 @@ describe("Execution Order Placer job", () => {
       ExecutionOrder: ExecutionOrder,
       Instrument: Instrument,
       InstrumentExchangeMapping,
-      Exchange
+      Exchange,
+      InvestmentRun
     },
-    ccxt: ccxt
+    sequelize,
+    ccxt
   };
 
   before(done => {
@@ -69,7 +73,7 @@ describe("Execution Order Placer job", () => {
     recipe_order_id: 2,
     instrument_id: 3,
     exchange_id: 6,
-    failed_attempts: 0
+    failed_attempts: 4
   };
 
   let INSTRUMENT_EXCHANGE_MAP = {
@@ -123,7 +127,20 @@ describe("Execution Order Placer job", () => {
     createOrder: function () {}
   };
 
+  let INVESTMENT_RUN = {
+    id: 1,
+    started_timestamp: new Date("Fri Jun 29 2018 09:57:04 GMT+0300 (EEST)"),
+    updated_timestamp: new Date("Fri Jun 29 2018 09:57:04 GMT+0300 (EEST)"),
+    completed_timestamp: null,
+    user_created_id: 2,
+    strategy_type: 102,
+    is_simulated: false,
+    status: 302,
+    deposit_usd: "399",
+  }
+
   const EXEC_ORDERS_PER_EXCHANGE = 3;
+  let ALL_STUBBED_EXCHANGES = [];
 
   beforeEach(() => {
     sinon.stub(ccxt, EXCHANGE_INFO.api_id).callsFake((data) => {
@@ -154,6 +171,8 @@ describe("Execution Order Placer job", () => {
 
         return Promise.resolve(exchange_response);
       });
+
+      ALL_STUBBED_EXCHANGES.push(exchange);
 
       return exchange;
     });
@@ -192,6 +211,10 @@ describe("Execution Order Placer job", () => {
 
       return Promise.resolve(exchange);
     });
+
+    sinon.stub(sequelize, 'query').returns(Promise.resolve(
+      new InvestmentRun( INVESTMENT_RUN )
+    ));
   })
 
   afterEach(() => {
@@ -199,6 +222,8 @@ describe("Execution Order Placer job", () => {
     ExecutionOrder.findAll.restore();
     InstrumentExchangeMapping.findOne.restore();
     Exchange.findOne.restore();
+    sequelize.query.restore();
+    ALL_STUBBED_EXCHANGES = [];
   });
 
   it("job body shall exist", () => {
@@ -223,7 +248,7 @@ describe("Execution Order Placer job", () => {
   });
 
   it('increment failed_attempts counter after order placement failed', () => {
-    ccxt[EXCHANGE_INFO.api_id].restore();
+    if (ccxt[EXCHANGE_INFO.api_id].restore) ccxt[EXCHANGE_INFO.api_id].restore();
 
     sinon.stub(ccxt, EXCHANGE_INFO.api_id).callsFake(() => {
       let exchange = Object.assign({}, CCXT_EXCHANGE);
@@ -245,4 +270,45 @@ describe("Execution Order Placer job", () => {
       });
     });
   });
+
+  it('execution order status should change to failed if failed_attempts reaches threshold', () => {
+    if (ccxt[EXCHANGE_INFO.api_id].restore) ccxt[EXCHANGE_INFO.api_id].restore();
+
+    sinon.stub(ccxt, EXCHANGE_INFO.api_id).callsFake(() => {
+      let exchange = Object.assign({}, CCXT_EXCHANGE);
+
+      sinon.stub(exchange, 'createOrder').callsFake(() => {
+        return Promise.reject();
+      })
+      
+      return exchange;
+    });
+
+    return execOrderPlacer.JOB_BODY(stubbed_config, console.log).then(result => {
+      let orders_with_data = result;
+
+      chai.expect(orders_with_data).to.satisfy(data => {
+        return data.every(failed_order => {
+          return chai.expect(failed_order[0].status).to.be.equal(EXECUTION_ORDER_STATUSES.Failed);
+        });
+      });
+    });
+  });
+
+  it('not send order to exchanges if order is simulated', () => {
+    if (sequelize.query.restore) sequelize.query.restore();
+
+    sinon.stub(sequelize, 'query').returns(Promise.resolve(
+      Object.assign(new InvestmentRun( INVESTMENT_RUN ), { is_simulated: true })
+    ));
+
+    return execOrderPlacer.JOB_BODY(stubbed_config, console.log).then(result => {
+      chai.expect(ALL_STUBBED_EXCHANGES).to.satisfy((stubbed_exchanges) => {
+        return stubbed_exchanges.every(stubbed_exchange => {
+          return chai.expect(stubbed_exchange.createOrder.notCalled).to.be.true;
+        });
+      })
+    });
+  });
+
 });

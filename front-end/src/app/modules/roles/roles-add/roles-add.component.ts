@@ -139,7 +139,6 @@ export class RolesAddComponent implements OnInit {
 
   saveRole() {
     this.loading = true;
-
     this.rolesService.editRole(this.role).subscribe(
       data => {
         this.router.navigate(['/roles']);
