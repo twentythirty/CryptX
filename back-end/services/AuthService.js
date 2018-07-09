@@ -58,6 +58,7 @@ const authUser = async function (credentials, clientIP) {
   if (err) TE(err.message);
 
   if (!user) TE("Not registered");
+  if (!user.is_active) TE("User deactivated");
 
   [err, user] = await to(user.comparePassword(credentials.password));
   if (err) TE(err.message);
