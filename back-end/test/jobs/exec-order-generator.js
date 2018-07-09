@@ -91,7 +91,7 @@ describe('Execution Order generator job', () => {
         id: PENDING_ORDER_IDS[0],
         quantity: PENDING_ORDER_QNTY,
         price: PENDING_ORDER_PRICE,
-        instrument: {
+        Instrument: {
             symbol: 'LTC/BTC'
         },
         instrument_id: 361,
@@ -123,7 +123,7 @@ describe('Execution Order generator job', () => {
 
     it("shall skip pending recipe order with invalid sale currency", () => {
         let empty_order = Object.assign({
-            instrument: {
+            Instrument: {
                 symbol: 'XRP/LTC'
             }
         }, TEST_PENDING_ORDER_BASE);

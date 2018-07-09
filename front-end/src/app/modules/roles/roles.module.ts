@@ -4,7 +4,7 @@ import { RouterModule } from '@angular/router';
 import { FormsModule }   from '@angular/forms';
 import { CommonModule } from '@angular/common'; 
 import { BrowserModule } from '@angular/platform-browser';
-import { SharedModule } from '../../shared/components/shared.module';
+import { SharedModule } from '../../shared/shared.module';
 
 import { RolesService } from '../../services/roles/roles.service';
 

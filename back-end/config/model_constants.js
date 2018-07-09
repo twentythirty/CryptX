@@ -79,10 +79,10 @@ MODEL_CONST = {
   },
 
   COLD_STORAGE_ORDER_STATUSES: {
-    Pending: 51, //"order was generated internally, but not yet sent",
-    Sent: 52, //"order wassent to exchange or blockchain (waiting confirmation)",
-    Completed: 53, //"when order reaches its final successful state",
-    Failed: 54 //"system failed to execute the order"
+    Pending: 91, //"order was generated internally, but not yet sent",
+    Sent: 92, //"order wassent to exchange or blockchain (waiting confirmation)",
+    Completed: 93, //"when order reaches its final successful state",
+    Failed: 94 //"system failed to execute the order"
   },
 
   CUSTODIANS: {

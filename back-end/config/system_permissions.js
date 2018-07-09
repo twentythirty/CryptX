@@ -210,8 +210,8 @@ ROUTES = {
     required_permissions: [PERMISSIONS.VIEW_ASSETS]
   },
   GetAssets: {
-    router_string: "/assets/",
-    permissions_matcher: /\/assets\/\d+$/,
+    router_string: "/assets/all",
+    permissions_matcher: /\/assets\/all$/,
     required_permissions: [PERMISSIONS.VIEW_ASSETS]
   },
   ChangeAssetStatus: {

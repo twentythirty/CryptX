@@ -268,9 +268,9 @@ const changeRecipeRunStatus = async function (user_id, recipe_run_id, status_con
   if (err) TE(err.message);
 
   //approving recipe run that was not approved before, try generate orders async
-  if (status_constant == RECIPE_RUN_STATUSES.Approved && old_status !== status_constant) {
+  /* if (status_constant == RECIPE_RUN_STATUSES.Approved && old_status !== status_constant) { */
     OrdersService.generateApproveRecipeOrders(recipe_run.id);
-  }
+  /* } */
 
   return recipe_run;
 };

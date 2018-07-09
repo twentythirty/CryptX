@@ -7,8 +7,7 @@
  * @param order the order for which to return symbol being sold. Must have `instrument` field realized
  */
 const get_order_sold_symbol = (order) => {
-
-    const order_instrument = order.instrument;
+    const order_instrument = order.Instrument; /* Instrument in order object is defined with capital I */
     const [tx_symbol, quote_symbol] = order_instrument.symbol.split('/');
 
     switch (order.side) {
@@ -60,6 +59,7 @@ module.exports.JOB_BODY = async (config, log) => {
             _.map(active_orders, pending_order => {
 
                 const sold_symbol = get_order_sold_symbol(pending_order);
+                console.log("Selling symbol: ", sold_symbol);
                 const base_trade_amount = trade_base[sold_symbol];
                 if (base_trade_amount == null) {
                     log(`[ERROR.2A]: no base trade recorded for currency symbol ${sold_symbol}! Skipping order ${pending_order.id}...`);
@@ -152,7 +152,8 @@ module.exports.JOB_BODY = async (config, log) => {
                                 recipe_order_id: pending_order.id,
                                 instrument_id: pending_order.instrument_id,
                                 exchange_id: pending_order.target_exchange_id,
-                                price: next_total_price
+                                price: next_total_price,
+                                failed_attempts: 0
                             })
                         ]);
                     });

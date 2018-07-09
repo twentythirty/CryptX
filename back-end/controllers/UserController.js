@@ -33,7 +33,7 @@ const issueInvitation = async function (req, res) {
     email,
     role_id
   } = req.body;
-
+  
   let [err, invitation] = await to(inviteService.createInvitation(
     req.user,
     role_id,

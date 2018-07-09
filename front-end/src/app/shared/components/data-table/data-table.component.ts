@@ -1,15 +1,18 @@
 import { Component, OnInit, Input, EventEmitter, Output } from '@angular/core';
 import _ from 'lodash';
 
-interface TableDataSource {
-  header: Array<object>;
+export interface TableDataSource {
+  header: Array<{
+    column: string
+    name: string
+    filter?: {
+      type: 'text' | 'date' | 'number'
+      sortable?: boolean
+      rowData?: Array<string>
+    }
+  }>;
   body: Array<object>;
-  footer: Array<object>;
-}
-
-interface OrderBy {
-  by: string
-  order: 'asc' | 'desc'
+  footer?: Array<string>;
 }
 
 @Component({
@@ -18,52 +21,27 @@ interface OrderBy {
   styleUrls: ['./data-table.component.scss']
 })
 export class DataTableComponent implements OnInit {
+  private filterMap: Object;
+
   @Input() dataSource: TableDataSource;
   @Input() columnsToShow: Array<String>;
-  @Input() orderBy: Array<OrderBy>;
 
-  @Output() setOrderBy = new EventEmitter<object>();
+  @Output() setFilter = new EventEmitter<object>();
 
-  constructor() { }
+  constructor() {}
 
   ngOnInit() {
+    this.filterMap = _.zipObject(
+      this.columnsToShow,
+      _.fill( Array(this.columnsToShow.length), false )
+    );
   }
 
-  onSetOrderBy(column: string): void {
-    let obj = _.find(this.orderBy, o => o.by === column );
-
-    if ( obj ) {
-      if ( obj.order === 'asc' )
-        obj.order = 'desc';
-      else
-        obj.order = 'asc';
-    } else {
-      if (!this.orderBy) {
-        this.orderBy = [];
-      }
-
-      this.orderBy.push({
-        by: column,
-        order: 'asc'
-      });
-    }
-
-    this.setOrderBy.emit(this.orderBy);
+  onSetFilter(value) {
+    this.setFilter.emit(value);
   }
 
-  isColumnSortable(columnItem) {
-    return columnItem.sortable === undefined || columnItem.sortable;
-  }
-
-  isColumnOrdered(column: String) {
-    return _.find(this.orderBy, o => o.by === column );
-  }
-
-  isColumnASC(column: String) {
-    return _.find(this.orderBy, o => o.by === column && o.order === 'asc' );
-  }
-
-  isColumnDESC(column: String) {
-    return _.find(this.orderBy, o => o.by === column && o.order === 'desc' );
+  onToggleFilter(column) {
+    this.filterMap[column] = !this.filterMap[column];
   }
 }

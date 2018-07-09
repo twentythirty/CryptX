@@ -30,8 +30,9 @@ module.exports.getAsset = getAsset;
 
 const getAssets = async function (req, res) {
 
-  let asset_id = req.params.asset_id;
-  let asset = await Asset.findAll();
+  console.log('WHERE clause: %o', req.seq_query);
+
+  let asset = await Asset.findAll(req.seq_query);
   if (!asset) return ReE(res, 'Asset not found', 404);
 
   return ReS(res, {
