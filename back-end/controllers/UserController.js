@@ -31,12 +31,12 @@ const issueInvitation = async function (req, res) {
     first_name,
     last_name,
     email,
-    role_id
+    role_id// array or role ids
   } = req.body;
   
   let [err, invitation] = await to(inviteService.createInvitation(
     req.user,
-    role_id[0],
+    role_id,
     first_name,
     last_name,
     email));

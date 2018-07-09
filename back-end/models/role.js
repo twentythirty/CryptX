@@ -21,6 +21,10 @@ module.exports = (sequelize, DataTypes) => {
             through: 'user_role',
             timestamps: false
         })
+        Role.belongsToMany(models.UserInvitation, {
+            through: 'user_invitation_role',
+            timestamps: false
+        })
     }
 
     Role.prototype.toWeb = async function () {

@@ -7,7 +7,7 @@ const Op = require('../models').Sequelize.Op;
 const uuidv4 = require('uuid/v4');
 const validator = require('validator');
 
-const createInvitation = async function (creator, role_id, first_name, last_name, email) {
+const createInvitation = async function (creator, role_ids, first_name, last_name, email) {
 
     //check if user with email already registered
     let user = await User.findOne({
@@ -18,11 +18,13 @@ const createInvitation = async function (creator, role_id, first_name, last_name
     if (user) TE(`User with email ${email} already registered in system!`);
 
     //check if role is for real
-    const role = await Role.findById(role_id);
-    if (!role) TE(`Role with ID ${role_id} not found!`);
+    const role = await Role.findAll({
+        where: {
+            id: role_ids
+        }
+    });
+    if (!role) TE(`Role with ID ${role_ids} not found!`);
 
-    if (!validator.isEmail(email))
-        TE(`Please enter valid email adress`);
 
     const one_week_later = new Date();
     one_week_later.setDate(new Date().getDate() + 7);
@@ -34,8 +36,12 @@ const createInvitation = async function (creator, role_id, first_name, last_name
         first_name: first_name,
         last_name: last_name,
         email: email,
-        role_id: role.id
     }));
+        
+    if (err) TE(err.message);
+
+    let role_associations;
+    [err, role_associations] = await to(invitation.setRoles(role_ids));
     if (err) TE(err.message);
 
     return invitation;
@@ -83,12 +89,13 @@ const createUserByInvite = async function (invitation_id, password) {
             token_expiry_timestamp: {
                 [Op.gt]: new Date()
             }
-        }
+        },
+        include: [{
+            model: Role
+        }]
     });
     if (!invitation) TE(`No unused invitation found for id ${invitation_id} valid before ${new Date()}`);
     //check if role exists before comitting to new user creation
-    let role = await Role.findById(invitation.role_id);
-    if (!role) TE(`Role id in invitation ${invitation.role_id} not found!`);
     //all good, flow user creation
     invitation.was_used = true;
     let [err, userData] = await to(invitation.save().then(invitation => {
@@ -104,7 +111,7 @@ const createUserByInvite = async function (invitation_id, password) {
     }).then(user => {
         //return user after roles are set
         return Promise.all([
-            user.setRoles([role]),
+            user.setRoles(invitation.Roles),
             Promise.resolve(user)
         ]);
     }));
