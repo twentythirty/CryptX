@@ -71,8 +71,7 @@ module.exports.sendMail = async (to, subject, content, is_html = true) => {
 
         return result;
     }).catch(err => {
-
         console.error('EMAIL ERROR %o!', err);
-        TE(err);
+        TE(err.response.body.errors.map(error => error.message).join(" ")); // return all error messages joined in string
     });
 };
