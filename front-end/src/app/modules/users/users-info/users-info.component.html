@@ -1,0 +1,52 @@
+<app-content-block *ngIf="user"
+  heading="User information"
+>
+  <label>Name</label>
+  <input type="text" [(ngModel)]="user.first_name"><br>
+    <label>Surname</label>
+  <input type="text" [(ngModel)]="user.last_name"><br>
+    <label>Email</label>
+  <input type="email" [(ngModel)]="user.email">
+</app-content-block>
+<app-content-block
+  heading="User roles"
+>
+<div *ngIf="rolelist">
+   <app-checkbox
+      *ngFor="let role of rolelist"
+      [label]="role.name"
+      [checked]="role.is_active"
+      (onToggle)="addRole(role)"
+    ></app-checkbox>
+</div>
+</app-content-block>
+
+<app-form-action-bar>
+  <div left *ngIf="userId">
+    <button *ngIf="buttonName"
+      [disabled]="loading"
+      (click)="showDeactivateConfirm = true"
+    >{{buttonName}}</button>
+  </div>
+
+  <div center *ngIf="userId">
+    <button
+      [disabled]="loading"
+      (click)="addUser()"
+    >Add User</button>
+  </div>
+
+  <div right *ngIf="userId">
+    <button
+      [disabled]="loading"
+      (click)="saveUser()"
+    >Save changes</button>
+  </div>
+</app-form-action-bar>
+
+<app-confirm
+  *ngIf="showDeactivateConfirm"
+  message="Are you sure you want {{buttonName}} this user?"
+  (onReject)="closeDeactivateConfirm()"
+  (onConfirm)="deactivateUser()"
+></app-confirm>

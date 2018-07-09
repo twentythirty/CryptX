@@ -1,0 +1,24 @@
+<h1>Users</h1>
+<span>{{usersCount}}</span>
+
+  <app-data-table
+    [dataSource]="usersDataSource"
+    [columnsToShow]="usersColumnsToShow"
+    (setFilter)="onSetFilter($event)"
+  >
+    <tr
+      *ngFor="let item of usersDataSource.body"
+      [routerLink]="['/users/edit', item.id]"
+    >
+
+      <td *ngFor="let index of usersColumnsToShow">
+        {{item[index]}}
+      </td>
+
+    </tr>
+  </app-data-table>
+  <app-pagination
+    [count]="count"
+    [perPage]="pageSize"
+    [page]="page"
+  ></app-pagination>

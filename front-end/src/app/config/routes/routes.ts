@@ -10,6 +10,9 @@ import { DashboardComponent } from '../../modules/dashboard/dashboard.component'
 import { EditInfoComponent } from '../../modules/auth/edit-info/edit-info.component';
 import { RolesAddComponent } from '../../modules/roles/roles-add/roles-add.component';
 import { RolesListComponent } from '../../modules/roles/roles-list/roles-list.component';
+import { UsersListComponent } from '../../modules/users/users-list/users-list.component';
+import { UsersInfoComponent } from '../../modules/users/users-info/users-info.component';
+import { UsersAddComponent } from '../../modules/users/users-add/users-add.component';
 import { AcceptInviteComponent } from '../../modules/auth/accept-invite/accept-invite.component';
 
 const routes: Routes = [
@@ -36,6 +39,26 @@ const routes: Routes = [
   {
     path: 'roles/edit/:roleId',
     component: RolesAddComponent,
+    canActivate: [AuthGuard]
+  },
+  {
+    path: 'users',
+    component: UsersListComponent,
+    canActivate: [AuthGuard]
+  },
+  {
+    path: 'users/info',
+    component: UsersInfoComponent,
+    canActivate: [AuthGuard]
+  },
+  {
+    path: 'users/edit/:userId',
+    component: UsersInfoComponent,
+    canActivate: [AuthGuard]
+  },
+  {
+    path: 'users/add',
+    component: UsersAddComponent,
     canActivate: [AuthGuard]
   },
 

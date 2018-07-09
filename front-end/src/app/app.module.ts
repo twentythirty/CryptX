@@ -10,6 +10,7 @@ import { NavigationComponent } from './shared/components/navigation/navigation.c
 
 import { AuthService } from './services/auth/auth.service';
 import { RolesService } from './services/roles/roles.service';
+import { UsersService } from './services/users/users.service';
 import { ModelConstantsService } from './services/model-constants/model-constants.service';
 
 import { PreRequestAuthInterceptor, PostRequestAuthInterceptor } from './config/http/auth.http.insterceptor';
@@ -20,6 +21,9 @@ import { DashboardModule } from './modules/dashboard/dashboard.component';
 import { AuthGuard } from './config/routes/route-auth.guard';
 import { PermissionGuard } from './config/routes/route-permission.guard';
 import { RolesModule } from './modules/roles/roles.module';
+import { UsersModule } from './modules/users/users.module';
+
+
 
 @NgModule({
   declarations: [
@@ -33,6 +37,7 @@ import { RolesModule } from './modules/roles/roles.module';
     AuthModule,
     DashboardModule,
     RolesModule,
+    UsersModule,
     AppRoutingModule,
   ],
   providers: [
@@ -56,6 +61,7 @@ import { RolesModule } from './modules/roles/roles.module';
     AuthGuard,
     PermissionGuard,
     RolesService,
+    UsersService,
     ModelConstantsService
   ],
   bootstrap: [AppComponent]

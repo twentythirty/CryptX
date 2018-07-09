@@ -1,0 +1,33 @@
+<app-content-block
+  heading="User information"
+>
+  <label>Name</label>
+  <input type="text" [(ngModel)]="firstName"><br>
+    <label>Surname</label>
+  <input type="text" [(ngModel)]="lastName"><br>
+    <label>Email</label>
+  <input type="email" [(ngModel)]="email">
+</app-content-block>
+<app-content-block
+  heading="User roles"
+>
+<div *ngIf="rolelist">
+   <app-checkbox
+      *ngFor="let role of rolelist"
+      [label]="role.name"
+      [checked]="role.is_active"
+      (onToggle)="addRole(role)"
+    ></app-checkbox>
+</div>
+</app-content-block>
+
+<app-form-action-bar>
+
+  <div right>
+    <button
+      [disabled]="loading"
+      (click)="saveUser()"
+    >Add User</button>
+  </div>
+
+</app-form-action-bar>
