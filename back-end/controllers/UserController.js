@@ -36,7 +36,7 @@ const issueInvitation = async function (req, res) {
   
   let [err, invitation] = await to(inviteService.createInvitation(
     req.user,
-    role_id,
+    role_id[0],
     first_name,
     last_name,
     email));

@@ -18,9 +18,11 @@ module.exports.JOB_BODY = async (config, log) => {
     
     //reference shortcuts
     const models = config.models;
+    const sequelize = config.sequelize;
     const RecipeOrder = models.RecipeOrder;
     const RecipeOrderGroup = models.RecipeOrderGroup;
     const ExecutionOrder = models.ExecutionOrder;
+    const InvestmentRun = models.InvestmentRun;
     const Instrument = models.Instrument;
     const InstrumentExchangeMapping = models.InstrumentExchangeMapping;
     const Exchange = models.Exchange;
@@ -53,6 +55,22 @@ module.exports.JOB_BODY = async (config, log) => {
 
         return Promise.all([
           Promise.resolve(pending_order),
+          sequelize.query(`
+              SELECT ir.* 
+              FROM execution_order ed 
+              JOIN recipe_order ro ON ro.id=ed.recipe_order_id
+              JOIN recipe_order_group rog ON rog.id=ro.recipe_order_group_id
+              JOIN recipe_run rr ON rr.id=rog.recipe_run_id
+              JOIN investment_run ir ON ir.id=rr.investment_run_id
+              WHERE ed.id=:execution_order_id
+            `, {
+            plain: true, // makes raw query be parsed as single result, not array
+            replacements: { // replace keys with values in query
+              execution_order_id: pending_order.id
+            },
+            model: InvestmentRun, // parse results as InvestmenRun model
+            type: sequelize.QueryTypes.SELECT
+          }),
           InstrumentExchangeMapping.findOne({
             where: {
               exchange_id: pending_order.exchange_id,
@@ -70,9 +88,9 @@ module.exports.JOB_BODY = async (config, log) => {
 
       return Promise.all(
         _.map(orders_with_data, (order_with_data) => {
-
-          let [order, instrument_exchange_map, exchange_info] = order_with_data;
-  
+          
+          let [order, investment_run, instrument_exchange_map, exchange_info] = order_with_data;
+          console.log(investment_run);
           let exchange = new ccxt[exchange_info.api_id]();
           
           /* As we have two different ways to acquire an asset (buying and selling),
@@ -81,26 +99,28 @@ module.exports.JOB_BODY = async (config, log) => {
           let order_type;
           let exchange_supports_order_type = false; // assume exchange doesn't support action, confirm or deny in switch statement
   
+          
           switch (order.type) {
             case EXECUTION_ORDER_TYPES.Market:
               order_type = 'market';
-  
-              if (exchange.has.createMarketOrder) {// check if exchange allows to create market order
-                exchange_supports_order_type = true;
-              }
+              exchange_supports_order_type = exchange.has.createMarketOrder;
               break;
             case EXECUTION_ORDER_TYPES.Limit:
               order_type = 'limit';
-  
-              if (exchange.has.createLimitOrder) // check if exchagne allows to create limit order
-                exchange_supports_order_type = true;
+              exchange_supports_order_type = exchange.has.createLimitOrder;
               break;
             case EXECUTION_ORDER_TYPES.Stop:
+              order_type = 'stop';
               console.log("--- CCXT doesn't have stop orders. They are ignored for now...");
-              //order_type_identifier = 'market';
+              exchange_supports_order_type = false;
               break;
             default:
               return TE("Unknown order type. Should be market, limit or stop order.");
+          }
+
+          if (order_type != "market") {
+            console.log("Only market orders can be created at the moment");
+            return Promise.resolve(order);
           }
           
           let order_execution_side;
@@ -114,43 +134,43 @@ module.exports.JOB_BODY = async (config, log) => {
             default:
               return TE("Uknown order action. Should be either buy or sell.");
           }
-  
-          if (!exchange_supports_order_type) 
+
+          if (!exchange_supports_order_type) {
             console.log(`Order type ${ order.type } is not supported by ${ order.exchange_id } exchange`);
+            return order_with_data;
+          }
+
+          if (order.type == EXECUTION_ORDER_TYPES.Limit && !order.price)
+            console.log("Limit orders require price and this execution order doesn't have it.");
+
+          if (investment_run.is_simulated || !send_orders)
+            return Promise.resolve(console.log(`Prevented from sending order: createOrder(${instrument_exchange_map.external_instrument_id}, ${order_type}, ${order_execution_side}, ${order.total_quantity}[, ${order.price}[, params]])`));
           else {
-            if (order.type == EXECUTION_ORDER_TYPES.Limit && !order.price)
-              console.log("Limit orders require price and this execution order doesn't have it.");
-  
-            if (!send_orders)
-              console.log(`Prevented from sending order: createOrder(${instrument_exchange_map.external_instrument_id}, ${order_type}, ${order_execution_side}, ${order.total_quantity}[, ${order.price}[, params]])`);
-            else {
-              console.log(`Executing: createOrder(${instrument_exchange_map.external_instrument_id}, ${order_type}, ${order_execution_side}, ${order.total_quantity}[, ${order.price}[, params]])`);
-             
+            console.log(`Executing: createOrder(${instrument_exchange_map.external_instrument_id}, ${order_type}, ${order_execution_side}, ${order.total_quantity}[, ${order.price}[, params]])`);
+            
+            return exchange.createOrder(instrument_exchange_map.external_instrument_id, order_type, order_execution_side, order.total_quantity, order.price, {
+              test: true
+            }).then(order_response => {
+              order.external_identifier = order_response.id;
+              order.placed_timestamp = order_response.timestamp;
+              /* order statuses (need to assure what kind of data is returned during real order placement)
+                open - order should be executing in exchange
+                closed - could mean order is already executed, might do nothing here as other job should check if its done
+                canceled - order probably wasn't placed for some reason.
+                */
+              if (order_response == "open") {
+                order.status = EXECUTION_ORDER_STATUSES.Placed
+              }
               
-              return exchange.createOrder(instrument_exchange_map.external_instrument_id, order_type, order_execution_side, order.total_quantity, order.price, {
-                test: true
-              }).then(order_response => {
-                order.external_identifier = order_response.id;
-                order.placed_timestamp = order_response.timestamp;
-                /* order statuses (need to assure what kind of data is returned during real order placement)
-                  open - order should be executing in exchange
-                  closed - could mean order is already executed, might do nothing here as other job should check if its done
-                  canceled - order probably wasn't placed for some reason.
-                  */
-                if (order_response == "open") {
-                  order.status = EXECUTION_ORDER_STATUSES.Placed
-                }
-                
-                order.save();
+              order.save();
 
-                return Promise.resolve(order_with_data);
-              }).catch((err) => { // order placing failed. Perform actions below.
-                order.failed_attempts++; // increment failed attempts counter
-                order.save();
+              return Promise.resolve(order_with_data);
+            }).catch((err) => { // order placing failed. Perform actions below.
+              order.failed_attempts++; // increment failed attempts counter
+              order.save();
 
-                return Promise.resolve(order_with_data);
-              });
-            }
+              return Promise.resolve(order_with_data);
+            });
           }
         }));
   });
