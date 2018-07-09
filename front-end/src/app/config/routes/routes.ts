@@ -12,6 +12,8 @@ import { RolesAddComponent } from '../../modules/roles/roles-add/roles-add.compo
 import { RolesListComponent } from '../../modules/roles/roles-list/roles-list.component';
 import { AcceptInviteComponent } from '../../modules/auth/accept-invite/accept-invite.component';
 
+import { AssetListComponent } from '../../modules/asset/asset-list/asset-list.component';
+
 const routes: Routes = [
   { path: 'login', component: LoginComponent },
   { path: 'password_reset', component: PasswordResetComponent },
@@ -39,17 +41,24 @@ const routes: Routes = [
     canActivate: [AuthGuard]
   },
 
+  {
+    path: 'assets',
+    component: AssetListComponent,
+    canActivate: [AuthGuard]
+  },
+
   /**
    * Lazy loaded modules
    */
-  {
-    path: 'assets',
-    loadChildren: '../../modules/asset/asset.module#AssetModule',
-    canActivate: [AuthGuard /* PermissionGuard */]/* ,
-    data: { requiredPermission: ['CHANGE_ASSET_STATUS']} */ // restrict route to be accessed with certain permissions
-  },
+  // {
+  //   path: 'assets',
+  //   loadChildren: '../../modules/asset/asset.module#AssetModule',
+  //   canActivate: [AuthGuard /* PermissionGuard */]/* ,
+  //   data: { requiredPermission: ['CHANGE_ASSET_STATUS']} */ // restrict route to be accessed with certain permissions
+  // },
 
-  { path: '', redirectTo: 'login', pathMatch: 'full'}
+  { path: '', redirectTo: 'login', pathMatch: 'full'},
+  { path: '**', redirectTo: 'login', pathMatch: 'full'}
 ];
 
 @NgModule({

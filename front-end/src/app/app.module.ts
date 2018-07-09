@@ -20,6 +20,8 @@ import { DashboardModule } from './modules/dashboard/dashboard.component';
 import { AuthGuard } from './config/routes/route-auth.guard';
 import { PermissionGuard } from './config/routes/route-permission.guard';
 import { RolesModule } from './modules/roles/roles.module';
+import { AssetModule } from './modules/asset/asset.module';
+import { AssetService } from './services/asset/asset.service';
 
 @NgModule({
   declarations: [
@@ -33,6 +35,7 @@ import { RolesModule } from './modules/roles/roles.module';
     AuthModule,
     DashboardModule,
     RolesModule,
+    AssetModule,  // TODO: Remove this when moving to lazy loaded modules
     AppRoutingModule,
   ],
   providers: [
@@ -56,14 +59,15 @@ import { RolesModule } from './modules/roles/roles.module';
     AuthGuard,
     PermissionGuard,
     RolesService,
+    AssetService,
     ModelConstantsService
   ],
   bootstrap: [AppComponent]
 })
-export class AppModule { 
+export class AppModule {
 
   constructor (private authService: AuthService, private router: Router) {
-    
+
   }
-  
+
 }

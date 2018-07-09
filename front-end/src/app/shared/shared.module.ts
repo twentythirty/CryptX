@@ -60,8 +60,7 @@ import { BrowserModule } from '@angular/platform-browser';
         DataTableCommonManagerComponent,
         ButtonBackComponent,
         PageHeadingComponent,
-        FormsModule,
-        RouterModule
+        FormsModule
     ]
 })
 export class SharedModule {}

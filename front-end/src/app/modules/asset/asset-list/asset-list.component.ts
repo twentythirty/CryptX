@@ -18,11 +18,29 @@ export class AssetListComponent extends DataTableCommonManagerComponent implemen
 
   public assetsDataSource: TableDataSource = {
     header: [
-      { column: 'name', name: 'Role name', filter: { type: 'text', sortable: true } }
+      { column: 'symbol', name: 'Symbol', filter: { type: 'text', sortable: true } },
+      { column: 'is_cryptocurrency', name: 'Cryptocurrency', filter: { type: 'text', sortable: true } },
+      { column: 'long_name', name: 'Long name', filter: { type: 'text', sortable: true } },
+      { column: 'is_base', name: 'Is base?', filter: { type: 'text', sortable: true } },
+      { column: 'is_deposit', name: 'Is deposit?', filter: { type: 'text', sortable: true } },
+      { column: 'capitalisation', name: 'Capitalisation', filter: { type: 'text', sortable: true } },
+      { column: 'nvt_ratio', name: 'NVT ratio', filter: { type: 'text', sortable: true } },
+      { column: 'market_share', name: 'Market share', filter: { type: 'text', sortable: true } },
+      { column: 'capitalisation_updated_timestamp', name: 'Capitalisation updated', filter: { type: 'text', sortable: true } }
     ],
     body: []
   };
-  assetsColumnsToShow = ['name'];
+  assetsColumnsToShow = [
+    'symbol',
+    'is_cryptocurrency',
+    'long_name',
+    'is_base',
+    'is_deposit',
+    'capitalisation',
+    'nvt_ratio',
+    'market_share',
+    'capitalisation_updated_timestamp',
+  ];
 
   constructor(
     public route: ActivatedRoute,
@@ -38,9 +56,6 @@ export class AssetListComponent extends DataTableCommonManagerComponent implemen
         this.count = res.count
       }
     )
-  }
-
-  ngOnInit() {
   }
 
 }

@@ -20,26 +20,28 @@ export class AssetResultData {
 @Injectable()
 export class AssetService {
 
+  private baseUrl: string = 'api/v1/';
+
   constructor(private http: HttpClient) { }
 
   getAllAssets(requestData?: EntitiesFilter): Observable<AssetsAllResponse>{
     if(requestData) {
-      return this.http.post<AssetsAllResponse>(`assets/all`, requestData);
+      return this.http.post<AssetsAllResponse>(this.baseUrl + `assets/all`, requestData);
     } else {
-      return this.http.get<AssetsAllResponse>(`assets/all`);
+      return this.http.get<AssetsAllResponse>(this.baseUrl + `assets/all`);
     }
   }
 
   getAsset(assetId: number) {
-    return this.http.get<AssetResultData>(`assets/${assetId}`);
+    return this.http.get<AssetResultData>(this.baseUrl + `assets/${assetId}`);
   }
 
   blacklistAsset(assetId: number, is_blacklisted: boolean): Observable<ActionResultData> {
-    return this.http.post<ActionResultData>(`assets/${assetId}/blacklist`, { is_blacklisted });
+    return this.http.post<ActionResultData>(this.baseUrl + `assets/${assetId}/blacklist`, { is_blacklisted });
   }
 
   greylistAsset(assetId: number, is_greylisted: boolean): Observable<ActionResultData> {
-    return this.http.post<ActionResultData>(`assets/${assetId}/greylist`, { is_greylisted });
+    return this.http.post<ActionResultData>(this.baseUrl + `assets/${assetId}/greylist`, { is_greylisted });
   }
 
 }
