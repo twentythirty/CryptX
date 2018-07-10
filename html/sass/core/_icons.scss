@@ -1,0 +1,50 @@
+@font-face {
+	font-family: "icons";
+	src: url('./fonts/icons.eot?ts=1529918758812');
+	src: url('./fonts/icons.eot?ts=1529918758812#iefix') format('eot'),
+		 url('./fonts/icons.woff?ts=1529918758812') format('woff'),
+		 url('./fonts/icons.ttf?ts=1529918758812') format('truetype'),
+		 url('./fonts/icons.svg#icons?ts=1529918758812') format('svg');
+}
+
+
+@mixin icon-styles {
+  font-family: "icons";
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  font-style: normal;
+  font-variant: normal;
+  font-weight: normal;
+  // speak: none; // only necessary if not using the private unicode range (firstGlyph option)
+  text-decoration: none;
+  text-transform: none;
+}
+
+%icon {
+  @include icon-styles;
+}
+
+@function icon-char($filename) {
+  $char: "";
+
+  @if $filename == user-arrow {
+    $char: "\EA01";
+  }
+
+  @return $char;
+}
+
+@mixin icon($filename, $insert: before, $extend: true) {
+  &:#{$insert} {
+    @if $extend {
+      @extend %icon;
+    } @else {
+      @include icon-styles;
+    }
+    content: icon-char($filename);
+  }
+}
+
+.icon_user-arrow {
+  @include icon(user-arrow);
+}

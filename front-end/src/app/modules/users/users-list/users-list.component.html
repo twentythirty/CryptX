@@ -1,8 +1,17 @@
 <h1>Users</h1>
 <span>{{usersCount}}</span>
 
+  <app-form-action-bar>
+    <div right>
+      <button
+        [routerLink]="['/users/add']"
+      >Add User</button>
+    </div>
+  </app-form-action-bar>
+
   <app-data-table
     [dataSource]="usersDataSource"
+    [customRows]="true"
     [columnsToShow]="usersColumnsToShow"
     (setFilter)="onSetFilter($event)"
   >

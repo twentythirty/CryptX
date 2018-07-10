@@ -29,13 +29,6 @@
     >{{buttonName}}</button>
   </div>
 
-  <div center *ngIf="userId">
-    <button
-      [disabled]="loading"
-      (click)="addUser()"
-    >Add User</button>
-  </div>
-
   <div right *ngIf="userId">
     <button
       [disabled]="loading"

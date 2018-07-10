@@ -16,6 +16,7 @@
 
   <app-data-table
     [dataSource]="rolesDataSource"
+    [customRows]="true"
     [columnsToShow]="rolesColumnsToShow"
     (setFilter)="onSetFilter($event)"
   >

@@ -7,7 +7,6 @@ import { RolesAllRequestData } from '../../../shared/models/api/rolesAllRequestD
 import { User } from '../../../shared/models/user';
 import { DataTableCommonManagerComponent } from '../../../shared/components/data-table-common-manager/data-table-common-manager.component';
 
-
 @Component({
   selector: 'app-users-list',
   templateUrl: './users-list.component.html',

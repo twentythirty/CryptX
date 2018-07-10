@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+
+<head>
+
+    <meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <link rel='shortcut icon' type='image/x-icon' href='favicon.ico' />
+    <title>CryptX</title>
+    <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,400,600,700&amp;subset=latin-ext" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="css/index.css">
+    <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
+    <script type="text/javascript" src="js/main.js"></script>
+
+</head>
+
+<body>
+    <header>
+        <div class="wrapper">
+            <div class="top-header-part">
+                <a href="javascript:void(0)" class="logo"></a>
+                <div class="user-details">
+                    <div class="user-initials">JD</div>
+                    <div class="user-name-role">
+                        <span class="name">John Doe</span>
+                        <span class="role">Admin</span>
+                    </div>
+                </div>
+            </div>
+            <div class="navigation-header">
+                <nav>
+                    <a href="javascript:void(0)" class="active">Dashboard</a>
+                    <a href="javascript:void(0)">Recipe runs</a>
+                    <a href="javascript:void(0)">Orders</a>
+                    <a href="javascript:void(0)">Execution orders</a>
+                    <a href="javascript:void(0)">Blacklist</a>
+                    <a href="javascript:void(0)">Assets</a>
+                    <a href="javascript:void(0)">Instruments</a>
+                </nav>
+                <div class="more-menu-items">
+                    <a href="javascript:void(0)" class="init">More</a>
+                </div>
+            </div>
+        </div>
+    </header>
+    <main>
+        <div class="wrapper">
+            <div class="dashboard-item-status">
+                <a href="javascript:void(0)" class="title">Recipe run</a>
+                <ul class="dashboard-item-details">
+                    <li>
+                        <a href="javascript:void(0)">0 Orders</a>
+                    </li>
+                    <li>
+                        <a href="javascript:void(0)">0 Execution orders</a>
+                    </li>
+                    <li>
+                        <a href="javascript:void(0)">0 Deposits</a>
+                    </li>
+                </ul>
+            </div>
+            <div class="left-part-dashboard">
+                <span class="headline-title">Investment runs</span>
+                <table class="data-table shrinked">
+                    <thead>
+                        <tr>
+                            <th>
+                                ID
+                            </th>
+                            <th>
+                                Created
+                            </th>
+                            <th>
+                                Instrument
+                            </th>
+                            <th>
+                                Creator
+                            </th>
+                            <th>
+                                Status
+                            </th>
+                            <th>
+                                Desicion by
+                            </th>
+                            <th>
+                                Approval / rejection time
+                            </th>
+                            <th>
+                                Rationale
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>
+                                IR-2324
+                            </td>
+                            <td>
+                                21 May, 2018 <br/> 10:33
+                            </td>
+                            <td>
+                                BTC/ETH
+                            </td>
+                            <td>
+                                John Doe
+                            </td>
+                            <td class="approved">
+                                Approved
+                            </td>
+                            <td>
+                                John Doe
+                            </td>
+                            <td>
+                                21 May, 2018 <br/> 10:33
+                            </td>
+                            <td>
+                                <label class="rationale-status">Read</label>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+                <div class="top-controls">
+                    <span class="headline-title">Orders</span>
+                </div>
+                <table class="data-table shrinked" data-receive-row="tableName">
+                    <thead>
+                        <tr>
+                            <th>
+                                ID
+                                <div class="sort-arrow"></div>
+                            </th>
+                            <th>
+                                Instrument
+                                <div class="sort-arrow"></div>
+                            </th>
+                            <th>
+                                Side
+                                <div class="sort-arrow"></div>
+                            </th>
+                            <th>
+                                price
+                                <div class="sort-arrow"></div>
+                            </th>
+                            <th>
+                                quantity
+                                <div class="sort-arrow"></div>
+                            </th>
+                            <th>
+                                status
+                                <div class="sort-arrow"></div>
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>
+                                IR-2324
+                            </td>
+                            <td>
+                                BTC/ETH
+                            </td>
+                            <td>
+                                Buy
+                            </td>
+                            <td>
+                                2,123.22
+                            </td>
+                            <td>
+                                5
+                            </td>
+                            <td class="pending">
+                                Pending
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                IR-2324
+                            </td>
+                            <td>
+                                BTC/ETH
+                            </td>
+                            <td>
+                                Buy
+                            </td>
+                            <td>
+                                2,123.22
+                            </td>
+                            <td>
+                                5
+                            </td>
+                            <td class="failed">
+                                Failed
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                IR-2324
+                            </td>
+                            <td>
+                                BTC/ETH
+                            </td>
+                            <td>
+                                Buy
+                            </td>
+                            <td>
+                                2,123.22
+                            </td>
+                            <td>
+                                5
+                            </td>
+                            <td class="approved">
+                                Completed
+                            </td>
+                        </tr>
+                    </tbody>
+                    <tfoot>
+                        <tr>
+                            <td>4 ID</td>
+                            <td>1 instruments</td>
+                            <td>2 sides</td>
+                            <td>4,532.44 total</td>
+                            <td>20 total</td>
+                            <td>1 pending</td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+            <!-- If there is no step-labels, hide whole container -->
+            <div class="step-labels-container">
+                <a href="javascript:void(0)" class="step-label">
+                    <span class="title">Investment run</span>
+                    <label>Orders filled</label>
+                    <div class="data">IR-001, LCI 21 May, 2018 10:33</div>
+                </a>
+                <a href="javascript:void(0)" class="step-label">
+                    <span class="title">Investment run</span>
+                    <label class="approved">Approved</label>
+                    <div class="data">IR-001, LCI 21 May, 2018 10:33</div>
+                </a>
+            </div>
+        </div>
+    </main>
+    <div class="modal" modal-popup-open="rationale">
+        <div class="modal-content">
+            <div class="step-box step1">
+                <a href="javascript:void(0)" class="close-modal"></a>
+                <span class="modal-title">Rationale needs to be given</span>
+                <span class="label label-after-title">Please enter your rationale and submit your action</span>
+                <div class="form-item">
+                    <textarea placeholder="Your rationale"></textarea>
+                </div>
+                <div class="btn-wrap btn-right">
+                    <button class="btn" type="submit">Submit</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>

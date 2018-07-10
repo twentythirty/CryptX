@@ -15,6 +15,23 @@ export interface TableDataSource {
   footer?: Array<string>;
 }
 
+/**
+ * column - key to access data from model
+ * type - type of the field
+ * format - (for type number) - https://angular.io/api/common/DecimalPipe, e.g., '3.1-5'
+ * prefix - e.g., '$'
+ * suffix - e.g., '%'
+ */
+export class TableDataColumn {
+  column: string;
+  component?: any;
+  inputs?: { [key: string]: any };
+  outputs?: { [key: string]: (ev) => void };
+  constructor(val: TableDataColumn) {
+    Object.assign(this, val);
+  }
+}
+
 @Component({
   selector: 'app-data-table',
   templateUrl: './data-table.component.html',
@@ -24,7 +41,8 @@ export class DataTableComponent implements OnInit {
   private filterMap: Object;
 
   @Input() dataSource: TableDataSource;
-  @Input() columnsToShow: Array<String>;
+  @Input() columnsToShow: Array<string | TableDataColumn>;
+  @Input() customRows: boolean = false;
 
   @Output() setFilter = new EventEmitter<object>();
 
@@ -32,7 +50,7 @@ export class DataTableComponent implements OnInit {
 
   ngOnInit() {
     this.filterMap = _.zipObject(
-      this.columnsToShow,
+      this.columnsToShow.map(el => (typeof el == 'string') ? el : el.column ),
       _.fill( Array(this.columnsToShow.length), false )
     );
   }
@@ -43,5 +61,26 @@ export class DataTableComponent implements OnInit {
 
   onToggleFilter(column) {
     this.filterMap[column] = !this.filterMap[column];
+  }
+
+  /**
+   * Dynamic columns
+   */
+
+  columnIsBasic(column: string | TableDataColumn): boolean {
+    return typeof column == 'string';
+  }
+
+  public dynamicInputs(column: TableDataColumn, value: any): any {
+    return {
+      ...(column.inputs || {}),
+      value
+    }
+  }
+
+  public dynamicOutputs(column: TableDataColumn): any {
+    return {
+      ...(column.outputs || {})
+    }
   }
 }
