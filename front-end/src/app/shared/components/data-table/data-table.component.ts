@@ -22,11 +22,14 @@ export interface TableDataSource {
  * prefix - e.g., '$'
  * suffix - e.g., '%'
  */
-export interface TableDataColumn {
-  column: string,
-  component?: any,
-  inputs?: { [key: string]: any },
-  outputs?: { [key: string]: (ev) => void }
+export class TableDataColumn {
+  column: string;
+  component?: any;
+  inputs?: { [key: string]: any };
+  outputs?: { [key: string]: (ev) => void };
+  constructor(val: TableDataColumn) {
+    Object.assign(this, val);
+  }
 }
 
 @Component({
