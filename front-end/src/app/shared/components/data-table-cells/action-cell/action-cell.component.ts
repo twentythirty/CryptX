@@ -1,10 +1,22 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, Input, Output, EventEmitter } from '@angular/core';
 import { TableDataColumn } from '../../data-table/data-table.component';
 
+export class DataCellAction {
+  label: string;
+  isShown?: (row: any) => boolean = (row) => true
+  exec: (row: any) => void;
+
+  constructor(val: DataCellAction) {
+    Object.assign(this, val);
+  }
+}
+
 export class ActionCellDataColumn extends TableDataColumn {
-  component = ActionCellComponent;
+  component? = ActionCellComponent;
   inputs?: {
     value?: boolean;
+    row?: any;
+    actions?: Array<DataCellAction>
   }
   outputs?: {
 
@@ -21,9 +33,21 @@ export class ActionCellDataColumn extends TableDataColumn {
 })
 export class ActionCellComponent implements OnInit {
 
+  @Input() value: any;
+  @Input() row: any;
+
+  @Input() actions: Array<DataCellAction> = [];
+
   constructor() { }
 
   ngOnInit() {
+  }
+
+  public doAction(action: DataCellAction, ev?: MouseEvent): void {
+    if(ev) {
+      ev.stopPropagation();
+    }
+    action.exec(this.row);
   }
 
 }

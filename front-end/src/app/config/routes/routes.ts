@@ -69,13 +69,13 @@ const routes: Routes = [
     path: 'assets',
     component: AssetListComponent,
     canActivate: [AuthGuard, PermissionGuard],
-    data: { requiredPermission: ['CHANGE_ASSET_STATUS']}
+    data: { requiredPermission: ['VIEW_ASSETS']}
   },
   {
     path: 'assets/view/:assetId',
     component: AssetViewComponent,
     canActivate: [AuthGuard, PermissionGuard],
-    data: { requiredPermission: ['CHANGE_ASSET_STATUS']}
+    data: { requiredPermission: ['VIEW_ASSETS']}
   },
 
   /**
@@ -85,7 +85,7 @@ const routes: Routes = [
   //   path: 'assets',
   //   loadChildren: '../../modules/asset/asset.module#AssetModule',
   //   canActivate: [AuthGuard /* PermissionGuard */]/* ,
-  //   data: { requiredPermission: ['CHANGE_ASSET_STATUS']} */ // restrict route to be accessed with certain permissions
+  //   data: { requiredPermission: ['VIEW_ASSETS']} */ // restrict route to be accessed with certain permissions
   // },
 
   { path: '', redirectTo: 'login', pathMatch: 'full'},

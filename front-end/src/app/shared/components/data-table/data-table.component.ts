@@ -71,9 +71,10 @@ export class DataTableComponent implements OnInit {
     return typeof column == 'string';
   }
 
-  public dynamicInputs(column: TableDataColumn, value: any): any {
+  public dynamicInputs(column: TableDataColumn, value: any, row: any): any {
     return {
       ...(column.inputs || {}),
+      row,
       value
     }
   }

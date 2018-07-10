@@ -2,9 +2,8 @@
   <nav>
     <a routerLink="/dashboard" *ngIf="checkPerm(['VIEW_INVESTMENT_RUN'])">Dashboard</a>
     <a href="#" *ngIf="checkPerm(['ALTER_PERMS'])">Recipe Runs</a>
-    <a routerLink="/assets" *ngIf="checkPerm(['CHANGE_ASSET_STATUS'])">Assets</a>
+    <a routerLink="/assets" *ngIf="checkPerm(['VIEW_ASSETS'])">Assets</a>
     <a routerLink="/users" href="#" *ngIf="checkPerm(['EDIT_USERS'])">User Management</a>
-    <a href="#" *ngIf="checkPerm(['CHANGE_ASSET_STATUS'])">Assets</a>
     <a href="#" *ngIf="checkPerm(['EDIT_USERS'])">User Management</a>
     <a routerLink="/roles" *ngIf="checkPerm(['VIEW_ROLES'])">Role Management</a>
     <a href="#" *ngIf="checkPerm(['VIEW_SETTING_VALUES'])">Setting Management</a>

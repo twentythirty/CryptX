@@ -37,7 +37,7 @@
         </ng-container>
         <ng-template #dynamicColumn>
           <ndc-dynamic [ndcDynamicComponent]="index.component"
-            [ndcDynamicInputs]="dynamicInputs(index, item[index.column])"
+            [ndcDynamicInputs]="dynamicInputs(index, item[index.column], item)"
             [ndcDynamicOutputs]="dynamicOutputs(index)"></ndc-dynamic>
         </ng-template>
       </td>

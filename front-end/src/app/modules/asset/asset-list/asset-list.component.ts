@@ -18,8 +18,11 @@ import {
   DateCellComponent,
   DateCellDataColumn,
   PercentCellDataColumn,
-  NumberCellDataColumn
+  NumberCellDataColumn,
+  ActionCellDataColumn,
+  DataCellAction
 } from '../../../shared/components/data-table-cells';
+import { AuthService } from '../../../services/auth/auth.service';
 
 @Component({
   selector: 'app-asset-list',
@@ -60,14 +63,40 @@ export class AssetListComponent extends DataTableCommonManagerComponent implemen
     new CurrencyCellDataColumn({ column: 'capitalisation' }),
     new NumberCellDataColumn({ column: 'nvt_ratio' }),
     new PercentCellDataColumn({ column: 'market_share' }),
-    new DateCellDataColumn({ column: 'capitalisation_updated_timestamp' })
+    new DateCellDataColumn({ column: 'capitalisation_updated_timestamp' }),
+    new ActionCellDataColumn({ column: null,
+      inputs: {
+        actions: [
+          new DataCellAction({
+            label: 'De-greylist',
+            isShown: (row: any) => this.checkPerm(['']) && (row.is_greylisted === true),
+            exec: (row: any) => { this.deGreylist(<Asset>row) }
+          }),
+          new DataCellAction({
+            label: 'Blacklist',
+            isShown: (row: any) => this.checkPerm(['CHANGE_ASSET_STATUS']) && (row.is_blacklisted === false),
+            exec: (row: any) => { this.blacklist(<Asset>row) }
+          }),
+          new DataCellAction({
+            label: 'De-blacklist',
+            isShown: (row: any) => this.checkPerm(['CHANGE_ASSET_STATUS']) && (row.is_blacklisted === true),
+            exec: (row: any) => { this.deBlacklist(<Asset>row) }
+          })
+        ]
+      }
+    })
   ];
 
   constructor(
     public route: ActivatedRoute,
-    private assetService: AssetService
+    private assetService: AssetService,
+    private authService: AuthService
   ) {
     super(route);
+  }
+
+  checkPerm (perm_code) {
+    return this.authService.hasPermissions(perm_code);
   }
 
   getAllData(): void {
@@ -76,13 +105,6 @@ export class AssetListComponent extends DataTableCommonManagerComponent implemen
         this.assetsDataSource.body = res.assets.map(
           asset => {
             return {
-              capitalisation_updated_timestamp: Date.now(),
-              capitalisation: 140256985548,
-              is_cryptocurrency: true,
-              is_greylisted: false,
-              is_blacklisted: true,
-              market_share: 37.7,
-              nvt_ratio: 52.8,
               ...asset
             }
           }
@@ -90,6 +112,25 @@ export class AssetListComponent extends DataTableCommonManagerComponent implemen
         this.count = res.count
       }
     )
+  }
+
+  /**
+   * Actions
+   */
+
+  private deGreylist(asset: Asset): void {
+    console.log("de-Greylist", asset);
+    asset.is_greylisted = false;
+  }
+
+  private blacklist(asset: Asset): void {
+    console.log("Blacklist", asset);
+    asset.is_blacklisted = true;
+  }
+
+  private deBlacklist(asset: Asset): void {
+    console.log("de-Blacklist", asset);
+    asset.is_blacklisted = false;
   }
 
 }
