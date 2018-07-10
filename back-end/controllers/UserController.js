@@ -4,6 +4,7 @@ const Permission = require("../models").Permission;
 const Sequelize = require('../models').Sequelize;
 const Op = Sequelize.Op;
 const authService = require("./../services/AuthService");
+const adminViewsService = require('../services/AdminViewsService');
 const inviteService = require('./../services/InvitationService');
 const mailUtil = require('./../utils/EmailUtil');
 const model_constants = require('../config/model_constants');
@@ -129,13 +130,17 @@ const getUsers = async function (req, res) {
   console.log('WHERE clause: %o', req.seq_where);
 
   let [err, result] = await to(User.findAndCountAll(req.seq_query));
-  if (err) ReE(res, err.message, 422);
+  if (err) return ReE(res, err.message, 422);
+  let footer = [];
+  [err, footer] = await to(adminViewsService.fetchUsersViewFooter());
+  if(err) return ReE(res, err.message, 422);
 
   let { rows: users, count } = result;
   
   return ReS(res, {
     users: users.map(u => u.toWeb()),
-    count
+    count,
+    footer
   });
 };
 module.exports.getUsers = getUsers;
