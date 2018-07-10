@@ -13,3 +13,17 @@ export class Asset {
   public market_share: number;
   public nvt_ratio: number;
 }
+
+
+export class AssetStatus {
+  constructor(
+    public type: AssetStatusChanges,
+    public comment: any
+  ) {}
+}
+
+export enum AssetStatusChanges {
+  Whitelisting = 400,
+  Blacklisting = 401,
+  Graylisting = 402
+}

@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { Observable } from 'rxjs';
 
 import { AssetService, AssetResultData, AssetsAllResponse } from '../../../services/asset/asset.service';
-import { Asset } from '../../../shared/models/asset';
+import { Asset, AssetStatusChanges, AssetStatus } from '../../../shared/models/asset';
 import { map } from 'rxjs/operator/map';
 import { EntitiesFilter } from '../../../shared/models/api/entitiesFilter';
 import { TableDataSource, TableDataColumn } from '../../../shared/components/data-table/data-table.component';
@@ -69,18 +69,18 @@ export class AssetListComponent extends DataTableCommonManagerComponent implemen
         actions: [
           new DataCellAction({
             label: 'De-greylist',
-            isShown: (row: any) => this.checkPerm(['']) && (row.is_greylisted === true),
+            isShown: (row: any) => false && (row.is_greylisted === true),
             exec: (row: any) => { this.deGreylist(<Asset>row) }
           }),
           new DataCellAction({
             label: 'Blacklist',
-            isShown: (row: any) => this.checkPerm(['CHANGE_ASSET_STATUS']) && (row.is_blacklisted === false),
+            isShown: (row: any) => this.checkPerm(['CHANGE_ASSET_STATUS']) && (!row.is_blacklisted),
             exec: (row: any) => { this.blacklist(<Asset>row) }
           }),
           new DataCellAction({
-            label: 'De-blacklist',
-            isShown: (row: any) => this.checkPerm(['CHANGE_ASSET_STATUS']) && (row.is_blacklisted === true),
-            exec: (row: any) => { this.deBlacklist(<Asset>row) }
+            label: 'Whitelist',
+            isShown: (row: any) => this.checkPerm(['CHANGE_ASSET_STATUS']) && (row.is_blacklisted),
+            exec: (row: any) => { this.whitelist(<Asset>row) }
           })
         ]
       }
@@ -119,18 +119,36 @@ export class AssetListComponent extends DataTableCommonManagerComponent implemen
    */
 
   private deGreylist(asset: Asset): void {
-    console.log("de-Greylist", asset);
-    asset.is_greylisted = false;
+    this.assetService.changeAssetStatus(
+      asset.id,
+      new AssetStatus(AssetStatusChanges.Graylisting, '')
+    ).subscribe(
+      res => {
+        asset.is_greylisted = true;
+      }
+    )
   }
 
   private blacklist(asset: Asset): void {
-    console.log("Blacklist", asset);
-    asset.is_blacklisted = true;
+    this.assetService.changeAssetStatus(
+      asset.id,
+      new AssetStatus(AssetStatusChanges.Blacklisting, '')
+    ).subscribe(
+      res => {
+        asset.is_blacklisted = true;
+      }
+    )
   }
 
-  private deBlacklist(asset: Asset): void {
-    console.log("de-Blacklist", asset);
-    asset.is_blacklisted = false;
+  private whitelist(asset: Asset): void {
+    this.assetService.changeAssetStatus(
+      asset.id,
+      new AssetStatus(AssetStatusChanges.Whitelisting, '')
+    ).subscribe(
+      res => {
+        asset.is_blacklisted = false;
+      }
+    )
   }
 
 }
