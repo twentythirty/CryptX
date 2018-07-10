@@ -115,8 +115,4 @@ export class UsersInfoComponent implements OnInit {
     });
   }
 
-  addUser(){
-    this.router.navigate(['/users/add']);
-  }
-
 }
