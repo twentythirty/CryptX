@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
-import { FormGroup, FormControl } from '@angular/forms';
+import { FormGroup, FormControl, Validators } from '@angular/forms';
 import _ from 'lodash';
 import 'rxjs/add/operator/filter';
 
@@ -33,7 +33,7 @@ export class RolesAddComponent implements OnInit {
   constructor(
     private rolesService: RolesService,
     private router: Router,
-    private route: ActivatedRoute
+    private route: ActivatedRoute,
   ) {
     // generate maps for checkbox value storing
     this.rolesService.getPermissionsList().subscribe(result => {

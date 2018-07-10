@@ -20,7 +20,7 @@ import { DataTableCommonManagerComponent } from './components/data-table-common-
 import { ButtonBackComponent } from './components/button-back/button-back.component';
 import { PageHeadingComponent } from './components/page-heading/page-heading.component';
 import { RouterModule } from '@angular/router';
-import { BrowserModule } from '@angular/platform-browser';
+import { InputItemComponent } from './components/input-item/input-item.component';
 
 @NgModule({
     imports: [
@@ -44,6 +44,7 @@ import { BrowserModule } from '@angular/platform-browser';
         DataTableCommonManagerComponent,
         ButtonBackComponent,
         PageHeadingComponent,
+        InputItemComponent,
     ],
     exports: [
         BtnComponent,
@@ -60,7 +61,8 @@ import { BrowserModule } from '@angular/platform-browser';
         DataTableCommonManagerComponent,
         ButtonBackComponent,
         PageHeadingComponent,
-        FormsModule
+        FormsModule,
+        InputItemComponent,
     ]
 })
 export class SharedModule {}
