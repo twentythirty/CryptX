@@ -5,9 +5,14 @@ import { AssetService, AssetResultData, AssetsAllResponse } from '../../../servi
 import { Asset } from '../../../shared/models/asset';
 import { map } from 'rxjs/operator/map';
 import { EntitiesFilter } from '../../../shared/models/api/entitiesFilter';
-import { TableDataSource } from '../../../shared/components/data-table/data-table.component';
+import { TableDataSource, TableDataColumn } from '../../../shared/components/data-table/data-table.component';
 import { DataTableCommonManagerComponent } from '../../../shared/components/data-table-common-manager/data-table-common-manager.component';
 import { ActivatedRoute } from '@angular/router';
+import { PercentCellComponent } from '../../../shared/components/data-table-cells/percent-cell/percent-cell.component';
+import { CurrencyCellComponent } from '../../../shared/components/data-table-cells/currency-cell/currency-cell.component';
+import { BooleanCellComponent } from '../../../shared/components/data-table-cells/boolean-cell/boolean-cell.component';
+import { DateCellComponent } from '../../../shared/components/data-table-cells/date-cell/date-cell.component';
+import { NumberCellComponent } from '../../../shared/components/data-table-cells/number-cell/number-cell.component';
 
 @Component({
   selector: 'app-asset-list',
@@ -30,16 +35,17 @@ export class AssetListComponent extends DataTableCommonManagerComponent implemen
     ],
     body: []
   };
-  assetsColumnsToShow = [
+
+  public assetsColumnsToShow: Array<string | TableDataColumn> = [
     'symbol',
-    'is_cryptocurrency',
+    { column: 'is_cryptocurrency', component: BooleanCellComponent },
     'long_name',
-    'is_base',
-    'is_deposit',
-    'capitalisation',
-    'nvt_ratio',
-    'market_share',
-    'capitalisation_updated_timestamp',
+    { column: 'is_base', component: BooleanCellComponent },
+    { column: 'is_deposit', component: BooleanCellComponent },
+    { column: 'capitalisation', component: CurrencyCellComponent },
+    { column: 'nvt_ratio', component: NumberCellComponent },
+    { column: 'market_share', component: PercentCellComponent },
+    { column: 'capitalisation_updated_timestamp', component: DateCellComponent }
   ];
 
   constructor(

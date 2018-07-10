@@ -3,6 +3,7 @@ import { FormsModule } from '@angular/forms'
 import { CommonModule } from '@angular/common';
 
 import { Ng2FlatpickrModule } from 'ng2-flatpickr';
+import { DynamicModule } from 'ng-dynamic-component';
 
 import { BtnComponent } from './components/btn/btn.component'
 import { DataTableComponent } from './components/data-table/data-table.component'
@@ -21,6 +22,12 @@ import { ButtonBackComponent } from './components/button-back/button-back.compon
 import { PageHeadingComponent } from './components/page-heading/page-heading.component';
 import { RouterModule } from '@angular/router';
 import { InputItemComponent } from './components/input-item/input-item.component';
+import { ActionCellComponent } from './components/data-table-cells/action-cell/action-cell.component';
+import { CurrencyCellComponent } from './components/data-table-cells/currency-cell/currency-cell.component';
+import { PercentCellComponent } from './components/data-table-cells/percent-cell/percent-cell.component';
+import { NumberCellComponent } from './components/data-table-cells/number-cell/number-cell.component';
+import { DateCellComponent } from './components/data-table-cells/date-cell/date-cell.component';
+import { BooleanCellComponent } from './components/data-table-cells/boolean-cell/boolean-cell.component';
 
 @NgModule({
     imports: [
@@ -28,6 +35,14 @@ import { InputItemComponent } from './components/input-item/input-item.component
         FormsModule,
         RouterModule,
         Ng2FlatpickrModule,
+        DynamicModule.withComponents([
+          ActionCellComponent,
+          CurrencyCellComponent,
+          PercentCellComponent,
+          NumberCellComponent,
+          DateCellComponent,
+          BooleanCellComponent,
+        ])
     ],
     declarations: [
         BtnComponent,
@@ -45,6 +60,12 @@ import { InputItemComponent } from './components/input-item/input-item.component
         ButtonBackComponent,
         PageHeadingComponent,
         InputItemComponent,
+        ActionCellComponent,
+        CurrencyCellComponent,
+        PercentCellComponent,
+        NumberCellComponent,
+        DateCellComponent,
+        BooleanCellComponent
     ],
     exports: [
         BtnComponent,
@@ -63,6 +84,7 @@ import { InputItemComponent } from './components/input-item/input-item.component
         PageHeadingComponent,
         FormsModule,
         InputItemComponent,
+        DynamicModule
     ]
 })
 export class SharedModule {}
