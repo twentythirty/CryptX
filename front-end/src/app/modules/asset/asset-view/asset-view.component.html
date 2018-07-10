@@ -1,5 +1,28 @@
 <app-page-heading backButton="true">Blacklisting</app-page-heading>
 
 <app-content-block heading="Asset">
-  <div>{{ asset | json }}</div>
+  <app-data-table
+    [dataSource]="assetsDataSource"
+    [columnsToShow]="assetsColumnsToShow"
+    (setFilter)="onSetFilter($event)">
+  </app-data-table>
+</app-content-block>
+
+<app-content-block heading="Blacklisting activity log" *ngIf="activityLog as log">
+  <p>{{ log.length }} change has been done</p>
+  <small *ngFor="let change of log">
+    <span>{{ change.timestamp | date:'dd MMM yyyy hh:mm' }}</span>
+    <span> - </span>
+    <span><b>{{ change.user_id }}</b></span>
+    <span> changed </span>
+    <span><b>Status</b></span>
+    <span> from </span>
+    <span>{{ change.prev || 'undefined' }}</span>
+    <span> to </span>
+    <span>{{ change.current || 'undefined' }}</span>
+    <ng-container *ngIf="change.comment">
+      <span> due to </span>
+      <span>{{ change.comment || 'undefined' }}</span>
+    </ng-container>
+  </small>
 </app-content-block>

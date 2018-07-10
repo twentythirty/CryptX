@@ -89,8 +89,8 @@ export class AssetListComponent extends DataTableCommonManagerComponent implemen
 
   constructor(
     public route: ActivatedRoute,
-    private assetService: AssetService,
-    private authService: AuthService
+    protected assetService: AssetService,
+    protected authService: AuthService
   ) {
     super(route);
   }
@@ -102,13 +102,7 @@ export class AssetListComponent extends DataTableCommonManagerComponent implemen
   getAllData(): void {
     this.assetService.getAllAssets(this.requestData).subscribe(
       (res: AssetsAllResponse) => {
-        this.assetsDataSource.body = res.assets.map(
-          asset => {
-            return {
-              ...asset
-            }
-          }
-        );
+        this.assetsDataSource.body = res.assets;
         this.count = res.count || res.assets.length;
       }
     )
