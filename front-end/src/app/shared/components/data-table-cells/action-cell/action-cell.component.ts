@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { TableDataColumn } from '../../data-table/data-table.component';
 
 export class ActionCellDataColumn extends TableDataColumn {
+  component = ActionCellComponent;
   inputs?: {
     value?: boolean;
   }

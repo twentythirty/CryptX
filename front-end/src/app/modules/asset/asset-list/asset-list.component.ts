@@ -53,14 +53,14 @@ export class AssetListComponent extends DataTableCommonManagerComponent implemen
    */
   public assetsColumnsToShow: Array<string | TableDataColumn> = [
     'symbol',
-    new BooleanCellDataColumn({ column: 'is_cryptocurrency', component: BooleanCellComponent }),
+    new BooleanCellDataColumn({ column: 'is_cryptocurrency' }),
     'long_name',
-    new BooleanCellDataColumn({ column: 'is_base', component: BooleanCellComponent }),
-    new BooleanCellDataColumn({ column: 'is_deposit', component: BooleanCellComponent }),
-    new CurrencyCellDataColumn({ column: 'capitalisation', component: CurrencyCellComponent }),
-    new NumberCellDataColumn({ column: 'nvt_ratio', component: NumberCellComponent }),
-    new PercentCellDataColumn({ column: 'market_share', component: PercentCellComponent }),
-    new DateCellDataColumn({ column: 'capitalisation_updated_timestamp', component: DateCellComponent })
+    new BooleanCellDataColumn({ column: 'is_base' }),
+    new BooleanCellDataColumn({ column: 'is_deposit' }),
+    new CurrencyCellDataColumn({ column: 'capitalisation' }),
+    new NumberCellDataColumn({ column: 'nvt_ratio' }),
+    new PercentCellDataColumn({ column: 'market_share' }),
+    new DateCellDataColumn({ column: 'capitalisation_updated_timestamp' })
   ];
 
   constructor(
