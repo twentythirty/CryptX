@@ -44,6 +44,9 @@ export class DataTableComponent implements OnInit {
   @Input() columnsToShow: Array<string | TableDataColumn>;
   @Input() customRows: boolean = false;
 
+  @Input() rowBackgroundColor: (row: any) => string = (row) => null;
+  @Input() rowTexColor: (row: any) => string = (row) => null;
+
   @Output() setFilter = new EventEmitter<object>();
 
   constructor() {}
@@ -84,4 +87,17 @@ export class DataTableComponent implements OnInit {
       ...(column.outputs || {})
     }
   }
+
+  /**
+   * Style methods
+   */
+
+  public getRowBackgroundColor(row: any): string {
+    return this.rowBackgroundColor(row) || null;
+  }
+
+  public getRowTexColor(row: any): string {
+    return this.rowTexColor(row) || null;
+  }
+
 }

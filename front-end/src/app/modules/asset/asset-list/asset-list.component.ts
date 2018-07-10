@@ -145,4 +145,20 @@ export class AssetListComponent extends DataTableCommonManagerComponent implemen
     )
   }
 
+  /**
+   * Styles
+   */
+
+  public rowBackgroundColor = (row: Asset): string => {
+    if(row.is_blacklisted) return '#6b6b6b';
+    if(row.is_greylisted) return '#aeaeae';
+    return null;
+  }
+
+  public rowTexColor = (row: Asset): string => {
+    if(row.is_blacklisted) return '#ffffff';
+    if(row.is_greylisted) return '#f2f2f2';
+    return null;
+  }
+
 }

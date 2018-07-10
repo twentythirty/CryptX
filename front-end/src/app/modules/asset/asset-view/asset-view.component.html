@@ -4,12 +4,18 @@
   <app-data-table
     [dataSource]="assetsDataSource"
     [columnsToShow]="assetsColumnsToShow"
+    [rowBackgroundColor]="rowBackgroundColor"
+    [rowTexColor]="rowTexColor"
     (setFilter)="onSetFilter($event)">
   </app-data-table>
 </app-content-block>
 
 <app-content-block heading="Blacklisting activity log" *ngIf="activityLog as log">
-  <p>{{ log.length }} change has been done</p>
+  <p [ngPlural]="log.length">
+    <ng-template ngPluralCase="=0">No changes have been done</ng-template>
+    <ng-template ngPluralCase="=1">{{ log.length }} change has been done</ng-template>
+    <ng-template ngPluralCase="other">{{ log.length }} changes have been done</ng-template>
+  </p>
   <small *ngFor="let change of log">
     <span>{{ change.timestamp | date:'dd MMM yyyy hh:mm' }}</span>
     <span> - </span>
