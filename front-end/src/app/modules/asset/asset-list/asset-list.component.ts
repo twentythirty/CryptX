@@ -109,7 +109,7 @@ export class AssetListComponent extends DataTableCommonManagerComponent implemen
             }
           }
         );
-        this.count = res.count
+        this.count = res.count || res.assets.length;
       }
     )
   }
