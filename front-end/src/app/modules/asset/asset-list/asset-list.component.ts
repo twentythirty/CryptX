@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { Observable } from 'rxjs';
 
 import { AssetService, AssetResultData, AssetsAllResponse } from '../../../services/asset/asset.service';
-import { Asset } from '../../../shared/models/asset';
+import { Asset, AssetStatusChanges, AssetStatus } from '../../../shared/models/asset';
 import { map } from 'rxjs/operator/map';
 import { EntitiesFilter } from '../../../shared/models/api/entitiesFilter';
 import { TableDataSource, TableDataColumn } from '../../../shared/components/data-table/data-table.component';
@@ -18,8 +18,11 @@ import {
   DateCellComponent,
   DateCellDataColumn,
   PercentCellDataColumn,
-  NumberCellDataColumn
+  NumberCellDataColumn,
+  ActionCellDataColumn,
+  DataCellAction
 } from '../../../shared/components/data-table-cells';
+import { AuthService } from '../../../services/auth/auth.service';
 
 @Component({
   selector: 'app-asset-list',
@@ -60,36 +63,102 @@ export class AssetListComponent extends DataTableCommonManagerComponent implemen
     new CurrencyCellDataColumn({ column: 'capitalisation' }),
     new NumberCellDataColumn({ column: 'nvt_ratio' }),
     new PercentCellDataColumn({ column: 'market_share' }),
-    new DateCellDataColumn({ column: 'capitalisation_updated_timestamp' })
+    new DateCellDataColumn({ column: 'capitalisation_updated_timestamp' }),
+    new ActionCellDataColumn({ column: null,
+      inputs: {
+        actions: [
+          new DataCellAction({
+            label: 'De-greylist',
+            isShown: (row: any) => false && (row.is_greylisted === true),
+            exec: (row: any) => { this.deGreylist(<Asset>row) }
+          }),
+          new DataCellAction({
+            label: 'Blacklist',
+            isShown: (row: any) => this.checkPerm(['CHANGE_ASSET_STATUS']) && (!row.is_blacklisted),
+            exec: (row: any) => { this.blacklist(<Asset>row) }
+          }),
+          new DataCellAction({
+            label: 'Whitelist',
+            isShown: (row: any) => this.checkPerm(['CHANGE_ASSET_STATUS']) && (row.is_blacklisted),
+            exec: (row: any) => { this.whitelist(<Asset>row) }
+          })
+        ]
+      }
+    })
   ];
 
   constructor(
     public route: ActivatedRoute,
-    private assetService: AssetService
+    protected assetService: AssetService,
+    protected authService: AuthService
   ) {
     super(route);
+  }
+
+  checkPerm (perm_code) {
+    return this.authService.hasPermissions(perm_code);
   }
 
   getAllData(): void {
     this.assetService.getAllAssets(this.requestData).subscribe(
       (res: AssetsAllResponse) => {
-        this.assetsDataSource.body = res.assets.map(
-          asset => {
-            return {
-              capitalisation_updated_timestamp: Date.now(),
-              capitalisation: 140256985548,
-              is_cryptocurrency: true,
-              is_greylisted: false,
-              is_blacklisted: true,
-              market_share: 37.7,
-              nvt_ratio: 52.8,
-              ...asset
-            }
-          }
-        );
-        this.count = res.count
+        this.assetsDataSource.body = res.assets;
+        this.count = res.count || res.assets.length;
       }
     )
+  }
+
+  /**
+   * Actions
+   */
+
+  private deGreylist(asset: Asset): void {
+    this.assetService.changeAssetStatus(
+      asset.id,
+      new AssetStatus(AssetStatusChanges.Graylisting, '')
+    ).subscribe(
+      res => {
+        asset.is_greylisted = true;
+      }
+    )
+  }
+
+  private blacklist(asset: Asset): void {
+    this.assetService.changeAssetStatus(
+      asset.id,
+      new AssetStatus(AssetStatusChanges.Blacklisting, '')
+    ).subscribe(
+      res => {
+        asset.is_blacklisted = true;
+      }
+    )
+  }
+
+  private whitelist(asset: Asset): void {
+    this.assetService.changeAssetStatus(
+      asset.id,
+      new AssetStatus(AssetStatusChanges.Whitelisting, '')
+    ).subscribe(
+      res => {
+        asset.is_blacklisted = false;
+      }
+    )
+  }
+
+  /**
+   * Styles
+   */
+
+  public rowBackgroundColor = (row: Asset): string => {
+    if(row.is_blacklisted) return '#6b6b6b';
+    if(row.is_greylisted) return '#aeaeae';
+    return null;
+  }
+
+  public rowTexColor = (row: Asset): string => {
+    if(row.is_blacklisted) return '#ffffff';
+    if(row.is_greylisted) return '#f2f2f2';
+    return null;
   }
 
 }
