@@ -11,6 +11,7 @@
 
   <app-data-table
     [dataSource]="usersDataSource"
+    [customRows]="true"
     [columnsToShow]="usersColumnsToShow"
     (setFilter)="onSetFilter($event)"
   >

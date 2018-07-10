@@ -25,7 +25,25 @@
     </tr>
   </thead>
 
-  <ng-content></ng-content>
+  <ng-content *ngIf="customRows; else defaultRows">
+  </ng-content>
+
+  <ng-template #defaultRows>
+    <tr *ngFor="let item of dataSource.body"
+    [routerLink]="['/assets/view', item.id]">
+      <td *ngFor="let index of columnsToShow">
+        <ng-container *ngIf="columnIsBasic(index); else dynamicColumn">
+          {{ item[index] || '-' }}
+        </ng-container>
+        <ng-template #dynamicColumn>
+          <ndc-dynamic [ndcDynamicComponent]="index.component"
+            [ndcDynamicInputs]="dynamicInputs(index, item[index.column])"
+            [ndcDynamicOutputs]="dynamicOutputs(index)"></ndc-dynamic>
+        </ng-template>
+      </td>
+    </tr>
+  </ng-template>
+
 
   <tfoot *ngIf="dataSource.footer?.length > 0">
     <tr>
