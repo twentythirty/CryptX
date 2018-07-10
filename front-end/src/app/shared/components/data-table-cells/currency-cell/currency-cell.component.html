@@ -1,1 +1,1 @@
-{{ (value | currency) || '-' }}
+{{ (value | currency:currencyCode:display:digitsInfo:locale) || '-' }}

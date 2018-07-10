@@ -1,1 +1,1 @@
-{{ (value | percent) || '-' }}
+{{ ((value * multiplier) | percent:digitsInfo:locale) || '-' }}

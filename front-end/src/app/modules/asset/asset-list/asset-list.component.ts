@@ -8,11 +8,18 @@ import { EntitiesFilter } from '../../../shared/models/api/entitiesFilter';
 import { TableDataSource, TableDataColumn } from '../../../shared/components/data-table/data-table.component';
 import { DataTableCommonManagerComponent } from '../../../shared/components/data-table-common-manager/data-table-common-manager.component';
 import { ActivatedRoute } from '@angular/router';
-import { PercentCellComponent } from '../../../shared/components/data-table-cells/percent-cell/percent-cell.component';
-import { CurrencyCellComponent } from '../../../shared/components/data-table-cells/currency-cell/currency-cell.component';
-import { BooleanCellComponent } from '../../../shared/components/data-table-cells/boolean-cell/boolean-cell.component';
-import { DateCellComponent } from '../../../shared/components/data-table-cells/date-cell/date-cell.component';
-import { NumberCellComponent } from '../../../shared/components/data-table-cells/number-cell/number-cell.component';
+import {
+  BooleanCellDataColumn,
+  BooleanCellComponent,
+  CurrencyCellDataColumn,
+  CurrencyCellComponent,
+  NumberCellComponent,
+  PercentCellComponent,
+  DateCellComponent,
+  DateCellDataColumn,
+  PercentCellDataColumn,
+  NumberCellDataColumn
+} from '../../../shared/components/data-table-cells';
 
 @Component({
   selector: 'app-asset-list',
@@ -36,16 +43,24 @@ export class AssetListComponent extends DataTableCommonManagerComponent implemen
     body: []
   };
 
+  /**
+   * Column config for data table
+   * Every ...CellComponent has its ...CellDataColumn type class
+   * Constructing it accepts an object of type ...CellDataColumn
+   * This allows the compiler to type-check all inputs and outputs for a specific
+   * component used. This config would be perfectly valid only by passing an object
+   * that fits the type TableDataColumn, without constructing DataColumn classes, too.
+   */
   public assetsColumnsToShow: Array<string | TableDataColumn> = [
     'symbol',
-    { column: 'is_cryptocurrency', component: BooleanCellComponent },
+    new BooleanCellDataColumn({ column: 'is_cryptocurrency', component: BooleanCellComponent }),
     'long_name',
-    { column: 'is_base', component: BooleanCellComponent },
-    { column: 'is_deposit', component: BooleanCellComponent },
-    { column: 'capitalisation', component: CurrencyCellComponent },
-    { column: 'nvt_ratio', component: NumberCellComponent },
-    { column: 'market_share', component: PercentCellComponent },
-    { column: 'capitalisation_updated_timestamp', component: DateCellComponent }
+    new BooleanCellDataColumn({ column: 'is_base', component: BooleanCellComponent }),
+    new BooleanCellDataColumn({ column: 'is_deposit', component: BooleanCellComponent }),
+    new CurrencyCellDataColumn({ column: 'capitalisation', component: CurrencyCellComponent }),
+    new NumberCellDataColumn({ column: 'nvt_ratio', component: NumberCellComponent }),
+    new PercentCellDataColumn({ column: 'market_share', component: PercentCellComponent }),
+    new DateCellDataColumn({ column: 'capitalisation_updated_timestamp', component: DateCellComponent })
   ];
 
   constructor(
@@ -58,7 +73,20 @@ export class AssetListComponent extends DataTableCommonManagerComponent implemen
   getAllData(): void {
     this.assetService.getAllAssets(this.requestData).subscribe(
       (res: AssetsAllResponse) => {
-        this.assetsDataSource.body = res.assets;
+        this.assetsDataSource.body = res.assets.map(
+          asset => {
+            return {
+              capitalisation_updated_timestamp: Date.now(),
+              capitalisation: 140256985548,
+              is_cryptocurrency: true,
+              is_greylisted: false,
+              is_blacklisted: true,
+              market_share: 37.7,
+              nvt_ratio: 52.8,
+              ...asset
+            }
+          }
+        );
         this.count = res.count
       }
     )
