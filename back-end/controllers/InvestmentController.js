@@ -20,14 +20,13 @@ const createInvestmentRun = async function (req, res) {
   );
   if (err) return ReE(res, err, 422);
 
-  [err, recipe_run] = await to(
+  /* [err, recipe_run] = await to(
     investmentService.createRecipeRun(req.user.id, investment_run.id, strategy_type)
   );
-  if (err) return ReE(res, err, 422);
+  if (err) return ReE(res, err, 422); */
 
   return ReS(res, {
-    investment_run: investment_run,
-    recipe: recipe_run
+    investment_run: investment_run.toWeb()
   })
 };
 module.exports.createInvestmentRun = createInvestmentRun;

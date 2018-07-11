@@ -3,7 +3,7 @@
   "version": "0.0.1",
   "private": true,
   "scripts": {
-    "prestart": "webpack",
+    "poststart": "webpack",
     "start": "./startup.sh",
     "serve": "webpack-dev-server --port=3001 --open",
     "test": "NODE_ENV=test mocha --recursive --timeout 20000 --exit back-end/test",
