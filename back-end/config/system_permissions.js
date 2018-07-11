@@ -214,6 +214,16 @@ ROUTES = {
     permissions_matcher: /\/assets\/all$/,
     required_permissions: [PERMISSIONS.VIEW_ASSETS]
   },
+  GetAssetDetailedInfo: {
+    router_string: "/assets/detailed/:asset_id",
+    permissions_matcher: /\/assets\/detailed\/\d+$/,
+    required_permissions: [PERMISSIONS.VIEW_ASSETS]
+  },
+  GetAssetsDetailed: {
+    router_string: "/assets/detailed/all",
+    permissions_matcher: /\/assets\/detailed\/all$/,
+    required_permissions: [PERMISSIONS.VIEW_ASSETS]
+  },
   ChangeAssetStatus: {
     router_string: "/assets/:asset_id/change_status",
     permissions_matcher: /\/assets\/\d+\/change_status$/,
@@ -242,7 +252,7 @@ ROUTES = {
     required_permissions: [PERMISSIONS.VIEW_INVESTMENT_RUN]
   },
   GetRecipeRuns: {
-    router_string: "/recipes/all",
+    router_string: "/investments/:inverstment_id/recipes/all",
     permissions_matcher: /\/recipes\/all$/,
     required_permissions: [PERMISSIONS.VIEW_INVESTMENT_RUN]
   },

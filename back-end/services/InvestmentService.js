@@ -33,7 +33,7 @@ const createInvestmentRun = async function (user_id, strategy_type, is_simulated
   if (investment_run) {
     let message = `Investment with ${strategy_type} strategy and ${
       is_simulated ? 'simulated' : 'real investment'
-    } mode already created`;
+    } mode already is executing.`;
 
     TE(message);
   }

@@ -28,3 +28,54 @@ const fetchUsersViewFooter = async () => {
     return builder.queryReturnRowToFooterObj(footer_values);
 }
 module.exports.fetchUsersViewFooter = fetchUsersViewFooter;
+
+
+const fetchAssetsViewFooter = async () => {
+
+    let mock_data = [
+        {
+            "name": "symbol",
+            "value": 999
+        },
+        {
+            "name": "is_cryptocurrency",
+            "value": 999
+        },
+        {
+            "name": "long_name",
+            "value": 999
+        },
+        {
+            "name": "is_base",
+            "value": 999
+        },
+        {
+            "name": "is_deposit",
+            "value": 999
+        },
+        {
+            "name": "capitalization",
+            "value": 999
+        },
+        {
+            "name": "nvt_ratio",
+            "value": 999
+        },
+        {
+            "name": "market_share",
+            "value": 999
+        },
+        {
+            "name": "capitalization_updated",
+            "value": 999
+        },
+        {
+            "name": "status",
+            "value": 999
+        }
+    ];
+
+    return mock_data;
+}
+module.exports.fetchAssetsViewFooter = fetchAssetsViewFooter;
+
