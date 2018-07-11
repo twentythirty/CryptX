@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { AssetService, AssetResultData } from '../../../services/asset/asset.service';
-import { ActivatedRoute, Params } from '@angular/router';
+import { ActivatedRoute, Params, Router } from '@angular/router';
 import { Asset, AssetStatus } from '../../../shared/models/asset';
 import { AssetListComponent } from '../asset-list/asset-list.component';
 import { AuthService } from '../../../services/auth/auth.service';
@@ -19,9 +19,10 @@ export class AssetViewComponent extends AssetListComponent implements OnInit {
   constructor(
     public route: ActivatedRoute,
     protected assetService: AssetService,
-    protected authService: AuthService
+    protected authService: AuthService,
+    protected router: Router
   ) {
-    super(route, assetService, authService);
+    super(route, assetService, authService, router);
   }
 
   ngOnInit() {
@@ -43,6 +44,10 @@ export class AssetViewComponent extends AssetListComponent implements OnInit {
         )
       }
     )
+  }
+
+  public openRow(asset: Asset): void {
+    // Override to do nothing
   }
 
 }

@@ -29,7 +29,6 @@ export class RolesAddComponent implements OnInit {
   loading = false;
   showDeleteConfirm = false;
 
-
   constructor(
     private rolesService: RolesService,
     private router: Router,

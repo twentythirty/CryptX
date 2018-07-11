@@ -1,0 +1,38 @@
+<div>
+  <div>
+    <h1>{{ pageTitle }}</h1>
+    <span class="assets-count">{{ count }}</span>
+  </div>
+</div>
+<div class="timeline-detail-wrap">
+  <div class="column">
+    <div class="table-wrap">
+      <div class="table-header">
+        <h3>{{ singleTitle }}</h3>
+      </div>
+      <app-data-table
+        [dataSource]="singleDataSource"
+        [columnsToShow]="listColumnsToShow"
+        (openRow)="openSingleRow($event)">
+      </app-data-table>
+    </div>
+    <div class="table-wrap">
+      <div class="table-header">
+        <h3>{{ listTitle }}</h3>
+        <app-btn (click)="addAction()">
+          {{ addTitle }}
+        </app-btn>
+      </div>
+      <app-data-table
+        [dataSource]="listDataSource"
+        [columnsToShow]="listColumnsToShow"
+        (setFilter)="onSetFilter($event)"
+        (openRow)="openListRow($event)">
+      </app-data-table>
+      <app-pagination [count]="count" [perPage]="pageSize" [page]="page"></app-pagination>
+    </div>
+  </div>
+  <div class="column column-side">
+    <app-timeline [timelineEvents]="timelineEvents"></app-timeline>
+  </div>
+</div>

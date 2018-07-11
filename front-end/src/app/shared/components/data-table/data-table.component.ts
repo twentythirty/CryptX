@@ -48,6 +48,7 @@ export class DataTableComponent implements OnInit {
   @Input() rowTexColor: (row: any) => string = (row) => null;
 
   @Output() setFilter = new EventEmitter<object>();
+  @Output() openRow = new EventEmitter<any>();
 
   constructor() {}
 
@@ -60,6 +61,10 @@ export class DataTableComponent implements OnInit {
 
   onSetFilter(value) {
     this.setFilter.emit(value);
+  }
+
+  onOpenRow(item: any): void {
+    this.openRow.emit(item);
   }
 
   onToggleFilter(column) {

@@ -34,7 +34,7 @@
     <tr *ngFor="let item of dataSource.body"
     [style.background-color]="getRowBackgroundColor(item)"
     [style.color]="getRowTexColor(item)"
-    [routerLink]="['/assets/view', item.id]">
+    (click)="onOpenRow(item)">
       <td *ngFor="let index of columnsToShow">
         <ng-container *ngIf="columnIsBasic(index); else dynamicColumn">
           {{ item[index] || '-' }}
