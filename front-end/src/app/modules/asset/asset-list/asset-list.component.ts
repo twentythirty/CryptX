@@ -41,7 +41,8 @@ export class AssetListComponent extends DataTableCommonManagerComponent implemen
       { column: 'capitalisation', name: 'Capitalisation', filter: { type: 'text', sortable: true } },
       { column: 'nvt_ratio', name: 'NVT ratio', filter: { type: 'text', sortable: true } },
       { column: 'market_share', name: 'Market share', filter: { type: 'text', sortable: true } },
-      { column: 'capitalisation_updated_timestamp', name: 'Capitalisation updated', filter: { type: 'text', sortable: true } }
+      { column: 'capitalisation_updated_timestamp', name: 'Capitalisation updated', filter: { type: 'text', sortable: true } },
+      { column: '', name: 'Action' }
     ],
     body: []
   };
