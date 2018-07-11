@@ -103,6 +103,14 @@ export class AssetListComponent extends DataTableCommonManagerComponent implemen
     this.assetService.getAllAssets(this.requestData).subscribe(
       (res: AssetsAllResponse) => {
         this.assetsDataSource.body = res.assets;
+        // --- TODO: Remove this
+        this.assetsDataSource.footer = this.assetsColumnsToShow.map(col => {
+          let key = (typeof col == 'string') ? col : col.column;
+          return '' + res.assets.reduce((prev, curr) => {
+            return prev + Number(curr[key]);
+          }, 0)
+        })
+        // ---
         this.count = res.count || res.assets.length;
       }
     )
