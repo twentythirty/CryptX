@@ -7,7 +7,8 @@
         <ng-container *ngIf="select">
             <select
                 [(ngModel)]="value"
-                (change)="onChange($event)"
+                [class.error]="isInvalid()"
+                (blur)="onBlur()"
             >
                 <option *ngFor="let item of items" [value]="item">{{ item }}</option>
             </select>
@@ -16,15 +17,14 @@
         <ng-container *ngIf="!select">
             <input
                 [(ngModel)]="value"
-                class="form-control"
+                [class.error]="isInvalid()"
                 (blur)="onBlur()"
-                (change)="onChange($event)"
-                (keyup)="onChange($event)"
             >
         </ng-container>
         
-        <div *ngIf="invalid">
-            Error
-        </div>
+        <app-input-item-error-message
+            *ngIf="isInvalid()"
+            [errors]="fieldControl.errors"
+        ></app-input-item-error-message>
     </label>
 </div>
