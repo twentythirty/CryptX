@@ -7,7 +7,7 @@ import { map } from 'rxjs/operator/map';
 import { EntitiesFilter } from '../../../shared/models/api/entitiesFilter';
 import { TableDataSource, TableDataColumn } from '../../../shared/components/data-table/data-table.component';
 import { DataTableCommonManagerComponent } from '../../../shared/components/data-table-common-manager/data-table-common-manager.component';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import {
   BooleanCellDataColumn,
   BooleanCellComponent,
@@ -91,7 +91,8 @@ export class AssetListComponent extends DataTableCommonManagerComponent implemen
   constructor(
     public route: ActivatedRoute,
     protected assetService: AssetService,
-    protected authService: AuthService
+    protected authService: AuthService,
+    protected router: Router
   ) {
     super(route);
   }
@@ -113,6 +114,10 @@ export class AssetListComponent extends DataTableCommonManagerComponent implemen
         this.count = res.count || res.assets.length;
       }
     )
+  }
+
+  public openRow(asset: Asset): void {
+    this.router.navigate(['/assets/view', asset.id])
   }
 
   /**

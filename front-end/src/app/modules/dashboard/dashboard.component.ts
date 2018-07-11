@@ -1,6 +1,7 @@
 import { NgModule, Component, OnInit } from '@angular/core';
 import { ModelConstantsService } from '../../services/model-constants/model-constants.service';
 import { CommonModule } from '@angular/common';
+import { RouterModule } from '@angular/router';
 
 @Component({
   selector: 'app-dashboard',
@@ -20,6 +21,7 @@ export class DashboardComponent implements OnInit {
     DashboardComponent
   ],
   imports: [
+    RouterModule,
     CommonModule // enables json pipe
   ],
   providers: []
