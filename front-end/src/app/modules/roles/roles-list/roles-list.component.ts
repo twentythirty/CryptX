@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import 'rxjs/add/operator/filter';
 
@@ -12,7 +12,7 @@ import { DataTableCommonManagerComponent } from '../../../shared/components/data
   templateUrl: './roles-list.component.html',
   styleUrls: ['./roles-list.component.scss']
 })
-export class RolesListComponent extends DataTableCommonManagerComponent implements OnInit {
+export class RolesListComponent extends DataTableCommonManagerComponent {
   rolesDataSource: TableDataSource = {
     header: [
       { column: 'name', name: 'Role name', filter: { type: 'text', sortable: true } }

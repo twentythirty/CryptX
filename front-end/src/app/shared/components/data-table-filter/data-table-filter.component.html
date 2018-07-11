@@ -21,17 +21,17 @@
   </div>
 
   <div class="filter-body">
-    <ng-container  *ngIf="type === 'text' && rowData && rowData?.length">
-      <div *ngFor="let item of (rowData | filter: _filterSearchText)">
+    <ng-container  *ngIf="(type === 'text' || type === 'boolean') && rowData && rowData?.length">
+      <div *ngFor="let item of (rowData | filter: _filterSearchText : 'value')">
         <app-checkbox
-          [label]="item"
-          [value]="item"
+          [label]="item.label ? item.label : item.value"
+          [value]="item.value"
           (onToggle)="onCheckboxToggle($event)"
         ></app-checkbox>
       </div>
     </ng-container>
 
-    <ng-container  *ngIf="type === 'date'">
+    <ng-container *ngIf="type === 'date'">
       <ng2-flatpickr
         [config]="_datepickerOptions"
         [(ngModel)]="_filterData.values[0]"
@@ -42,7 +42,7 @@
       ></ng2-flatpickr>
     </ng-container>
 
-    <ng-container  *ngIf="type === 'number'">
+    <ng-container *ngIf="type === 'number'">
       <div>
         <label>From</label>
         <input
