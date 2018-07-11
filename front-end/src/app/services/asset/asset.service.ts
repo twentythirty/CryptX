@@ -9,6 +9,7 @@ import { ActionResultData } from '../../shared/models/api/actionResultData';
 export class AssetsAllResponse {
   success: boolean;
   assets: Array<Asset>;
+  footer: Array<any>
   count: number;
 }
 
