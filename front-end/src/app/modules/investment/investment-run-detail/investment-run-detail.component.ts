@@ -16,6 +16,8 @@ export class InvestmentRunDetailComponent extends TimelineDetailComponent implem
   public listTitle: string = 'Recipe runs';
   public addTitle: string = '+ Start new run';
 
+  public timelineEvents: Array<TimelineEvent>;
+
   public listColumnsToShow: Array<string | TableDataColumn> = [
     'one',
     'two',
@@ -42,7 +44,7 @@ export class InvestmentRunDetailComponent extends TimelineDetailComponent implem
   }
 
   constructor(
-    protected route: ActivatedRoute
+    public route: ActivatedRoute
   ) {
     super(route);
   }

@@ -90,7 +90,7 @@ const routes: Routes = [
     ],
     canActivate: [AuthGuard, PermissionGuard],
     data: { requiredPermission: ['VIEW_INVESTMENT_RUN']}
-  }
+  },
 
   /**
    * Lazy loaded modules

@@ -42,7 +42,7 @@ export abstract class TimelineDetailComponent extends DataTableCommonManagerComp
   public listColumnsToShow: Array<string | TableDataColumn>;
 
   constructor(
-    protected route: ActivatedRoute
+    public route: ActivatedRoute
   ) {
     super(route)
   }
