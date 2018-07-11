@@ -41,7 +41,8 @@ export class AssetListComponent extends DataTableCommonManagerComponent implemen
       { column: 'capitalisation', name: 'Capitalisation', filter: { type: 'text', sortable: true } },
       { column: 'nvt_ratio', name: 'NVT ratio', filter: { type: 'text', sortable: true } },
       { column: 'market_share', name: 'Market share', filter: { type: 'text', sortable: true } },
-      { column: 'capitalisation_updated_timestamp', name: 'Capitalisation updated', filter: { type: 'text', sortable: true } }
+      { column: 'capitalisation_updated_timestamp', name: 'Capitalisation updated', filter: { type: 'text', sortable: true } },
+      { column: '', name: 'Action' }
     ],
     body: []
   };
@@ -103,6 +104,12 @@ export class AssetListComponent extends DataTableCommonManagerComponent implemen
     this.assetService.getAllAssets(this.requestData).subscribe(
       (res: AssetsAllResponse) => {
         this.assetsDataSource.body = res.assets;
+        if(res.footer) {
+          this.assetsDataSource.footer = this.assetsColumnsToShow.map(col => {
+            let key = (typeof col == 'string') ? col : col.column;
+            return res.footer.find(f => f.name == key) || '';
+          })
+        }
         this.count = res.count || res.assets.length;
       }
     )
