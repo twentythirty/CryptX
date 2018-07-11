@@ -66,6 +66,14 @@ export class InvestmentRunDetailComponent extends TimelineDetailComponent implem
     alert('add?')
   }
 
+  public openSingleRow(row: any): void {
+    // Navigate to a single item page
+  }
+
+  public openListRow(row: any): void {
+    alert('Navigate to a row item page');
+  }
+
   ngOnInit() {
     super.ngOnInit();
     this.timelineEvents = Array(5).fill(

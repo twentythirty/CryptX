@@ -53,8 +53,8 @@ export abstract class TimelineDetailComponent extends DataTableCommonManagerComp
   }
 
   public abstract getAllData(): void;
-
   protected abstract getSingleData(): void;
-
   public abstract addAction(): void;
+  public abstract openSingleRow(row: any): void;
+  public abstract openListRow(row: any): void;
 }

@@ -12,7 +12,8 @@
       </div>
       <app-data-table
         [dataSource]="singleDataSource"
-        [columnsToShow]="listColumnsToShow">
+        [columnsToShow]="listColumnsToShow"
+        (openRow)="openSingleRow($event)">
       </app-data-table>
     </div>
     <div class="table-wrap">
@@ -25,7 +26,8 @@
       <app-data-table
         [dataSource]="listDataSource"
         [columnsToShow]="listColumnsToShow"
-        (setFilter)="onSetFilter($event)">
+        (setFilter)="onSetFilter($event)"
+        (openRow)="openListRow($event)">
       </app-data-table>
       <app-pagination [count]="count" [perPage]="pageSize" [page]="page"></app-pagination>
     </div>
