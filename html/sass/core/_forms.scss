@@ -34,10 +34,10 @@
 
         &.icon-login {
             input {
-                background: url("../img/icons/user.svg") 14px center no-repeat;
+                background: url($imagePath + "icons/user.svg") 14px center no-repeat;
 
                 &:hover, &:focus, &:active, &.focus {
-                    background: rgba(235,255,243,0.40) url("../img/icons/user-focus.svg") 14px center no-repeat;
+                    background: rgba(235,255,243,0.40) url($imagePath + "icons/user-focus.svg") 14px center no-repeat;
                 }
 
                 &.focus {
@@ -49,10 +49,10 @@
 
         &.icon-password {
             input {
-                background: url("../img/icons/password.svg") 14px center no-repeat;
+                background: url($imagePath + "icons/password.svg") 14px center no-repeat;
 
                 &:hover, &:focus, &:active, &.focus {
-                    background: rgba(235,255,243,0.40) url("../img/icons/password-focus.svg") 14px center no-repeat;
+                    background: rgba(235,255,243,0.40) url($imagePath + "icons/password-focus.svg") 14px center no-repeat;
                 }
 
                 &.focus {
@@ -182,7 +182,7 @@
                     content: "";
                     width: 20px;
                     height: 20px;
-                    @include backgroundC("../img/icons/action-true.svg");
+                    @include backgroundC("icons/action-true.svg");
                     position: absolute;
                     top: 50%;
                     right: 9px;

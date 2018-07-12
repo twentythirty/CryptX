@@ -248,14 +248,27 @@ ROUTES = {
     permissions_matcher: ROUTE_MATCHERS.GetInvestments,
     required_permissions: [PERMISSIONS.VIEW_INVESTMENT_RUN]
   },
+  CreateDeposit: {
+    router_string: "/investments/:investment_id/deposit",
+    permissions_matcher: /\/investments\/\d+\/deposit$/,
+    required_permissions: [PERMISSIONS.CREATE_INVESTMENT_RUN]
+  },
+
+  // Recipe
+  CreateNewRecipeRun: {
+    router_string: "/investments/:investment_id/start_recipe_run",
+    permissions_matcher: /\/investments\/\d+\/create_recipe$/,
+    required_permissions: [PERMISSIONS.CREATE_INVESTMENT_RUN]
+  },
   GetRecipeRun: {
     router_string: "/recipes/:recipe_id",
     permissions_matcher: ROUTE_MATCHERS.GetRecipeRun,
     required_permissions: [PERMISSIONS.VIEW_INVESTMENT_RUN]
   },
   GetRecipeRuns: {
-    router_string: "/investments/:inverstment_id/recipes/all",
-    permissions_matcher: ROUTE_MATCHERS.GetRecipeRuns,
+    router_string: "/recipes/of_investment/:investment_id",
+    permissions_matcher: /\/recipes\/of_investment\/\d+$/,
+    /* permissions_matcher: ROUTE_MATCHERS.GetRecipeRuns, */
     required_permissions: [PERMISSIONS.VIEW_INVESTMENT_RUN]
   },
   GetRecipeRunDetails: {
@@ -268,9 +281,34 @@ ROUTES = {
     permissions_matcher: ROUTE_MATCHERS.ApproveRecipeRun,
     required_permissions: [PERMISSIONS.VIEW_INVESTMENT_RUN, PERMISSIONS.APPROVE_RECIPE_RUN]
   },
+
+  // Recipe run details
+  GetRecipeRunDetails: {
+    router_string: "/recipe_details/of_recipe/:recipe_id",
+    permissions_matcher: /\/recipe_details\/of_recipe\/\d+$/,
+    required_permissions: [PERMISSIONS.VIEW_INVESTMENT_RUN]
+  },
+  GetRecipeRunDetail: {
+    router_string: "/recipe_details/:recipe_detail_id",
+    permissions_matcher: /\/recipe_details\/\d+$/,
+    required_permissions: [PERMISSIONS.VIEW_INVESTMENT_RUN]
+  },
+
+
+  // Recipe orders
   GetRecipeOrders: {
     router_string: "/orders/of_recipe/:recipe_run_id",
     permissions_matcher: ROUTE_MATCHERS.GetRecipeOrders,
+    required_permissions: [PERMISSIONS.VIEW_ORDERS]
+  },
+  GetRecipeOrder: {
+    router_string: "/orders/of_recipe/:recipe_run_id",
+    permissions_matcher: /\/orders\/of_recipe\/d+$/,
+    required_permissions: [PERMISSIONS.VIEW_ORDERS]
+  },
+  GetRecipeOrder: {
+    router_string: "/orders/:order_id",
+    permissions_matcher: /\/orders\/d+$/,
     required_permissions: [PERMISSIONS.VIEW_ORDERS]
   },
   AlterOrdersGroup: {
@@ -278,16 +316,49 @@ ROUTES = {
     permissions_matcher: ROUTE_MATCHERS.AlterOrdersGroup,
     required_permissions: [PERMISSIONS.VIEW_ORDERS, PERMISSIONS.ALTER_ORDERS]
   },
-  CreateNewRecipeRun: {
-    router_string: "/investments/:investment_id/create_recipe",
-    permissions_matcher: ROUTE_MATCHERS.CreateNewRecipeRun,
-    required_permissions: [PERMISSIONS.CREATE_INVESTMENT_RUN]
+
+   // Recipe run deposits
+  GetRecipeRunDeposits: {
+    router_string: "/recipe_deposits/of_recipe/:recipe_id",
+    permissions_matcher: /\/recipe_deposits\/of_recipe\/\d+$/,
+    required_permissions: [PERMISSIONS.VIEW_INVESTMENT_RUN]
   },
+  GetRecipeRunDeposit: {
+    router_string: "/recipe_deposits/:recipe_detail_id",
+    permissions_matcher: /\/recipe_deposits\/\d+$/,
+    required_permissions: [PERMISSIONS.VIEW_INVESTMENT_RUN]
+  },
+
+  // Execution orders
+  GetExecutionOrders: {
+    router_string: "/execution_orders/of_order/:order_detail_id",
+    permissions_matcher: /\/execution_orders\/of_order\/\d+$/,
+    required_permissions: [PERMISSIONS.VIEW_INVESTMENT_RUN]
+  },
+  GetExecutionOrder: {
+    router_string: "/execution_orders/:order_detail_id",
+    permissions_matcher: /\/execution_orders\/\d+$/,
+    required_permissions: [PERMISSIONS.VIEW_INVESTMENT_RUN]
+  },
+
+  // Execution order fill
+  GetExecutionOrdersFills: {
+    router_string: "/exec_orders_fills/of_execution_order/:execution_order_id",
+    permissions_matcher: /\/exec_orders_fills\/of_order\/\d+$/,
+    required_permissions: [PERMISSIONS.VIEW_INVESTMENT_RUN]
+  },
+  GetExecutionOrdersFill: {
+    router_string: "/exec_orders_fills/:exec_order_fill_id",
+    permissions_matcher: /\/exec_orders_fills\/\d+$/,
+    required_permissions: [PERMISSIONS.VIEW_INVESTMENT_RUN]
+  },
+
   CreateDeposit: {
     router_string: "/investments/:investment_id/deposit",
     permissions_matcher: ROUTE_MATCHERS.CreateDeposit,
     required_permissions: [PERMISSIONS.CREATE_INVESTMENT_RUN]
   },
+  
 
   // System settings
   ChangeSettingValues: {

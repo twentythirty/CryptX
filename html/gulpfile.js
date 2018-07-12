@@ -5,8 +5,9 @@ var autoprefixer 	= require('gulp-autoprefixer' );
 var cssmin          = require('gulp-cssmin');
 var rename          = require('gulp-rename');
 var iconfont 		= require( 'gulp-iconfont' );
-var consolidate 		= require( 'gulp-consolidate' );
-var lodash  			= require( 'lodash' );
+var consolidate 	= require( 'gulp-consolidate' );
+var lodash  		= require( 'lodash' );
+var merge 			= require('merge-stream');
 
 
 
@@ -34,7 +35,8 @@ gulp.task('iconfont', function(){
 			iconfont({
 				fontName: 'icons',
 				appendUnicode: false,
-				normalize: true
+				normalize: true,
+				formats: ['ttf', 'eot', 'woff', 'svg']
 			})
 		)
 		.on('glyphs', function(glyphs, options) {
@@ -53,11 +55,24 @@ gulp.task('iconfont', function(){
 			.pipe(consolidate('lodash', {
 				glyphs: unicodeGlyphs,
 				fontName: 'icons',
-				fontPath: './fonts/',
+				//fontPath: './fonts/',
 				className: 'icon',
 				timestamp: date
 			}))
 			.pipe(gulp.dest('./sass/core/' ));
 		})
 		.pipe(gulp.dest( './fonts/' ));
+});
+
+gulp.task('sync', function() {
+	var sass = gulp.src(['./sass/**/*.scss', '!./sass/**/_config.scss'])
+	.pipe(gulp.dest('./../front-end/src/sass/'));
+
+	var images = gulp.src(['./img/**/*.*'])
+	.pipe(gulp.dest('./../front-end/src/assets/img/'));
+
+	var fonts = gulp.src(['./fonts/**/*.*'])
+	.pipe(gulp.dest('./../front-end/src/assets/fonts/'));
+
+	return merge(sass, images, fonts);
 });

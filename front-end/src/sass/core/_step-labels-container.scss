@@ -31,7 +31,7 @@
             margin-bottom: 0;
 
             &::before {
-                @include backgroundC("/../../assets/img/icons/step-label-oval.svg");
+                @include backgroundC("icons/step-label-oval.svg");
             }
         }
 
@@ -39,7 +39,7 @@
             content: "";
             width: 10px;
             height: 20px;
-            @include backgroundC("/../../assets/img/icons/step-label-arrow.svg");
+            @include backgroundC("icons/step-label-arrow.svg");
             position: absolute;
             right: -9px;
             top: 50%;
@@ -50,7 +50,7 @@
             content: "";
             width: 15px;
             height: 15px;
-            @include backgroundC("/../../assets/img/icons/step-label-oval-prev.svg");
+            @include backgroundC("icons/step-label-oval-prev.svg");
             position: absolute;
             right: -26px;
             top: 50%;

@@ -97,7 +97,7 @@ body {
             content: "";
             width: 15px;
             height: 15px;
-            @include backgroundC("../img/icons/calendar.svg");
+            @include backgroundC("icons/calendar.svg");
             position: absolute;
             right: 10px;
             top: 7px;
@@ -105,7 +105,7 @@ body {
 
         &:focus, &:active {
             &::after {
-                @include backgroundC("../img/icons/calendar-active.svg");
+                @include backgroundC("icons/calendar-active.svg");
             }    
         }
     }

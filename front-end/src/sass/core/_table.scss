@@ -114,7 +114,7 @@
         width: 8px;
         height: 8px;
         display: inline-block;
-        @include backgroundC("/../../assets/img/icons/table-filter-arrow.svg");
+        @include backgroundC("icons/table-filter-arrow.svg");
         margin-left: 4px;
     }
 }

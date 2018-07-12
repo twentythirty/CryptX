@@ -111,14 +111,14 @@ $mobileHeight: "(max-width: 767px) and (max-height: 600px)";
 
 @mixin backgroundC($imgpath,$position:center center,$repeat: no-repeat) {
 	background: {
-		image: url($imgpath);
+		image: url($imagePath + $imgpath);
 		position: $position;
 		repeat: $repeat;
 	}
 }
 @mixin backgroundL($imgpath,$position:left center,$repeat: no-repeat) {
 	background: {
-		image: url($imgpath);
+		image: url($imagePath + $imgpath);
 		position: $position;
 		repeat: $repeat;
 	}
