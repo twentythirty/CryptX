@@ -3,7 +3,7 @@ import { ActivatedRoute } from '@angular/router';
 
 import { TimelineDetailComponent, SingleTableDataSource } from '../timeline-detail/timeline-detail.component'
 import { TableDataSource, TableDataColumn } from '../../../shared/components/data-table/data-table.component';
-import { TimelineEvent } from '../timeline/timeline.component';
+import { TimelineEvent, StatusColor } from '../timeline/timeline.component';
 import { ActionCellDataColumn, DataCellAction } from '../../../shared/components/data-table-cells';
 
 /**
@@ -111,10 +111,17 @@ export class InvestmentRunDetailComponent extends TimelineDetailComponent implem
       new TimelineEvent(
         'Investment run',
         'Orders filled',
+        StatusColor.SUCCESS,
         'IR-001, rci',
-        '21 May, 2018 10:30'
+        (new Date()).toUTCString(),
+        `/dashboard`
       )
-    )
+    ).map((val: TimelineEvent, i) => {
+      return {
+        ...val,
+        isCurrent: (i == 2) ? true : false
+      }
+    })
     this.setTagLine(0, 0, 0);
   }
 
