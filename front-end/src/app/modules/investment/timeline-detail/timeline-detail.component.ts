@@ -115,6 +115,10 @@ export abstract class TimelineDetailComponent extends DataTableCommonManagerComp
    * Additional
    */
 
+  public goBack(): void {
+
+  }
+
   public setTagLine(items: Array<TagLineItem>): void {
     this.tagLine = items;
   }
