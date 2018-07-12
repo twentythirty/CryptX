@@ -6,6 +6,8 @@ import { TimelineDetailComponent, SingleTableDataSource, TagLineItem } from '../
 import { TableDataSource, TableDataColumn } from '../../../shared/components/data-table/data-table.component';
 import { TimelineEvent } from '../timeline/timeline.component';
 import { ActionCellDataColumn, DataCellAction, DateCellComponent, BooleanCellComponent, DateCellDataColumn, BooleanCellDataColumn, NumberCellDataColumn } from '../../../shared/components/data-table-cells';
+import { InvestmentService } from '../../../services/investment/investment.service';
+import { mergeMap } from 'rxjs/operators';
 
 /**
  * 0. Set HTML and SCSS files in component decorator
@@ -94,7 +96,8 @@ export class InvestmentRunDetailComponent extends TimelineDetailComponent implem
    */
   constructor(
     public route: ActivatedRoute,
-    private router: Router
+    private router: Router,
+    private investmentService: InvestmentService
   ) {
     super(route);
   }
@@ -103,16 +106,31 @@ export class InvestmentRunDetailComponent extends TimelineDetailComponent implem
    * 4. Implement abstract methods to fetch data OnInit
    */
   public getAllData(): void {
-    this.listDataSource.body = [
-      { id: 'IR-3224', created: Date.now(), creator: 'John Doe', status: 'Rejected', decision_by: 'John Doe', decision_time: Date.now(), rationale: 'Lipsum' }
-    ]
-    this.count = 3;
+    this.route.params.pipe(
+      mergeMap(
+        params => this.investmentService.getAllRecipes(params['id'])
+      )
+    ).subscribe(
+      res => {
+        console.log(res);
+        this.listDataSource.body = res.recipe_runs;
+        this.count = res.count;
+      }
+    )
   }
 
   protected getSingleData(): void {
-    this.singleDataSource.body = [
-      { id: 'IR-3224', started: Date.now(), updated: Date.now(), completed: Date.now(), creator: 'John Doe', strategy: 'LCI', simulated: false, deposit: 120000, status: 'Orders Executing' }
-    ]
+    this.route.params.pipe(
+      mergeMap(
+        params => this.investmentService.getSingleInvestment(params['id'])
+      )
+    ).subscribe(
+      res => {
+        if(res.investment_run) {
+          this.singleDataSource.body = [ res.investment_run ];
+        }
+      }
+    )
   }
 
   protected getTimelineData(): void {
