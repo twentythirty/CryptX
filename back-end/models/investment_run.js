@@ -35,5 +35,16 @@ module.exports = (sequelize, DataTypes) => {
     });
   };
 
+  InvestmentRun.prototype.toWeb = function() {
+    let json = this.toJSON();
+    
+    json.started_timestamp = json.started_timestamp.getTime();
+    json.updated_timestamp = json.updated_timestamp.getTime();
+    json.completed_timestamp = (json.completed_timestamp != null ? json.completed_timestamp.getTime() : json.completed_timestamp);
+
+    return json;
+  };
+
+
   return InvestmentRun;
 };

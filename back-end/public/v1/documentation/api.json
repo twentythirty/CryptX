@@ -156,6 +156,69 @@
         }
       }
     },
+    "/investments/{investment_id}/recipes/all": {
+      "get": {
+        "tags": [
+          "investment"
+        ],
+        "description": "Get investment run data by id",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "investment_id",
+            "in": "path",
+            "description": "identifier of investment run to fecth",
+            "required": true,
+            "type": "integer"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "$ref": "#/definitions/RecipeRunListResponse"
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "investment"
+        ],
+        "description": "Get investment run data by id",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "investment_id",
+            "in": "path",
+            "description": "identifier of investment run to fecth",
+            "required": true,
+            "type": "integer"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "description": "The filter definition to perform on the data set. If absent will assume empty filter and return all data",
+            "required": false,
+            "schema": {
+              "$ref": "#/definitions/EntitiesFilter"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "$ref": "#/definitions/InvestmentRunListResponse"
+            }
+          }
+        }
+      }
+    },
     "/recipe/{recipe_run_id}/approve": {
       "post": {
         "tags": [
@@ -226,6 +289,158 @@
             "description": "success",
             "schema": {
               "$ref": "#/definitions/AssetResponse"
+            }
+          }
+        }
+      }
+    },
+    "/assets/{asset_id}": {
+      "get": {
+        "tags": [
+          "assets"
+        ],
+        "summary": "Get single asset by id",
+        "description": null,
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "asset_id",
+            "in": "path",
+            "description": "ID of asset",
+            "required": true,
+            "type": "integer"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "$ref": "#/definitions/AssetResponse"
+            }
+          }
+        }
+      }
+    },
+    "/assets/all": {
+      "get": {
+        "tags": [
+          "assets"
+        ],
+        "description": "Get basic information of all system assets",
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "$ref": "#/definitions/AssetListResponse"
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "assets"
+        ],
+        "description": "Get basic information of filtered system assets",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "description": "The filter definition to perform on the data set. If absent will assume empty filter and return all data",
+            "required": false,
+            "schema": {
+              "$ref": "#/definitions/EntitiesFilter"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "$ref": "#/definitions/AssetResponse"
+            }
+          }
+        }
+      }
+    },
+    "/assets/detailed/{asset_id}": {
+      "get": {
+        "tags": [
+          "assets"
+        ],
+        "summary": "Get detailed information of single asset",
+        "description": "Can be used to get detailed single asset information with status change history. History property will have all status changes of that asset.",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "asset_id",
+            "in": "path",
+            "description": "ID of asset",
+            "required": true,
+            "type": "integer"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "$ref": "#/definitions/AssetDetailedResponse"
+            }
+          }
+        }
+      }
+    },
+    "/assets/detailed/all": {
+      "get": {
+        "tags": [
+          "assets"
+        ],
+        "description": "Get more detailed information about all assets. This returns many additional values that may not be needed a lot of cases. If functionality doesn't use extra values this route provides please use regular asset information.",
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "$ref": "#/definitions/AssetDetailedListResponse"
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "assets"
+        ],
+        "description": "Get more detailed information about assets that meet filter parameters. This returns many additional values that may not be needed a lot of cases. If functionality doesn't use extra values this route provides please use regular asset information.",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "description": "The filter definition to perform on the data set. If absent will assume empty filter and return all data",
+            "required": false,
+            "schema": {
+              "$ref": "#/definitions/EntitiesFilter"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "$ref": "#/definitions/AssetDetailedListResponse"
             }
           }
         }
@@ -1124,9 +1339,28 @@
           "type": "number",
           "example": 43
         },
-        "comment": {
-          "type": "string",
-          "example": "I approve this recipe run because..."
+        "recipe_run": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/RecipeRun"
+          }
+        },
+        "count": {
+          "type": "number",
+          "example": 20
+        }
+      }
+    },
+    "RecipeRunListResponse": {
+      "description": "Recipe run response",
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean",
+          "example": true
+        },
+        "recipe_run": {
+          "$ref": "#/definitions/RecipeRun"
         }
       }
     },
@@ -1195,8 +1429,96 @@
         }
       }
     },
+    "AssetDetailedListResponse": {
+      "description": "Server response with array of detailed asset information",
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean",
+          "example": true
+        },
+        "asset": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/AssetDetailed"
+          }
+        }
+      }
+    },
+    "AssetDetailedResponse": {
+      "description": "Server response with detailed asset information",
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean",
+          "example": true
+        },
+        "asset": {
+          "$ref": "#/definitions/AssetDetailed"
+        },
+        "status_changes": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/AssetStatusChangeHistory"
+          }
+        }
+      }
+    },
+    "AssetDetailed": {
+      "description": "More detailed information about asset.",
+      "type": "object",
+      "allOf": [
+        {
+          "$ref": "#/definitions/Asset"
+        },
+        {
+          "properties": {
+            "capitalization": {
+              "type": "number",
+              "example": 130000000
+            },
+            "nvt_ratio": {
+              "type": "number",
+              "example": 22
+            },
+            "market_share": {
+              "type": "number",
+              "example": 37
+            },
+            "capitalization_updated": {
+              "type": "number",
+              "example": 1525424340810
+            },
+            "status": {
+              "type": "number",
+              "example": 400
+            }
+          }
+        }
+      ]
+    },
+    "AssetListResponse": {
+      "description": "Example of a response where list of assets are returned",
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean",
+          "example": true
+        },
+        "asset": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Asset"
+          }
+        },
+        "count": {
+          "type": "number",
+          "example": 50
+        }
+      }
+    },
     "AssetResponse": {
-      "description": "Asset, or a cryptocurrency, that is used in system for trading puposes.",
+      "description": "Example of server response when asset is retured",
       "type": "object",
       "properties": {
         "success": {
@@ -1209,7 +1531,7 @@
       }
     },
     "Asset": {
-      "description": "Asset, or a cryptocurrency, that is used in system for trading puposes.",
+      "description": "Asset, in other words - cryptocurrency, that is used in system for trading purposes.",
       "type": "object",
       "properties": {
         "id": {
@@ -1231,6 +1553,36 @@
         "is_deposit": {
           "type": "boolean",
           "example": false
+        }
+      }
+    },
+    "AssetStatusChangeHistory": {
+      "description": "Single entry of asset status history.",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "number",
+          "example": 3
+        },
+        "timestamp": {
+          "type": "number",
+          "example": 1525424340810
+        },
+        "comment": {
+          "type": "string",
+          "example": "WHITELISTED"
+        },
+        "type": {
+          "type": "number",
+          "example": 402
+        },
+        "asset_id": {
+          "type": "number",
+          "example": 2
+        },
+        "user_id": {
+          "type": "number",
+          "example": 10
         }
       }
     },
@@ -1298,7 +1650,7 @@
         },
         "completed_timestamp": {
           "type": "number",
-          "example": 1525424340810
+          "example": null
         },
         "user_created_id": {
           "type": "number",

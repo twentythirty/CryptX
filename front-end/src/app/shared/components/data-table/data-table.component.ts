@@ -6,9 +6,12 @@ export interface TableDataSource {
     column: string
     name: string
     filter?: {
-      type: 'text' | 'date' | 'number'
+      type: 'text' | 'boolean' | 'date' | 'number'
       sortable?: boolean
-      rowData?: Array<string>
+      rowData?: Array<{
+        value: string | boolean,
+        label?: string
+      }>
     }
   }>;
   body: Array<object>;
