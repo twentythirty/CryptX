@@ -24,12 +24,14 @@ export class TimelineEvent {
    * @param routerLink - Link to navigate when clicked (if clickable)
    * @param isCurrent - Apply current card-specific style
    */
+  public note?: string;
+
   constructor(
-    public title: string,
-    public status: string,
+    public title?: string,
+    public status?: string,
     public statusClass: StatusClass = StatusClass.DEFAULT,
-    public id: string,
-    public date: string,
+    public id?: string,
+    public date?: string,
     public routerLink?: string,
     public isCurrent: boolean = false
   ) {}
