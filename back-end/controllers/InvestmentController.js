@@ -25,8 +25,14 @@ const createInvestmentRun = async function (req, res) {
   );
   if (err) return ReE(res, err, 422); */
 
+  // mock data below
+  investment_run.toWeb();
+  mock_investment_run = Object.assign(investment_run, {
+    user_created: 'Mock User'
+  })
+
   return ReS(res, {
-    investment_run: investment_run.toWeb()
+    investment_run: mock_investment_run
   })
 };
 module.exports.createInvestmentRun = createInvestmentRun;
@@ -35,14 +41,14 @@ const createRecipeRun = async function (req, res) {
 
   let investment_run_id = req.params.investment_id,
 
-  [err, recipe_run] = await to(
-    investmentService.createRecipeRun(req.user.id, investment_run_id)
-  );
+    [err, recipe_run] = await to(
+      investmentService.createRecipeRun(req.user.id, investment_run_id)
+    );
   if (err) return ReE(res, err, 422);
 
   // mock data added below
   recipe_run.toJSON();
-  recipe_run = Object.assign(recipe_run, { 
+  recipe_run = Object.assign(recipe_run, {
     user_created: 'Mock User',
     approval_user: 'Mock User'
   })
@@ -54,14 +60,20 @@ const createRecipeRun = async function (req, res) {
 module.exports.createRecipeRun = createRecipeRun;
 
 const getInvestmentRun = async function (req, res) {
-  
+
   let investment_run_id = req.params.investment_id;
   let [err, investment_run] = await to(InvestmentRun.findById(investment_run_id,
-  {
-    include: RecipeRun
-  }));
+    {
+      include: RecipeRun
+    }));
 
   if (err) return ReE(res, err.message, 422);
+
+  // mock data below
+  investment_run.toWeb();
+  mock_investment_run = Object.assign(investment_run, {
+    user_created: 'Mock User'
+  })
 
   return ReS(res, {
     investment_run: investment_run
@@ -77,8 +89,31 @@ const getInvestmentRuns = async function (req, res) {
   if (err) return ReE(res, err.message, 422);
 
   let { rows: investment_runs, count } = results;
+
+  // mock data added below
+
+  let mock_investment_runs = investment_runs.map((investment, index) => {
+    investment = investment.toJSON();
+    return Object.assign(investment, {
+      user_created: 'Mock User',
+    })
+  });
+
+  let footer = [
+    { "name": "id", "value": "15" },
+    { "name": "started_timestamp", "value": "1531404392947" },
+    { "name": "updated_timestamp", "value": "1531404392947" },
+    { "name": "completed_timestamp", "value": "null" },
+    { "name": "strategy_type", "value": "102" },
+    { "name": "is_simulated", "value": "true" },
+    { "name": "status", "value": "302" },
+    { "name": "deposit_usd", "value": "399" },
+    { "name": "user_created_id", "value": "2" },
+  ]
+
   return ReS(res, {
-    investment_runs: investment_runs,
+    investment_runs: mock_investment_runs,
+    footer,
     count
   })
 };
@@ -96,15 +131,15 @@ const changeRecipeRunStatus = async function (req, res) {
   ));
   if (err) return ReE(res, err.message, 422);
 
-    // mock data added below
-  recipe_run.toJSON();
-  recipe_run = Object.assign(recipe_run, { 
+  // mock data added below
+  recipe_run.toWeb();
+  mock_recipe_run = Object.assign(recipe_run, {
     user_created: 'Mock User',
     approval_user: 'Mock User'
   })
 
   return ReS(res, {
-    recipe_run: recipe_run
+    recipe_run: mock_recipe_run
   })
 };
 module.exports.changeRecipeRunStatus = changeRecipeRunStatus;
@@ -132,15 +167,15 @@ const getRecipeRun = async function (req, res) {
 
   if (err) return ReE(res, err.message, 422);
 
-    // mock data added below
-  recipe_run.toJSON();
-  recipe_run = Object.assign(recipe_run, { 
+  // mock data added below
+  recipe_run.toWeb();
+  mock_recipe_run = Object.assign(recipe_run, {
     user_created: 'Mock User',
     approval_user: 'Mock User'
   })
 
   return ReS(res, {
-    recipe_run: recipe_run
+    recipe_run: mock_recipe_run
   })
 };
 module.exports.getRecipeRun = getRecipeRun;
@@ -154,26 +189,52 @@ const getRecipeRuns = async function (req, res) {
   if (err) return ReE(res, err.message, 422);
 
   let { rows: recipe_runs, count } = results;
-  
+
   // mock data below
-  let mock_recipes = [...Array(20)].map((recipe, index) => {
-    return {
-      "id": index,
-      "created_timestamp": 1529926807127,
-      "approval_status": 42,
-      "approval_timestamp": 1529926807127,
-      "approval_comment": "Don't do it",
-      "investment_run_id": investment_id,
-      "user_created_id": 2,
-      "user_created": "John Doe",
-      "approval_user_id": 2,
-      "approval_user": "John Doe"
-    };
+  let mock_recipes = recipe_runs.map((recipe, index) => {
+    recipe = recipe.toWeb();
+    return Object.assign(recipe, {
+      user_created: 'Mock User',
+      approval_user: 'Mock User'
+    })
   });
-  
+
+  let footer = [
+    {
+      "name": "id",
+      "value": "999"
+    },
+    {
+      "name": "created_timestamp",
+      "value": "999"
+    },
+    {
+      "name": "approval_status",
+      "value": "999"
+    },
+    {
+      "name": "approval_timestamp",
+      "value": "999"
+    },
+    {
+      "name": "investment_run_id",
+      "value": "999"
+    }, {
+      "name": "user_created_id",
+      "value": "999"
+    }, {
+      "name": "user_created",
+      "value": "999"
+    }, {
+      "name": "approval_user",
+      "value": "999"
+    }
+  ];
+
   return ReS(res, {
     recipe_runs: mock_recipes,
-    count: 20
+    footer,
+    count
   });
 };
 module.exports.getRecipeRuns = getRecipeRuns;
@@ -194,7 +255,7 @@ const getRecipeRunDetail = async function (req, res) {
   // mock data below
   let recipe_run_detail = {
     "id": 1,
-    "investment_percentage": "55.67945412594929",
+    "investment_percentage": "5.67945412594929",
     "recipe_run_id": 5,
     "transaction_asset_id": 2,
     "quote_asset_id": 2,
@@ -202,7 +263,7 @@ const getRecipeRunDetail = async function (req, res) {
     "transaction_asset": "BTC",
     "quote_asset": "XRP",
     "target_exchange": "bitstamp"
-}
+  }
 
   return ReS(res, {
     recipe_detail: recipe_run_detail
@@ -224,21 +285,55 @@ const getRecipeRunDetails = async function (req, res) {
   if (err) return ReE(res, err.message, 422);
 
   // mock data below
-  
+
   let mock_detail = [...Array(20)].map((detail, index) => ({
-      "id": index+1,
-      "investment_percentage": "55.67945412594929",
-      "recipe_run_id": 5,
-      "transaction_asset_id": 2,
-      "quote_asset_id": 2,
-      "target_exchange_id": 5,
-      "transaction_asset": "BTC",
-      "quote_asset": "XRP",
-      "target_exchange": "bitstamp"
+    "id": index + 1,
+    "investment_percentage": "55.67945412594929",
+    "recipe_run_id": 5,
+    "transaction_asset_id": 2,
+    "quote_asset_id": 2,
+    "target_exchange_id": 5,
+    "transaction_asset": "BTC",
+    "quote_asset": "XRP",
+    "target_exchange": "bitstamp"
   }));
 
+  let footer = [
+    {
+      "name": "id",
+      "value": "999"
+    },
+    {
+      "name": "investment_percentage",
+      "value": "999"
+    },
+    {
+      "name": "recipe_run_id",
+      "value": "999"
+    },
+    {
+      "name": "transaction_asset_id",
+      "value": "999"
+    },
+    {
+      "name": "target_exchange_id",
+      "value": "999"
+    }, {
+      "name": "transaction_asset",
+      "value": "999"
+    }, {
+      "name": "quote_asset",
+      "value": "999"
+    }, {
+      "name": "target_exchange",
+      "value": "999"
+    }
+  ];
+
   return ReS(res, {
-    recipe_details: mock_detail
+    recipe_details: mock_detail,
+    footer,
+    count: 20
   })
 };
 module.exports.getRecipeRunDetails = getRecipeRunDetails;
@@ -247,12 +342,13 @@ module.exports.getRecipeRunDetails = getRecipeRunDetails;
 const getRecipeOrder = async function (req, res) {
 
   // mock data below
-  
+
   let mock_detail = {
     id: 1,
-    recipe_order_group_id: "",
-    instrument_id: "",
-    side: "buy",
+    recipe_order_group_id: "31",
+    instrument_id: "12",
+    instrument_name: "BTC/ETH",
+    side: "999",
     price: 100,
     quantity: 7,
     status: 51,
@@ -269,20 +365,60 @@ module.exports.getRecipeOrder = getRecipeOrder;
 const getRecipeOrders = async function (req, res) {
 
   // mock data below
-  
+
   let mock_detail = [...Array(20)].map((detail, index) => ({
-    id: index+1,
-    recipe_order_group_id: "",
-    instrument_id: "",
-    side: "buy",
+    id: index + 1,
+    recipe_order_group_id: "31",
+    instrument_id: "12",
+    instrument_name: "BTC/XRP",
+    side: "999",
     price: 100,
     quantity: 7,
     status: 51,
-    sum_of_exhange_trading_fee: 100
+    sum_of_exhange_trading_fee: 100,
+
   }));
 
+  let footer = [
+    {
+      "name": "id",
+      "value": "999"
+    },
+    {
+      "name": "recipe_order_group_id",
+      "value": "999"
+    },
+    {
+      "name": "instrument_id",
+      "value": "999"
+    },
+    {
+      "name": "instrument_name",
+      "value": "999"
+    },
+    {
+      "name": "side",
+      "value": "999"
+    },
+    {
+      "name": "price",
+      "value": "999"
+    }, {
+      "name": "quantity",
+      "value": "999"
+    }, {
+      "name": "status",
+      "value": "999"
+    }, {
+      "name": "sum_of_exhange_trading_fee",
+      "value": "999"
+    }
+  ];
+
   return ReS(res, {
-    recipe_orders: mock_detail
+    recipe_orders: mock_detail,
+    footer,
+    count: 10
   })
 };
 module.exports.getRecipeOrders = getRecipeOrders;
@@ -291,9 +427,11 @@ module.exports.getRecipeOrders = getRecipeOrders;
 const getRecipeDeposit = async function (req, res) {
 
   // mock data below
-  
+
   let mock_detail = {
     id: 1,
+    transaction_asset_id: 2,
+    exchange_id: 1,
     transaction_asset: "BTC",
     exchange: "BITSTAMP",
     account: "1541154",
@@ -312,9 +450,11 @@ module.exports.getRecipeDeposit = getRecipeDeposit;
 const getRecipeDeposits = async function (req, res) {
 
   // mock data below
-  
+
   let mock_detail = [...Array(20)].map((detail, index) => ({
     id: index,
+    transaction_asset_id: 2,
+    exchange_id: 1,
     transaction_asset: "BTC",
     exchange: "BITSTAMP",
     account: "1541154",
@@ -323,8 +463,47 @@ const getRecipeDeposits = async function (req, res) {
     status: 150,
   }));
 
+  let footer = [
+    {
+      "name": "id",
+      "value": "999"
+    },
+    {
+      "name": "transaction_asset_id",
+      "value": "999"
+    },
+    {
+      "name": "exchange_id",
+      "value": "999"
+    },
+    {
+      "name": "transaction_asset",
+      "value": "999"
+    },
+    {
+      "name": "exchange",
+      "value": "999"
+    },
+    {
+      "name": "account",
+      "value": "999"
+    },
+    {
+      "name": "amount",
+      "value": "999"
+    }, {
+      "name": "investment_percentage",
+      "value": "999"
+    }, {
+      "name": "status",
+      "value": "999"
+    }
+  ];
+
   return ReS(res, {
-    recipe_deposits: mock_detail
+    recipe_deposits: mock_detail,
+    footer,
+    count: 20
   })
 };
 module.exports.getRecipeDeposits = getRecipeDeposits;
@@ -333,16 +512,16 @@ module.exports.getRecipeDeposits = getRecipeDeposits;
 const getExecutionOrder = async function (req, res) {
 
   // mock data below
-  
+
   let mock_detail = {
     id: 1,
     instrument: "BTC/ETH",
-    side: "buy",
-    type: "market",
+    side: 999,
+    type: 71,
     price: 12.01,
     total_quantity: 6.01,
     exchange_trading_fee: 1.01,
-    status: "Pending",
+    status: 61,
     submission_time: 1531396477062,
     completion_time: 1531396477062
   };
@@ -360,18 +539,59 @@ const getExecutionOrders = async function (req, res) {
   let mock_detail = [...Array(20)].map((detail, index) => ({
     id: index,
     instrument: "BTC/ETH",
-    side: "buy",
-    type: "market",
+    side: 999,
+    type: 71,
     price: 12.01,
     total_quantity: 6.01,
     exchange_trading_fee: 1.01,
-    status: "Pending",
+    status: 61,
     submission_time: 1531396477062,
     completion_time: 1531396477062
   }));
 
+  let footer = [
+    {
+      "name": "id",
+      "value": "999"
+    },
+    {
+      "name": "instrument",
+      "value": "999"
+    },
+    {
+      "name": "side",
+      "value": "999"
+    },
+    {
+      "name": "type",
+      "value": "999"
+    },
+    {
+      "name": "price",
+      "value": "999"
+    }, {
+      "name": "total_quantity",
+      "value": "999"
+    }, {
+      "name": "exchange_trading_fee",
+      "value": "999"
+    }, {
+      "name": "status",
+      "value": "999"
+    }, {
+      "name": "submission_time",
+      "value": "999"
+    },
+    {
+      "name": "completion_time",
+      "value": "999"
+    },
+  ];
+
   return ReS(res, {
-    execution_orders: mock_detail
+    execution_orders: mock_detail,
+    footer,
+    count: 20
   })
 };
 module.exports.getExecutionOrders = getExecutionOrders;
@@ -380,7 +600,7 @@ module.exports.getExecutionOrders = getExecutionOrders;
 const ExecutionOrderFill = async function (req, res) {
 
   // mock data below
-  
+
   let mock_detail = {
     id: 1,
     fill_time: 1531396477062,
@@ -397,7 +617,7 @@ module.exports.ExecutionOrderFill = ExecutionOrderFill;
 const ExecutionOrderFills = async function (req, res) {
 
   // mock data below
-  
+
   let mock_detail = [...Array(20)].map((detail, index) => ({
     id: index,
     fill_time: 1531396477062,
@@ -405,8 +625,29 @@ const ExecutionOrderFills = async function (req, res) {
     quantity: 3
   }));
 
+  let footer = [
+    {
+      "name": "id",
+      "value": "999"
+    },
+    {
+      "name": "fill_time",
+      "value": "999"
+    },
+    {
+      "name": "fill_price",
+      "value": "999"
+    },
+    {
+      "name": "quantity",
+      "value": "999"
+    }
+  ];
+
   return ReS(res, {
-    execution_order_fills: mock_detail
+    execution_order_fills: mock_detail,
+    footer: footer,
+    count: 20
   })
 };
 module.exports.ExecutionOrderFills = ExecutionOrderFills;
