@@ -1,7 +1,10 @@
-<div class="timeline-card" *ngFor="let event of timelineEvents"
+<a class="step-label"
+  *ngFor="let event of timelineEvents"
   (click)="openEvent(event)" [class.current]="event.isCurrent">
-  <h5>{{ event.title }}</h5>
-  <p><small [style.color]="event.statusColor">{{ event.status }}</small></p>
-  <p>{{ event.id }}</p>
-  <p>{{ (event.date | date:'dd MMMM, yyyy hh:mm') || '-' }}</p>
-</div>
+    <span class="title">{{ event.title }}</span>
+    <label class="{{ event.statusClass }}">{{ event.status }}</label>
+    <div class="data">
+      <span>{{ event.id }}</span><br>
+      <span>{{ (event.date | date:'dd MMMM, yyyy hh:mm') || '-' }}</span>
+    </div>
+</a>

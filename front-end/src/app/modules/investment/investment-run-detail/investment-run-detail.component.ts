@@ -1,9 +1,9 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 
-import { TimelineDetailComponent, SingleTableDataSource } from '../timeline-detail/timeline-detail.component'
+import { TimelineDetailComponent, SingleTableDataSource, TagLineItem } from '../timeline-detail/timeline-detail.component'
 import { TableDataSource, TableDataColumn } from '../../../shared/components/data-table/data-table.component';
-import { TimelineEvent, StatusColor } from '../timeline/timeline.component';
+import { TimelineEvent, StatusClass } from '../timeline/timeline.component';
 import { ActionCellDataColumn, DataCellAction } from '../../../shared/components/data-table-cells';
 
 /**
@@ -111,7 +111,7 @@ export class InvestmentRunDetailComponent extends TimelineDetailComponent implem
       new TimelineEvent(
         'Investment run',
         'Orders filled',
-        StatusColor.SUCCESS,
+        StatusClass.SUCCESS,
         'IR-001, rci',
         (new Date()).toUTCString(),
         `/dashboard`
@@ -122,7 +122,11 @@ export class InvestmentRunDetailComponent extends TimelineDetailComponent implem
         isCurrent: (i == 2) ? true : false
       }
     })
-    this.setTagLine(0, 0, 0);
+    this.setTagLine([
+      new TagLineItem(`${0} Orders`, () => alert('Open Orders')),
+      new TagLineItem(`${0} Execution orders`, () => alert('Open Execution orders')),
+      new TagLineItem(`${0} Deposits`, () => alert('Open Deposits'))
+    ]);
   }
 
   /**
