@@ -1,11 +1,10 @@
-<div class="dashboard-item-status">
-  <a href="javascript:void(0)" class="title">{{ pageTitle }}</a>
+<app-page-heading [heading]="pageTitle">
   <ul class="dashboard-item-details">
     <li *ngFor="let item of tagLine">
       <a (click)="doItemAction(item)">{{ item.title }}</a>
     </li>
   </ul>
-</div>
+</app-page-heading>
 <div class="left-part-dashboard">
   <span class="headline-title">{{ singleTitle }}</span>
   <app-data-table [dataSource]="singleDataSource" [columnsToShow]="singleColumnsToShow" (openRow)="openSingleRow($event)">

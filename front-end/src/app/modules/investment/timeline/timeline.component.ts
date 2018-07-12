@@ -1,16 +1,7 @@
 import { Component, OnInit, Input } from '@angular/core';
 import { Router } from '@angular/router';
 
-/**
- * This can later be mapped to certain CSS classes
- */
-export enum StatusClass {
-  DEFAULT = 'default',
-  REJECTED = 'rejected',
-  FAILED = 'failed',
-  PENDING = 'pending',
-  APPROVED = 'approved',
-}
+import { StatusClass } from '../../../shared/models/common';
 
 export class TimelineEvent {
   /**

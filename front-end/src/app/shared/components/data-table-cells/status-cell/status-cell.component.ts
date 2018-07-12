@@ -1,0 +1,41 @@
+import { Component, OnInit, Input } from '@angular/core';
+import { TableDataColumn } from '../../data-table/data-table.component';
+
+export class StatusCellDataColumn extends TableDataColumn {
+  component? = StatusCellComponent;
+  inputs?: {
+    value?: any;
+    classMap?: (Function | { [key: string]: string });
+  }
+  outputs?: {
+
+  }
+  constructor(val: StatusCellDataColumn) {
+    super(val);
+  }
+}
+
+@Component({
+  selector: 'app-status-cell',
+  templateUrl: './status-cell.component.html',
+  styleUrls: ['./status-cell.component.scss']
+})
+export class StatusCellComponent implements OnInit {
+
+  @Input() value: any;
+  @Input() classMap: (Function | { [key: string]: string });
+
+  constructor() { }
+
+  ngOnInit() {
+  }
+
+  public getStatusClass(value: any): string {
+    if(typeof this.classMap == 'function') {
+      return this.classMap(value);
+    } else if(this.classMap) {
+      return this.classMap[value] || '';
+    } else return '';
+  }
+
+}

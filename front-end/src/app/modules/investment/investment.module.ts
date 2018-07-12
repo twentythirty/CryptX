@@ -7,6 +7,7 @@ import { SharedModule } from '../../shared/shared.module';
 import { BrowserModule } from '@angular/platform-browser';
 import { TimelineComponent } from './timeline/timeline.component';
 import { InvestmentRunDetailComponent } from './investment-run-detail/investment-run-detail.component';
+import { RecipeRunDetailComponent } from './recipe-run-detail/recipe-run-detail.component';
 
 @NgModule({
   imports: [
@@ -18,7 +19,8 @@ import { InvestmentRunDetailComponent } from './investment-run-detail/investment
   ],
   declarations: [
     TimelineComponent,
-    InvestmentRunDetailComponent
+    InvestmentRunDetailComponent,
+    RecipeRunDetailComponent
   ]
 })
 export class InvestmentModule { }
