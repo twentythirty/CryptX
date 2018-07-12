@@ -5,6 +5,7 @@ import { HttpClient } from '@angular/common/http';
 import { Asset, AssetStatus } from '../../shared/models/asset';
 import { EntitiesFilter } from '../../shared/models/api/entitiesFilter';
 import { ActionResultData } from '../../shared/models/api/actionResultData';
+import { environment } from '../../../environments/environment';
 
 export class AssetsAllResponse {
   success: boolean;
@@ -15,26 +16,27 @@ export class AssetsAllResponse {
 
 export class AssetResultData {
   success: boolean;
-  asset: Asset;
+  assets: Asset;
+  status_changes: Array<AssetStatus>;
 }
 
 @Injectable()
 export class AssetService {
 
-  private baseUrl: string = 'api/v1/';
+  private baseUrl: string = environment.baseUrl;
 
   constructor(private http: HttpClient) { }
 
   getAllAssets(requestData?: EntitiesFilter): Observable<AssetsAllResponse>{
     if(requestData) {
-      return this.http.post<AssetsAllResponse>(this.baseUrl + `assets/all`, requestData);
+      return this.http.post<AssetsAllResponse>(this.baseUrl + `assets/detailed/all`, requestData);
     } else {
-      return this.http.get<AssetsAllResponse>(this.baseUrl + `assets/all`);
+      return this.http.get<AssetsAllResponse>(this.baseUrl + `assets/detailed/all`);
     }
   }
 
   getAsset(assetId: number) {
-    return this.http.get<AssetResultData>(this.baseUrl + `assets/${assetId}`);
+    return this.http.get<AssetResultData>(this.baseUrl + `assets/detailed/${assetId}`);
   }
 
   changeAssetStatus(assetId: number, status: AssetStatus): Observable<any> {

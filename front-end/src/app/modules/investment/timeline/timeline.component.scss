@@ -1,6 +1,9 @@
-.timeline-card {
-  background: white;
-  border: 1px solid black;
-  margin-bottom: 1rem;
-  padding: 1rem;
+.data-note {
+  min-height: 58px;
+  display: flex !important;
+  align-items: center;
+  text-transform: none !important;
+  text-align: center;
+  justify-content: center;
+  color: #e6eaec !important;
 }

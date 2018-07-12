@@ -1,33 +1,30 @@
-<h1>Users</h1>
-<span>{{usersCount}}</span>
-
-  <app-form-action-bar>
-    <div right>
-      <button
-        [routerLink]="['/users/add']"
-      >Add User</button>
+ <main> 
+  <div class="wrapper">
+    <div class="top-controls">
+      <span class="headline-title">{{count}} Users</span>
+      <a [routerLink]="['/users/add']" class="btn start" modal-btn-open="">
+        <span>Add new user</span>
+      </a>
     </div>
-  </app-form-action-bar>
-
-  <app-data-table
-    [dataSource]="usersDataSource"
-    [customRows]="true"
-    [columnsToShow]="usersColumnsToShow"
-    (setFilter)="onSetFilter($event)"
-  >
-    <tr
-      *ngFor="let item of usersDataSource.body"
-      [routerLink]="['/users/edit', item.id]"
+      <app-data-table
+      [dataSource]="usersDataSource"
+      [customRows]="true"
+      [columnsToShow]="usersColumnsToShow"
+      (setFilter)="onSetFilter($event)"
     >
-
-      <td *ngFor="let index of usersColumnsToShow">
-        {{item[index]}}
-      </td>
-
-    </tr>
-  </app-data-table>
-  <app-pagination
-    [count]="count"
-    [perPage]="pageSize"
-    [page]="page"
-  ></app-pagination>
+      <tr 
+        *ngFor="let item of usersDataSource.body"
+        [routerLink]="['/users/edit', item.id]"
+      >
+        <td *ngFor="let index of usersColumnsToShow">
+          <span>{{item[index]}}</span>
+        </td>
+      </tr>
+    </app-data-table>
+    <app-pagination
+      [count]="count"
+      [perPage]="pageSize"
+      [page]="page"
+    ></app-pagination>
+  </div>
+</main>

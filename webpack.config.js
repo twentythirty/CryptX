@@ -154,6 +154,7 @@ let configuration = {
     ],
     "styles": [
       "./front-end/src/styles.scss"
+      //'./html/css/index.css'
     ]
   },
   "output": {

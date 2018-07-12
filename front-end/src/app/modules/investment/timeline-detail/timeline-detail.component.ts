@@ -29,6 +29,13 @@ export interface SingleTableDataSource extends TableDataSource {
   footer?: undefined;
 }
 
+export class TagLineItem {
+  constructor(
+    public title: string,
+    public action?: () => void
+  ) {}
+}
+
 /**
  * 0. HTML and SCSS files in component decorator
  */
@@ -39,7 +46,7 @@ export interface SingleTableDataSource extends TableDataSource {
 })
 export abstract class TimelineDetailComponent extends DataTableCommonManagerComponent implements OnInit {
 
-  public tagLine: string;
+  public tagLine: Array<TagLineItem> = [];
 
   /**
    * 1. Abstract attributes to display titles
@@ -47,7 +54,7 @@ export abstract class TimelineDetailComponent extends DataTableCommonManagerComp
   public abstract pageTitle: string;
   public abstract singleTitle: string;
   public abstract listTitle: string;
-  public abstract addTitle: string;
+  public addTitle: string;  // Optional
 
   /**
    * 2. Abstract attributes to preset data structure
@@ -97,7 +104,10 @@ export abstract class TimelineDetailComponent extends DataTableCommonManagerComp
   /**
    * 5. Abstract methods to handle user actions
    */
-  public abstract addAction(): void;
+  public addAction(): void {
+    // Do nothing by default
+  }
+
   public abstract openSingleRow(row: any): void;
   public abstract openListRow(row: any): void;
 
@@ -105,8 +115,12 @@ export abstract class TimelineDetailComponent extends DataTableCommonManagerComp
    * Additional
    */
 
-  public setTagLine(orders, executionOrders, deposits): void {
-    this.tagLine = `${orders} Orders   |   ${executionOrders} Execution orders   |   ${deposits} Deposits`
+  public setTagLine(items: Array<TagLineItem>): void {
+    this.tagLine = items;
+  }
+
+  public doItemAction(item: TagLineItem): void {
+    if(item.action) item.action();
   }
 
 }

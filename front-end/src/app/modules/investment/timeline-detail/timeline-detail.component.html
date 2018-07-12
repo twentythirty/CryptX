@@ -1,41 +1,26 @@
-<div>
-  <div>
-    <h1>
-      {{ pageTitle }}
-      <small class="assets-count">{{ count }}</small>
-    </h1>
-    <p>{{ tagLine }}</p>
-  </div>
+<div class="dashboard-item-status">
+  <a href="javascript:void(0)" class="title">{{ pageTitle }}</a>
+  <ul class="dashboard-item-details">
+    <li *ngFor="let item of tagLine">
+      <a (click)="doItemAction(item)">{{ item.title }}</a>
+    </li>
+  </ul>
 </div>
-<div class="timeline-detail-wrap">
-  <div class="column">
-    <div class="table-wrap">
-      <div class="table-header">
-        <h3>{{ singleTitle }}</h3>
-      </div>
-      <app-data-table
-        [dataSource]="singleDataSource"
-        [columnsToShow]="singleColumnsToShow"
-        (openRow)="openSingleRow($event)">
-      </app-data-table>
-    </div>
-    <div class="table-wrap">
-      <div class="table-header">
-        <h3>{{ listTitle }}</h3>
-        <app-btn (click)="addAction()">
-          {{ addTitle }}
-        </app-btn>
-      </div>
-      <app-data-table
-        [dataSource]="listDataSource"
-        [columnsToShow]="listColumnsToShow"
-        (setFilter)="onSetFilter($event)"
-        (openRow)="openListRow($event)">
-      </app-data-table>
-      <app-pagination [count]="count" [perPage]="pageSize" [page]="page"></app-pagination>
-    </div>
+<div class="left-part-dashboard">
+  <span class="headline-title">{{ singleTitle }}</span>
+  <app-data-table [dataSource]="singleDataSource" [columnsToShow]="singleColumnsToShow" (openRow)="openSingleRow($event)">
+  </app-data-table>
+  <div class="top-controls">
+    <span class="headline-title">{{ listTitle }}</span>
+    <a *ngIf="addTitle" (click)="addAction()" class="btn start">
+      <span>{{ addTitle }}</span>
+    </a>
   </div>
-  <div class="column column-side">
-    <app-timeline [timelineEvents]="timelineEvents"></app-timeline>
-  </div>
+  <app-data-table [dataSource]="listDataSource" [columnsToShow]="listColumnsToShow" (setFilter)="onSetFilter($event)" (openRow)="openListRow($event)">
+  </app-data-table>
+  <app-pagination [count]="count" [perPage]="pageSize" [page]="page"></app-pagination>
+</div>
+<!-- If there is no step-labels, hide whole container -->
+<div class="step-labels-container">
+  <app-timeline [timelineEvents]="timelineEvents"></app-timeline>
 </div>

@@ -1,10 +1,10 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 
-import { TimelineDetailComponent, SingleTableDataSource } from '../timeline-detail/timeline-detail.component'
+import { TimelineDetailComponent, SingleTableDataSource, TagLineItem } from '../timeline-detail/timeline-detail.component'
 import { TableDataSource, TableDataColumn } from '../../../shared/components/data-table/data-table.component';
-import { TimelineEvent } from '../timeline/timeline.component';
-import { ActionCellDataColumn, DataCellAction } from '../../../shared/components/data-table-cells';
+import { TimelineEvent, StatusClass } from '../timeline/timeline.component';
+import { ActionCellDataColumn, DataCellAction, DateCellComponent, BooleanCellComponent, DateCellDataColumn, BooleanCellDataColumn, NumberCellDataColumn } from '../../../shared/components/data-table-cells';
 
 /**
  * 0. Set HTML and SCSS files in component decorator
@@ -22,7 +22,7 @@ export class InvestmentRunDetailComponent extends TimelineDetailComponent implem
   public pageTitle: string = 'Recipe run';
   public singleTitle: string = 'Investment run';
   public listTitle: string = 'Recipe runs';
-  public addTitle: string = '+ Start new run';
+  public addTitle: string = 'Start new run';
 
   /**
    * 2. Implement abstract attributes to preset data structure
@@ -50,7 +50,7 @@ export class InvestmentRunDetailComponent extends TimelineDetailComponent implem
       { column: 'created', name: 'created', filter: {type: 'text', sortable: true }},
       { column: 'creator', name: 'creator', filter: {type: 'text', sortable: true }},
       { column: 'status', name: 'status', filter: {type: 'text', sortable: true }},
-      { column: 'desicion_by', name: 'desicion_by', filter: {type: 'text', sortable: true }},
+      { column: 'decision_by', name: 'desicion_by', filter: {type: 'text', sortable: true }},
       { column: 'decision_time', name: 'decision_time', filter: {type: 'text', sortable: true }},
       { column: 'rationale', name: 'rationale', filter: {type: 'text', sortable: true }},
     ],
@@ -58,24 +58,33 @@ export class InvestmentRunDetailComponent extends TimelineDetailComponent implem
   };
 
   public singleColumnsToShow: Array<string | TableDataColumn> = [
-    ...this.singleDataSource.header.map(
-      h => h.column
-    )
+    'id',
+    new DateCellDataColumn({ column: 'started' }),
+    new DateCellDataColumn({ column: 'updated' }),
+    new DateCellDataColumn({ column: 'completed' }),
+    'creator',
+    'strategy',
+    new BooleanCellDataColumn({ column: 'simulated' }),
+    new NumberCellDataColumn({ column: 'deposit' }),
+    'status',
   ];
 
   public listColumnsToShow: Array<string | TableDataColumn> = [
-    ...this.listDataSource.header.map(
-      h => h.column
-    ).map(
-      h => h == 'rationale' ? new ActionCellDataColumn({ column: h, inputs: {
+    'id',
+    new DateCellDataColumn({ column: 'created' }),
+    'creator',
+    'status',
+    'decision_by',
+    new DateCellDataColumn({ column: 'decision_time' }),
+    new ActionCellDataColumn({ column: 'rationale', inputs: {
         actions: [
           new DataCellAction({
             label: 'READ',
             exec: (row: any) => { this.readRationale(<any>row) }
           })
         ]
-      } }) : h
-    ),
+      }
+    }),
   ];
 
   /**
@@ -93,29 +102,38 @@ export class InvestmentRunDetailComponent extends TimelineDetailComponent implem
    */
   public getAllData(): void {
     this.listDataSource.body = [
-      { one: 1, two: 2, three: 3 },
-      { one: 1, two: 2, three: 3 },
-      { one: 1, two: 2, three: 3 }
+      { id: 'IR-3224', created: Date.now(), creator: 'John Doe', status: 'Rejected', decision_by: 'John Doe', decision_time: Date.now(), rationale: 'Lipsum' }
     ]
     this.count = 3;
   }
 
   protected getSingleData(): void {
     this.singleDataSource.body = [
-      { one: 1, two: 2, three: 3 }
+      { id: 'IR-3224', started: Date.now(), updated: Date.now(), completed: Date.now(), creator: 'John Doe', strategy: 'LCI', simulated: false, deposit: 120000, status: 'Orders Executing' }
     ]
   }
 
   protected getTimelineData(): void {
-    this.timelineEvents = Array(5).fill(
-      new TimelineEvent(
-        'Investment run',
-        'Orders filled',
-        'IR-001, rci',
-        '21 May, 2018 10:30'
+    this.timelineEvents = [
+      ...Array(2).fill(
+        new TimelineEvent(
+          'Investment run',
+          'Orders filled',
+          StatusClass.APPROVED,
+          'IR-001, rci',
+          (new Date()).toUTCString(),
+          `/dashboard`
+        )
+      ),
+      ...Array(3).fill(
+        { note: 'Investments isn\'t made yet' }
       )
-    )
-    this.setTagLine(0, 0, 0);
+    ]
+    this.setTagLine([
+      new TagLineItem(`${0} Orders`, () => alert('Open Orders')),
+      new TagLineItem(`${0} Execution orders`, () => alert('Open Execution orders')),
+      new TagLineItem(`${0} Deposits`, () => alert('Open Deposits'))
+    ]);
   }
 
   /**
@@ -123,7 +141,9 @@ export class InvestmentRunDetailComponent extends TimelineDetailComponent implem
    */
 
   public addAction(): void {
-    alert('add?')
+    this.listDataSource.body.push({
+      ...this.listDataSource.body[0]
+    })
   }
 
   public openSingleRow(row: any): void {
@@ -148,7 +168,7 @@ export class InvestmentRunDetailComponent extends TimelineDetailComponent implem
    */
 
   public readRationale(row): void {
-    alert('Reading rationale...')
+    alert(row.rationale)
   }
 
 }

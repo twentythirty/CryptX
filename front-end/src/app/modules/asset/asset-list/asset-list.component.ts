@@ -38,10 +38,10 @@ export class AssetListComponent extends DataTableCommonManagerComponent implemen
       { column: 'long_name', name: 'Long name', filter: { type: 'text', sortable: true } },
       { column: 'is_base', name: 'Is base?', filter: { type: 'text', sortable: true } },
       { column: 'is_deposit', name: 'Is deposit?', filter: { type: 'text', sortable: true } },
-      { column: 'capitalisation', name: 'Capitalisation', filter: { type: 'text', sortable: true } },
+      { column: 'capitalization', name: 'Capitalisation', filter: { type: 'text', sortable: true } },
       { column: 'nvt_ratio', name: 'NVT ratio', filter: { type: 'text', sortable: true } },
       { column: 'market_share', name: 'Market share', filter: { type: 'text', sortable: true } },
-      { column: 'capitalisation_updated_timestamp', name: 'Capitalisation updated', filter: { type: 'text', sortable: true } },
+      { column: 'capitalization_updated_timestamp', name: 'Capitalisation updated', filter: { type: 'text', sortable: true } },
       { column: '', name: 'Action' }
     ],
     body: []
@@ -61,10 +61,10 @@ export class AssetListComponent extends DataTableCommonManagerComponent implemen
     'long_name',
     new BooleanCellDataColumn({ column: 'is_base' }),
     new BooleanCellDataColumn({ column: 'is_deposit' }),
-    new CurrencyCellDataColumn({ column: 'capitalisation' }),
+    new CurrencyCellDataColumn({ column: 'capitalization' }),
     new NumberCellDataColumn({ column: 'nvt_ratio' }),
     new PercentCellDataColumn({ column: 'market_share' }),
-    new DateCellDataColumn({ column: 'capitalisation_updated_timestamp' }),
+    new DateCellDataColumn({ column: 'capitalization_updated_timestamp' }),
     new ActionCellDataColumn({ column: null,
       inputs: {
         actions: [
@@ -108,7 +108,7 @@ export class AssetListComponent extends DataTableCommonManagerComponent implemen
         if(res.footer) {
           this.assetsDataSource.footer = this.assetsColumnsToShow.map(col => {
             let key = (typeof col == 'string') ? col : col.column;
-            return res.footer.find(f => f.name == key) || '';
+            return (res.footer.find(f => f.name == key) || {}).value || '';
           })
         }
         this.count = res.count || res.assets.length;
