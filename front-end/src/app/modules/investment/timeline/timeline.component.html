@@ -1,6 +1,7 @@
-<div class="timeline-card" *ngFor="let event of timelineEvents">
+<div class="timeline-card" *ngFor="let event of timelineEvents"
+  (click)="openEvent(event)" [class.current]="event.isCurrent">
   <h5>{{ event.title }}</h5>
-  <p><small>{{ event.status }}</small></p>
+  <p><small [style.color]="event.statusColor">{{ event.status }}</small></p>
   <p>{{ event.id }}</p>
-  <p>{{ event.date }}</p>
+  <p>{{ (event.date | date:'dd MMMM, yyyy hh:mm') || '-' }}</p>
 </div>
