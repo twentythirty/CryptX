@@ -4,6 +4,7 @@ import { ActivatedRoute } from '@angular/router';
 import { TimelineDetailComponent, SingleTableDataSource } from '../timeline-detail/timeline-detail.component'
 import { TableDataSource, TableDataColumn } from '../../../shared/components/data-table/data-table.component';
 import { TimelineEvent } from '../timeline/timeline.component';
+import { ActionCellDataColumn, DataCellAction } from '../../../shared/components/data-table-cells';
 
 /**
  * 0. Set HTML and SCSS files in component decorator
@@ -65,7 +66,16 @@ export class InvestmentRunDetailComponent extends TimelineDetailComponent implem
   public listColumnsToShow: Array<string | TableDataColumn> = [
     ...this.listDataSource.header.map(
       h => h.column
-    )
+    ).map(
+      h => h == 'rationale' ? new ActionCellDataColumn({ column: h, inputs: {
+        actions: [
+          new DataCellAction({
+            label: 'READ',
+            exec: (row: any) => { this.readRationale(<any>row) }
+          })
+        ]
+      } }) : h
+    ),
   ];
 
   /**
@@ -131,6 +141,14 @@ export class InvestmentRunDetailComponent extends TimelineDetailComponent implem
 
   ngOnInit() {
     super.ngOnInit();
+  }
+
+  /**
+   * Additional
+   */
+
+  public readRationale(row): void {
+    alert('Reading rationale...')
   }
 
 }
