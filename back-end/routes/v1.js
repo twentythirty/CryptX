@@ -253,6 +253,8 @@ router.get(
   check_permissions,
   InvestmentController.getInvestmentRun
 );
+
+// Recipe Runs
 router.post(
   ROUTES.ApproveRecipeRun.router_string,
   stateless_auth,
@@ -265,20 +267,6 @@ router.post(
   check_permissions,
   InvestmentController.createRecipeRun
 );
-
-router.get(
-  ROUTES.GetRecipeOrders.router_string,
-  stateless_auth,
-  check_permissions,
-  OrdersController.getOrdersGroup
-);
-router.post(
-  ROUTES.AlterOrdersGroup.router_string,
-  stateless_auth,
-  check_permissions,
-  OrdersController.changeOrdersGroupStatus
-);
-
 router.get(
   ROUTES.GetRecipeRuns.router_string,
   stateless_auth,
@@ -300,6 +288,41 @@ router.get(
   filter_reducer,
   InvestmentController.getRecipeRun
 );
+
+
+// Recipe orders
+/* router.get( // original
+  ROUTES.GetRecipeOrders.router_string,
+  stateless_auth,
+  check_permissions,
+  OrdersController.getOrdersGroup
+); */
+router.get(
+  ROUTES.GetRecipeOrders.router_string,
+  stateless_auth,
+  check_permissions,
+  InvestmentController.getRecipeOrders
+);
+router.post(
+  ROUTES.GetRecipeOrders.router_string,
+  stateless_auth,
+  check_permissions,
+  InvestmentController.getRecipeOrders
+);
+router.get(
+  ROUTES.GetRecipeOrder.router_string,
+  stateless_auth,
+  check_permissions,
+  InvestmentController.getRecipeOrder
+);
+router.post(
+  ROUTES.AlterOrdersGroup.router_string,
+  stateless_auth,
+  check_permissions,
+  OrdersController.changeOrdersGroupStatus
+);
+
+// Recipe run details
 router.get(
   ROUTES.GetRecipeRunDetails.router_string,
   stateless_auth,
@@ -307,7 +330,86 @@ router.get(
   filter_reducer,
   InvestmentController.getRecipeRunDetails
 );
+router.post(
+  ROUTES.GetRecipeRunDetails.router_string,
+  stateless_auth,
+  check_permissions,
+  filter_reducer,
+  InvestmentController.getRecipeRunDetails
+);
+router.get(
+  ROUTES.GetRecipeRunDetail.router_string,
+  stateless_auth,
+  check_permissions,
+  filter_reducer,
+  InvestmentController.getRecipeRunDetail
+);
 
+// Recipe orders
+router.get(
+  ROUTES.GetRecipeRunDeposits.router_string,
+  stateless_auth,
+  check_permissions,
+  filter_reducer,
+  InvestmentController.getRecipeDeposits
+);
+router.post(
+  ROUTES.GetRecipeRunDeposits.router_string,
+  stateless_auth,
+  check_permissions,
+  filter_reducer,
+  InvestmentController.getRecipeDeposits
+);
+router.get(
+  ROUTES.GetRecipeRunDeposit.router_string,
+  stateless_auth,
+  check_permissions,
+  InvestmentController.getRecipeDeposit
+);
+
+ // Execution orders
+router.get(
+  ROUTES.GetExecutionOrders.router_string,
+  stateless_auth,
+  check_permissions,
+  filter_reducer,
+  InvestmentController.getExecutionOrders
+);
+router.post(
+  ROUTES.GetExecutionOrders.router_string,
+  stateless_auth,
+  check_permissions,
+  filter_reducer,
+  InvestmentController.getExecutionOrders
+);
+router.get(
+  ROUTES.GetExecutionOrder.router_string,
+  stateless_auth,
+  check_permissions,
+  InvestmentController.getExecutionOrder
+);
+
+ // Execution order fills
+ router.get(
+  ROUTES.GetExecutionOrdersFills.router_string,
+  stateless_auth,
+  check_permissions,
+  filter_reducer,
+  InvestmentController.ExecutionOrderFills
+);
+router.post(
+  ROUTES.GetExecutionOrdersFills.router_string,
+  stateless_auth,
+  check_permissions,
+  filter_reducer,
+  InvestmentController.ExecutionOrderFills
+);
+router.get(
+  ROUTES.GetExecutionOrdersFill.router_string,
+  stateless_auth,
+  check_permissions,
+  InvestmentController.ExecutionOrderFill
+);
 
 router.post(
   ROUTES.CreateDeposit.router_string,

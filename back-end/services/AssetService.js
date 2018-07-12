@@ -118,20 +118,20 @@ const getStrategyAssets = async function (strategy_type, exclude_from_index = []
 
   let totalMarketShare = 0;
   // selects all assets before threshold MARKETCAP_LIMIT_PERCENT, total marketshare sum of assets
-  let assets_selected = assets.reduce((acc, coin) => {
+  let before_marketshare_limit = assets.reduce((acc, coin, currentIndex) => {
     totalMarketShare += coin.avg_share;
     if(totalMarketShare <= SYSTEM_SETTINGS.MARKETCAP_LIMIT_PERCENT)
       acc.push(coin);
     return acc;
   }, []);
 
-  let lci = assets_selected.slice(0, SYSTEM_SETTINGS.INDEX_LCI_CAP);
+  let lci = before_marketshare_limit.slice(0, SYSTEM_SETTINGS.INDEX_LCI_CAP);
 
   if (strategy_type == STRATEGY_TYPES.LCI) {
     return lci;
   }
 
-  let mci = assets_selected.slice(lci.length, lci.length + SYSTEM_SETTINGS.INDEX_MCI_CAP);
+  let mci = assets.slice(lci.length, lci.length + SYSTEM_SETTINGS.INDEX_MCI_CAP);
 
   return mci;
 };

@@ -16,10 +16,9 @@ const getAsset = async function (req, res) {
   }));
   if (err) return ReE(res, err.message, 422);
   if (!asset) return ReE(res, 'Asset not found', 422);
-
+  
   return ReS(res, {
-    asset: asset,
-    status_changes
+    asset: asset
   })
 };
 module.exports.getAsset = getAsset;
