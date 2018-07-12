@@ -1,9 +1,10 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 
+import { StatusClass } from '../../../shared/models/common';
 import { TimelineDetailComponent, SingleTableDataSource, TagLineItem } from '../timeline-detail/timeline-detail.component'
 import { TableDataSource, TableDataColumn } from '../../../shared/components/data-table/data-table.component';
-import { TimelineEvent, StatusClass } from '../timeline/timeline.component';
+import { TimelineEvent } from '../timeline/timeline.component';
 import { ActionCellDataColumn, DataCellAction, DateCellComponent, BooleanCellComponent, DateCellDataColumn, BooleanCellDataColumn, NumberCellDataColumn } from '../../../shared/components/data-table-cells';
 
 /**
@@ -131,9 +132,9 @@ export class InvestmentRunDetailComponent extends TimelineDetailComponent implem
       )
     ]
     this.setTagLine([
-      new TagLineItem(`${0} Orders`, () => alert('Open Orders')),
-      new TagLineItem(`${0} Execution orders`, () => alert('Open Execution orders')),
-      new TagLineItem(`${0} Deposits`, () => alert('Open Deposits'))
+      new TagLineItem(`${0} Orders`),
+      new TagLineItem(`${0} Execution orders`),
+      new TagLineItem(`${0} Deposits`)
     ]);
   }
 

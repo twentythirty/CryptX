@@ -1,10 +1,12 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 
+import { StatusClass } from '../../../shared/models/common';
+
 import { TimelineDetailComponent, SingleTableDataSource, TagLineItem } from '../timeline-detail/timeline-detail.component'
 import { TableDataSource, TableDataColumn } from '../../../shared/components/data-table/data-table.component';
-import { TimelineEvent, StatusClass } from '../timeline/timeline.component';
-import { ActionCellDataColumn, DataCellAction, DateCellDataColumn, PercentCellDataColumn } from '../../../shared/components/data-table-cells';
+import { TimelineEvent } from '../timeline/timeline.component';
+import { ActionCellDataColumn, DataCellAction, DateCellDataColumn, PercentCellDataColumn, StatusCellDataColumn } from '../../../shared/components/data-table-cells';
 
 /**
  * 0. Set HTML and SCSS files in component decorator
@@ -59,7 +61,9 @@ export class RecipeRunDetailComponent extends TimelineDetailComponent implements
     new DateCellDataColumn({ column: 'creation_time' }),
     'instrument',
     'creator',
-    'status',
+    new StatusCellDataColumn({ column: 'status', inputs: { classMap: (val) => {
+      return StatusClass.APPROVED;
+    }}}),
     'decision_by',
     new DateCellDataColumn({ column: 'decision_time' }),
     'rationale',
@@ -132,9 +136,9 @@ export class RecipeRunDetailComponent extends TimelineDetailComponent implements
       )
     ]
     this.setTagLine([
-      new TagLineItem(`${0} Orders`, () => alert('Open Orders')),
-      new TagLineItem(`${0} Execution orders`, () => alert('Open Execution orders')),
-      new TagLineItem(`${0} Deposits`, () => alert('Open Deposits'))
+      new TagLineItem(`${0} Orders`),
+      new TagLineItem(`${0} Execution orders`),
+      new TagLineItem(`${0} Deposits`)
     ]);
   }
 
