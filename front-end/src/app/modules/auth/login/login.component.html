@@ -1,3 +1,48 @@
+<div class="login-block">
+  <div class="top">
+    <img alt class="logo">
+  </div>
+  <form (ngSubmit)="authenticate()" action class="the-form login-form" >
+    <div class="form-item with-icons icon-login">
+        <input type="text" placeholder="Login" name="user" [(ngModel)]="username">
+    </div>
+    <div class="form-item with-icons icon-password">
+         <input type="password" placeholder="Password" name="pwd" [(ngModel)]="password">
+    </div>
+    <a (click)="showPassReset()" class="forgot-pass">Forgot password?</a>
+    <p>
+      {{ status }}
+    </p>
+    <div class="btn-wrap btn-right">
+        <button class="btn" type="submit">Login</button>
+    </div>
+  </form>
+</div>
+
+<app-modal *ngIf="showPasswordReset" (close)="hidePassReset()" heading="Please enter your Email">
+    <div *ngIf="!password_reset_sent">
+      <form>
+          <span class="label label-after-title">We will contact you soon</span>
+          <div class="form-item">
+            <input [(ngModel)]="reset_email" name="email" type="text" placeholder="Enter email">
+          </div>
+        <p>{{ password_reset_status }}</p>
+        <div class="btn-wrap btn-right">
+            <button class="btn submit" type="submit" (click)="requestPasswordReset()">Submit</button>
+         </div>
+      </form>
+    </div>
+    <div *ngIf="password_reset_sent">
+      <span class="label label-after-title">Email sent.
+      <br>Please check your inbox.</span>
+    </div>
+</app-modal>
+
+
+
+
+<!--
+
 <div class="login-wrapper">
   <div class="login-form">
     <div class="login-logo">
@@ -35,7 +80,7 @@
           <input [(ngModel)]="reset_email" name="email" type="text">
         </p>
         <p>{{ password_reset_status }}</p>
-        <button (click)="requestPasswordReset()">Send</button>
+        <button class="btn" type="submit" (click)="requestPasswordReset()">Send</button>
       </form>
     </div>
     <div *ngIf="password_reset_sent">
@@ -44,3 +89,5 @@
     </div>
   </app-modal>
 </div>
+
+-->

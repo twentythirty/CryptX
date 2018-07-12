@@ -1,19 +1,18 @@
-<table>
+<table class="data-table">
   <thead *ngIf="dataSource.header?.length > 0">
     <tr>
       <th *ngFor="let item of dataSource.header">
-        <button
-          class="table-order-button"
+        <a
           (click)="filterMap[item.column] = !filterMap[item.column]"
         >
           {{item.name}}
+          <div class="sort-arrow"></div>
           <span
             *ngIf="item.filter"
             [class.ucaret]="filterMap[item.column]"
             [class.dcaret]="!filterMap[item.column]"
           ></span>
-        </button>
-
+        </a>
         <app-data-table-filter
           *ngIf="item.filter"
           [hidden]="!item.filter || !filterMap[item.column]"

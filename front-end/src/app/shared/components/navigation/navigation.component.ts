@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit} from '@angular/core';
 
 import { AuthService } from '../../../services/auth/auth.service';
 import { Router } from '@angular/router';
@@ -11,10 +11,12 @@ import { Router } from '@angular/router';
 })
 export class NavigationComponent implements OnInit {
   showUserMenu: boolean = false;
+  initials: String;
 
   constructor(private authService: AuthService, private router: Router) { }
 
   ngOnInit() {
+    this.initials= (this.authService.user.first_name.charAt(0) + this.authService.user.last_name.charAt(0)).toUpperCase();
   }
 
   checkPerm (perm_code) {
@@ -29,4 +31,5 @@ export class NavigationComponent implements OnInit {
   toggleUserMenu () {
     this.showUserMenu = !this.showUserMenu;
   }
+
 }

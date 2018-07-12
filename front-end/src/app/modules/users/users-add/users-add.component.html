@@ -1,33 +1,48 @@
-<app-content-block
-  heading="User information"
->
-  <label>Name</label>
-  <input type="text" [(ngModel)]="firstName"><br>
-    <label>Surname</label>
-  <input type="text" [(ngModel)]="lastName"><br>
-    <label>Email</label>
-  <input type="email" [(ngModel)]="email">
-</app-content-block>
-<app-content-block
-  heading="User roles"
->
-<div *ngIf="rolelist">
-   <app-checkbox
-      *ngFor="let role of rolelist"
-      [label]="role.name"
-      [checked]="role.is_active"
-      (onToggle)="addRole(role)"
-    ></app-checkbox>
-</div>
-</app-content-block>
-
-<app-form-action-bar>
-
-  <div right>
-    <button
+<main>
+  <div class="wrapper">
+    <app-page-heading heading="{{userName}}">
+    </app-page-heading>
+    <div class="split-content">
+      <app-content-block
+        heading="User information">
+        <div class="form-item">
+            <label class="label-name">Name</label>
+            <input type="text" placeholder="Enter name" [(ngModel)]="firstName">
+          </div>
+          <div class="form-item">
+            <label class="label-name">Surname</label>
+            <input type="text" placeholder="Enter surname" [(ngModel)]="lastName">
+          </div>
+          <div class="form-item">
+            <label class="label-name">Email</label>
+            <input type="email" placeholder="Enter email" [(ngModel)]="email">
+          </div>
+      </app-content-block>
+      <app-content-block 
+        heading="User roles">
+        <div class="check-list">
+          <div class="checkboxes-item" *ngFor="let role of rolelist">
+            <label class="label-name">{{role.name}}</label>
+            <div class="checkboxes-modal">
+              <app-button-checkbox 
+                [value]="role.name" 
+                [checked]="role.is_active" 
+                labelTrue="Select" 
+                labelFalse="Select" 
+                (onToggle)="addRole(role)">
+              </app-button-checkbox>
+            </div>
+          </div>
+        </div>
+      </app-content-block>
+      </div>
+    </div>
+</main>
+<div class="sticky-controls-bar">
+  <div class="wrapper">
+    <button class="btn submit"
       [disabled]="loading"
       (click)="saveUser()"
-    >Add User</button>
+    >Submit</button>
   </div>
-
-</app-form-action-bar>
+</div>

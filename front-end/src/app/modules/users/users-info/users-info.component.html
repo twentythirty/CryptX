@@ -1,45 +1,61 @@
-<app-content-block *ngIf="user"
-  heading="User information"
->
-  <label>Name</label>
-  <input type="text" [(ngModel)]="user.first_name"><br>
-    <label>Surname</label>
-  <input type="text" [(ngModel)]="user.last_name"><br>
-    <label>Email</label>
-  <input type="email" [(ngModel)]="user.email">
-</app-content-block>
-<app-content-block
-  heading="User roles"
->
-<div *ngIf="rolelist">
-   <app-checkbox
-      *ngFor="let role of rolelist"
-      [label]="role.name"
-      [checked]="role.is_active"
-      (onToggle)="addRole(role)"
-    ></app-checkbox>
-</div>
-</app-content-block>
-
+<main>
+  <div class="wrapper">
+    <app-page-heading heading="{{userName}}">
+    </app-page-heading>
+    <div class="split-content">
+      <app-content-block *ngIf="user"
+        heading="User information">
+        <div class="form-item" >
+            <label class="label-name">Name</label>
+            <input type="text" placeholder="Enter name" [(ngModel)]="user.first_name">
+          </div>
+          <div class="form-item">
+            <label class="label-name">Surname</label>
+            <input type="text" placeholder="Enter surname" [(ngModel)]="user.last_name">
+          </div>
+          <div class="form-item">
+            <label class="label-name">Email</label>
+            <input type="email" placeholder="Enter email" [(ngModel)]="user.email">
+          </div>
+      </app-content-block>
+      <app-content-block 
+        heading="User roles">
+        <div class="check-list">
+          <div class="checkboxes-item" *ngFor="let role of rolelist">
+            <label class="label-name">{{role.name}}</label>
+            <div class="checkboxes-modal">
+              <app-button-checkbox 
+                [value]="role.name" 
+                [checked]="role.is_active" 
+                labelTrue="Select" 
+                labelFalse="Select" 
+                (onToggle)="addRole(role)">
+              </app-button-checkbox>
+            </div>
+          </div>
+        </div>
+      </app-content-block>
+      </div>
+    </div>
+</main>
 <app-form-action-bar>
-  <div left *ngIf="userId">
-    <button *ngIf="buttonName"
-      [disabled]="loading"
-      (click)="showDeactivateConfirm = true"
-    >{{buttonName}}</button>
-  </div>
-
-  <div right *ngIf="userId">
-    <button
-      [disabled]="loading"
-      (click)="saveUser()"
-    >Save changes</button>
+  <div *ngIf="userId">
+    <button 
+      *ngIf="buttonName" 
+      class="btn deactive" 
+      [disabled]="loading" 
+      (click)="showDeactivateConfirm = true">
+      {{buttonName}}</button>
+    <button 
+      class="btn submit" 
+      [disabled]="loading" 
+      (click)="saveUser()">
+      Submit</button>
   </div>
 </app-form-action-bar>
-
-<app-confirm
-  *ngIf="showDeactivateConfirm"
-  message="Are you sure you want {{buttonName}} this user?"
+<app-confirm 
+  *ngIf="showDeactivateConfirm" 
+  heading="Are you sure you want {{buttonName}} this user?" 
   (onReject)="closeDeactivateConfirm()"
-  (onConfirm)="deactivateUser()"
-></app-confirm>
+  (onConfirm)="deactivateUser()">
+</app-confirm>
