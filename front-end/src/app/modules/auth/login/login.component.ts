@@ -1,4 +1,6 @@
-import { NgModule, Component, OnInit } from '@angular/core';
+declare function require(path: string);
+
+import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common'; 
@@ -6,8 +8,6 @@ import { BrowserModule } from '@angular/platform-browser';
 
 import { AuthService } from '../../../services/auth/auth.service';
 
-import { BtnComponent } from '../../../shared/components/btn/btn.component';
-import { ModalComponent } from '../../../shared/components/modal/modal.component';
 
 @Component({
   selector: 'app-login',
@@ -15,6 +15,8 @@ import { ModalComponent } from '../../../shared/components/modal/modal.component
   styleUrls: ['./login.component.scss']
 })
 export class LoginComponent implements OnInit {
+  imageLogo = require('Images/Logo.png');
+
   username:string = '';
   password:string = '';
   status: string = '';
@@ -26,9 +28,7 @@ export class LoginComponent implements OnInit {
 
   constructor(private authService: AuthService, private router: Router) { }
 
-  ngOnInit() {
-    
-  }
+  ngOnInit() {}
 
   authenticate () {
     this.authService.authenticate(this.username, this.password).subscribe(

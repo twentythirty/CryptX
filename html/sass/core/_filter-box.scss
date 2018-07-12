@@ -14,7 +14,7 @@
         content: "";
         width: 16px;
         height: 7px;
-        @include backgroundC("../img/icons/filter-box-arrow.png");
+        @include backgroundC("icons/filter-box-arrow.png");
         background-size: 16px;
         position: absolute;
         top: -6px;
@@ -44,7 +44,7 @@
                 width: 20px;
                 height: 20px;
                 display: inline-block;
-                @include backgroundC("../img/icons/search.svg");
+                @include backgroundC("icons/search.svg");
                 cursor: pointer;
                 margin-top: 6px;
             }
@@ -90,7 +90,7 @@
                     position: absolute;
                     right: 5px;
                     top: 7px;
-                    @include backgroundC("../img/icons/search-close.svg");
+                    @include backgroundC("icons/search-close.svg");
                 }
             }
         }

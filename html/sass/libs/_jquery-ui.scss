@@ -154,13 +154,13 @@
     }
 
     .ui-datepicker-prev {
-        @include backgroundC("../img/icons/calendar-prev.svg");
+        @include backgroundC("icons/calendar-prev.svg");
         left: -10px;
         top: 0;
     }
 
     .ui-datepicker-next {
-        @include backgroundC("../img/icons/calendar-next.svg");
+        @include backgroundC("icons/calendar-next.svg");
         right: -10px;
         top: 0;
     }

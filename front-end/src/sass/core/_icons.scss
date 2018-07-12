@@ -1,11 +1,12 @@
+@import "../config";
+
 @font-face {
 	font-family: "icons";
-	src: url('/../../assets/fonts/icons.eot?ts=1529918758812');
-	src: url('/../../assets/fonts/icons.eot?ts=1529918758812#iefix') format('eot'),
-		 url('/../../assets/fonts/icons.woff?ts=1529918758812') format('woff'),
-		 url('/../../assets/fonts/icons.ttf?ts=1529918758812') format('truetype'),
-		 url('/../../assets/fonts/icons.svg#icons?ts=1529918758812') format('svg');
-     
+	src: url($fontPath + 'icons.eot?ts=1531398658400');
+	src: url($fontPath + 'icons.eot?ts=1531398658400#iefix') format('eot'),
+		 url($fontPath + 'icons.woff?ts=1531398658400') format('woff'),
+		 url($fontPath + 'icons.ttf?ts=1531398658400') format('truetype'),
+		 url($fontPath + 'icons.svg#icons?ts=1531398658400') format('svg');
 }
 
 
@@ -48,4 +49,4 @@
 
 .icon_user-arrow {
   @include icon(user-arrow);
-}
+}
