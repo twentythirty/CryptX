@@ -12,7 +12,15 @@ export class InvestmentService {
 
   constructor(private http: HttpClient) { }
 
+  /**
+   * Create and investment
+   */
+
   // /investments/create
+
+  /**
+   * Lists with(out) filters
+   */
 
   getAllInvestments(requestData?: EntitiesFilter): Observable<any>{
     if(requestData) {
@@ -70,24 +78,55 @@ export class InvestmentService {
     }
   }
 
-  // get /investments/:investment_id
-  // get /recipes/:recipe_id
-  // get /orders/:order_id
-  // get /recipe_deposits/:recipe_detail_id
-  // get /execution_orders/:order_detail_id
-  // get /exec_orders_fills/:exec_order_fill_id
+  /**
+   * Get single entities
+   */
 
+  getSingleInvestment(investment_id: number): Observable<any> {
+    return this.http.get<any>(this.baseUrl + `investments/${investment_id}`);
+  }
+
+  getSingleRecipe(recipe_id: number): Observable<any> {
+    return this.http.get<any>(this.baseUrl + `recipes/${recipe_id}`);
+  }
+
+  getSingleOrder(order_id: number): Observable<any> {
+    return this.http.get<any>(this.baseUrl + `orders/${order_id}`);
+  }
+
+  getSingleRecipeDeposit(recipe_detail_id: number): Observable<any> {
+    return this.http.get<any>(this.baseUrl + `recipe_deposits/${recipe_detail_id}`);
+  }
+
+  getSingleExecutionOrder(order_detail_id: number): Observable<any> {
+    return this.http.get<any>(this.baseUrl + `execution_orders/${order_detail_id}`);
+  }
+
+  getSingleExecOrdersFill(exec_order_fill_id: number): Observable<any> {
+    return this.http.get<any>(this.baseUrl + `exec_orders_fills/${exec_order_fill_id}`);
+  }
+
+  /**
+   * Start recipe run
+   */
 
   // /investments/:investment_id/start_recipe_run
+
+  /**
+   * Recipe run methods
+   */
 
   // get /recipes/:recipe_id/details
   // /recipes/:recipe_id/approve"
 
+  /**
+   * No idea what this is
+   */
   // get /recipe_details/:recipe_detail_id
 
+  /**
+   * Wut
+   */
   // /orders/:order_group_id/alter
-
-
-
 
 }
