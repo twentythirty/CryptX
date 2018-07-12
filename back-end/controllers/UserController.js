@@ -8,6 +8,7 @@ const adminViewsService = require('../services/AdminViewsService');
 const inviteService = require('./../services/InvitationService');
 const mailUtil = require('./../utils/EmailUtil');
 const model_constants = require('../config/model_constants');
+require('../config/validators');
 
 const create = async function (req, res) {
   const body = req.body;
@@ -108,6 +109,7 @@ const login = async function (req, res) {
     token: session.token,
     permissions: perms,
     model_constants: model_constants,
+    validators: VALIDATORS,
     user: user.toWeb(false)
   });
 };
