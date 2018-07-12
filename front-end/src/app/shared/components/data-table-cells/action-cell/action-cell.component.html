@@ -1,3 +1,3 @@
 <ng-container *ngFor="let action of actions">
-  <button *ngIf="action.isShown(row)" (click)="doAction(action, $event)">{{ action.label }}</button>
+  <label class="rationale-status" *ngIf="action.isShown(row)" (click)="doAction(action, $event)">{{ action.label }}</label>
 </ng-container>

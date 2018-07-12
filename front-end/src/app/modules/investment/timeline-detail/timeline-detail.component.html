@@ -12,6 +12,9 @@
   </app-data-table>
   <div class="top-controls">
     <span class="headline-title">{{ listTitle }}</span>
+    <a *ngIf="addTitle" (click)="addAction()" class="btn start">
+      <span>{{ addTitle }}</span>
+    </a>
   </div>
   <app-data-table [dataSource]="listDataSource" [columnsToShow]="listColumnsToShow" (setFilter)="onSetFilter($event)" (openRow)="openListRow($event)">
   </app-data-table>

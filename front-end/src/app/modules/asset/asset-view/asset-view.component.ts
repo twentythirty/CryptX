@@ -37,8 +37,8 @@ export class AssetViewComponent extends AssetListComponent implements OnInit {
         this.assetId = params.assetId;
         this.assetService.getAsset(this.assetId).subscribe(
           (res: AssetResultData) => {
-            this.assetsDataSource.body = [res.asset];
-            this.activityLog = res.asset.AssetStatusChanges
+            this.assetsDataSource.body = [res.assets];
+            this.activityLog = res.status_changes
             this.count = 1;
           }
         )
