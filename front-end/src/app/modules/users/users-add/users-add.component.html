@@ -1,5 +1,4 @@
-<main>
-  <div class="wrapper">
+
     <app-page-heading heading="{{userName}}">
     </app-page-heading>
     <div class="split-content">
@@ -18,17 +17,17 @@
             <input type="email" placeholder="Enter email" [(ngModel)]="email">
           </div>
       </app-content-block>
-      <app-content-block 
+      <app-content-block
         heading="User roles">
         <div class="check-list">
           <div class="checkboxes-item" *ngFor="let role of rolelist">
             <label class="label-name">{{role.name}}</label>
             <div class="checkboxes-modal">
-              <app-button-checkbox 
-                [value]="role.name" 
-                [checked]="role.is_active" 
-                labelTrue="Select" 
-                labelFalse="Select" 
+              <app-button-checkbox
+                [value]="role.name"
+                [checked]="role.is_active"
+                labelTrue="Select"
+                labelFalse="Select"
                 (onToggle)="addRole(role)">
               </app-button-checkbox>
             </div>
@@ -36,8 +35,6 @@
         </div>
       </app-content-block>
       </div>
-    </div>
-</main>
 <div class="sticky-controls-bar">
   <div class="wrapper">
     <button class="btn submit"
