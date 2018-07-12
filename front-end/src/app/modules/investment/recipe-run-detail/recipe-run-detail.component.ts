@@ -6,7 +6,7 @@ import { StatusClass } from '../../../shared/models/common';
 import { TimelineDetailComponent, SingleTableDataSource, TagLineItem } from '../timeline-detail/timeline-detail.component'
 import { TableDataSource, TableDataColumn } from '../../../shared/components/data-table/data-table.component';
 import { TimelineEvent } from '../timeline/timeline.component';
-import { ActionCellDataColumn, DataCellAction, DateCellDataColumn, PercentCellDataColumn, StatusCellDataColumn } from '../../../shared/components/data-table-cells';
+import { ActionCellDataColumn, DataCellAction, DateCellDataColumn, PercentCellDataColumn, StatusCellDataColumn, ConfirmCellDataColumn } from '../../../shared/components/data-table-cells';
 
 /**
  * 0. Set HTML and SCSS files in component decorator
@@ -67,7 +67,10 @@ export class RecipeRunDetailComponent extends TimelineDetailComponent implements
     'decision_by',
     new DateCellDataColumn({ column: 'decision_time' }),
     'rationale',
-    'actions',  // TODO: Actions component
+    new ConfirmCellDataColumn({ column: 'actions', inputs: {
+      execConfirm: (row) => this.confirmRun(row),
+      execDecline: (row) => this.declineRun(row),
+    } }),  // TODO: Actions component
   ];
 
   public listColumnsToShow: Array<string | TableDataColumn> = [
@@ -166,5 +169,14 @@ export class RecipeRunDetailComponent extends TimelineDetailComponent implements
   /**
    * Additional
    */
+
+  private confirmRun(run: any): void {
+    alert('confirmRun');
+  }
+
+  private declineRun(run: any): void {
+    alert('declineRun');
+  }
+
 
 }
