@@ -24,6 +24,7 @@ import { RolesModule } from './modules/roles/roles.module';
 import { UsersModule } from './modules/users/users.module';
 import { AssetModule } from './modules/asset/asset.module';
 import { AssetService } from './services/asset/asset.service';
+import { InvestmentService } from './services/investment/investment.service';
 import { InvestmentModule } from './modules/investment/investment.module';
 
 
@@ -69,6 +70,7 @@ import { InvestmentModule } from './modules/investment/investment.module';
     RolesService,
     AssetService,
     UsersService,
+    InvestmentService,
     ModelConstantsService
   ],
   bootstrap: [AppComponent]
