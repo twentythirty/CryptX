@@ -1,28 +1,27 @@
 import { Component, OnInit } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute } from '@angular/router';
 
 import { TimelineDetailComponent, SingleTableDataSource, TagLineItem } from '../timeline-detail/timeline-detail.component'
 import { TableDataSource, TableDataColumn } from '../../../shared/components/data-table/data-table.component';
 import { TimelineEvent, StatusClass } from '../timeline/timeline.component';
-import { ActionCellDataColumn, DataCellAction, DateCellComponent, BooleanCellComponent, DateCellDataColumn, BooleanCellDataColumn, NumberCellDataColumn } from '../../../shared/components/data-table-cells';
+import { ActionCellDataColumn, DataCellAction, DateCellDataColumn, PercentCellDataColumn } from '../../../shared/components/data-table-cells';
 
 /**
  * 0. Set HTML and SCSS files in component decorator
  */
 @Component({
-  selector: 'app-investment-run-detail',
+  selector: 'app-recipe-run-detail',
   templateUrl: '../timeline-detail/timeline-detail.component.html',
   styleUrls: ['../timeline-detail/timeline-detail.component.scss']
 })
-export class InvestmentRunDetailComponent extends TimelineDetailComponent implements OnInit {
+export class RecipeRunDetailComponent extends TimelineDetailComponent implements OnInit {
 
   /**
    * 1. Implement abstract attributes to display titles
    */
   public pageTitle: string = 'Recipe run';
-  public singleTitle: string = 'Investment run';
-  public listTitle: string = 'Recipe runs';
-  public addTitle: string = 'Start new run';
+  public singleTitle: string = 'Recipe runs';
+  public listTitle: string = 'Recipe run details';
 
   /**
    * 2. Implement abstract attributes to preset data structure
@@ -32,14 +31,14 @@ export class InvestmentRunDetailComponent extends TimelineDetailComponent implem
   public singleDataSource: SingleTableDataSource = {
     header: [
       { column: 'id', name: 'Id' },
-      { column: 'started', name: 'Started' },
-      { column: 'updated', name: 'Updated' },
-      { column: 'completed', name: 'Completed' },
+      { column: 'creation_time', name: 'Creation time' },
+      { column: 'instrument', name: 'Instrument' },
       { column: 'creator', name: 'Creator' },
-      { column: 'strategy', name: 'Strategy' },
-      { column: 'simulated', name: 'Simulated' },
-      { column: 'deposit', name: 'Deposit' },
-      { column: 'status', name: 'Status' }
+      { column: 'status', name: 'Status' },
+      { column: 'decision_by', name: 'Decision by' },
+      { column: 'decision_time', name: 'Decision time' },
+      { column: 'rationale', name: 'Rationale' },
+      { column: 'actions', name: 'Actions' }
     ],
     body: null
   }
@@ -47,44 +46,32 @@ export class InvestmentRunDetailComponent extends TimelineDetailComponent implem
   public listDataSource: TableDataSource = {
     header: [
       { column: 'id', name: 'Id', filter: {type: 'text', sortable: true }},
-      { column: 'created', name: 'Created', filter: {type: 'text', sortable: true }},
-      { column: 'creator', name: 'Creator', filter: {type: 'text', sortable: true }},
-      { column: 'status', name: 'Status', filter: {type: 'text', sortable: true }},
-      { column: 'desicion_by', name: 'Desicion by', filter: {type: 'text', sortable: true }},
-      { column: 'decision_time', name: 'Decision time', filter: {type: 'text', sortable: true }},
-      { column: 'rationale', name: 'Rationale', filter: {type: 'text', sortable: true }},
+      { column: 'transaction_asset', name: 'Transaction asset', filter: {type: 'text', sortable: true }},
+      { column: 'quote_asset', name: 'Quote asset', filter: {type: 'text', sortable: true }},
+      { column: 'exchange', name: 'Exchange', filter: {type: 'text', sortable: true }},
+      { column: 'percentage', name: 'Percentage, %', filter: {type: 'text', sortable: true }}
     ],
     body: null,
   };
 
   public singleColumnsToShow: Array<string | TableDataColumn> = [
     'id',
-    new DateCellDataColumn({ column: 'started' }),
-    new DateCellDataColumn({ column: 'updated' }),
-    new DateCellDataColumn({ column: 'completed' }),
-    'creator',
-    'strategy',
-    new BooleanCellDataColumn({ column: 'simulated' }),
-    new NumberCellDataColumn({ column: 'deposit' }),
-    'status',
-  ];
-
-  public listColumnsToShow: Array<string | TableDataColumn> = [
-    'id',
-    new DateCellDataColumn({ column: 'created' }),
+    new DateCellDataColumn({ column: 'creation_time' }),
+    'instrument',
     'creator',
     'status',
     'decision_by',
     new DateCellDataColumn({ column: 'decision_time' }),
-    new ActionCellDataColumn({ column: 'rationale', inputs: {
-        actions: [
-          new DataCellAction({
-            label: 'READ',
-            exec: (row: any) => { this.readRationale(<any>row) }
-          })
-        ]
-      }
-    }),
+    'rationale',
+    'actions',  // TODO: Actions component
+  ];
+
+  public listColumnsToShow: Array<string | TableDataColumn> = [
+    'id',
+    'transaction_asset',
+    'quote_asset',
+    'exchange',
+    new PercentCellDataColumn({ column: 'percentage' })
   ];
 
   /**
@@ -92,8 +79,7 @@ export class InvestmentRunDetailComponent extends TimelineDetailComponent implem
    * @param route - ActivatedRoute, used in DataTableCommonManagerComponent
    */
   constructor(
-    public route: ActivatedRoute,
-    private router: Router
+    public route: ActivatedRoute
   ) {
     super(route);
   }
@@ -103,14 +89,29 @@ export class InvestmentRunDetailComponent extends TimelineDetailComponent implem
    */
   public getAllData(): void {
     this.listDataSource.body = [
-      { id: 'IR-3224', created: Date.now(), creator: 'John Doe', status: 'Rejected', decision_by: 'John Doe', decision_time: Date.now(), rationale: 'Lipsum' }
+      {
+        id: 'IR-3242',
+        transaction_asset: 'BTC',
+        quote_asset: 'ETH',
+        exchange: 'Bitstamp',
+        percentage: 5.11,
+      }
     ]
     this.count = 3;
   }
 
   protected getSingleData(): void {
     this.singleDataSource.body = [
-      { id: 'IR-3224', started: Date.now(), updated: Date.now(), completed: Date.now(), creator: 'John Doe', strategy: 'LCI', simulated: false, deposit: 120000, status: 'Orders Executing' }
+      {
+        id: 'IR-3242',
+        creation_time: Date.now(),
+        instrument: 'BTC/ETH',
+        creator: 'John Doe',
+        status: 'Pending',
+        decision_by: null,
+        decision_time: null,
+        rationale: null
+      }
     ]
   }
 
@@ -141,18 +142,12 @@ export class InvestmentRunDetailComponent extends TimelineDetailComponent implem
    * 5. Implement abstract methods to handle user actions
    */
 
-  public addAction(): void {
-    this.listDataSource.body.push({
-      ...this.listDataSource.body[0]
-    })
-  }
-
   public openSingleRow(row: any): void {
-    // Do nothing
+    // Navigate to a single item page
   }
 
   public openListRow(row: any): void {
-    this.router.navigate([`/run/recipe/${row.id}`])
+    alert('Navigate to a row item page');
   }
 
   /**
@@ -167,9 +162,5 @@ export class InvestmentRunDetailComponent extends TimelineDetailComponent implem
   /**
    * Additional
    */
-
-  public readRationale(row): void {
-    alert(row.rationale)
-  }
 
 }
