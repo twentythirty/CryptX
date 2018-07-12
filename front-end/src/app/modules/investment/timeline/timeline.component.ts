@@ -5,10 +5,11 @@ import { Router } from '@angular/router';
  * This can later be mapped to certain CSS classes
  */
 export enum StatusClass {
-  DEFAULT =  '',
-  REJECTED = '',
-  PENDING = '',
-  SUCCESS = 'approved'
+  DEFAULT = 'default',
+  REJECTED = 'rejected',
+  FAILED = 'failed',
+  PENDING = 'pending',
+  APPROVED = 'approved',
 }
 
 export class TimelineEvent {

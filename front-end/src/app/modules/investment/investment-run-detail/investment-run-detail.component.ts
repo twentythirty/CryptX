@@ -111,7 +111,7 @@ export class InvestmentRunDetailComponent extends TimelineDetailComponent implem
       new TimelineEvent(
         'Investment run',
         'Orders filled',
-        StatusClass.SUCCESS,
+        StatusClass.APPROVED,
         'IR-001, rci',
         (new Date()).toUTCString(),
         `/dashboard`
