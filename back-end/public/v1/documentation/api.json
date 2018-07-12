@@ -156,11 +156,49 @@
         }
       }
     },
-    "/investments/{investment_id}/recipes/all": {
+    "/investments/{investment_id}/start_recipe_run": {
+      "post": {
+        "tags": [
+          "investment"
+        ],
+        "description": "Get investment run data by id",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "investment_id",
+            "in": "path",
+            "description": "ID of investment run that recipe will be created for",
+            "required": true,
+            "type": "number"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "description": "Recipe run creation body. This can be empty",
+            "required": false,
+            "schema": {
+              "$ref": "#/definitions/RecipeRunCreateRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "$ref": "#/definitions/RecipeRunResponse"
+            }
+          }
+        }
+      }
+    },
+    "/recipes/of_investment/{investment_id}": {
       "get": {
         "tags": [
           "investment"
         ],
+        "summary": "Get recipe runs of investment run.",
         "description": "Get investment run data by id",
         "produces": [
           "application/json"
@@ -219,7 +257,7 @@
         }
       }
     },
-    "/recipe/{recipe_run_id}/approve": {
+    "/recipes/{recipe_run_id}/approve": {
       "post": {
         "tags": [
           "investment"
@@ -300,7 +338,7 @@
           "assets"
         ],
         "summary": "Get single asset by id",
-        "description": null,
+        "description": "Fetch single asset information.",
         "produces": [
           "application/json"
         ],
@@ -1377,6 +1415,10 @@
         }
       }
     },
+    "RecipeRunCreateRequest": {
+      "description": "Request body for recipe run creation",
+      "type": "object"
+    },
     "RecipeRun": {
       "description": "Recipe run",
       "type": "object",
@@ -1397,6 +1439,10 @@
           "type": "number",
           "example": 4
         },
+        "user_created": {
+          "type": "string",
+          "example": "John Doe"
+        },
         "approval_status": {
           "type": "number",
           "example": 41
@@ -1412,6 +1458,10 @@
         "approval_user_id": {
           "type": "number",
           "example": 6
+        },
+        "approval_user": {
+          "type": "string",
+          "example": "John Doe"
         }
       }
     },
@@ -1655,6 +1705,10 @@
         "user_created_id": {
           "type": "number",
           "example": 6
+        },
+        "user_created": {
+          "type": "string",
+          "example": "John Doe"
         },
         "strategy_type": {
           "type": "number",
