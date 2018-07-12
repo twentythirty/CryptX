@@ -216,6 +216,16 @@ ROUTES = {
     permissions_matcher: ROUTE_MATCHERS.GetAssets,
     required_permissions: [PERMISSIONS.VIEW_ASSETS]
   },
+  GetAssetDetailedInfo: {
+    router_string: "/assets/detailed/:asset_id",
+    permissions_matcher: ROUTE_MATCHERS.GetAssetDetailedInfo,
+    required_permissions: [PERMISSIONS.VIEW_ASSETS]
+  },
+  GetAssetsDetailed: {
+    router_string: "/assets/detailed/all",
+    permissions_matcher: ROUTE_MATCHERS.GetAssetsDetailed,
+    required_permissions: [PERMISSIONS.VIEW_ASSETS]
+  },
   ChangeAssetStatus: {
     router_string: "/assets/:asset_id/change_status",
     permissions_matcher: ROUTE_MATCHERS.ChangeAssetStatus,
@@ -244,7 +254,7 @@ ROUTES = {
     required_permissions: [PERMISSIONS.VIEW_INVESTMENT_RUN]
   },
   GetRecipeRuns: {
-    router_string: "/recipes/all",
+    router_string: "/investments/:inverstment_id/recipes/all",
     permissions_matcher: ROUTE_MATCHERS.GetRecipeRuns,
     required_permissions: [PERMISSIONS.VIEW_INVESTMENT_RUN]
   },

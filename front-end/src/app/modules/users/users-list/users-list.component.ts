@@ -1,10 +1,8 @@
-import { Component, OnInit } from '@angular/core';
-import { DataTableComponent, TableDataSource } from '../../../shared/components/data-table/data-table.component';
+import { Component } from '@angular/core';
+import { TableDataSource } from '../../../shared/components/data-table/data-table.component';
 import { ActivatedRoute } from '@angular/router';
 
 import { UsersService } from '../../../services/users/users.service';
-import { RolesAllRequestData } from '../../../shared/models/api/rolesAllRequestData';
-import { User } from '../../../shared/models/user';
 import { DataTableCommonManagerComponent } from '../../../shared/components/data-table-common-manager/data-table-common-manager.component';
 
 @Component({
@@ -12,31 +10,31 @@ import { DataTableCommonManagerComponent } from '../../../shared/components/data
   templateUrl: './users-list.component.html',
   styleUrls: ['./users-list.component.scss']
 })
-export class UsersListComponent extends DataTableCommonManagerComponent implements OnInit {
-
-  constructor(private userService: UsersService, public route: ActivatedRoute) { super(route);}
-
-
+export class UsersListComponent extends DataTableCommonManagerComponent {
   usersDataSource: TableDataSource = {
     header: [
-      { column: 'first_name', name: 'name', filter: { type: 'text', sortable: true }},
-      { column: 'last_name', name: 'surname', filter: { type: 'text', sortable: true}},
-      { column: 'email', name: 'email', filter: { type: 'text', sortable: true}},
-      { column: 'created_at', name: 'creation date', filter: { type: 'date', sortable: true}},
-      { column: 'is_active', name: 'status', filter: { type: 'text', sortable: true}}
+      { column: 'first_name', name: 'Name', filter: { type: 'text', sortable: true, rowData:[{value:'test'},{value:'last'}] }},
+      { column: 'last_name', name: 'Surname', filter: { type: 'text', sortable: true}},
+      { column: 'email', name: 'Email', filter: { type: 'text', sortable: true}},
+      { column: 'created_timestamp', name: 'Creation date', filter: { type: 'date', sortable: true}},
+      { column: 'is_active', name: 'Status', filter: { type: 'boolean', sortable: true, rowData: [{value: true},{value: false, label: 'Inactive'}] }}
     ],
-    body: [{}],
-    footer: [
-    ]
+    body: [],
+    footer: []
   };
   usersColumnsToShow = ['first_name', 'last_name', 'email', 'created_timestamp', 'is_active'];
 
+  constructor(
+    private userService: UsersService,
+    public route: ActivatedRoute
+  ) {
+    super(route);
+  }
 
   getAllData(): void {
     this.userService.getAllUsers(this.requestData).subscribe(res => {
-      this.count = res.count;
       this.usersDataSource.body = res.users;
-      let filter = this.usersDataSource.body;
+      this.count = res.count;
     });
   }
 

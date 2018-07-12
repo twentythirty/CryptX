@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, Input } from '@angular/core';
 import { Location } from '@angular/common';
 
 
@@ -8,6 +8,7 @@ import { Location } from '@angular/common';
   styleUrls: ['./button-back.component.scss']
 })
 export class ButtonBackComponent {
+@Input() heading: string;
 
   constructor(
     private location: Location

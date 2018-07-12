@@ -5,7 +5,6 @@ import { InvestmentRoutingModule } from './investment-routing.module';
 import { RouterModule } from '@angular/router';
 import { SharedModule } from '../../shared/shared.module';
 import { BrowserModule } from '@angular/platform-browser';
-import { TimelineDetailComponent } from './timeline-detail/timeline-detail.component';
 import { TimelineComponent } from './timeline/timeline.component';
 import { InvestmentRunDetailComponent } from './investment-run-detail/investment-run-detail.component';
 
@@ -17,6 +16,9 @@ import { InvestmentRunDetailComponent } from './investment-run-detail/investment
     SharedModule
     // InvestmentRoutingModule
   ],
-  declarations: [TimelineDetailComponent, TimelineComponent, InvestmentRunDetailComponent]
+  declarations: [
+    TimelineComponent,
+    InvestmentRunDetailComponent
+  ]
 })
 export class InvestmentModule { }

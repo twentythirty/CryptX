@@ -28,6 +28,7 @@ import { PercentCellComponent } from './components/data-table-cells/percent-cell
 import { NumberCellComponent } from './components/data-table-cells/number-cell/number-cell.component';
 import { DateCellComponent } from './components/data-table-cells/date-cell/date-cell.component';
 import { BooleanCellComponent } from './components/data-table-cells/boolean-cell/boolean-cell.component';
+import { InputItemErrorMessageComponent } from './components/input-item-error-message/input-item-error-message.component';
 
 @NgModule({
     imports: [
@@ -65,7 +66,8 @@ import { BooleanCellComponent } from './components/data-table-cells/boolean-cell
         PercentCellComponent,
         NumberCellComponent,
         DateCellComponent,
-        BooleanCellComponent
+        BooleanCellComponent,
+        InputItemErrorMessageComponent
     ],
     exports: [
         BtnComponent,
@@ -84,7 +86,8 @@ import { BooleanCellComponent } from './components/data-table-cells/boolean-cell
         PageHeadingComponent,
         FormsModule,
         InputItemComponent,
-        DynamicModule
+        DynamicModule,
+        InputItemErrorMessageComponent
     ]
 })
 export class SharedModule {}

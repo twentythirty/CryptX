@@ -13,3 +13,13 @@
   box-shadow: 0 2px 6px rgba(0,0,0,0.2);
   padding: 5px;
 }
+
+button {
+    background: none;
+    color: inherit;
+    border: none;
+    padding: 0;
+    font: inherit;
+    cursor: pointer;
+    outline: inherit;
+}
