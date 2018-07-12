@@ -6,9 +6,12 @@ export interface TableDataSource {
     column: string
     name: string
     filter?: {
-      type: 'text' | 'date' | 'number'
+      type: 'text' | 'boolean' | 'date' | 'number'
       sortable?: boolean
-      rowData?: Array<string>
+      rowData?: Array<{
+        value: string | boolean,
+        label?: string
+      }>
     }
   }>;
   body: Array<object>;
@@ -22,11 +25,14 @@ export interface TableDataSource {
  * prefix - e.g., '$'
  * suffix - e.g., '%'
  */
-export interface TableDataColumn {
-  column: string,
-  component?: any,
-  inputs?: { [key: string]: any },
-  outputs?: { [key: string]: (ev) => void }
+export class TableDataColumn {
+  column: string;
+  component?: any;
+  inputs?: { [key: string]: any };
+  outputs?: { [key: string]: (ev) => void };
+  constructor(val: TableDataColumn) {
+    Object.assign(this, val);
+  }
 }
 
 @Component({
@@ -41,7 +47,11 @@ export class DataTableComponent implements OnInit {
   @Input() columnsToShow: Array<string | TableDataColumn>;
   @Input() customRows: boolean = false;
 
+  @Input() rowBackgroundColor: (row: any) => string = (row) => null;
+  @Input() rowTexColor: (row: any) => string = (row) => null;
+
   @Output() setFilter = new EventEmitter<object>();
+  @Output() openRow = new EventEmitter<any>();
 
   constructor() {}
 
@@ -56,6 +66,10 @@ export class DataTableComponent implements OnInit {
     this.setFilter.emit(value);
   }
 
+  onOpenRow(item: any): void {
+    this.openRow.emit(item);
+  }
+
   onToggleFilter(column) {
     this.filterMap[column] = !this.filterMap[column];
   }
@@ -68,9 +82,10 @@ export class DataTableComponent implements OnInit {
     return typeof column == 'string';
   }
 
-  public dynamicInputs(column: TableDataColumn, value: any): any {
+  public dynamicInputs(column: TableDataColumn, value: any, row: any): any {
     return {
       ...(column.inputs || {}),
+      row,
       value
     }
   }
@@ -80,4 +95,17 @@ export class DataTableComponent implements OnInit {
       ...(column.outputs || {})
     }
   }
+
+  /**
+   * Style methods
+   */
+
+  public getRowBackgroundColor(row: any): string {
+    return this.rowBackgroundColor(row) || null;
+  }
+
+  public getRowTexColor(row: any): string {
+    return this.rowTexColor(row) || null;
+  }
+
 }

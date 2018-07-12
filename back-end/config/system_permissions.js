@@ -1,3 +1,5 @@
+require('./route_matchers');
+
 //initial constants
 PERMISSIONS = {
   ALTER_ROLES: "perm_alter_user_roles",
@@ -93,17 +95,17 @@ all_roles = Object.values(ROLES);
 ROUTES = {
   CreateUser: {
     router_string: "/users/create",
-    permissions_matcher: /\/users\/create/,
+    permissions_matcher: ROUTE_MATCHERS.CreateUser,
     required_permissions: [PERMISSIONS.CREATE_USER]
   },
   InviteUser: {
     router_string: "/users/invite",
-    permissions_matcher: /\/users\/invite/,
+    permissions_matcher: ROUTE_MATCHERS.InviteUser,
     required_permissions: [PERMISSIONS.CREATE_USER]
   },
   DeleteUserInfo: {
     router_string: "/users/rm/:user_id",
-    permissions_matcher: /\users\/rm\/(\d+|me)$/,
+    permissions_matcher: ROUTE_MATCHERS.DeleteUserInfo,
     required_permissions: [PERMISSIONS.VIEW_USERS, PERMISSIONS.DELETE_USER]
   },
   //a route that does not require permissions by deisgn
@@ -111,187 +113,197 @@ ROUTES = {
   //for somebody who doesnt have a user account yet
   InvitationByToken: {
     router_string: "/users/invitation",
-    permissions_matcher: /\/users\/invitation/,
+    permissions_matcher: ROUTE_MATCHERS.InvitationByToken,
     required_permissions: []
   },
   CreateUserByInvite: {
     router_string: '/users/create-invited',
-    permissions_matcher: /\/users\/create-invited/,
+    permissions_matcher: ROUTE_MATCHERS.CreateUserByInvite,
     required_permissions: []
   },
   Login: {
     router_string: "/users/login",
-    permissions_matcher: /\/users\/login/,
+    permissions_matcher: ROUTE_MATCHERS.Login,
     required_permissions: []
   },
   GetMyPermissions: {
     router_string: "/users/me/permissions",
-    permissions_matcher: /\/users\/me\/permissions/,
+    permissions_matcher: ROUTE_MATCHERS.GetMyPermissions,
     required_permissions: [PERMISSIONS.VIEW_USERS]
   },
   GetUserInfo: {
     router_string: "/users/:user_id",
-    permissions_matcher: /\/users\/(\d+|me)$/,
+    permissions_matcher: ROUTE_MATCHERS.GetUserInfo,
     required_permissions: [PERMISSIONS.VIEW_USERS]
   },
   GetUsersInfo: {
     router_string: "/users/all",
-    permissions_matcher: /\/users\/all\/list/,
+    permissions_matcher: ROUTE_MATCHERS.GetUsersInfo,
     required_permissions: [PERMISSIONS.VIEW_USERS]
   },
   ChangeUserInfo: {
     router_string: "/users/:user_id/edit",
-    permissions_matcher: /\/users\/(\d+|me)\/edit/,
+    permissions_matcher: ROUTE_MATCHERS.ChangeUserInfo,
     required_permissions: [PERMISSIONS.VIEW_USERS, PERMISSIONS.EDIT_USERS]
   },
   ChangeUserRole: {
     router_string: "/users/:user_id/change_role",
-    permissions_matcher: /\/users\/(\d+|me)\/change_role/,
+    permissions_matcher: ROUTE_MATCHERS.ChangeUserRole,
     required_permissions: [PERMISSIONS.VIEW_USERS, PERMISSIONS.ALTER_ROLES]
   },
   CreateUser: {
     router_string: "/users/create",
-    permissions_matcher: /\/users\/create/,
+    permissions_matcher: ROUTE_MATCHERS.CreateUser,
     required_permissions: [PERMISSIONS.CREATE_USER]
   },
   ChangePassword: {
     router_string: "/users/:user_id/change_password",
-    permissions_matcher: /\/users\/(\d+|me)\/change_password/,
+    permissions_matcher: ROUTE_MATCHERS.ChangePassword,
     required_permissions: [PERMISSIONS.VIEW_USERS]
   },
   SendPasswordResetToken: {
     router_string: "/send_reset_token",
-    permissions_matcher: /\/send_reset_token/,
+    permissions_matcher: ROUTE_MATCHERS.SendPasswordResetToken,
     required_permissions: []
   },
   ResetPassword: {
     router_string: "/password_reset/:token",
-    permissions_matcher: /\/password_reset\/\w+/,
+    permissions_matcher: ROUTE_MATCHERS.ResetPassword,
     required_permissions: []
   },
 
   // Roles
   GetRoleInfo: {
     router_string: "/roles/:role_id",
-    permissions_matcher: /\/roles\/\d+$/,
+    permissions_matcher: ROUTE_MATCHERS.GetRoleInfo,
     required_permissions: [PERMISSIONS.VIEW_ROLES]
   },
   GetRolesInfo: {
     router_string: "/roles/all",
-    permissions_matcher: /\/roles\/all/,
+    permissions_matcher: ROUTE_MATCHERS.GetRolesInfo,
     required_permissions: [PERMISSIONS.VIEW_ROLES]
   },
   EditRole: {
     router_string: "/roles/:role_id/edit",
-    permissions_matcher: /\/roles\/\d+\/edit/,
+    permissions_matcher: ROUTE_MATCHERS.EditRole,
     required_permissions: [PERMISSIONS.ALTER_PERMS]
   },
   CreateRole: {
     router_string: "/roles/create",
-    permissions_matcher: /\/roles\/create/,
+    permissions_matcher: ROUTE_MATCHERS.CreateRole,
     required_permissions: [PERMISSIONS.ALTER_ROLES, PERMISSIONS.VIEW_ROLES]
   },
   DeleteRole: {
     router_string: "/roles/:role_id/delete",
-    permissions_matcher: /\/roles\/\d+\/delete/,
+    permissions_matcher: ROUTE_MATCHERS.DeleteRole,
     required_permissions: [PERMISSIONS.ALTER_ROLES, PERMISSIONS.VIEW_ROLES]
   },
 
   GetAllPermissions: {
     router_string: "/permissions/list",
-    permissions_matcher: /\/permissions\/list/,
+    permissions_matcher: ROUTE_MATCHERS.GetAllPermissions,
     required_permissions: [PERMISSIONS.VIEW_ROLES]
   },
 
   // Assets
   GetAssetInfo: {
     router_string: "/assets/:asset_id",
-    permissions_matcher: /\/assets\/\d+$/,
+    permissions_matcher: ROUTE_MATCHERS.GetAssetInfo,
     required_permissions: [PERMISSIONS.VIEW_ASSETS]
   },
   GetAssets: {
     router_string: "/assets/all",
-    permissions_matcher: /\/assets\/all$/,
+    permissions_matcher: ROUTE_MATCHERS.GetAssets,
+    required_permissions: [PERMISSIONS.VIEW_ASSETS]
+  },
+  GetAssetDetailedInfo: {
+    router_string: "/assets/detailed/:asset_id",
+    permissions_matcher: ROUTE_MATCHERS.GetAssetDetailedInfo,
+    required_permissions: [PERMISSIONS.VIEW_ASSETS]
+  },
+  GetAssetsDetailed: {
+    router_string: "/assets/detailed/all",
+    permissions_matcher: ROUTE_MATCHERS.GetAssetsDetailed,
     required_permissions: [PERMISSIONS.VIEW_ASSETS]
   },
   ChangeAssetStatus: {
     router_string: "/assets/:asset_id/change_status",
-    permissions_matcher: /\/assets\/\d+\/change_status$/,
+    permissions_matcher: ROUTE_MATCHERS.ChangeAssetStatus,
     required_permissions: [PERMISSIONS.VIEW_ASSETS, PERMISSIONS.CHANGE_ASSET_STATUS]
   },
 
   // Investment
   CreateInvestment: {
     router_string: "/investments/create",
-    permissions_matcher: /\/investments\/create$/,
+    permissions_matcher: ROUTE_MATCHERS.CreateInvestment,
     required_permissions: [PERMISSIONS.CREATE_INVESTMENT_RUN, PERMISSIONS.VIEW_INVESTMENT_RUN]
   },
   GetInvestment: {
     router_string: "/investments/:investment_id",
-    permissions_matcher: /\/investments\/\d+$/,
+    permissions_matcher: ROUTE_MATCHERS.GetInvestment,
     required_permissions: [PERMISSIONS.VIEW_INVESTMENT_RUN]
   },
   GetInvestments: {
     router_string: "/investments/all",
-    permissions_matcher: /\/investments\/all$/,
+    permissions_matcher: ROUTE_MATCHERS.GetInvestments,
     required_permissions: [PERMISSIONS.VIEW_INVESTMENT_RUN]
   },
   GetRecipeRun: {
     router_string: "/recipes/:recipe_id",
-    permissions_matcher: /\/recipes\/\d+$/,
+    permissions_matcher: ROUTE_MATCHERS.GetRecipeRun,
     required_permissions: [PERMISSIONS.VIEW_INVESTMENT_RUN]
   },
   GetRecipeRuns: {
-    router_string: "/recipes/all",
-    permissions_matcher: /\/recipes\/all$/,
+    router_string: "/investments/:inverstment_id/recipes/all",
+    permissions_matcher: ROUTE_MATCHERS.GetRecipeRuns,
     required_permissions: [PERMISSIONS.VIEW_INVESTMENT_RUN]
   },
   GetRecipeRunDetails: {
     router_string: "/recipes/:recipe_id/details",
-    permissions_matcher: /\/recipes\/\d+\/details$/,
+    permissions_matcher: ROUTE_MATCHERS.GetRecipeRunDetails,
     required_permissions: [PERMISSIONS.VIEW_INVESTMENT_RUN]
   },
   ApproveRecipeRun: {
     router_string: "/recipes/:recipe_id/approve",
-    permissions_matcher: /\/recipes\/\d+\/approve$/,
+    permissions_matcher: ROUTE_MATCHERS.ApproveRecipeRun,
     required_permissions: [PERMISSIONS.VIEW_INVESTMENT_RUN, PERMISSIONS.APPROVE_RECIPE_RUN]
   },
   GetRecipeOrders: {
     router_string: "/orders/of_recipe/:recipe_run_id",
-    permissions_matcher: /\/orders\/of_recipe\/d+$/,
+    permissions_matcher: ROUTE_MATCHERS.GetRecipeOrders,
     required_permissions: [PERMISSIONS.VIEW_ORDERS]
   },
   AlterOrdersGroup: {
     router_string: "/orders/:order_group_id/alter",
-    permissions_matcher: /\/orders\/d+\/alter$/,
+    permissions_matcher: ROUTE_MATCHERS.AlterOrdersGroup,
     required_permissions: [PERMISSIONS.VIEW_ORDERS, PERMISSIONS.ALTER_ORDERS]
   },
   CreateNewRecipeRun: {
     router_string: "/investments/:investment_id/create_recipe",
-    permissions_matcher: /\/investments\/\d+\/create_recipe$/,
+    permissions_matcher: ROUTE_MATCHERS.CreateNewRecipeRun,
     required_permissions: [PERMISSIONS.CREATE_INVESTMENT_RUN]
   },
   CreateDeposit: {
     router_string: "/investments/:investment_id/deposit",
-    permissions_matcher: /\/investments\/\d+\/deposit$/,
+    permissions_matcher: ROUTE_MATCHERS.CreateDeposit,
     required_permissions: [PERMISSIONS.CREATE_INVESTMENT_RUN]
   },
 
   // System settings
   ChangeSettingValues: {
     router_string: "/settings/:setting_id",
-    permissions_matcher: /\/settings\/\d+$/,
+    permissions_matcher: ROUTE_MATCHERS.ChangeSettingValues,
     required_permissions: [PERMISSIONS.CHANGE_SETTING_VALUES]
   },
   ViewSettingValues: {
     router_string: "/settings",
-    permissions_matcher: /\/settings$/,
+    permissions_matcher: ROUTE_MATCHERS.ViewSettingValues,
     required_permissions: [PERMISSIONS.VIEW_SETTING_VALUES]
   },
 
   CheckAuth: {
     router_string: "/users/login/check",
-    permissions_matcher: /\/users\/login\/check$/,
+    permissions_matcher: ROUTE_MATCHERS.CheckAuth,
     required_permissions: [PERMISSIONS.VIEW_USERS]
   },
 };

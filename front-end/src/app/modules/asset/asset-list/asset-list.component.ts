@@ -2,17 +2,27 @@ import { Component, OnInit } from '@angular/core';
 import { Observable } from 'rxjs';
 
 import { AssetService, AssetResultData, AssetsAllResponse } from '../../../services/asset/asset.service';
-import { Asset } from '../../../shared/models/asset';
+import { Asset, AssetStatusChanges, AssetStatus } from '../../../shared/models/asset';
 import { map } from 'rxjs/operator/map';
 import { EntitiesFilter } from '../../../shared/models/api/entitiesFilter';
 import { TableDataSource, TableDataColumn } from '../../../shared/components/data-table/data-table.component';
 import { DataTableCommonManagerComponent } from '../../../shared/components/data-table-common-manager/data-table-common-manager.component';
-import { ActivatedRoute } from '@angular/router';
-import { PercentCellComponent } from '../../../shared/components/data-table-cells/percent-cell/percent-cell.component';
-import { CurrencyCellComponent } from '../../../shared/components/data-table-cells/currency-cell/currency-cell.component';
-import { BooleanCellComponent } from '../../../shared/components/data-table-cells/boolean-cell/boolean-cell.component';
-import { DateCellComponent } from '../../../shared/components/data-table-cells/date-cell/date-cell.component';
-import { NumberCellComponent } from '../../../shared/components/data-table-cells/number-cell/number-cell.component';
+import { ActivatedRoute, Router } from '@angular/router';
+import {
+  BooleanCellDataColumn,
+  BooleanCellComponent,
+  CurrencyCellDataColumn,
+  CurrencyCellComponent,
+  NumberCellComponent,
+  PercentCellComponent,
+  DateCellComponent,
+  DateCellDataColumn,
+  PercentCellDataColumn,
+  NumberCellDataColumn,
+  ActionCellDataColumn,
+  DataCellAction
+} from '../../../shared/components/data-table-cells';
+import { AuthService } from '../../../services/auth/auth.service';
 
 @Component({
   selector: 'app-asset-list',
@@ -31,37 +41,136 @@ export class AssetListComponent extends DataTableCommonManagerComponent implemen
       { column: 'capitalisation', name: 'Capitalisation', filter: { type: 'text', sortable: true } },
       { column: 'nvt_ratio', name: 'NVT ratio', filter: { type: 'text', sortable: true } },
       { column: 'market_share', name: 'Market share', filter: { type: 'text', sortable: true } },
-      { column: 'capitalisation_updated_timestamp', name: 'Capitalisation updated', filter: { type: 'text', sortable: true } }
+      { column: 'capitalisation_updated_timestamp', name: 'Capitalisation updated', filter: { type: 'text', sortable: true } },
+      { column: '', name: 'Action' }
     ],
     body: []
   };
 
+  /**
+   * Column config for data table
+   * Every ...CellComponent has its ...CellDataColumn type class
+   * Constructing it accepts an object of type ...CellDataColumn
+   * This allows the compiler to type-check all inputs and outputs for a specific
+   * component used. This config would be perfectly valid only by passing an object
+   * that fits the type TableDataColumn, without constructing DataColumn classes, too.
+   */
   public assetsColumnsToShow: Array<string | TableDataColumn> = [
     'symbol',
-    { column: 'is_cryptocurrency', component: BooleanCellComponent },
+    new BooleanCellDataColumn({ column: 'is_cryptocurrency' }),
     'long_name',
-    { column: 'is_base', component: BooleanCellComponent },
-    { column: 'is_deposit', component: BooleanCellComponent },
-    { column: 'capitalisation', component: CurrencyCellComponent },
-    { column: 'nvt_ratio', component: NumberCellComponent },
-    { column: 'market_share', component: PercentCellComponent },
-    { column: 'capitalisation_updated_timestamp', component: DateCellComponent }
+    new BooleanCellDataColumn({ column: 'is_base' }),
+    new BooleanCellDataColumn({ column: 'is_deposit' }),
+    new CurrencyCellDataColumn({ column: 'capitalisation' }),
+    new NumberCellDataColumn({ column: 'nvt_ratio' }),
+    new PercentCellDataColumn({ column: 'market_share' }),
+    new DateCellDataColumn({ column: 'capitalisation_updated_timestamp' }),
+    new ActionCellDataColumn({ column: null,
+      inputs: {
+        actions: [
+          new DataCellAction({
+            label: 'De-greylist',
+            isShown: (row: any) => false && (row.is_greylisted === true),
+            exec: (row: any) => { this.deGreylist(<Asset>row) }
+          }),
+          new DataCellAction({
+            label: 'Blacklist',
+            isShown: (row: any) => this.checkPerm(['CHANGE_ASSET_STATUS']) && (!row.is_blacklisted),
+            exec: (row: any) => { this.blacklist(<Asset>row) }
+          }),
+          new DataCellAction({
+            label: 'Whitelist',
+            isShown: (row: any) => this.checkPerm(['CHANGE_ASSET_STATUS']) && (row.is_blacklisted),
+            exec: (row: any) => { this.whitelist(<Asset>row) }
+          })
+        ]
+      }
+    })
   ];
 
   constructor(
     public route: ActivatedRoute,
-    private assetService: AssetService
+    protected assetService: AssetService,
+    protected authService: AuthService,
+    protected router: Router
   ) {
     super(route);
+  }
+
+  checkPerm (perm_code) {
+    return this.authService.hasPermissions(perm_code);
   }
 
   getAllData(): void {
     this.assetService.getAllAssets(this.requestData).subscribe(
       (res: AssetsAllResponse) => {
         this.assetsDataSource.body = res.assets;
-        this.count = res.count
+        if(res.footer) {
+          this.assetsDataSource.footer = this.assetsColumnsToShow.map(col => {
+            let key = (typeof col == 'string') ? col : col.column;
+            return res.footer.find(f => f.name == key) || '';
+          })
+        }
+        this.count = res.count || res.assets.length;
       }
     )
+  }
+
+  public openRow(asset: Asset): void {
+    this.router.navigate(['/assets/view', asset.id])
+  }
+
+  /**
+   * Actions
+   */
+
+  private deGreylist(asset: Asset): void {
+    this.assetService.changeAssetStatus(
+      asset.id,
+      new AssetStatus(AssetStatusChanges.Graylisting, '')
+    ).subscribe(
+      res => {
+        asset.is_greylisted = true;
+      }
+    )
+  }
+
+  private blacklist(asset: Asset): void {
+    this.assetService.changeAssetStatus(
+      asset.id,
+      new AssetStatus(AssetStatusChanges.Blacklisting, '')
+    ).subscribe(
+      res => {
+        asset.is_blacklisted = true;
+      }
+    )
+  }
+
+  private whitelist(asset: Asset): void {
+    this.assetService.changeAssetStatus(
+      asset.id,
+      new AssetStatus(AssetStatusChanges.Whitelisting, '')
+    ).subscribe(
+      res => {
+        asset.is_blacklisted = false;
+      }
+    )
+  }
+
+  /**
+   * Styles
+   */
+
+  public rowBackgroundColor = (row: Asset): string => {
+    if(row.is_blacklisted) return '#6b6b6b';
+    if(row.is_greylisted) return '#aeaeae';
+    return null;
+  }
+
+  public rowTexColor = (row: Asset): string => {
+    if(row.is_blacklisted) return '#ffffff';
+    if(row.is_greylisted) return '#f2f2f2';
+    return null;
   }
 
 }

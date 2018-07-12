@@ -1,0 +1,9 @@
+.timeline-card {
+  background: white;
+  border: 1px solid black;
+  margin-bottom: 1rem;
+  padding: 1rem;
+  &.current {
+    background-color: azure;
+  }
+}

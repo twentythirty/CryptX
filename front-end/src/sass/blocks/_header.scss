@@ -1,0 +1,154 @@
+header {
+    background: #fff;
+
+    .wrapper {
+        position: static;
+        &::after {
+            content: "";
+            width: 100%;
+            height: 1px;
+            opacity: 0.2;
+            background: #849AA6;
+            position: absolute;
+            left: 0;
+            top: 71px;
+        }
+    }
+
+    .top-header-part {
+        display: inline-block;
+        width: 100%;
+        border-bottom: #E6EBED;
+        padding: 15px 0px;
+    }
+
+    .logo {
+        width: 126px;
+        height: 35px;
+        @include backgroundC("/../../assets/img/logo.png");
+        background-size: 126px;
+        float: left;
+        margin-top: 6px;
+    }
+
+    .user-details {
+        float: right;
+
+        .user-initials {
+            width: 40px;
+            height: 40px;
+            border-radius: 40px;
+            background: #F2F4F6;
+            display: inline-block;
+            vertical-align: middle;
+            line-height: 40px;
+            text-align: center;
+            font-weight: 700;
+            font-size: 13px;
+            color: $gray;
+            letter-spacing: 0.15px;
+        }
+
+        .user-name-role {
+            display: inline-block;
+            vertical-align: middle;
+            margin-left: 10px;
+            padding-right: 14px;
+
+            .name {
+                display: block;
+                font-size: 16px;
+                text-align: right;
+                position: relative;
+
+                &:after {
+                    content: "";
+                    width: 10px;
+                    height: 10px;
+                    @include backgroundC("/../../assets/img/icons/user-arrow.svg");
+                    position: absolute;
+                    top: 6px;
+                    right: -14px;
+                }
+            }
+
+            .role {
+                font-size: 12px;
+                color: $gray;
+            }
+        }
+    }
+
+    .navigation-header {
+        nav {
+            display: inline-block;
+
+            a {
+                display: inline-block;
+                padding: 15px 10px;
+                margin: 0 8px;
+                text-transform: uppercase;
+                vertical-align: middle;
+                font-weight: 700;
+                font-size: 13px;
+                color: #78909C;
+                letter-spacing: 0.15px;
+
+                &:first-child {
+                    margin-left: 0;
+                    padding-left: 0;
+
+                    &.active, &:hover {
+
+                        &::after {
+                            width: calc(100% - 10px);
+                            left: 0;
+                            @include translate(0, 0);
+                        }
+                    }
+                }
+
+                &.active, &:hover {
+                    color: $green;
+                    position: relative;
+
+                    &::after {
+                        content: "";
+                        width: calc(100% - 16px);
+                        height: 3px;
+                        background: $green;
+                        position: absolute;
+                        bottom: 0;
+                        left: 50%;
+                        @include translate(-50%, 0);
+                    }
+                }
+            }
+        }
+
+        .more-menu-items {
+            float: right;
+            font-weight: 700;
+            font-size: 13px;
+            color: $gray;
+            letter-spacing: 0.15px;
+            text-transform: uppercase;
+            padding: 15px 10px;
+            cursor: pointer;
+
+            .init {
+                position: relative;
+
+                &:after {
+                    content: "";
+                    width: 10px;
+                    height: 10px;
+                    @include backgroundC("/../../assets/img/icons/more-arrow.svg");
+                    position: absolute;
+                    top: 3px;
+                    right: -14px;
+                }
+            }
+        }
+    }
+}

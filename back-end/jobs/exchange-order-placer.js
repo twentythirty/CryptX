@@ -2,13 +2,6 @@
 
 const ccxt = require('ccxt');
 
-/* 
-todo: 
-- make simple boolean that would allow to disable sending orders to exchanges to allow to debug more easily
-- manipulate data so it would place order in binance and try to place order in binance
-- try placing orders in other exchanges.
-- make sure everything connects. */
-
 //every 5 seconds
 module.exports.SCHEDULE = "*/5 * * * * *";
 module.exports.NAME = "PLACE_EXCH_OR";
@@ -40,8 +33,7 @@ module.exports.JOB_BODY = async (config, log) => {
     });
 
 
-    /* if (!all_pending_orders.length)
-      return Promise.resolve(""); */
+
     /* pending_orders - orders from different exchanges that are going to be sent to exchanges.
     Number of orders shouldn't exceed number of exchanges. */
     let pending_orders = _.map(

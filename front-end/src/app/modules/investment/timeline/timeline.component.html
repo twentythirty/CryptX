@@ -1,0 +1,10 @@
+<a class="step-label"
+  *ngFor="let event of timelineEvents"
+  (click)="openEvent(event)" [class.current]="event.isCurrent">
+    <span class="title">{{ event.title }}</span>
+    <label class="{{ event.statusClass }}">{{ event.status }}</label>
+    <div class="data">
+      <span>{{ event.id }}</span><br>
+      <span>{{ (event.date | date:'dd MMMM, yyyy hh:mm') || '-' }}</span>
+    </div>
+</a>

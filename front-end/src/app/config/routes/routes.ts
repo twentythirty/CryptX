@@ -17,6 +17,7 @@ import { AcceptInviteComponent } from '../../modules/auth/accept-invite/accept-i
 
 import { AssetListComponent } from '../../modules/asset/asset-list/asset-list.component';
 import { AssetViewComponent } from '../../modules/asset/asset-view/asset-view.component';
+import { InvestmentRunDetailComponent } from '../../modules/investment/investment-run-detail/investment-run-detail.component';
 
 const routes: Routes = [
   { path: 'login', component: LoginComponent },
@@ -69,13 +70,26 @@ const routes: Routes = [
     path: 'assets',
     component: AssetListComponent,
     canActivate: [AuthGuard, PermissionGuard],
-    data: { requiredPermission: ['CHANGE_ASSET_STATUS']}
+    data: { requiredPermission: ['VIEW_ASSETS']}
   },
   {
     path: 'assets/view/:assetId',
     component: AssetViewComponent,
     canActivate: [AuthGuard, PermissionGuard],
-    data: { requiredPermission: ['CHANGE_ASSET_STATUS']}
+    data: { requiredPermission: ['VIEW_ASSETS']}
+  },
+
+  {
+    path: 'run',
+    children: [
+      { path: 'investment/:id', component: InvestmentRunDetailComponent },
+      // { path: 'recipe/:id', component: RecipeRunDetailComponent },
+      // { path: 'deposit/:id', component: DepositDetailComponent },
+      // { path: 'order/:id', component: OrderDetailComponent },
+      // { path: 'execution-order/:id', component: ExecutionOrderDetailComponent }
+    ],
+    canActivate: [AuthGuard, PermissionGuard],
+    data: { requiredPermission: ['VIEW_INVESTMENT_RUN']}
   },
 
   /**
@@ -85,7 +99,7 @@ const routes: Routes = [
   //   path: 'assets',
   //   loadChildren: '../../modules/asset/asset.module#AssetModule',
   //   canActivate: [AuthGuard /* PermissionGuard */]/* ,
-  //   data: { requiredPermission: ['CHANGE_ASSET_STATUS']} */ // restrict route to be accessed with certain permissions
+  //   data: { requiredPermission: ['VIEW_ASSETS']} */ // restrict route to be accessed with certain permissions
   // },
 
   { path: '', redirectTo: 'login', pathMatch: 'full'},

@@ -1,4 +1,19 @@
 import { Component, OnInit, Input } from '@angular/core';
+import { TableDataColumn } from '../../data-table/data-table.component';
+
+export class BooleanCellDataColumn extends TableDataColumn {
+  component? = BooleanCellComponent;
+  inputs?: {
+    value?: boolean;
+  }
+  outputs?: {
+
+  }
+  constructor(val: BooleanCellDataColumn) {
+    super(val);
+  }
+}
+
 
 @Component({
   selector: 'app-boolean-cell',

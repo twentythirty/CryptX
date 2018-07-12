@@ -50,6 +50,402 @@
         }
       }
     },
+    "/investment/create": {
+      "post": {
+        "tags": [
+          "investment"
+        ],
+        "summary": "Start new investment run",
+        "description": "Start new investment run",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "description": "Info to start investment run",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/CreateInvestmentRun"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "$ref": "#/definitions/InvestmentRunResponse"
+            }
+          }
+        }
+      }
+    },
+    "/investments/{investment_id}": {
+      "get": {
+        "tags": [
+          "investment"
+        ],
+        "description": "Get investment run data by id",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "investment_id",
+            "in": "path",
+            "description": "identifier of investment run to fecth",
+            "required": true,
+            "type": "integer"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "$ref": "#/definitions/InvestmentRunResponse"
+            }
+          }
+        }
+      }
+    },
+    "/investments/all": {
+      "get": {
+        "tags": [
+          "investment"
+        ],
+        "description": "Get investment run data by id",
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "$ref": "#/definitions/InvestmentRunListResponse"
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "investment"
+        ],
+        "description": "Get investment run data by id",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "description": "The filter definition to perform on the data set. If absent will assume empty filter and return all data",
+            "required": false,
+            "schema": {
+              "$ref": "#/definitions/EntitiesFilter"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "$ref": "#/definitions/InvestmentRunListResponse"
+            }
+          }
+        }
+      }
+    },
+    "/investments/{investment_id}/recipes/all": {
+      "get": {
+        "tags": [
+          "investment"
+        ],
+        "description": "Get investment run data by id",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "investment_id",
+            "in": "path",
+            "description": "identifier of investment run to fecth",
+            "required": true,
+            "type": "integer"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "$ref": "#/definitions/RecipeRunListResponse"
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "investment"
+        ],
+        "description": "Get investment run data by id",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "investment_id",
+            "in": "path",
+            "description": "identifier of investment run to fecth",
+            "required": true,
+            "type": "integer"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "description": "The filter definition to perform on the data set. If absent will assume empty filter and return all data",
+            "required": false,
+            "schema": {
+              "$ref": "#/definitions/EntitiesFilter"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "$ref": "#/definitions/InvestmentRunListResponse"
+            }
+          }
+        }
+      }
+    },
+    "/recipe/{recipe_run_id}/approve": {
+      "post": {
+        "tags": [
+          "investment"
+        ],
+        "summary": "Approve recipe run",
+        "description": "In order to continue investing cryptocurrencies recipe run must be approved first. After approving recipe run, order groups will need to be approved later on after they are generated",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "recipe_run_id",
+            "in": "path",
+            "description": "ID of recipe run to be approved",
+            "required": true,
+            "type": "integer"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "description": "ID of recipe run to be approved",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/RecipeRunChangeStatus"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "$ref": "#/definitions/RecipeRunResponse"
+            }
+          }
+        }
+      }
+    },
+    "/assets/{asset_id}/change_status": {
+      "post": {
+        "tags": [
+          "assets"
+        ],
+        "description": "Change asset status to whitelist/blacklist an asset",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "asset_id",
+            "in": "path",
+            "description": "identifier of investment run to fecth",
+            "required": true,
+            "type": "integer"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "description": "The filter definition to perform on the data set. If absent will assume empty filter and return all data",
+            "required": false,
+            "schema": {
+              "$ref": "#/definitions/AssetChangeStatus"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "$ref": "#/definitions/AssetResponse"
+            }
+          }
+        }
+      }
+    },
+    "/assets/{asset_id}": {
+      "get": {
+        "tags": [
+          "assets"
+        ],
+        "summary": "Get single asset by id",
+        "description": null,
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "asset_id",
+            "in": "path",
+            "description": "ID of asset",
+            "required": true,
+            "type": "integer"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "$ref": "#/definitions/AssetResponse"
+            }
+          }
+        }
+      }
+    },
+    "/assets/all": {
+      "get": {
+        "tags": [
+          "assets"
+        ],
+        "description": "Get basic information of all system assets",
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "$ref": "#/definitions/AssetListResponse"
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "assets"
+        ],
+        "description": "Get basic information of filtered system assets",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "description": "The filter definition to perform on the data set. If absent will assume empty filter and return all data",
+            "required": false,
+            "schema": {
+              "$ref": "#/definitions/EntitiesFilter"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "$ref": "#/definitions/AssetResponse"
+            }
+          }
+        }
+      }
+    },
+    "/assets/detailed/{asset_id}": {
+      "get": {
+        "tags": [
+          "assets"
+        ],
+        "summary": "Get detailed information of single asset",
+        "description": "Can be used to get detailed single asset information with status change history. History property will have all status changes of that asset.",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "asset_id",
+            "in": "path",
+            "description": "ID of asset",
+            "required": true,
+            "type": "integer"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "$ref": "#/definitions/AssetDetailedResponse"
+            }
+          }
+        }
+      }
+    },
+    "/assets/detailed/all": {
+      "get": {
+        "tags": [
+          "assets"
+        ],
+        "description": "Get more detailed information about all assets. This returns many additional values that may not be needed a lot of cases. If functionality doesn't use extra values this route provides please use regular asset information.",
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "$ref": "#/definitions/AssetDetailedListResponse"
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "assets"
+        ],
+        "description": "Get more detailed information about assets that meet filter parameters. This returns many additional values that may not be needed a lot of cases. If functionality doesn't use extra values this route provides please use regular asset information.",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "description": "The filter definition to perform on the data set. If absent will assume empty filter and return all data",
+            "required": false,
+            "schema": {
+              "$ref": "#/definitions/EntitiesFilter"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "$ref": "#/definitions/AssetDetailedListResponse"
+            }
+          }
+        }
+      }
+    },
     "/roles/create": {
       "post": {
         "tags": [
@@ -935,6 +1331,349 @@
     }
   },
   "definitions": {
+    "RecipeRunChangeStatus": {
+      "description": "Recipe run response",
+      "type": "object",
+      "properties": {
+        "status": {
+          "type": "number",
+          "example": 43
+        },
+        "recipe_run": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/RecipeRun"
+          }
+        },
+        "count": {
+          "type": "number",
+          "example": 20
+        }
+      }
+    },
+    "RecipeRunListResponse": {
+      "description": "Recipe run response",
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean",
+          "example": true
+        },
+        "recipe_run": {
+          "$ref": "#/definitions/RecipeRun"
+        }
+      }
+    },
+    "RecipeRunResponse": {
+      "description": "Recipe run response",
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean",
+          "example": true
+        },
+        "recipe_run": {
+          "$ref": "#/definitions/RecipeRun"
+        }
+      }
+    },
+    "RecipeRun": {
+      "description": "Recipe run",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "number",
+          "example": 10
+        },
+        "created_timestamp": {
+          "type": "number",
+          "example": 1525424340810
+        },
+        "investment_run_id": {
+          "type": "number",
+          "example": 10
+        },
+        "user_created_id": {
+          "type": "number",
+          "example": 4
+        },
+        "approval_status": {
+          "type": "number",
+          "example": 41
+        },
+        "approval_timestamp": {
+          "type": "number",
+          "example": 1525424340810
+        },
+        "approval_comment": {
+          "type": "string",
+          "example": "I approve this recipe run because..."
+        },
+        "approval_user_id": {
+          "type": "number",
+          "example": 6
+        }
+      }
+    },
+    "AssetChangeStatus": {
+      "description": "Change asset status - blacklist or whitelist. Blacklisting an asset means it won't be considered in future recipe runs.",
+      "type": "object",
+      "properties": {
+        "comment": {
+          "type": "string",
+          "example": "Whitelist this asset because..."
+        },
+        "type": {
+          "type": "number",
+          "example": 400
+        }
+      }
+    },
+    "AssetDetailedListResponse": {
+      "description": "Server response with array of detailed asset information",
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean",
+          "example": true
+        },
+        "asset": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/AssetDetailed"
+          }
+        }
+      }
+    },
+    "AssetDetailedResponse": {
+      "description": "Server response with detailed asset information",
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean",
+          "example": true
+        },
+        "asset": {
+          "$ref": "#/definitions/AssetDetailed"
+        },
+        "status_changes": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/AssetStatusChangeHistory"
+          }
+        }
+      }
+    },
+    "AssetDetailed": {
+      "description": "More detailed information about asset.",
+      "type": "object",
+      "allOf": [
+        {
+          "$ref": "#/definitions/Asset"
+        },
+        {
+          "properties": {
+            "capitalization": {
+              "type": "number",
+              "example": 130000000
+            },
+            "nvt_ratio": {
+              "type": "number",
+              "example": 22
+            },
+            "market_share": {
+              "type": "number",
+              "example": 37
+            },
+            "capitalization_updated": {
+              "type": "number",
+              "example": 1525424340810
+            },
+            "status": {
+              "type": "number",
+              "example": 400
+            }
+          }
+        }
+      ]
+    },
+    "AssetListResponse": {
+      "description": "Example of a response where list of assets are returned",
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean",
+          "example": true
+        },
+        "asset": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Asset"
+          }
+        },
+        "count": {
+          "type": "number",
+          "example": 50
+        }
+      }
+    },
+    "AssetResponse": {
+      "description": "Example of server response when asset is retured",
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean",
+          "example": true
+        },
+        "asset": {
+          "$ref": "#/definitions/Asset"
+        }
+      }
+    },
+    "Asset": {
+      "description": "Asset, in other words - cryptocurrency, that is used in system for trading purposes.",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "number",
+          "example": 22
+        },
+        "symbol": {
+          "type": "string",
+          "example": "ETH"
+        },
+        "long_name": {
+          "type": "string",
+          "example": "Ethereum"
+        },
+        "is_base": {
+          "type": "boolean",
+          "example": true
+        },
+        "is_deposit": {
+          "type": "boolean",
+          "example": false
+        }
+      }
+    },
+    "AssetStatusChangeHistory": {
+      "description": "Single entry of asset status history.",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "number",
+          "example": 3
+        },
+        "timestamp": {
+          "type": "number",
+          "example": 1525424340810
+        },
+        "comment": {
+          "type": "string",
+          "example": "WHITELISTED"
+        },
+        "type": {
+          "type": "number",
+          "example": 402
+        },
+        "asset_id": {
+          "type": "number",
+          "example": 2
+        },
+        "user_id": {
+          "type": "number",
+          "example": 10
+        }
+      }
+    },
+    "CreateInvestmentRun": {
+      "description": "Fill out investment run information to start investment run.",
+      "type": "object",
+      "properties": {
+        "strategy_type": {
+          "type": "number",
+          "example": 101
+        },
+        "is_simulated": {
+          "type": "boolean",
+          "example": true
+        },
+        "deposit_usd": {
+          "type": "number",
+          "example": 11000
+        }
+      }
+    },
+    "InvestmentRunListResponse": {
+      "description": "Single investment run information",
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean",
+          "example": true
+        },
+        "investment_runs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/InvestmentRun"
+          }
+        }
+      }
+    },
+    "InvestmentRunResponse": {
+      "description": "Single investment run information",
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean",
+          "example": true
+        },
+        "investment_run": {
+          "$ref": "#/definitions/InvestmentRun"
+        }
+      }
+    },
+    "InvestmentRun": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "number",
+          "example": 1
+        },
+        "started_timestamp": {
+          "type": "number",
+          "example": 1525424340810
+        },
+        "updated_timestamp": {
+          "type": "number",
+          "example": 1525424340810
+        },
+        "completed_timestamp": {
+          "type": "number",
+          "example": null
+        },
+        "user_created_id": {
+          "type": "number",
+          "example": 6
+        },
+        "strategy_type": {
+          "type": "number",
+          "example": 101
+        },
+        "is_simulated": {
+          "type": "boolean",
+          "example": true
+        },
+        "status": {
+          "type": "number",
+          "example": 301
+        },
+        "deposit_usd": {
+          "type": "number",
+          "example": 11000
+        }
+      }
+    },
     "AuthCheckResponse": {
       "description": "User, his permissions, and model constants information that will be used to change number values to user friendly values.",
       "type": "object",

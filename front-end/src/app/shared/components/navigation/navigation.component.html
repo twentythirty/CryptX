@@ -1,21 +1,33 @@
-<div class="topbar">
-  <nav>
-    <a routerLink="/dashboard" *ngIf="checkPerm(['VIEW_INVESTMENT_RUN'])">Dashboard</a>
-    <a href="#" *ngIf="checkPerm(['ALTER_PERMS'])">Recipe Runs</a>
-    <a routerLink="/assets" *ngIf="checkPerm(['CHANGE_ASSET_STATUS'])">Assets</a>
-    <a routerLink="/users" href="#" *ngIf="checkPerm(['EDIT_USERS'])">User Management</a>
-    <a href="#" *ngIf="checkPerm(['CHANGE_ASSET_STATUS'])">Assets</a>
-    <a href="#" *ngIf="checkPerm(['EDIT_USERS'])">User Management</a>
-    <a routerLink="/roles" *ngIf="checkPerm(['VIEW_ROLES'])">Role Management</a>
-    <a href="#" *ngIf="checkPerm(['VIEW_SETTING_VALUES'])">Setting Management</a>
-  </nav>
-  <div>
-    <button (click)="toggleUserMenu()">{{ authService.user.first_name }} {{ authService.user.last_name }} </button>
-    <div *ngIf="showUserMenu" class="user-menu">
-      <button routerLink="/change_my_info">Change password</button>
-      <br>
-      <button (click)="logout()">Logout</button>
+<header>
+  <div class="wrapper">
+    <div class="top-header-part">
+      <a routerLink="/dashboard" class="logo"></a>
+      <div class="user-details">
+        <div *ngIf="initials" class="user-initials">{{initials}}</div>
+        <div class="user-name-role">
+          <span class="name">
+            <div>
+              <button (click)="toggleUserMenu()">{{ authService.user.first_name }} {{ authService.user.last_name }} </button>
+              <div *ngIf="showUserMenu" class="user-menu">
+                  <button routerLink="/change_my_info">Change password</button>
+                  <br>
+                  <button (click)="logout()">Logout</button>
+              </div>
+           </div>
+          </span>
+          <span class="role">Admin</span>
+        </div>
+      </div>
     </div>
-  </div>
-</div>
-
+    <div class="navigation-header">
+      <nav>
+        <a routerLinkActive="active" routerLink="/dashboard" *ngIf="checkPerm(['VIEW_INVESTMENT_RUN'])">Dashboard</a>
+        <a routerLinkActive="active" href="#" *ngIf="checkPerm(['ALTER_PERMS'])">Recipe Runs</a>
+        <a routerLinkActive="active" routerLink="/assets" *ngIf="checkPerm(['VIEW_ASSETS'])">Assets</a>
+        <a routerLinkActive="active" routerLink="/users" href="#" *ngIf="checkPerm(['EDIT_USERS'])">User Management</a>
+        <a routerLinkActive="active" routerLink="/roles" *ngIf="checkPerm(['VIEW_ROLES'])">Role Management</a>
+        <a routerLinkActive="active" href="#" *ngIf="checkPerm(['VIEW_SETTING_VALUES'])">Setting Management</a>
+    </nav>
+    </div>
+    </div>
+</header>

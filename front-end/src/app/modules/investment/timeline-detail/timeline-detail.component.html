@@ -1,0 +1,23 @@
+<div class="dashboard-item-status">
+  <a href="javascript:void(0)" class="title">{{ pageTitle }}</a>
+  <ul class="dashboard-item-details">
+    <li *ngFor="let item of tagLine">
+      <a (click)="doItemAction(item)">{{ item.title }}</a>
+    </li>
+  </ul>
+</div>
+<div class="left-part-dashboard">
+  <span class="headline-title">{{ singleTitle }}</span>
+  <app-data-table [dataSource]="singleDataSource" [columnsToShow]="singleColumnsToShow" (openRow)="openSingleRow($event)">
+  </app-data-table>
+  <div class="top-controls">
+    <span class="headline-title">{{ listTitle }}</span>
+  </div>
+  <app-data-table [dataSource]="listDataSource" [columnsToShow]="listColumnsToShow" (setFilter)="onSetFilter($event)" (openRow)="openListRow($event)">
+  </app-data-table>
+  <app-pagination [count]="count" [perPage]="pageSize" [page]="page"></app-pagination>
+</div>
+<!-- If there is no step-labels, hide whole container -->
+<div class="step-labels-container">
+  <app-timeline [timelineEvents]="timelineEvents"></app-timeline>
+</div>

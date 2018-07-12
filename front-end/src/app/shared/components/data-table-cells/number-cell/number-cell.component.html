@@ -1,1 +1,1 @@
-{{ (value | number) || '-' }}
+<span>{{ (value | number:digitsInfo:locale) || '-' }}</span>
