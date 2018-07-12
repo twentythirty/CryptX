@@ -45,6 +45,8 @@ import { ConfirmCellComponent } from './components/data-table-cells/confirm-cell
           NumberCellComponent,
           DateCellComponent,
           BooleanCellComponent,
+          StatusCellComponent,
+          ConfirmCellComponent
         ])
     ],
     declarations: [

@@ -62,7 +62,7 @@ export class RecipeRunDetailComponent extends TimelineDetailComponent implements
     'instrument',
     'creator',
     new StatusCellDataColumn({ column: 'status', inputs: { classMap: (val) => {
-      return StatusClass.APPROVED;
+      return StatusClass.PENDING;
     }}}),
     'decision_by',
     new DateCellDataColumn({ column: 'decision_time' }),
