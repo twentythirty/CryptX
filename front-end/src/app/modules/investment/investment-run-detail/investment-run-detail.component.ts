@@ -28,30 +28,45 @@ export class InvestmentRunDetailComponent extends TimelineDetailComponent implem
    */
   public timelineEvents: Array<TimelineEvent>;
 
-  public listColumnsToShow: Array<string | TableDataColumn> = [
-    'one',
-    'two',
-    'three'
-  ];
+  public singleDataSource: SingleTableDataSource = {
+    header: [
+      { column: 'id', name: 'id' },
+      { column: 'started', name: 'started' },
+      { column: 'updated', name: 'updated' },
+      { column: 'completed', name: 'completed' },
+      { column: 'creator', name: 'creator' },
+      { column: 'strategy', name: 'strategy' },
+      { column: 'simulated', name: 'simulated' },
+      { column: 'deposit', name: 'deposit' },
+      { column: 'status', name: 'status' }
+    ],
+    body: null
+  }
 
   public listDataSource: TableDataSource = {
     header: [
-      { column: 'one', name: 'One', filter: { type: 'text', sortable: true }},
-      { column: 'two', name: 'Two', filter: { type: 'text', sortable: true }},
-      { column: 'three', name: 'Three', filter: { type: 'text', sortable: true }}
+      { column: 'id', name: 'id', filter: {type: 'text', sortable: true }},
+      { column: 'created', name: 'created', filter: {type: 'text', sortable: true }},
+      { column: 'creator', name: 'creator', filter: {type: 'text', sortable: true }},
+      { column: 'status', name: 'status', filter: {type: 'text', sortable: true }},
+      { column: 'desicion_by', name: 'desicion_by', filter: {type: 'text', sortable: true }},
+      { column: 'decision_time', name: 'decision_time', filter: {type: 'text', sortable: true }},
+      { column: 'rationale', name: 'rationale', filter: {type: 'text', sortable: true }},
     ],
     body: null,
   };
 
-  public singleDataSource: SingleTableDataSource = {
-    header: this.listDataSource.header.map(
-      el => { return {
-        column: el.column,
-        name: el.name
-      }}
-    ),
-    body: null
-  }
+  public singleColumnsToShow: Array<string | TableDataColumn> = [
+    ...this.singleDataSource.header.map(
+      h => h.column
+    )
+  ];
+
+  public listColumnsToShow: Array<string | TableDataColumn> = [
+    ...this.listDataSource.header.map(
+      h => h.column
+    )
+  ];
 
   /**
    * 3. Call super() with ActivatedRoute
@@ -90,6 +105,7 @@ export class InvestmentRunDetailComponent extends TimelineDetailComponent implem
         '21 May, 2018 10:30'
       )
     )
+    this.setTagLine(0, 0, 0);
   }
 
   /**

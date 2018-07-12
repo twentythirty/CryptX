@@ -1,7 +1,10 @@
 <div>
   <div>
-    <h1>{{ pageTitle }}</h1>
-    <span class="assets-count">{{ count }}</span>
+    <h1>
+      {{ pageTitle }}
+      <small class="assets-count">{{ count }}</small>
+    </h1>
+    <p>{{ tagLine }}</p>
   </div>
 </div>
 <div class="timeline-detail-wrap">
@@ -12,7 +15,7 @@
       </div>
       <app-data-table
         [dataSource]="singleDataSource"
-        [columnsToShow]="listColumnsToShow"
+        [columnsToShow]="singleColumnsToShow"
         (openRow)="openSingleRow($event)">
       </app-data-table>
     </div>

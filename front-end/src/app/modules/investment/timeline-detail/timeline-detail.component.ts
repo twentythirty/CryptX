@@ -39,6 +39,8 @@ export interface SingleTableDataSource extends TableDataSource {
 })
 export abstract class TimelineDetailComponent extends DataTableCommonManagerComponent implements OnInit {
 
+  public tagLine: string;
+
   /**
    * 1. Abstract attributes to display titles
    */
@@ -63,6 +65,7 @@ export abstract class TimelineDetailComponent extends DataTableCommonManagerComp
    * component used. This config would be perfectly valid only by passing an object
    * that fits the type TableDataColumn, without constructing DataColumn classes, too.
    */
+  public abstract singleColumnsToShow: Array<string | TableDataColumn>;
   public abstract listColumnsToShow: Array<string | TableDataColumn>;
 
   /**
@@ -81,6 +84,7 @@ export abstract class TimelineDetailComponent extends DataTableCommonManagerComp
   ngOnInit() {
     super.ngOnInit();
     this.getSingleData();
+    this.getTimelineData();
   }
 
   /**
@@ -96,5 +100,13 @@ export abstract class TimelineDetailComponent extends DataTableCommonManagerComp
   public abstract addAction(): void;
   public abstract openSingleRow(row: any): void;
   public abstract openListRow(row: any): void;
+
+  /**
+   * Additional
+   */
+
+  public setTagLine(orders, executionOrders, deposits): void {
+    this.tagLine = `${orders} Orders   |   ${executionOrders} Execution orders   |   ${deposits} Deposits`
+  }
 
 }
