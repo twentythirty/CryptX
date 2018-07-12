@@ -302,11 +302,6 @@ ROUTES = {
     required_permissions: [PERMISSIONS.VIEW_ORDERS]
   },
   GetRecipeOrder: {
-    router_string: "/orders/of_recipe/:recipe_run_id",
-    permissions_matcher: /\/orders\/of_recipe\/d+$/,
-    required_permissions: [PERMISSIONS.VIEW_ORDERS]
-  },
-  GetRecipeOrder: {
     router_string: "/orders/:order_id",
     permissions_matcher: /\/orders\/d+$/,
     required_permissions: [PERMISSIONS.VIEW_ORDERS]
