@@ -5,6 +5,7 @@ import { HttpClient } from '@angular/common/http';
 import { Asset, AssetStatus } from '../../shared/models/asset';
 import { EntitiesFilter } from '../../shared/models/api/entitiesFilter';
 import { ActionResultData } from '../../shared/models/api/actionResultData';
+import { environment } from '../../../environments/environment';
 
 export class AssetsAllResponse {
   success: boolean;
@@ -21,7 +22,7 @@ export class AssetResultData {
 @Injectable()
 export class AssetService {
 
-  private baseUrl: string = 'api/v1/';
+  private baseUrl: string = environment.baseUrl;
 
   constructor(private http: HttpClient) { }
 

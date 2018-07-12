@@ -7,6 +7,7 @@ import { Role } from '../../shared/models/role';
 import { RolesAllRequestData } from '../../shared/models/api/rolesAllRequestData';
 import { RolesPermissionsResultData } from '../../shared/models/api/rolesPermissionsResultData';
 import { RoleResultData } from '../../shared/models/api/roleResultData';
+import { environment } from '../../../environments/environment';
 
 export class RolesAllResponse {
   success: boolean
@@ -20,7 +21,7 @@ export class RolesCreateResponse {
 
 @Injectable()
 export class RolesService {
-  baseUrl: string = 'api/v1/';
+  baseUrl: string = environment.baseUrl;
 
   constructor(private http: HttpClient) { }
 

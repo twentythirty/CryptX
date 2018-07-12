@@ -7,6 +7,7 @@ import { UserResultData } from '../../shared/models/api/userResultData';
 import { RoleResultData } from '../../shared/models/api/roleResultData';
 import { RolesPermissionsResultData } from '../../shared/models/api/rolesPermissionsResultData';
 import { RolesAllRequestData } from "../../shared/models/api/rolesAllRequestData";
+import { environment } from '../../../environments/environment';
 
 export class UsersAllResponse {
   success: boolean
@@ -31,7 +32,7 @@ export class UserInviteResponse {
 
 @Injectable()
 export class UsersService {
-    baseUrl: string = 'api/v1/';
+    baseUrl: string = environment.baseUrl;
 
   constructor(private http: HttpClient) { }
 
