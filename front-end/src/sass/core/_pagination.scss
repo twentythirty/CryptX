@@ -1,0 +1,67 @@
+.pagination {
+    text-align: center;
+    margin-top: 40px;
+
+    .item {
+        width: 30px;
+        height: 30px;
+        display: inline-block;
+        vertical-align: middle;
+        border-radius: 30px;
+        text-align: center;
+        line-height: 30px;
+        color: $gray;
+        font-size: 13px;
+        font-weight: 700;
+        background-color: #fff;
+
+        &.active {
+            background: $gray;
+            color: #fff;
+        }
+    }
+
+    .pages {
+        display: inline-block;
+        vertical-align: middle;
+        li {
+            float: left;
+            margin: 0 5px;
+        }
+    }
+
+    .pager-nav {
+        display: inline-block;
+        vertical-align: middle;
+
+        .item {
+            margin: 0 5px;
+        }
+
+        .prev, .next {
+            @include backgroundC("/../../assets/img/icons/prev-arrow.svg");
+        }
+
+        .next {
+            @include rotate(180);
+        }
+
+        .to-jump {
+            height: 30px;
+            min-width: 80px;
+            padding: 0 15px;
+        }
+
+        .to-jump {
+            width: auto;
+        }
+
+        &.left-nav {
+            margin-right: 25px;
+        }
+
+        &.right-nav {
+            margin-left: 25px;
+        }
+    }
+}

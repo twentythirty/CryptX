@@ -3,20 +3,13 @@
     <div *ngIf="!_showSearch" class="header-default">
       <div>All</div>
       <div *ngIf="type === 'text'">
-        <button
-          (click)="_showSearch = !_showSearch"
-        >Search</button>
+        <button (click)="_showSearch = !_showSearch">Search</button>
       </div>
     </div>
 
     <div *ngIf="type === 'text' && _showSearch">
-      <input
-        type="text"
-        [(ngModel)]="_filterSearchText"
-      >
-      <button
-        (click)="cancelSearch()"
-      >X</button>
+      <input type="text" [(ngModel)]="_filterSearchText">
+      <button (click)="cancelSearch()">X</button>
     </div>
   </div>
 
@@ -30,7 +23,6 @@
         ></app-checkbox>
       </div>
     </ng-container>
-
     <ng-container *ngIf="type === 'date'">
       <ng2-flatpickr
         [config]="_datepickerOptions"
@@ -45,37 +37,25 @@
     <ng-container *ngIf="type === 'number'">
       <div>
         <label>From</label>
-        <input
-          type="number"
-          [(ngModel)]="_filterData.values[0]"
-          (change)="onNumberRangeChange('min')"
-        >
+        <input type="number" [(ngModel)]="_filterData.values[0]" (change)="onNumberRangeChange('min')">
       </div>
       <div>
         <label>To</label>
-        <input
-          type="number"
-          [(ngModel)]="_filterData.values[1]"
-          (change)="onNumberRangeChange('max')"
-        >
+        <input type="number" [(ngModel)]="_filterData.values[1]" (change)="onNumberRangeChange('max')">
       </div>
     </ng-container>
   </div>
 
   <div class="filter-footer">
     <div *ngIf="sortable">
-      <select
-        [(ngModel)]="_filterData.order"
-      >
+      <select [(ngModel)]="_filterData.order">
         <option value="">Select ordering</option>
         <option value="asc">A - Z</option>
         <option value="desc">Z - A</option>
       </select>
     </div>
     <div>
-      <app-btn
-        (onClick)="onFilterChange()"
-      >Filter</app-btn>
+      <app-btn (onClick)="onFilterChange()">Filter</app-btn>
     </div>
   </div>
 </div>

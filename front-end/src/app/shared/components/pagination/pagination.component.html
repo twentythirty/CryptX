@@ -1,31 +1,43 @@
 <div class="pagination" *ngIf="count > 0">
-  <button
-    (click)="onFirst()"
-    [disabled]="page == 1"
-    [ngClass]="{ 'disabled': page == 1 }"
-  >First</button>
-
-  <button
-    (click)="onPrev()"
-    [disabled]="page == 1"
-    [ngClass]="{ 'disabled': page == 1 }"
-  >&lt;</button>
-
-  <button
+  <ul class="pager-nav left-nav">
+    <li>
+        <a class="to-jump item">
+          <button 
+            (click)="onFirst()"
+            [disabled]="page == 1"
+            [ngClass]="{ 'disabled': page == 1 }"
+          ></button>
+        First</a>
+        <a class="prev item">
+          <button
+            [disabled]="page == 1"
+            (click)="onPrev()"
+            [ngClass]="{ 'disabled': page == 1 }"
+          ></button>
+        </a>
+    </li>
+  </ul>
+  <ul class="pages">
+    <a class="item"
     *ngFor="let pageNum of getPages()"
     (click)="onPage(pageNum)"
     [ngClass]="{ 'active': pageNum == page }"
-  >{{ pageNum }}</button>
-
-  <button
-    (click)="onNext()"
-    [disabled]="isLastPage()"
-    [ngClass]="{ 'disabled': isLastPage() }"
-  >&gt;</button>
-
-  <button
-    (click)="onLast()"
-    [disabled]="isLastPage()"
-    [ngClass]="{ 'disabled': isLastPage() }"
-  >Last</button>
+  >{{ pageNum }}</a>
+  </ul>
+  <ul class="pager-nav right-nav">
+    <li>
+        <button class="next item"
+          (click)="onNext()"
+          [disabled]="isLastPage()"
+          [ngClass]="{ 'disabled': isLastPage() }"
+        ></button>
+        <a class="to-jump item">
+        <button 
+          (click)="onLast()"
+          [disabled]="isLastPage()"
+          [ngClass]="{ 'disabled': isLastPage() }"
+        ></button>
+        Last</a>
+    </li>
+  </ul>
 </div>
