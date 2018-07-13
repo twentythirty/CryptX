@@ -4,7 +4,7 @@
 const sequelize = require('../models').sequelize;
 const builder = require('../utils/AdminViewUtils');
 
-const fetchUsersViewFooter = async () => {
+const fetchUsersViewFooter = async (where_clause = '') => {
 
     const simple_fields = {
         first_name: 'first_name',
@@ -15,13 +15,14 @@ const fetchUsersViewFooter = async () => {
 
     const query_parts = _.concat(_.map(simple_fields, (field_expr, alias) => {
         //using public.user, since pg has a default user table and its very different
-        return builder.selectCountDistinct(field_expr, alias, 'public.user')
+        return builder.selectCountDistinct(field_expr, alias, 'public.user', where_clause)
     }), 
     //attach the more fancy footer column query as-is to avoid convoluted parametrization
-    `(SELECT SUM(a)
+    `(SELECT COALESCE(SUM(a), 0)
     FROM
       (SELECT CASE WHEN is_active THEN 1 ELSE 0 END as a
-       FROM public.USER) AS active_users) AS is_active`)
+       FROM public.USER
+       ${_.isEmpty(where_clause)? '' : `WHERE ${where_clause}`}) AS active_users) AS is_active`)
 
     const footer_values = (await sequelize.query(`SELECT\n${_.join(query_parts, ',\n')};`))[0];
 

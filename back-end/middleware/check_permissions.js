@@ -9,9 +9,9 @@ let check_permissions = async function(req, res, next) {
   let route = Object.values(ROUTES).find(route => {
     return route.permissions_matcher.test(req.path);
   });
-  console.log("Matched route: %o", route);
-
+  
   if (route) {
+    console.log("Matched route: %o", route);
     let user = req.user;
     //copy of permissions array
     let reqPermissions = route.required_permissions;
