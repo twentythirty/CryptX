@@ -5,6 +5,7 @@ import { Observable } from 'rxjs';
 import 'rxjs/add/operator/do';
 
 import { AuthService } from '../../services/auth/auth.service';
+import { MatSnackBar } from '@angular/material';
 
 @Injectable()
 export class PreRequestAuthInterceptor implements HttpInterceptor {
@@ -49,6 +50,31 @@ export class PostRequestAuthInterceptor implements HttpInterceptor {
             // do something with permission renewed permission data
           });
         }
+      }
+    });
+  }
+}
+
+@Injectable()
+export class PostRequestErrorInterceptor implements HttpInterceptor {
+
+  constructor(public snackBar: MatSnackBar) {}
+
+  intercept(request: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
+
+    return next.handle(request).do((event: HttpEvent<any>) => {
+      if (event instanceof HttpResponse) {
+        // do stuff if needed
+      }
+    }, (err: any) => {
+      if (err instanceof HttpErrorResponse) {
+        if(err && err.error && (err.error.success === false) &&
+           (typeof err.error.error == 'string')) {
+            let snackBarRef = this.snackBar.open(err.error.error, 'Close', {
+              panelClass: 'mat-snack-bar-error',
+              verticalPosition: 'top'
+            });
+          }
       }
     });
   }

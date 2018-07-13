@@ -161,9 +161,19 @@ export class InvestmentRunDetailComponent extends TimelineDetailComponent implem
    */
 
   public addAction(): void {
-    this.listDataSource.body.push({
-      ...this.listDataSource.body[0]
-    })
+
+    let recipeRun = {};
+
+    this.route.params.pipe(
+      mergeMap(
+        params => this.investmentService.createRecipeRun(params['id'], recipeRun)
+      )
+    ).subscribe(
+      res => {
+        console.log(res);
+        this.listDataSource.body.push(res);
+      }
+    )
   }
 
   public openSingleRow(row: any): void {
