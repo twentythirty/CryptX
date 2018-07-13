@@ -3,8 +3,10 @@ import { HttpInterceptor, HttpRequest, HttpHandler, HttpEvent, HttpResponse, Htt
 
 import { Observable } from 'rxjs';
 import 'rxjs/add/operator/do';
+import 'rxjs/add/operator/catch';
 
 import { AuthService } from '../../services/auth/auth.service';
+import { MatSnackBar } from '@angular/material';
 
 @Injectable()
 export class PreRequestAuthInterceptor implements HttpInterceptor {
@@ -51,5 +53,40 @@ export class PostRequestAuthInterceptor implements HttpInterceptor {
         }
       }
     });
+  }
+}
+
+@Injectable()
+export class PostRequestErrorInterceptor implements HttpInterceptor {
+
+  constructor(public snackBar: MatSnackBar) {}
+
+  intercept(request: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
+
+    return next.handle(request).catch((err, caught) => {
+      if (err instanceof HttpErrorResponse) {
+        console.log(err.status, err.error);
+
+        if(err.status > 200 && err.status < 400) {
+          return caught;
+        } else {
+          if(err && err.error && (err.error.success === false) &&
+           (typeof err.error.error == 'string')) {
+            let snackBarRef = this.snackBar.open(err.error.error, 'Close', {
+              panelClass: 'mat-snack-bar-error',
+              verticalPosition: 'top',
+              duration: 5000
+            });
+          }
+        }
+      }
+      return Observable.throw(err);
+    }).do((event: HttpEvent<any>) => {
+      if (event instanceof HttpResponse) {
+        // Do nothing
+      }
+    }, (err: any) => {
+
+    })
   }
 }

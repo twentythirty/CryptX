@@ -18,6 +18,8 @@ import { RolesAllRequestData } from "../../../shared/models/api/rolesAllRequestD
 export class UsersInfoComponent implements OnInit {
  
   userId: number;
+  userName: String;
+  userSurname: String;
   user: User;
   userRoles= [];
   rolelist = [];
@@ -40,6 +42,7 @@ export class UsersInfoComponent implements OnInit {
   ngOnInit() {
       this.usersService.getUser(this.userId).subscribe(data => {
           this.user = data.user;
+          this.userName = String(this.user.first_name +' '+ this.user.last_name);
           if (this.user.is_active){
             this.buttonName='Deactivate'
           }else {

@@ -28,6 +28,10 @@ import { PercentCellComponent } from './components/data-table-cells/percent-cell
 import { NumberCellComponent } from './components/data-table-cells/number-cell/number-cell.component';
 import { DateCellComponent } from './components/data-table-cells/date-cell/date-cell.component';
 import { BooleanCellComponent } from './components/data-table-cells/boolean-cell/boolean-cell.component';
+import { InputItemErrorMessageComponent } from './components/input-item-error-message/input-item-error-message.component';
+import { StatusCellComponent } from './components/data-table-cells/status-cell/status-cell.component';
+import { ConfirmCellComponent } from './components/data-table-cells/confirm-cell/confirm-cell.component';
+import { MatProgressSpinnerModule } from '@angular/material';
 
 @NgModule({
     imports: [
@@ -35,6 +39,7 @@ import { BooleanCellComponent } from './components/data-table-cells/boolean-cell
         FormsModule,
         RouterModule,
         Ng2FlatpickrModule,
+        MatProgressSpinnerModule,
         DynamicModule.withComponents([
           ActionCellComponent,
           CurrencyCellComponent,
@@ -42,6 +47,8 @@ import { BooleanCellComponent } from './components/data-table-cells/boolean-cell
           NumberCellComponent,
           DateCellComponent,
           BooleanCellComponent,
+          StatusCellComponent,
+          ConfirmCellComponent
         ])
     ],
     declarations: [
@@ -65,9 +72,13 @@ import { BooleanCellComponent } from './components/data-table-cells/boolean-cell
         PercentCellComponent,
         NumberCellComponent,
         DateCellComponent,
-        BooleanCellComponent
+        BooleanCellComponent,
+        InputItemErrorMessageComponent,
+        StatusCellComponent,
+        ConfirmCellComponent
     ],
     exports: [
+        MatProgressSpinnerModule,
         BtnComponent,
         DataTableComponent,
         ModalComponent,
@@ -84,7 +95,8 @@ import { BooleanCellComponent } from './components/data-table-cells/boolean-cell
         PageHeadingComponent,
         FormsModule,
         InputItemComponent,
-        DynamicModule
+        DynamicModule,
+        InputItemErrorMessageComponent
     ]
 })
 export class SharedModule {}

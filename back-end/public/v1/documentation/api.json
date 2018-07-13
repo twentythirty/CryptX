@@ -114,7 +114,7 @@
         "tags": [
           "investment"
         ],
-        "description": "Get investment run data by id",
+        "description": "Get investment run data",
         "produces": [
           "application/json"
         ],
@@ -131,7 +131,7 @@
         "tags": [
           "investment"
         ],
-        "description": "Get investment run data by id",
+        "description": "Get investment run data with filtering functionality",
         "produces": [
           "application/json"
         ],
@@ -156,13 +156,143 @@
         }
       }
     },
-    "/recipe/{recipe_run_id}/approve": {
+    "/investments/{investment_id}/start_recipe_run": {
+      "post": {
+        "tags": [
+          "investment"
+        ],
+        "description": "Start a new recipe run on specified investment run.",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "investment_id",
+            "in": "path",
+            "description": "ID of investment run that recipe will be created for",
+            "required": true,
+            "type": "number"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "description": "Recipe run creation body. This can be empty",
+            "required": false,
+            "schema": {
+              "$ref": "#/definitions/RecipeRunCreateRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "$ref": "#/definitions/RecipeRunResponse"
+            }
+          }
+        }
+      }
+    },
+    "/recipes/{recipe_id}": {
+      "get": {
+        "tags": [
+          "investment"
+        ],
+        "summary": "Get recipe run of investment run.",
+        "description": "Get investment run data by id",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "recipe_id",
+            "in": "path",
+            "description": "ID of recipe run to fetch",
+            "required": true,
+            "type": "integer"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "$ref": "#/definitions/RecipeRunWithStatsResponse"
+            }
+          }
+        }
+      }
+    },
+    "/recipes/of_investment/{investment_id}": {
+      "get": {
+        "tags": [
+          "investment"
+        ],
+        "summary": "Get recipe runs of investment run.",
+        "description": "Get investment run data by id",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "investment_id",
+            "in": "path",
+            "description": "identifier of investment run to fetch",
+            "required": true,
+            "type": "integer"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "$ref": "#/definitions/RecipeRunListResponse"
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "investment"
+        ],
+        "description": "Get investment run data by id",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "investment_id",
+            "in": "path",
+            "description": "identifier of investment run to fecth",
+            "required": true,
+            "type": "integer"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "description": "The filter definition to perform on the data set. If absent will assume empty filter and return all data",
+            "required": false,
+            "schema": {
+              "$ref": "#/definitions/EntitiesFilter"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "$ref": "#/definitions/RecipeRunListResponse"
+            }
+          }
+        }
+      }
+    },
+    "/recipes/{recipe_run_id}/approve": {
       "post": {
         "tags": [
           "investment"
         ],
         "summary": "Approve recipe run",
-        "description": "In order to continue investing cryptocurrencies recipe run must be approved first. After approving recipe run, order groups will need to be approved later on after they are generated",
+        "description": "In order to continue investment into all the different cryptocurrencies proccess, recipe run must be approved first. After approving recipe run, order groups will need to be approved later after they are generated",
         "produces": [
           "application/json"
         ],
@@ -189,6 +319,514 @@
             "description": "success",
             "schema": {
               "$ref": "#/definitions/RecipeRunResponse"
+            }
+          }
+        }
+      }
+    },
+    "/recipe_details/{recipe_detail_id}": {
+      "get": {
+        "tags": [
+          "investment"
+        ],
+        "summary": "Get recipe run of investment run.",
+        "description": "Get investment run data by id",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "recipe_detail_id",
+            "in": "path",
+            "description": "ID of recipe detail",
+            "required": true,
+            "type": "integer"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "$ref": "#/definitions/RecipeDetailsResponse"
+            }
+          }
+        }
+      }
+    },
+    "/recipe_details/of_recipe/{recipe_id}": {
+      "get": {
+        "tags": [
+          "investment"
+        ],
+        "summary": "Get recipe run details.",
+        "description": "Get recipe run details",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "recipe_id",
+            "in": "path",
+            "description": "ID of recipe run to get details of",
+            "required": true,
+            "type": "integer"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "$ref": "#/definitions/RecipeDetailsListResponse"
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "investment"
+        ],
+        "summary": "Get recipe run details.",
+        "description": "Get recipe run details",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "recipe_id",
+            "in": "path",
+            "description": "ID of recipe run to get details of",
+            "required": true,
+            "type": "integer"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "description": "The filter definition to perform on the data set. If absent will assume empty filter and return all data",
+            "required": false,
+            "schema": {
+              "$ref": "#/definitions/EntitiesFilter"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "$ref": "#/definitions/RecipeDetailsListResponse"
+            }
+          }
+        }
+      }
+    },
+    "/orders/{recipe_order_id}": {
+      "get": {
+        "tags": [
+          "investment"
+        ],
+        "summary": "Get orders of recipe run by recipe order id",
+        "description": "Get orders of recipe run by recipe order id",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "recipe_order_id",
+            "in": "path",
+            "description": "ID of recipe detail",
+            "required": true,
+            "type": "integer"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "$ref": "#/definitions/RecipeOrderResponse"
+            }
+          }
+        }
+      }
+    },
+    "/orders/of_recipe/{recipe_id}": {
+      "get": {
+        "tags": [
+          "investment"
+        ],
+        "summary": "Get orders of recipe run by recipe id",
+        "description": "Get orders of recipe run by recipe id",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "recipe_id",
+            "in": "path",
+            "description": "ID of recipe run to get details of",
+            "required": true,
+            "type": "integer"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "$ref": "#/definitions/RecipeOrderListResponse"
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "investment"
+        ],
+        "summary": "Get orders of recipe run by recipe id",
+        "description": "Get orders of recipe run by recipe id",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "recipe_id",
+            "in": "path",
+            "description": "ID of recipe run to get details of",
+            "required": true,
+            "type": "integer"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "description": "The filter definition to perform on the data set. If absent will assume empty filter and return all data",
+            "required": false,
+            "schema": {
+              "$ref": "#/definitions/EntitiesFilter"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "$ref": "#/definitions/RecipeOrderListResponse"
+            }
+          }
+        }
+      }
+    },
+    "/orders/{order_group_id}/alter": {
+      "post": {
+        "tags": [
+          "investment"
+        ],
+        "summary": "Approve/Reject recipe group",
+        "description": "Approve or reject recipe order group by giving status code and rationale for the action.",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "order_group_id",
+            "in": "path",
+            "description": "Recipe order group ID",
+            "required": true,
+            "type": "integer"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "description": "The filter definition to perform on the data set. If absent will assume empty filter and return all data",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/RecipeOrderAlterRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "$ref": "#/definitions/RecipeOrderAlterResponse"
+            }
+          }
+        }
+      }
+    },
+    "/deposits/{deposit_id}": {
+      "get": {
+        "tags": [
+          "investment"
+        ],
+        "summary": "Get deposits of recipe by deposit ID",
+        "description": "Get deposits of recipe by deposit ID",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "deposit_id",
+            "in": "path",
+            "description": "ID of recipe deposit",
+            "required": true,
+            "type": "integer"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "$ref": "#/definitions/RecipeDepositResponse"
+            }
+          }
+        }
+      }
+    },
+    "/deposits/of_recipe/{recipe_id}": {
+      "get": {
+        "tags": [
+          "investment"
+        ],
+        "summary": "Get recipe deposits of recipe run by recipe id",
+        "description": "Get recipe deposits of recipe run by recipe id",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "recipe_id",
+            "in": "path",
+            "description": "ID of recipe run to get recipe deposits of",
+            "required": true,
+            "type": "integer"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "$ref": "#/definitions/RecipeDepositListResponse"
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "investment"
+        ],
+        "summary": "Get recipe deposits of recipe run by recipe id",
+        "description": "Get recipe deposits of recipe run by recipe id",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "recipe_id",
+            "in": "path",
+            "description": "ID of recipe run to get recipe deposits of",
+            "required": true,
+            "type": "integer"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "description": "The filter definition to perform on the data set. If absent will assume empty filter and return all data",
+            "required": false,
+            "schema": {
+              "$ref": "#/definitions/EntitiesFilter"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "$ref": "#/definitions/RecipeDepositListResponse"
+            }
+          }
+        }
+      }
+    },
+    "/execution_orders/{execution_order_id}": {
+      "get": {
+        "tags": [
+          "investment"
+        ],
+        "summary": "Get execution order by id",
+        "description": "Get execution orders by id",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "execution_order_id",
+            "in": "path",
+            "description": "ID of execution order",
+            "required": true,
+            "type": "integer"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "$ref": "#/definitions/ExecutionOrderResponse"
+            }
+          }
+        }
+      }
+    },
+    "/execution_orders/of_order/{order_id}": {
+      "get": {
+        "tags": [
+          "investment"
+        ],
+        "summary": "Get execution orders of by order id",
+        "description": "Get execution orders of by order id",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "order_id",
+            "in": "path",
+            "description": "ID of order to get details of",
+            "required": true,
+            "type": "integer"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "$ref": "#/definitions/ExecutionOrderListResponse"
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "investment"
+        ],
+        "summary": "Get execution orders of by order id",
+        "description": "Get execution orders of by order id",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "order_id",
+            "in": "path",
+            "description": "ID of order to get details of",
+            "required": true,
+            "type": "integer"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "description": "The filter definition to perform on the data set. If absent will assume empty filter and return all data",
+            "required": false,
+            "schema": {
+              "$ref": "#/definitions/EntitiesFilter"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "$ref": "#/definitions/ExecutionOrderListResponse"
+            }
+          }
+        }
+      }
+    },
+    "/exec_orders_fills/{execution_order_fill_id}": {
+      "get": {
+        "tags": [
+          "investment"
+        ],
+        "summary": "Get execution order fill by id",
+        "description": "Get execution order fill by id",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "execution_order_fill_id",
+            "in": "path",
+            "description": "ID of execution order fill",
+            "required": true,
+            "type": "integer"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "$ref": "#/definitions/ExecutionOrderFillResponse"
+            }
+          }
+        }
+      }
+    },
+    "/exec_orders_fills/of_order/{execution_order_id}": {
+      "get": {
+        "tags": [
+          "investment"
+        ],
+        "summary": "Get execution order fill by execution order id",
+        "description": "Get execution order fill by execution order id",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "execution_order_id",
+            "in": "path",
+            "description": "ID of execution order order to get details of",
+            "required": true,
+            "type": "integer"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "$ref": "#/definitions/ExecutionOrderFillListResponse"
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "investment"
+        ],
+        "summary": "Get execution order fill by execution order id",
+        "description": "Get execution order fill by execution order id",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "execution_order_id",
+            "in": "path",
+            "description": "ID of execution order order to get details of",
+            "required": true,
+            "type": "integer"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "description": "The filter definition to perform on the data set. If absent will assume empty filter and return all data",
+            "required": false,
+            "schema": {
+              "$ref": "#/definitions/EntitiesFilter"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "$ref": "#/definitions/ExecutionOrderFillListResponse"
             }
           }
         }
@@ -226,6 +864,158 @@
             "description": "success",
             "schema": {
               "$ref": "#/definitions/AssetResponse"
+            }
+          }
+        }
+      }
+    },
+    "/assets/{asset_id}": {
+      "get": {
+        "tags": [
+          "assets"
+        ],
+        "summary": "Get single asset by id",
+        "description": "Fetch single asset information.",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "asset_id",
+            "in": "path",
+            "description": "ID of asset",
+            "required": true,
+            "type": "integer"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "$ref": "#/definitions/AssetResponse"
+            }
+          }
+        }
+      }
+    },
+    "/assets/all": {
+      "get": {
+        "tags": [
+          "assets"
+        ],
+        "description": "Get basic information of all system assets",
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "$ref": "#/definitions/AssetListResponse"
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "assets"
+        ],
+        "description": "Get basic information of filtered system assets",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "description": "The filter definition to perform on the data set. If absent will assume empty filter and return all data",
+            "required": false,
+            "schema": {
+              "$ref": "#/definitions/EntitiesFilter"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "$ref": "#/definitions/AssetResponse"
+            }
+          }
+        }
+      }
+    },
+    "/assets/detailed/{asset_id}": {
+      "get": {
+        "tags": [
+          "assets"
+        ],
+        "summary": "Get detailed information of single asset",
+        "description": "Can be used to get detailed single asset information with status change history. History property will have all status changes of that asset.",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "asset_id",
+            "in": "path",
+            "description": "ID of asset",
+            "required": true,
+            "type": "integer"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "$ref": "#/definitions/AssetDetailedResponse"
+            }
+          }
+        }
+      }
+    },
+    "/assets/detailed/all": {
+      "get": {
+        "tags": [
+          "assets"
+        ],
+        "description": "Get more detailed information about all assets. This returns many additional values that may not be needed a lot of cases. If functionality doesn't use extra values this route provides please use regular asset information.",
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "$ref": "#/definitions/AssetDetailedListResponse"
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "assets"
+        ],
+        "description": "Get more detailed information about assets that meet filter parameters. This returns many additional values that may not be needed a lot of cases. If functionality doesn't use extra values this route provides please use regular asset information.",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "description": "The filter definition to perform on the data set. If absent will assume empty filter and return all data",
+            "required": false,
+            "schema": {
+              "$ref": "#/definitions/EntitiesFilter"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "$ref": "#/definitions/AssetDetailedListResponse"
             }
           }
         }
@@ -1116,17 +1906,475 @@
     }
   },
   "definitions": {
+    "ExecutionOrderFillListResponse": {
+      "description": "Execution order list response",
+      "type": "object",
+      "allOf": [
+        {
+          "$ref": "#/definitions/ListResponse"
+        },
+        {
+          "properties": {
+            "execution_order_fills": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/ExecutionOrderFill"
+              }
+            }
+          }
+        }
+      ]
+    },
+    "ExecutionOrderFillResponse": {
+      "description": "Execution order response",
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean",
+          "example": true
+        },
+        "execution_order_fill": {
+          "$ref": "#/definitions/ExecutionOrderFill"
+        }
+      }
+    },
+    "ExecutionOrderFill": {
+      "description": "Information of single fill for excution order",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "number",
+          "example": 0
+        },
+        "fill_time": {
+          "type": "number",
+          "example": 1531396477062
+        },
+        "fill_price": {
+          "type": "number",
+          "example": 10.05
+        },
+        "quantity": {
+          "type": "number",
+          "example": 3
+        }
+      }
+    },
+    "ExecutionOrderListResponse": {
+      "description": "Execution order list response",
+      "type": "object",
+      "allOf": [
+        {
+          "$ref": "#/definitions/ListResponse"
+        },
+        {
+          "properties": {
+            "execution_orders": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/ExecutionOrder"
+              }
+            }
+          }
+        }
+      ]
+    },
+    "ExecutionOrderResponse": {
+      "description": "Execution order response",
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean",
+          "example": true
+        },
+        "execution_order": {
+          "$ref": "#/definitions/ExecutionOrder"
+        }
+      }
+    },
+    "ExecutionOrder": {
+      "description": "Detail of recipe run.",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "number",
+          "example": 23
+        },
+        "instrument": {
+          "type": "string",
+          "example": "BTC/ETH,"
+        },
+        "side": {
+          "type": "number",
+          "example": "999,"
+        },
+        "type": {
+          "type": "number",
+          "example": "71,"
+        },
+        "price": {
+          "type": "number",
+          "example": "12.01,"
+        },
+        "total_quantity": {
+          "type": "number",
+          "example": "6.01,"
+        },
+        "exchange_trading_fee": {
+          "type": "number",
+          "example": "1.01,"
+        },
+        "status": {
+          "type": "number",
+          "example": "61,"
+        },
+        "submission_time": {
+          "type": "number",
+          "example": 1531396477062
+        },
+        "completion_time": {
+          "type": "number",
+          "example": 1531396477062
+        }
+      }
+    },
+    "RecipeDepositListResponse": {
+      "description": "Recipe deposit list response",
+      "type": "object",
+      "allOf": [
+        {
+          "$ref": "#/definitions/ListResponse"
+        },
+        {
+          "properties": {
+            "recipe_deposits": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/RecipeDeposit"
+              }
+            }
+          }
+        }
+      ]
+    },
+    "RecipeDepositResponse": {
+      "description": "Recipe deposit response",
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean",
+          "example": true
+        },
+        "recipe_deposit": {
+          "$ref": "#/definitions/RecipeDeposit"
+        }
+      }
+    },
+    "RecipeDeposit": {
+      "description": "Recipe deposit details",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "number",
+          "example": 0
+        },
+        "transaction_asset_id": {
+          "type": "number",
+          "example": 2
+        },
+        "exchange_id": {
+          "type": "number",
+          "example": 1
+        },
+        "transaction_asset": {
+          "type": "string",
+          "example": "BTC"
+        },
+        "exchange": {
+          "type": "string",
+          "example": "BITSTAMP"
+        },
+        "account": {
+          "type": "number",
+          "example": 1541154
+        },
+        "amount": {
+          "type": "number",
+          "example": 165165
+        },
+        "investment_percentage": {
+          "type": "number",
+          "example": 64
+        },
+        "status": {
+          "type": "number",
+          "example": 150
+        }
+      }
+    },
+    "RecipeOrderAlterResponse": {
+      "description": "Response of successful recipe order status change",
+      "type": "object",
+      "properties": {
+        "message": {
+          "type": "string",
+          "example": "OK!"
+        },
+        "success": {
+          "type": "boolean",
+          "example": true
+        }
+      }
+    },
+    "RecipeOrderAlterRequest": {
+      "description": "Parameters needed to approve or reject recipe order",
+      "type": "object",
+      "properties": {
+        "status": {
+          "type": "number",
+          "example": 82
+        },
+        "comment": {
+          "type": "string",
+          "example": "Approve this recipe order group because..."
+        }
+      }
+    },
+    "RecipeOrderListResponse": {
+      "description": "Recipe order list response",
+      "type": "object",
+      "allOf": [
+        {
+          "$ref": "#/definitions/ListResponse"
+        },
+        {
+          "properties": {
+            "recipe_orders": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/RecipeOrder"
+              }
+            }
+          }
+        }
+      ]
+    },
+    "RecipeOrderResponse": {
+      "description": "Recipe order response",
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean",
+          "example": true
+        },
+        "recipe_order": {
+          "$ref": "#/definitions/RecipeOrder"
+        }
+      }
+    },
+    "RecipeOrder": {
+      "description": "Recipe order details",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "number",
+          "example": 4
+        },
+        "recipe_order_group_id": {
+          "type": "number",
+          "example": 58
+        },
+        "instrument_id": {
+          "type": "number",
+          "example": 5
+        },
+        "side": {
+          "type": "number",
+          "example": 999
+        },
+        "price": {
+          "type": "number",
+          "example": 100
+        },
+        "quantity": {
+          "type": "number",
+          "example": 7
+        },
+        "status": {
+          "type": "number",
+          "example": 51
+        },
+        "sum_of_exhange_trading_fee": {
+          "type": "number",
+          "example": 100
+        }
+      }
+    },
+    "RecipeDetailsListResponse": {
+      "description": "Recipe details list response",
+      "type": "object",
+      "allOf": [
+        {
+          "$ref": "#/definitions/ListResponse"
+        },
+        {
+          "properties": {
+            "recipes_details": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/RecipeDetails"
+              }
+            }
+          }
+        }
+      ]
+    },
+    "RecipeDetailsResponse": {
+      "description": "Recipe details response",
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean",
+          "example": true
+        },
+        "recipe_detail": {
+          "$ref": "#/definitions/RecipeDetails"
+        }
+      }
+    },
+    "RecipeDetails": {
+      "description": "Detail of recipe run.",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "number",
+          "example": 15
+        },
+        "investment_percentage": {
+          "type": "number",
+          "example": 5.67945412594929
+        },
+        "recipe_run_id": {
+          "type": "number",
+          "example": 5
+        },
+        "transaction_asset_id": {
+          "type": "number",
+          "example": 2
+        },
+        "quote_asset_id": {
+          "type": "number",
+          "example": 2
+        },
+        "target_exchange_id": {
+          "type": "number",
+          "example": 5
+        },
+        "transaction_asset": {
+          "type": "string",
+          "example": "BTC"
+        },
+        "quote_asset": {
+          "type": "string",
+          "example": "XRP"
+        },
+        "target_exchange": {
+          "type": "string",
+          "example": "bitstamp"
+        }
+      }
+    },
+    "ListResponse": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean",
+          "example": true
+        },
+        "count": {
+          "type": "number",
+          "example": 10
+        },
+        "footer": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string",
+                "example": "property name"
+              },
+              "value": {
+                "type": "string",
+                "example": 10
+              }
+            }
+          }
+        }
+      }
+    },
     "RecipeRunChangeStatus": {
       "description": "Recipe run response",
       "type": "object",
       "properties": {
         "status": {
-          "type": "number",
-          "example": 43
+          "type": "boolean",
+          "example": true
         },
-        "comment": {
-          "type": "string",
-          "example": "I approve this recipe run because..."
+        "recipe_run": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/RecipeRun"
+          }
+        }
+      }
+    },
+    "RecipeRunListResponse": {
+      "description": "Recipe run response",
+      "type": "object",
+      "allOf": [
+        {
+          "$ref": "#/definitions/ListResponse"
+        },
+        {
+          "properties": {
+            "recipes_runs": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/RecipeRun"
+              }
+            }
+          }
+        }
+      ]
+    },
+    "RecipeRunWithStatsResponse": {
+      "description": "Recipe run response",
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean",
+          "example": true
+        },
+        "recipe_run": {
+          "$ref": "#/definitions/RecipeRun"
+        },
+        "recipe_stats": {
+          "description": "Statistics of how much orders, execution orders and deposits recipe run has.",
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string",
+                "example": "Orders"
+              },
+              "count": {
+                "type": "number",
+                "example": 20
+              }
+            }
+          }
         }
       }
     },
@@ -1142,6 +2390,10 @@
           "$ref": "#/definitions/RecipeRun"
         }
       }
+    },
+    "RecipeRunCreateRequest": {
+      "description": "Request body for recipe run creation",
+      "type": "object"
     },
     "RecipeRun": {
       "description": "Recipe run",
@@ -1163,6 +2415,10 @@
           "type": "number",
           "example": 4
         },
+        "user_created": {
+          "type": "string",
+          "example": "John Doe"
+        },
         "approval_status": {
           "type": "number",
           "example": 41
@@ -1178,6 +2434,10 @@
         "approval_user_id": {
           "type": "number",
           "example": 6
+        },
+        "approval_user": {
+          "type": "string",
+          "example": "John Doe"
         }
       }
     },
@@ -1195,8 +2455,95 @@
         }
       }
     },
+    "AssetDetailedListResponse": {
+      "description": "Server response with array of detailed asset information",
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean",
+          "example": true
+        },
+        "asset": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/AssetDetailed"
+          }
+        }
+      }
+    },
+    "AssetDetailedResponse": {
+      "description": "Server response with detailed asset information",
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean",
+          "example": true
+        },
+        "asset": {
+          "$ref": "#/definitions/AssetDetailed"
+        },
+        "status_changes": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/AssetStatusChangeHistory"
+          }
+        }
+      }
+    },
+    "AssetDetailed": {
+      "description": "More detailed information about asset.",
+      "type": "object",
+      "allOf": [
+        {
+          "$ref": "#/definitions/Asset"
+        },
+        {
+          "properties": {
+            "capitalization": {
+              "type": "number",
+              "example": 130000000
+            },
+            "nvt_ratio": {
+              "type": "number",
+              "example": 22
+            },
+            "market_share": {
+              "type": "number",
+              "example": 37
+            },
+            "capitalization_updated": {
+              "type": "number",
+              "example": 1525424340810
+            },
+            "status": {
+              "type": "number",
+              "example": 400
+            }
+          }
+        }
+      ]
+    },
+    "AssetListResponse": {
+      "description": "Example of a response where list of assets are returned",
+      "type": "object",
+      "allOf": [
+        {
+          "$ref": "#/definitions/ListResponse"
+        },
+        {
+          "properties": {
+            "assets": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/Asset"
+              }
+            }
+          }
+        }
+      ]
+    },
     "AssetResponse": {
-      "description": "Asset, or a cryptocurrency, that is used in system for trading puposes.",
+      "description": "Example of server response when asset is retured",
       "type": "object",
       "properties": {
         "success": {
@@ -1209,7 +2556,7 @@
       }
     },
     "Asset": {
-      "description": "Asset, or a cryptocurrency, that is used in system for trading puposes.",
+      "description": "Asset, in other words - cryptocurrency, that is used in system for trading purposes.",
       "type": "object",
       "properties": {
         "id": {
@@ -1234,6 +2581,36 @@
         }
       }
     },
+    "AssetStatusChangeHistory": {
+      "description": "Single entry of asset status history.",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "number",
+          "example": 3
+        },
+        "timestamp": {
+          "type": "number",
+          "example": 1525424340810
+        },
+        "comment": {
+          "type": "string",
+          "example": "WHITELISTED"
+        },
+        "type": {
+          "type": "number",
+          "example": 402
+        },
+        "asset_id": {
+          "type": "number",
+          "example": 2
+        },
+        "user_id": {
+          "type": "number",
+          "example": 10
+        }
+      }
+    },
     "CreateInvestmentRun": {
       "description": "Fill out investment run information to start investment run.",
       "type": "object",
@@ -1255,18 +2632,21 @@
     "InvestmentRunListResponse": {
       "description": "Single investment run information",
       "type": "object",
-      "properties": {
-        "success": {
-          "type": "boolean",
-          "example": true
+      "allOf": [
+        {
+          "$ref": "#/definitions/ListResponse"
         },
-        "investment_runs": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/InvestmentRun"
+        {
+          "properties": {
+            "investment_runs": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/InvestmentRun"
+              }
+            }
           }
         }
-      }
+      ]
     },
     "InvestmentRunResponse": {
       "description": "Single investment run information",
@@ -1298,11 +2678,15 @@
         },
         "completed_timestamp": {
           "type": "number",
-          "example": 1525424340810
+          "example": null
         },
         "user_created_id": {
           "type": "number",
           "example": 6
+        },
+        "user_created": {
+          "type": "string",
+          "example": "John Doe"
         },
         "strategy_type": {
           "type": "number",
@@ -1812,22 +3196,21 @@
     },
     "ReturnUsersListResponse": {
       "type": "object",
-      "properties": {
-        "success": {
-          "type": "boolean",
-          "example": true
+      "allOf": [
+        {
+          "$ref": "#/definitions/ListResponse"
         },
-        "users": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/UserDetails"
+        {
+          "properties": {
+            "users": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/UserDetails"
+              }
+            }
           }
-        },
-        "count": {
-          "type": "string",
-          "example": 26
         }
-      }
+      ]
     },
     "ReturnRolesListResponse": {
       "type": "object",

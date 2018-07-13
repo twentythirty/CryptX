@@ -7,7 +7,8 @@ export interface DataTableFilterData {
   values: Array<{
     field: string
     value: any,
-    expression: string
+    expression: string,
+    type: string
   }>
   order?: {
     by: string
@@ -32,7 +33,10 @@ export class DataTableFilterComponent implements OnInit {
   @Input() column: string;
   @Input() type: string = 'text';
   @Input() sortable: boolean = true;
-  @Input() rowData: Array<string> = [];
+  @Input() rowData: Array<{
+    value: string | boolean,
+    label?: string
+  }> = [];
 
   @Output() onFilter = new EventEmitter<object>();
 
@@ -48,19 +52,33 @@ export class DataTableFilterComponent implements OnInit {
 
     switch(this.type) {
       case 'text':
-        if (this.rowData && this.rowData.length) {
+        if (this.rowData && this.rowData.length && this._filterData.values.length) {
           // checkbox data pick
           data.values.push({
             field: this.column,
             value: this._filterData.values,
-            expression: 'in'
+            expression: 'in',
+            type: 'string'
           });
-        } else {
+        } else if ( this._filterSearchText.length ) {
           // search field data
           data.values.push({
             field: this.column,
             value: `%${this._filterSearchText}%`,
-            expression: 'iLike'
+            expression: 'iLike',
+            type: 'string'
+          });
+        }
+        break;
+
+      case 'boolean':
+        if (this.rowData && this.rowData.length && this._filterData.values.length === 1) {
+          // checkbox data pick only for bool values
+          data.values.push({
+            field: this.column,
+            value: this._filterData.values[0],
+            expression: 'eq',
+            type: 'boolean'
           });
         }
         break;
@@ -70,14 +88,16 @@ export class DataTableFilterComponent implements OnInit {
           data.values[0] = {
             field: this.column,
             value: Date.parse(this._filterData.values[0]),
-            expression: 'gt'
+            expression: 'gt',
+            type: 'timestamp'
           };
         }
         if ( this._filterData.values[1] ) {
           data.values[1] = {
             field: this.column,
             value: Date.parse(this._filterData.values[1]),
-            expression: 'lt'
+            expression: 'lt',
+            type: 'timestamp'
           };
         }
         break;
@@ -87,14 +107,16 @@ export class DataTableFilterComponent implements OnInit {
           data.values[0] = {
             field: this.column,
             value: this._filterData.values[0],
-            expression: 'gte'
+            expression: 'gte',
+            type: 'number'
           };
         }
         if ( this._filterData.values[1] ) {
           data.values[1] = {
             field: this.column,
             value: this._filterData.values[1],
-            expression: 'lte'
+            expression: 'lte',
+            type: 'number'
           };
         }
         break;

@@ -17,6 +17,9 @@ const check_permissions = require("../middleware/check_permissions")
   .check_permissions;
 const content_json = require("../middleware/content_json_header").content_json;
 const filter_reducer = require('../middleware/resolve_list_filter').resolve_list_filter;
+//validate POSTed body of request object using rules defined in config/validators.js
+//not intended to validate filters, DON'T use in same stack filter_reduced
+const post_body_validator = require('../middleware/post_body_validator').post_body_validator;
 const stateless_auth = passport.authenticate("jwt", {
   session: false
 });
@@ -37,7 +40,10 @@ router.get("/", check_permissions, function (req, res, next) {
 router.all("*", content_json);
 
 //USERS
-router.post(ROUTES.Login.router_string, UserController.login);
+router.post(
+  ROUTES.Login.router_string, 
+  post_body_validator,
+  UserController.login);
 router.get(
   ROUTES.GetUsersInfo.router_string,
   stateless_auth,
@@ -62,6 +68,7 @@ router.post(
   ROUTES.ChangeUserInfo.router_string,
   stateless_auth,
   check_permissions,
+  post_body_validator,
   UserController.editUser
 );
 router.get(
@@ -74,6 +81,7 @@ router.post(
   ROUTES.InviteUser.router_string,
   stateless_auth,
   check_permissions,
+  post_body_validator,
   UserController.issueInvitation
 );
 
@@ -81,13 +89,19 @@ router.post(
 //calls made by browser before a user exists
 router.post(
   ROUTES.InvitationByToken.router_string,
+  post_body_validator,
   UserController.inviteTokenInfo
 );
 router.post(
   ROUTES.CreateUserByInvite.router_string,
+  post_body_validator,
   UserController.createByInvite
 );
-router.post(ROUTES.CreateUser.router_string, UserController.create);
+router.post(
+  ROUTES.CreateUser.router_string, 
+  post_body_validator,
+  UserController.create
+);
 //----------------------------------------------
 
 router.delete(
@@ -100,6 +114,7 @@ router.post(
   ROUTES.ChangeUserRole.router_string,
   stateless_auth,
   check_permissions,
+  post_body_validator,
   UserController.changeUserRole
 );
 
@@ -107,6 +122,7 @@ router.post(
 //calls made by browser when user cant login
 router.post(
   ROUTES.SendPasswordResetToken.router_string,
+  post_body_validator,
   UserController.sendPasswordResetToken
 );
 router.get(
@@ -115,6 +131,7 @@ router.get(
 );
 router.post(
   ROUTES.ResetPassword.router_string,
+  post_body_validator,
   UserController.resetPassword
 );
 //----------------------------------------------
@@ -123,6 +140,7 @@ router.post(
   ROUTES.ChangePassword.router_string,
   stateless_auth,
   check_permissions,
+  post_body_validator,
   UserController.changePassword
 );
 
@@ -134,6 +152,7 @@ router.post(
   ROUTES.CreateRole.router_string,
   stateless_auth,
   check_permissions,
+  post_body_validator,
   SecurityController.createRole
 );
 router.delete(
@@ -146,6 +165,7 @@ router.post(
   ROUTES.EditRole.router_string,
   stateless_auth,
   check_permissions,
+  post_body_validator,
   SecurityController.editRole
 );
 router.get(
@@ -178,6 +198,26 @@ router.get(
 
 // ASSETS
 router.get(
+  ROUTES.GetAssetDetailedInfo.router_string,
+  stateless_auth,
+  check_permissions,
+  AssetController.getAssetDetailed
+);
+router.get(
+  ROUTES.GetAssetsDetailed.router_string,
+  stateless_auth,
+  check_permissions,
+  filter_reducer,
+  AssetController.getAssetsDetailed
+);
+router.post(
+  ROUTES.GetAssetsDetailed.router_string,
+  stateless_auth,
+  check_permissions,
+  filter_reducer,
+  AssetController.getAssetsDetailed
+);
+router.get(
   ROUTES.GetAssets.router_string,
   stateless_auth,
   check_permissions,
@@ -201,6 +241,7 @@ router.post(
   ROUTES.ChangeAssetStatus.router_string,
   stateless_auth,
   check_permissions,
+  post_body_validator,
   AssetController.changeAssetStatus
 );
 
@@ -210,6 +251,7 @@ router.post(
   ROUTES.CreateInvestment.router_string,
   stateless_auth,
   check_permissions,
+  post_body_validator,
   InvestmentController.createInvestmentRun
 );
 router.get(
@@ -233,32 +275,22 @@ router.get(
   check_permissions,
   InvestmentController.getInvestmentRun
 );
+
+// Recipe Runs
 router.post(
   ROUTES.ApproveRecipeRun.router_string,
   stateless_auth,
   check_permissions,
+  post_body_validator,
   InvestmentController.changeRecipeRunStatus
 );
 router.post(
   ROUTES.CreateNewRecipeRun.router_string,
   stateless_auth,
   check_permissions,
+  post_body_validator,
   InvestmentController.createRecipeRun
 );
-
-router.get(
-  ROUTES.GetRecipeOrders.router_string,
-  stateless_auth,
-  check_permissions,
-  OrdersController.getOrdersGroup
-);
-router.post(
-  ROUTES.AlterOrdersGroup.router_string,
-  stateless_auth,
-  check_permissions,
-  OrdersController.changeOrdersGroupStatus
-);
-
 router.get(
   ROUTES.GetRecipeRuns.router_string,
   stateless_auth,
@@ -280,6 +312,42 @@ router.get(
   filter_reducer,
   InvestmentController.getRecipeRun
 );
+
+
+// Recipe orders
+/* router.get( // original
+  ROUTES.GetRecipeOrders.router_string,
+  stateless_auth,
+  check_permissions,
+  OrdersController.getOrdersGroup
+); */
+router.get(
+  ROUTES.GetRecipeOrders.router_string,
+  stateless_auth,
+  check_permissions,
+  InvestmentController.getRecipeOrders
+);
+router.post(
+  ROUTES.GetRecipeOrders.router_string,
+  stateless_auth,
+  check_permissions,
+  InvestmentController.getRecipeOrders
+);
+router.get(
+  ROUTES.GetRecipeOrder.router_string,
+  stateless_auth,
+  check_permissions,
+  InvestmentController.getRecipeOrder
+);
+router.post(
+  ROUTES.AlterOrdersGroup.router_string,
+  stateless_auth,
+  check_permissions,
+  post_body_validator,
+  OrdersController.changeOrdersGroupStatus
+);
+
+// Recipe run details
 router.get(
   ROUTES.GetRecipeRunDetails.router_string,
   stateless_auth,
@@ -287,12 +355,92 @@ router.get(
   filter_reducer,
   InvestmentController.getRecipeRunDetails
 );
+router.post(
+  ROUTES.GetRecipeRunDetails.router_string,
+  stateless_auth,
+  check_permissions,
+  filter_reducer,
+  InvestmentController.getRecipeRunDetails
+);
+router.get(
+  ROUTES.GetRecipeRunDetail.router_string,
+  stateless_auth,
+  check_permissions,
+  filter_reducer,
+  InvestmentController.getRecipeRunDetail
+);
 
+// Recipe Run deposits
+router.get(
+  ROUTES.GetRecipeRunDeposits.router_string,
+  stateless_auth,
+  check_permissions,
+  filter_reducer,
+  InvestmentController.getRecipeDeposits
+);
+router.post(
+  ROUTES.GetRecipeRunDeposits.router_string,
+  stateless_auth,
+  check_permissions,
+  filter_reducer,
+  InvestmentController.getRecipeDeposits
+);
+router.get(
+  ROUTES.GetRecipeRunDeposit.router_string,
+  stateless_auth,
+  check_permissions,
+  InvestmentController.getRecipeDeposit
+);
+
+ // Execution orders
+router.get(
+  ROUTES.GetExecutionOrders.router_string,
+  stateless_auth,
+  check_permissions,
+  filter_reducer,
+  InvestmentController.getExecutionOrders
+);
+router.post(
+  ROUTES.GetExecutionOrders.router_string,
+  stateless_auth,
+  check_permissions,
+  filter_reducer,
+  InvestmentController.getExecutionOrders
+);
+router.get(
+  ROUTES.GetExecutionOrder.router_string,
+  stateless_auth,
+  check_permissions,
+  InvestmentController.getExecutionOrder
+);
+
+ // Execution order fills
+ router.get(
+  ROUTES.GetExecutionOrdersFills.router_string,
+  stateless_auth,
+  check_permissions,
+  filter_reducer,
+  InvestmentController.ExecutionOrderFills
+);
+router.post(
+  ROUTES.GetExecutionOrdersFills.router_string,
+  stateless_auth,
+  check_permissions,
+  filter_reducer,
+  InvestmentController.ExecutionOrderFills
+);
+router.get(
+  ROUTES.GetExecutionOrdersFill.router_string,
+  stateless_auth,
+  check_permissions,
+  InvestmentController.ExecutionOrderFill
+);
 
 router.post(
   ROUTES.CreateDeposit.router_string,
   stateless_auth,
   check_permissions,
+  post_body_validator,
   InvestmentController.addDeposit
 );
 
@@ -301,6 +449,7 @@ router.post(
   ROUTES.ChangeSettingValues.router_string,
   stateless_auth,
   check_permissions,
+  post_body_validator,
   SystemController.changeSettingValue
 );
 router.get(

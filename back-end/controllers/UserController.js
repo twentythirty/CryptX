@@ -8,6 +8,7 @@ const adminViewsService = require('../services/AdminViewsService');
 const inviteService = require('./../services/InvitationService');
 const mailUtil = require('./../utils/EmailUtil');
 const model_constants = require('../config/model_constants');
+require('../config/validators');
 
 const create = async function (req, res) {
   const body = req.body;
@@ -108,6 +109,7 @@ const login = async function (req, res) {
     token: session.token,
     permissions: perms,
     model_constants: model_constants,
+    validators: VALIDATORS,
     user: user.toWeb(false)
   });
 };
@@ -128,11 +130,11 @@ function resolveUserId(req) {
 const getUsers = async function (req, res) {
 
   console.log('WHERE clause: %o', req.seq_where);
-
+  console.log(`SQL WHERE clause: ${req.sql_where}`);
   let [err, result] = await to(User.findAndCountAll(req.seq_query));
   if (err) return ReE(res, err.message, 422);
   let footer = [];
-  [err, footer] = await to(adminViewsService.fetchUsersViewFooter());
+  [err, footer] = await to(adminViewsService.fetchUsersViewFooter(req.sql_where));
   if(err) return ReE(res, err.message, 422);
 
   let { rows: users, count } = result;

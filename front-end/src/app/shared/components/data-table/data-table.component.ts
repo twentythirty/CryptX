@@ -6,9 +6,12 @@ export interface TableDataSource {
     column: string
     name: string
     filter?: {
-      type: 'text' | 'date' | 'number'
+      type: 'text' | 'boolean' | 'date' | 'number'
       sortable?: boolean
-      rowData?: Array<string>
+      rowData?: Array<{
+        value: string | boolean,
+        label?: string
+      }>
     }
   }>;
   body: Array<object>;
@@ -48,6 +51,7 @@ export class DataTableComponent implements OnInit {
   @Input() rowTexColor: (row: any) => string = (row) => null;
 
   @Output() setFilter = new EventEmitter<object>();
+  @Output() openRow = new EventEmitter<any>();
 
   constructor() {}
 
@@ -60,6 +64,10 @@ export class DataTableComponent implements OnInit {
 
   onSetFilter(value) {
     this.setFilter.emit(value);
+  }
+
+  onOpenRow(item: any): void {
+    this.openRow.emit(item);
   }
 
   onToggleFilter(column) {

@@ -33,7 +33,7 @@ const createInvestmentRun = async function (user_id, strategy_type, is_simulated
   if (investment_run) {
     let message = `Investment with ${strategy_type} strategy and ${
       is_simulated ? 'simulated' : 'real investment'
-    } mode already created`;
+    } mode already is executing.`;
 
     TE(message);
   }
@@ -126,9 +126,6 @@ const createRecipeRun = async function (user_id, investment_run_id) {
   ));
 
   if (err) TE(err.message);
-
-  recipe_run = recipe_run.toJSON();
-  recipe_run.recipe_run_details = recipe_run_detail;//.map(detail => detail.toJSON());
 
   return recipe_run;
 };

@@ -6,7 +6,7 @@ import { Component, Input, Output, EventEmitter } from '@angular/core';
   styleUrls: ['./confirm.component.scss']
 })
 export class ConfirmComponent {
-  @Input() message: string;
+  @Input() heading: string;
   
   @Output() onReject = new EventEmitter<object>();
   @Output() onConfirm = new EventEmitter<object>();

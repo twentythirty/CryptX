@@ -35,5 +35,14 @@ module.exports = (sequelize, DataTypes) => {
     });
   };
 
+  RecipeRun.prototype.toWeb = function() {
+    let json = this.toJSON();
+    
+    json.created_timestamp = json.created_timestamp.getTime();
+    json.approval_timestamp = ( json.approval_timestamp ? json.approval_timestamp.getTime() : json.approval_timestamp );
+
+    return json;
+  };
+
   return RecipeRun;
 };

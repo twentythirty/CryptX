@@ -30,7 +30,7 @@ export class PercentCellComponent implements OnInit {
    * Inputs specific to Angular PercentPipe
    * Read more https://angular.io/api/common/PercentPipe
    */
-  @Input() digitsInfo: string = '2.2-2';
+  @Input() digitsInfo: string = '1.2-2';
   @Input() locale: string;
 
   @Input() multiplier: number = 0.01;

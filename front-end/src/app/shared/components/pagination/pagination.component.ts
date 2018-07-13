@@ -51,7 +51,8 @@ export class PaginationComponent implements OnChanges {
       queryParamsHandling: 'merge',
       queryParams: {
         page: this.page
-      }
+      },
+      replaceUrl: true
     });
   }
 

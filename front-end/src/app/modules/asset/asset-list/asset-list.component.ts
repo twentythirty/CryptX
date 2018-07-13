@@ -7,7 +7,7 @@ import { map } from 'rxjs/operator/map';
 import { EntitiesFilter } from '../../../shared/models/api/entitiesFilter';
 import { TableDataSource, TableDataColumn } from '../../../shared/components/data-table/data-table.component';
 import { DataTableCommonManagerComponent } from '../../../shared/components/data-table-common-manager/data-table-common-manager.component';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import {
   BooleanCellDataColumn,
   BooleanCellComponent,
@@ -38,13 +38,13 @@ export class AssetListComponent extends DataTableCommonManagerComponent implemen
       { column: 'long_name', name: 'Long name', filter: { type: 'text', sortable: true } },
       { column: 'is_base', name: 'Is base?', filter: { type: 'text', sortable: true } },
       { column: 'is_deposit', name: 'Is deposit?', filter: { type: 'text', sortable: true } },
-      { column: 'capitalisation', name: 'Capitalisation', filter: { type: 'text', sortable: true } },
+      { column: 'capitalization', name: 'Capitalisation', filter: { type: 'text', sortable: true } },
       { column: 'nvt_ratio', name: 'NVT ratio', filter: { type: 'text', sortable: true } },
       { column: 'market_share', name: 'Market share', filter: { type: 'text', sortable: true } },
-      { column: 'capitalisation_updated_timestamp', name: 'Capitalisation updated', filter: { type: 'text', sortable: true } },
+      { column: 'capitalization_updated_timestamp', name: 'Capitalisation updated', filter: { type: 'text', sortable: true } },
       { column: '', name: 'Action' }
     ],
-    body: []
+    body: null
   };
 
   /**
@@ -61,10 +61,10 @@ export class AssetListComponent extends DataTableCommonManagerComponent implemen
     'long_name',
     new BooleanCellDataColumn({ column: 'is_base' }),
     new BooleanCellDataColumn({ column: 'is_deposit' }),
-    new CurrencyCellDataColumn({ column: 'capitalisation' }),
+    new CurrencyCellDataColumn({ column: 'capitalization' }),
     new NumberCellDataColumn({ column: 'nvt_ratio' }),
     new PercentCellDataColumn({ column: 'market_share' }),
-    new DateCellDataColumn({ column: 'capitalisation_updated_timestamp' }),
+    new DateCellDataColumn({ column: 'capitalization_updated_timestamp' }),
     new ActionCellDataColumn({ column: null,
       inputs: {
         actions: [
@@ -91,7 +91,8 @@ export class AssetListComponent extends DataTableCommonManagerComponent implemen
   constructor(
     public route: ActivatedRoute,
     protected assetService: AssetService,
-    protected authService: AuthService
+    protected authService: AuthService,
+    protected router: Router
   ) {
     super(route);
   }
@@ -107,12 +108,16 @@ export class AssetListComponent extends DataTableCommonManagerComponent implemen
         if(res.footer) {
           this.assetsDataSource.footer = this.assetsColumnsToShow.map(col => {
             let key = (typeof col == 'string') ? col : col.column;
-            return res.footer.find(f => f.name == key) || '';
+            return (res.footer.find(f => f.name == key) || {}).value || '';
           })
         }
         this.count = res.count || res.assets.length;
       }
     )
+  }
+
+  public openRow(asset: Asset): void {
+    this.router.navigate(['/assets/view', asset.id])
   }
 
   /**

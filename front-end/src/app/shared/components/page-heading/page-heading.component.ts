@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, Input } from '@angular/core';
 
 @Component({
   selector: 'app-page-heading',
@@ -6,6 +6,7 @@ import { Component, OnInit } from '@angular/core';
   styleUrls: ['./page-heading.component.scss']
 })
 export class PageHeadingComponent implements OnInit {
+   @Input() heading: string;
 
   constructor() { }
 

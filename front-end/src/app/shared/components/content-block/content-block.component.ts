@@ -7,7 +7,9 @@ import { Component, OnInit, Input } from '@angular/core';
 })
 export class ContentBlockComponent implements OnInit {
   @Input() heading: string; // block h2 heading text
-
+  @Input() name: string;
+  @Input() type: string;
+  @Input() value: any;
 
   constructor() { }
 
