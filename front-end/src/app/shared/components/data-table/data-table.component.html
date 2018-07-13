@@ -30,21 +30,38 @@
   </ng-content>
 
   <ng-template #defaultRows>
-    <tr *ngFor="let item of dataSource.body"
-    [style.background-color]="getRowBackgroundColor(item) || 'white'"
-    [style.color]="getRowTexColor(item)"
-    (click)="onOpenRow(item)">
-      <td *ngFor="let index of columnsToShow">
-        <ng-container *ngIf="columnIsBasic(index); else dynamicColumn">
-          <span>{{ item[index] || '-' }}</span>
-        </ng-container>
-        <ng-template #dynamicColumn>
-          <ndc-dynamic [ndcDynamicComponent]="index.component"
-            [ndcDynamicInputs]="dynamicInputs(index, item[index.column], item)"
-            [ndcDynamicOutputs]="dynamicOutputs(index)"></ndc-dynamic>
-        </ng-template>
-      </td>
-    </tr>
+    <ng-container *ngIf="dataSource.body?.length > 0; else listEmpty">
+      <tr *ngFor="let item of dataSource.body"
+      [style.background-color]="getRowBackgroundColor(item) || 'white'"
+      [style.color]="getRowTexColor(item)"
+      (click)="onOpenRow(item)">
+        <td *ngFor="let index of columnsToShow">
+          <ng-container *ngIf="columnIsBasic(index); else dynamicColumn">
+            <span>{{ item[index] || '-' }}</span>
+          </ng-container>
+          <ng-template #dynamicColumn>
+            <ndc-dynamic [ndcDynamicComponent]="index.component"
+              [ndcDynamicInputs]="dynamicInputs(index, item[index.column], item)"
+              [ndcDynamicOutputs]="dynamicOutputs(index)"></ndc-dynamic>
+          </ng-template>
+        </td>
+      </tr>
+    </ng-container>
+    <ng-template #listEmpty>
+      <tr [style.background-color]="'white'">
+        <td class="empty-col" colSpan="{{ columnsToShow.length }}">
+          <span *ngIf="dataSource.body; else loadingList">This list is empty</span>
+          <ng-template #loadingList><span>
+            <mat-progress-spinner
+              mode="indeterminate"
+              color="accent"
+              strokeWidth="1"
+              diameter="25">
+            </mat-progress-spinner>
+          </span></ng-template>
+        </td>
+      </tr>
+    </ng-template>
   </ng-template>
 
 

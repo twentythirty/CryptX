@@ -18,3 +18,7 @@
     color: white;
   }
 }
+
+.mat-progress-spinner.mat-accent circle, .mat-spinner.mat-accent circle {
+  stroke: #00c858 !important;
+}
