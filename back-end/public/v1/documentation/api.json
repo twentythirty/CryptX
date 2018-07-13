@@ -114,7 +114,7 @@
         "tags": [
           "investment"
         ],
-        "description": "Get investment run data by id",
+        "description": "Get investment run data",
         "produces": [
           "application/json"
         ],
@@ -131,7 +131,7 @@
         "tags": [
           "investment"
         ],
-        "description": "Get investment run data by id",
+        "description": "Get investment run data with filtering functionality",
         "produces": [
           "application/json"
         ],
@@ -161,7 +161,7 @@
         "tags": [
           "investment"
         ],
-        "description": "Get investment run data by id",
+        "description": "Start a new recipe run on specified investment run.",
         "produces": [
           "application/json"
         ],
@@ -292,7 +292,7 @@
           "investment"
         ],
         "summary": "Approve recipe run",
-        "description": "In order to continue investing cryptocurrencies recipe run must be approved first. After approving recipe run, order groups will need to be approved later on after they are generated",
+        "description": "In order to continue investment into all the different cryptocurrencies proccess, recipe run must be approved first. After approving recipe run, order groups will need to be approved later after they are generated",
         "produces": [
           "application/json"
         ],
@@ -507,6 +507,44 @@
             "description": "success",
             "schema": {
               "$ref": "#/definitions/RecipeOrderListResponse"
+            }
+          }
+        }
+      }
+    },
+    "/orders/{order_group_id}/alter": {
+      "post": {
+        "tags": [
+          "investment"
+        ],
+        "summary": "Approve/Reject recipe group",
+        "description": "Approve or reject recipe order group by giving status code and rationale for the action.",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "order_group_id",
+            "in": "path",
+            "description": "Recipe order group ID",
+            "required": true,
+            "type": "integer"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "description": "The filter definition to perform on the data set. If absent will assume empty filter and return all data",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/RecipeOrderAlterRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "$ref": "#/definitions/RecipeOrderAlterResponse"
             }
           }
         }
@@ -2071,6 +2109,34 @@
         "status": {
           "type": "number",
           "example": 150
+        }
+      }
+    },
+    "RecipeOrderAlterResponse": {
+      "description": "Response of successful recipe order status change",
+      "type": "object",
+      "properties": {
+        "message": {
+          "type": "string",
+          "example": "OK!"
+        },
+        "success": {
+          "type": "boolean",
+          "example": true
+        }
+      }
+    },
+    "RecipeOrderAlterRequest": {
+      "description": "Parameters needed to approve or reject recipe order",
+      "type": "object",
+      "properties": {
+        "status": {
+          "type": "number",
+          "example": 82
+        },
+        "comment": {
+          "type": "string",
+          "example": "Approve this recipe order group because..."
         }
       }
     },
