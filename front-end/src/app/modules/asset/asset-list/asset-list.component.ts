@@ -44,7 +44,7 @@ export class AssetListComponent extends DataTableCommonManagerComponent implemen
       { column: 'capitalization_updated_timestamp', name: 'Capitalisation updated', filter: { type: 'text', sortable: true } },
       { column: '', name: 'Action' }
     ],
-    body: []
+    body: null
   };
 
   /**
