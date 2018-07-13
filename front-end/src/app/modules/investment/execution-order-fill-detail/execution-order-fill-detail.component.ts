@@ -105,7 +105,7 @@ export class ExecutionOrderFillDetailComponent extends TimelineDetailComponent i
       )
     ).subscribe(
       res => {
-        this.listDataSource.body = res.execution_orders;
+        this.listDataSource.body = res.execution_order_fills;
         this.count = res.count;
       },
       err => this.listDataSource.body = []
@@ -119,8 +119,8 @@ export class ExecutionOrderFillDetailComponent extends TimelineDetailComponent i
       )
     ).subscribe(
       res => {
-        if(res.recipe_run) {
-          this.singleDataSource.body = [ res.recipe_run ];
+        if(res.execution_order) {
+          this.singleDataSource.body = [ res.execution_order ];
         }
       },
       err => this.singleDataSource.body = []
