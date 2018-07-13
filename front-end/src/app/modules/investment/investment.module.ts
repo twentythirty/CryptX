@@ -8,6 +8,7 @@ import { BrowserModule } from '@angular/platform-browser';
 import { TimelineComponent } from './timeline/timeline.component';
 import { InvestmentRunDetailComponent } from './investment-run-detail/investment-run-detail.component';
 import { RecipeRunDetailComponent } from './recipe-run-detail/recipe-run-detail.component';
+import { OrderDetailComponent } from './order-detail/order-detail.component';
 
 @NgModule({
   imports: [
@@ -20,7 +21,8 @@ import { RecipeRunDetailComponent } from './recipe-run-detail/recipe-run-detail.
   declarations: [
     TimelineComponent,
     InvestmentRunDetailComponent,
-    RecipeRunDetailComponent
+    RecipeRunDetailComponent,
+    OrderDetailComponent
   ]
 })
 export class InvestmentModule { }
