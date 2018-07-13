@@ -113,6 +113,7 @@ export class OrderDetailComponent extends TimelineDetailComponent implements OnI
       res => {
         this.listDataSource.body = res.recipe_orders;
         this.count = res.count;
+        this.setListFooter(res);
       },
       err => this.listDataSource.body = []
     )

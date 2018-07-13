@@ -117,6 +117,7 @@ export class ExecutionOrderDetailComponent extends TimelineDetailComponent imple
       res => {
         this.listDataSource.body = res.execution_orders;
         this.count = res.count;
+        this.setListFooter(res);
       },
       err => this.listDataSource.body = []
     )
