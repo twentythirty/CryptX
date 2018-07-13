@@ -6,7 +6,7 @@ import { StatusClass } from '../../../shared/models/common';
 import { TimelineDetailComponent, SingleTableDataSource, TagLineItem } from '../timeline-detail/timeline-detail.component'
 import { TableDataSource, TableDataColumn } from '../../../shared/components/data-table/data-table.component';
 import { TimelineEvent } from '../timeline/timeline.component';
-import { ActionCellDataColumn, DataCellAction, DateCellDataColumn, PercentCellDataColumn, StatusCellDataColumn, ConfirmCellDataColumn } from '../../../shared/components/data-table-cells';
+import { ActionCellDataColumn, DataCellAction, DateCellDataColumn, PercentCellDataColumn, StatusCellDataColumn, ConfirmCellDataColumn, NumberCellDataColumn } from '../../../shared/components/data-table-cells';
 import { mergeMap } from 'rxjs/operators';
 import { InvestmentService } from '../../../services/investment/investment.service';
 
@@ -14,18 +14,18 @@ import { InvestmentService } from '../../../services/investment/investment.servi
  * 0. Set HTML and SCSS files in component decorator
  */
 @Component({
-  selector: 'app-recipe-run-detail',
+  selector: 'app-order-detail',
   templateUrl: '../timeline-detail/timeline-detail.component.html',
   styleUrls: ['../timeline-detail/timeline-detail.component.scss']
 })
-export class RecipeRunDetailComponent extends TimelineDetailComponent implements OnInit {
+export class OrderDetailComponent extends TimelineDetailComponent implements OnInit {
 
   /**
    * 1. Implement abstract attributes to display titles
    */
-  public pageTitle: string = 'Recipe run';
-  public singleTitle: string = 'Recipe runs';
-  public listTitle: string = 'Recipe run details';
+  public pageTitle: string = 'Recipe orders';
+  public singleTitle: string = 'Recipe run';
+  public listTitle: string = 'Orders';
 
   /**
    * 2. Implement abstract attributes to preset data structure
@@ -41,8 +41,7 @@ export class RecipeRunDetailComponent extends TimelineDetailComponent implements
       { column: 'status', name: 'Status' },
       { column: 'decision_by', name: 'Decision by' },
       { column: 'decision_time', name: 'Decision time' },
-      { column: 'rationale', name: 'Rationale' },
-      { column: 'actions', name: 'Actions' }
+      { column: 'rationale', name: 'Rationale' }
     ],
     body: null
   }
@@ -50,10 +49,12 @@ export class RecipeRunDetailComponent extends TimelineDetailComponent implements
   public listDataSource: TableDataSource = {
     header: [
       { column: 'id', name: 'Id', filter: {type: 'text', sortable: true }},
-      { column: 'transaction_asset', name: 'Transaction asset', filter: {type: 'text', sortable: true }},
-      { column: 'quote_asset', name: 'Quote asset', filter: {type: 'text', sortable: true }},
-      { column: 'exchange', name: 'Exchange', filter: {type: 'text', sortable: true }},
-      { column: 'percentage', name: 'Percentage, %', filter: {type: 'number', sortable: true }}
+      { column: 'instrument', name: 'Instrument', filter: {type: 'text', sortable: true }},
+      { column: 'side', name: 'Side', filter: {type: 'text', sortable: true }},
+      { column: 'price', name: 'Price', filter: {type: 'number', sortable: true }},
+      { column: 'quantity', name: 'Quantity', filter: {type: 'number', sortable: true }},
+      { column: 'fee', name: 'Sum of exchange trading fee', filter: {type: 'number', sortable: true }},
+      { column: 'status', name: 'Status', filter: {type: 'text', sortable: true }}
     ],
     body: null,
   };
@@ -70,19 +71,21 @@ export class RecipeRunDetailComponent extends TimelineDetailComponent implements
     }}}),
     'decision_by',
     new DateCellDataColumn({ column: 'decision_time' }),
-    'rationale',
-    new ConfirmCellDataColumn({ column: 'actions', inputs: {
-      execConfirm: (row) => this.confirmRun(row),
-      execDecline: (row) => this.declineRun(row),
-    } }),  // TODO: Actions component
+    'rationale'
   ];
 
   public listColumnsToShow: Array<string | TableDataColumn> = [
     'id',
-    'transaction_asset',
-    'quote_asset',
-    'exchange',
-    new PercentCellDataColumn({ column: 'percentage' })
+    'instrument',
+    'side',
+    new NumberCellDataColumn({ column: 'price' }),
+    new NumberCellDataColumn({ column: 'quantity' }),
+    new NumberCellDataColumn({ column: 'fee' }),
+    new StatusCellDataColumn({ column: 'status', inputs: { classMap: {
+      'pending' : StatusClass.PENDING,
+      'rejected': StatusClass.REJECTED,
+      'approved': StatusClass.APPROVED
+    }}})
   ];
 
   /**
@@ -104,11 +107,11 @@ export class RecipeRunDetailComponent extends TimelineDetailComponent implements
     console.log(this.requestData);
     this.route.params.pipe(
       mergeMap(
-        params => this.investmentService.getAllRecipeDetails(params['id'], this.requestData)
+        params => this.investmentService.getAllOrders(params['id'], this.requestData)
       )
     ).subscribe(
       res => {
-        this.listDataSource.body = res.recipe_details;
+        this.listDataSource.body = res.recipe_orders;
         this.count = res.count;
       },
       err => this.listDataSource.body = []
@@ -173,18 +176,5 @@ export class RecipeRunDetailComponent extends TimelineDetailComponent implements
   ngOnInit() {
     super.ngOnInit();
   }
-
-  /**
-   * Additional
-   */
-
-  private confirmRun(run: any): void {
-    alert('confirmRun');
-  }
-
-  private declineRun(run: any): void {
-    alert('declineRun');
-  }
-
 
 }

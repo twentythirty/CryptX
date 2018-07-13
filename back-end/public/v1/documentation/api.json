@@ -193,7 +193,7 @@
         }
       }
     },
-    "/recipes/{investment_id}": {
+    "/recipes/{recipe_id}": {
       "get": {
         "tags": [
           "investment"
@@ -205,9 +205,9 @@
         ],
         "parameters": [
           {
-            "name": "investment_id",
+            "name": "recipe_id",
             "in": "path",
-            "description": "identifier of investment run to fetch",
+            "description": "ID of recipe run to fetch",
             "required": true,
             "type": "integer"
           }
@@ -216,7 +216,7 @@
           "200": {
             "description": "success",
             "schema": {
-              "$ref": "#/definitions/RecipeRunResponse"
+              "$ref": "#/definitions/RecipeRunWithStatsResponse"
             }
           }
         }
@@ -2347,6 +2347,36 @@
           }
         }
       ]
+    },
+    "RecipeRunWithStatsResponse": {
+      "description": "Recipe run response",
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean",
+          "example": true
+        },
+        "recipe_run": {
+          "$ref": "#/definitions/RecipeRun"
+        },
+        "recipe_stats": {
+          "description": "Statistics of how much orders, execution orders and deposits recipe run has.",
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string",
+                "example": "Orders"
+              },
+              "count": {
+                "type": "number",
+                "example": 20
+              }
+            }
+          }
+        }
+      }
     },
     "RecipeRunResponse": {
       "description": "Recipe run response",

@@ -43,7 +43,9 @@ export class PasswordResetComponent implements OnInit {
       this.token.isValid = true;
     }, error => {
       this.token.isValid = false;
-      this.status = error.error.error;
+      if(error.error) {
+        this.status = error.error.error;
+      }
     });
   }
 
@@ -62,7 +64,9 @@ export class PasswordResetComponent implements OnInit {
     .subscribe(response => {
       this.done = true;
     }, error => {
-      this.status = error.error.error;
+      if(error.error) {
+        this.status = error.error.error;
+      }
     });
   }
 
