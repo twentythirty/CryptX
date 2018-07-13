@@ -7,3 +7,11 @@
         content: "\25be";
     }
 }
+.empty-col {
+  color: #78909C;
+  text-align: center !important;
+  span {
+    margin: 0 auto;
+    width: auto;
+  }
+}

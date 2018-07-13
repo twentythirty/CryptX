@@ -50,11 +50,11 @@ export class InvestmentRunDetailComponent extends TimelineDetailComponent implem
   public listDataSource: TableDataSource = {
     header: [
       { column: 'id', name: 'Id', filter: {type: 'text', sortable: true }},
-      { column: 'created', name: 'Created', filter: {type: 'text', sortable: true }},
+      { column: 'created', name: 'Created', filter: {type: 'date', sortable: true }},
       { column: 'creator', name: 'Creator', filter: {type: 'text', sortable: true }},
       { column: 'status', name: 'Status', filter: {type: 'text', sortable: true }},
       { column: 'desicion_by', name: 'Desicion by', filter: {type: 'text', sortable: true }},
-      { column: 'decision_time', name: 'Decision time', filter: {type: 'text', sortable: true }},
+      { column: 'decision_time', name: 'Decision time', filter: {type: 'date', sortable: true }},
       { column: 'rationale', name: 'Rationale', filter: {type: 'text', sortable: true }},
     ],
     body: null,
@@ -161,9 +161,19 @@ export class InvestmentRunDetailComponent extends TimelineDetailComponent implem
    */
 
   public addAction(): void {
-    this.listDataSource.body.push({
-      ...this.listDataSource.body[0]
-    })
+
+    let recipeRun = {};
+
+    this.route.params.pipe(
+      mergeMap(
+        params => this.investmentService.createRecipeRun(params['id'], recipeRun)
+      )
+    ).subscribe(
+      res => {
+        console.log(res);
+        this.listDataSource.body.push(res);
+      }
+    )
   }
 
   public openSingleRow(row: any): void {

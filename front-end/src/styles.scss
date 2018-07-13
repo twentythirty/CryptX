@@ -1,9 +1,24 @@
 /* You can add global styles to this file, and also import other style files */
+@import "~@angular/material/prebuilt-themes/indigo-pink.css";
 @import '~normalize.css/normalize.css';
 
 @import './sass/variables';
 
 @import '../../node_modules/flatpickr/dist/flatpickr.min.css';
-@import '/sass/index.scss'
+@import '/sass/index.scss';
 //@import './app/modules/login/login.component';
 //@import './app/shared/components/btn/btn.component';
+
+.mat-snack-bar-error {
+  background: #ff4360;
+  color: white;
+  border-radius: 0px 0px 3px 3px !important;
+  box-shadow: 0 4px 20px 0 rgba(255, 67, 96, 0.55);
+  .mat-simple-snackbar-action {
+    color: white;
+  }
+}
+
+.mat-progress-spinner.mat-accent circle, .mat-spinner.mat-accent circle {
+  stroke: #00c858 !important;
+}
