@@ -176,8 +176,24 @@ const getRecipeRun = async function (req, res) {
     approval_user: 'Mock User'
   })
 
+  let countDetails = [
+    { 
+      name: "Orders",
+      count: 999
+    },
+    { 
+      name: "Execution Orders",
+      count: 999
+    },
+    { 
+      name: "Deposits",
+      count: 999
+    }
+  ]
+
   return ReS(res, {
-    recipe_run: mock_recipe_run
+    recipe_run: mock_recipe_run,
+    recipe_stats: countDetails
   })
 };
 module.exports.getRecipeRun = getRecipeRun;
