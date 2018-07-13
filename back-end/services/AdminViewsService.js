@@ -26,7 +26,11 @@ const fetchUsersViewFooter = async (where_clause = '') => {
 
     const footer_values = (await sequelize.query(`SELECT\n${_.join(query_parts, ',\n')};`))[0];
 
-    return builder.queryReturnRowToFooterObj(footer_values);
+    return builder.addFooterLabels(
+        builder.queryReturnRowToFooterObj(footer_values),
+        'users',
+        {}
+    );
 }
 module.exports.fetchUsersViewFooter = fetchUsersViewFooter;
 
@@ -36,11 +40,7 @@ const fetchAssetsViewFooter = async () => {
     let mock_data = [
         {
             "name": "symbol",
-            "value": 999
-        },
-        {
-            "name": "is_cryptocurrency",
-            "value": 999
+            "value": 999,
         },
         {
             "name": "long_name",
@@ -56,15 +56,7 @@ const fetchAssetsViewFooter = async () => {
         },
         {
             "name": "capitalization",
-            "value": 999
-        },
-        {
-            "name": "nvt_ratio",
-            "value": 999
-        },
-        {
-            "name": "market_share",
-            "value": 999
+            "value": 9999999
         },
         {
             "name": "capitalization_updated",
@@ -76,7 +68,9 @@ const fetchAssetsViewFooter = async () => {
         }
     ];
 
-    return mock_data;
+    return builder.addFooterLabels(mock_data, 'assets', {
+        capitalization: (cap) => `$${cap}`
+    });
 }
 module.exports.fetchAssetsViewFooter = fetchAssetsViewFooter;
 
