@@ -127,4 +127,13 @@ export abstract class TimelineDetailComponent extends DataTableCommonManagerComp
     if(item.action) item.action();
   }
 
+  public setListFooter(res): void {
+    if(res.footer) {
+      this.listDataSource.footer = this.listColumnsToShow.map(col => {
+        let key = (typeof col == 'string') ? col : col.column;
+        return (res.footer.find(f => f.name == key) || {}).value || '';
+      })
+    }
+  }
+
 }
