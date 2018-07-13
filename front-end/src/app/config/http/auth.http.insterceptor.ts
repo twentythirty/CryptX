@@ -72,7 +72,8 @@ export class PostRequestErrorInterceptor implements HttpInterceptor {
            (typeof err.error.error == 'string')) {
             let snackBarRef = this.snackBar.open(err.error.error, 'Close', {
               panelClass: 'mat-snack-bar-error',
-              verticalPosition: 'top'
+              verticalPosition: 'top',
+              duration: 5000
             });
           }
       }
