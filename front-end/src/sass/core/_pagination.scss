@@ -39,7 +39,7 @@
         }
 
         .prev, .next {
-            @include backgroundC("/../../assets/img/icons/prev-arrow.svg");
+            @include backgroundC("icons/prev-arrow.svg");
         }
 
         .next {

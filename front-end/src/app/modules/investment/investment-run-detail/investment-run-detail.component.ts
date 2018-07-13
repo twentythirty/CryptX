@@ -1,10 +1,13 @@
 import { Component, OnInit } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 
+import { StatusClass } from '../../../shared/models/common';
 import { TimelineDetailComponent, SingleTableDataSource, TagLineItem } from '../timeline-detail/timeline-detail.component'
 import { TableDataSource, TableDataColumn } from '../../../shared/components/data-table/data-table.component';
-import { TimelineEvent, StatusClass } from '../timeline/timeline.component';
+import { TimelineEvent } from '../timeline/timeline.component';
 import { ActionCellDataColumn, DataCellAction, DateCellComponent, BooleanCellComponent, DateCellDataColumn, BooleanCellDataColumn, NumberCellDataColumn } from '../../../shared/components/data-table-cells';
+import { InvestmentService } from '../../../services/investment/investment.service';
+import { mergeMap } from 'rxjs/operators';
 
 /**
  * 0. Set HTML and SCSS files in component decorator
@@ -31,28 +34,28 @@ export class InvestmentRunDetailComponent extends TimelineDetailComponent implem
 
   public singleDataSource: SingleTableDataSource = {
     header: [
-      { column: 'id', name: 'id' },
-      { column: 'started', name: 'started' },
-      { column: 'updated', name: 'updated' },
-      { column: 'completed', name: 'completed' },
-      { column: 'creator', name: 'creator' },
-      { column: 'strategy', name: 'strategy' },
-      { column: 'simulated', name: 'simulated' },
-      { column: 'deposit', name: 'deposit' },
-      { column: 'status', name: 'status' }
+      { column: 'id', name: 'Id' },
+      { column: 'started', name: 'Started' },
+      { column: 'updated', name: 'Updated' },
+      { column: 'completed', name: 'Completed' },
+      { column: 'creator', name: 'Creator' },
+      { column: 'strategy', name: 'Strategy' },
+      { column: 'simulated', name: 'Simulated' },
+      { column: 'deposit', name: 'Deposit' },
+      { column: 'status', name: 'Status' }
     ],
     body: null
   }
 
   public listDataSource: TableDataSource = {
     header: [
-      { column: 'id', name: 'id', filter: {type: 'text', sortable: true }},
-      { column: 'created', name: 'created', filter: {type: 'text', sortable: true }},
-      { column: 'creator', name: 'creator', filter: {type: 'text', sortable: true }},
-      { column: 'status', name: 'status', filter: {type: 'text', sortable: true }},
-      { column: 'decision_by', name: 'desicion_by', filter: {type: 'text', sortable: true }},
-      { column: 'decision_time', name: 'decision_time', filter: {type: 'text', sortable: true }},
-      { column: 'rationale', name: 'rationale', filter: {type: 'text', sortable: true }},
+      { column: 'id', name: 'Id', filter: {type: 'text', sortable: true }},
+      { column: 'created', name: 'Created', filter: {type: 'text', sortable: true }},
+      { column: 'creator', name: 'Creator', filter: {type: 'text', sortable: true }},
+      { column: 'status', name: 'Status', filter: {type: 'text', sortable: true }},
+      { column: 'desicion_by', name: 'Desicion by', filter: {type: 'text', sortable: true }},
+      { column: 'decision_time', name: 'Decision time', filter: {type: 'text', sortable: true }},
+      { column: 'rationale', name: 'Rationale', filter: {type: 'text', sortable: true }},
     ],
     body: null,
   };
@@ -92,7 +95,9 @@ export class InvestmentRunDetailComponent extends TimelineDetailComponent implem
    * @param route - ActivatedRoute, used in DataTableCommonManagerComponent
    */
   constructor(
-    public route: ActivatedRoute
+    public route: ActivatedRoute,
+    private router: Router,
+    private investmentService: InvestmentService
   ) {
     super(route);
   }
@@ -101,16 +106,31 @@ export class InvestmentRunDetailComponent extends TimelineDetailComponent implem
    * 4. Implement abstract methods to fetch data OnInit
    */
   public getAllData(): void {
-    this.listDataSource.body = [
-      { id: 'IR-3224', created: Date.now(), creator: 'John Doe', status: 'Rejected', decision_by: 'John Doe', decision_time: Date.now(), rationale: 'Lipsum' }
-    ]
-    this.count = 3;
+    this.route.params.pipe(
+      mergeMap(
+        params => this.investmentService.getAllRecipes(params['id'])
+      )
+    ).subscribe(
+      res => {
+        console.log(res);
+        this.listDataSource.body = res.recipe_runs;
+        this.count = res.count;
+      }
+    )
   }
 
   protected getSingleData(): void {
-    this.singleDataSource.body = [
-      { id: 'IR-3224', started: Date.now(), updated: Date.now(), completed: Date.now(), creator: 'John Doe', strategy: 'LCI', simulated: false, deposit: 120000, status: 'Orders Executing' }
-    ]
+    this.route.params.pipe(
+      mergeMap(
+        params => this.investmentService.getSingleInvestment(params['id'])
+      )
+    ).subscribe(
+      res => {
+        if(res.investment_run) {
+          this.singleDataSource.body = [ res.investment_run ];
+        }
+      }
+    )
   }
 
   protected getTimelineData(): void {
@@ -130,9 +150,9 @@ export class InvestmentRunDetailComponent extends TimelineDetailComponent implem
       )
     ]
     this.setTagLine([
-      new TagLineItem(`${0} Orders`, () => alert('Open Orders')),
-      new TagLineItem(`${0} Execution orders`, () => alert('Open Execution orders')),
-      new TagLineItem(`${0} Deposits`, () => alert('Open Deposits'))
+      new TagLineItem(`${0} Orders`),
+      new TagLineItem(`${0} Execution orders`),
+      new TagLineItem(`${0} Deposits`)
     ]);
   }
 
@@ -147,11 +167,11 @@ export class InvestmentRunDetailComponent extends TimelineDetailComponent implem
   }
 
   public openSingleRow(row: any): void {
-    // Navigate to a single item page
+    // Do nothing
   }
 
   public openListRow(row: any): void {
-    alert('Navigate to a row item page');
+    this.router.navigate([`/run/recipe/${row.id}`])
   }
 
   /**

@@ -132,7 +132,10 @@ let configuration = {
       "./front-end/src",
       "./node_modules"
     ],
-    "alias": rxPaths(),
+    "alias": {
+      ...rxPaths(),
+      Images: path.resolve(__dirname, 'front-end/src/assets/img')
+    },
     "mainFields": [
       "browser",
       "module",

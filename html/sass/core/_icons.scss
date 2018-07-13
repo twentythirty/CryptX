@@ -1,10 +1,12 @@
+@import "../config";
+
 @font-face {
 	font-family: "icons";
-	src: url('./fonts/icons.eot?ts=1529918758812');
-	src: url('./fonts/icons.eot?ts=1529918758812#iefix') format('eot'),
-		 url('./fonts/icons.woff?ts=1529918758812') format('woff'),
-		 url('./fonts/icons.ttf?ts=1529918758812') format('truetype'),
-		 url('./fonts/icons.svg#icons?ts=1529918758812') format('svg');
+	src: url($fontPath + 'icons.eot?ts=1531398658400');
+	src: url($fontPath + 'icons.eot?ts=1531398658400#iefix') format('eot'),
+		 url($fontPath + 'icons.woff?ts=1531398658400') format('woff'),
+		 url($fontPath + 'icons.ttf?ts=1531398658400') format('truetype'),
+		 url($fontPath + 'icons.svg#icons?ts=1531398658400') format('svg');
 }
 
 
