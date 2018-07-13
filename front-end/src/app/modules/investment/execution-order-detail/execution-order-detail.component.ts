@@ -129,8 +129,8 @@ export class ExecutionOrderDetailComponent extends TimelineDetailComponent imple
       )
     ).subscribe(
       res => {
-        if(res.recipe_run) {
-          this.singleDataSource.body = [ res.recipe_run ];
+        if(res.recipe_order) {
+          this.singleDataSource.body = [ res.recipe_order ];
         }
       },
       err => this.singleDataSource.body = []
