@@ -37,3 +37,9 @@ export enum AssetStatusChanges {
   Blacklisting = 401,
   Graylisting = 402
 }
+
+export const AssetStatuses = {
+  '400': 'Whitelisted',
+  '401': 'Blacklisted',
+  '402': 'Greylisted'
+}
