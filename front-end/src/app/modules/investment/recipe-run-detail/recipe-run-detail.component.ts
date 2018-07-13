@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 
 import { StatusClass } from '../../../shared/models/common';
 
@@ -7,6 +7,8 @@ import { TimelineDetailComponent, SingleTableDataSource, TagLineItem } from '../
 import { TableDataSource, TableDataColumn } from '../../../shared/components/data-table/data-table.component';
 import { TimelineEvent } from '../timeline/timeline.component';
 import { ActionCellDataColumn, DataCellAction, DateCellDataColumn, PercentCellDataColumn, StatusCellDataColumn, ConfirmCellDataColumn } from '../../../shared/components/data-table-cells';
+import { mergeMap } from 'rxjs/operators';
+import { InvestmentService } from '../../../services/investment/investment.service';
 
 /**
  * 0. Set HTML and SCSS files in component decorator
@@ -51,7 +53,7 @@ export class RecipeRunDetailComponent extends TimelineDetailComponent implements
       { column: 'transaction_asset', name: 'Transaction asset', filter: {type: 'text', sortable: true }},
       { column: 'quote_asset', name: 'Quote asset', filter: {type: 'text', sortable: true }},
       { column: 'exchange', name: 'Exchange', filter: {type: 'text', sortable: true }},
-      { column: 'percentage', name: 'Percentage, %', filter: {type: 'text', sortable: true }}
+      { column: 'percentage', name: 'Percentage, %', filter: {type: 'number', sortable: true }}
     ],
     body: null,
   };
@@ -86,7 +88,9 @@ export class RecipeRunDetailComponent extends TimelineDetailComponent implements
    * @param route - ActivatedRoute, used in DataTableCommonManagerComponent
    */
   constructor(
-    public route: ActivatedRoute
+    public route: ActivatedRoute,
+    private router: Router,
+    private investmentService: InvestmentService
   ) {
     super(route);
   }
@@ -95,31 +99,32 @@ export class RecipeRunDetailComponent extends TimelineDetailComponent implements
    * 4. Implement abstract methods to fetch data OnInit
    */
   public getAllData(): void {
-    this.listDataSource.body = [
-      {
-        id: 'IR-3242',
-        transaction_asset: 'BTC',
-        quote_asset: 'ETH',
-        exchange: 'Bitstamp',
-        percentage: 5.11,
-      }
-    ]
-    this.count = 3;
+    this.route.params.pipe(
+      mergeMap(
+        params => this.investmentService.getAllRecipeDetails(params['id'])
+      )
+    ).subscribe(
+      res => {
+        this.listDataSource.body = res.recipe_details;
+        this.count = res.count;
+      },
+      err => this.listDataSource.body = []
+    )
   }
 
   protected getSingleData(): void {
-    this.singleDataSource.body = [
-      {
-        id: 'IR-3242',
-        creation_time: Date.now(),
-        instrument: 'BTC/ETH',
-        creator: 'John Doe',
-        status: 'Pending',
-        decision_by: null,
-        decision_time: null,
-        rationale: null
-      }
-    ]
+    this.route.params.pipe(
+      mergeMap(
+        params => this.investmentService.getSingleRecipe(params['id'])
+      )
+    ).subscribe(
+      res => {
+        if(res.recipe_run) {
+          this.singleDataSource.body = [ res.recipe_run ];
+        }
+      },
+      err => this.singleDataSource.body = []
+    )
   }
 
   protected getTimelineData(): void {
