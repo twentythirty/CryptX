@@ -116,23 +116,32 @@ export class InvestmentService {
     return this.http.post<any>(this.baseUrl + `investments/${investment_id}/start_recipe_run`, data);
   }
 
-  // /investments/:investment_id/start_recipe_run
-
   /**
    * Recipe run methods
    */
 
-  // get /recipes/:recipe_id/details
-  // /recipes/:recipe_id/approve"
+  getRecipeDetails(recipe_id: any): Observable<any> {
+    return this.http.get<any>(this.baseUrl + `recipes/${recipe_id}/details`)
+  }
+
+  approveRecipe(recipe_id: any, data: any): Observable<any> {
+    return this.http.post<any>(this.baseUrl + `recipes/${recipe_id}/approve`, data)
+  }
 
   /**
    * No idea what this is
    */
-  // get /recipe_details/:recipe_detail_id
+
+  getRecipeDetailByDetailId(recipe_detail_id: any): Observable<any> {
+    return this.http.get<any>(this.baseUrl + `recipe_details/${recipe_detail_id}`)
+  }
 
   /**
    * Wut
    */
-  // /orders/:order_group_id/alter
+
+  alterOrderGroup(order_group_id: any, data: any): Observable<any> {
+    return this.http.post<any>(this.baseUrl + `orders/${order_group_id}/alter`, data)
+  }
 
 }

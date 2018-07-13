@@ -64,7 +64,7 @@ export class PostRequestErrorInterceptor implements HttpInterceptor {
 
     return next.handle(request).do((event: HttpEvent<any>) => {
       if (event instanceof HttpResponse) {
-        // do stuff if needed
+        // Do nothing
       }
     }, (err: any) => {
       if (err instanceof HttpErrorResponse) {

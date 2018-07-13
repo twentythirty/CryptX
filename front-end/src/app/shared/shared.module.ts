@@ -31,6 +31,7 @@ import { BooleanCellComponent } from './components/data-table-cells/boolean-cell
 import { InputItemErrorMessageComponent } from './components/input-item-error-message/input-item-error-message.component';
 import { StatusCellComponent } from './components/data-table-cells/status-cell/status-cell.component';
 import { ConfirmCellComponent } from './components/data-table-cells/confirm-cell/confirm-cell.component';
+import { MatProgressSpinnerModule } from '@angular/material';
 
 @NgModule({
     imports: [
@@ -38,6 +39,7 @@ import { ConfirmCellComponent } from './components/data-table-cells/confirm-cell
         FormsModule,
         RouterModule,
         Ng2FlatpickrModule,
+        MatProgressSpinnerModule,
         DynamicModule.withComponents([
           ActionCellComponent,
           CurrencyCellComponent,
@@ -76,6 +78,7 @@ import { ConfirmCellComponent } from './components/data-table-cells/confirm-cell
         ConfirmCellComponent
     ],
     exports: [
+        MatProgressSpinnerModule,
         BtnComponent,
         DataTableComponent,
         ModalComponent,
