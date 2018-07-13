@@ -16,7 +16,9 @@ export class InvestmentService {
    * Create and investment
    */
 
-  // /investments/create
+  createInvestmentRun(data: any): Observable<any> {
+    return this.http.post<any>(this.baseUrl + `investments/create`, data);
+  }
 
   /**
    * Lists with(out) filters
@@ -109,6 +111,10 @@ export class InvestmentService {
   /**
    * Start recipe run
    */
+
+  createRecipeRun(investment_id: any, data: any): Observable<any> {
+    return this.http.post<any>(this.baseUrl + `investments/${investment_id}/start_recipe_run`, data);
+  }
 
   // /investments/:investment_id/start_recipe_run
 
