@@ -31,10 +31,11 @@ export class StatusCellComponent implements OnInit {
   }
 
   public getStatusClass(value: any): string {
+    value = '' + value;
     if(typeof this.classMap == 'function') {
       return this.classMap(value);
     } else if(this.classMap) {
-      return this.classMap[value] || '';
+      return this.classMap[value.toLowerCase()] || '';
     } else return '';
   }
 
