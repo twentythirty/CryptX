@@ -1,6 +1,6 @@
 'use strict';
 
-const filter_resolve = require('../utils/QueryFilterUtil');
+const filter_resolvers = require('../utils/QueryFilterUtil');
 
 module.exports.resolve_list_filter = (req, res, next) => {
     //check the POST request for a "filter" key and resolve that filter to a 
@@ -8,13 +8,16 @@ module.exports.resolve_list_filter = (req, res, next) => {
     if (req.method === 'POST') {
         req.seq_query = {};
         if (req.body.filter) {
-            req.seq_where = filter_resolve(
+            req.seq_where = filter_resolvers.toSequelizeWhere(
                 typeof req.body.filter === 'object' ? req.body.filter : {}
             )
-
+            req.sql_where = filter_resolvers.toWhereSQL(
+                typeof req.body.filter === 'object'? req.body.filter: {}
+            )
             req.seq_query.where =  req.seq_where;
         } else {
             req.seq_where = {};
+            req.sql_where = '';
             req.seq_query.where = {};
         }
 
@@ -23,6 +26,7 @@ module.exports.resolve_list_filter = (req, res, next) => {
         req.seq_query.offset = req.body.offset ? parseInt(req.body.offset) : null;
     } else {
         req.seq_where = {};
+        req.sql_where = '';
     }
 
     next();

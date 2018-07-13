@@ -4,38 +4,51 @@
 /**
  * generate an SQL snippet that selects count fo rows from table table_expr
  */
-const selectCount = (table_expr) => {
+const selectCount = (table_expr, where_clause = '') => {
 
     return `SELECT count(*)
-            FROM ${table_expr}`
+            FROM ${table_expr}
+            ${_.isEmpty(where_clause)? '' : `WHERE ${where_clause}`}
+    `
 }
 module.exports.selectCount = selectCount;
 /**
  * generate an SQL snippet that selects distinct values on field_expr from table table_expr
  */
-const selectDistinct = (field_expr, table_expr) => {
+const selectDistinct = (field_expr, table_expr, where_clause = '') => {
 
     return `SELECT DISTINCT ${field_expr}
-            FROM ${table_expr}`
+            FROM ${table_expr}
+            ${_.isEmpty(where_clause)? '' : `WHERE ${where_clause}`}
+    `
 }
 module.exports.selectDistinct = selectDistinct;
 /** 
     Build chains of query parts like 
+    ```
     (SELECT count(*)
     FROM
     (SELECT DISTINCT field_expr
-        FROM table_expr) AS ALIAS) AS ALIAS
-
+        FROM table_expr
+        WHERE ...
+    ) AS ALIAS) AS ALIAS
+    ```
     these simple distinct counts make up many footer columns so its better to easily generate them.
     the query chosen is DB-specific:
 
-    in Postgres, doing SELECT count(*) from (select distinct ...) is a lot faster than
-    doing a direct SELECT COUNT(DISTINCT...), so we go for the latter 
+    in Postgres, doing 
+    ```
+    SELECT count(*) 
+    FROM (SELECT DISTINCT ...) 
+    ```
+    
+    is a lot faster than
+    doing a direct `SELECT COUNT(DISTINCT...)`, so we go for the latter 
 
-    (info why here: https://www.postgresql.org/message-id/CAONnt+72Mtg6kyAFDTHXFWyPPY-QRbAtuREak+64Lm1KN1c-wg@mail.gmail.com)
+    (Why: https://www.postgresql.org/message-id/CAONnt+72Mtg6kyAFDTHXFWyPPY-QRbAtuREak+64Lm1KN1c-wg@mail.gmail.com)
 */
-const selectCountDistinct = (field_expr, res_alias, table_expr) => {
-    return `(${selectCount(`(${selectDistinct(field_expr, table_expr)}) AS ${res_alias}`)}) AS ${res_alias}`
+const selectCountDistinct = (field_expr, res_alias, table_expr, where_clause = '') => {
+    return `(${selectCount(`(${selectDistinct(field_expr, table_expr, where_clause)}) AS ${res_alias}`)}) AS ${res_alias}`
 }
 module.exports.selectCountDistinct = selectCountDistinct;
 
