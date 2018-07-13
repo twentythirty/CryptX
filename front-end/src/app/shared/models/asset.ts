@@ -9,13 +9,11 @@ export class Asset {
   public nvt_ratio: number;
   public market_share: number;
   public capitalization_updated: any;
-  public status: string;
+  public status: (string | number);
 
   // Not yet implemented
   public capitalization_updated_timestamp: number;
   public is_cryptocurrency: boolean;
-  public is_greylisted: boolean;
-  public is_blacklisted: boolean;
 }
 
 
@@ -36,4 +34,13 @@ export enum AssetStatusChanges {
   Whitelisting = 400,
   Blacklisting = 401,
   Graylisting = 402
+}
+
+export const AssetStatuses = {
+  '400': 'Whitelisted',
+  '401': 'Blacklisted',
+  '402': 'Greylisted',
+  'Whitelisted': '400',
+  'Blacklisted': '401',
+  'Greylisted': '402'
 }
