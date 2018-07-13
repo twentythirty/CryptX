@@ -107,7 +107,8 @@ export class RecipeRunDetailComponent extends TimelineDetailComponent implements
       res => {
         this.listDataSource.body = res.recipe_details;
         this.count = res.count;
-      }
+      },
+      err => this.listDataSource.body = []
     )
   }
 
@@ -121,7 +122,8 @@ export class RecipeRunDetailComponent extends TimelineDetailComponent implements
         if(res.recipe_run) {
           this.singleDataSource.body = [ res.recipe_run ];
         }
-      }
+      },
+      err => this.singleDataSource.body = []
     )
   }
 
