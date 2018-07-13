@@ -158,11 +158,11 @@ export class RecipeRunDetailComponent extends TimelineDetailComponent implements
    */
 
   public openSingleRow(row: any): void {
-    // Navigate to a single item page
+    // Do nothing
   }
 
   public openListRow(row: any): void {
-    alert('Navigate to a row item page');
+    // Do nothing
   }
 
   /**

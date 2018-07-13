@@ -161,11 +161,11 @@ export class OrderDetailComponent extends TimelineDetailComponent implements OnI
    */
 
   public openSingleRow(row: any): void {
-    // Navigate to a single item page
+    this.router.navigate([`/run/recipe/${row.id}`])
   }
 
   public openListRow(row: any): void {
-    alert('Navigate to a row item page');
+    this.router.navigate([`/run/execution-order/${row.id}`])
   }
 
   /**
