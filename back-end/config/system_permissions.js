@@ -342,6 +342,37 @@ ROUTES = {
     required_permissions: [PERMISSIONS.VIEW_INVESTMENT_RUN]
   },
 
+  InstrumentCreate: {
+    router_string: "/instruments/create",
+    permissions_matcher: /\/instruments\/create/,
+    required_permissions: []
+  },
+  GetInstrument: {
+    router_string: "/instruments/:instrument_id",
+    permissions_matcher: /\/instruments\/\d+$/,
+    required_permissions: []
+  },
+  GetInstruments: {
+    router_string: "/instruments/all",
+    permissions_matcher: /\/instruments\/all$/,
+    required_permissions: []
+  },
+  InstrumentCheckMapping: {
+    router_string: "/instruments/:instrument_id/check_mapping",
+    permissions_matcher: /\/instruments\/\d+\/check_mapping$/,
+    required_permissions: []
+  },
+  InstrumentMapExchanges: {
+    router_string: "/instruments/:instrument_id/add_mapping",
+    permissions_matcher: /\/instruments\/\d+\/add_mapping$/,
+    required_permissions: []
+  },
+  GetInstrumentExchanges: {
+    router_string: "/instruments/:instrument_id/exchanges",
+    permissions_matcher: /\/instruments\/\d+\/exchanges$/,
+    required_permissions: []
+  },
+
   CreateDeposit: {
     router_string: "/investments/:investment_id/deposit",
     permissions_matcher: ROUTE_MATCHERS.CreateDeposit,
