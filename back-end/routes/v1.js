@@ -7,6 +7,7 @@ const AssetController = require('./../controllers/AssetController');
 const InvestmentController = require('./../controllers/InvestmentController');
 const OrdersController = require('./../controllers/OrdersController');
 const SystemController = require('./../controllers/SystemController');
+const InstrumentController = require('./../controllers/InstrumentController');
 
 // const custom 	        = require('./../middleware/custom');
 
@@ -435,6 +436,54 @@ router.get(
   check_permissions,
   InvestmentController.ExecutionOrderFill
 );
+
+// Instruments
+router.post(
+  ROUTES.InstrumentCreate.router_string,
+  stateless_auth,
+  check_permissions,
+  InstrumentController.createInstrument
+);
+router.get(
+  ROUTES.GetInstruments.router_string,
+  stateless_auth,
+  check_permissions,
+  filter_reducer,
+  InstrumentController.getInstruments
+);
+router.post(
+  ROUTES.GetInstruments.router_string,
+  stateless_auth,
+  check_permissions,
+  filter_reducer,
+  InstrumentController.getInstruments
+);
+router.get(
+  ROUTES.GetInstrument.router_string,
+  stateless_auth,
+  check_permissions,
+  InstrumentController.getInstrument
+);
+router.post(
+  ROUTES.InstrumentCheckMapping.router_string,
+  stateless_auth,
+  check_permissions,
+  InstrumentController.checkInstrumentExchangeMap
+);
+router.post(
+  ROUTES.InstrumentMapExchanges.router_string,
+  stateless_auth,
+  check_permissions,
+  InstrumentController.mapInstrumentsWithExchanges
+);
+router.get(
+  ROUTES.GetInstrumentExchanges.router_string,
+  stateless_auth,
+  check_permissions,
+  InstrumentController.getInstrumentExchanges
+);
+
+
 
 router.post(
   ROUTES.CreateDeposit.router_string,
