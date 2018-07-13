@@ -512,6 +512,100 @@
         }
       }
     },
+    "/deposits/{deposit_id}": {
+      "get": {
+        "tags": [
+          "investment"
+        ],
+        "summary": "Get deposits of recipe by deposit ID",
+        "description": "Get deposits of recipe by deposit ID",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "deposit_id",
+            "in": "path",
+            "description": "ID of recipe deposit",
+            "required": true,
+            "type": "integer"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "$ref": "#/definitions/RecipeDepositResponse"
+            }
+          }
+        }
+      }
+    },
+    "/deposits/of_recipe/{recipe_id}": {
+      "get": {
+        "tags": [
+          "investment"
+        ],
+        "summary": "Get recipe deposits of recipe run by recipe id",
+        "description": "Get recipe deposits of recipe run by recipe id",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "recipe_id",
+            "in": "path",
+            "description": "ID of recipe run to get recipe deposits of",
+            "required": true,
+            "type": "integer"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "$ref": "#/definitions/RecipeDepositListResponse"
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "investment"
+        ],
+        "summary": "Get recipe deposits of recipe run by recipe id",
+        "description": "Get recipe deposits of recipe run by recipe id",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "recipe_id",
+            "in": "path",
+            "description": "ID of recipe run to get recipe deposits of",
+            "required": true,
+            "type": "integer"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "description": "The filter definition to perform on the data set. If absent will assume empty filter and return all data",
+            "required": false,
+            "schema": {
+              "$ref": "#/definitions/EntitiesFilter"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "$ref": "#/definitions/RecipeDepositListResponse"
+            }
+          }
+        }
+      }
+    },
     "/execution_orders/{execution_order_id}": {
       "get": {
         "tags": [
@@ -1785,7 +1879,9 @@
           "properties": {
             "execution_order_fills": {
               "type": "array",
-              "$ref": "#/definitions/ExecutionOrderFill"
+              "items": {
+                "$ref": "#/definitions/ExecutionOrderFill"
+              }
             }
           }
         }
@@ -1837,7 +1933,9 @@
           "properties": {
             "execution_orders": {
               "type": "array",
-              "$ref": "#/definitions/ExecutionOrder"
+              "items": {
+                "$ref": "#/definitions/ExecutionOrder"
+              }
             }
           }
         }
@@ -1913,7 +2011,9 @@
           "properties": {
             "recipe_deposits": {
               "type": "array",
-              "$ref": "#/definitions/RecipeDeposit"
+              "items": {
+                "$ref": "#/definitions/RecipeDeposit"
+              }
             }
           }
         }
@@ -1985,7 +2085,9 @@
           "properties": {
             "recipe_orders": {
               "type": "array",
-              "$ref": "#/definitions/RecipeOrder"
+              "items": {
+                "$ref": "#/definitions/RecipeOrder"
+              }
             }
           }
         }
@@ -2053,7 +2155,9 @@
           "properties": {
             "recipes_details": {
               "type": "array",
-              "$ref": "#/definitions/RecipeDetails"
+              "items": {
+                "$ref": "#/definitions/RecipeDetails"
+              }
             }
           }
         }

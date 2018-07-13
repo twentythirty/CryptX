@@ -167,6 +167,8 @@ const getRecipeRun = async function (req, res) {
 
   if (err) return ReE(res, err.message, 422);
 
+  if (!recipe_run) 
+    ReE(res, "Recipe not found", 422);
   // mock data added below
   recipe_run.toWeb();
   mock_recipe_run = Object.assign(recipe_run, {

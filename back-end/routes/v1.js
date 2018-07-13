@@ -370,7 +370,7 @@ router.get(
   InvestmentController.getRecipeRunDetail
 );
 
-// Recipe orders
+// Recipe Run deposits
 router.get(
   ROUTES.GetRecipeRunDeposits.router_string,
   stateless_auth,
