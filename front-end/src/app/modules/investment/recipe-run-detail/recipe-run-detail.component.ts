@@ -63,8 +63,10 @@ export class RecipeRunDetailComponent extends TimelineDetailComponent implements
     new DateCellDataColumn({ column: 'creation_time' }),
     'instrument',
     'creator',
-    new StatusCellDataColumn({ column: 'status', inputs: { classMap: (val) => {
-      return StatusClass.PENDING;
+    new StatusCellDataColumn({ column: 'status', inputs: { classMap: {
+      'pending' : StatusClass.PENDING,
+      'rejected': StatusClass.REJECTED,
+      'approved': StatusClass.APPROVED
     }}}),
     'decision_by',
     new DateCellDataColumn({ column: 'decision_time' }),
@@ -99,9 +101,10 @@ export class RecipeRunDetailComponent extends TimelineDetailComponent implements
    * 4. Implement abstract methods to fetch data OnInit
    */
   public getAllData(): void {
+    console.log(this.requestData);
     this.route.params.pipe(
       mergeMap(
-        params => this.investmentService.getAllRecipeDetails(params['id'])
+        params => this.investmentService.getAllRecipeDetails(params['id'], this.requestData)
       )
     ).subscribe(
       res => {
