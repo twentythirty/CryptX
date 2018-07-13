@@ -27,7 +27,7 @@ const createInvestmentRun = async function (req, res) {
 
   // mock data below
   investment_run.toWeb();
-  mock_investment_run = Object.assign(investment_run, {
+  let mock_investment_run = Object.assign(investment_run, {
     user_created: 'Mock User'
   })
 
@@ -48,13 +48,13 @@ const createRecipeRun = async function (req, res) {
 
   // mock data added below
   recipe_run.toJSON();
-  recipe_run = Object.assign(recipe_run, {
+  let mock_recipe_run = Object.assign(recipe_run, {
     user_created: 'Mock User',
     approval_user: 'Mock User'
   })
 
   return ReS(res, {
-    recipe_run: recipe_run
+    recipe_run: mock_recipe_run
   })
 };
 module.exports.createRecipeRun = createRecipeRun;
@@ -71,7 +71,7 @@ const getInvestmentRun = async function (req, res) {
 
   // mock data below
   investment_run.toWeb();
-  mock_investment_run = Object.assign(investment_run, {
+  let mock_investment_run = Object.assign(investment_run, {
     user_created: 'Mock User'
   })
 
@@ -133,7 +133,7 @@ const changeRecipeRunStatus = async function (req, res) {
 
   // mock data added below
   recipe_run.toWeb();
-  mock_recipe_run = Object.assign(recipe_run, {
+  let mock_recipe_run = Object.assign(recipe_run, {
     user_created: 'Mock User',
     approval_user: 'Mock User'
   })
@@ -168,10 +168,10 @@ const getRecipeRun = async function (req, res) {
   if (err) return ReE(res, err.message, 422);
 
   if (!recipe_run) 
-    ReE(res, "Recipe not found", 422);
+    return ReE(res, "Recipe not found", 422);
   // mock data added below
   recipe_run.toWeb();
-  mock_recipe_run = Object.assign(recipe_run, {
+  let mock_recipe_run = Object.assign(recipe_run, {
     user_created: 'Mock User',
     approval_user: 'Mock User'
   })
