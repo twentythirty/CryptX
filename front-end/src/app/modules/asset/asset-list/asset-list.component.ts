@@ -154,7 +154,7 @@ export class AssetListComponent extends DataTableCommonManagerComponent implemen
       new AssetStatus(this.modelConstantsService.getGroup(INSTRUMENT_STATUS_CHANGES)['Graylisting'], rationale)
     ).subscribe(
       res => {
-        asset.status = 402;
+        asset.status = this.modelConstantsService.getName(402);
       }
     )
   }
@@ -166,7 +166,7 @@ export class AssetListComponent extends DataTableCommonManagerComponent implemen
       new AssetStatus(this.modelConstantsService.getGroup(INSTRUMENT_STATUS_CHANGES)['Blacklisting'], rationale)
     ).subscribe(
       res => {
-        asset.status = 401;
+        asset.status = this.modelConstantsService.getName(401);
       }
     )
   }
@@ -178,7 +178,7 @@ export class AssetListComponent extends DataTableCommonManagerComponent implemen
       new AssetStatus(this.modelConstantsService.getGroup(INSTRUMENT_STATUS_CHANGES)['Whitelisting'], rationale)
     ).subscribe(
       res => {
-        asset.status = 400;
+        asset.status = this.modelConstantsService.getName(400)
       }
     )
   }
@@ -188,14 +188,14 @@ export class AssetListComponent extends DataTableCommonManagerComponent implemen
    */
 
   public rowBackgroundColor = (row: Asset): string => {
-    if(row.status == 401) return '#6b6b6b';
-    if(row.status == 402) return '#aeaeae';
+    if(row.status == this.modelConstantsService.getName(401)) return '#6b6b6b';
+    if(row.status == this.modelConstantsService.getName(402)) return '#aeaeae';
     return null;
   }
 
   public rowTexColor = (row: Asset): string => {
-    if(row.status == 401) return '#ffffff';
-    if(row.status == 402) return '#f2f2f2';
+    if(row.status == this.modelConstantsService.getName(401)) return '#ffffff';
+    if(row.status == this.modelConstantsService.getName(402)) return '#f2f2f2';
     return null;
   }
 
