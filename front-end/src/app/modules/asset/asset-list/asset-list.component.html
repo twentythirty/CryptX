@@ -6,3 +6,7 @@
 </app-data-table>
 
 <app-pagination [count]="count" [perPage]="pageSize" [page]="page"></app-pagination>
+
+<app-modal *ngIf="rationaleModelIsShown" (close)="hideRationaleModal()">
+  <app-rationale-modal [data]="rationaleData" (close)="submitRationale($event)"></app-rationale-modal>
+</app-modal>
