@@ -30,12 +30,12 @@ const getInstrument = async function (req, res) {
   let instrument_id = req.params.instrument_id;
 
   let instrument_mock = {
-    id: 1,
+    id: instrument_id,
     transaction_asset_id: 28,
     quote_asset_id: 2,
     symbol: "BTC/XRP",
     exchanges_connected: 4,
-    exchanges_connected: 3
+    exchanges_failed: 3
   };
 
   return ReS(res, {
@@ -74,6 +74,10 @@ const getInstruments = async function (req, res) {
     },
     {
       "name": "exchanges_connected",
+      "value": "999"
+    },
+    {
+      "name": "exchanges_failed",
       "value": "999"
     },
     {
@@ -126,7 +130,7 @@ const mapInstrumentsWithExchanges = async function (req, res) {
   let instrument_id = req.params.instrument_id;
   let exchange_mapping = req.body.exchange_mapping;
 
-  if (!exchange_mapping.length && !instrument_id)
+  if (!exchange_mapping || !exchange_mapping.length || !instrument_id)
     return ReE(res, "Instrument ID and exchange mappings must be supplied to map exchanges with instrument", 422);
 
   // enforce specific exchange mapping structure
@@ -149,7 +153,7 @@ const getInstrumentExchanges = async function (req, res) {
     instrument_id,
     exchange_id: index,
     exchange_name: "Bitstamp" + index,
-    external_instrument_id,
+    external_instrument_id: "BTC/XRP",
     current_price: 7422.46,
     last_day_vol: 12300,
     last_week_vol: 86100,
@@ -162,3 +166,192 @@ const getInstrumentExchanges = async function (req, res) {
   });
 };
 module.exports.getInstrumentExchanges = getInstrumentExchanges;
+
+
+// liquidity requirements
+
+const createLiquidityRequirement = async function (req, res) {
+ 
+  // mock data below
+  let {
+    instrument_id,
+    exchange_id,
+    periodicity,
+    minimum_circulation
+  } = req.body;
+
+  if (!instrument_id || 
+    !exchange_id || 
+    !periodicity || 
+    !minimum_circulation)
+    return ReE(res, "Please fill all values: instrument_id, exchange_id, periodicity, minimum_circulation", 422);
+
+  let liquidity_mock = {
+    id: 1,
+    instrument_id: instrument_id,
+    instrument: "BTC/ETH",
+    periodicity: 7,
+    quote_asset: "BTC",
+    minimum_circulation: 60000,
+    exchange: "All exchanges",
+    exchange_count: 2,
+    exchange_pass: 2
+  };
+
+  return ReS(res, {
+    liquidity_requirement: liquidity_mock
+  });
+};
+module.exports.createLiquidityRequirement = createLiquidityRequirement;
+
+const getLiquidityRequirement = async function (req, res) {
+ 
+  // mock data below
+  let liquidity_req_id = req.params.liquidity_requirement_id
+
+  if (!liquidity_req_id)
+    return ReE(res, "Not found", 422);
+
+  let liquidity_mock = {
+    id: liquidity_req_id,
+    instrument: "BTC/ETH",
+    periodicity: 7,
+    quote_asset: "BTC",
+    minimum_circulation: 60000,
+    exchange: "All exchanges",
+    exchange_count: 2,
+    exchange_pass: 2
+  };
+
+  return ReS(res, {
+    liquidity_requirement: liquidity_mock
+  });
+};
+module.exports.getLiquidityRequirement = getLiquidityRequirement;
+
+
+const getLiquidityRequirements = async function (req, res) {
+ 
+  // mock data below
+
+  let liquidity_mock = [...Array(20)].map((map, index) => ({
+    id: index,
+    instrument: "BTC/ETH",
+    periodicity: 7,
+    quote_asset: "BTC",
+    minimum_circulation: 60000,
+    exchange: "All exchanges",
+    exchange_count: 2,
+    exchange_pass: 2
+  }));
+
+  let footer = [
+    {
+      "name": "id",
+      "value": "999"
+    },
+    {
+      "name": "instrument",
+      "value": "999"
+    },
+    {
+      "name": "periodicity",
+      "value": "999"
+    },
+    {
+      "name": "quote_asset",
+      "value": "999"
+    },
+    {
+      "name": "minimum_circulation",
+      "value": "999"
+    },
+    {
+      "name": "exchange",
+      "value": "999"
+    },
+    {
+      "name": "exchange_count",
+      "value": "999"
+    },
+    {
+      "name": "exchange_pass",
+      "value": "999"
+    }
+  ];
+
+  return ReS(res, {
+    liquidity_requirements: liquidity_mock,
+    count: liquidity_mock.length,
+    footer  
+  });
+};
+module.exports.getLiquidityRequirements = getLiquidityRequirements;
+
+
+const getLiquidityRequirementExchanges = async function (req, res) {
+ 
+  // mock data below
+  let liquidity_requirement_id = req.params.liquidity_requirement_id
+
+  if (!liquidity_requirement_id)
+    return ReE(res, "Not found", 422);
+
+  let liquidity_mock = [...Array(8)].map((map, index) => ({
+    id: index,
+    exchange_id: 1,
+    exchange: "Bitstamp",
+    instrument: "BTC/ETH",
+    instrument_identifier: "XRP/BTC",
+    last_day_vol: 12300,
+    last_week_vol: 86100,
+    last_updated: 1531725075560,
+    passes: true 
+  }));
+
+  let footer = [
+    {
+      "name": "id",
+      "value": "999"
+    },
+    {
+      "name": "exchange_id",
+      "value": "999"
+    },
+    {
+      "name": "exchange",
+      "value": "999"
+    },
+    {
+      "name": "instrument",
+      "value": "999"
+    },
+    {
+      "name": "instrument_identifier",
+      "value": "999"
+    },
+    {
+      "name": "last_day_vol",
+      "value": "999"
+    },
+    {
+      "name": "last_week_vol",
+      "value": "999"
+    },
+    {
+      "name": "last_updated",
+      "value": "999"
+    },
+    {
+      "name": "passes",
+      "value": "999"
+    }
+  ];
+
+  return ReS(res, {
+    exchanges: liquidity_mock,
+    count: liquidity_mock.length,
+    footer
+  });
+};
+module.exports.getLiquidityRequirementExchanges = getLiquidityRequirementExchanges;

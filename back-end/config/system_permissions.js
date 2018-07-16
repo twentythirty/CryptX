@@ -342,6 +342,7 @@ ROUTES = {
     required_permissions: [PERMISSIONS.VIEW_INVESTMENT_RUN]
   },
 
+  // Instruments
   InstrumentCreate: {
     router_string: "/instruments/create",
     permissions_matcher: /\/instruments\/create/,
@@ -370,6 +371,28 @@ ROUTES = {
   GetInstrumentExchanges: {
     router_string: "/instruments/:instrument_id/exchanges",
     permissions_matcher: /\/instruments\/\d+\/exchanges$/,
+    required_permissions: []
+  },
+
+  // Liquidity requirements
+  LiquidityReqCreate: {
+    router_string: "/liquidity_requirements/create",
+    permissions_matcher: /\/liquidity_requirements\/create$/,
+    required_permissions: []
+  },
+  GetLiquidityRequirement: {
+    router_string: "/liquidity_requirements/:liquidity_requirement_id",
+    permissions_matcher: /\/liquidity_requirements\/\d+$/,
+    required_permissions: []
+  },
+  GetLiquidityRequirements: {
+    router_string: "/liquidity_requirements/all",
+    permissions_matcher: /\/liquidity_requirements\/all$/,
+    required_permissions: []
+  },
+  GetLiquidityRequirementExchanges: {
+    router_string: "/liquidity_requirements/:liquidity_requirement_id/exchanges",
+    permissions_matcher: /\/liquidity_requirements\/\d+\/exchanges$/,
     required_permissions: []
   },
 

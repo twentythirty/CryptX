@@ -483,6 +483,37 @@ router.get(
   InstrumentController.getInstrumentExchanges
 );
 
+// Liquidity requirements
+router.post(
+  ROUTES.LiquidityReqCreate.router_string,
+  stateless_auth,
+  check_permissions,
+  InstrumentController.createLiquidityRequirement
+);
+router.get(
+  ROUTES.GetLiquidityRequirements.router_string,
+  stateless_auth,
+  check_permissions,
+  InstrumentController.getLiquidityRequirements
+);
+router.post(
+  ROUTES.GetLiquidityRequirements.router_string,
+  stateless_auth,
+  check_permissions,
+  InstrumentController.getLiquidityRequirements
+);
+router.get(
+  ROUTES.GetLiquidityRequirement.router_string,
+  stateless_auth,
+  check_permissions,
+  InstrumentController.getLiquidityRequirement
+);
+router.get(
+  ROUTES.GetLiquidityRequirementExchanges.router_string,
+  stateless_auth,
+  check_permissions,
+  InstrumentController.getLiquidityRequirementExchanges
+);
 
 
 router.post(
