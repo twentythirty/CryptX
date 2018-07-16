@@ -80,12 +80,12 @@ export class AssetListComponent extends DataTableCommonManagerComponent implemen
           }),
           new DataCellAction({
             label: 'Blacklist',
-            isShown: (row: any) => this.checkPerm(['CHANGE_ASSET_STATUS']) && (!row.is_blacklisted),
+            isShown: (row: any) => this.checkPerm(['CHANGE_ASSET_STATUS']) && (!(row.status == 401)),
             exec: (row: any) => { this.blacklist(<Asset>row) }
           }),
           new DataCellAction({
             label: 'Whitelist',
-            isShown: (row: any) => this.checkPerm(['CHANGE_ASSET_STATUS']) && (row.is_blacklisted),
+            isShown: (row: any) => this.checkPerm(['CHANGE_ASSET_STATUS']) && ((row.status == 401)),
             exec: (row: any) => { this.whitelist(<Asset>row) }
           })
         ]
@@ -127,38 +127,58 @@ export class AssetListComponent extends DataTableCommonManagerComponent implemen
   }
 
   /**
+   * Clicks
+   */
+
+  public deGreylist(asset: Asset): void {
+    this.showRationaleModal(asset, data => data && this.doDeGreylist(data));
+  }
+
+  public blacklist(asset: Asset): void {
+    this.showRationaleModal(asset, data => data && this.doBlacklist(data));
+  }
+
+  public whitelist(asset: Asset): void {
+    this.showRationaleModal(asset, data => data && this.doWhitelist(data));
+  }
+
+
+  /**
    * Actions
    */
 
-  private deGreylist(asset: Asset): void {
+  public doDeGreylist({ rationale, data }): void {
+    let asset: Asset = data;
     this.assetService.changeAssetStatus(
       asset.id,
-      new AssetStatus(this.modelConstantsService.getGroup(INSTRUMENT_STATUS_CHANGES)['Graylisting'], '')
+      new AssetStatus(this.modelConstantsService.getGroup(INSTRUMENT_STATUS_CHANGES)['Graylisting'], rationale)
     ).subscribe(
       res => {
-        asset.status = this.modelConstantsService.getName(INSTRUMENT_STATUS_CHANGES, 402);
+        asset.status = 402;
       }
     )
   }
 
-  private blacklist(asset: Asset): void {
+  public doBlacklist({ rationale, data }): void {
+    let asset: Asset = data;
     this.assetService.changeAssetStatus(
       asset.id,
-      new AssetStatus(this.modelConstantsService.getGroup(INSTRUMENT_STATUS_CHANGES)['Blacklisting'], '')
+      new AssetStatus(this.modelConstantsService.getGroup(INSTRUMENT_STATUS_CHANGES)['Blacklisting'], rationale)
     ).subscribe(
       res => {
-        asset.status = this.modelConstantsService.getName(INSTRUMENT_STATUS_CHANGES, 401);
+        asset.status = 401;
       }
     )
   }
 
-  private whitelist(asset: Asset): void {
+  public doWhitelist({ rationale, data }): void {
+    let asset: Asset = data;
     this.assetService.changeAssetStatus(
       asset.id,
-      new AssetStatus(this.modelConstantsService.getGroup(INSTRUMENT_STATUS_CHANGES)['Whitelisting'], '')
+      new AssetStatus(this.modelConstantsService.getGroup(INSTRUMENT_STATUS_CHANGES)['Whitelisting'], rationale)
     ).subscribe(
       res => {
-        asset.status = this.modelConstantsService.getName(INSTRUMENT_STATUS_CHANGES, 400)
+        asset.status = 400;
       }
     )
   }
@@ -168,15 +188,42 @@ export class AssetListComponent extends DataTableCommonManagerComponent implemen
    */
 
   public rowBackgroundColor = (row: Asset): string => {
-    if(row.status == this.modelConstantsService.getName(INSTRUMENT_STATUS_CHANGES, 401)) return '#6b6b6b';
-    if(row.status == this.modelConstantsService.getName(INSTRUMENT_STATUS_CHANGES, 402)) return '#aeaeae';
+    if(row.status == 401) return '#6b6b6b';
+    if(row.status == 402) return '#aeaeae';
     return null;
   }
 
   public rowTexColor = (row: Asset): string => {
-    if(row.status == this.modelConstantsService.getName(INSTRUMENT_STATUS_CHANGES, 401)) return '#ffffff';
-    if(row.status == this.modelConstantsService.getName(INSTRUMENT_STATUS_CHANGES, 402)) return '#f2f2f2';
+    if(row.status == 401) return '#ffffff';
+    if(row.status == 402) return '#f2f2f2';
     return null;
+  }
+
+  /**
+   * Rationale
+   */
+
+  public rationaleModelIsShown: boolean = false;
+  public rationaleData: any;
+  public rationaleDone: (data: any) => void;
+
+  public showRationaleModal(data: any, done?: (data: any) => void): void {
+    this.rationaleModelIsShown = true;
+    this.rationaleData = data;
+    this.rationaleDone = done;
+  }
+
+  public hideRationaleModal(): void {
+    this.rationaleModelIsShown = false;
+    this.rationaleData = null;
+    this.rationaleDone = null;
+  }
+
+  public submitRationale(data): void {
+    if(typeof this.rationaleDone == 'function') {
+      this.rationaleDone(data);
+    }
+    this.hideRationaleModal();
   }
 
 }

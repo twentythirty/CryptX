@@ -2,7 +2,7 @@
         <div class="modal-content">
             <div class="step-box step1">
                 <a (click)="closeModal()" class="close-modal"></a>
-                <span class="modal-title">{{heading}}</span>
+                <span class="modal-title" *ngIf="heading">{{heading}}</span>
                   <ng-content>
                   </ng-content>
             </div>
