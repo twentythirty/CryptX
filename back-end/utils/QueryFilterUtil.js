@@ -1,6 +1,7 @@
 'use strict';
 
 const Sequelize = require('../models').Sequelize;
+const sequelize = require('../models').sequelize;
 const Op = Sequelize.Op;
 
 /**
@@ -286,14 +287,11 @@ const format_for_sql = (value) => {
     if (_.isNull(value)) {
         return `NULL`;
     }
-    if (_.isString(value)) {
-        return `'${value}'`
-    }
     if (_.isArray(value)) {
         return `${paren(_.join(_.map(value, format_for_sql), ', '))}`
     }
 
-    return `${value}`;
+    return `${sequelize.escape(value)}`;
 }
 
 /**
@@ -318,8 +316,6 @@ const add_to_where = (current_where, addition) => {
 
 
 const expr_to_sql = (field_name, expr_obj, negation = false) => {
-
-    let clause_expression = '';
 
     //supplied thing is an atom of some kind - string, array, value or null
     if (!_.isPlainObject(expr_obj)) {
@@ -378,7 +374,9 @@ const atom_to_sql_expression = (left_side, atom, negation = false) => {
  */
 const expression_op_to_sql = (expression_op, negation = false) => {
 
-    switch (expression_op) {
+    const expr = (expression_op? expression_op : '').trim().toLowerCase();
+    
+    switch (expr) {
 
         case 'lt':
             return negation ? '>=' : '<';
@@ -388,10 +386,14 @@ const expression_op_to_sql = (expression_op, negation = false) => {
             return negation ? '<=' : '>';
         case 'gte':
             return negation ? '<' : '>=';
-        case 'notIn':
+        case 'in':
+            return negation ? 'NOT IN' : 'IN';
+        case 'notin':
             return negation ? 'IN' : 'NOT IN';
+        case 'like':
+            return negation ? 'NOT LIKE' : 'LIKE';
         default:
-            return `${negation? 'NOT ' : ''}${expression_op}`
+            return `${negation? 'NOT ' : ''}${sequelize.escape(expression_op)}`
     }
 }
 

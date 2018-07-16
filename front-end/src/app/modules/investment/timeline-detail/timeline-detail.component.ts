@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
+import { Observable } from 'rxjs';
 
 import { DataTableCommonManagerComponent } from '../../../shared/components/data-table-common-manager/data-table-common-manager.component';
 import { TableDataColumn, TableDataSource } from '../../../shared/components/data-table/data-table.component';
@@ -59,10 +60,10 @@ export abstract class TimelineDetailComponent extends DataTableCommonManagerComp
   /**
    * 2. Abstract attributes to preset data structure
    */
-  public abstract timelineEvents: Array<TimelineEvent>;
-
   public abstract singleDataSource: SingleTableDataSource;
   public abstract listDataSource: TableDataSource;
+
+  public timeline$: Observable<Array<TimelineEvent>>;
 
   /**
    * Column config for data table

@@ -169,7 +169,7 @@ describe('QueryFilterUtil', () => {
         const where = filter_transformers.toWhereSQL(filter_props);
 
         chai.expect(where).to.eq(
-            `((prop1 = true AND prop2 = false) AND (prop3 IN (56, 57, 90) OR prop3 NOT IN (44, 90)) AND (prop5 != -99 AND prop5 <= -88)) AND (prop4 like 'Smith')`
+            `((prop1 = true AND prop2 = false) AND (prop3 IN (56, 57, 90) OR prop3 NOT IN (44, 90)) AND (prop5 != -99 AND prop5 <= -88)) AND (prop4 LIKE 'Smith')`
         );
     });
 
