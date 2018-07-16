@@ -126,8 +126,13 @@ export class OrderDetailComponent extends TimelineDetailComponent implements OnI
       )
     ).subscribe(
       res => {
-        if(res.recipe_run) {
-          this.singleDataSource.body = [ res.recipe_run ];
+        if(res.order) {
+          this.singleDataSource.body = [ res.order ];
+        }
+        if(res.order_stats) {
+          this.setTagLine(res.order_stats.map(stat => {
+            return new TagLineItem(`${stat.count} ${stat.name}`)
+          }))
         }
       },
       err => this.singleDataSource.body = []
@@ -135,28 +140,8 @@ export class OrderDetailComponent extends TimelineDetailComponent implements OnI
   }
 
   protected getTimelineData(): void {
-    this.timelineEvents = [
-      ...Array(2).fill(
-        new TimelineEvent(
-          'Investment run',
-          'Orders filled',
-          StatusClass.APPROVED,
-          'IR-001, rci',
-          (new Date()).toUTCString(),
-          `/dashboard`
-        )
-      ),
-      ...Array(3).fill(
-        { note: 'Investments isn\'t made yet' }
-      )
-    ]
-    this.setTagLine([
-      new TagLineItem(`${0} Orders`),
-      new TagLineItem(`${0} Execution orders`),
-      new TagLineItem(`${0} Deposits`)
-    ]);
+    this.timeline$ = this.investmentService.getTimelineData();
   }
-
   /**
    * 5. Implement abstract methods to handle user actions
    */

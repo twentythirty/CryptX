@@ -28,11 +28,11 @@
         display: inline-block;
 
         &:last-child{
-            margin-bottom: 0;
+          margin-bottom: 0;
+        }
 
-            &::before {
-                @include backgroundC("icons/step-label-oval.svg");
-            }
+        &.active::before {
+            @include backgroundC("icons/step-label-oval.svg");
         }
 
         &::after {

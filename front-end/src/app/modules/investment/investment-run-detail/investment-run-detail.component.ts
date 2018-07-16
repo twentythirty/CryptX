@@ -130,32 +130,18 @@ export class InvestmentRunDetailComponent extends TimelineDetailComponent implem
         if(res.investment_run) {
           this.singleDataSource.body = [ res.investment_run ];
         }
+        if(res.investment_stats) {
+          this.setTagLine(res.investment_stats.map(stat => {
+            return new TagLineItem(`${stat.count} ${stat.name}`)
+          }))
+        }
       },
       err => this.singleDataSource.body = []
     )
   }
 
   protected getTimelineData(): void {
-    this.timelineEvents = [
-      ...Array(2).fill(
-        new TimelineEvent(
-          'Investment run',
-          'Orders filled',
-          StatusClass.APPROVED,
-          'IR-001, rci',
-          (new Date()).toUTCString(),
-          `/dashboard`
-        )
-      ),
-      ...Array(3).fill(
-        { note: 'Investments isn\'t made yet' }
-      )
-    ]
-    this.setTagLine([
-      new TagLineItem(`${0} Orders`),
-      new TagLineItem(`${0} Execution orders`),
-      new TagLineItem(`${0} Deposits`)
-    ]);
+    this.timeline$ = this.investmentService.getTimelineData();
   }
 
   /**
