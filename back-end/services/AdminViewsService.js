@@ -27,10 +27,7 @@ const fetchUsersViewFooter = async (where_clause = '') => {
     const footer_values = (await sequelize.query(`SELECT\n${_.join(query_parts, ',\n')};`))[0];
 
     return builder.addFooterLabels(
-        builder.queryReturnRowToFooterObj(footer_values),
-        'users',
-        {}
-    );
+        builder.queryReturnRowToFooterObj(footer_values), 'users');
 }
 module.exports.fetchUsersViewFooter = fetchUsersViewFooter;
 
@@ -74,3 +71,159 @@ const fetchAssetsViewFooter = async () => {
 }
 module.exports.fetchAssetsViewFooter = fetchAssetsViewFooter;
 
+const fetchInstrumentsViewFooter = async () => {
+
+    let footer = [
+        {
+          "name": "id",
+          "value": "999"
+        },
+        {
+          "name": "transaction_asset_id",
+          "value": "999"
+        },
+        {
+          "name": "quote_asset_id",
+          "value": "999"
+        },
+        {
+          "name": "symbol",
+          "value": "999"
+        },
+        {
+          "name": "exchanges_connected",
+          "value": "999"
+        },
+        {
+          "name": "exchanges_failed",
+          "value": "999"
+        }
+      ];
+
+      return builder.addFooterLabels(footer, 'instruments')
+}
+module.exports.fetchInstrumentsViewFooter = fetchInstrumentsViewFooter;
+
+const fetchLiquidityViewFooter = async () => {
+
+    /* let footer = [
+        {
+          "name": "id",
+          "value": "999"
+        },
+        {
+          "name": "exchange_id",
+          "value": "999"
+        },
+        {
+          "name": "exchange",
+          "value": "999"
+        },
+        {
+          "name": "instrument",
+          "value": "999"
+        },
+        {
+          "name": "instrument_identifier",
+          "value": "999"
+        },
+        {
+          "name": "last_day_vol",
+          "value": "999"
+        },
+        {
+          "name": "last_week_vol",
+          "value": "999"
+        },
+        {
+          "name": "last_updated",
+          "value": "999"
+        },
+        {
+          "name": "passes",
+          "value": "999"
+        }
+      ];
+ */
+      let footer = [
+        {
+          "name": "id",
+          "value": "999"
+        },
+        {
+          "name": "instrument",
+          "value": "999"
+        },
+        {
+          "name": "periodicity",
+          "value": "999"
+        },
+        {
+          "name": "quote_asset",
+          "value": "999"
+        },
+        {
+          "name": "minimum_circulation",
+          "value": "999"
+        },
+        {
+          "name": "exchange",
+          "value": "999"
+        },
+        {
+          "name": "exchange_count",
+          "value": "999"
+        },
+        {
+          "name": "exchange_pass",
+          "value": "999"
+        }
+      ];
+      return builder.addFooterLabels(footer, 'liquidity')
+}
+module.exports.fetchLiquidityViewFooter = fetchLiquidityViewFooter;
+
+const fetchLiquidityExchangesViewFooter = async () => {
+
+    let footer = [
+        {
+            "name": "id",
+            "value": "999"
+        },
+        {
+            "name": "exchange_id",
+            "value": "999"
+        },
+        {
+            "name": "exchange",
+            "value": "999"
+        },
+        {
+            "name": "instrument",
+            "value": "999"
+        },
+        {
+            "name": "instrument_identifier",
+            "value": "999"
+        },
+        {
+            "name": "last_day_vol",
+            "value": "999"
+        },
+        {
+            "name": "last_week_vol",
+            "value": "999"
+        },
+        {
+            "name": "last_updated",
+            "value": "999"
+        },
+        {
+            "name": "passes",
+            "value": "999"
+        }
+    ];
+
+      return builder.addFooterLabels(footer, 'liquidity_exchanges')
+}
+module.exports.fetchLiquidityExchangesViewFooter = fetchLiquidityExchangesViewFooter;

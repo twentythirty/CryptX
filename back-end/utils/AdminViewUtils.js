@@ -86,7 +86,7 @@ module.exports.queryReturnRowToFooterObj = queryReturnRowToFooterObj;
  * @param table_name 
  * @param raw_mappings 
  */
-const addFooterLabels = (footer_objs, table_name, raw_mappings) => {
+const addFooterLabels = (footer_objs, table_name, raw_mappings = {}) => {
 
     return _.map(footer_objs, footer_obj => {
         if (raw_mappings[footer_obj.name]) {

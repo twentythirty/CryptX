@@ -1,5 +1,7 @@
 'use strict';
 
+const adminViewService = require('../services/AdminViewsService');
+
 const createInstrument = async function (req, res) {
  
   // mock data below
@@ -55,36 +57,7 @@ const getInstruments = async function (req, res) {
       exchanges_failed: 3
   }));
 
-  let footer = [
-    {
-      "name": "id",
-      "value": "999"
-    },
-    {
-      "name": "transaction_asset_id",
-      "value": "999"
-    },
-    {
-      "name": "quote_asset_id",
-      "value": "999"
-    },
-    {
-      "name": "symbol",
-      "value": "999"
-    },
-    {
-      "name": "exchanges_connected",
-      "value": "999"
-    },
-    {
-      "name": "exchanges_failed",
-      "value": "999"
-    },
-    {
-      "name": "exchanges_failed",
-      "value": "999"
-    }
-  ];
+  let footer = await adminViewService.fetchInstrumentsViewFooter();
 
   return ReS(res, {
     instruments: instruments_mock,
@@ -94,7 +67,7 @@ const getInstruments = async function (req, res) {
 };
 module.exports.getInstruments = getInstruments;
 
-/** Route to check if instrument can be mapped with exchange. If yes, information
+/** Controller for checking if instrument can be mapped with exchange. If yes, information
  * from exchange is returned.
 */
 const checkInstrumentExchangeMap = async function (req, res) {
@@ -245,40 +218,7 @@ const getLiquidityRequirements = async function (req, res) {
     exchange_pass: 2
   }));
 
-  let footer = [
-    {
-      "name": "id",
-      "value": "999"
-    },
-    {
-      "name": "instrument",
-      "value": "999"
-    },
-    {
-      "name": "periodicity",
-      "value": "999"
-    },
-    {
-      "name": "quote_asset",
-      "value": "999"
-    },
-    {
-      "name": "minimum_circulation",
-      "value": "999"
-    },
-    {
-      "name": "exchange",
-      "value": "999"
-    },
-    {
-      "name": "exchange_count",
-      "value": "999"
-    },
-    {
-      "name": "exchange_pass",
-      "value": "999"
-    }
-  ];
+  let footer = await adminViewService.fetchLiquidityViewFooter();
 
   return ReS(res, {
     liquidity_requirements: liquidity_mock,
@@ -309,44 +249,7 @@ const getLiquidityRequirementExchanges = async function (req, res) {
     passes: true 
   }));
 
-  let footer = [
-    {
-      "name": "id",
-      "value": "999"
-    },
-    {
-      "name": "exchange_id",
-      "value": "999"
-    },
-    {
-      "name": "exchange",
-      "value": "999"
-    },
-    {
-      "name": "instrument",
-      "value": "999"
-    },
-    {
-      "name": "instrument_identifier",
-      "value": "999"
-    },
-    {
-      "name": "last_day_vol",
-      "value": "999"
-    },
-    {
-      "name": "last_week_vol",
-      "value": "999"
-    },
-    {
-      "name": "last_updated",
-      "value": "999"
-    },
-    {
-      "name": "passes",
-      "value": "999"
-    }
-  ];
+  let footer = await adminViewService.fetchLiquidityExchangesViewFooter();
 
   return ReS(res, {
     exchanges: liquidity_mock,
