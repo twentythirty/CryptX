@@ -30,7 +30,7 @@ export class DateCellComponent implements OnInit {
    * Inputs specific to Angular DatePipe
    * Read more https://angular.io/api/common/DatePipe
    */
-  @Input() format: string = 'yyyy-MM-dd hh:mm';
+  @Input() format: string = 'dd MMMM, yyyy hh:mm';
   @Input() timezone: string;
   @Input() locale: string;
 

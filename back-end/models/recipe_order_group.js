@@ -29,6 +29,7 @@ module.exports = (sequelize, DataTypes) => {
             foreignKey: 'approval_user_id'
         });
         RecipeOrderGroup.belongsTo(models.RecipeRun);
+        RecipeOrderGroup.hasMany(models.RecipeOrder);
     };
 
     return RecipeOrderGroup;

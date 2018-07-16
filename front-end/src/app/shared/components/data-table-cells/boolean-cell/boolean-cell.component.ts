@@ -5,6 +5,8 @@ export class BooleanCellDataColumn extends TableDataColumn {
   component? = BooleanCellComponent;
   inputs?: {
     value?: boolean;
+    yesText?: string;
+    noText?: string;
   }
   outputs?: {
 
@@ -23,10 +25,18 @@ export class BooleanCellDataColumn extends TableDataColumn {
 export class BooleanCellComponent implements OnInit {
 
   @Input() value: boolean;
+  @Input() yesText: string = 'Yes';
+  @Input() noText: string = 'No';
 
   constructor() { }
 
   ngOnInit() {
+  }
+
+  public displayValue(): string {
+    if(this.value === true) return this.yesText;
+    if(this.value === false) return this.noText;
+    return '-';
   }
 
 }

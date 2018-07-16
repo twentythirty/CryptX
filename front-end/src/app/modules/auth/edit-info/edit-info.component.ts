@@ -33,11 +33,13 @@ export class EditInfoComponent implements OnInit {
   }
 
   updateInfo () {
-         
+
     this.authService.changeInfo(this.user_info).subscribe(response => {
       this.status = true;
     }, error => {
-      this.message = error.error.error;
+      if(error.error) {
+        this.message = error.error.error;
+      }
     })
   }
 }

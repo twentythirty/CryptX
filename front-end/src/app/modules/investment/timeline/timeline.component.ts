@@ -1,15 +1,7 @@
 import { Component, OnInit, Input } from '@angular/core';
 import { Router } from '@angular/router';
 
-/**
- * This can later be mapped to certain CSS classes
- */
-export enum StatusColor {
-  DEFAULT =  '#000',
-  REJECTED = '#88a4ae',
-  PENDING = '#ff992f',
-  SUCCESS = '#1f9f7f'
-}
+import { StatusClass } from '../../../shared/models/common';
 
 export class TimelineEvent {
   /**
@@ -23,12 +15,14 @@ export class TimelineEvent {
    * @param routerLink - Link to navigate when clicked (if clickable)
    * @param isCurrent - Apply current card-specific style
    */
+  public note?: string;
+
   constructor(
-    public title: string,
-    public status: string,
-    public statusColor: StatusColor = StatusColor.DEFAULT,
-    public id: string,
-    public date: string,
+    public title?: string,
+    public status?: string,
+    public statusClass: StatusClass = StatusClass.DEFAULT,
+    public id?: string,
+    public date?: string,
     public routerLink?: string,
     public isCurrent: boolean = false
   ) {}

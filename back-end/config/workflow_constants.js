@@ -48,9 +48,9 @@ EXCHANGE_KEYS = {
         secret: process.env.BITSTAMP_SECRETKEY,
         uid: process.env.BITSTAMP_UID
     },
-    bittrex: {
-        apiKey: process.env.BITTREX_APIKEY,
-        secret: process.env.BITTREX_SECRETKEY
+    huobipro: {
+        apiKey: process.env.HUOBIPRO_APIKEY,
+        secret: process.env.HUOBIPRO_SECRETKEY
     },
     hitbtc2: {
         apiKey: process.env.HITBTC_APIKEY,

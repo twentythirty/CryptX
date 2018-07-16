@@ -12,4 +12,13 @@
   {{ this.modelConstants.getGroup('RECIPE_RUN_STATUSES') | json }}
 </p>
 
-<button routerLink="/run/investment/1">Demo investment run</button>
+<a (click)="addInvestmentRun()" class="btn start">
+  <span>Start new run</span>
+</a>
+
+<div>
+  <p *ngFor="let investment of investments$ | async"
+    [routerLink]="'/run/investment/' + investment.id">
+    <br>{{ investment | json }}<br>
+  </p>
+</div>

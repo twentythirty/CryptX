@@ -127,9 +127,6 @@ const createRecipeRun = async function (user_id, investment_run_id) {
 
   if (err) TE(err.message);
 
-  recipe_run = recipe_run.toJSON();
-  recipe_run.recipe_run_details = recipe_run_detail;//.map(detail => detail.toJSON());
-
   return recipe_run;
 };
 module.exports.createRecipeRun = createRecipeRun;

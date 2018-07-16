@@ -1,11 +1,11 @@
-<div>
-  <label>
-    <input
+<div class="checkbox">
+    <input id="{{value}}"
       type="checkbox"
       [value]="value"
       [checked]="checked"
       (change)="handleToggle()"
     >
-    {{ label }}
+  <label for="{{value}}">
+    {{label}}
   </label>
 </div>

@@ -10,6 +10,7 @@ import { User } from '../../shared/models/user';
 import PERMISSIONS from '../../config/permissions';
 
 import { ModelConstantsService } from '../model-constants/model-constants.service';
+import { environment } from '../../../environments/environment';
 
 export class LoginReponse {
   success: boolean
@@ -24,7 +25,7 @@ export class AuthService {
   user: User;
   permissions:Array<string> = [];
   authChecked:boolean = false;
-  baseUrl: string = 'api/v1/';
+  baseUrl: string = environment.baseUrl;
 
   constructor(private http: HttpClient, private modelConstants: ModelConstantsService) { }
 

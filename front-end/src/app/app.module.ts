@@ -4,6 +4,8 @@ import { FormsModule }   from '@angular/forms';
 import { Router }   from '@angular/router';
 import { HttpClientModule }   from '@angular/common/http';
 import { HTTP_INTERCEPTORS } from '@angular/common/http';
+import { MatSnackBarModule } from '@angular/material';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 
 import { AppComponent } from './app.component';
 import { NavigationComponent } from './shared/components/navigation/navigation.component';
@@ -13,7 +15,7 @@ import { RolesService } from './services/roles/roles.service';
 import { UsersService } from './services/users/users.service';
 import { ModelConstantsService } from './services/model-constants/model-constants.service';
 
-import { PreRequestAuthInterceptor, PostRequestAuthInterceptor } from './config/http/auth.http.insterceptor';
+import { PreRequestAuthInterceptor, PostRequestAuthInterceptor, PostRequestErrorInterceptor } from './config/http/auth.http.insterceptor';
 import { appInitialization } from './config/app-initialization';
 import { AppRoutingModule } from './config/routes/routes';
 import { AuthModule } from './modules/auth/auth.module';
@@ -24,9 +26,8 @@ import { RolesModule } from './modules/roles/roles.module';
 import { UsersModule } from './modules/users/users.module';
 import { AssetModule } from './modules/asset/asset.module';
 import { AssetService } from './services/asset/asset.service';
+import { InvestmentService } from './services/investment/investment.service';
 import { InvestmentModule } from './modules/investment/investment.module';
-
-
 
 @NgModule({
   declarations: [
@@ -35,10 +36,12 @@ import { InvestmentModule } from './modules/investment/investment.module';
   ],
   imports: [
     BrowserModule,
+    BrowserAnimationsModule,
     FormsModule,
     HttpClientModule,
     AuthModule,
     DashboardModule,
+    MatSnackBarModule,
     RolesModule,
     UsersModule,
     AssetModule,  // TODO: Remove this when moving to lazy loaded modules
@@ -62,12 +65,18 @@ import { InvestmentModule } from './modules/investment/investment.module';
       useClass: PostRequestAuthInterceptor,
       multi: true
     },
+    {
+      provide: HTTP_INTERCEPTORS,
+      useClass: PostRequestErrorInterceptor,
+      multi: true
+    },
     AuthService,
     AuthGuard,
     PermissionGuard,
     RolesService,
     AssetService,
     UsersService,
+    InvestmentService,
     ModelConstantsService
   ],
   bootstrap: [AppComponent]

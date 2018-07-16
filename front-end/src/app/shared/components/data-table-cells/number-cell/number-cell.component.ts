@@ -29,7 +29,7 @@ export class NumberCellComponent implements OnInit {
    * Inputs specific to Angular DecimalPipe
    * Read more https://angular.io/api/common/DecimalPipe
    */
-  @Input() digitsInfo: string = '2.2-2';
+  @Input() digitsInfo: string = '1.2-2';
   @Input() locale: string;
 
   constructor() { }

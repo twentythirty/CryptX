@@ -29,6 +29,9 @@ import { NumberCellComponent } from './components/data-table-cells/number-cell/n
 import { DateCellComponent } from './components/data-table-cells/date-cell/date-cell.component';
 import { BooleanCellComponent } from './components/data-table-cells/boolean-cell/boolean-cell.component';
 import { InputItemErrorMessageComponent } from './components/input-item-error-message/input-item-error-message.component';
+import { StatusCellComponent } from './components/data-table-cells/status-cell/status-cell.component';
+import { ConfirmCellComponent } from './components/data-table-cells/confirm-cell/confirm-cell.component';
+import { MatProgressSpinnerModule } from '@angular/material';
 
 @NgModule({
     imports: [
@@ -36,6 +39,7 @@ import { InputItemErrorMessageComponent } from './components/input-item-error-me
         FormsModule,
         RouterModule,
         Ng2FlatpickrModule,
+        MatProgressSpinnerModule,
         DynamicModule.withComponents([
           ActionCellComponent,
           CurrencyCellComponent,
@@ -43,6 +47,8 @@ import { InputItemErrorMessageComponent } from './components/input-item-error-me
           NumberCellComponent,
           DateCellComponent,
           BooleanCellComponent,
+          StatusCellComponent,
+          ConfirmCellComponent
         ])
     ],
     declarations: [
@@ -67,9 +73,12 @@ import { InputItemErrorMessageComponent } from './components/input-item-error-me
         NumberCellComponent,
         DateCellComponent,
         BooleanCellComponent,
-        InputItemErrorMessageComponent
+        InputItemErrorMessageComponent,
+        StatusCellComponent,
+        ConfirmCellComponent
     ],
     exports: [
+        MatProgressSpinnerModule,
         BtnComponent,
         DataTableComponent,
         ModalComponent,

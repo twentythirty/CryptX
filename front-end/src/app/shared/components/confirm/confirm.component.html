@@ -1,13 +1,17 @@
 <app-modal
   (close)="handleReject()"
+  heading="{{heading}}"
 >
-  <div>{{ message }}</div>
-  <div>
-    <app-btn
-      (onClick)="handleReject()"
-    >Cancel</app-btn>
-    <app-btn
-      (onClick)="handleConfirm()"
-    >Confirm</app-btn>
+  <div class="select-box">
+    <div class="label">
+      <div class="checkboxes-modal-wrap">
+        <button class="btn deactive checkboxes-modal"
+          (onClick)="handleReject()"
+        >Cancel</button>
+        <button class="btn submit checkboxes-modal"
+          (onClick)="handleConfirm()"
+        >Confirm</button>
+      </div>
+    </div>
   </div>
 </app-modal>

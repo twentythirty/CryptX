@@ -5,15 +5,15 @@ export class Asset {
   public is_base: boolean;
   public is_deposit: boolean;
 
-  public capitalisation_updated_timestamp: number;
-  public capitalisation: number;
-  public is_cryptocurrency: boolean;
-  public is_greylisted: boolean;
-  public is_blacklisted: boolean;
-  public market_share: number;
+  public capitalization: number;
   public nvt_ratio: number;
+  public market_share: number;
+  public capitalization_updated: any;
+  public status: (string | number);
 
-  public AssetStatusChanges?: Array<AssetStatus>;
+  // Not yet implemented
+  public capitalization_updated_timestamp: number;
+  public is_cryptocurrency: boolean;
 }
 
 
@@ -34,4 +34,13 @@ export enum AssetStatusChanges {
   Whitelisting = 400,
   Blacklisting = 401,
   Graylisting = 402
+}
+
+export const AssetStatuses = {
+  '400': 'Whitelisted',
+  '401': 'Blacklisted',
+  '402': 'Greylisted',
+  'Whitelisted': '400',
+  'Blacklisted': '401',
+  'Greylisted': '402'
 }

@@ -775,8 +775,8 @@ body.sticky-bottom {
 
 @font-face {
   font-family: "icons";
-  src: url("./fonts/icons.eot?ts=1529918758812");
-  src: url("./fonts/icons.eot?ts=1529918758812#iefix") format("eot"), url("./fonts/icons.woff?ts=1529918758812") format("woff"), url("./fonts/icons.ttf?ts=1529918758812") format("truetype"), url("./fonts/icons.svg#icons?ts=1529918758812") format("svg"); }
+  src: url("./fonts/icons.eot?ts=1531398658400");
+  src: url("./fonts/icons.eot?ts=1531398658400#iefix") format("eot"), url("./fonts/icons.woff?ts=1531398658400") format("woff"), url("./fonts/icons.ttf?ts=1531398658400") format("truetype"), url("./fonts/icons.svg#icons?ts=1531398658400") format("svg"); }
 
 .icon_user-arrow:before {
   font-family: "icons";
@@ -1378,7 +1378,7 @@ header {
   header .logo {
     width: 126px;
     height: 35px;
-    background-image: url("../img/logo.png");
+    background-image: url("../img/Logo.png");
     background-position: center center;
     background-repeat: no-repeat;
     background-size: 126px;

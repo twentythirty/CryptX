@@ -74,7 +74,9 @@ export class AcceptInviteComponent implements OnInit {
       this.token.isValid = true;
     }, error => {
       this.token.isValid = false;
-      this.message = error.error.error;
+      if(error.error) {
+        this.message = error.error.error;
+      }
       console.log(error);
     });
   }
@@ -90,7 +92,7 @@ export class AcceptInviteComponent implements OnInit {
       this.message = "Passwords doesn't match";
       return ;
     }
-    
+
     let data = {
       "invitation_id": this.invitationInfo.id,
       "password": this.userInfoForm.value.password
@@ -99,7 +101,9 @@ export class AcceptInviteComponent implements OnInit {
     this.inviteService.fulfillInvitation(data).subscribe(data => {
       this.done = true;
     }, error => {
-      this.message = error.error.error;
+      if(error.error) {
+        this.message = error.error.error;
+      }
     });
   }
 }
