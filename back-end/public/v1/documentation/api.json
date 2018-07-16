@@ -50,6 +50,64 @@
         }
       }
     },
+    "/settings/": {
+      "get": {
+        "tags": [
+          "settings"
+        ],
+        "summary": "Get list of system settings",
+        "description": "Fetches all system setting values. Settings values are used to customise application without the need to edit code. Key is used as a identifier for that value. Value is actual value that is saved as string but parsed according to type. Type is and constant that represents type of data that value should be parsed into, it can be integer, float, string or boolean.",
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "$ref": "#/definitions/SystemSettingsListResponse"
+            }
+          }
+        }
+      }
+    },
+    "/settings/{setting_id}": {
+      "post": {
+        "tags": [
+          "settings"
+        ],
+        "summary": "Alter system setting",
+        "description": "This route is for changing single system setting value. To change setting value all is needed is setting ID and value it should be changed to.",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "setting_id",
+            "in": "path",
+            "description": "ID of system setting",
+            "required": true,
+            "type": "integer"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "description": "Information needed to change system setting",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/SystemSettingChange"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "$ref": "#/definitions/SystemSettingResponse"
+            }
+          }
+        }
+      }
+    },
     "/liquidity_requirements/create": {
       "post": {
         "tags": [
@@ -2254,6 +2312,69 @@
     }
   },
   "definitions": {
+    "SystemSettingChange": {
+      "description": "Request body to change single system setting",
+      "type": "object",
+      "properties": {
+        "setting_value": {
+          "type": "string",
+          "example": 20,
+          "description": "It can take anything - string, number, boolean. It will be parsed in the back-end according to what type of value it's set to be."
+        }
+      }
+    },
+    "SystemSettingsListResponse": {
+      "description": "List of system settings",
+      "type": "object",
+      "properties": {
+        "execution_orders": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/SystemSetting"
+          }
+        },
+        "success": {
+          "type": "boolean",
+          "example": true
+        }
+      }
+    },
+    "SystemSettingResponse": {
+      "description": "Single system setting response",
+      "type": "object",
+      "properties": {
+        "setting": {
+          "$ref": "#/definitions/SystemSetting"
+        },
+        "success": {
+          "type": "boolean",
+          "example": true
+        }
+      }
+    },
+    "SystemSetting": {
+      "description": "Single system setting data. Key is used as a identifier for that value, and they are use in in code. Value is actual value. Type is and constant that represents type of data, it can be integer, float, string or boolean.",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "number",
+          "example": 1
+        },
+        "key": {
+          "type": "number",
+          "example": "MARKETCAP_LIMIT_PERCENT"
+        },
+        "value": {
+          "type": "number",
+          "example": 90
+        },
+        "type": {
+          "type": "number",
+          "description": "Type of value (integer|float|string|boolean)",
+          "example": 131
+        }
+      }
+    },
     "LiquidityRequirementExchangesResponse": {
       "description": "List of exchanges for certain liquidity requirement.",
       "type": "object",
