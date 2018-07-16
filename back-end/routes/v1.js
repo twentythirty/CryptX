@@ -491,6 +491,7 @@ router.post(
   ROUTES.LiquidityReqCreate.router_string,
   stateless_auth,
   check_permissions,
+  post_body_validator,
   InstrumentController.createLiquidityRequirement
 );
 router.get(
@@ -503,6 +504,7 @@ router.post(
   ROUTES.GetLiquidityRequirements.router_string,
   stateless_auth,
   check_permissions,
+  filter_reducer,
   InstrumentController.getLiquidityRequirements
 );
 router.get(
