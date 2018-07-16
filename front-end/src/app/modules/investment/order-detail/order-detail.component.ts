@@ -126,11 +126,11 @@ export class OrderDetailComponent extends TimelineDetailComponent implements OnI
       )
     ).subscribe(
       res => {
-        if(res.order) {
-          this.singleDataSource.body = [ res.order ];
+        if(res.recipe) {
+          this.singleDataSource.body = [ res.recipe ];
         }
-        if(res.order_stats) {
-          this.setTagLine(res.order_stats.map(stat => {
+        if(res.recipe_stats) {
+          this.setTagLine(res.recipe_stats.map(stat => {
             return new TagLineItem(`${stat.count} ${stat.name}`)
           }))
         }

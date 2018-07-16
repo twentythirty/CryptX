@@ -3,7 +3,7 @@ import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 
 import { AssetService, AssetResultData, AssetsAllResponse } from '../../../services/asset/asset.service';
-import { Asset, AssetStatusChanges, AssetStatus, AssetStatuses } from '../../../shared/models/asset';
+import { Asset, AssetStatus } from '../../../shared/models/asset';
 import { EntitiesFilter } from '../../../shared/models/api/entitiesFilter';
 import { TableDataSource, TableDataColumn } from '../../../shared/components/data-table/data-table.component';
 import { DataTableCommonManagerComponent } from '../../../shared/components/data-table-common-manager/data-table-common-manager.component';
@@ -23,6 +23,9 @@ import {
   DataCellAction
 } from '../../../shared/components/data-table-cells';
 import { AuthService } from '../../../services/auth/auth.service';
+import { ModelConstantsService } from '../../../services/model-constants/model-constants.service';
+
+const INSTRUMENT_STATUS_CHANGES = 'INSTRUMENT_STATUS_CHANGES';
 
 @Component({
   selector: 'app-asset-list',
@@ -94,6 +97,7 @@ export class AssetListComponent extends DataTableCommonManagerComponent implemen
     public route: ActivatedRoute,
     protected assetService: AssetService,
     protected authService: AuthService,
+    protected modelConstantsService: ModelConstantsService,
     protected router: Router
   ) {
     super(route);
@@ -106,7 +110,7 @@ export class AssetListComponent extends DataTableCommonManagerComponent implemen
   getAllData(): void {
     this.assetService.getAllAssets(this.requestData).subscribe(
       (res: AssetsAllResponse) => {
-        this.assetsDataSource.body = this.populateAssetStatuses(res.assets);
+        this.assetsDataSource.body = res.assets;
         if(res.footer) {
           this.assetsDataSource.footer = this.assetsColumnsToShow.map(col => {
             let key = (typeof col == 'string') ? col : col.column;
@@ -114,15 +118,6 @@ export class AssetListComponent extends DataTableCommonManagerComponent implemen
           })
         }
         this.count = res.count || res.assets.length;
-      }
-    )
-  }
-
-  private populateAssetStatuses(assets: Array<Asset>): Array<Asset> {
-    return assets.map(
-      (asset: Asset) => {
-        asset.status = AssetStatuses[asset.status + ''];
-        return asset;
       }
     )
   }
@@ -138,10 +133,10 @@ export class AssetListComponent extends DataTableCommonManagerComponent implemen
   private deGreylist(asset: Asset): void {
     this.assetService.changeAssetStatus(
       asset.id,
-      new AssetStatus(AssetStatusChanges.Graylisting, '')
+      new AssetStatus(this.modelConstantsService.getGroup(INSTRUMENT_STATUS_CHANGES)['Graylisting'], '')
     ).subscribe(
       res => {
-        asset.status = AssetStatus['402'];
+        asset.status = this.modelConstantsService.getName(INSTRUMENT_STATUS_CHANGES, 402);
       }
     )
   }
@@ -149,10 +144,10 @@ export class AssetListComponent extends DataTableCommonManagerComponent implemen
   private blacklist(asset: Asset): void {
     this.assetService.changeAssetStatus(
       asset.id,
-      new AssetStatus(AssetStatusChanges.Blacklisting, '')
+      new AssetStatus(this.modelConstantsService.getGroup(INSTRUMENT_STATUS_CHANGES)['Blacklisting'], '')
     ).subscribe(
       res => {
-        asset.status = AssetStatuses['401'];
+        asset.status = this.modelConstantsService.getName(INSTRUMENT_STATUS_CHANGES, 401);
       }
     )
   }
@@ -160,10 +155,10 @@ export class AssetListComponent extends DataTableCommonManagerComponent implemen
   private whitelist(asset: Asset): void {
     this.assetService.changeAssetStatus(
       asset.id,
-      new AssetStatus(AssetStatusChanges.Whitelisting, '')
+      new AssetStatus(this.modelConstantsService.getGroup(INSTRUMENT_STATUS_CHANGES)['Whitelisting'], '')
     ).subscribe(
       res => {
-        asset.status = AssetStatuses['400']
+        asset.status = this.modelConstantsService.getName(INSTRUMENT_STATUS_CHANGES, 400)
       }
     )
   }
@@ -173,14 +168,14 @@ export class AssetListComponent extends DataTableCommonManagerComponent implemen
    */
 
   public rowBackgroundColor = (row: Asset): string => {
-    if(row.status == AssetStatuses['401']) return '#6b6b6b';
-    if(row.status == AssetStatuses['402']) return '#aeaeae';
+    if(row.status == this.modelConstantsService.getName(INSTRUMENT_STATUS_CHANGES, 401)) return '#6b6b6b';
+    if(row.status == this.modelConstantsService.getName(INSTRUMENT_STATUS_CHANGES, 402)) return '#aeaeae';
     return null;
   }
 
   public rowTexColor = (row: Asset): string => {
-    if(row.status == AssetStatuses['401']) return '#ffffff';
-    if(row.status == AssetStatuses['402']) return '#f2f2f2';
+    if(row.status == this.modelConstantsService.getName(INSTRUMENT_STATUS_CHANGES, 401)) return '#ffffff';
+    if(row.status == this.modelConstantsService.getName(INSTRUMENT_STATUS_CHANGES, 402)) return '#f2f2f2';
     return null;
   }
 
