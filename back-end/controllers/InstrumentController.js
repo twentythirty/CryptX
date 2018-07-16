@@ -108,7 +108,7 @@ const mapInstrumentsWithExchanges = async function (req, res) {
 
   // enforce specific exchange mapping structure
   if (!exchange_mapping.every((map) => {
-    return typeof map === 'object' && map.exchange_id && map.external_identifier;
+    return typeof map === 'object' && map.exchange_id && map.external_instrument_id;
   }));
 
   return ReS(res, {
@@ -126,7 +126,7 @@ const getInstrumentExchanges = async function (req, res) {
     instrument_id,
     exchange_id: index,
     exchange_name: "Bitstamp" + index,
-    external_instrument_id: "BTC/XRP",
+    external_instrument: "BTC/XRP",
     current_price: 7422.46,
     last_day_vol: 12300,
     last_week_vol: 86100,

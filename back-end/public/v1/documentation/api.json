@@ -50,6 +50,354 @@
         }
       }
     },
+    "/liquidity_requirements/create": {
+      "post": {
+        "tags": [
+          "liquidity"
+        ],
+        "summary": "Create new instrument that will be used for trading",
+        "description": "Instrument in this system is an asset pair for trading. Instrument consists of two assets, transation asset and quote asset. Freshly created instrument won't be mapped with any of the exchanges so it won't be available for trading at first. Only after mapping instruments with exchanges system will start collecting data for that instrument.",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "description": "Information needed to create new instrument.",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/LiquidityRequirementCreate"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "$ref": "#/definitions/LiquidityRequirementResponse"
+            }
+          }
+        }
+      }
+    },
+    "/liquidity_requirements/{liquidity_requirement_id}": {
+      "get": {
+        "tags": [
+          "liquidity"
+        ],
+        "summary": "Get liquidity requirement information by ID",
+        "description": "Fetches single liquidity requirement information by ID",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "liquidity_requirement_id",
+            "in": "path",
+            "description": "ID of liquidity requirement",
+            "required": true,
+            "type": "integer"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "$ref": "#/definitions/LiquidityRequirementResponse"
+            }
+          }
+        }
+      }
+    },
+    "/liquidity_requirements/all": {
+      "get": {
+        "tags": [
+          "liquidity"
+        ],
+        "description": "Fetches data of all liquidity requirements",
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "$ref": "#/definitions/LiquidityRequirementListResponse"
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "liquidity"
+        ],
+        "description": "Fetches data of liquidity requirements that pass given filter",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "description": "Filter object used to filter out data",
+            "required": false,
+            "schema": {
+              "$ref": "#/definitions/EntitiesFilter"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "$ref": "#/definitions/InstrumentGetListResponse"
+            }
+          }
+        }
+      }
+    },
+    "/liquidity_requirements/{liquidity_requirement_id}/exchanges": {
+      "get": {
+        "tags": [
+          "liquidity"
+        ],
+        "summary": "Get instrument exchange information by ID of certain liquidity requirement",
+        "description": "Fetches data of exchange by liquidity requirement. It gives information of what exchanges passes the requirement, which of the exchanges lack liquidity, when was the last data update.",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "liquidity_requirement_id",
+            "in": "path",
+            "description": "ID of liquidity requirement",
+            "required": true,
+            "type": "integer"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "$ref": "#/definitions/LiquidityRequirementExchangesResponse"
+            }
+          }
+        }
+      }
+    },
+    "/instruments/create": {
+      "post": {
+        "tags": [
+          "instrument"
+        ],
+        "summary": "Create new instrument that will be used for trading",
+        "description": "Instrument in this system is an asset pair for trading. Instrument consists of two assets, transation asset and quote asset. Freshly created instrument won't be mapped with any of the exchanges so it won't be available for trading at first. Only after mapping instruments with exchanges system will start collecting data for that instrument.",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "description": "Information needed to create new instrument.",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/InstrumentCreate"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "$ref": "#/definitions/InstrumentResponse"
+            }
+          }
+        }
+      }
+    },
+    "/instruments/{instrument_id}": {
+      "get": {
+        "tags": [
+          "instrument"
+        ],
+        "summary": "Get instrument information by ID",
+        "description": "Fetches single instrument information by ID",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "instrument_id",
+            "in": "path",
+            "description": "ID of instrument",
+            "required": true,
+            "type": "integer"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "$ref": "#/definitions/InstrumentGetResponse"
+            }
+          }
+        }
+      }
+    },
+    "/instruments/all": {
+      "get": {
+        "tags": [
+          "instrument"
+        ],
+        "description": "Fetches data of all instruments",
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "$ref": "#/definitions/InstrumentGetListResponse"
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "instrument"
+        ],
+        "description": "Fetches data of instruments that pass filter given with this request",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "description": "Filter object used to filter out data",
+            "required": false,
+            "schema": {
+              "$ref": "#/definitions/EntitiesFilter"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "$ref": "#/definitions/InstrumentGetListResponse"
+            }
+          }
+        }
+      }
+    },
+    "/instruments/{instrument_id}/check_mapping": {
+      "post": {
+        "tags": [
+          "instrument"
+        ],
+        "summary": "Check if instrument is valid",
+        "description": "When mapping instruments with exchanges it's possible that exchange and instrument couldn't be mapped(for example: exchange doesn't support instrument), so mapping checking actions are done first to ensure that exchange has instrument and it can be used for trading.",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "instrument_id",
+            "in": "path",
+            "description": "ID of instrument",
+            "required": true,
+            "type": "integer"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "description": "Information needed to create new instrument.",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/InstrumentCheckMapping"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "$ref": "#/definitions/InstrumentExchangeMap"
+            }
+          }
+        }
+      }
+    },
+    "/instruments/{instrument_id}/add_mapping": {
+      "post": {
+        "tags": [
+          "instrument"
+        ],
+        "summary": "Map instrument with multiple exchanges",
+        "description": "When mapping instruments with exchanges",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "instrument_id",
+            "in": "path",
+            "description": "ID of instrument",
+            "required": true,
+            "type": "integer"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "description": "Information needed to create new instrument.",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/InstrumentCheckMapping"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "$ref": "#/definitions/InstrumentAddMappingResponse"
+            }
+          }
+        }
+      }
+    },
+    "/instruments/{instrument_id}/exchanges": {
+      "get": {
+        "tags": [
+          "instrument"
+        ],
+        "summary": "Get instrument exchange informationby ID of instrument",
+        "description": "Fetches information about instrument on all exchanges, includes price and volume for last 24 hours and week.",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "instrument_id",
+            "in": "path",
+            "description": "ID of instrument",
+            "required": true,
+            "type": "integer"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "$ref": "#/definitions/InstrumentExchangeMapExpanded"
+            }
+          }
+        }
+      }
+    },
     "/investment/create": {
       "post": {
         "tags": [
@@ -1906,6 +2254,398 @@
     }
   },
   "definitions": {
+    "LiquidityRequirementExchangesResponse": {
+      "description": "List of exchanges for certain liquidity requirement.",
+      "type": "object",
+      "allOf": [
+        {
+          "$ref": "#/definitions/ListResponse"
+        },
+        {
+          "properties": {
+            "execution_orders": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/LiquidityRequirementExchanges"
+              }
+            }
+          }
+        }
+      ]
+    },
+    "LiquidityRequirementExchanges": {
+      "description": "List of exchanges for certain liquidity requirement.",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "number",
+          "example": 7
+        },
+        "exchange_id": {
+          "type": "number",
+          "example": 1
+        },
+        "exchange": {
+          "type": "string",
+          "example": "Bitstamp"
+        },
+        "instrument": {
+          "type": "string",
+          "example": "XRP/BTC"
+        },
+        "instrument_identifier": {
+          "type": "string",
+          "example": "XRP/BTC"
+        },
+        "last_day_vol": {
+          "type": "number",
+          "example": 12300
+        },
+        "last_week_vol": {
+          "type": "number",
+          "example": 86100
+        },
+        "last_updated": {
+          "type": "number",
+          "example": 1531725075560
+        },
+        "passes": {
+          "type": "boolean",
+          "example": true
+        }
+      }
+    },
+    "LiquidityRequirementListResponse": {
+      "description": "Liquidity requirement list response",
+      "type": "object",
+      "allOf": [
+        {
+          "$ref": "#/definitions/ListResponse"
+        },
+        {
+          "properties": {
+            "execution_orders": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/LiquidityRequirement"
+              }
+            }
+          }
+        }
+      ]
+    },
+    "LiquidityRequirementResponse": {
+      "description": "Servers response with basic instrument information.",
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean",
+          "example": true
+        },
+        "liquidity_requirement": {
+          "$ref": "#/definitions/LiquidityRequirement"
+        }
+      }
+    },
+    "LiquidityRequirement": {
+      "description": "Liquidity requirement view data",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "number",
+          "example": "5"
+        },
+        "instrument": {
+          "type": "number",
+          "example": "BTC/ETH"
+        },
+        "periodicity": {
+          "type": "number",
+          "example": 7
+        },
+        "quote_asset": {
+          "type": "number",
+          "example": "BTC"
+        },
+        "minimum_circulation": {
+          "type": "number",
+          "example": 60000
+        },
+        "exchange": {
+          "type": "number",
+          "example": "All exchanges"
+        },
+        "exchange_count": {
+          "type": "number",
+          "example": 2
+        },
+        "exchange_pass": {
+          "type": "number",
+          "example": 2
+        }
+      }
+    },
+    "LiquidityRequirementCreate": {
+      "description": "Create liquidity requirement for instrument and exchange (by providing exchange ID) or all exchanges (by providing 'all') in exchange property",
+      "type": "object",
+      "properties": {
+        "instrument_id": {
+          "type": "number",
+          "example": 10
+        },
+        "exchange_id": {
+          "type": "number",
+          "example": 20
+        },
+        "periodicity": {
+          "type": "number",
+          "example": 7
+        },
+        "minimum_circulation": {
+          "type": "number",
+          "example": 25000
+        }
+      }
+    },
+    "InstrumentExchangeMapExpanded": {
+      "description": "Servers response with basic instrument information.",
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean",
+          "example": true
+        },
+        "mapping_data": {
+          "type": "array",
+          "items": {
+            "allOf": [
+              {
+                "$ref": "#/definitions/InstrumentExchangeMap"
+              },
+              {
+                "properties": {
+                  "exchange_name": {
+                    "type": "string",
+                    "example": "Bitstamp0"
+                  },
+                  "last_week_vol": {
+                    "type": "number",
+                    "example": 86100
+                  },
+                  "last_updated": {
+                    "type": "number",
+                    "example": 1531486061727
+                  },
+                  "liquidity_rules": {
+                    "type": "number",
+                    "example": 3
+                  }
+                }
+              }
+            ]
+          }
+        }
+      }
+    },
+    "InstrumentExchangeMapResponse": {
+      "description": "Servers response with basic instrument information.",
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean",
+          "example": true
+        },
+        "instrument": {
+          "$ref": "#/definitions/InstrumentExchangeMap"
+        }
+      }
+    },
+    "InstrumentExchangeMap": {
+      "description": "Servers response with instrument information that includes price, trading volume.",
+      "type": "object",
+      "properties": {
+        "instrument_id": {
+          "type": "number",
+          "example": "5"
+        },
+        "exchange_id": {
+          "type": "number",
+          "example": 12
+        },
+        "external_instrument_id": {
+          "type": "number",
+          "example": "BTC/USD"
+        },
+        "current_price": {
+          "type": "number",
+          "example": 7422.46
+        },
+        "last_day_vol": {
+          "type": "number",
+          "example": 12300
+        },
+        "last_week_vol": {
+          "type": "number",
+          "example": 86100
+        },
+        "last_updated": {
+          "type": "number",
+          "description": "Gives timestamp of when was the last data update for this instrument & exchange",
+          "example": 1531486061727
+        }
+      }
+    },
+    "InstrumentAddMappingResponse": {
+      "description": "Response of successful recipe order status change",
+      "type": "object",
+      "properties": {
+        "message": {
+          "type": "string",
+          "example": "OK!"
+        },
+        "success": {
+          "type": "boolean",
+          "example": true
+        }
+      }
+    },
+    "InstrumentAddMapping": {
+      "description": "Map multiple instruments with exchanges through array of exchange mapping data",
+      "type": "object",
+      "properties": {
+        "exchange_mapping": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/InstrumentCheckMapping"
+          }
+        }
+      }
+    },
+    "InstrumentCheckMapping": {
+      "description": "Request data need to map instrument with exchange",
+      "type": "object",
+      "properties": {
+        "exchange_id": {
+          "type": "number",
+          "example": "12,"
+        },
+        "external_instrument_id": {
+          "type": "string",
+          "example": "BTC/USD"
+        }
+      }
+    },
+    "InstrumentGetListResponse": {
+      "description": "Execution order list response",
+      "type": "object",
+      "allOf": [
+        {
+          "$ref": "#/definitions/ListResponse"
+        },
+        {
+          "properties": {
+            "instruments": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/InstrumentGet"
+              }
+            }
+          }
+        }
+      ]
+    },
+    "InstrumentGetResponse": {
+      "description": "Servers response with basic instrument information.",
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean",
+          "example": true
+        },
+        "instrument": {
+          "$ref": "#/definitions/InstrumentGet"
+        }
+      }
+    },
+    "InstrumentGet": {
+      "description": "Servers response with basic instrument information.",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "number",
+          "example": 20
+        },
+        "transaction_asset_id": {
+          "type": "number",
+          "example": 28
+        },
+        "quote_asset_id": {
+          "type": "number",
+          "example": 2
+        },
+        "symbol": {
+          "type": "string",
+          "example": "BTC/XRP"
+        },
+        "exchanges_connected": {
+          "type": "number",
+          "example": 4
+        },
+        "exchanges_failed": {
+          "type": "number",
+          "example": 3
+        }
+      }
+    },
+    "InstrumentResponse": {
+      "description": "Servers response with basic instrument information.",
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean",
+          "example": true
+        },
+        "instrument": {
+          "$ref": "#/definitions/Instrument"
+        }
+      }
+    },
+    "Instrument": {
+      "description": "The most basic instrument information.",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "number",
+          "example": 11
+        },
+        "transaction_asset_id": {
+          "type": "number",
+          "example": 28
+        },
+        "quote_asset_id": {
+          "type": "number",
+          "example": 2
+        },
+        "symbol": {
+          "type": "string",
+          "example": "XRP/BTC"
+        }
+      }
+    },
+    "InstrumentCreate": {
+      "description": "Information needed for instrument creation.",
+      "type": "object",
+      "properties": {
+        "transaction_asset_id": {
+          "type": "number",
+          "example": 28
+        },
+        "quote_asset_id": {
+          "type": "number",
+          "example": 2
+        }
+      }
+    },
     "ExecutionOrderFillListResponse": {
       "description": "Execution order list response",
       "type": "object",
@@ -2307,6 +3047,14 @@
               "value": {
                 "type": "string",
                 "example": 10
+              },
+              "raw": {
+                "type": "boolean",
+                "example": false
+              },
+              "label": {
+                "type": "string",
+                "example": "instruments.footer.exchanges_failed"
               }
             }
           }
