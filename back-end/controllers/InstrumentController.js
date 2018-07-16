@@ -1,5 +1,7 @@
 'use strict';
 
+const adminViewService = require('../services/AdminViewsService');
+
 const createInstrument = async function (req, res) {
  
   // mock data below
@@ -55,32 +57,7 @@ const getInstruments = async function (req, res) {
       exchanges_failed: 3
   }));
 
-  let footer = [
-    {
-      "name": "id",
-      "value": "999"
-    },
-    {
-      "name": "transaction_asset_id",
-      "value": "999"
-    },
-    {
-      "name": "quote_asset_id",
-      "value": "999"
-    },
-    {
-      "name": "symbol",
-      "value": "999"
-    },
-    {
-      "name": "exchanges_connected",
-      "value": "999"
-    },
-    {
-      "name": "exchanges_failed",
-      "value": "999"
-    }
-  ];
+  let footer = await adminViewService.fetchInstrumentsViewFooter();
 
   return ReS(res, {
     instruments: instruments_mock,

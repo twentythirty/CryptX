@@ -344,32 +344,32 @@ ROUTES = {
 
   InstrumentCreate: {
     router_string: "/instruments/create",
-    permissions_matcher: /\/instruments\/create/,
+    permissions_matcher: ROUTE_MATCHERS.InstrumentCreate,
     required_permissions: []
   },
   GetInstrument: {
     router_string: "/instruments/:instrument_id",
-    permissions_matcher: /\/instruments\/\d+$/,
+    permissions_matcher: ROUTE_MATCHERS.GetInstrument,
     required_permissions: []
   },
   GetInstruments: {
     router_string: "/instruments/all",
-    permissions_matcher: /\/instruments\/all$/,
+    permissions_matcher: ROUTE_MATCHERS.GetInstruments,
     required_permissions: []
   },
   InstrumentCheckMapping: {
     router_string: "/instruments/:instrument_id/check_mapping",
-    permissions_matcher: /\/instruments\/\d+\/check_mapping$/,
+    permissions_matcher: ROUTE_MATCHERS.InstrumentCheckMapping,
     required_permissions: []
   },
   InstrumentMapExchanges: {
     router_string: "/instruments/:instrument_id/add_mapping",
-    permissions_matcher: /\/instruments\/\d+\/add_mapping$/,
+    permissions_matcher: ROUTE_MATCHERS.InstrumentMapExchanges,
     required_permissions: []
   },
   GetInstrumentExchanges: {
     router_string: "/instruments/:instrument_id/exchanges",
-    permissions_matcher: /\/instruments\/\d+\/exchanges$/,
+    permissions_matcher: ROUTE_MATCHERS.GetInstrumentExchanges,
     required_permissions: []
   },
 

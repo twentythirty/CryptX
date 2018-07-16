@@ -27,10 +27,7 @@ const fetchUsersViewFooter = async (where_clause = '') => {
     const footer_values = (await sequelize.query(`SELECT\n${_.join(query_parts, ',\n')};`))[0];
 
     return builder.addFooterLabels(
-        builder.queryReturnRowToFooterObj(footer_values),
-        'users',
-        {}
-    );
+        builder.queryReturnRowToFooterObj(footer_values), 'users');
 }
 module.exports.fetchUsersViewFooter = fetchUsersViewFooter;
 
@@ -74,3 +71,35 @@ const fetchAssetsViewFooter = async () => {
 }
 module.exports.fetchAssetsViewFooter = fetchAssetsViewFooter;
 
+const fetchInstrumentsViewFooter = async () => {
+
+    let footer = [
+        {
+          "name": "id",
+          "value": "999"
+        },
+        {
+          "name": "transaction_asset_id",
+          "value": "999"
+        },
+        {
+          "name": "quote_asset_id",
+          "value": "999"
+        },
+        {
+          "name": "symbol",
+          "value": "999"
+        },
+        {
+          "name": "exchanges_connected",
+          "value": "999"
+        },
+        {
+          "name": "exchanges_failed",
+          "value": "999"
+        }
+      ];
+
+      return builder.addFooterLabels(footer, 'instruments')
+}
+module.exports.fetchInstrumentsViewFooter = fetchInstrumentsViewFooter;

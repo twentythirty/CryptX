@@ -442,6 +442,7 @@ router.post(
   ROUTES.InstrumentCreate.router_string,
   stateless_auth,
   check_permissions,
+  post_body_validator,
   InstrumentController.createInstrument
 );
 router.get(
@@ -468,12 +469,14 @@ router.post(
   ROUTES.InstrumentCheckMapping.router_string,
   stateless_auth,
   check_permissions,
+  post_body_validator,
   InstrumentController.checkInstrumentExchangeMap
 );
 router.post(
   ROUTES.InstrumentMapExchanges.router_string,
   stateless_auth,
   check_permissions,
+  post_body_validator,
   InstrumentController.mapInstrumentsWithExchanges
 );
 router.get(
