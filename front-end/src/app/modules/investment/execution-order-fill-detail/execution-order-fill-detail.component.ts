@@ -14,18 +14,18 @@ import { InvestmentService } from '../../../services/investment/investment.servi
  * 0. Set HTML and SCSS files in component decorator
  */
 @Component({
-  selector: 'app-order-detail',
+  selector: 'app-execution-order-fill-detail',
   templateUrl: '../timeline-detail/timeline-detail.component.html',
   styleUrls: ['../timeline-detail/timeline-detail.component.scss']
 })
-export class OrderDetailComponent extends TimelineDetailComponent implements OnInit {
+export class ExecutionOrderFillDetailComponent extends TimelineDetailComponent implements OnInit {
 
   /**
    * 1. Implement abstract attributes to display titles
    */
-  public pageTitle: string = 'Recipe orders';
-  public singleTitle: string = 'Recipe run';
-  public listTitle: string = 'Orders';
+  public pageTitle: string = 'Execution order fill';
+  public singleTitle: string = 'Execution order';
+  public listTitle: string = 'Execution order fill';
 
   /**
    * 2. Implement abstract attributes to preset data structure
@@ -35,13 +35,15 @@ export class OrderDetailComponent extends TimelineDetailComponent implements OnI
   public singleDataSource: SingleTableDataSource = {
     header: [
       { column: 'id', name: 'Id' },
-      { column: 'creation_time', name: 'Creation time' },
       { column: 'instrument', name: 'Instrument' },
-      { column: 'creator', name: 'Creator' },
+      { column: 'side', name: 'Side' },
+      { column: 'type', name: 'Type' },
+      { column: 'price', name: 'Price' },
+      { column: 'quantity', name: 'Total quantity' },
+      { column: 'fee', name: 'Exchange trading fee' },
       { column: 'status', name: 'Status' },
-      { column: 'decision_by', name: 'Decision by' },
-      { column: 'decision_time', name: 'Decision time' },
-      { column: 'rationale', name: 'Rationale' }
+      { column: 'submission_time', name: 'Submission time' },
+      { column: 'completion_time', name: 'Completion time' }
     ],
     body: null
   }
@@ -49,35 +51,18 @@ export class OrderDetailComponent extends TimelineDetailComponent implements OnI
   public listDataSource: TableDataSource = {
     header: [
       { column: 'id', name: 'Id', filter: {type: 'text', sortable: true }},
-      { column: 'instrument', name: 'Instrument', filter: {type: 'text', sortable: true }},
-      { column: 'side', name: 'Side', filter: {type: 'text', sortable: true }},
-      { column: 'price', name: 'Price', filter: {type: 'number', sortable: true }},
-      { column: 'quantity', name: 'Quantity', filter: {type: 'number', sortable: true }},
-      { column: 'fee', name: 'Sum of exchange trading fee', filter: {type: 'number', sortable: true }},
-      { column: 'status', name: 'Status', filter: {type: 'text', sortable: true }}
+      { column: 'fill_time', name: 'Fill time', filter: {type: 'text', sortable: true }},
+      { column: 'fill_price', name: 'Fill price', filter: {type: 'number', sortable: true }},
+      { column: 'quantity', name: 'Quantity', filter: {type: 'number', sortable: true }}
     ],
     body: null,
   };
 
   public singleColumnsToShow: Array<string | TableDataColumn> = [
     'id',
-    new DateCellDataColumn({ column: 'creation_time' }),
-    'instrument',
-    'creator',
-    new StatusCellDataColumn({ column: 'status', inputs: { classMap: {
-      'pending' : StatusClass.PENDING,
-      'rejected': StatusClass.REJECTED,
-      'approved': StatusClass.APPROVED
-    }}}),
-    'decision_by',
-    new DateCellDataColumn({ column: 'decision_time' }),
-    'rationale'
-  ];
-
-  public listColumnsToShow: Array<string | TableDataColumn> = [
-    'id',
     'instrument',
     'side',
+    'type',
     new NumberCellDataColumn({ column: 'price' }),
     new NumberCellDataColumn({ column: 'quantity' }),
     new NumberCellDataColumn({ column: 'fee' }),
@@ -85,7 +70,16 @@ export class OrderDetailComponent extends TimelineDetailComponent implements OnI
       'pending' : StatusClass.PENDING,
       'rejected': StatusClass.REJECTED,
       'approved': StatusClass.APPROVED
-    }}})
+    }}}),
+    new DateCellDataColumn({ column: 'submission_time' }),
+    new DateCellDataColumn({ column: 'completion_time' })
+  ];
+
+  public listColumnsToShow: Array<string | TableDataColumn> = [
+    'id',
+    new DateCellDataColumn({ column: 'fill_time' }),
+    new NumberCellDataColumn({ column: 'fill_price' }),
+    new NumberCellDataColumn({ column: 'quantity' }),
   ];
 
   /**
@@ -107,11 +101,11 @@ export class OrderDetailComponent extends TimelineDetailComponent implements OnI
     console.log(this.requestData);
     this.route.params.pipe(
       mergeMap(
-        params => this.investmentService.getAllOrders(params['id'], this.requestData)
+        params => this.investmentService.getAllExecOrdersFills(params['id'], this.requestData)
       )
     ).subscribe(
       res => {
-        this.listDataSource.body = res.recipe_orders;
+        this.listDataSource.body = res.execution_order_fills;
         this.count = res.count;
         this.setListFooter(res);
       },
@@ -122,15 +116,15 @@ export class OrderDetailComponent extends TimelineDetailComponent implements OnI
   protected getSingleData(): void {
     this.route.params.pipe(
       mergeMap(
-        params => this.investmentService.getSingleRecipe(params['id'])
+        params => this.investmentService.getSingleExecutionOrder(params['id'])
       )
     ).subscribe(
       res => {
-        if(res.order) {
-          this.singleDataSource.body = [ res.order ];
+        if(res.execution_order) {
+          this.singleDataSource.body = [ res.execution_order ];
         }
-        if(res.order_stats) {
-          this.setTagLine(res.order_stats.map(stat => {
+        if(res.execution_order_stats) {
+          this.setTagLine(res.execution_order_stats.map(stat => {
             return new TagLineItem(`${stat.count} ${stat.name}`)
           }))
         }
@@ -142,16 +136,17 @@ export class OrderDetailComponent extends TimelineDetailComponent implements OnI
   protected getTimelineData(): void {
     this.timeline$ = this.investmentService.getTimelineData();
   }
+
   /**
    * 5. Implement abstract methods to handle user actions
    */
 
   public openSingleRow(row: any): void {
-    this.router.navigate([`/run/recipe/${row.id}`])
+    // Do nothing
   }
 
   public openListRow(row: any): void {
-    this.router.navigate([`/run/execution-order/${row.id}`])
+    this.router.navigate([`/run/execution-order-fill/${row.id}`])
   }
 
   /**

@@ -9,6 +9,8 @@ import { TimelineComponent } from './timeline/timeline.component';
 import { InvestmentRunDetailComponent } from './investment-run-detail/investment-run-detail.component';
 import { RecipeRunDetailComponent } from './recipe-run-detail/recipe-run-detail.component';
 import { OrderDetailComponent } from './order-detail/order-detail.component';
+import { ExecutionOrderDetailComponent } from './execution-order-detail/execution-order-detail.component';
+import { ExecutionOrderFillDetailComponent } from './execution-order-fill-detail/execution-order-fill-detail.component';
 
 @NgModule({
   imports: [
@@ -22,7 +24,9 @@ import { OrderDetailComponent } from './order-detail/order-detail.component';
     TimelineComponent,
     InvestmentRunDetailComponent,
     RecipeRunDetailComponent,
-    OrderDetailComponent
+    OrderDetailComponent,
+    ExecutionOrderDetailComponent,
+    ExecutionOrderFillDetailComponent
   ]
 })
 export class InvestmentModule { }

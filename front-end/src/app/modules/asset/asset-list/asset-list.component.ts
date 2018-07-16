@@ -1,9 +1,9 @@
 import { Component, OnInit } from '@angular/core';
 import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
 
 import { AssetService, AssetResultData, AssetsAllResponse } from '../../../services/asset/asset.service';
-import { Asset, AssetStatusChanges, AssetStatus } from '../../../shared/models/asset';
-import { map } from 'rxjs/operator/map';
+import { Asset, AssetStatusChanges, AssetStatus, AssetStatuses } from '../../../shared/models/asset';
 import { EntitiesFilter } from '../../../shared/models/api/entitiesFilter';
 import { TableDataSource, TableDataColumn } from '../../../shared/components/data-table/data-table.component';
 import { DataTableCommonManagerComponent } from '../../../shared/components/data-table-common-manager/data-table-common-manager.component';
@@ -42,6 +42,7 @@ export class AssetListComponent extends DataTableCommonManagerComponent implemen
       { column: 'nvt_ratio', name: 'NVT ratio', filter: { type: 'text', sortable: true } },
       { column: 'market_share', name: 'Market share', filter: { type: 'text', sortable: true } },
       { column: 'capitalization_updated_timestamp', name: 'Capitalisation updated', filter: { type: 'text', sortable: true } },
+      { column: 'status', name: 'Status', filter: { type: 'text', sortable: true } },
       { column: '', name: 'Action' }
     ],
     body: null
@@ -65,6 +66,7 @@ export class AssetListComponent extends DataTableCommonManagerComponent implemen
     new NumberCellDataColumn({ column: 'nvt_ratio' }),
     new PercentCellDataColumn({ column: 'market_share' }),
     new DateCellDataColumn({ column: 'capitalization_updated_timestamp' }),
+    'status',
     new ActionCellDataColumn({ column: null,
       inputs: {
         actions: [
@@ -104,7 +106,7 @@ export class AssetListComponent extends DataTableCommonManagerComponent implemen
   getAllData(): void {
     this.assetService.getAllAssets(this.requestData).subscribe(
       (res: AssetsAllResponse) => {
-        this.assetsDataSource.body = res.assets;
+        this.assetsDataSource.body = this.populateAssetStatuses(res.assets);
         if(res.footer) {
           this.assetsDataSource.footer = this.assetsColumnsToShow.map(col => {
             let key = (typeof col == 'string') ? col : col.column;
@@ -112,6 +114,15 @@ export class AssetListComponent extends DataTableCommonManagerComponent implemen
           })
         }
         this.count = res.count || res.assets.length;
+      }
+    )
+  }
+
+  private populateAssetStatuses(assets: Array<Asset>): Array<Asset> {
+    return assets.map(
+      (asset: Asset) => {
+        asset.status = AssetStatuses[asset.status + ''];
+        return asset;
       }
     )
   }
@@ -130,7 +141,7 @@ export class AssetListComponent extends DataTableCommonManagerComponent implemen
       new AssetStatus(AssetStatusChanges.Graylisting, '')
     ).subscribe(
       res => {
-        asset.is_greylisted = true;
+        asset.status = AssetStatus['402'];
       }
     )
   }
@@ -141,7 +152,7 @@ export class AssetListComponent extends DataTableCommonManagerComponent implemen
       new AssetStatus(AssetStatusChanges.Blacklisting, '')
     ).subscribe(
       res => {
-        asset.is_blacklisted = true;
+        asset.status = AssetStatuses['401'];
       }
     )
   }
@@ -152,7 +163,7 @@ export class AssetListComponent extends DataTableCommonManagerComponent implemen
       new AssetStatus(AssetStatusChanges.Whitelisting, '')
     ).subscribe(
       res => {
-        asset.is_blacklisted = false;
+        asset.status = AssetStatuses['400']
       }
     )
   }
@@ -162,14 +173,14 @@ export class AssetListComponent extends DataTableCommonManagerComponent implemen
    */
 
   public rowBackgroundColor = (row: Asset): string => {
-    if(row.is_blacklisted) return '#6b6b6b';
-    if(row.is_greylisted) return '#aeaeae';
+    if(row.status == AssetStatuses['401']) return '#6b6b6b';
+    if(row.status == AssetStatuses['402']) return '#aeaeae';
     return null;
   }
 
   public rowTexColor = (row: Asset): string => {
-    if(row.is_blacklisted) return '#ffffff';
-    if(row.is_greylisted) return '#f2f2f2';
+    if(row.status == AssetStatuses['401']) return '#ffffff';
+    if(row.status == AssetStatuses['402']) return '#f2f2f2';
     return null;
   }
 
