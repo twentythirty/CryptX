@@ -64,29 +64,41 @@ export class ExecutionOrderDetailComponent extends TimelineDetailComponent imple
   public singleColumnsToShow: Array<string | TableDataColumn> = [
     'id',
     'instrument',
-    'side',
+    new StatusCellDataColumn({ column: 'side', inputs: { classMap: value => {
+      return StatusClass.DEFAULT;
+    }}}),
     new NumberCellDataColumn({ column: 'price' }),
     new NumberCellDataColumn({ column: 'quantity' }),
     new NumberCellDataColumn({ column: 'fee' }),
     new StatusCellDataColumn({ column: 'status', inputs: { classMap: {
-      'pending' : StatusClass.PENDING,
-      'rejected': StatusClass.REJECTED,
-      'approved': StatusClass.APPROVED
-    }}})
+      '51': StatusClass.PENDING,
+      '52': StatusClass.DEFAULT,
+      '53': StatusClass.APPROVED,
+      '54': StatusClass.REJECTED,
+      '55': StatusClass.REJECTED,
+      '56': StatusClass.FAILED,
+    }}}),
   ];
 
   public listColumnsToShow: Array<string | TableDataColumn> = [
     'id',
     'instrument',
-    'side',
-    'type',
+    new StatusCellDataColumn({ column: 'side', inputs: { classMap: value => {
+      return StatusClass.DEFAULT;
+    }}}),
+    new StatusCellDataColumn({ column: 'side', inputs: { classMap: value => {
+      return StatusClass.DEFAULT;
+    }}}),
     new NumberCellDataColumn({ column: 'price' }),
     new NumberCellDataColumn({ column: 'quantity' }),
     new NumberCellDataColumn({ column: 'fee' }),
     new StatusCellDataColumn({ column: 'status', inputs: { classMap: {
-      'pending' : StatusClass.PENDING,
-      'rejected': StatusClass.REJECTED,
-      'approved': StatusClass.APPROVED
+      '61': StatusClass.PENDING,
+      '62': StatusClass.APPROVED,
+      '63': StatusClass.APPROVED,
+      '64': StatusClass.APPROVED,
+      '65': StatusClass.REJECTED,
+      '66': StatusClass.FAILED,
     }}}),
     new DateCellDataColumn({ column: 'submission_time' }),
     new DateCellDataColumn({ column: 'completion_time' })

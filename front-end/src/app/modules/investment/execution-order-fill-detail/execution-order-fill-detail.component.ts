@@ -61,15 +61,22 @@ export class ExecutionOrderFillDetailComponent extends TimelineDetailComponent i
   public singleColumnsToShow: Array<string | TableDataColumn> = [
     'id',
     'instrument',
-    'side',
-    'type',
+    new StatusCellDataColumn({ column: 'side', inputs: { classMap: value => {
+      return StatusClass.DEFAULT;
+    }}}),
+    new StatusCellDataColumn({ column: 'side', inputs: { classMap: value => {
+      return StatusClass.DEFAULT;
+    }}}),
     new NumberCellDataColumn({ column: 'price' }),
     new NumberCellDataColumn({ column: 'quantity' }),
     new NumberCellDataColumn({ column: 'fee' }),
     new StatusCellDataColumn({ column: 'status', inputs: { classMap: {
-      'pending' : StatusClass.PENDING,
-      'rejected': StatusClass.REJECTED,
-      'approved': StatusClass.APPROVED
+      '61': StatusClass.PENDING,
+      '62': StatusClass.APPROVED,
+      '63': StatusClass.APPROVED,
+      '64': StatusClass.APPROVED,
+      '65': StatusClass.REJECTED,
+      '66': StatusClass.FAILED,
     }}}),
     new DateCellDataColumn({ column: 'submission_time' }),
     new DateCellDataColumn({ column: 'completion_time' })

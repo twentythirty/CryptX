@@ -65,9 +65,9 @@ export class OrderDetailComponent extends TimelineDetailComponent implements OnI
     'instrument',
     'creator',
     new StatusCellDataColumn({ column: 'status', inputs: { classMap: {
-      'pending' : StatusClass.PENDING,
-      'rejected': StatusClass.REJECTED,
-      'approved': StatusClass.APPROVED
+      '41' : StatusClass.PENDING,
+      '42': StatusClass.REJECTED,
+      '43': StatusClass.APPROVED,
     }}}),
     'decision_by',
     new DateCellDataColumn({ column: 'decision_time' }),
@@ -77,15 +77,20 @@ export class OrderDetailComponent extends TimelineDetailComponent implements OnI
   public listColumnsToShow: Array<string | TableDataColumn> = [
     'id',
     'instrument',
-    'side',
+    new StatusCellDataColumn({ column: 'side', inputs: { classMap: value => {
+      return StatusClass.DEFAULT;
+    }}}),
     new NumberCellDataColumn({ column: 'price' }),
     new NumberCellDataColumn({ column: 'quantity' }),
     new NumberCellDataColumn({ column: 'fee' }),
     new StatusCellDataColumn({ column: 'status', inputs: { classMap: {
-      'pending' : StatusClass.PENDING,
-      'rejected': StatusClass.REJECTED,
-      'approved': StatusClass.APPROVED
-    }}})
+      '51': StatusClass.PENDING,
+      '52': StatusClass.DEFAULT,
+      '53': StatusClass.APPROVED,
+      '54': StatusClass.REJECTED,
+      '55': StatusClass.REJECTED,
+      '56': StatusClass.FAILED,
+    }}}),
   ];
 
   /**
