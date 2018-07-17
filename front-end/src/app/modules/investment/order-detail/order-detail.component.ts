@@ -71,7 +71,20 @@ export class OrderDetailComponent extends TimelineDetailComponent implements OnI
     }}}),
     'decision_by',
     new DateCellDataColumn({ column: 'decision_time' }),
-    'rationale'
+    new ActionCellDataColumn({ column: 'rationale', inputs: {
+        actions: [
+          new DataCellAction({
+            label: 'READ',
+            exec: (row: any) => {
+              this.showReadModal({
+                title: 'Rationale',
+                content: row.rationale
+              })
+            }
+          })
+        ]
+      }
+    }),
   ];
 
   public listColumnsToShow: Array<string | TableDataColumn> = [
@@ -109,16 +122,15 @@ export class OrderDetailComponent extends TimelineDetailComponent implements OnI
    * 4. Implement abstract methods to fetch data OnInit
    */
   public getAllData(): void {
-    console.log(this.requestData);
     this.route.params.pipe(
       mergeMap(
         params => this.investmentService.getAllOrders(params['id'], this.requestData)
       )
     ).subscribe(
       res => {
-        this.listDataSource.body = res.recipe_orders;
         this.count = res.count;
-        this.setListFooter(res);
+        this.listDataSource.body = res.recipe_orders;
+        this.listDataSource.footer = res.footer;
       },
       err => this.listDataSource.body = []
     )
