@@ -83,9 +83,9 @@ export class DataTableComponent implements OnInit {
     return this.columnsToShow.map(col => {
       let f = _.filter(this.dataSource.footer, ['name', (typeof col == 'string') ? col : col.column])
       if(f) {
-        return [0];
+        return f[0];
       } else {
-        return null;
+        return {};
       }
     });
   }

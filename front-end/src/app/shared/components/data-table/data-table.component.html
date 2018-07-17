@@ -67,7 +67,9 @@
   <tfoot *ngIf="dataSource.footer?.length > 0">
     <tr>
       <td *ngFor="let item of getFooterData()">
-        {{ item.value }} {{ item.raw ? item.label : item.label }}
+        <ng-container *ngIf="item">
+          {{ item.value }} {{ item.raw ? item.label : item.label }}
+        </ng-container>
       </td>
     </tr>
   </tfoot>
