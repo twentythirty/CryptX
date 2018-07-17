@@ -22,9 +22,14 @@ export class ModelConstantsService {
    * @param group_name name of group constant is defined in
    * @param value constan number that will be used to find name by
    */
-  getName(group_name: string, value: number) {
-    let group = this.model_constants[group_name];
-    return Object.keys(group).find(key => group[key] === value);
+  getName(value: number) {
+    for(let group_key in this.model_constants) {
+      let group = this.model_constants[group_key];
+
+      if (Object.values(group).find(val => val === value)) {
+        return Object.keys(group).find(key => group[key] == value );
+      }
+    }
   }
 
   /** Returns names of values in group

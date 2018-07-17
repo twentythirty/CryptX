@@ -4,6 +4,9 @@ import { HttpClient } from '@angular/common/http';
 
 import { environment } from '../../../environments/environment';
 import { EntitiesFilter } from '../../shared/models/api/entitiesFilter';
+import { of } from 'rxjs/observable/of';
+import { TimelineEvent } from '../../modules/investment/timeline/timeline.component';
+import { StatusClass } from '../../shared/models/common';
 
 @Injectable()
 export class InvestmentService {
@@ -142,6 +145,21 @@ export class InvestmentService {
 
   alterOrderGroup(order_group_id: any, data: any): Observable<any> {
     return this.http.post<any>(this.baseUrl + `orders/${order_group_id}/alter`, data)
+  }
+
+  /**
+   * Timeline data
+   */
+
+  // TODO: Normal API route
+  getTimelineData(): Observable<Array<TimelineEvent>> {
+    return of([
+      new TimelineEvent('Investment run', 'Orders filled', StatusClass.APPROVED, 'IR-001, rci', (new Date()).toUTCString(), `/run/investment/${1}`),
+      new TimelineEvent('Recipe run', 'Pending', StatusClass.PENDING, 'IR-001, rci', (new Date()).toUTCString(), `/run/recipe/${1}`, true),
+      { note: 'Deposits aren\'t made yet' },
+      { note: 'Orders aren\'t made yet' },
+      { note: 'Execution orders aren\'t made yet' }
+    ])
   }
 
 }

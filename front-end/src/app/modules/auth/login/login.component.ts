@@ -3,7 +3,7 @@ declare function require(path: string);
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { CommonModule } from '@angular/common'; 
+import { CommonModule } from '@angular/common';
 import { BrowserModule } from '@angular/platform-browser';
 
 import { AuthService } from '../../../services/auth/auth.service';
@@ -37,7 +37,9 @@ export class LoginComponent implements OnInit {
         this.touched = true;
       }, error => {
         this.touched = true;
-        this.status = error.error.error;
+        if(error.error) {
+          this.status = error.error.error;
+        }
         console.log("Error happened", error);
       });
   }
@@ -63,7 +65,9 @@ export class LoginComponent implements OnInit {
     this.authService.requestPasswordReset(this.reset_email).subscribe(response => {
       this.password_reset_sent = true;
     }, error => {
-      this.password_reset_status = error.error.error;
+      if(error.error) {
+        this.password_reset_status = error.error.error;
+      }
     });
   }
 }
