@@ -2,7 +2,7 @@
   "swagger": "2.0",
   "info": {
     "description": "This is documentatin for the Node API. For every request you must include in the header: \n `Content-Type: application/json` \n\n <b>Routes with a lock next to them use authorization</b>. In this case, its request-scope JWT tokens in the `Authorization` header coupled with server-side database session persistence. An example secure request would contain the header:\n `Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ...`",
-    "version": "0.5.9",
+    "version": "0.7.4",
     "title": "CryptX System",
     "termsOfService": "http://swagger.io/terms/",
     "contact": {
@@ -1950,6 +1950,93 @@
             "description": "successful operation",
             "schema": {
               "$ref": "#/definitions/ReturnUsersListResponse"
+            }
+          },
+          "401": {
+            "description": "unauthorized - no session",
+            "schema": {
+              "$ref": "#/definitions/ApiUnauthorizezdResponse"
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/users/header_lov/{field_name}": {
+      "get": {
+        "tags": [
+          "user"
+        ],
+        "summary": "Get a list of all values for this field in the users view table",
+        "description": "Optionally filtered list of all values for a speicfic field in the users admin view table. Used as the set of options in LOV-type headers. The POST version can be used in conjunction with header search. For users table, this `field_name` can be: `first_name`, `last_name`, `email`, `is_active`",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [ 
+          {
+            "name": "field_name",
+            "in": "path",
+            "description": "name of column field to fetch LOV for. corresponds to value used to fill column by entity.",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "schema": {
+              "$ref": "#/definitions/HeaderColListResponse"
+            }
+          },
+          "401": {
+            "description": "unauthorized - no session",
+            "schema": {
+              "$ref": "#/definitions/ApiUnauthorizezdResponse"
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      },
+      "post": {
+        "tags": [
+          "user"
+        ],
+        "summary": "Get a list of all values for this field in the users view table",
+        "description": "Optionally filtered list of all values for a speicfic field in the users admin view table. Used as the set of options in LOV-type headers. The POST version can be used in conjunction with header search. For users table, this `field_name` can be: `first_name`, `last_name`, `email`, `is_active`",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "field_name",
+            "in": "path",
+            "description": "name of column field to fetch LOV for. corresponds to value used to fill column by entity.",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "filter query",
+            "in": "body",
+            "description": "the query used to additionally filter the LOV",
+            "required": false,
+            "schema": {
+              "$ref": "#/definitions/LOVFilter"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "schema": {
+              "$ref": "#/definitions/HeaderColListResponse"
             }
           },
           "401": {
@@ -4161,6 +4248,31 @@
         },
         "error": {
           "type": "string"
+        }
+      }
+    },
+    "HeaderColListResponse": {
+      "type": "object",
+      "properties": {
+        "query": {
+          "type": "string",
+          "example": "tes"
+        },
+        "lov": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "example": "val1"
+          }
+        }
+      }
+    },
+    "LOVFilter": {
+      "type": "object",
+      "properties": {
+        "query": {
+          "type": "string",
+          "example": "tes"
         }
       }
     },

@@ -131,16 +131,16 @@ const getUsers = async function (req, res) {
 
   console.log('WHERE clause: %o', req.seq_where);
   console.log(`SQL WHERE clause: ${req.sql_where}`);
-  let [err, result] = await to(User.findAndCountAll(req.seq_query));
+  let [err, result] = await to(adminViewsService.fetchUsersViewDataWithCount(req.seq_where));
   if (err) return ReE(res, err.message, 422);
   let footer = [];
   [err, footer] = await to(adminViewsService.fetchUsersViewFooter(req.sql_where));
   if(err) return ReE(res, err.message, 422);
 
-  let { rows: users, count } = result;
+  let { data: users, total: count } = result;
   
   return ReS(res, {
-    users: users.map(u => u.toWeb()),
+    users,
     count,
     footer
   });
@@ -164,6 +164,20 @@ const getUser = async function (req, res) {
   });
 };
 module.exports.getUser = getUser;
+
+const getUsersColumnLOV = async (req, res) => {
+
+  const field_name = req.params.field_name
+  const { query } = _.isPlainObject(req.body)? req.body : { query: '' };
+
+  const field_vals = await adminViewsService.fetchUsersViewHeaderLOV(field_name, query);
+
+  return ReS(res, {
+    query: query,
+    lov: field_vals
+  })
+};
+module.exports.getUsersColumnLOV = getUsersColumnLOV;
 
 const getUserPermissions = async function (req, res) {
 

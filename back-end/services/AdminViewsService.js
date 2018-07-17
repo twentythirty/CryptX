@@ -3,6 +3,56 @@
 
 const sequelize = require('../models').sequelize;
 const builder = require('../utils/AdminViewUtils');
+const AVUser = require('../models').AVUser;
+
+const TABLE_LOV_FIELDS = {
+    'av_users': [
+        'first_name', 
+        'last_name',
+        'email',
+        'is_active'
+    ]
+}
+
+
+const fetchViewHeaderLOV = async (table, field, query) => {
+
+    const allowed_fields = TABLE_LOV_FIELDS[table];
+
+    if (allowed_fields == null || !allowed_fields.includes(field)) {
+        return [];
+    }
+
+    const sql = builder.selectDistinct(field, table, query? `${field} LIKE '%${query}%'`: '')
+    
+    //returns list of objects with 1 key-value pair, key being field name
+    const values = await sequelize.query(sql, { type: sequelize.QueryTypes.SELECT });
+
+    //extrac field values from key value pairs
+    return _.map(values, field);
+}
+const fetchViewDataWithCount = async (model, seq_where = {}) => {
+
+    const [data, total] = await Promise.all([
+        model.findAll(seq_where),
+        model.count()
+    ]);
+    
+    return { data, total }
+}
+
+
+const fetchUsersViewHeaderLOV = async (header_field, query = '') => {
+
+    return fetchViewHeaderLOV('av_users', header_field, query)
+}
+module.exports.fetchUsersViewHeaderLOV = fetchUsersViewHeaderLOV;
+
+const fetchUsersViewDataWithCount = async (seq_where = {}) => {
+
+    return fetchViewDataWithCount(AVUser, seq_where);
+}
+module.exports.fetchUsersViewDataWithCount = fetchUsersViewDataWithCount;
 
 const fetchUsersViewFooter = async (where_clause = '') => {
 
@@ -15,14 +65,10 @@ const fetchUsersViewFooter = async (where_clause = '') => {
 
     const query_parts = _.concat(_.map(simple_fields, (field_expr, alias) => {
         //using public.user, since pg has a default user table and its very different
-        return builder.selectCountDistinct(field_expr, alias, 'public.user', where_clause)
+        return builder.selectCountDistinct(field_expr, alias, 'av_users', where_clause)
     }), 
     //attach the more fancy footer column query as-is to avoid convoluted parametrization
-    `(SELECT COALESCE(SUM(a), 0)
-    FROM
-      (SELECT CASE WHEN is_active THEN 1 ELSE 0 END as a
-       FROM public.USER
-       ${_.isEmpty(where_clause)? '' : `WHERE ${where_clause}`}) AS active_users) AS is_active`)
+    `(${builder.selectCount('av_users', 'is_active', 'is_active = \'users.entity.active\'')})`);
 
     const footer_values = (await sequelize.query(`SELECT\n${_.join(query_parts, ',\n')};`))[0];
 
