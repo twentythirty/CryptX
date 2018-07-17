@@ -137,4 +137,48 @@ export abstract class TimelineDetailComponent extends DataTableCommonManagerComp
     }
   }
 
+  /**
+   * Rationale set modal
+   */
+
+  public rationaleModalIsShown: boolean = false;
+  public rationaleData: any;
+  public rationaleDone: (data: any) => void;
+
+  public showRationaleModal(data: any, done?: (data: any) => void): void {
+    this.rationaleModalIsShown = true;
+    this.rationaleData = data;
+    this.rationaleDone = done;
+  }
+
+  public hideRationaleModal(): void {
+    this.rationaleModalIsShown = false;
+    this.rationaleData = null;
+    this.rationaleDone = null;
+  }
+
+  public submitRationale(data): void {
+    if(typeof this.rationaleDone == 'function') {
+      this.rationaleDone(data);
+    }
+    this.hideRationaleModal();
+  }
+
+  /**
+   * Read set modal
+   */
+
+  public readModalIsShown: boolean = false;
+  public readData: { title: string, content: string };
+
+  public showReadModal(data: { title: string, content: string }): void {
+    this.readModalIsShown = true;
+    this.readData = data;
+  }
+
+  public hideReadModal(): void {
+    this.readModalIsShown = false;
+    this.readData = null;
+  }
+
 }

@@ -71,7 +71,20 @@ export class OrderDetailComponent extends TimelineDetailComponent implements OnI
     }}}),
     'decision_by',
     new DateCellDataColumn({ column: 'decision_time' }),
-    'rationale'
+    new ActionCellDataColumn({ column: 'rationale', inputs: {
+        actions: [
+          new DataCellAction({
+            label: 'READ',
+            exec: (row: any) => {
+              this.showReadModal({
+                title: 'Rationale',
+                content: row.rationale
+              })
+            }
+          })
+        ]
+      }
+    }),
   ];
 
   public listColumnsToShow: Array<string | TableDataColumn> = [

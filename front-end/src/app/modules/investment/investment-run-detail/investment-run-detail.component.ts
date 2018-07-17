@@ -87,7 +87,12 @@ export class InvestmentRunDetailComponent extends TimelineDetailComponent implem
         actions: [
           new DataCellAction({
             label: 'READ',
-            exec: (row: any) => { this.readRationale(<any>row) }
+            exec: (row: any) => {
+              this.showReadModal({
+                title: 'Rationale',
+                content: row.rationale
+              })
+            }
           })
         ]
       }
@@ -183,14 +188,6 @@ export class InvestmentRunDetailComponent extends TimelineDetailComponent implem
 
   ngOnInit() {
     super.ngOnInit();
-  }
-
-  /**
-   * Additional
-   */
-
-  public readRationale(row): void {
-    alert(row.rationale)
   }
 
 }

@@ -70,10 +70,23 @@ export class RecipeRunDetailComponent extends TimelineDetailComponent implements
     }}}),
     'decision_by',
     new DateCellDataColumn({ column: 'decision_time' }),
-    'rationale',
+    new ActionCellDataColumn({ column: 'rationale', inputs: {
+        actions: [
+          new DataCellAction({
+            label: 'READ',
+            exec: (row: any) => {
+              this.showReadModal({
+                title: 'Rationale',
+                content: row.rationale
+              })
+            }
+          })
+        ]
+      }
+    }),
     new ConfirmCellDataColumn({ column: 'actions', inputs: {
-      execConfirm: (row) => this.confirmRun(row),
-      execDecline: (row) => this.declineRun(row),
+      execConfirm: (row) => this.showRationaleModal(row, data => data && this.confirmRun(data)),
+      execDecline: (row) => this.showRationaleModal(row, data => data && this.declineRun(data)),
     } }),  // TODO: Actions component
   ];
 
@@ -131,7 +144,7 @@ export class RecipeRunDetailComponent extends TimelineDetailComponent implements
           }))
         }
       },
-      err => this.singleDataSource.body = []
+      // err => this.singleDataSource.body = []
     )
   }
 
@@ -164,13 +177,22 @@ export class RecipeRunDetailComponent extends TimelineDetailComponent implements
    * Additional
    */
 
-  private confirmRun(run: any): void {
-    alert('confirmRun');
+  private confirmRun({ rationale, data }): void {
+    let run = data;
+    this.investmentService.approveRecipe(run.id, { status: true, comment: rationale }).subscribe(
+      res => {
+        // TODO
+      }
+    )
   }
 
-  private declineRun(run: any): void {
-    alert('declineRun');
+  private declineRun({ rationale, data }): void {
+    let run = data;
+    this.investmentService.approveRecipe(run.id, { status: false, comment: rationale }).subscribe(
+      res => {
+        // TODO
+      }
+    )
   }
-
 
 }
