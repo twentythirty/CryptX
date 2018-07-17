@@ -127,7 +127,6 @@ export class DepositDetailComponent extends TimelineDetailComponent implements O
         this.count = res.count;
         this.listDataSource.body = res.recipe_deposits;
         this.listDataSource.footer = res.footer;
-        console.log('footer', res.footer);
       },
       err => this.listDataSource.body = []
     )
