@@ -9,13 +9,11 @@ export class Asset {
   public nvt_ratio: number;
   public market_share: number;
   public capitalization_updated: any;
-  public status: string;
+  public status: (string | number);
 
   // Not yet implemented
   public capitalization_updated_timestamp: number;
   public is_cryptocurrency: boolean;
-  public is_greylisted: boolean;
-  public is_blacklisted: boolean;
 }
 
 
@@ -27,13 +25,7 @@ export class AssetStatus {
   public user_id?: number;
 
   constructor(
-    public type: AssetStatusChanges,
+    public type: string,
     public comment: any
   ) {}
-}
-
-export enum AssetStatusChanges {
-  Whitelisting = 400,
-  Blacklisting = 401,
-  Graylisting = 402
 }

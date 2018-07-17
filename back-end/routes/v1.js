@@ -7,6 +7,7 @@ const AssetController = require('./../controllers/AssetController');
 const InvestmentController = require('./../controllers/InvestmentController');
 const OrdersController = require('./../controllers/OrdersController');
 const SystemController = require('./../controllers/SystemController');
+const InstrumentController = require('./../controllers/InstrumentController');
 
 // const custom 	        = require('./../middleware/custom');
 
@@ -57,6 +58,20 @@ router.post(
   check_permissions,
   filter_reducer,
   UserController.getUsers
+);
+router.get(
+  ROUTES.GetUsersColLOV.router_string,
+  stateless_auth,
+  check_permissions,
+  filter_reducer,
+  UserController.getUsersColumnLOV
+);
+router.post(
+  ROUTES.GetUsersColLOV.router_string,
+  stateless_auth,
+  check_permissions,
+  filter_reducer,
+  UserController.getUsersColumnLOV
 );
 router.get(
   ROUTES.GetUserInfo.router_string,
@@ -435,6 +450,90 @@ router.get(
   check_permissions,
   InvestmentController.ExecutionOrderFill
 );
+
+// Instruments
+router.post(
+  ROUTES.InstrumentCreate.router_string,
+  stateless_auth,
+  check_permissions,
+  post_body_validator,
+  InstrumentController.createInstrument
+);
+router.get(
+  ROUTES.GetInstruments.router_string,
+  stateless_auth,
+  check_permissions,
+  filter_reducer,
+  InstrumentController.getInstruments
+);
+router.post(
+  ROUTES.GetInstruments.router_string,
+  stateless_auth,
+  check_permissions,
+  filter_reducer,
+  InstrumentController.getInstruments
+);
+router.get(
+  ROUTES.GetInstrument.router_string,
+  stateless_auth,
+  check_permissions,
+  InstrumentController.getInstrument
+);
+router.post(
+  ROUTES.InstrumentCheckMapping.router_string,
+  stateless_auth,
+  check_permissions,
+  post_body_validator,
+  InstrumentController.checkInstrumentExchangeMap
+);
+router.post(
+  ROUTES.InstrumentMapExchanges.router_string,
+  stateless_auth,
+  check_permissions,
+  post_body_validator,
+  InstrumentController.mapInstrumentsWithExchanges
+);
+router.get(
+  ROUTES.GetInstrumentExchanges.router_string,
+  stateless_auth,
+  check_permissions,
+  InstrumentController.getInstrumentExchanges
+);
+
+// Liquidity requirements
+router.post(
+  ROUTES.LiquidityReqCreate.router_string,
+  stateless_auth,
+  check_permissions,
+  post_body_validator,
+  InstrumentController.createLiquidityRequirement
+);
+router.get(
+  ROUTES.GetLiquidityRequirements.router_string,
+  stateless_auth,
+  check_permissions,
+  InstrumentController.getLiquidityRequirements
+);
+router.post(
+  ROUTES.GetLiquidityRequirements.router_string,
+  stateless_auth,
+  check_permissions,
+  filter_reducer,
+  InstrumentController.getLiquidityRequirements
+);
+router.get(
+  ROUTES.GetLiquidityRequirement.router_string,
+  stateless_auth,
+  check_permissions,
+  InstrumentController.getLiquidityRequirement
+);
+router.get(
+  ROUTES.GetLiquidityRequirementExchanges.router_string,
+  stateless_auth,
+  check_permissions,
+  InstrumentController.getLiquidityRequirementExchanges
+);
+
 
 router.post(
   ROUTES.CreateDeposit.router_string,

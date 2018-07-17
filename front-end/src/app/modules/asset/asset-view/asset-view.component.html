@@ -27,7 +27,7 @@
       <span> from </span>
       <span>{{ change.prev || 'undefined' }}</span>
       <span> to </span>
-      <span>{{ change.current || 'undefined' }}</span>
+      <span>{{ getType(change.type) || 'undefined' }}</span>
       <ng-container *ngIf="change.comment">
         <span> due to </span>
         <span>{{ change.comment || 'undefined' }}</span>
@@ -35,3 +35,7 @@
     </small>
   </p>
 </div>
+
+<app-modal *ngIf="rationaleModelIsShown" (close)="hideRationaleModal()">
+  <app-rationale-modal [data]="rationaleData" (close)="submitRationale($event)"></app-rationale-modal>
+</app-modal>

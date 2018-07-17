@@ -19,6 +19,10 @@ import { AssetListComponent } from '../../modules/asset/asset-list/asset-list.co
 import { AssetViewComponent } from '../../modules/asset/asset-view/asset-view.component';
 import { InvestmentRunDetailComponent } from '../../modules/investment/investment-run-detail/investment-run-detail.component';
 import { RecipeRunDetailComponent } from '../../modules/investment/recipe-run-detail/recipe-run-detail.component';
+import { OrderDetailComponent } from '../../modules/investment/order-detail/order-detail.component';
+import { ExecutionOrderDetailComponent } from '../../modules/investment/execution-order-detail/execution-order-detail.component';
+import { ExecutionOrderFillDetailComponent } from '../../modules/investment/execution-order-fill-detail/execution-order-fill-detail.component';
+import { DepositDetailComponent } from '../../modules/investment/deposit-detail/deposit-detail.component';
 
 const routes: Routes = [
   { path: 'login', component: LoginComponent },
@@ -85,9 +89,10 @@ const routes: Routes = [
     children: [
       { path: 'investment/:id', component: InvestmentRunDetailComponent },
       { path: 'recipe/:id', component: RecipeRunDetailComponent },
-      // { path: 'deposit/:id', component: DepositDetailComponent },
-      // { path: 'order/:id', component: OrderDetailComponent },
-      // { path: 'execution-order/:id', component: ExecutionOrderDetailComponent }
+      { path: 'deposit/:id', component: DepositDetailComponent },
+      { path: 'order/:id', component: OrderDetailComponent },
+      { path: 'execution-order/:id', component: ExecutionOrderDetailComponent },
+      { path: 'execution-order-fill/:id', component: ExecutionOrderFillDetailComponent }
     ],
     canActivate: [AuthGuard, PermissionGuard],
     data: { requiredPermission: ['VIEW_INVESTMENT_RUN']}

@@ -141,6 +141,11 @@ ROUTES = {
     permissions_matcher: ROUTE_MATCHERS.GetUsersInfo,
     required_permissions: [PERMISSIONS.VIEW_USERS]
   },
+  GetUsersColLOV: {
+    router_string: "/users/header_lov/:field_name",
+    permissions_matcher: ROUTE_MATCHERS.GetUsersColLOV,
+    required_permissions: [PERMISSIONS.VIEW_USERS]
+  },
   ChangeUserInfo: {
     router_string: "/users/:user_id/edit",
     permissions_matcher: ROUTE_MATCHERS.ChangeUserInfo,
@@ -340,6 +345,60 @@ ROUTES = {
     router_string: "/exec_orders_fills/:exec_order_fill_id",
     permissions_matcher: ROUTE_MATCHERS.GetExecutionOrdersFill,
     required_permissions: [PERMISSIONS.VIEW_INVESTMENT_RUN]
+  },
+
+  // Instruments
+  InstrumentCreate: {
+    router_string: "/instruments/create",
+    permissions_matcher: ROUTE_MATCHERS.InstrumentCreate,
+    required_permissions: []
+  },
+  GetInstrument: {
+    router_string: "/instruments/:instrument_id",
+    permissions_matcher: ROUTE_MATCHERS.GetInstrument,
+    required_permissions: []
+  },
+  GetInstruments: {
+    router_string: "/instruments/all",
+    permissions_matcher: ROUTE_MATCHERS.GetInstruments,
+    required_permissions: []
+  },
+  InstrumentCheckMapping: {
+    router_string: "/instruments/:instrument_id/check_mapping",
+    permissions_matcher: ROUTE_MATCHERS.InstrumentCheckMapping,
+    required_permissions: []
+  },
+  InstrumentMapExchanges: {
+    router_string: "/instruments/:instrument_id/add_mapping",
+    permissions_matcher: ROUTE_MATCHERS.InstrumentMapExchanges,
+    required_permissions: []
+  },
+  GetInstrumentExchanges: {
+    router_string: "/instruments/:instrument_id/exchanges",
+    permissions_matcher: ROUTE_MATCHERS.GetInstrumentExchanges,
+    required_permissions: []
+  },
+
+  // Liquidity requirements
+  LiquidityReqCreate: {
+    router_string: "/liquidity_requirements/create",
+    permissions_matcher: ROUTE_MATCHERS.LiquidityReqCreate,
+    required_permissions: []
+  },
+  GetLiquidityRequirement: {
+    router_string: "/liquidity_requirements/:liquidity_requirement_id",
+    permissions_matcher: ROUTE_MATCHERS.GetLiquidityRequirement,
+    required_permissions: []
+  },
+  GetLiquidityRequirements: {
+    router_string: "/liquidity_requirements/all",
+    permissions_matcher: ROUTE_MATCHERS.GetLiquidityRequirements,
+    required_permissions: []
+  },
+  GetLiquidityRequirementExchanges: {
+    router_string: "/liquidity_requirements/:liquidity_requirement_id/exchanges",
+    permissions_matcher: ROUTE_MATCHERS.GetLiquidityRequirementExchanges,
+    required_permissions: []
   },
 
   CreateDeposit: {

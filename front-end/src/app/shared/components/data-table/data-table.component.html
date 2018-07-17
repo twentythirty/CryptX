@@ -37,7 +37,7 @@
       (click)="onOpenRow(item)">
         <td *ngFor="let index of columnsToShow">
           <ng-container *ngIf="columnIsBasic(index); else dynamicColumn">
-            <span>{{ item[index] || '-' }}</span>
+            <span>{{ item[index?.column || index] || '-' }}</span>
           </ng-container>
           <ng-template #dynamicColumn>
             <ndc-dynamic [ndcDynamicComponent]="index.component"
@@ -64,11 +64,12 @@
     </ng-template>
   </ng-template>
 
-
   <tfoot *ngIf="dataSource.footer?.length > 0">
     <tr>
-      <td *ngFor="let item of dataSource.footer">
-        {{item}}
+      <td *ngFor="let item of getFooterData()">
+        <ng-container *ngIf="item">
+          {{ item.value }} {{ item.raw ? item.label : item.label }}
+        </ng-container>
       </td>
     </tr>
   </tfoot>

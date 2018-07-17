@@ -4,6 +4,7 @@ import { RolesAllRequestData } from "../../../shared/models/api/rolesAllRequestD
 import { Router, ActivatedRoute } from '@angular/router';
 import { User } from "../../../shared/models/user";
 import { UsersService } from "../../../services/users/users.service";
+import { FormGroup, FormControl } from '@angular/forms';
 
 @Component({
   selector: 'app-users-add',

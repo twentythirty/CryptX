@@ -20,11 +20,11 @@ export class TimelineEvent {
   constructor(
     public title?: string,
     public status?: string,
-    public statusClass: StatusClass = StatusClass.DEFAULT,
+    public statusClass?: StatusClass,
     public id?: string,
     public date?: string,
     public routerLink?: string,
-    public isCurrent: boolean = false
+    public isCurrent?: boolean
   ) {}
 }
 

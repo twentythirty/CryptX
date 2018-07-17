@@ -1,9 +1,9 @@
 import { Component, OnInit } from '@angular/core';
 import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
 
 import { AssetService, AssetResultData, AssetsAllResponse } from '../../../services/asset/asset.service';
-import { Asset, AssetStatusChanges, AssetStatus } from '../../../shared/models/asset';
-import { map } from 'rxjs/operator/map';
+import { Asset, AssetStatus } from '../../../shared/models/asset';
 import { EntitiesFilter } from '../../../shared/models/api/entitiesFilter';
 import { TableDataSource, TableDataColumn } from '../../../shared/components/data-table/data-table.component';
 import { DataTableCommonManagerComponent } from '../../../shared/components/data-table-common-manager/data-table-common-manager.component';
@@ -20,9 +20,14 @@ import {
   PercentCellDataColumn,
   NumberCellDataColumn,
   ActionCellDataColumn,
-  DataCellAction
+  DataCellAction,
+  StatusCellDataColumn
 } from '../../../shared/components/data-table-cells';
 import { AuthService } from '../../../services/auth/auth.service';
+import { ModelConstantsService } from '../../../services/model-constants/model-constants.service';
+import { StatusClass } from '../../../shared/models/common';
+
+const INSTRUMENT_STATUS_CHANGES = 'INSTRUMENT_STATUS_CHANGES';
 
 @Component({
   selector: 'app-asset-list',
@@ -42,6 +47,7 @@ export class AssetListComponent extends DataTableCommonManagerComponent implemen
       { column: 'nvt_ratio', name: 'NVT ratio', filter: { type: 'text', sortable: true } },
       { column: 'market_share', name: 'Market share', filter: { type: 'text', sortable: true } },
       { column: 'capitalization_updated_timestamp', name: 'Capitalisation updated', filter: { type: 'text', sortable: true } },
+      { column: 'status', name: 'Status', filter: { type: 'text', sortable: true } },
       { column: '', name: 'Action' }
     ],
     body: null
@@ -65,6 +71,9 @@ export class AssetListComponent extends DataTableCommonManagerComponent implemen
     new NumberCellDataColumn({ column: 'nvt_ratio' }),
     new PercentCellDataColumn({ column: 'market_share' }),
     new DateCellDataColumn({ column: 'capitalization_updated_timestamp' }),
+    new StatusCellDataColumn({ column: 'status', inputs: { classMap: value => {
+      return StatusClass.DEFAULT;
+    }}}),
     new ActionCellDataColumn({ column: null,
       inputs: {
         actions: [
@@ -75,12 +84,12 @@ export class AssetListComponent extends DataTableCommonManagerComponent implemen
           }),
           new DataCellAction({
             label: 'Blacklist',
-            isShown: (row: any) => this.checkPerm(['CHANGE_ASSET_STATUS']) && (!row.is_blacklisted),
+            isShown: (row: any) => this.checkPerm(['CHANGE_ASSET_STATUS']) && (!(row.status == 401)),
             exec: (row: any) => { this.blacklist(<Asset>row) }
           }),
           new DataCellAction({
             label: 'Whitelist',
-            isShown: (row: any) => this.checkPerm(['CHANGE_ASSET_STATUS']) && (row.is_blacklisted),
+            isShown: (row: any) => this.checkPerm(['CHANGE_ASSET_STATUS']) && ((row.status == 401)),
             exec: (row: any) => { this.whitelist(<Asset>row) }
           })
         ]
@@ -92,6 +101,7 @@ export class AssetListComponent extends DataTableCommonManagerComponent implemen
     public route: ActivatedRoute,
     protected assetService: AssetService,
     protected authService: AuthService,
+    protected modelConstantsService: ModelConstantsService,
     protected router: Router
   ) {
     super(route);
@@ -106,10 +116,7 @@ export class AssetListComponent extends DataTableCommonManagerComponent implemen
       (res: AssetsAllResponse) => {
         this.assetsDataSource.body = res.assets;
         if(res.footer) {
-          this.assetsDataSource.footer = this.assetsColumnsToShow.map(col => {
-            let key = (typeof col == 'string') ? col : col.column;
-            return (res.footer.find(f => f.name == key) || {}).value || '';
-          })
+          this.assetsDataSource.footer = res.footer;
         }
         this.count = res.count || res.assets.length;
       }
@@ -121,38 +128,58 @@ export class AssetListComponent extends DataTableCommonManagerComponent implemen
   }
 
   /**
+   * Clicks
+   */
+
+  public deGreylist(asset: Asset): void {
+    this.showRationaleModal(asset, data => data && this.doDeGreylist(data));
+  }
+
+  public blacklist(asset: Asset): void {
+    this.showRationaleModal(asset, data => data && this.doBlacklist(data));
+  }
+
+  public whitelist(asset: Asset): void {
+    this.showRationaleModal(asset, data => data && this.doWhitelist(data));
+  }
+
+
+  /**
    * Actions
    */
 
-  private deGreylist(asset: Asset): void {
+  public doDeGreylist({ rationale, data }): void {
+    let asset: Asset = data;
     this.assetService.changeAssetStatus(
       asset.id,
-      new AssetStatus(AssetStatusChanges.Graylisting, '')
+      new AssetStatus(this.modelConstantsService.getGroup(INSTRUMENT_STATUS_CHANGES)['Graylisting'], rationale)
     ).subscribe(
       res => {
-        asset.is_greylisted = true;
+        asset.status = this.modelConstantsService.getName(402);
       }
     )
   }
 
-  private blacklist(asset: Asset): void {
+  public doBlacklist({ rationale, data }): void {
+    let asset: Asset = data;
     this.assetService.changeAssetStatus(
       asset.id,
-      new AssetStatus(AssetStatusChanges.Blacklisting, '')
+      new AssetStatus(this.modelConstantsService.getGroup(INSTRUMENT_STATUS_CHANGES)['Blacklisting'], rationale)
     ).subscribe(
       res => {
-        asset.is_blacklisted = true;
+        asset.status = this.modelConstantsService.getName(401);
       }
     )
   }
 
-  private whitelist(asset: Asset): void {
+  public doWhitelist({ rationale, data }): void {
+    let asset: Asset = data;
     this.assetService.changeAssetStatus(
       asset.id,
-      new AssetStatus(AssetStatusChanges.Whitelisting, '')
+      new AssetStatus(this.modelConstantsService.getGroup(INSTRUMENT_STATUS_CHANGES)['Whitelisting'], rationale)
     ).subscribe(
       res => {
-        asset.is_blacklisted = false;
+        asset.status = this.modelConstantsService.getName(400)
       }
     )
   }
@@ -162,15 +189,42 @@ export class AssetListComponent extends DataTableCommonManagerComponent implemen
    */
 
   public rowBackgroundColor = (row: Asset): string => {
-    if(row.is_blacklisted) return '#6b6b6b';
-    if(row.is_greylisted) return '#aeaeae';
+    if(row.status == this.modelConstantsService.getName(401)) return '#6b6b6b';
+    if(row.status == this.modelConstantsService.getName(402)) return '#aeaeae';
     return null;
   }
 
   public rowTexColor = (row: Asset): string => {
-    if(row.is_blacklisted) return '#ffffff';
-    if(row.is_greylisted) return '#f2f2f2';
+    if(row.status == this.modelConstantsService.getName(401)) return '#ffffff';
+    if(row.status == this.modelConstantsService.getName(402)) return '#f2f2f2';
     return null;
+  }
+
+  /**
+   * Rationale
+   */
+
+  public rationaleModelIsShown: boolean = false;
+  public rationaleData: any;
+  public rationaleDone: (data: any) => void;
+
+  public showRationaleModal(data: any, done?: (data: any) => void): void {
+    this.rationaleModelIsShown = true;
+    this.rationaleData = data;
+    this.rationaleDone = done;
+  }
+
+  public hideRationaleModal(): void {
+    this.rationaleModelIsShown = false;
+    this.rationaleData = null;
+    this.rationaleDone = null;
+  }
+
+  public submitRationale(data): void {
+    if(typeof this.rationaleDone == 'function') {
+      this.rationaleDone(data);
+    }
+    this.hideRationaleModal();
   }
 
 }

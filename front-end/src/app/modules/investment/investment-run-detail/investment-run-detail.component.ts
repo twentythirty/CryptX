@@ -5,7 +5,7 @@ import { StatusClass } from '../../../shared/models/common';
 import { TimelineDetailComponent, SingleTableDataSource, TagLineItem } from '../timeline-detail/timeline-detail.component'
 import { TableDataSource, TableDataColumn } from '../../../shared/components/data-table/data-table.component';
 import { TimelineEvent } from '../timeline/timeline.component';
-import { ActionCellDataColumn, DataCellAction, DateCellComponent, BooleanCellComponent, DateCellDataColumn, BooleanCellDataColumn, NumberCellDataColumn } from '../../../shared/components/data-table-cells';
+import { ActionCellDataColumn, DataCellAction, DateCellComponent, BooleanCellComponent, DateCellDataColumn, BooleanCellDataColumn, NumberCellDataColumn, StatusCellDataColumn } from '../../../shared/components/data-table-cells';
 import { InvestmentService } from '../../../services/investment/investment.service';
 import { mergeMap } from 'rxjs/operators';
 
@@ -69,14 +69,18 @@ export class InvestmentRunDetailComponent extends TimelineDetailComponent implem
     'strategy',
     new BooleanCellDataColumn({ column: 'simulated' }),
     new NumberCellDataColumn({ column: 'deposit' }),
-    'status',
+    new StatusCellDataColumn({ column: 'status', inputs: { classMap: value => {
+      return StatusClass.DEFAULT;
+    }}}),
   ];
 
   public listColumnsToShow: Array<string | TableDataColumn> = [
     'id',
     new DateCellDataColumn({ column: 'created' }),
     'creator',
-    'status',
+    new StatusCellDataColumn({ column: 'status', inputs: { classMap: value => {
+      return StatusClass.DEFAULT;
+    }}}),
     'decision_by',
     new DateCellDataColumn({ column: 'decision_time' }),
     new ActionCellDataColumn({ column: 'rationale', inputs: {
@@ -130,32 +134,18 @@ export class InvestmentRunDetailComponent extends TimelineDetailComponent implem
         if(res.investment_run) {
           this.singleDataSource.body = [ res.investment_run ];
         }
+        if(res.investment_stats) {
+          this.setTagLine(res.investment_stats.map(stat => {
+            return new TagLineItem(`${stat.count} ${stat.name}`)
+          }))
+        }
       },
       err => this.singleDataSource.body = []
     )
   }
 
   protected getTimelineData(): void {
-    this.timelineEvents = [
-      ...Array(2).fill(
-        new TimelineEvent(
-          'Investment run',
-          'Orders filled',
-          StatusClass.APPROVED,
-          'IR-001, rci',
-          (new Date()).toUTCString(),
-          `/dashboard`
-        )
-      ),
-      ...Array(3).fill(
-        { note: 'Investments isn\'t made yet' }
-      )
-    ]
-    this.setTagLine([
-      new TagLineItem(`${0} Orders`),
-      new TagLineItem(`${0} Execution orders`),
-      new TagLineItem(`${0} Deposits`)
-    ]);
+    this.timeline$ = this.investmentService.getTimelineData();
   }
 
   /**
