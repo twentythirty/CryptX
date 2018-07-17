@@ -5,7 +5,7 @@ import { StatusClass } from '../../../shared/models/common';
 import { TimelineDetailComponent, SingleTableDataSource, TagLineItem } from '../timeline-detail/timeline-detail.component'
 import { TableDataSource, TableDataColumn } from '../../../shared/components/data-table/data-table.component';
 import { TimelineEvent } from '../timeline/timeline.component';
-import { ActionCellDataColumn, DataCellAction, DateCellComponent, BooleanCellComponent, DateCellDataColumn, BooleanCellDataColumn, NumberCellDataColumn } from '../../../shared/components/data-table-cells';
+import { ActionCellDataColumn, DataCellAction, DateCellComponent, BooleanCellComponent, DateCellDataColumn, BooleanCellDataColumn, NumberCellDataColumn, StatusCellDataColumn } from '../../../shared/components/data-table-cells';
 import { InvestmentService } from '../../../services/investment/investment.service';
 import { mergeMap } from 'rxjs/operators';
 
@@ -69,14 +69,18 @@ export class InvestmentRunDetailComponent extends TimelineDetailComponent implem
     'strategy',
     new BooleanCellDataColumn({ column: 'simulated' }),
     new NumberCellDataColumn({ column: 'deposit' }),
-    'status',
+    new StatusCellDataColumn({ column: 'status', inputs: { classMap: value => {
+      return StatusClass.DEFAULT;
+    }}}),
   ];
 
   public listColumnsToShow: Array<string | TableDataColumn> = [
     'id',
     new DateCellDataColumn({ column: 'created' }),
     'creator',
-    'status',
+    new StatusCellDataColumn({ column: 'status', inputs: { classMap: value => {
+      return StatusClass.DEFAULT;
+    }}}),
     'decision_by',
     new DateCellDataColumn({ column: 'decision_time' }),
     new ActionCellDataColumn({ column: 'rationale', inputs: {
