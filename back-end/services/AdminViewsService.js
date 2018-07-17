@@ -23,7 +23,7 @@ const fetchViewHeaderLOV = async (table, field, query) => {
         return [];
     }
 
-    const sql = builder.selectDistinct(field, table, query? `${field} LIKE '%${query}%'`: '')
+    const sql = builder.selectDistinct(field, table, query? `${field} LIKE ${sequelize.escape(`%${query}%`)}`: '')
     
     //returns list of objects with 1 key-value pair, key being field name
     const values = await sequelize.query(sql, { type: sequelize.QueryTypes.SELECT });
