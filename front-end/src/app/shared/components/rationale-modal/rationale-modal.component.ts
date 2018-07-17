@@ -19,8 +19,6 @@ export class RationaleModalComponent implements OnInit {
   ) { }
 
   ngOnInit() {
-    console.log(this.data);
-
     this.form = this.fb.group({
       rationale: [null, Validators.required]
     })

@@ -121,9 +121,9 @@ export class InvestmentRunDetailComponent extends TimelineDetailComponent implem
       )
     ).subscribe(
       res => {
-        console.log(res);
-        this.listDataSource.body = res.recipe_runs;
         this.count = res.count;
+        this.listDataSource.body = res.recipe_runs;
+        this.listDataSource.footer = res.footer;
       },
       err => this.listDataSource.body = []
     )
@@ -167,7 +167,6 @@ export class InvestmentRunDetailComponent extends TimelineDetailComponent implem
       )
     ).subscribe(
       res => {
-        console.log(res);
         this.listDataSource.body.push(res);
       }
     )

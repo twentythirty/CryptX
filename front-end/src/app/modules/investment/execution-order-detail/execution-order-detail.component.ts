@@ -120,16 +120,15 @@ export class ExecutionOrderDetailComponent extends TimelineDetailComponent imple
    * 4. Implement abstract methods to fetch data OnInit
    */
   public getAllData(): void {
-    console.log(this.requestData);
     this.route.params.pipe(
       mergeMap(
         params => this.investmentService.getAllExecutionOrders(params['id'], this.requestData)
       )
     ).subscribe(
       res => {
-        this.listDataSource.body = res.execution_orders;
         this.count = res.count;
-        this.setListFooter(res);
+        this.listDataSource.body = res.execution_orders;
+        this.listDataSource.footer = res.footer;
       },
       err => this.listDataSource.body = []
     )

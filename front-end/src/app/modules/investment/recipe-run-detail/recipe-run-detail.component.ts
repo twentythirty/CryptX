@@ -114,15 +114,15 @@ export class RecipeRunDetailComponent extends TimelineDetailComponent implements
    * 4. Implement abstract methods to fetch data OnInit
    */
   public getAllData(): void {
-    console.log(this.requestData);
     this.route.params.pipe(
       mergeMap(
         params => this.investmentService.getAllRecipeDetails(params['id'], this.requestData)
       )
     ).subscribe(
       res => {
-        this.listDataSource.body = res.recipe_details;
         this.count = res.count;
+        this.listDataSource.body = res.recipe_details;
+        this.listDataSource.footer = res.footer;
       },
       err => this.listDataSource.body = []
     )
