@@ -8,6 +8,7 @@ ROUTE_MATCHERS = {
     GetMyPermissions: /\/users\/me\/permissions/,
     GetUserInfo: /\/users\/(\d+|me)$/,
     GetUsersInfo: /\/users\/all\/list/,
+    GetUsersColLOV: /\/users\/header_lov\/\w+$/,
     ChangeUserInfo: /\/users\/(\d+|me)\/edit/,
     ChangeUserRole: /\/users\/(\d+|me)\/change_role/,
     ChangePassword: /\/users\/(\d+|me)\/change_password/,

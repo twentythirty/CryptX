@@ -141,6 +141,11 @@ ROUTES = {
     permissions_matcher: ROUTE_MATCHERS.GetUsersInfo,
     required_permissions: [PERMISSIONS.VIEW_USERS]
   },
+  GetUsersColLOV: {
+    router_string: "/users/header_lov/:field_name",
+    permissions_matcher: ROUTE_MATCHERS.GetUsersColLOV,
+    required_permissions: [PERMISSIONS.VIEW_USERS]
+  },
   ChangeUserInfo: {
     router_string: "/users/:user_id/edit",
     permissions_matcher: ROUTE_MATCHERS.ChangeUserInfo,

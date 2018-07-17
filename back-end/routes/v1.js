@@ -60,6 +60,20 @@ router.post(
   UserController.getUsers
 );
 router.get(
+  ROUTES.GetUsersColLOV.router_string,
+  stateless_auth,
+  check_permissions,
+  filter_reducer,
+  UserController.getUsersColumnLOV
+);
+router.post(
+  ROUTES.GetUsersColLOV.router_string,
+  stateless_auth,
+  check_permissions,
+  filter_reducer,
+  UserController.getUsersColumnLOV
+);
+router.get(
   ROUTES.GetUserInfo.router_string,
   stateless_auth,
   check_permissions,
