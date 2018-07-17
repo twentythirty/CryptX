@@ -20,10 +20,12 @@ import {
   PercentCellDataColumn,
   NumberCellDataColumn,
   ActionCellDataColumn,
-  DataCellAction
+  DataCellAction,
+  StatusCellDataColumn
 } from '../../../shared/components/data-table-cells';
 import { AuthService } from '../../../services/auth/auth.service';
 import { ModelConstantsService } from '../../../services/model-constants/model-constants.service';
+import { StatusClass } from '../../../shared/models/common';
 
 const INSTRUMENT_STATUS_CHANGES = 'INSTRUMENT_STATUS_CHANGES';
 
@@ -69,7 +71,9 @@ export class AssetListComponent extends DataTableCommonManagerComponent implemen
     new NumberCellDataColumn({ column: 'nvt_ratio' }),
     new PercentCellDataColumn({ column: 'market_share' }),
     new DateCellDataColumn({ column: 'capitalization_updated_timestamp' }),
-    'status',
+    new StatusCellDataColumn({ column: 'status', inputs: { classMap: value => {
+      return StatusClass.DEFAULT;
+    }}}),
     new ActionCellDataColumn({ column: null,
       inputs: {
         actions: [
@@ -112,10 +116,7 @@ export class AssetListComponent extends DataTableCommonManagerComponent implemen
       (res: AssetsAllResponse) => {
         this.assetsDataSource.body = res.assets;
         if(res.footer) {
-          this.assetsDataSource.footer = this.assetsColumnsToShow.map(col => {
-            let key = (typeof col == 'string') ? col : col.column;
-            return (res.footer.find(f => f.name == key) || {}).value || '';
-          })
+          this.assetsDataSource.footer = res.footer;
         }
         this.count = res.count || res.assets.length;
       }
