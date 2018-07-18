@@ -1,70 +1,22 @@
- <main> 
-  <div class="wrapper">
-    <div class="top-controls">
-      <span class="headline-title">{{count}} Roles</span>
-      <a [routerLink]="['/roles/add']" class="btn start" modal-btn-open="">
+<div class="top-controls">
+  <span class="headline-title">{{count}} Roles</span>
+  <a [routerLink]="['/roles/add']" class="btn start" modal-btn-open="">
         <span>Add new role</span>
       </a>
-    </div>
-      <app-data-table
-        [dataSource]="rolesDataSource"
-        [customRows]="true"
-        [columnsToShow]="rolesColumnsToShow"
-        (setFilter)="onSetFilter($event)"
-      >
-        <tr
-          *ngFor="let item of rolesDataSource.body"
-          [routerLink]="['/roles/edit', item.id]"
-        >
-          <td *ngFor="let index of rolesColumnsToShow">
-            {{item[index]}}
-          </td>
-        </tr>
-      </app-data-table>
-    <app-pagination
-      [count]="count"
-      [perPage]="pageSize"
-      [page]="page"
-    ></app-pagination>
-  </div>
-</main>
-
-<!-- <div>
-  <div>
-    <div>
-      <h1>Roles</h1>
-      <span class="roles-count">{{rolesCount}}</span>
-    </div>
-
-    <div>
-      <app-btn
-        [routerLink]="['/roles/add']"
-      >
-        Add role
-      </app-btn>
-    </div>
-  </div>
-
-  <app-data-table
-    [dataSource]="rolesDataSource"
-    [customRows]="true"
-    [columnsToShow]="rolesColumnsToShow"
-    (setFilter)="onSetFilter($event)"
-  >
-    <tr
-      *ngFor="let item of rolesDataSource.body"
-      [routerLink]="['/roles/edit', item.id]"
-    >
-      <td *ngFor="let index of rolesColumnsToShow">
-        {{item[index]}}
-      </td>
-    </tr>
-  </app-data-table>
-
-  <app-pagination
-    [count]="count"
-    [perPage]="pageSize"
-    [page]="page"
-  ></app-pagination>
 </div>
--->
+<app-data-table 
+  [dataSource]="rolesDataSource" 
+  [customRows]="true" 
+  [columnsToShow]="rolesColumnsToShow" 
+  (setFilter)="onSetFilter($event)">
+  <tr *ngFor="let item of rolesDataSource.body"  [routerLink]="['/roles/edit', item.id]">
+    <td *ngFor="let index of rolesColumnsToShow">
+      {{item[index]}}
+    </td>
+  </tr>
+</app-data-table>
+<app-pagination 
+  [count]="count" 
+  [perPage]="pageSize" 
+  [page]="page">
+</app-pagination>

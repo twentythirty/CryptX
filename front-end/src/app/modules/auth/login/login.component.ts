@@ -2,8 +2,8 @@ declare function require(path: string);
 
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
-import { FormsModule } from '@angular/forms';
-import { CommonModule } from '@angular/common';
+import { FormsModule, FormGroup, FormControl, Validators } from '@angular/forms';
+import { CommonModule } from '@angular/common'; 
 import { BrowserModule } from '@angular/platform-browser';
 
 import { AuthService } from '../../../services/auth/auth.service';
@@ -26,6 +26,22 @@ export class LoginComponent implements OnInit {
   password_reset_sent: boolean = false;
   password_reset_status: string = '';
 
+  loading = false;
+  loading2 = false;
+
+  validation;
+  loginValidation;
+  resetValidation;
+  
+  loginForm = new FormGroup ({
+    Firstname: new FormControl('',[Validators.required]),
+    Lastname: new FormControl('',[Validators.required]),
+  });
+
+  loginForm2: FormGroup = new FormGroup ({
+    Email: new FormControl('', [Validators.email]),
+  });
+
   constructor(private authService: AuthService, private router: Router) { }
 
   ngOnInit() {}
@@ -42,6 +58,12 @@ export class LoginComponent implements OnInit {
         }
         console.log("Error happened", error);
       });
+      if (this.loginForm.status === "INVALID"){
+        this.loading = true;
+      }else {
+        this.redirectToPage();
+        this.loading = false;
+      }
   }
 
   redirectToPage () {
@@ -69,5 +91,10 @@ export class LoginComponent implements OnInit {
         this.password_reset_status = error.error.error;
       }
     });
+    if (this.loginForm2.status === "INVALID"){
+        this.loading2 = true;
+    }else {
+        this.loading2 = false;
+    }
   }
 }

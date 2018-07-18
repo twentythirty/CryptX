@@ -1,4 +1,4 @@
-<div class="filter">
+  <div class="filter">
   <div class="filter-header">
     <div *ngIf="!_showSearch" class="header-default">
       <div>All</div>
@@ -14,24 +14,14 @@
   </div>
 
   <div class="filter-body">
-    <ng-container  *ngIf="(type === 'text' || type === 'boolean') && rowData && rowData?.length">
+    <ng-container *ngIf="(type === 'text' || type === 'boolean') && rowData && rowData?.length">
       <div *ngFor="let item of (rowData | filter: _filterSearchText : 'value')">
-        <app-checkbox
-          [label]="item.label ? item.label : item.value"
-          [value]="item.value"
-          (onToggle)="onCheckboxToggle($event)"
-        ></app-checkbox>
+        <app-checkbox [label]="item.label ? item.label : item.value" [value]="item.value" (onToggle)="onCheckboxToggle($event)"></app-checkbox>
       </div>
     </ng-container>
     <ng-container *ngIf="type === 'date'">
-      <ng2-flatpickr
-        [config]="_datepickerOptions"
-        [(ngModel)]="_filterData.values[0]"
-      ></ng2-flatpickr>
-      <ng2-flatpickr
-        [config]="_datepickerOptions"
-        [(ngModel)]="_filterData.values[1]"
-      ></ng2-flatpickr>
+      <ng2-flatpickr [config]="_datepickerOptions" [(ngModel)]="_filterData.values[0]"></ng2-flatpickr>
+      <ng2-flatpickr [config]="_datepickerOptions" [(ngModel)]="_filterData.values[1]"></ng2-flatpickr>
     </ng-container>
 
     <ng-container *ngIf="type === 'number'">

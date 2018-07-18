@@ -11,6 +11,7 @@ import PERMISSIONS from '../../config/permissions';
 
 import { ModelConstantsService } from '../model-constants/model-constants.service';
 import { environment } from '../../../environments/environment';
+import { Validators } from "@angular/forms/";
 
 export class LoginReponse {
   success: boolean
@@ -18,6 +19,7 @@ export class LoginReponse {
   permissions: Array<string>
   user: User
   model_constants: Object
+  validators: Object
 }
 
 @Injectable()
@@ -26,6 +28,7 @@ export class AuthService {
   permissions:Array<string> = [];
   authChecked:boolean = false;
   baseUrl: string = environment.baseUrl;
+  validation;
 
   constructor(private http: HttpClient, private modelConstants: ModelConstantsService) { }
 
@@ -37,6 +40,7 @@ export class AuthService {
       if (data.success) {
         this.setToken(data.token);
         this.setUser(data.user);
+        this.setValidators(data.validators)
         this.setPermissions(data.permissions);
         this.modelConstants.setConstants(data.model_constants);
       }
@@ -61,6 +65,22 @@ export class AuthService {
       perm_key => this.permissions.includes(PERMISSIONS[perm_key])
     );
   };
+
+  setValidators (validators) {
+    localStorage.setItem('validators', JSON.stringify(validators));
+  }
+
+  getValidators (path:string, key: string) {
+    this.validation = JSON.parse(localStorage.getItem('validators'))
+    let validate = this.validation[path];
+    if (validate[key]==="not_blank"){
+      return Validators.required
+    }if (validate[key]==="email"){
+      return Validators.email
+    }if (validate[key]==="not_empty"){
+      return Validators.required
+    }
+  }
 
   setToken (token) {
     localStorage.setItem('token', token);

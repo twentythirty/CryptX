@@ -6,6 +6,7 @@ import { HttpClientModule }   from '@angular/common/http';
 import { HTTP_INTERCEPTORS } from '@angular/common/http';
 import { MatSnackBarModule } from '@angular/material';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { ReactiveFormsModule } from '@angular/forms';
 
 import { AppComponent } from './app.component';
 import { NavigationComponent } from './shared/components/navigation/navigation.component';
@@ -47,6 +48,7 @@ import { InvestmentModule } from './modules/investment/investment.module';
     AssetModule,  // TODO: Remove this when moving to lazy loaded modules
     InvestmentModule, // TODO: Remove this when moving to lazy loaded modules
     AppRoutingModule,
+    ReactiveFormsModule
   ],
   providers: [
     {
