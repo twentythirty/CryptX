@@ -69,11 +69,9 @@ const getAssetDetailed = async function (req, res) {
 
   let status_changes = new_asset_data.AssetStatusChanges;
   delete new_asset_data.AssetStatusChanges;
-  let header_lov = fetchMockHeaderLOV;
   return ReS(res, {
     assets: new_asset_data,
-    status_changes,
-    header_lov
+    status_changes
   })
 };
 module.exports.getAssetDetailed = getAssetDetailed;
@@ -106,13 +104,16 @@ const getAssetsDetailed = async function (req, res) {
       status: (index % 2 == 0 ? INSTRUMENT_STATUS_CHANGES.Whitelisting : INSTRUMENT_STATUS_CHANGES.Blacklisting)
       }, single_asset_data)
   });
-console.log(new_asset_data);
+
   let footer;
   [err, footer] = await to(adminViewsService.fetchAssetsViewFooter());
 
+  let header_lov = await adminViewsService.fetchMockHeaderLOV();
+
   return ReS(res, {
     assets: new_asset_data,
-    footer
+    footer,
+    header_lov
   })
 };
 module.exports.getAssetsDetailed = getAssetsDetailed;

@@ -225,16 +225,22 @@ router.post(
   stateless_auth,
   check_permissions,
   filter_reducer,
-  AssetController.getAssetsDetailed
+  MockController.fetchColLOV
 );
 router.get(
-  ROUTES.GetAssetDetailedInfo.router_string,
+  ROUTES.GetAssetsDetailedColLOV.router_string,
+  stateless_auth,
+  check_permissions,
+  MockController.fetchColLOV
+);
+router.post(
+  ROUTES.GetAssetsDetailedColLOV.router_string,
   stateless_auth,
   check_permissions,
   AssetController.getAssetDetailed
 );
 router.get(
-  ROUTES.GetAssetsDetailedColLOV.router_string,
+  ROUTES.GetAssetDetailedInfo.router_string,
   stateless_auth,
   check_permissions,
   AssetController.getAssetDetailed
