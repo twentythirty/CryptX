@@ -39,14 +39,14 @@ export class AssetListComponent extends DataTableCommonManagerComponent implemen
   public assetsDataSource: TableDataSource = {
     header: [
       { column: 'symbol', name: 'Symbol', filter: { type: 'text', sortable: true } },
-      { column: 'is_cryptocurrency', name: 'Cryptocurrency', filter: { type: 'text', sortable: true } },
+      { column: 'is_cryptocurrency', name: 'Cryptocurrency', filter: { type: 'boolean', sortable: true } },
       { column: 'long_name', name: 'Long name', filter: { type: 'text', sortable: true } },
-      { column: 'is_base', name: 'Is base?', filter: { type: 'text', sortable: true } },
-      { column: 'is_deposit', name: 'Is deposit?', filter: { type: 'text', sortable: true } },
-      { column: 'capitalization', name: 'Capitalisation', filter: { type: 'text', sortable: true } },
-      { column: 'nvt_ratio', name: 'NVT ratio', filter: { type: 'text', sortable: true } },
-      { column: 'market_share', name: 'Market share', filter: { type: 'text', sortable: true } },
-      { column: 'capitalization_updated_timestamp', name: 'Capitalisation updated', filter: { type: 'text', sortable: true } },
+      { column: 'is_base', name: 'Is base?', filter: { type: 'boolean', sortable: true } },
+      { column: 'is_deposit', name: 'Is deposit?', filter: { type: 'boolean', sortable: true } },
+      { column: 'capitalization', name: 'Capitalisation', filter: { type: 'number', sortable: true } },
+      { column: 'nvt_ratio', name: 'NVT ratio', filter: { type: 'number', sortable: true } },
+      { column: 'market_share', name: 'Market share', filter: { type: 'number', sortable: true } },
+      { column: 'capitalization_updated_timestamp', name: 'Capitalisation updated', filter: { type: 'date', sortable: true } },
       { column: 'status', name: 'Status', filter: { type: 'text', sortable: true } },
       { column: '', name: 'Action' }
     ],
@@ -107,6 +107,11 @@ export class AssetListComponent extends DataTableCommonManagerComponent implemen
     super(route);
   }
 
+  ngOnInit() {
+    super.ngOnInit();
+    this.getFilterLOV();
+  }
+
   checkPerm (perm_code) {
     return this.authService.hasPermissions(perm_code);
   }
@@ -119,6 +124,19 @@ export class AssetListComponent extends DataTableCommonManagerComponent implemen
           this.assetsDataSource.footer = res.footer;
         }
         this.count = res.count || res.assets.length;
+      }
+    )
+  }
+
+  /**
+   * Add a rowData$ Observable to text and boolean column filters
+   */
+  getFilterLOV(): void {
+    this.assetsDataSource.header.filter(
+      col => col.filter && (col.filter.type == 'text' || col.filter.type == 'boolean')
+    ).map(
+      col => {
+        col.filter.rowData$ = this.assetService.getHeaderLOV(col.column)
       }
     )
   }
