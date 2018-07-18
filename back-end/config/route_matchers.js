@@ -68,6 +68,7 @@ ROUTE_MATCHERS = {
     ChangeSettingValues: /\/settings\/\d+$/,
     ViewSettingValues: /\/settings$/,
     CheckAuth: /\/users\/login\/check$/,
+    GetExchanges: /\/exchanges\/all$/,
 }
 
 //same as above map but with regex strings that can be converted into regex objects

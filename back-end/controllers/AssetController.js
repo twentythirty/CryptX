@@ -27,11 +27,13 @@ const getAssets = async function (req, res) {
 
   console.log('WHERE clause: %o', req.seq_query);
 
-  let [err, assets] = await to(Asset.findAll(req.seq_query));
+  let [err, result] = await to(Asset.findAndCountAll(req.seq_query));
   if (err) return ReE(res, err.message, 422);
 
+  let { rows: assets, count } = result;
   return ReS(res, {
-    assets: assets
+    assets: assets,
+    count
   })
 };
 module.exports.getAssets = getAssets;
@@ -42,7 +44,7 @@ const getAssetDetailed = async function (req, res) {
   let asset = await Asset.findOne({
     where: {
       id: asset_id
-    },
+  },
     include: [{
       model: AssetStatusChange,
       order: [
@@ -80,14 +82,14 @@ const getAssetsDetailed = async function (req, res) {
 
   console.log('WHERE clause: %o', req.seq_query);
 
-  let [err, assets] = await to(Asset.findAll(req.seq_query));
+  let [err, assets] = await to(Asset.findAndCountAll(req.seq_query));
   if (err) return ReE(res, err.message, 422);
 
   // mock data below assigned below
-  [err, assets] = await to(Asset.findAll(Object.assign({ raw: true}, req.seq_query)));
+  [err, assets] = await to(Asset.findAndCountAll(req.seq_query));
   if (err) return ReE(res, err.message, 422);
 
-  let new_asset_data = assets;
+  let { rows: new_asset_data, count } = assets;
   
   new_asset_data.map((single_asset_data, index) => {
     return Object.assign(single_asset_data,
@@ -108,12 +110,10 @@ const getAssetsDetailed = async function (req, res) {
   let footer;
   [err, footer] = await to(adminViewsService.fetchAssetsViewFooter());
 
-  let header_lov = await adminViewsService.fetchMockHeaderLOV();
-
   return ReS(res, {
     assets: new_asset_data,
     footer,
-    header_lov
+    count,
   })
 };
 module.exports.getAssetsDetailed = getAssetsDetailed;

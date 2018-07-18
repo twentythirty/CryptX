@@ -482,4 +482,10 @@ ROUTES = {
     permissions_matcher: ROUTE_MATCHERS.CheckAuth,
     required_permissions: [PERMISSIONS.VIEW_USERS]
   },
+
+  GetExchanges: {
+    router_string: "/exchanges/all",
+    permissions_matcher: ROUTE_MATCHERS.CheckAuth,
+    required_permissions: []
+  },
 };
