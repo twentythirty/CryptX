@@ -227,8 +227,8 @@ describe('InvestmentService testing:', () => {
         chai.expect(recipe_run.approval_user_id).to.be.eq(USER_ID);
         chai.expect(recipe_run.approval_comment).to.be.eq(RECIPE_APPROVAL_COMMENT);
         
-        //check if generateApproveRecipeOrders called
-        chai.assert.isTrue(
+        //check if generateApproveRecipeOrders was not called (this is not done seperately)
+        chai.assert.isFalse(
           ordersService.generateApproveRecipeOrders.calledWith(RECIPE_RUN_ID)
         );
       });
