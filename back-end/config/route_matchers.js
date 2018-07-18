@@ -59,6 +59,7 @@ ROUTE_MATCHERS = {
     GetInstrumentsColLOV: /\/instruments\/header_lov\/\w+/,
     InstrumentCheckMapping: /\/instruments\/\d+\/check_mapping$/,
     InstrumentMapExchanges: /\/instruments\/\d+\/add_mapping$/,
+    InstrumentMappingExchanges: /\/instruments\/\d+\/mapping_exchanges/,
     GetInstrumentExchanges: /\/instruments\/\d+\/exchanges$/,
     LiquidityReqCreate: /\/liquidity_requirements\/create$/,
     GetLiquidityRequirement: /\/liquidity_requirements\/\d+$/,

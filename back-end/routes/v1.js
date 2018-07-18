@@ -703,12 +703,39 @@ router.get(
   SystemController.getAllSettings
 );
 
-// Route to check auth and get values front-end needs
+
+// Route to check auth and get values. Front-end needs
 router.get(
   ROUTES.CheckAuth.router_string,
   stateless_auth,
   check_permissions,
   UserController.checkAuth
+);
+
+
+router.get(
+  ROUTES.GetExchanges.router_string,
+  stateless_auth,
+  check_permissions,
+  MockController.getExchanges
+);
+router.post(
+  ROUTES.GetExchanges.router_string,
+  stateless_auth,
+  check_permissions,
+  MockController.getExchanges
+);
+router.get(
+  ROUTES.InstrumentMapExchanges.router_string,
+  stateless_auth,
+  check_permissions,
+  MockController.getExchanges
+);
+router.post(
+  ROUTES.InstrumentMapExchanges.router_string,
+  stateless_auth,
+  check_permissions,
+  MockController.getExchanges
 );
 
 //********* API DOCUMENTATION **********

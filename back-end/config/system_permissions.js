@@ -425,6 +425,11 @@ ROUTES = {
     permissions_matcher: ROUTE_MATCHERS.InstrumentMapExchanges,
     required_permissions: []
   },
+  InstrumentMapExchanges: {
+    router_string: "/instruments/:instrument_id/mapping_exchanges",
+    permissions_matcher: ROUTE_MATCHERS.InstrumentMappingExchanges,
+    required_permissions: []
+  },
   GetInstrumentExchanges: {
     router_string: "/instruments/:instrument_id/exchanges",
     permissions_matcher: ROUTE_MATCHERS.GetInstrumentExchanges,
@@ -485,7 +490,7 @@ ROUTES = {
 
   GetExchanges: {
     router_string: "/exchanges/all",
-    permissions_matcher: ROUTE_MATCHERS.CheckAuth,
+    permissions_matcher: ROUTE_MATCHERS.GetExchanges,
     required_permissions: []
   },
 };

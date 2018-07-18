@@ -50,7 +50,56 @@
         }
       }
     },
-    "/settings/": {
+    "/exchanges/all": {
+      "get": {
+        "tags": [
+          "exchange"
+        ],
+        "summary": "Get list of exchanges",
+        "description": "Fetches list of exchanges.",
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "$ref": "#/definitions/ExchangeList"
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "exchange"
+        ],
+        "summary": "Get list of exchanges",
+        "description": "Fetches list of exchanges that pass given filter",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "description": "Filter object used to filter out data",
+            "required": false,
+            "schema": {
+              "$ref": "#/definitions/EntitiesFilter"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "$ref": "#/definitions/ExchangeList"
+            }
+          }
+        }
+      }
+    },
+    "/settings": {
       "get": {
         "tags": [
           "settings"
@@ -432,7 +481,7 @@
         "tags": [
           "instrument"
         ],
-        "summary": "Get instrument exchange informationby ID of instrument",
+        "summary": "Get instrument exchange information by ID of instrument",
         "description": "Fetches information about instrument on all exchanges, includes price and volume for last 24 hours and week.",
         "produces": [
           "application/json"
@@ -451,6 +500,71 @@
             "description": "success",
             "schema": {
               "$ref": "#/definitions/InstrumentExchangeMapExpanded"
+            }
+          }
+        }
+      }
+    },
+    "/instruments/{instrument_id}/mapping_exchanges": {
+      "get": {
+        "tags": [
+          "instrument"
+        ],
+        "summary": "Get list of exchanges instrument can be mapped with",
+        "description": "Get list of exchanges instrument can be mapped with",
+        "parameters": [
+          {
+            "name": "instrument_id",
+            "in": "path",
+            "description": "ID of instrument",
+            "required": true,
+            "type": "integer"
+          }
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "$ref": "#/definitions/ExchangeList"
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "instrument"
+        ],
+        "summary": "Get list of exchanges instrument can be mapped with",
+        "description": "Get list of exchanges instrument can be mapped with",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "instrument_id",
+            "in": "path",
+            "description": "ID of instrument",
+            "required": true,
+            "type": "integer"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "description": "Filter object used to filter out data",
+            "required": false,
+            "schema": {
+              "$ref": "#/definitions/EntitiesFilter"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "$ref": "#/definitions/ExchangeList"
             }
           }
         }
@@ -3182,6 +3296,40 @@
     }
   },
   "definitions": {
+    "ExchangeList": {
+      "description": "Fetches distinct values of table column. Should help implement filtering.",
+      "type": "object",
+      "properties": {
+        "exchanges": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Exchange"
+          }
+        },
+        "status": {
+          "type": "boolean",
+          "example": true
+        },
+        "count": {
+          "type": "number",
+          "example": 10
+        }
+      }
+    },
+    "Exchange": {
+      "description": "Fetches distinct values of table column. Should help implement filtering.",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "number",
+          "example": 10
+        },
+        "name": {
+          "type": "string",
+          "example": "Bitstamp"
+        }
+      }
+    },
     "ColumnLOV": {
       "description": "Fetches distinct values of table column. Should help implement filtering.",
       "type": "object",
