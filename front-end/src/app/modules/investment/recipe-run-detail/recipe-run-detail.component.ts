@@ -63,17 +63,30 @@ export class RecipeRunDetailComponent extends TimelineDetailComponent implements
     new DateCellDataColumn({ column: 'creation_time' }),
     'instrument',
     'creator',
-    new StatusCellDataColumn({ column: 'status', inputs: { classMap: {
-      'pending' : StatusClass.PENDING,
-      'rejected': StatusClass.REJECTED,
-      'approved': StatusClass.APPROVED
+    new StatusCellDataColumn({ column: 'approval_status', inputs: { classMap: {
+      '41' : StatusClass.PENDING,
+      '42': StatusClass.REJECTED,
+      '43': StatusClass.APPROVED,
     }}}),
     'decision_by',
     new DateCellDataColumn({ column: 'decision_time' }),
-    'rationale',
+    new ActionCellDataColumn({ column: 'rationale', inputs: {
+        actions: [
+          new DataCellAction({
+            label: 'READ',
+            exec: (row: any) => {
+              this.showReadModal({
+                title: 'Rationale',
+                content: row.rationale
+              })
+            }
+          })
+        ]
+      }
+    }),
     new ConfirmCellDataColumn({ column: 'actions', inputs: {
-      execConfirm: (row) => this.confirmRun(row),
-      execDecline: (row) => this.declineRun(row),
+      execConfirm: (row) => this.showRationaleModal(row, data => data && this.confirmRun(data)),
+      execDecline: (row) => this.showRationaleModal(row, data => data && this.declineRun(data)),
     } }),  // TODO: Actions component
   ];
 
@@ -101,15 +114,15 @@ export class RecipeRunDetailComponent extends TimelineDetailComponent implements
    * 4. Implement abstract methods to fetch data OnInit
    */
   public getAllData(): void {
-    console.log(this.requestData);
     this.route.params.pipe(
       mergeMap(
         params => this.investmentService.getAllRecipeDetails(params['id'], this.requestData)
       )
     ).subscribe(
       res => {
-        this.listDataSource.body = res.recipe_details;
         this.count = res.count;
+        this.listDataSource.body = res.recipe_details;
+        this.listDataSource.footer = res.footer;
       },
       err => this.listDataSource.body = []
     )
@@ -131,7 +144,7 @@ export class RecipeRunDetailComponent extends TimelineDetailComponent implements
           }))
         }
       },
-      err => this.singleDataSource.body = []
+      // err => this.singleDataSource.body = []
     )
   }
 
@@ -164,13 +177,22 @@ export class RecipeRunDetailComponent extends TimelineDetailComponent implements
    * Additional
    */
 
-  private confirmRun(run: any): void {
-    alert('confirmRun');
+  private confirmRun({ rationale, data }): void {
+    let run = data;
+    this.investmentService.approveRecipe(run.id, { status: true, comment: rationale }).subscribe(
+      res => {
+        // TODO
+      }
+    )
   }
 
-  private declineRun(run: any): void {
-    alert('declineRun');
+  private declineRun({ rationale, data }): void {
+    let run = data;
+    this.investmentService.approveRecipe(run.id, { status: false, comment: rationale }).subscribe(
+      res => {
+        // TODO
+      }
+    )
   }
-
 
 }
