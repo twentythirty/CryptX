@@ -8,6 +8,7 @@ const InvestmentController = require('./../controllers/InvestmentController');
 const OrdersController = require('./../controllers/OrdersController');
 const SystemController = require('./../controllers/SystemController');
 const InstrumentController = require('./../controllers/InstrumentController');
+const MockController = require('./../controllers/MockController');
 
 // const custom 	        = require('./../middleware/custom');
 
@@ -213,12 +214,6 @@ router.get(
 
 // ASSETS
 router.get(
-  ROUTES.GetAssetDetailedInfo.router_string,
-  stateless_auth,
-  check_permissions,
-  AssetController.getAssetDetailed
-);
-router.get(
   ROUTES.GetAssetsDetailed.router_string,
   stateless_auth,
   check_permissions,
@@ -231,6 +226,18 @@ router.post(
   check_permissions,
   filter_reducer,
   AssetController.getAssetsDetailed
+);
+router.get(
+  ROUTES.GetAssetDetailedInfo.router_string,
+  stateless_auth,
+  check_permissions,
+  AssetController.getAssetDetailed
+);
+router.get(
+  ROUTES.GetAssetsDetailedColLOV.router_string,
+  stateless_auth,
+  check_permissions,
+  AssetController.getAssetDetailed
 );
 router.get(
   ROUTES.GetAssets.router_string,
@@ -285,6 +292,20 @@ router.post(
   InvestmentController.getInvestmentRuns
 );
 router.get(
+  ROUTES.GetInvestmentsColLOV.router_string,
+  stateless_auth,
+  check_permissions,
+  filter_reducer,
+MockController.fetchColLOV
+);
+router.post(
+  ROUTES.GetInvestmentsColLOV.router_string,
+  stateless_auth,
+  check_permissions,
+  filter_reducer,
+MockController.fetchColLOV
+);
+router.get(
   ROUTES.GetInvestment.router_string,
   stateless_auth,
   check_permissions,
@@ -321,6 +342,20 @@ router.post(
   InvestmentController.getRecipeRuns
 );
 router.get(
+  ROUTES.GetRecipeRunsColLOV.router_string,
+  stateless_auth,
+  check_permissions,
+  filter_reducer,
+MockController.fetchColLOV
+);
+router.post(
+  ROUTES.GetRecipeRunsColLOV.router_string,
+  stateless_auth,
+  check_permissions,
+  filter_reducer,
+MockController.fetchColLOV
+);
+router.get(
   ROUTES.GetRecipeRun.router_string,
   stateless_auth,
   check_permissions,
@@ -347,6 +382,20 @@ router.post(
   stateless_auth,
   check_permissions,
   InvestmentController.getRecipeOrders
+);
+router.get(
+  ROUTES.GetRecipeOrdersColLOV.router_string,
+  stateless_auth,
+  check_permissions,
+  filter_reducer,
+MockController.fetchColLOV
+);
+router.post(
+  ROUTES.GetRecipeOrdersColLOV.router_string,
+  stateless_auth,
+  check_permissions,
+  filter_reducer,
+MockController.fetchColLOV
 );
 router.get(
   ROUTES.GetRecipeOrder.router_string,
@@ -378,6 +427,20 @@ router.post(
   InvestmentController.getRecipeRunDetails
 );
 router.get(
+  ROUTES.GetRecipeRunDetailsColLOV.router_string,
+  stateless_auth,
+  check_permissions,
+  filter_reducer,
+MockController.fetchColLOV
+);
+router.post(
+  ROUTES.GetRecipeRunDetailsColLOV.router_string,
+  stateless_auth,
+  check_permissions,
+  filter_reducer,
+MockController.fetchColLOV
+);
+router.get(
   ROUTES.GetRecipeRunDetail.router_string,
   stateless_auth,
   check_permissions,
@@ -399,6 +462,20 @@ router.post(
   check_permissions,
   filter_reducer,
   InvestmentController.getRecipeDeposits
+);
+router.get(
+  ROUTES.GetRecipeRunDepositsColLOV.router_string,
+  stateless_auth,
+  check_permissions,
+  filter_reducer,
+MockController.fetchColLOV
+);
+router.post(
+  ROUTES.GetRecipeRunDepositsColLOV.router_string,
+  stateless_auth,
+  check_permissions,
+  filter_reducer,
+MockController.fetchColLOV
 );
 router.get(
   ROUTES.GetRecipeRunDeposit.router_string,
@@ -423,7 +500,21 @@ router.post(
   InvestmentController.getExecutionOrders
 );
 router.get(
-  ROUTES.GetExecutionOrder.router_string,
+  ROUTES.ExecutionOrdersColLOV.router_string,
+  stateless_auth,
+  check_permissions,
+  filter_reducer,
+MockController.fetchColLOV
+);
+router.post(
+  ROUTES.ExecutionOrdersFillColLOV.router_string,
+  stateless_auth,
+  check_permissions,
+  filter_reducer,
+MockController.fetchColLOV
+);
+router.get(
+  ROUTES.ExecutionOrdersFillColLOV.router_string,
   stateless_auth,
   check_permissions,
   InvestmentController.getExecutionOrder
@@ -443,6 +534,20 @@ router.post(
   check_permissions,
   filter_reducer,
   InvestmentController.ExecutionOrderFills
+);
+router.get(
+  ROUTES.ExecutionOrdersFillColLOV.router_string,
+  stateless_auth,
+  check_permissions,
+  filter_reducer,
+MockController.fetchColLOV
+);
+router.post(
+  ROUTES.ExecutionOrdersFillColLOV.router_string,
+  stateless_auth,
+  check_permissions,
+  filter_reducer,
+MockController.fetchColLOV
 );
 router.get(
   ROUTES.GetExecutionOrdersFill.router_string,
@@ -472,6 +577,20 @@ router.post(
   check_permissions,
   filter_reducer,
   InstrumentController.getInstruments
+);
+router.get(
+  ROUTES.GetInstrumentsColLOV.router_string,
+  stateless_auth,
+  check_permissions,
+  filter_reducer,
+MockController.fetchColLOV
+);
+router.post(
+  ROUTES.GetInstrumentsColLOV.router_string,
+  stateless_auth,
+  check_permissions,
+  filter_reducer,
+MockController.fetchColLOV
 );
 router.get(
   ROUTES.GetInstrument.router_string,
@@ -520,6 +639,20 @@ router.post(
   check_permissions,
   filter_reducer,
   InstrumentController.getLiquidityRequirements
+);
+router.get(
+  ROUTES.GetLiquidityRequirementsColLOV.router_string,
+  stateless_auth,
+  check_permissions,
+  filter_reducer,
+MockController.fetchColLOV
+);
+router.post(
+  ROUTES.GetLiquidityRequirementsColLOV.router_string,
+  stateless_auth,
+  check_permissions,
+  filter_reducer,
+MockController.fetchColLOV
 );
 router.get(
   ROUTES.GetLiquidityRequirement.router_string,

@@ -69,10 +69,11 @@ const getAssetDetailed = async function (req, res) {
 
   let status_changes = new_asset_data.AssetStatusChanges;
   delete new_asset_data.AssetStatusChanges;
-
+  let header_lov = fetchMockHeaderLOV;
   return ReS(res, {
     assets: new_asset_data,
-    status_changes
+    status_changes,
+    header_lov
   })
 };
 module.exports.getAssetDetailed = getAssetDetailed;
@@ -138,18 +139,3 @@ const changeAssetStatus = async function (req, res) {
   })
 };
 module.exports.changeAssetStatus = changeAssetStatus;
-/* 
-const getAssetStatusHistory = async function (req, res) {
-  
-  let asset_id = req.params.asset_id;
-  let assets = await AssetStatusChange.findAll({
-    where: {
-      asset_id: 
-    }
-  });
-  
-  if (!assets) return ReE(res, 'No assets not found', 404);
-
-  return ReS(res, { assets });
-};
-module.exports.getWhitelisted = getWhitelisted; */

@@ -4,7 +4,6 @@ const adminViewService = require('../services/AdminViewsService');
 
 const createInstrument = async function (req, res) {
  
-  // mock data below
   let {
     transaction_asset_id,
     quote_asset_id
@@ -12,6 +11,8 @@ const createInstrument = async function (req, res) {
 
   if (!transaction_asset_id || !quote_asset_id)
     return ReE(res, "Both assets must be specified to create an instrument", 422);
+  
+  // mock data below
 
   let instrument_mock = {
     id: 1,
@@ -28,8 +29,8 @@ module.exports.createInstrument = createInstrument;
 
 const getInstrument = async function (req, res) {
 
-  // mock data below
   let instrument_id = req.params.instrument_id;
+  // mock data below
 
   let instrument_mock = {
     id: instrument_id,
@@ -47,7 +48,7 @@ const getInstrument = async function (req, res) {
 module.exports.getInstrument = getInstrument;
 
 const getInstruments = async function (req, res) {
-
+   // mock data below
   let instruments_mock = [...Array(20)].map((i, index) => ({
       id: index + 1,
       transaction_asset_id: 28,
@@ -82,6 +83,7 @@ const checkInstrumentExchangeMap = async function (req, res) {
   if (!instrument_id || !exchange_id || !external_instrument_id)
     return ReE(res, "Instrument ID, exchange and external instrument ID must be specified to map", 422);
 
+  // mock data below
   let mapping_data = {
     instrument_id,
     exchange_id,
@@ -118,10 +120,10 @@ const mapInstrumentsWithExchanges = async function (req, res) {
 module.exports.mapInstrumentsWithExchanges = mapInstrumentsWithExchanges;
 
 const getInstrumentExchanges = async function (req, res) {
-
-  // mock data belows
+ 
   let instrument_id = req.params.instrument_id;
 
+  // mock data below
   let mapping_data = [...Array(8)].map((map, index) => ({
     instrument_id,
     exchange_id: index,
@@ -145,7 +147,6 @@ module.exports.getInstrumentExchanges = getInstrumentExchanges;
 
 const createLiquidityRequirement = async function (req, res) {
  
-  // mock data below
   let {
     instrument_id,
     exchange_id,
@@ -158,6 +159,8 @@ const createLiquidityRequirement = async function (req, res) {
     !periodicity || 
     !minimum_circulation)
     return ReE(res, "Please fill all values: instrument_id, exchange_id, periodicity, minimum_circulation", 422);
+
+  // mock data below
 
   let liquidity_mock = {
     id: 1,
@@ -179,11 +182,12 @@ module.exports.createLiquidityRequirement = createLiquidityRequirement;
 
 const getLiquidityRequirement = async function (req, res) {
  
-  // mock data below
   let liquidity_req_id = req.params.liquidity_requirement_id
 
   if (!liquidity_req_id)
     return ReE(res, "Not found", 422);
+
+  // mock data below
 
   let liquidity_mock = {
     id: liquidity_req_id,
@@ -231,11 +235,12 @@ module.exports.getLiquidityRequirements = getLiquidityRequirements;
 
 const getLiquidityRequirementExchanges = async function (req, res) {
  
-  // mock data below
   let liquidity_requirement_id = req.params.liquidity_requirement_id
 
   if (!liquidity_requirement_id)
     return ReE(res, "Not found", 422);
+
+  // mock data below
 
   let liquidity_mock = [...Array(8)].map((map, index) => ({
     id: index,
