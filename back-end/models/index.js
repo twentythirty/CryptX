@@ -8,6 +8,9 @@ var db        = {};
 
 const sequelize = new Sequelize(process.env.DATABASE_URL, {
   dialect: CONFIG.db_dialect,
+  dialectOptions: {
+    ssl: true
+  },
   operatorsAliases: false
 });
 
