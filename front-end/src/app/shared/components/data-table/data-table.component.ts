@@ -1,4 +1,5 @@
 import { Component, OnInit, Input, EventEmitter, Output } from '@angular/core';
+import { Observable } from 'rxjs';
 import _ from 'lodash';
 
 export interface TableDataSource {
@@ -11,8 +12,13 @@ export interface TableDataSource {
       rowData?: Array<{
         value: string | boolean,
         label?: string
-      }>
-    }
+      }>,
+      rowData$?: Observable<Array<{
+        value: string | boolean,
+        label?: string
+      }>>
+    },
+    _dirty?: boolean;
   }>;
   body: Array<object>;
   footer?: Array<{
@@ -65,6 +71,12 @@ export class DataTableComponent implements OnInit {
       this.columnsToShow.map(el => (typeof el == 'string') ? el : el.column ),
       _.fill( Array(this.columnsToShow.length), false )
     );
+  }
+
+  toggleFilter(item: any): void {
+    // Make it dirty on open
+    item._dirty = true;
+    this.filterMap[item.column] = !this.filterMap[item.column];
   }
 
   onSetFilter(value): void {
