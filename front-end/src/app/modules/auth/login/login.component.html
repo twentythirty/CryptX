@@ -2,33 +2,45 @@
   <div class="top">
     <img [src]="imageLogo" class="logo">
   </div>
-  <form (ngSubmit)="authenticate()" action class="the-form login-form" >
-    <div class="form-item with-icons icon-login">
-        <input type="text" placeholder="Login" name="user" [(ngModel)]="username">
-    </div>
-    <div class="form-item with-icons icon-password">
-         <input type="password" placeholder="Password" name="pwd" [(ngModel)]="password">
-    </div>
+  <form (ngSubmit)="authenticate()" action class="the-form login-form" [formGroup]="loginForm">
+   
+   <app-input-item class="form-item with-icons icon-login"
+        placeholder="Login"
+        [formGroup]="loginForm"
+        formControlName="Firstname"
+        [(ngModel)]="username">
+    </app-input-item>
+    <app-input-item class="form-item with-icons icon-password"
+        placeholder="Password"
+        type = "password"
+        [formGroup]="loginForm"
+        formControlName="Lastname"
+        [(ngModel)]="password">
+    </app-input-item>
     <a (click)="showPassReset()" class="forgot-pass">Forgot password?</a>
-    <p>
+    <p *ngIf= !loading>
       {{ status }}
     </p>
     <div class="btn-wrap btn-right">
-        <button class="btn" type="submit">Login</button>
+        <button class="btn" [disabled] = loading type="submit">Login</button>
     </div>
   </form>
 </div>
 
 <app-modal *ngIf="showPasswordReset" (close)="hidePassReset()" heading="Please enter your Email">
     <div *ngIf="!password_reset_sent">
-      <form>
+      <form [formGroup]="loginForm2">
           <span class="label label-after-title">We will contact you soon</span>
-          <div class="form-item">
-            <input [(ngModel)]="reset_email" name="email" type="text" placeholder="Enter email">
-          </div>
-        <p>{{ password_reset_status }}</p>
+          <app-input-item class="form-item"
+            placeholder="Enter email"
+            type = "text"
+            [formGroup]="loginForm2"
+            formControlName="Email"
+            [(ngModel)]="reset_email">
+          </app-input-item>
+        <p *ngIf=!loading2>{{ password_reset_status }}</p>
         <div class="btn-wrap btn-right">
-            <button class="btn submit" type="submit" (click)="requestPasswordReset()">Submit</button>
+            <button class="btn submit" [disabled] = loading2 type="submit" (click)="requestPasswordReset()">Submit</button>
          </div>
       </form>
     </div>
@@ -37,57 +49,3 @@
       <br>Please check your inbox.</span>
     </div>
 </app-modal>
-
-
-
-
-<!--
-
-<div class="login-wrapper">
-  <div class="login-form">
-    <div class="login-logo">
-      Logo place holder
-    </div>
-    <form (ngSubmit)="authenticate()">
-      <p>
-        <label for="user">User name</label>
-        <br>
-        <input [(ngModel)]="username" name="user" type="text">
-      </p>
-      <p>
-        <label for="pwd">Password</label>
-        <br>
-        <input [(ngModel)]="password" name="pwd" type="password">
-      </p>
-      <p>
-        {{ status }}
-      </p>
-
-      <app-btn type="submit" big="true">Login</app-btn>
-      <br>
-      <a (click)="showPassReset()">Forgot password?</a>
-    </form>
-  </div>
-
-  <app-modal *ngIf="showPasswordReset" (close)="hidePassReset()">
-    <div *ngIf="!password_reset_sent">
-      <form>
-        <p>Please enter your Email.
-          <br>We will contact you soon</p>
-        <p>
-          <label for="email">Email</label>
-          <br>
-          <input [(ngModel)]="reset_email" name="email" type="text">
-        </p>
-        <p>{{ password_reset_status }}</p>
-        <button class="btn" type="submit" (click)="requestPasswordReset()">Send</button>
-      </form>
-    </div>
-    <div *ngIf="password_reset_sent">
-      Email sent.
-      <br>Please check your inbox.
-    </div>
-  </app-modal>
-</div>
-
--->

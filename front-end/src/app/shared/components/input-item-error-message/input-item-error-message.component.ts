@@ -10,7 +10,7 @@ export class InputItemErrorMessageComponent implements OnInit {
 
   errorMessages = {
     required: () => `Field is required`,
-    maxlength: ({ requiredLength }) => `Field require minimum length of ${requiredLength}`,
+    maxLength: ({ requiredLength }) => `Field require minimum length of ${requiredLength}`,
     minlength: ({ requiredLength }) => `Field require at least ${requiredLength} characters`,
     email: () => `Invalid email address`,
   };
@@ -22,7 +22,9 @@ export class InputItemErrorMessageComponent implements OnInit {
 
   getErrorMessage(): string {
     for(const error in this.errors) {
+      //console.log(this.errorMessages[error]( this.errors[error] ))
       return this.errorMessages[error]( this.errors[error] );
+
     }
   }
 

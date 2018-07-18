@@ -23,6 +23,9 @@ export class InputItemComponent implements ControlValueAccessor, OnInit {
   @Input() items: Array<string>; // select field items array
   @Input() formGroup: FormGroup; // reactive forms form group instance
   @Input() formControlName: string; // reactive forms form group control name
+  @Input() label: string; //input heading
+  @Input() placeholder: string;
+  @Input() type: string;
 
   //The internal data model
   private innerValue: any = '';

@@ -361,6 +361,12 @@ router.post(
   post_body_validator,
   OrdersController.changeOrdersGroupStatus
 );
+router.post(
+  ROUTES.GenerateRecipeOrders.router_string,
+  stateless_auth,
+  check_permissions,
+  OrdersController.generateRecipeRunOrders
+)
 
 // Recipe run details
 router.get(

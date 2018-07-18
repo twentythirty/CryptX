@@ -26,7 +26,14 @@ DEFAULT_SETTINGS = {
      * Max number of exexcution order fails tolerated.
      * When this threshold is reached by a specific execution order, it will no longer be placed on exchanges and marked as failed
      */
-    EXEC_ORD_FAIL_TOLERANCE: 5
+    EXEC_ORD_FAIL_TOLERANCE: 5,
+
+    /**
+     * Threshold which is used to make rcipe runs fail if base asset
+     * haven't updated too long. The value is in seconds.
+     * Currently it is 900 seconds, or 15 minutes.
+     */
+    BASE_ASSET_PRICE_TTL_THRESHOLD: 900
 };
 /**
  * Actual system-used active database settings values

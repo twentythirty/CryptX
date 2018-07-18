@@ -1,13 +1,13 @@
 import { Component, OnInit } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
-import { FormGroup, FormControl } from '@angular/forms';
+import { FormsModule, FormGroup, FormControl, ReactiveFormsModule } from '@angular/forms';
 import { UsersService } from '../../../services/users/users.service';
-import { NgForm } from '@angular/forms'
-
+import { NgForm, Validators, FormArray, AbstractControl } from '@angular/forms'
 import { User } from '../../../shared/models/user';
 import { RolesPermissionsResultData } from '../../../shared/models/api/rolesPermissionsResultData';
 import { RolesService } from "../../../services/roles/roles.service";
 import { RolesAllRequestData } from "../../../shared/models/api/rolesAllRequestData";
+import { AuthService } from "../../../services/auth/auth.service";
 
 
 @Component({
@@ -16,6 +16,13 @@ import { RolesAllRequestData } from "../../../shared/models/api/rolesAllRequestD
   styleUrls: ['./users-info.component.scss']
 })
 export class UsersInfoComponent implements OnInit {
+
+  userForm: FormGroup = new FormGroup ({
+    Firstname: new FormControl('', [this.authService.getValidators('\\/users\\/invite','first_name')]),
+    Lastname: new FormControl('', [this.authService.getValidators('\\/users\\/invite','last_name')]),
+    Email: new FormControl('', [this.authService.getValidators('\\/users\\/invite','email')]),
+    Checkbox: new FormControl('', [this.authService.getValidators('\\/users\\/invite','role_id')])
+  });
  
   userId: number;
   userName: String;
@@ -27,12 +34,17 @@ export class UsersInfoComponent implements OnInit {
   loading = false;
   showDeactivateConfirm = false;
   buttonName: String;
-  list = [];
 
-  constructor(private router: Router, 
-              private route:ActivatedRoute, 
+  validation;
+  userValidation;
+
+  form: FormGroup;
+
+  constructor(private router: Router,
+              private route: ActivatedRoute, 
               private usersService: UsersService,
-              private rolesService: RolesService) {  
+              private rolesService: RolesService,
+              private authService: AuthService) {  
     this.route.params
       .filter(params => params.userId)
       .subscribe( params => {
@@ -40,8 +52,29 @@ export class UsersInfoComponent implements OnInit {
       }); }
 
   ngOnInit() {
+      this.rolesService.getAllRoles(this.rolesRequestData).subscribe(res => {
+                res.roles.forEach(role => {
+                  let obj = {
+                    id: Number,
+                    name: String,
+                    is_active: false
+                  };
+                  obj.id = role.id;
+                  obj.name = role.name;
+                  this.userRoles.forEach(userrole => {
+                    if (obj.id === userrole.id){
+                      obj.is_active = true;
+                    }
+                  })
+                  this.rolelist.push(obj);
+                });
+                this.add()
+      });
       this.usersService.getUser(this.userId).subscribe(data => {
           this.user = data.user;
+          this.userForm.controls.Firstname.setValue(this.user.first_name)
+          this.userForm.controls.Lastname.setValue(this.user.last_name)
+          this.userForm.controls.Email.setValue(this.user.email)
           this.userName = String(this.user.first_name +' '+ this.user.last_name);
           if (this.user.is_active){
             this.buttonName='Deactivate'
@@ -49,9 +82,34 @@ export class UsersInfoComponent implements OnInit {
             this.buttonName ='Activate'
           }
           this.userRoles = Object.values(data.user.roles);
-          this.getAllRoles();
-        });
+      });
   }
+
+  add(){
+    let checkboxGroup = new FormArray(this.rolelist.map(item => new FormGroup({
+      id: new FormControl(item.id),
+      text: new FormControl(item.name),
+      checkbox: new FormControl(item.is_active)
+    })));
+
+    // create a hidden reuired formControl to keep status of checkbox group
+    let hiddenControl = new FormControl(this.mapItems(checkboxGroup.value), this.authService.getValidators('\\/users\\/invite','role_id'));
+    // update checkbox group's value to hidden formcontrol
+    checkboxGroup.valueChanges.subscribe((v) => {
+    hiddenControl.setValue(this.mapItems(v));
+    });
+
+    this.form = new FormGroup({
+      items: checkboxGroup,
+      selectedItems: hiddenControl
+    });
+  }
+
+  mapItems(items) {
+    let selectedItems = items.filter((item) => item.checkbox).map((item) => item.id);
+    return selectedItems.length ? selectedItems : null;
+  }
+
 
   getAllRoles() {
     this.rolesService.getAllRoles(this.rolesRequestData).subscribe(res => {
@@ -82,15 +140,13 @@ export class UsersInfoComponent implements OnInit {
       data => {
         this.router.navigate(['/users']);
       }, error => {
-        console.log('Error', error);
       }, () => {
         this.loading = false;
       });
-    this.usersService.updateUserRoles(this.user.id,this.list).subscribe(
+    this.usersService.updateUserRoles(this.user.id, this.form.controls.selectedItems.value).subscribe(
       data => {
         this.router.navigate(['/users']);
       }, error => {
-        console.log('Error', error);
       }, () => {
         this.loading = false;
       }); 
@@ -102,20 +158,9 @@ export class UsersInfoComponent implements OnInit {
       data => {
         this.router.navigate(['/users']);
       }, error => {
-        console.log('Error', error);
       }, () => {
         this.loading = false;
       });
-  }
-
-  addRole(role){
-    role.is_active = !role.is_active;
-    this.list = [];
-    this.rolelist.forEach(role => {
-      if (role.is_active){
-        this.list.push(role.id);
-      }
-    });
   }
 
 }

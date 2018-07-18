@@ -1,28 +1,54 @@
-import { Component } from '@angular/core';
-import { TableDataSource } from '../../../shared/components/data-table/data-table.component';
+import { Component, OnInit } from '@angular/core';
+import { TableDataSource, TableDataColumn } from '../../../shared/components/data-table/data-table.component';
 import { ActivatedRoute } from '@angular/router';
+import { map } from 'rxjs/operator/map';
+import { EntitiesFilter } from '../../../shared/models/api/entitiesFilter';
+import { Observable } from 'rxjs';
 
 import { UsersService } from '../../../services/users/users.service';
 import { DataTableCommonManagerComponent } from '../../../shared/components/data-table-common-manager/data-table-common-manager.component';
+import {
+  BooleanCellDataColumn,
+  BooleanCellComponent,
+  CurrencyCellDataColumn,
+  CurrencyCellComponent,
+  NumberCellComponent,
+  PercentCellComponent,
+  DateCellComponent,
+  DateCellDataColumn,
+  PercentCellDataColumn,
+  NumberCellDataColumn,
+  ActionCellDataColumn,
+  DataCellAction
+} from '../../../shared/components/data-table-cells';
+
 
 @Component({
   selector: 'app-users-list',
   templateUrl: './users-list.component.html',
   styleUrls: ['./users-list.component.scss']
 })
-export class UsersListComponent extends DataTableCommonManagerComponent {
-  usersDataSource: TableDataSource = {
+export class UsersListComponent extends DataTableCommonManagerComponent implements OnInit {
+
+  public usersDataSource: TableDataSource = {
     header: [
-      { column: 'first_name', name: 'Name', filter: { type: 'text', sortable: true, rowData:[{value:'test'},{value:'last'}] }},
-      { column: 'last_name', name: 'Surname', filter: { type: 'text', sortable: true}},
-      { column: 'email', name: 'Email', filter: { type: 'text', sortable: true}},
+      { column: 'first_name', name: 'Name', filter: { type: 'text', sortable: true, rowData: []}},
+      { column: 'last_name', name: 'Surname', filter: { type: 'text', sortable: true, rowData: [] }},
+      { column: 'email', name: 'Email', filter: { type: 'text', sortable: true, rowData:[] }},
       { column: 'created_timestamp', name: 'Creation date', filter: { type: 'date', sortable: true}},
-      { column: 'is_active', name: 'Status', filter: { type: 'boolean', sortable: true, rowData: [{value: true},{value: false, label: 'Inactive'}] }}
+      { column: 'is_active', name: 'Status', filter: { type: 'boolean', sortable: true, rowData: [{value: true, label: 'Active'},{value: false, label: 'Inactive'}] }}
     ],
     body: [],
-    footer: []
   };
-  usersColumnsToShow = ['first_name', 'last_name', 'email', 'created_timestamp', 'is_active'];
+  public usersColumnsToShow: Array<string | TableDataColumn> = [
+    'first_name',
+    'last_name',
+    'email',
+    new PercentCellDataColumn({ column: 'created_timestamp' }),
+    new BooleanCellDataColumn({ column: 'is_active' })
+  ];
+
+  
 
   constructor(
     private userService: UsersService,
@@ -35,7 +61,22 @@ export class UsersListComponent extends DataTableCommonManagerComponent {
     this.userService.getAllUsers(this.requestData).subscribe(res => {
       this.usersDataSource.body = res.users;
       this.count = res.count;
+        if(res.footer) {
+          this.usersDataSource.footer = this.usersColumnsToShow.map(col => {
+            let key = (typeof col == 'string') ? col : col.column;
+            return res.footer.find(f => f.name == key) || '';
+          })
+        }
     });
+  }
+
+  generateRowData(){
+    let array = []
+    let objects = Object.values(this.usersDataSource.body);
+    objects.forEach( item => {
+      array.push({value: item.first_name})
+    });
+    return array;
   }
 
 }

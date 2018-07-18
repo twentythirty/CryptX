@@ -15,6 +15,7 @@ PERMISSIONS = {
   CREATE_INVESTMENT_RUN: "perm_create_investment_run",
   APPROVE_RECIPE_RUN: "perm_approve_recipe_run",
   VIEW_ORDERS: "perm_view_orders",
+  GENERATE_ORDERS: "perm_generate_orders",
   ALTER_ORDERS: "perm_alter_orders",
   CHANGE_SETTING_VALUES: "perm_change_settings",
   VIEW_SETTING_VALUES: "perm_view_settings"
@@ -37,7 +38,8 @@ CATEGORY_TO_PERM_ASSOC = {
   ],
   [PERMISSIONS_CATEGORIES.ORDERS]: [
     PERMISSIONS.VIEW_ORDERS,
-    PERMISSIONS.ALTER_ORDERS
+    PERMISSIONS.ALTER_ORDERS,
+    PERMISSIONS.GENERATE_ORDERS
   ],
   [PERMISSIONS_CATEGORIES.RECIPE_RUN]: [
     PERMISSIONS.APPROVE_RECIPE_RUN
@@ -309,6 +311,11 @@ ROUTES = {
     router_string: "/orders/:order_group_id/alter",
     permissions_matcher: ROUTE_MATCHERS.AlterOrdersGroup,
     required_permissions: [PERMISSIONS.VIEW_ORDERS, PERMISSIONS.ALTER_ORDERS]
+  },
+  GenerateRecipeOrders: {
+    router_string: "/orders/of_recipe/:recipe_run_id",
+    permissions_matcher: ROUTE_MATCHERS.GenerateRecipeOrders,
+    required_permissions: [PERMISSIONS.GENERATE_ORDERS]
   },
 
    // Recipe run deposits

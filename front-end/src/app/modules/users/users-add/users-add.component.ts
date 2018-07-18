@@ -4,7 +4,9 @@ import { RolesAllRequestData } from "../../../shared/models/api/rolesAllRequestD
 import { Router, ActivatedRoute } from '@angular/router';
 import { User } from "../../../shared/models/user";
 import { UsersService } from "../../../services/users/users.service";
-import { FormGroup, FormControl } from '@angular/forms';
+import { FormArray, FormGroup, FormControl, ReactiveFormsModule } from "@angular/forms";
+import { NgForm, Validators, AbstractControl } from '@angular/forms'
+import { AuthService } from "../../../services/auth/auth.service";
 
 @Component({
   selector: 'app-users-add',
@@ -15,7 +17,8 @@ export class UsersAddComponent implements OnInit {
 
   constructor(private rolesService: RolesService,
               private usersService: UsersService,
-              private router: Router) { 
+              private router: Router,
+              private authService: AuthService) { 
   }
 
   rolesRequestData: RolesAllRequestData = {
@@ -24,9 +27,9 @@ export class UsersAddComponent implements OnInit {
   };
 
   rolelist = [];
-  firstName = " " ;
-  lastName = " ";
-  email: " ";
+  UserName = "" ;
+  UserSurname = "";
+  UserEmail: "";
 
   invite = {
     first_name: "String",
@@ -37,30 +40,27 @@ export class UsersAddComponent implements OnInit {
 
   loading = false;
 
-  ngOnInit() {
-    this.getAllRoles();
-  }
+  form: FormGroup;
 
-  getAllRoles() {
+  userForm: FormGroup = new FormGroup ({
+    Name: new FormControl('', [this.authService.getValidators('\\/users\\/invite','first_name')]),
+    Surname: new FormControl('', [this.authService.getValidators('\\/users\\/invite','last_name')]),
+    Email: new FormControl('', [this.authService.getValidators('\\/users\\/invite','email')]),
+  });
+
+  ngOnInit() {
     this.rolesService.getAllRoles(this.rolesRequestData).subscribe(res => {
-      res.roles.forEach(role => {
-        let obj = {
-          id: Number,
-          name: String,
-          is_active: false
-        };
-        obj.id = role.id;
-        obj.name = role.name;
-        this.rolelist.push(obj);
-      });
+      this.rolelist = res.roles;
+      this.add();
     });
+    
   }
 
   saveUser(){
-    this.invite.first_name = this.firstName;
-    this.invite.last_name = this.lastName;
-    this.invite.email = this.email;
-    console.log(JSON.stringify(this.invite));
+    this.invite.first_name = this.UserName;
+    this.invite.last_name = this.UserSurname;
+    this.invite.email = this.UserEmail;
+    this.invite.role_id = this.form.controls.selectedItems.value;
     this.usersService.sendInvite(this.invite).subscribe(
       data => {
         this.router.navigate(['/users']);
@@ -70,16 +70,29 @@ export class UsersAddComponent implements OnInit {
         this.loading = false;
       }); 
   }
-  
-  addRole(role){
-   role.is_active = !role.is_active;
-   let arr = [];
-   this.rolelist.forEach(role => {
-      if (role.is_active) {
-        arr.push(role.id);
-      }
+
+  add(){
+    let checkboxGroup = new FormArray(this.rolelist.map(item => new FormGroup({
+      id: new FormControl(item.id),
+      text: new FormControl(item.name),
+      checkbox: new FormControl(false)
+    })));
+    
+    // create a hidden reuired formControl to keep status of checkbox group
+    let hiddenControl = new FormControl(this.mapItems(checkboxGroup.value), this.authService.getValidators('\\/users\\/invite','role_id'));
+    // update checkbox group's value to hidden formcontrol
+    checkboxGroup.valueChanges.subscribe((v) => {
+      hiddenControl.setValue(this.mapItems(v));
     });
-   this.invite.role_id = arr;
+
+    this.form = new FormGroup({
+      items: checkboxGroup,
+      selectedItems: hiddenControl
+    });
   }
 
+  mapItems(items) {
+    let selectedItems = items.filter((item) => item.checkbox).map((item) => item.id);
+    return selectedItems.length ? selectedItems : null;
+  }
 }
