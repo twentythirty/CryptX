@@ -1,6 +1,7 @@
-import { Component, OnInit, Input, EventEmitter, Output } from '@angular/core';
+import { Component, OnInit, Input, EventEmitter, Output, OnChanges } from '@angular/core';
 import _ from 'lodash';
 import { FlatpickrOptions } from 'ng2-flatpickr';
+import { Observable } from 'rxjs';
 
 export interface DataTableFilterData {
   column: string
@@ -21,7 +22,7 @@ export interface DataTableFilterData {
   templateUrl: './data-table-filter.component.html',
   styleUrls: ['./data-table-filter.component.scss']
 })
-export class DataTableFilterComponent implements OnInit {
+export class DataTableFilterComponent implements OnInit, OnChanges {
   private _filterData = {
     values: [],
     order: ''
@@ -38,11 +39,26 @@ export class DataTableFilterComponent implements OnInit {
     label?: string
   }> = [];
 
+  @Input() rowData$: Observable<Array<{
+    value: string | boolean,
+    label?: string
+  }>>;
+  @Input() dirty: boolean;
+
   @Output() onFilter = new EventEmitter<object>();
 
   constructor() {}
 
-  ngOnInit() {}
+  ngOnInit() {
+
+  }
+
+  ngOnChanges(changes) {
+    // Runs when filter becomes dirty
+    if(!changes.dirty.previousValue && (changes.dirty.currentValue === true)) {
+      this.getrowData$();
+    }
+  }
 
   onFilterChange() {
     let data: DataTableFilterData = {
@@ -147,6 +163,26 @@ export class DataTableFilterComponent implements OnInit {
     }
     else if ( value === 'max' && this._filterData.values[0] > this._filterData.values[1] ) {
       this._filterData.values[1] = this._filterData.values[0];
+    }
+  }
+
+  /**
+   * If we have a rowData$ Observable, replace rowData items
+   */
+  getrowData$(): void {
+    if(this.rowData$ && (typeof this.rowData$.subscribe == 'function')) {
+      this.rowData$.subscribe(
+        res => {
+          if(!Array.isArray(res)) {
+            return;
+          }
+          if(!Array.isArray(this.rowData)) {
+            this.rowData = [];
+          }
+          this.rowData.splice(0, this.rowData.length);
+          this.rowData.push(...res);
+        }
+      )
     }
   }
 
