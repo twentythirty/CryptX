@@ -89,7 +89,6 @@ module.exports.toSequelizeWhere = toSequelizeWhere;
  * for making direct DB calls.
  **/
 const toWhereSQL = (filter_obj_ext) => {
-
     let final_sql = "";
 
     if (filter_obj_ext == null) {
@@ -254,6 +253,9 @@ function parse_data_type(data_type, value) {
             break;
         case 'number':
             parsed_value = parseFloat(value);
+            break;
+        case 'boolean':
+            parsed_value = (String(value).toLowerCase() === 'true'); //Based on: https://stackoverflow.com/questions/263965/how-can-i-convert-a-string-to-boolean-in-javascript
             break;
         case 'string':
         default:

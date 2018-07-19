@@ -27,12 +27,12 @@
   </app-content-block>
 </form>
   <app-content-block heading="User roles">
-  <form [formGroup]="form">
+  <form *ngIf="form" [formGroup]="form">
   <div class="check-list" [formArrayName]="'items'" [class.invalid]="!form.controls.selectedItems.valid">
     <div class="checkboxes-item" *ngFor="let control of form.controls.items.controls; let i = index;" [formGroup]="control">
       <label class="label-name">{{ control.controls.text.value }}</label>
       <div class="checkboxes-modal">
-      <input class="checkall" type="checkbox" formControlName="checkbox" id="{{ control.controls.id.value }}">
+      <input class="checkall" type="checkbox" formControlName="checkbox" id="{{ control.controls.id.value }}" (click)="click()">
       <label [class.checked]="checked" attr.for={{control.controls.id.value}}>
         <ng-container *ngIf="checked">
           Select{{ labelTrue }}
@@ -45,7 +45,7 @@
     </div>
   </div>
  <app-input-item-error-message
-       *ngIf="!form.controls.selectedItems.valid"
+       *ngIf="show"
         [errors]="form.controls.selectedItems.errors"
   ></app-input-item-error-message>
 </form>
@@ -53,6 +53,6 @@
 </div>
 <div class="sticky-controls-bar">
   <div class="wrapper">
-    <button class="btn submit" [disabled]="loading" (click)="saveUser()">Submit</button>
+    <button class="btn submit" [disabled]=loading (click)="saveUser()">Submit</button>
   </div>
 </div>

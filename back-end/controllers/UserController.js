@@ -213,7 +213,7 @@ const editUser = async function (req, res) {
 
   let [err, user] = await to(authService.changeUserInfo(user_id, req.body));
 
-  if (err) return ReE(res, err, 422);
+  if (err) return ReE(res, err.message, 422);
 
   return ReS(res, {
     user: user.toWeb()
@@ -244,7 +244,7 @@ const changePassword = async function (req, res) {
   let [err, user] = await to(authService.updatePassword(user_id, old_password, new_password));
   if (err) return ReE(res, "Old password doesn't match", 403);
 
-  let status;
+  let status; 
   [err, status] = await to(authService.expireOtherSessions(user_id, req.headers.authorization));
   if (err) return ReE(res, err, 403);
 

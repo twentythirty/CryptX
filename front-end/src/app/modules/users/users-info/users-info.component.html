@@ -1,30 +1,32 @@
 <app-page-heading heading="{{userName}}">
 </app-page-heading>
 <div class="split-content">
-
+<form [formGroup]="userForm">
 <app-content-block *ngIf="user" heading="User information">
-    <form [formGroup]="userForm">
       <app-input-item  class="form-item"
         label="Name"
         placeholder="Enter name"
         [formGroup]="userForm"
-        formControlName="Firstname">
+        formControlName="Firstname"
+        [(ngModel)]="user.first_name">
       </app-input-item>
       <app-input-item  class="form-item"
         label="Surname"
         placeholder="Enter surname"
         [formGroup]="userForm"
-        formControlName="Lastname">
+        formControlName="Lastname"
+        [(ngModel)]="user.last_name">
       </app-input-item>
       <app-input-item class="form-item"
         label="Email"
         placeholder="Enter email"
         [formGroup]="userForm"
-        formControlName="Email">
+        formControlName="Email"
+        [(ngModel)]="user.email">
       </app-input-item>
-  </form>
   </app-content-block>
-<form [formGroup]="form">
+  </form>
+<form *ngIf="form" [formGroup]="form">
 <app-content-block heading="User roles">
   <div class="check-list" [formArrayName]="'items'" [class.invalid]="!form.controls.selectedItems.valid">
     <div class="checkboxes-item" *ngFor="let control of form.controls.items.controls; let i = index;" [formGroup]="control">
@@ -43,16 +45,15 @@
     </div>
   </div>
  <app-input-item-error-message
-       *ngIf="!form.controls.selectedItems.valid"
+        *ngIf="!this.form.controls.selectedItems.valid"
         [errors]="form.controls.selectedItems.errors"
   ></app-input-item-error-message>
   </app-content-block>
 </form>
 </div>
-
 <app-form-action-bar>
   <div *ngIf="userId">
-    <button *ngIf="buttonName" class="btn deactive" [disabled]="loading" (click)="showDeactivateConfirm = true">
+    <button *ngIf="buttonName" class="btn deactive" (click)="showDeactivateConfirm = true">
       {{buttonName}}</button>
     <button type="button" class="btn submit" (click)="saveUser()">
       Submit</button>

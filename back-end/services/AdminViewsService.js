@@ -129,8 +129,14 @@ FROM
 }
 module.exports.fetchAssetsViewFooter = fetchAssetsViewFooter;
 
-const fetchInstrumentsViewFooter = async () => {
+const fetchMockHeaderLOV = async (header_field, query = '') => {
+    // mock data below
+    return [ 'Value 1', 'Value 2', 'Value 3', 'Value 4', 'Value 5'];
+}
+module.exports.fetchMockHeaderLOV = fetchMockHeaderLOV;
 
+const fetchInstrumentsViewFooter = async () => {
+    // mock data below
     let footer = [
         {
           "name": "id",
@@ -163,7 +169,7 @@ const fetchInstrumentsViewFooter = async () => {
 module.exports.fetchInstrumentsViewFooter = fetchInstrumentsViewFooter;
 
 const fetchLiquidityViewFooter = async () => {
-
+    // mock data below
     /* let footer = [
         {
           "name": "id",
@@ -242,6 +248,7 @@ const fetchLiquidityViewFooter = async () => {
 module.exports.fetchLiquidityViewFooter = fetchLiquidityViewFooter;
 
 const fetchLiquidityExchangesViewFooter = async () => {
+    // mock data below
 
     let footer = [
         {

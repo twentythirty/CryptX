@@ -391,15 +391,13 @@ describe("AuthService testing", () => {
 
     it('not change data that can not changed', function () {
       let new_data = {
-        id: 55,
-        email: "Some@newemail.com"
+        id: 55
       };
 
       return AuthService.changeUserInfo(USER_ID, new_data)
         .then(returnedUser => {
           // check if data that can't be changed is not changed
           chai.expect(returnedUser.id).to.be.equal(USER_ID);
-          chai.expect(returnedUser.email).to.be.equal(EMAIL);
 
           // these model methods should've been called
           chai.assert.isTrue(User.findById.calledWith(USER_ID));
@@ -411,6 +409,7 @@ describe("AuthService testing", () => {
       let new_data = {
         first_name: "New_Name",
         last_name: "New_Last_Name",
+        email: "new@email.com",
         is_active: false
       };
 

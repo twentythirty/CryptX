@@ -27,11 +27,13 @@ const getAssets = async function (req, res) {
 
   console.log('WHERE clause: %o', req.seq_query);
 
-  let [err, assets] = await to(Asset.findAll(req.seq_query));
+  let [err, result] = await to(Asset.findAndCountAll(req.seq_query));
   if (err) return ReE(res, err.message, 422);
 
+  let { rows: assets, count } = result;
   return ReS(res, {
-    assets: assets
+    assets: assets,
+    count
   })
 };
 module.exports.getAssets = getAssets;
@@ -42,7 +44,7 @@ const getAssetDetailed = async function (req, res) {
   let asset = await Asset.findOne({
     where: {
       id: asset_id
-    },
+  },
     include: [{
       model: AssetStatusChange,
       order: [
@@ -69,7 +71,6 @@ const getAssetDetailed = async function (req, res) {
 
   let status_changes = new_asset_data.AssetStatusChanges;
   delete new_asset_data.AssetStatusChanges;
-
   return ReS(res, {
     assets: new_asset_data,
     status_changes
@@ -136,18 +137,3 @@ const changeAssetStatus = async function (req, res) {
   })
 };
 module.exports.changeAssetStatus = changeAssetStatus;
-/* 
-const getAssetStatusHistory = async function (req, res) {
-  
-  let asset_id = req.params.asset_id;
-  let assets = await AssetStatusChange.findAll({
-    where: {
-      asset_id: 
-    }
-  });
-  
-  if (!assets) return ReE(res, 'No assets not found', 404);
-
-  return ReS(res, { assets });
-};
-module.exports.getWhitelisted = getWhitelisted; */
