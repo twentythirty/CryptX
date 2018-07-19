@@ -1,0 +1,14 @@
+{
+  "common": {
+
+  },
+  "assets": {
+    "headline": "{{ count }} Cryptocurrencies",
+    "footer": {
+      "capitalization": "${{ total }} TOTAL"
+    }
+  },
+  "error": {
+
+  }
+}

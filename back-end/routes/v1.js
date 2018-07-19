@@ -754,4 +754,10 @@ router.use(
   "/docs",
   express.static(path.join(__dirname, "/../public/v1/documentation/dist"))
 );
+
+//********* FE TRANSLATIONS **********
+router.use(
+  "/fe/i18n",
+  express.static(path.join(__dirname, "/../public/fe/i18n"))
+);
 module.exports = router;
