@@ -255,3 +255,23 @@ const getBaseAssetPrices = async function () {
   return prices;
 }
 module.exports.getBaseAssetPrices = getBaseAssetPrices;
+
+const fetchAssetStatusHistory = async (asset) => {
+
+  const sorted_history = await AssetStatusChange.findAll({
+    where: {
+      asset_id: asset.id
+    },
+    include: [
+      {
+        model: User
+      }
+    ],
+    order: [
+      ['timestamp', 'DESC']
+    ]
+  })
+
+  return sorted_history;
+}
+module.exports.fetchAssetStatusHistory = fetchAssetStatusHistory;

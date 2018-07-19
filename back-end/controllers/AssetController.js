@@ -2,7 +2,6 @@
 
 const assetService = require('../services/AssetService');
 const Asset = require('../models').Asset;
-const AssetStatusChange = require('../models').AssetStatusChange;
 const Op = require('sequelize').Op;
 const adminViewsService = require('../services/AdminViewsService');
 
@@ -40,40 +39,33 @@ module.exports.getAssets = getAssets;
 
 const getAssetDetailed = async function (req, res) {
 
-  let asset_id = req.params.asset_id;
-  let asset = await Asset.findOne({
-    where: {
-      id: asset_id
-  },
-    include: [{
-      model: AssetStatusChange,
-      order: [
-        ['timestamp', 'DESC']
-      ]
-    }]
-  });
-  if (!asset) return ReE(res, 'Asset not found', 404);
-
-  // mock data below assigned below
+  const asset_id = req.params.asset_id;
   
-  let new_asset_data = Object.assign(asset.toJSON(), {
-    /* symbol: 999,
-    is_cryptocurrency: 999,
-    long_name: 999,
-    is_base: 999,
-    is_deposit: 999, */
-    capitalization: 999,
-    nvt_ratio: 999,
-    market_share: 999,
-    capitalization_updated: 999,
-    status: INSTRUMENT_STATUS_CHANGES.Whitelisting
-  });
+  const single_asset_view = await adminViewsService.fetchAssetView(asset_id);
+  if (single_asset_view == null) {
+    return ReE(res, `Asset information for id ${asset_id} not found!`, 404);
+  }
 
-  let status_changes = new_asset_data.AssetStatusChanges;
-  delete new_asset_data.AssetStatusChanges;
+  const asset_history = await assetService.fetchAssetStatusHistory(single_asset_view);
+  
+  const formatted_history = _.map(asset_history, history_element => {
+
+    return {
+      asset_id: history_element.asset_id,
+      timestamp: history_element.timestamp,
+      user: {
+        id: history_element.User.id,
+        name: history_element.User.fullName(),
+        email: history_element.User.email
+      },
+      comment: history_element.comment,
+      type: `assets.status.${history_element.type}`
+    }
+  })
+
   return ReS(res, {
-    assets: new_asset_data,
-    status_changes
+    asset: single_asset_view,
+    history: formatted_history
   })
 };
 module.exports.getAssetDetailed = getAssetDetailed;

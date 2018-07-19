@@ -88,6 +88,10 @@ module.exports = (sequelize, DataTypes) => {
     );
   };
 
+  User.prototype.fullName = function() {
+     return `${this.first_name} ${this.last_name}`.trim();
+  };
+
   User.prototype.toWeb = function(send_roles = true) {
     let json = this.toJSON();
     delete json.password;

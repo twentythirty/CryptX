@@ -43,12 +43,14 @@ const fetchViewHeaderLOV = async (table, field, query) => {
 const fetchViewDataWithCount = async (model, seq_where = {}) => {
 
     const [data, total] = await Promise.all([
-        model.findAll(seq_where),
-        model.count()
+        fetchModelData(model, seq_where),
+        fetchModelCount(model)
     ]);
     
     return { data, total }
 }
+const fetchModelData = async (model, seq_where = {}) => model.findAll(seq_where)
+const fetchModelCount = async (model) => model.count()
 
 
 const fetchUsersViewHeaderLOV = async (header_field, query = '') => {
@@ -74,6 +76,16 @@ const fetchAssetsViewDataWithCount = async (seq_where = {}) => {
     return fetchViewDataWithCount(AVAsset, seq_where);
 }
 module.exports.fetchAssetsViewDataWithCount = fetchAssetsViewDataWithCount;
+
+const fetchAssetView = async (asset_id) => {
+
+    return _.first(await fetchModelData(AVAsset, {
+        where: {
+            id: asset_id
+        }
+    }))
+}
+module.exports.fetchAssetView = fetchAssetView;
 
 const fetchUsersViewFooter = async (where_clause = '') => {
 
