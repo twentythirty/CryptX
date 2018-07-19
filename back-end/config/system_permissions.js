@@ -233,6 +233,11 @@ ROUTES = {
     permissions_matcher: ROUTE_MATCHERS.GetAssetsDetailed,
     required_permissions: [PERMISSIONS.VIEW_ASSETS]
   },
+  GetAssetsColLOV: {
+    router_string: "/assets/header_lov/:field_name",
+    permissions_matcher: ROUTE_MATCHERS.GetAssetsColLOV,
+    required_permissions: [PERMISSIONS.VIEW_ASSETS]
+  },
   ChangeAssetStatus: {
     router_string: "/assets/:asset_id/change_status",
     permissions_matcher: ROUTE_MATCHERS.ChangeAssetStatus,

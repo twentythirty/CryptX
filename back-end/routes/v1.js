@@ -233,6 +233,20 @@ router.post(
   AssetController.getAssetsDetailed
 );
 router.get(
+  ROUTES.GetAssetsColLOV.router_string,
+  stateless_auth,
+  check_permissions,
+  filter_reducer,
+  AssetController.getAssetsColumnLOV
+);
+router.post(
+  ROUTES.GetAssetsColLOV.router_string,
+  stateless_auth,
+  check_permissions,
+  filter_reducer,
+  AssetController.getAssetsColumnLOV
+);
+router.get(
   ROUTES.GetAssets.router_string,
   stateless_auth,
   check_permissions,

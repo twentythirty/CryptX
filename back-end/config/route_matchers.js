@@ -24,6 +24,7 @@ ROUTE_MATCHERS = {
     GetAssets: /\/assets\/all$/,
     GetAssetDetailedInfo: /\/assets\/detailed\/\d+$/,
     GetAssetsDetailed: /\/assets\/detailed\/all$/,
+    GetAssetsColLOV: /\/assets\/header_lov\/\w+$/,
     ChangeAssetStatus: /\/assets\/\d+\/change_status$/,
     CreateInvestment: /\/investments\/create$/,
     GetInvestment: /\/investments\/\d+$/,
