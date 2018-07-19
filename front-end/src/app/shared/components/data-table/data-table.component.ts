@@ -5,7 +5,7 @@ import _ from 'lodash';
 export interface TableDataSource {
   header: Array<{
     column: string
-    name: string
+    nameKey: string
     filter?: {
       type: 'text' | 'boolean' | 'date' | 'number'
       sortable?: boolean

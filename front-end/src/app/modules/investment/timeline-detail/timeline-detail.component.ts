@@ -23,7 +23,7 @@ import { TimelineEvent } from '../timeline/timeline.component';
 export interface SingleTableDataSource extends TableDataSource {
   header: Array<{
     column: string
-    name: string
+    nameKey: string
     // Does not have a filter
   }>;
   body: Array<object>;

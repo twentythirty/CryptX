@@ -33,6 +33,7 @@ import { StatusCellComponent } from './components/data-table-cells/status-cell/s
 import { ConfirmCellComponent } from './components/data-table-cells/confirm-cell/confirm-cell.component';
 import { MatProgressSpinnerModule } from '@angular/material';
 import { RationaleModalComponent } from './components/rationale-modal/rationale-modal.component';
+import { TranslateModule } from '@ngx-translate/core';
 
 @NgModule({
     imports: [
@@ -42,6 +43,7 @@ import { RationaleModalComponent } from './components/rationale-modal/rationale-
         RouterModule,
         Ng2FlatpickrModule,
         MatProgressSpinnerModule,
+        TranslateModule,
         DynamicModule.withComponents([
           ActionCellComponent,
           CurrencyCellComponent,
@@ -82,6 +84,7 @@ import { RationaleModalComponent } from './components/rationale-modal/rationale-
     ],
     exports: [
         MatProgressSpinnerModule,
+        TranslateModule,
         BtnComponent,
         DataTableComponent,
         ModalComponent,

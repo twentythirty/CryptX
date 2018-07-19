@@ -28,11 +28,11 @@ export class UsersListComponent extends DataTableCommonManagerComponent implemen
 
   public usersDataSource: TableDataSource = {
     header: [
-      { column: 'first_name', name: 'Name', filter: { type: 'text', sortable: true, rowData: []}},
-      { column: 'last_name', name: 'Surname', filter: { type: 'text', sortable: true, rowData: [] }},
-      { column: 'email', name: 'Email', filter: { type: 'text', sortable: true, rowData:[] }},
-      { column: 'created_timestamp', name: 'Creation date', filter: { type: 'date', sortable: true}},
-      { column: 'is_active', name: 'Status', filter: { type: 'boolean', sortable: true, rowData: [{value: true, label: 'Active'},{value: false, label: 'Inactive'}] }}
+      { column: 'first_name', nameKey: 'table.header.name', filter: { type: 'text', sortable: true, rowData: []}},
+      { column: 'last_name', nameKey: 'table.header.surname', filter: { type: 'text', sortable: true, rowData: [] }},
+      { column: 'email', nameKey: 'table.header.email', filter: { type: 'text', sortable: true, rowData:[] }},
+      { column: 'created_timestamp', nameKey: 'table.header.creation_date', filter: { type: 'date', sortable: true}},
+      { column: 'is_active', nameKey: 'table.header.status', filter: { type: 'boolean', sortable: true, rowData: [{value: true, label: 'Active'},{value: false, label: 'Inactive'}] }}
     ],
     body: [],
   };

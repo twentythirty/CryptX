@@ -34,26 +34,26 @@ export class ExecutionOrderFillDetailComponent extends TimelineDetailComponent i
 
   public singleDataSource: SingleTableDataSource = {
     header: [
-      { column: 'id', name: 'Id' },
-      { column: 'instrument', name: 'Instrument' },
-      { column: 'side', name: 'Side' },
-      { column: 'type', name: 'Type' },
-      { column: 'price', name: 'Price' },
-      { column: 'quantity', name: 'Total quantity' },
-      { column: 'fee', name: 'Exchange trading fee' },
-      { column: 'status', name: 'Status' },
-      { column: 'submission_time', name: 'Submission time' },
-      { column: 'completion_time', name: 'Completion time' }
+      { column: 'id', nameKey: 'table.header.id' },
+      { column: 'instrument', nameKey: 'table.header.instrument' },
+      { column: 'side', nameKey: 'table.header.side' },
+      { column: 'type', nameKey: 'table.header.type' },
+      { column: 'price', nameKey: 'table.header.price' },
+      { column: 'quantity', nameKey: 'table.header.total_quantity' },
+      { column: 'fee', nameKey: 'table.header.exchange_trading_fee' },
+      { column: 'status', nameKey: 'table.header.status' },
+      { column: 'submission_time', nameKey: 'table.header.submission_time' },
+      { column: 'completion_time', nameKey: 'table.header.completion_time' }
     ],
     body: null
   }
 
   public listDataSource: TableDataSource = {
     header: [
-      { column: 'id', name: 'Id', filter: {type: 'text', sortable: true }},
-      { column: 'fill_time', name: 'Fill time', filter: {type: 'text', sortable: true }},
-      { column: 'fill_price', name: 'Fill price', filter: {type: 'number', sortable: true }},
-      { column: 'quantity', name: 'Quantity', filter: {type: 'number', sortable: true }}
+      { column: 'id', nameKey: 'table.header.id', filter: {type: 'text', sortable: true }},
+      { column: 'fill_time', nameKey: 'table.header.fill_time', filter: {type: 'text', sortable: true }},
+      { column: 'fill_price', nameKey: 'table.header.fill_price', filter: {type: 'number', sortable: true }},
+      { column: 'quantity', nameKey: 'table.header.quantity', filter: {type: 'number', sortable: true }}
     ],
     body: null,
   };

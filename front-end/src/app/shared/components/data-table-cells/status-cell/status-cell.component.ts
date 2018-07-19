@@ -44,7 +44,7 @@ export class StatusCellComponent implements OnInit {
   }
 
   public getName(): string {
-    return this.modelConstants.getName(this.value);
+    return this.value;
   }
 
 }

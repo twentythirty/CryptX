@@ -1,5 +1,5 @@
 <div class="top-controls">
-  <span class="headline-title">{{count}} Cryptocurrencies</span>
+  <span class="headline-title">{{ 'assets.headline' | translate:{ count: count } }}</span>
 </div>
 <app-data-table [dataSource]="assetsDataSource" [columnsToShow]="assetsColumnsToShow" [rowBackgroundColor]="rowBackgroundColor"
   [rowTexColor]="rowTexColor" (setFilter)="onSetFilter($event)" (openRow)="openRow($event)">

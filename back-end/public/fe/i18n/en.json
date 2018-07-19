@@ -1,0 +1,72 @@
+{
+  "common": {
+    "list_empty": "This list is empty"
+  },
+  "table": {
+    "header": {
+      "symbol": "Symbol",
+      "cryptocurrency": "Cryptocurrency",
+      "long_name": "Long name",
+      "is_base": "Is base?",
+      "is_deposit": "Is deposit?",
+      "capitalisation": "Capitalisation",
+      "nvt_ratio": "NVT ratio",
+      "market_share": "Market share",
+      "capitalisation_updated": "Capitalisation updated",
+      "status": "Status",
+      "action": "Action",
+      "id": "Id",
+      "creation_time": "Creation time",
+      "creator": "Creator",
+      "decision_by": "Decision by",
+      "decision_time": "Decision time",
+      "rationale": "Rationale",
+      "transaction_asset": "Transaction asset",
+      "exchange": "Exchange",
+      "account": "Account",
+      "amount": "Amount",
+      "investment_percentage": "Investment percentage",
+      "instrument": "Instrument",
+      "side": "Side",
+      "price": "Price",
+      "quantity": "Quantity",
+      "sum_of_exchange_trading_fee": "Sum of exchange trading fee",
+      "type": "Type",
+      "total_quantity": "Total quantity",
+      "exchange_trading_fee": "Exchange trading fee",
+      "submission_time": "Submission time",
+      "completion_time": "Completion time",
+      "fill_time": "Fill time",
+      "fill_price": "Fill price",
+      "started": "Started",
+      "updated": "Updated",
+      "completed": "Completed",
+      "strategy": "Strategy",
+      "simulated": "Simulated",
+      "deposit": "Deposit",
+      "created": "Created",
+      "actions": "Actions",
+      "quote_asset": "Quote asset",
+      "percentage": "Percentage, %",
+      "role_name": "Role name",
+      "name": "Name",
+      "surname": "Surname",
+      "email": "Email",
+      "creation_date": "Creation date"
+    }
+  },
+  "assets": {
+    "headline": "{{ count }} Cryptocurrencies",
+    "status": {
+      "400": "Whitelisted",
+      "401": "Graylisted",
+      "402": "Blacklisted"
+    },
+    "footer": {
+      "capitalization": "${{ total }} TOTAL"
+    }
+  },
+  "error": {
+
+  }
+}

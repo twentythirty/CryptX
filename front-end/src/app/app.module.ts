@@ -2,11 +2,14 @@ import { BrowserModule } from '@angular/platform-browser';
 import { NgModule, APP_INITIALIZER } from '@angular/core';
 import { FormsModule }   from '@angular/forms';
 import { Router }   from '@angular/router';
-import { HttpClientModule }   from '@angular/common/http';
+import { HttpClientModule, HttpClient }   from '@angular/common/http';
 import { HTTP_INTERCEPTORS } from '@angular/common/http';
 import { MatSnackBarModule } from '@angular/material';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { ReactiveFormsModule } from '@angular/forms';
+import { TranslateModule, TranslateLoader } from '@ngx-translate/core';
+import { TranslateHttpLoader } from '@ngx-translate/http-loader';
+import { environment } from '../environments/environment';
 
 import { AppComponent } from './app.component';
 import { NavigationComponent } from './shared/components/navigation/navigation.component';
@@ -31,6 +34,14 @@ import { InvestmentService } from './services/investment/investment.service';
 import { InvestmentModule } from './modules/investment/investment.module';
 import { InstrumentsModule } from './modules/instruments/instruments.module';
 
+export function HttpLoaderFactory(http: HttpClient) {
+  return new TranslateHttpLoader(
+    http,
+    `${environment.baseUrl}fe/i18n/`,
+    `.json?d=${Date.now()}`
+  );
+}
+
 @NgModule({
   declarations: [
     AppComponent,
@@ -41,6 +52,13 @@ import { InstrumentsModule } from './modules/instruments/instruments.module';
     BrowserAnimationsModule,
     FormsModule,
     HttpClientModule,
+    TranslateModule.forRoot({
+      loader: {
+        provide: TranslateLoader,
+        useFactory: HttpLoaderFactory,
+        deps: [HttpClient]
+      }
+    }),
     AuthModule,
     DashboardModule,
     MatSnackBarModule,
