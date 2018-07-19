@@ -44,8 +44,8 @@ export class UsersListComponent extends DataTableCommonManagerComponent implemen
     'first_name',
     'last_name',
     'email',
-    new PercentCellDataColumn({ column: 'created_timestamp' }),
-    new BooleanCellDataColumn({ column: 'is_active' })
+    'created_timestamp',
+    'is_active'
   ];
 
   
@@ -68,15 +68,6 @@ export class UsersListComponent extends DataTableCommonManagerComponent implemen
           })
         }
     });
-  }
-
-  generateRowData(){
-    let array = []
-    let objects = Object.values(this.usersDataSource.body);
-    objects.forEach( item => {
-      array.push({value: item.first_name})
-    });
-    return array;
   }
 
 }

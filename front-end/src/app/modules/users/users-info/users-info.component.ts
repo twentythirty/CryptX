@@ -8,6 +8,8 @@ import { RolesPermissionsResultData } from '../../../shared/models/api/rolesPerm
 import { RolesService } from "../../../services/roles/roles.service";
 import { RolesAllRequestData } from "../../../shared/models/api/rolesAllRequestData";
 import { AuthService } from "../../../services/auth/auth.service";
+import { Observable } from 'rxjs';
+import { zip } from 'rxjs/operators';
 
 
 @Component({
@@ -32,6 +34,7 @@ export class UsersInfoComponent implements OnInit {
   rolelist = [];
   rolesRequestData: RolesAllRequestData;
   loading = false;
+  loading2 = false;
   showDeactivateConfirm = false;
   buttonName: String;
 
@@ -51,39 +54,43 @@ export class UsersInfoComponent implements OnInit {
         this.userId = params.userId;
       }); }
 
-  ngOnInit() {
-      this.rolesService.getAllRoles(this.rolesRequestData).subscribe(res => {
-                res.roles.forEach(role => {
-                  let obj = {
-                    id: Number,
-                    name: String,
-                    is_active: false
-                  };
-                  obj.id = role.id;
-                  obj.name = role.name;
-                  this.userRoles.forEach(userrole => {
-                    if (obj.id === userrole.id){
-                      obj.is_active = true;
-                    }
-                  })
-                  this.rolelist.push(obj);
-                });
-                this.add()
-      });
-      this.usersService.getUser(this.userId).subscribe(data => {
-          this.user = data.user;
-          this.userForm.controls.Firstname.setValue(this.user.first_name)
-          this.userForm.controls.Lastname.setValue(this.user.last_name)
-          this.userForm.controls.Email.setValue(this.user.email)
-          this.userName = String(this.user.first_name +' '+ this.user.last_name);
-          if (this.user.is_active){
-            this.buttonName='Deactivate'
-          }else {
-            this.buttonName ='Activate'
-          }
-          this.userRoles = Object.values(data.user.roles);
-      });
-  }
+      ngOnInit() {
+          Observable.zip(
+            this.rolesService.getAllRoles(this.rolesRequestData),
+            this.usersService.getUser(this.userId),
+          ).subscribe((res) => {
+            const [{ roles }, { user }] = res;
+
+            this.user = user;
+            this.userForm.controls.Firstname.setValue(this.user.first_name)
+            this.userForm.controls.Lastname.setValue(this.user.last_name)
+            this.userForm.controls.Email.setValue(this.user.email)
+            this.userName = String(this.user.first_name +' '+ this.user.last_name);
+            if (this.user.is_active){
+              this.buttonName='Deactivate'
+            }else {
+              this.buttonName ='Activate'
+            }
+            this.userRoles = Object.values(user.roles);
+
+            roles.forEach(role => {
+              let obj = {
+                id: Number,
+                name: String,
+                is_active: false
+              };
+              obj.id = role.id;
+              obj.name = role.name;
+              this.userRoles.forEach(userrole => {
+                if (obj.id === userrole.id){
+                  obj.is_active = true;
+                }
+              })
+              this.rolelist.push(obj);
+            });
+            this.add();
+          });
+        }
 
   add(){
     let checkboxGroup = new FormArray(this.rolelist.map(item => new FormGroup({
@@ -138,28 +145,42 @@ export class UsersInfoComponent implements OnInit {
   saveUser(){
     this.usersService.saveUser(this.user).subscribe(
       data => {
-        this.router.navigate(['/users']);
+        if(data.success == true){
+         this.loading=false;
+        }
       }, error => {
+        this.loading=true;
       }, () => {
         this.loading = false;
       });
     this.usersService.updateUserRoles(this.user.id, this.form.controls.selectedItems.value).subscribe(
       data => {
-        this.router.navigate(['/users']);
+        if(data.success){
+         this.loading2=false;
+        }
       }, error => {
+        this.loading2=true;
       }, () => {
-        this.loading = false;
+        this.loading2=false;
+
+        if(!this.loading && !this.loading2){
+          this.router.navigate(['/users']);
+        }
       }); 
+      
   }
 
   deactivateUser(){
     this.user.is_active = !this.user.is_active;
     this.usersService.saveUser(this.user).subscribe(
       data => {
-        this.router.navigate(['/users']);
+        if(data.success){
+          this.router.navigate(['/users']);
+        }else{
+          console.log(data.user)
+        }
       }, error => {
       }, () => {
-        this.loading = false;
       });
   }
 
