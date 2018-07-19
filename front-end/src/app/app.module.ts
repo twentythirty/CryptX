@@ -29,6 +29,7 @@ import { AssetModule } from './modules/asset/asset.module';
 import { AssetService } from './services/asset/asset.service';
 import { InvestmentService } from './services/investment/investment.service';
 import { InvestmentModule } from './modules/investment/investment.module';
+import { InstrumentsModule } from './modules/instruments/instruments.module';
 
 @NgModule({
   declarations: [
@@ -47,6 +48,7 @@ import { InvestmentModule } from './modules/investment/investment.module';
     UsersModule,
     AssetModule,  // TODO: Remove this when moving to lazy loaded modules
     InvestmentModule, // TODO: Remove this when moving to lazy loaded modules
+    InstrumentsModule,
     AppRoutingModule,
     ReactiveFormsModule
   ],

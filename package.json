@@ -24,6 +24,7 @@
     "@angular/platform-browser": "^5.2.0",
     "@angular/platform-browser-dynamic": "^5.2.0",
     "@angular/router": "^5.2.0",
+    "@ngui/auto-complete": "^2.0.0",
     "@sendgrid/mail": "^6.2.1",
     "bcrypt": "^1.0.3",
     "bcrypt-promise": "^2.0.0",

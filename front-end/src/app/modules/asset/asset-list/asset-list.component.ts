@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 
-import { AssetService, AssetResultData, AssetsAllResponse } from '../../../services/asset/asset.service';
+import { AssetService, AssetResultData, AssetsAllResponseDetailed } from '../../../services/asset/asset.service';
 import { Asset, AssetStatus } from '../../../shared/models/asset';
 import { EntitiesFilter } from '../../../shared/models/api/entitiesFilter';
 import { TableDataSource, TableDataColumn } from '../../../shared/components/data-table/data-table.component';
@@ -117,8 +117,8 @@ export class AssetListComponent extends DataTableCommonManagerComponent implemen
   }
 
   getAllData(): void {
-    this.assetService.getAllAssets(this.requestData).subscribe(
-      (res: AssetsAllResponse) => {
+    this.assetService.getAllAssetsDetailed(this.requestData).subscribe(
+      (res: AssetsAllResponseDetailed) => {
         this.assetsDataSource.body = res.assets;
         if(res.footer) {
           this.assetsDataSource.footer = res.footer;

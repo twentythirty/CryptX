@@ -11,6 +11,12 @@ import { map } from 'rxjs/operators';
 export class AssetsAllResponse {
   success: boolean;
   assets: Array<Asset>;
+  count: number;
+}
+
+export class AssetsAllResponseDetailed {
+  success: boolean;
+  assets: Array<Asset>;
   footer: Array<any>
   count: number;
 }
@@ -30,9 +36,17 @@ export class AssetService {
 
   getAllAssets(requestData?: EntitiesFilter): Observable<AssetsAllResponse>{
     if(requestData) {
-      return this.http.post<AssetsAllResponse>(this.baseUrl + `assets/detailed/all`, requestData);
+      return this.http.post<AssetsAllResponse>(this.baseUrl + `assets/all`, requestData);
     } else {
-      return this.http.get<AssetsAllResponse>(this.baseUrl + `assets/detailed/all`);
+      return this.http.get<AssetsAllResponse>(this.baseUrl + `assets/all`);
+    }
+  }
+
+  getAllAssetsDetailed(requestData?: EntitiesFilter): Observable<AssetsAllResponseDetailed>{
+    if(requestData) {
+      return this.http.post<AssetsAllResponseDetailed>(this.baseUrl + `assets/detailed/all`, requestData);
+    } else {
+      return this.http.get<AssetsAllResponseDetailed>(this.baseUrl + `assets/detailed/all`);
     }
   }
 
