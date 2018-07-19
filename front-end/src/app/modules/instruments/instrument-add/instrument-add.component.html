@@ -1,0 +1,49 @@
+<app-page-heading
+  heading="New instrument"
+></app-page-heading>
+
+<div class="split-content horizontal">
+  <app-content-block
+    heading="Parameters"
+  >
+    
+    <form [formGroup]="form">
+      <div class="form-item">
+        <label class="label-name">Transaction asset</label>
+        <input
+          ngui-auto-complete
+          formControlName="transaction_asset_id"
+          [source]="assets"
+          value-formatter="value"
+          list-formatter="value"
+          max-num-list="15"
+          [accept-user-input]="false"
+          (valueChanged)="assetValueChanged($event, 'transaction_asset_id')"
+        >
+      </div>
+
+      <div class="form-item">
+        <label class="label-name">Quote asset</label>
+        <input
+          ngui-auto-complete
+          formControlName="quote_asset_id"
+          [source]="assets"
+          value-formatter="value"
+          list-formatter="value"
+          max-num-list="15"
+          [accept-user-input]="false"
+          (valueChanged)="assetValueChanged($event, 'quote_asset_id')"
+        >
+      </div>
+    </form>
+
+  </app-content-block>
+</div>
+
+<app-form-action-bar>
+  <button
+    class="btn submit"
+    [disabled]="loading"
+    (click)="saveInstrument()"
+  >Add instrument</button>
+</app-form-action-bar>

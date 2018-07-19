@@ -23,6 +23,8 @@ import { OrderDetailComponent } from '../../modules/investment/order-detail/orde
 import { ExecutionOrderDetailComponent } from '../../modules/investment/execution-order-detail/execution-order-detail.component';
 import { ExecutionOrderFillDetailComponent } from '../../modules/investment/execution-order-fill-detail/execution-order-fill-detail.component';
 import { DepositDetailComponent } from '../../modules/investment/deposit-detail/deposit-detail.component';
+import { InstrumentAddComponent } from '../../modules/instruments/instrument-add/instrument-add.component';
+import { InstrumentListComponent } from '../../modules/instruments/instrument-list/instrument-list.component';
 
 const routes: Routes = [
   { path: 'login', component: LoginComponent },
@@ -50,6 +52,7 @@ const routes: Routes = [
     component: RolesAddComponent,
     canActivate: [AuthGuard]
   },
+
   {
     path: 'users',
     component: UsersListComponent,
@@ -97,6 +100,18 @@ const routes: Routes = [
     canActivate: [AuthGuard, PermissionGuard],
     data: { requiredPermission: ['VIEW_INVESTMENT_RUN']}
   },
+
+  {
+    path: 'instruments',
+    component: InstrumentListComponent,
+    canActivate: [AuthGuard]
+  },
+  {
+    path: 'instruments/create',
+    component: InstrumentAddComponent,
+    canActivate: [AuthGuard]
+  },
+
 
   /**
    * Lazy loaded modules

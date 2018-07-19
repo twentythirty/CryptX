@@ -1,32 +1,32 @@
-    <div class="form-group">
-        <label class="label-name">{{label}}
-            <span>
-                <ng-content></ng-content>
-            </span>
-        
-            <ng-container *ngIf="select">
-                <select
-                    [(ngModel)]="value"
-                    [class.error]="isInvalid()"
-                    (blur)="onBlur()"
-                >
-                    <option *ngFor="let item of items" [value]="item">{{ item }}</option>
-                </select>
-            </ng-container>
+<div class="form-group">
+    <label class="label-name">{{label}}
+        <span>
+            <ng-content></ng-content>
+        </span>
+    
+        <ng-container *ngIf="select">
+            <select
+                [(ngModel)]="value"
+                [class.error]="isInvalid()"
+                (blur)="onBlur()"
+            >
+                <option *ngFor="let item of items" [value]="item.value">{{ item.name }}</option>
+            </select>
+        </ng-container>
 
-            <ng-container *ngIf="!select">
-                <input
-                    placeholder="{{placeholder}}"
-                    [(ngModel)]="value"
-                    [class.error]="isInvalid()"
-                    (blur)="onBlur()"
-                    type = "{{type}}"
-                >
-            </ng-container>
-            
-            <app-input-item-error-message
-                *ngIf="isInvalid()"
-                [errors]="fieldControl.errors"
-            ></app-input-item-error-message>
-</label>
-    </div>
+        <ng-container *ngIf="!select">
+            <input
+                placeholder="{{placeholder}}"
+                [(ngModel)]="value"
+                [class.error]="isInvalid()"
+                (blur)="onBlur()"
+                type = "{{type}}"
+            >
+        </ng-container>
+        
+        <app-input-item-error-message
+            *ngIf="isInvalid()"
+            [errors]="fieldControl.errors"
+        ></app-input-item-error-message>
+    </label>
+</div>

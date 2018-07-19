@@ -71,14 +71,17 @@ export class AuthService {
   }
 
   getValidators (path:string, key: string) {
-    this.validation = JSON.parse(localStorage.getItem('validators'))
+    this.validation = JSON.parse(localStorage.getItem('validators'));
     let validate = this.validation[path];
-    if (validate[key]==="not_blank"){
-      return Validators.required
-    }if (validate[key]==="email"){
-      return Validators.email
-    }if (validate[key]==="not_empty"){
-      return Validators.required
+
+    if (!validate) {
+      return;
+    } else if (validate[key] === "not_blank") {
+      return Validators.required;
+    } else if (validate[key] === "email") {
+      return Validators.email;
+    } else if (validate[key] === "not_empty") {
+      return Validators.required;
     }
   }
 

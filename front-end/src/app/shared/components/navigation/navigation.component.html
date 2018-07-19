@@ -26,6 +26,7 @@
         <a routerLinkActive="active" routerLink="/assets" *ngIf="checkPerm(['VIEW_ASSETS'])">Assets</a>
         <a routerLinkActive="active" routerLink="/users" href="#" *ngIf="checkPerm(['EDIT_USERS'])">User Management</a>
         <a routerLinkActive="active" routerLink="/roles" *ngIf="checkPerm(['VIEW_ROLES'])">Role Management</a>
+        <a routerLinkActive="active" routerLink="/instruments" *ngIf="checkPerm(['VIEW_ROLES'])">Instruments</a>
         <a routerLinkActive="active" href="#" *ngIf="checkPerm(['VIEW_SETTING_VALUES'])">Setting Management</a>
     </nav>
     </div>
