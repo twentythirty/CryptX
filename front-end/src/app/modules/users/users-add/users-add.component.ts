@@ -39,6 +39,7 @@ export class UsersAddComponent implements OnInit {
   }
 
   loading = false;
+  show = false;
 
   form: FormGroup;
 
@@ -63,7 +64,13 @@ export class UsersAddComponent implements OnInit {
     this.invite.role_id = this.form.controls.selectedItems.value;
     this.usersService.sendInvite(this.invite).subscribe(
       data => {
-        this.router.navigate(['/users']);
+        if(data.success){
+          this.loading=false;
+          this.router.navigate(['/users']);
+        }else{
+          console.log(data.message)
+          this.loading=true;
+        }
       }, error => {
         console.log('Error', error);
       }, () => {
@@ -94,5 +101,9 @@ export class UsersAddComponent implements OnInit {
   mapItems(items) {
     let selectedItems = items.filter((item) => item.checkbox).map((item) => item.id);
     return selectedItems.length ? selectedItems : null;
+  }
+
+  click(){
+    this.show = true;
   }
 }
