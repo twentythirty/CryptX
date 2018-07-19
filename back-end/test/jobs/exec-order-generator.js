@@ -8,6 +8,8 @@ const sinon = require("sinon");
 
 chai.use(chaiAsPromised);
 
+const ccxtUtils = require('../../utils/CCXTUtils');
+
 const execOrderGenerator = require('../../jobs/exec-order-generator');
 
 const RecipeOrder = require('../../models').RecipeOrder;
@@ -70,8 +72,39 @@ describe('Execution Order generator job', () => {
             sinon.stub(RecipeOrderGroup, 'findAll').callsFake(options => {
                 return Promise.resolve([]);
             });
+
             done();
         });
+    });
+
+    //This is done before each test, as some may modify this stub.
+    beforeEach(done => {
+        sinon.stub(ccxtUtils, 'getConnector').callsFake(exhange => {
+            const connector = {
+                name: 'Mock exchange',
+                loadMarkets: () => {
+                    return {
+                        'LTC/BTC': {
+                            limits: {
+                                amount: {
+                                    min: 0,
+                                    max: 1000000
+                                },
+                                price: {
+                                    min: 0, //Set to 0 to make sure tests with random price pass always.
+                                    max: 1000000
+                                }
+                            },
+                            active: true
+                        }
+                    }
+                }
+            };
+
+            return Promise.resolve(connector);
+        });
+
+        done();
     });
 
     after(done => {
@@ -80,11 +113,16 @@ describe('Execution Order generator job', () => {
         done();
     });
 
+    afterEach(done => {
+        ccxtUtils.getConnector.restore();
+        done();
+    });
+
     const TEST_PENDING_ORDER_BASE = {
         status: RECIPE_ORDER_STATUSES.Pending,
         side: ORDER_SIDES.Buy,
     }
-    const PENDING_ORDER_IDS = [488, 512]; //ids for testing various pending orders
+    const PENDING_ORDER_IDS = [488, 512, 569, 599]; //ids for testing various pending orders
     const PENDING_ORDER_QNTY = 2.0;
     const PENDING_ORDER_PRICE = _.random();
     const TEST_SYMBOL_PENDING_ORDER_BASE = Object.assign({}, TEST_PENDING_ORDER_BASE, {
@@ -263,6 +301,154 @@ describe('Execution Order generator job', () => {
             chai.expect(finished_order).to.not.be.a('array');
 
             chai.expect(finished_order.status).to.eq(TEST_SYMBOL_PENDING_ORDER_BASE.status, "Order status chagned!");
+        });
+    });
+
+    it("shall skip a pending order if the execution total is less than the minimum limit of the market", () => {
+        ccxtUtils.getConnector.restore();
+        sinon.stub(ccxtUtils, 'getConnector').callsFake(exhange => {
+            const connector = {
+                name: 'Mock exchange',
+                loadMarkets: () => {
+                    return {
+                        'LTC/BTC': {
+                            limits: {
+                                amount: {
+                                    min: 400,
+                                    max: 1000000
+                                },
+                                price: {
+                                    min: 400,
+                                    max: 1000000
+                                }
+                            },
+                            active: true
+                        }
+                    }
+                }
+            };
+
+            return Promise.resolve(connector);
+        });
+
+
+        let not_completed_order = Object.assign({
+                
+        }, TEST_SYMBOL_PENDING_ORDER_BASE, {
+            id: PENDING_ORDER_IDS[2]
+        });
+
+        sinon.stub(RecipeOrder, 'findAll').callsFake(options => {
+
+            stubSave(not_completed_order);
+            return Promise.resolve([not_completed_order]);
+        });
+        sinon.stub(InstrumentExchangeMapping, 'find').callsFake(options => {
+            return Promise.resolve(new InstrumentExchangeMapping(Object.assign(options.where, {
+                tick_size: 0.5
+            })))
+        });
+
+        //Make sure the order is unfilled yet.
+        sinon.stub(ExecutionOrderFill, 'findAll').callsFake(options => {
+            return Promise.resolve([
+                new ExecutionOrderFill({
+                    quantity: 1,
+                    id: 1
+                })
+            ])
+        });
+
+        return execOrderGenerator.JOB_BODY(stubbed_config, console.log).then(processed_recipes => {
+
+            restoreSymbols(
+                RecipeOrder.findAll,
+                ExecutionOrderFill.findAll,
+                InstrumentExchangeMapping.find
+            );
+            
+            const [failed_recipe, execution_orders] = processed_recipes;
+            
+            chai.expect(failed_recipe).to.deep.equal(not_completed_order, "Order should not have changed!");
+  
+            chai.expect(execution_orders).to.be.undefined;
+        });
+
+    });
+
+    it("will create next step of execution orders with the total set to the markers max limit", () =>{
+        ccxtUtils.getConnector.restore();
+        sinon.stub(ccxtUtils, 'getConnector').callsFake(exhange => {
+            const connector = {
+                name: 'Mock exchange',
+                loadMarkets: () => {
+                    return {
+                        'LTC/BTC': {
+                            limits: {
+                                amount: {
+                                    min: 0,
+                                    max: 0.1
+                                },
+                                price: {
+                                    min: 0,
+                                    max: 0.1
+                                }
+                            },
+                            active: true
+                        }
+                    }
+                }
+            };
+
+            return Promise.resolve(connector);
+        });
+
+
+        let not_completed_order = Object.assign({
+  
+        }, TEST_SYMBOL_PENDING_ORDER_BASE, {
+            id: PENDING_ORDER_IDS[3]
+        });
+
+        sinon.stub(RecipeOrder, 'findAll').callsFake(options => {
+
+            stubSave(not_completed_order);
+            return Promise.resolve([not_completed_order]);
+        });
+        sinon.stub(InstrumentExchangeMapping, 'find').callsFake(options => {
+            return Promise.resolve(new InstrumentExchangeMapping(Object.assign(options.where, {
+                tick_size: 0.5
+            })))
+        });
+
+        //Make sure the order is unfilled yet.
+        sinon.stub(ExecutionOrderFill, 'findAll').callsFake(options => {
+            return Promise.resolve([
+                new ExecutionOrderFill({
+                    quantity: 1,
+                    id: 1
+                })
+            ])
+        });
+
+        sinon.stub(ExecutionOrder, 'create').callsFake(options => {
+
+            return Promise.resolve(options);
+        });
+
+        return execOrderGenerator.JOB_BODY(stubbed_config, console.log).then(processed_recipes => {
+
+            restoreSymbols(
+                RecipeOrder.findAll,
+                ExecutionOrderFill.findAll,
+                InstrumentExchangeMapping.find,
+                ExecutionOrder.create
+            );  
+            //console.log(processed_recipes);
+            const [[recipe, execution_order]] = processed_recipes;
+            
+            chai.expect(execution_order).to.be.not.undefined;
+            chai.expect(execution_order.total_quantity).to.equal(0.1);
         });
     });
 
