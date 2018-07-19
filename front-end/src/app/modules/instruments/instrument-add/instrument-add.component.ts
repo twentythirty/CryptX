@@ -60,7 +60,7 @@ export class InstrumentAddComponent implements OnInit {
         if (data.success) {
           this.router.navigate(['/instruments']);
         } else {
-          console.log(data.message);
+          console.log(data.error);
         }
       },
       error => {
