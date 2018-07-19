@@ -136,7 +136,7 @@ module.exports.JOB_BODY = async (config, log) => {
                         const exhnage_connector = await ccxtUtils.getConnector(pending_order.target_exchange_id);
 
                         if(!exhnage_connector) {
-                            log(`[WARN.4A]: Failed to retrieve exchange connector with id: ${pending_order.target_exchange_id}`);
+                            log(`[ERROR.4A]: Failed to retrieve exchange connector with id: ${pending_order.target_exchange_id}`);
                             return pending_order;
                         }
 
@@ -144,7 +144,7 @@ module.exports.JOB_BODY = async (config, log) => {
                         const exchange_markets = await exhnage_connector.loadMarkets();
 
                         if(_.isEmpty(exchange_markets)) {
-                            log(`[WARN.4A]: No market data is awailable for ${exchangeConnector.name}`);
+                            log(`[ERROR.4A]: No market data is awailable for ${exchangeConnector.name}`);
                             return pending_order;
                         }
 
@@ -152,7 +152,7 @@ module.exports.JOB_BODY = async (config, log) => {
                         const exchange_market = exchange_markets[pending_order.Instrument.symbol];
 
                         if(!exchange_market || !exchange_market.active) {
-                            log(`[WARN.4A]: Market for ${pending_order.Instrument.symbol} is not available or is not active`);
+                            log(`[ERROR.4A]: Market for ${pending_order.Instrument.symbol} is not available or is not active`);
                             return pending_order;
                         }
 
