@@ -57,6 +57,11 @@
   },
   "assets": {
     "headline": "{{ count }} Cryptocurrencies",
+    "status": {
+      "400": "Whitelisted",
+      "401": "Graylisted",
+      "402": "Blacklisted"
+    },
     "footer": {
       "capitalization": "${{ total }} TOTAL"
     }
