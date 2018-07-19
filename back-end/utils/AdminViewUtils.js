@@ -1,7 +1,21 @@
 'use strict';
 
 
-const where_or_empty = (where_clause) => `${_.isEmpty(where_clause)? '' : `WHERE ${where_clause}`}`;
+const whereOrEmpty = (where_clause) => `${_.isEmpty(where_clause)? '' : `WHERE ${where_clause}`}`;
+module.exports.whereOrEmpty = whereOrEmpty;
+
+const addToWhere = (where_clause = '', addition = '') => {
+
+    if (_.isEmpty(where_clause)) {
+        return addition || '';
+    }
+    if (_.isEmpty(addition)) {
+        return where_clause || '';
+    }
+
+    return `${where_clause} AND ${addition}`;
+}
+module.exports.addToWhere = addToWhere;
 
 /**
  * generate an SQL snippet that selects count fo rows from table table_expr
@@ -10,7 +24,7 @@ const selectCount = (table_expr, alias = 'count', where_clause = '') => {
 
     return `SELECT count(*) AS ${alias}
             FROM ${table_expr}
-            ${where_or_empty(where_clause)}
+            ${whereOrEmpty(where_clause)}
     `
 }
 module.exports.selectCount = selectCount;
@@ -18,7 +32,7 @@ module.exports.selectCount = selectCount;
 const selectDataRows = (fields = [], table_expr, where_clause = '') => {
 
     return `SELECT ${fields? _.join(fields, ',\n') : '*'} FROM ${table_expr}
-            ${where_or_empty(where_clause)}`
+            ${whereOrEmpty(where_clause)}`
 }
 module.exports.selectDataRows = selectDataRows;
 
@@ -29,7 +43,7 @@ const selectDistinct = (field_expr, table_expr, where_clause = '') => {
 
     return `SELECT DISTINCT ${field_expr}
             FROM ${table_expr}
-            ${where_or_empty(where_clause)}
+            ${whereOrEmpty(where_clause)}
     `
 }
 module.exports.selectDistinct = selectDistinct;

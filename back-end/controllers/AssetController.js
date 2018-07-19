@@ -82,41 +82,38 @@ const getAssetsDetailed = async function (req, res) {
 
   console.log('WHERE clause: %o', req.seq_query);
 
-  let [err, assets] = await to(Asset.findAndCountAll(req.seq_query));
-  if (err) return ReE(res, err.message, 422);
-
-  // mock data below assigned below
-  [err, assets] = await to(Asset.findAndCountAll(req.seq_query));
-  if (err) return ReE(res, err.message, 422);
-
-  let { rows: new_asset_data, count } = assets;
-  
-  new_asset_data.map((single_asset_data, index) => {
-    return Object.assign(single_asset_data,
-      {
-      /* symbol: 999,
-      is_cryptocurrency: 999,
-      long_name: 999,
-      is_base: 999,
-      is_deposit: 999, */
-      capitalization: 999,
-      nvt_ratio: 999,
-      market_share: 999,
-      capitalization_updated: 999,
-      status: (index % 2 == 0 ? INSTRUMENT_STATUS_CHANGES.Whitelisting : INSTRUMENT_STATUS_CHANGES.Blacklisting)
-      }, single_asset_data)
-  });
+  let [error, assets_with_count] = await to(adminViewsService.fetchAssetsViewDataWithCount(req.seq_query));
+  if (error)
+    return ReE(res, error, 422);
 
   let footer;
-  [err, footer] = await to(adminViewsService.fetchAssetsViewFooter());
+  [error, footer] = await to(adminViewsService.fetchAssetsViewFooter(req.sql_where));
+  if (error) 
+    return ReE(res, error, 422);
+  
+  const { data: assets, total: count } = assets_with_count;
 
   return ReS(res, {
-    assets: new_asset_data,
-    footer,
+    assets,
     count,
+    footer
   })
 };
 module.exports.getAssetsDetailed = getAssetsDetailed;
+
+const getAssetsColumnLOV = async (req, res) => {
+
+  const field_name = req.params.field_name
+  const { query } = _.isPlainObject(req.body)? req.body : { query: '' };
+
+  const field_vals = await adminViewsService.fetchAssetsViewHeaderLOV(field_name, query);
+
+  return ReS(res, {
+    query: query,
+    lov: field_vals
+  })
+};
+module.exports.getAssetsColumnLOV = getAssetsColumnLOV;
 
 const getWhitelisted = async function (req, res) {
   

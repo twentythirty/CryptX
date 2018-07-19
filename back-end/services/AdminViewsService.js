@@ -4,6 +4,7 @@
 const sequelize = require('../models').sequelize;
 const builder = require('../utils/AdminViewUtils');
 const AVUser = require('../models').AVUser;
+const AVAsset = require('../models').AVAsset;
 
 const TABLE_LOV_FIELDS = {
     'av_users': [
@@ -11,6 +12,14 @@ const TABLE_LOV_FIELDS = {
         'last_name',
         'email',
         'is_active'
+    ],
+    'av_assets': [
+        'symbol',
+        'is_base',
+        'is_deposit',
+        'is_cryptocurrency',
+        'long_name',
+        'status'
     ]
 }
 
@@ -48,11 +57,23 @@ const fetchUsersViewHeaderLOV = async (header_field, query = '') => {
 }
 module.exports.fetchUsersViewHeaderLOV = fetchUsersViewHeaderLOV;
 
+const fetchAssetsViewHeaderLOV = async (header_field, query = '') => {
+
+    return fetchViewHeaderLOV('av_assets', header_field, query)
+}
+module.exports.fetchAssetsViewHeaderLOV = fetchAssetsViewHeaderLOV;
+
 const fetchUsersViewDataWithCount = async (seq_where = {}) => {
 
     return fetchViewDataWithCount(AVUser, seq_where);
 }
 module.exports.fetchUsersViewDataWithCount = fetchUsersViewDataWithCount;
+
+const fetchAssetsViewDataWithCount = async (seq_where = {}) => {
+
+    return fetchViewDataWithCount(AVAsset, seq_where);
+}
+module.exports.fetchAssetsViewDataWithCount = fetchAssetsViewDataWithCount;
 
 const fetchUsersViewFooter = async (where_clause = '') => {
 
@@ -64,11 +85,10 @@ const fetchUsersViewFooter = async (where_clause = '') => {
     }
 
     const query_parts = _.concat(_.map(simple_fields, (field_expr, alias) => {
-        //using public.user, since pg has a default user table and its very different
         return builder.selectCountDistinct(field_expr, alias, 'av_users', where_clause)
     }), 
     //attach the more fancy footer column query as-is to avoid convoluted parametrization
-    `(${builder.selectCount('av_users', 'is_active', 'is_active = \'users.entity.active\'')})`);
+    `(${builder.selectCount('av_users', 'is_active', builder.addToWhere(where_clause, 'is_active = \'users.entity.active\''))})`);
 
     const footer_values = (await sequelize.query(`SELECT\n${_.join(query_parts, ',\n')};`))[0];
 
@@ -78,50 +98,42 @@ const fetchUsersViewFooter = async (where_clause = '') => {
 module.exports.fetchUsersViewFooter = fetchUsersViewFooter;
 
 
+const fetchAssetsViewFooter = async (where_clause = '') => {
+
+    //using singular ocmplete query due to performance impact of refetching part of this view footer
+    const united_query = `
+    SELECT 
+       SUM(is_base) AS is_base,
+       SUM(is_deposit) AS is_deposit,
+       SUM(status) AS status,
+       COUNT(DISTINCT symbol) AS symbol,
+       SUM(is_cryptocurrency) AS is_cryptocurrency,
+       SUM(capitalization) AS capitalization
+FROM
+  (SELECT (CASE WHEN is_base = 'assets.is_base.yes' THEN 1 ELSE 0 END) AS is_base,
+          (CASE WHEN is_deposit = 'assets.is_deposit.yes' THEN 1 ELSE 0 END) AS is_deposit,
+          (CASE WHEN status = 'assets.status.400' THEN 1 ELSE 0 END) AS status,
+          (CASE WHEN is_cryptocurrency = 'assets.is_cryptocurrency.yes' THEN 1 ELSE 0 END) AS is_cryptocurrency,
+          symbol,
+          capitalization
+   FROM av_assets
+    ${builder.whereOrEmpty(where_clause)}) AS inner_av
+    `
+
+    const footer_values = (await sequelize.query(united_query))[0];
+    
+    return builder.addFooterLabels(
+        builder.queryReturnRowToFooterObj(footer_values), 'assets', {
+        capitalization: (cap) => `$${cap}`
+    });
+}
+module.exports.fetchAssetsViewFooter = fetchAssetsViewFooter;
+
 const fetchMockHeaderLOV = async (header_field, query = '') => {
     // mock data below
     return [ 'Value 1', 'Value 2', 'Value 3', 'Value 4', 'Value 5'];
 }
 module.exports.fetchMockHeaderLOV = fetchMockHeaderLOV;
-
-const fetchAssetsViewFooter = async () => {
-    // mock data below
-    let mock_data = [
-        {
-            "name": "symbol",
-            "value": 999,
-        },
-        {
-            "name": "long_name",
-            "value": 999
-        },
-        {
-            "name": "is_base",
-            "value": 999
-        },
-        {
-            "name": "is_deposit",
-            "value": 999
-        },
-        {
-            "name": "capitalization",
-            "value": 9999999
-        },
-        {
-            "name": "capitalization_updated",
-            "value": 999
-        },
-        {
-            "name": "status",
-            "value": 999
-        }
-    ];
-
-    return builder.addFooterLabels(mock_data, 'assets', {
-        capitalization: (cap) => `$${cap}`
-    });
-}
-module.exports.fetchAssetsViewFooter = fetchAssetsViewFooter;
 
 const fetchInstrumentsViewFooter = async () => {
     // mock data below
