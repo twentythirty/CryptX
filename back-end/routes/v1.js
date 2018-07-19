@@ -317,6 +317,13 @@ router.get(
   check_permissions,
   InvestmentController.getInvestmentRun
 );
+router.get(
+  ROUTES.GetInvestmentStats.router_string,
+  stateless_auth,
+  check_permissions,
+  InvestmentController.getInvestmentStats
+);
+
 
 // Recipe Runs
 router.post(

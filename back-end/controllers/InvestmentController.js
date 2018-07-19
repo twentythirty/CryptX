@@ -81,6 +81,42 @@ const getInvestmentRun = async function (req, res) {
 };
 module.exports.getInvestmentRun = getInvestmentRun;
 
+const getInvestmentStats = async function(req, res) {
+
+  // mock data below
+  
+  let mock_stats = {
+    investment: {
+      id: 2,
+      status: 51,
+      strategy_type: "12",
+      timestamp: 1531989525768
+    },
+    recipe_run: {
+      id: 2,
+      status: 51,
+      timestamp: 1531989525768
+    },
+    deposits: {
+      count: 12,
+      status: 123
+    },
+    orders: {
+      count: 12,
+      status: 123
+    },
+    execution_orders: {
+      count: 12,
+      status: 123
+    }
+  }
+
+  return ReS(res, {
+    statistics: mock_stats
+  })
+}
+module.exports.getInvestmentStats = getInvestmentStats;
+
 const getInvestmentRuns = async function (req, res) {
 
   let query = req.seq_query;

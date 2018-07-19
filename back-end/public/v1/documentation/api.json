@@ -629,6 +629,34 @@
         }
       }
     },
+    "/investments/{investment_id}/stats": {
+      "get": {
+        "tags": [
+          "investment"
+        ],
+        "description": "Get statistics and statuses of investment run",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "investment_id",
+            "in": "path",
+            "description": "identifier of investment run to fecth",
+            "required": true,
+            "type": "integer"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "$ref": "#/definitions/InvestmentRunStats"
+            }
+          }
+        }
+      }
+    },
     "/investments/all": {
       "get": {
         "tags": [
@@ -3296,6 +3324,89 @@
     }
   },
   "definitions": {
+    "InvestmentRunStats": {
+      "description": "Statuses and statistics on investment run",
+      "type": "object",
+      "properties": {
+        "investment": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "number",
+              "example": 2
+            },
+            "status": {
+              "type": "number",
+              "example": 51
+            },
+            "strategy_type": {
+              "type": "number",
+              "example": 12
+            },
+            "timestamp": {
+              "type": "number",
+              "example": null
+            }
+          }
+        },
+        "recipe_run": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "number",
+              "example": 2
+            },
+            "status": {
+              "type": "number",
+              "example": 51
+            },
+            "timestamp": {
+              "type": "number",
+              "example": 1531989525768
+            }
+          }
+        },
+        "deposits": {
+          "type": "object",
+          "properties": {
+            "count": {
+              "type": "number",
+              "example": 12
+            },
+            "status": {
+              "type": "number",
+              "example": 123
+            }
+          }
+        },
+        "orders": {
+          "type": "object",
+          "properties": {
+            "count": {
+              "type": "number",
+              "example": 12
+            },
+            "status": {
+              "type": "number",
+              "example": 123
+            }
+          }
+        },
+        "execution_orders": {
+          "type": "object",
+          "properties": {
+            "count": {
+              "type": "number",
+              "example": 12
+            },
+            "status": {
+              "type": "number",
+              "example": 123
+            }
+          }
+        }
+      }
+    },
     "ExchangeList": {
       "description": "Fetches distinct values of table column. Should help implement filtering.",
       "type": "object",
