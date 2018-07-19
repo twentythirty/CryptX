@@ -143,31 +143,18 @@ export class UsersInfoComponent implements OnInit {
   }
 
   saveUser(){
+    this.user.roles = this.form.controls.selectedItems.value;
     this.usersService.saveUser(this.user).subscribe(
       data => {
         if(data.success == true){
          this.loading=false;
+         this.router.navigate(['/users']);
         }
       }, error => {
         this.loading=true;
       }, () => {
         this.loading = false;
       });
-    this.usersService.updateUserRoles(this.user.id, this.form.controls.selectedItems.value).subscribe(
-      data => {
-        if(data.success){
-         this.loading2=false;
-        }
-      }, error => {
-        this.loading2=true;
-      }, () => {
-        this.loading2=false;
-
-        if(!this.loading && !this.loading2){
-          this.router.navigate(['/users']);
-        }
-      }); 
-      
   }
 
   deactivateUser(){

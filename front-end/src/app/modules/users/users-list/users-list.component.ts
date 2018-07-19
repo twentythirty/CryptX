@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { TableDataSource, TableDataColumn } from '../../../shared/components/data-table/data-table.component';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { map } from 'rxjs/operator/map';
 import { EntitiesFilter } from '../../../shared/models/api/entitiesFilter';
 import { Observable } from 'rxjs';
@@ -8,19 +8,15 @@ import { Observable } from 'rxjs';
 import { UsersService } from '../../../services/users/users.service';
 import { DataTableCommonManagerComponent } from '../../../shared/components/data-table-common-manager/data-table-common-manager.component';
 import {
-  BooleanCellDataColumn,
-  BooleanCellComponent,
-  CurrencyCellDataColumn,
-  CurrencyCellComponent,
-  NumberCellComponent,
-  PercentCellComponent,
   DateCellComponent,
   DateCellDataColumn,
-  PercentCellDataColumn,
-  NumberCellDataColumn,
-  ActionCellDataColumn,
-  DataCellAction
+  StatusCellComponent,
+  StatusCellDataColumn,
+  PercentCellComponent,
+  PercentCellDataColumn
 } from '../../../shared/components/data-table-cells';
+import { User } from "../../../shared/models/user";
+import { StatusClass } from "../../../shared/models/common";
 
 
 @Component({
@@ -44,15 +40,19 @@ export class UsersListComponent extends DataTableCommonManagerComponent implemen
     'first_name',
     'last_name',
     'email',
-    'created_timestamp',
-    'is_active'
+     new DateCellDataColumn({ column: 'created_timestamp' }),
+     'is_active',
+     /*new StatusCellDataColumn({ column: 'is_active', inputs: { classMap: {
+      'users.entity.inactive': StatusClass.DEACTIVATED,
+      'users.entity.active': StatusClass.ACTIVE,
+    }}}),*/
   ];
-
-  
 
   constructor(
     private userService: UsersService,
-    public route: ActivatedRoute
+    public route: ActivatedRoute,
+    public router: Router,
+
   ) {
     super(route);
   }
@@ -70,4 +70,7 @@ export class UsersListComponent extends DataTableCommonManagerComponent implemen
     });
   }
 
+  public openRow(users: User): void {
+    this.router.navigate(['/users/edit', users.id])
+  }
 }

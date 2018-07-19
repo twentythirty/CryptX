@@ -1,9 +1,12 @@
+declare function require(path: string);
+
 import { Component, OnInit } from '@angular/core';
 import { Router, RouterLink, ActivatedRoute } from '@angular/router';
 
 import { AuthService } from '../../../services/auth/auth.service';
 import { TokenCheck } from '../models/tokenCheck';
 import { tap } from 'rxjs/operators';
+import { FormGroup, FormControl, Validators } from "@angular/forms";
 
 class Passwords {
   new_password: string = '';
@@ -16,6 +19,8 @@ class Passwords {
   styleUrls: ['./password-reset.component.scss']
 })
 export class PasswordResetComponent implements OnInit {
+  imageLogo = require('Images/Logo.png');
+
   token: TokenCheck = new TokenCheck();
   pass: Passwords = {
     new_password: '',
@@ -23,6 +28,11 @@ export class PasswordResetComponent implements OnInit {
   };
   status: string = '';
   done: boolean = false;
+
+  resetForm = new FormGroup ({
+    New: new FormControl('',[Validators.required]),
+    Repeat: new FormControl('',[Validators.required]),
+  });
 
   constructor(private authService: AuthService, private route: ActivatedRoute) { }
 

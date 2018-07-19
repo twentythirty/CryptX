@@ -7,7 +7,7 @@ export class User {
   public reset_password_token_hash: string
   public reset_password_token_expiry_timestamp: string
   public is_active: boolean
-  public roles: object[]
+  public roles: number[]
 
   /* public getFullName () {
     return this.first_name + ' ' + this.last_name; 
