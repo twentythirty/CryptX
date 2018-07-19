@@ -14,7 +14,7 @@ import { InstrumentsService } from '../../../services/instruments/instruments.se
 export class InstrumentListComponent extends DataTableCommonManagerComponent {
   public instrumentsDataSource: TableDataSource = {
     header: [
-      { column: 'id', nameKey: 'table.header.id', filter: { type: 'number', sortable: true }},
+      { column: 'symbol', nameKey: 'table.header.instrument', filter: { type: 'text', sortable: true }},
       { column: 'exchanges_connected', nameKey: 'table.header.exchanges_connected', filter: { type: 'number', sortable: true }},
       { column: 'exchanges_failed', nameKey: 'table.header.exchanges_connected', filter: { type: 'number', sortable: true }},
     ],
@@ -22,7 +22,7 @@ export class InstrumentListComponent extends DataTableCommonManagerComponent {
   };
 
   public instrumentsColumnsToShow: Array<TableDataColumn> = [
-    new TableDataColumn({ column: 'id' }),
+    new TableDataColumn({ column: 'symbol' }),
     new TableDataColumn({ column: 'exchanges_connected' }),
     new TableDataColumn({ column: 'exchanges_failed' }),
   ];
