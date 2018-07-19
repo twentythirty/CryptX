@@ -100,30 +100,33 @@ module.exports.queryReturnRowToFooterObj = queryReturnRowToFooterObj;
 /**
  * Adds labels to supplied footer object name/value pairs.
  * 
- * Supplied `raw_mappings` map should be structures as a series of key=function items.
+ * Supplied `args_mappings` map should be structures as a series of key=function items.
  * The key is a `field_name` while the value is a single-arg function that returns
- * the correct raw label representation from the value received
+ * the args required for the template as an object of key-value-pairs
  * 
- * Any field names not mention in the raw mappings map will be considered having translation
- * keys by default.
+ * Any field names not mention in the args_mappings map will be considered having the field `value` as their only translation arg.
  * @param footer_objs 
  * @param table_name 
- * @param raw_mappings 
+ * @param args_mappings
  */
-const addFooterLabels = (footer_objs, table_name, raw_mappings = {}) => {
+const addFooterLabels = (footer_objs, table_name, args_mappings = {}) => {
 
     return _.map(footer_objs, footer_obj => {
-        if (raw_mappings[footer_obj.name]) {
-            return Object.assign({}, footer_obj, {
-                raw: true,
-                label: raw_mappings[footer_obj.name](footer_obj.value)
-            })
+
+        let template_args = {};
+
+        if (args_mappings[footer_obj.name]) {
+            template_args = args_mappings[footer_obj.name](footer_obj.value)
         } else {
-            return Object.assign({}, footer_obj, {
-                raw: false,
-                label: `${table_name}.footer.${footer_obj.name}`
-            })
+            template_args = {
+                [footer_obj.name]: footer_obj.value
+            }
         }
+
+        return Object.assign({}, footer_obj, {
+            template: `${table_name}.footer.${footer_obj.name}`,
+            args: template_args
+        })
     });
 }
 module.exports.addFooterLabels = addFooterLabels;

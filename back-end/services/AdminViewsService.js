@@ -135,9 +135,7 @@ FROM
     const footer_values = (await sequelize.query(united_query))[0];
     
     return builder.addFooterLabels(
-        builder.queryReturnRowToFooterObj(footer_values), 'assets', {
-        capitalization: (cap) => `$${cap}`
-    });
+        builder.queryReturnRowToFooterObj(footer_values), 'assets');
 }
 module.exports.fetchAssetsViewFooter = fetchAssetsViewFooter;
 
