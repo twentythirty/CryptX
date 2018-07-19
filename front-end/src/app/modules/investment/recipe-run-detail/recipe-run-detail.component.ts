@@ -34,26 +34,26 @@ export class RecipeRunDetailComponent extends TimelineDetailComponent implements
 
   public singleDataSource: SingleTableDataSource = {
     header: [
-      { column: 'id', name: 'Id' },
-      { column: 'creation_time', name: 'Creation time' },
-      { column: 'instrument', name: 'Instrument' },
-      { column: 'creator', name: 'Creator' },
-      { column: 'status', name: 'Status' },
-      { column: 'decision_by', name: 'Decision by' },
-      { column: 'decision_time', name: 'Decision time' },
-      { column: 'rationale', name: 'Rationale' },
-      { column: 'actions', name: 'Actions' }
+      { column: 'id', nameKey: 'table.header.id' },
+      { column: 'creation_time', nameKey: 'table.header.creation_time' },
+      { column: 'instrument', nameKey: 'table.header.instrument' },
+      { column: 'creator', nameKey: 'table.header.creator' },
+      { column: 'status', nameKey: 'table.header.status' },
+      { column: 'decision_by', nameKey: 'table.header.decision_by' },
+      { column: 'decision_time', nameKey: 'table.header.decision_time' },
+      { column: 'rationale', nameKey: 'table.header.rationale' },
+      { column: 'actions', nameKey: 'table.header.actions' }
     ],
     body: null
   }
 
   public listDataSource: TableDataSource = {
     header: [
-      { column: 'id', name: 'Id', filter: {type: 'text', sortable: true }},
-      { column: 'transaction_asset', name: 'Transaction asset', filter: {type: 'text', sortable: true }},
-      { column: 'quote_asset', name: 'Quote asset', filter: {type: 'text', sortable: true }},
-      { column: 'exchange', name: 'Exchange', filter: {type: 'text', sortable: true }},
-      { column: 'percentage', name: 'Percentage, %', filter: {type: 'number', sortable: true }}
+      { column: 'id', nameKey: 'table.header.id', filter: {type: 'text', sortable: true }},
+      { column: 'transaction_asset', nameKey: 'table.header.transaction_asset', filter: {type: 'text', sortable: true }},
+      { column: 'quote_asset', nameKey: 'table.header.quote_asset', filter: {type: 'text', sortable: true }},
+      { column: 'exchange', nameKey: 'table.header.exchange', filter: {type: 'text', sortable: true }},
+      { column: 'percentage', nameKey: 'table.header.percentage', filter: {type: 'number', sortable: true }}
     ],
     body: null,
   };

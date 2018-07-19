@@ -34,27 +34,27 @@ export class OrderDetailComponent extends TimelineDetailComponent implements OnI
 
   public singleDataSource: SingleTableDataSource = {
     header: [
-      { column: 'id', name: 'Id' },
-      { column: 'creation_time', name: 'Creation time' },
-      { column: 'instrument', name: 'Instrument' },
-      { column: 'creator', name: 'Creator' },
-      { column: 'status', name: 'Status' },
-      { column: 'decision_by', name: 'Decision by' },
-      { column: 'decision_time', name: 'Decision time' },
-      { column: 'rationale', name: 'Rationale' }
+      { column: 'id', nameKey: 'table.header.id' },
+      { column: 'creation_time', nameKey: 'table.header.creation_time' },
+      { column: 'instrument', nameKey: 'table.header.instrument' },
+      { column: 'creator', nameKey: 'table.header.creator' },
+      { column: 'status', nameKey: 'table.header.status' },
+      { column: 'decision_by', nameKey: 'table.header.decision_by' },
+      { column: 'decision_time', nameKey: 'table.header.decision_time' },
+      { column: 'rationale', nameKey: 'table.header.rationale' }
     ],
     body: null
   }
 
   public listDataSource: TableDataSource = {
     header: [
-      { column: 'id', name: 'Id', filter: {type: 'text', sortable: true }},
-      { column: 'instrument', name: 'Instrument', filter: {type: 'text', sortable: true }},
-      { column: 'side', name: 'Side', filter: {type: 'text', sortable: true }},
-      { column: 'price', name: 'Price', filter: {type: 'number', sortable: true }},
-      { column: 'quantity', name: 'Quantity', filter: {type: 'number', sortable: true }},
-      { column: 'fee', name: 'Sum of exchange trading fee', filter: {type: 'number', sortable: true }},
-      { column: 'status', name: 'Status', filter: {type: 'text', sortable: true }}
+      { column: 'id', nameKey: 'table.header.id', filter: {type: 'text', sortable: true }},
+      { column: 'instrument', nameKey: 'table.header.instrument', filter: {type: 'text', sortable: true }},
+      { column: 'side', nameKey: 'table.header.side', filter: {type: 'text', sortable: true }},
+      { column: 'price', nameKey: 'table.header.price', filter: {type: 'number', sortable: true }},
+      { column: 'quantity', nameKey: 'table.header.quantity', filter: {type: 'number', sortable: true }},
+      { column: 'fee', nameKey: 'table.header.sum_of_exchange_trading_fee', filter: {type: 'number', sortable: true }},
+      { column: 'status', nameKey: 'table.header.status', filter: {type: 'text', sortable: true }}
     ],
     body: null,
   };

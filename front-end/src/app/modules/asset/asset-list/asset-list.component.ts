@@ -38,17 +38,17 @@ export class AssetListComponent extends DataTableCommonManagerComponent implemen
 
   public assetsDataSource: TableDataSource = {
     header: [
-      { column: 'symbol', name: 'Symbol', filter: { type: 'text', sortable: true } },
-      { column: 'is_cryptocurrency', name: 'Cryptocurrency', filter: { type: 'boolean', sortable: true } },
-      { column: 'long_name', name: 'Long name', filter: { type: 'text', sortable: true } },
-      { column: 'is_base', name: 'Is base?', filter: { type: 'boolean', sortable: true } },
-      { column: 'is_deposit', name: 'Is deposit?', filter: { type: 'boolean', sortable: true } },
-      { column: 'capitalization', name: 'Capitalisation', filter: { type: 'number', sortable: true } },
-      { column: 'nvt_ratio', name: 'NVT ratio', filter: { type: 'number', sortable: true } },
-      { column: 'market_share', name: 'Market share', filter: { type: 'number', sortable: true } },
-      { column: 'capitalization_updated_timestamp', name: 'Capitalisation updated', filter: { type: 'date', sortable: true } },
-      { column: 'status', name: 'Status', filter: { type: 'text', sortable: true } },
-      { column: '', name: 'Action' }
+      { column: 'symbol', nameKey: 'table.header.symbol', filter: { type: 'text', sortable: true } },
+      { column: 'is_cryptocurrency', nameKey: 'table.header.cryptocurrency', filter: { type: 'boolean', sortable: true } },
+      { column: 'long_name', nameKey: 'table.header.long_name', filter: { type: 'text', sortable: true } },
+      { column: 'is_base', nameKey: 'table.header.is_base', filter: { type: 'boolean', sortable: true } },
+      { column: 'is_deposit', nameKey: 'table.header.is_deposit', filter: { type: 'boolean', sortable: true } },
+      { column: 'capitalization', nameKey: 'table.header.capitalisation', filter: { type: 'number', sortable: true } },
+      { column: 'nvt_ratio', nameKey: 'table.header.nvt_ratio', filter: { type: 'number', sortable: true } },
+      { column: 'market_share', nameKey: 'table.header.market_share', filter: { type: 'number', sortable: true } },
+      { column: 'capitalization_updated_timestamp', nameKey: 'table.header.capitalisation_updated', filter: { type: 'date', sortable: true } },
+      { column: 'status', nameKey: 'table.header.status', filter: { type: 'text', sortable: true } },
+      { column: '', nameKey: 'table.header.action' }
     ],
     body: null
   };

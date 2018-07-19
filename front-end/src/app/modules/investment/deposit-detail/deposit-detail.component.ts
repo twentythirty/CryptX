@@ -30,13 +30,13 @@ export class DepositDetailComponent extends TimelineDetailComponent implements O
 
   public singleDataSource: SingleTableDataSource = {
     header: [
-      { column: 'id', name: 'Id' },
-      { column: 'created_timestamp', name: 'Creation time' },
-      { column: 'user_created_id', name: 'Creator' },
-      { column: 'approval_status', name: 'Status' },
-      { column: 'approval_user_id', name: 'Decision by' },
-      { column: 'approval_timestamp', name: 'Decision time' },
-      { column: 'approval_comment', name: 'Rationale' },
+      { column: 'id', nameKey: 'table.header.id' },
+      { column: 'created_timestamp', nameKey: 'table.header.creation_time' },
+      { column: 'user_created_id', nameKey: 'table.header.creator' },
+      { column: 'approval_status', nameKey: 'table.header.status' },
+      { column: 'approval_user_id', nameKey: 'table.header.decision_by' },
+      { column: 'approval_timestamp', nameKey: 'table.header.decision_time' },
+      { column: 'approval_comment', nameKey: 'table.header.rationale' },
     ],
     body: null,
   };
@@ -58,13 +58,13 @@ export class DepositDetailComponent extends TimelineDetailComponent implements O
 
   public listDataSource: TableDataSource = {
     header: [
-      { column: 'id', name: 'Id', filter: {type: 'text', sortable: true }},
-      { column: 'transaction_asset', name: 'Transaction asset', filter: {type: 'text', sortable: true }},
-      { column: 'exchange', name: 'Exchange', filter: {type: 'text', sortable: true }},
-      { column: 'account', name: 'Account', filter: {type: 'text', sortable: true }},
-      { column: 'amount', name: 'Amount', filter: {type: 'number', sortable: true }},
-      { column: 'investment_percentage', name: 'Investment percentage', filter: {type: 'number', sortable: true }},
-      { column: 'status', name: 'Status' },
+      { column: 'id', nameKey: 'table.header.id', filter: {type: 'text', sortable: true }},
+      { column: 'transaction_asset', nameKey: 'table.header.transaction_asset', filter: {type: 'text', sortable: true }},
+      { column: 'exchange', nameKey: 'table.header.exchange', filter: {type: 'text', sortable: true }},
+      { column: 'account', nameKey: 'table.header.account', filter: {type: 'text', sortable: true }},
+      { column: 'amount', nameKey: 'table.header.amount', filter: {type: 'number', sortable: true }},
+      { column: 'investment_percentage', nameKey: 'table.header.investment_percentage', filter: {type: 'number', sortable: true }},
+      { column: 'status', nameKey: 'table.header.status' },
     ],
     body: null,
   };

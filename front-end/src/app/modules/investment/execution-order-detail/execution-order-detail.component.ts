@@ -34,29 +34,29 @@ export class ExecutionOrderDetailComponent extends TimelineDetailComponent imple
 
   public singleDataSource: SingleTableDataSource = {
     header: [
-      { column: 'id', name: 'Id' },
-      { column: 'instrument', name: 'Instrument' },
-      { column: 'side', name: 'Side' },
-      { column: 'price', name: 'Price' },
-      { column: 'quantity', name: 'Quantity' },
-      { column: 'fee', name: 'Sum of exchange trading fee' },
-      { column: 'status', name: 'Status' }
+      { column: 'id', nameKey: 'table.header.id' },
+      { column: 'instrument', nameKey: 'table.header.instrument' },
+      { column: 'side', nameKey: 'table.header.side' },
+      { column: 'price', nameKey: 'table.header.price' },
+      { column: 'quantity', nameKey: 'table.header.quantity' },
+      { column: 'fee', nameKey: 'table.header.sum_of_exchange_trading_fee' },
+      { column: 'status', nameKey: 'table.header.status' }
     ],
     body: null
   }
 
   public listDataSource: TableDataSource = {
     header: [
-      { column: 'id', name: 'Id', filter: {type: 'text', sortable: true }},
-      { column: 'instrument', name: 'Instrument', filter: {type: 'text', sortable: true }},
-      { column: 'side', name: 'Side', filter: {type: 'text', sortable: true }},
-      { column: 'type', name: 'Type', filter: {type: 'text', sortable: true }},
-      { column: 'price', name: 'Price', filter: {type: 'number', sortable: true }},
-      { column: 'quantity', name: 'Total quantity', filter: {type: 'number', sortable: true }},
-      { column: 'fee', name: 'Exchange trading fee', filter: {type: 'number', sortable: true }},
-      { column: 'status', name: 'Status', filter: {type: 'text', sortable: true }},
-      { column: 'submission_time', name: 'Submission time', filter: {type: 'date', sortable: true }},
-      { column: 'completion_time', name: 'Completion time', filter: {type: 'date', sortable: true }}
+      { column: 'id', nameKey: 'table.header.id', filter: {type: 'text', sortable: true }},
+      { column: 'instrument', nameKey: 'table.header.instrument', filter: {type: 'text', sortable: true }},
+      { column: 'side', nameKey: 'table.header.side', filter: {type: 'text', sortable: true }},
+      { column: 'type', nameKey: 'table.header.type', filter: {type: 'text', sortable: true }},
+      { column: 'price', nameKey: 'table.header.price', filter: {type: 'number', sortable: true }},
+      { column: 'quantity', nameKey: 'table.header.total_quantity', filter: {type: 'number', sortable: true }},
+      { column: 'fee', nameKey: 'table.header.exchange_trading_fee', filter: {type: 'number', sortable: true }},
+      { column: 'status', nameKey: 'table.header.status', filter: {type: 'text', sortable: true }},
+      { column: 'submission_time', nameKey: 'table.header.submission_time', filter: {type: 'date', sortable: true }},
+      { column: 'completion_time', nameKey: 'table.header.completion_time', filter: {type: 'date', sortable: true }}
     ],
     body: null,
   };

@@ -34,28 +34,28 @@ export class InvestmentRunDetailComponent extends TimelineDetailComponent implem
 
   public singleDataSource: SingleTableDataSource = {
     header: [
-      { column: 'id', name: 'Id' },
-      { column: 'started', name: 'Started' },
-      { column: 'updated', name: 'Updated' },
-      { column: 'completed', name: 'Completed' },
-      { column: 'creator', name: 'Creator' },
-      { column: 'strategy', name: 'Strategy' },
-      { column: 'simulated', name: 'Simulated' },
-      { column: 'deposit', name: 'Deposit' },
-      { column: 'status', name: 'Status' }
+      { column: 'id', nameKey: 'table.header.id' },
+      { column: 'started', nameKey: 'table.header.started' },
+      { column: 'updated', nameKey: 'table.header.updated' },
+      { column: 'completed', nameKey: 'table.header.completed' },
+      { column: 'creator', nameKey: 'table.header.creator' },
+      { column: 'strategy', nameKey: 'table.header.strategy' },
+      { column: 'simulated', nameKey: 'table.header.simulated' },
+      { column: 'deposit', nameKey: 'table.header.deposit' },
+      { column: 'status', nameKey: 'table.header.status' }
     ],
     body: null
   }
 
   public listDataSource: TableDataSource = {
     header: [
-      { column: 'id', name: 'Id', filter: {type: 'text', sortable: true }},
-      { column: 'created', name: 'Created', filter: {type: 'date', sortable: true }},
-      { column: 'creator', name: 'Creator', filter: {type: 'text', sortable: true }},
-      { column: 'status', name: 'Status', filter: {type: 'text', sortable: true }},
-      { column: 'desicion_by', name: 'Desicion by', filter: {type: 'text', sortable: true }},
-      { column: 'decision_time', name: 'Decision time', filter: {type: 'date', sortable: true }},
-      { column: 'rationale', name: 'Rationale', filter: {type: 'text', sortable: true }},
+      { column: 'id', nameKey: 'table.header.id', filter: {type: 'text', sortable: true }},
+      { column: 'created', nameKey: 'table.header.created', filter: {type: 'date', sortable: true }},
+      { column: 'creator', nameKey: 'table.header.creator', filter: {type: 'text', sortable: true }},
+      { column: 'status', nameKey: 'table.header.status', filter: {type: 'text', sortable: true }},
+      { column: 'decision_by', nameKey: 'table.header.decision_by', filter: {type: 'text', sortable: true }},
+      { column: 'decision_time', nameKey: 'table.header.decision_time', filter: {type: 'date', sortable: true }},
+      { column: 'rationale', nameKey: 'table.header.rationale', filter: {type: 'text', sortable: true }},
     ],
     body: null,
   };

@@ -5,7 +5,7 @@
         <a
           (click)="toggleFilter(item)"
         >
-          {{item.name}}
+          {{ item.nameKey | translate }}
           <div class="sort-arrow" *ngIf="item.filter"></div>
           <span
             *ngIf="item.filter"
@@ -13,7 +13,7 @@
             [class.dcaret]="!filterMap[item.column]"
           ></span>
         </a>
-        <app-data-table-filter 
+        <app-data-table-filter
           *ngIf="item.filter"
           [dirty]="item._dirty"
           [rowData$]="item.filter.rowData$"
@@ -52,7 +52,7 @@
     <ng-template #listEmpty>
       <tr [style.background-color]="'white'">
         <td class="empty-col" colSpan="{{ columnsToShow.length }}">
-          <span *ngIf="dataSource.body; else loadingList">This list is empty</span>
+          <span *ngIf="dataSource.body; else loadingList">{{ 'common.list_empty' | translate }}</span>
           <ng-template #loadingList><span>
             <mat-progress-spinner
               mode="indeterminate"
