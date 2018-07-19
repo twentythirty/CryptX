@@ -4950,13 +4950,12 @@
           "type": "boolean",
           "example": true
         },
-        "old_password": {
-          "type": "string",
-          "example": "scott"
-        },
-        "new_password": {
-          "type": "string",
-          "example": "tiger"
+        "roles": {
+          "type": "array",
+          "items": {
+            "type": "number",
+            "example": 1
+          }
         }
       }
     },
