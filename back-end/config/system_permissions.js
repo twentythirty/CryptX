@@ -91,6 +91,8 @@ all_permissions[PERMISSIONS.CHANGE_SETTING_VALUES] =
   "Permission to edit system setting values";
 all_permissions[PERMISSIONS.VIEW_SETTING_VALUES] =
   "Permission to view system setting values";
+all_permissions[PERMISSIONS.GENERATE_ORDERS] = 
+  "Permission to generate recipe orders";
 
 all_roles = Object.values(ROLES);
 
@@ -353,29 +355,29 @@ ROUTES = {
     required_permissions: [PERMISSIONS.VIEW_ORDERS, PERMISSIONS.ALTER_ORDERS]
   },
   GenerateRecipeOrders: {
-    router_string: "/orders/of_recipe/:recipe_run_id",
+    router_string: "/recipes/:recipe_run_id/generete_orders",
     permissions_matcher: ROUTE_MATCHERS.GenerateRecipeOrders,
     required_permissions: [PERMISSIONS.GENERATE_ORDERS]
   },
 
    // Recipe run deposits
    GetRecipeRunDepositsOf: {
-    router_string: "/recipe_deposits/of_recipe/:recipe_id",
+    router_string: "/deposits/of_recipe/:recipe_id",
     permissions_matcher: ROUTE_MATCHERS.GetRecipeRunDepositsOf,
     required_permissions: [PERMISSIONS.VIEW_INVESTMENT_RUN]
   },
   GetRecipeRunDeposits: {
-    router_string: "/recipe_deposits/all",
+    router_string: "/deposits/all",
     permissions_matcher: ROUTE_MATCHERS.GetRecipeRunDeposits,
     required_permissions: [PERMISSIONS.VIEW_INVESTMENT_RUN]
   },
   GetRecipeRunDepositsColLOV: {
-    router_string: "/recipe_deposits/header_lov/:field_name",
+    router_string: "/deposits/header_lov/:field_name",
     permissions_matcher: ROUTE_MATCHERS.GetRecipeRunDepositsColLOV,
     required_permissions: [PERMISSIONS.VIEW_ASSETS]
   },
   GetRecipeRunDeposit: {
-    router_string: "/recipe_deposits/:recipe_detail_id",
+    router_string: "/deposits/:recipe_detail_id",
     permissions_matcher: ROUTE_MATCHERS.GetRecipeRunDeposit,
     required_permissions: [PERMISSIONS.VIEW_INVESTMENT_RUN]
   },
