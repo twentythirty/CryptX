@@ -52,7 +52,7 @@ module.exports.getInstrumentsColumnLOV = getInstrumentsColumnLOV;
 
 const getInstruments = async function (req, res) {
    // mock data below
-  const instruments_and_count = await adminViewService.fetchInstrumentsViewDataWithCount(req.seq_where);
+  const instruments_and_count = await adminViewService.fetchInstrumentsViewDataWithCount(req.seq_query);
 
   const { data: instruments, total: count } = instruments_and_count;
 

@@ -46,10 +46,10 @@ const fetchViewHeaderLOV = async (table, field, query) => {
     //extrac field values from key value pairs
     return _.map(values, field);
 }
-const fetchViewDataWithCount = async (model, seq_where = {}) => {
+const fetchViewDataWithCount = async (model, seq_query = {}) => {
 
     const [data, total] = await Promise.all([
-        fetchModelData(model, seq_where),
+        fetchModelData(model, seq_query),
         fetchModelCount(model)
     ]);
 
@@ -58,9 +58,7 @@ const fetchViewDataWithCount = async (model, seq_where = {}) => {
         total
     }
 }
-const fetchModelData = async (model, seq_where = {}) => model.findAll({
-    where: seq_where
-})
+const fetchModelData = async (model, seq_query = {}) => model.findAll(seq_query)
 const fetchModelCount = async (model) => model.count()
 const fetchSingleEntity = async (model, id) => {
 
@@ -106,21 +104,21 @@ module.exports.fetchInstrumentsViewHeaderLOV = fetchInstrumentsViewHeaderLOV;
 
 // ************************ DATA ***************************//
 
-const fetchUsersViewDataWithCount = async (seq_where = {}) => {
+const fetchUsersViewDataWithCount = async (seq_query = {}) => {
 
-    return fetchViewDataWithCount(AVUser, seq_where);
+    return fetchViewDataWithCount(AVUser, seq_query);
 }
 module.exports.fetchUsersViewDataWithCount = fetchUsersViewDataWithCount;
 
-const fetchAssetsViewDataWithCount = async (seq_where = {}) => {
+const fetchAssetsViewDataWithCount = async (seq_query = {}) => {
 
-    return fetchViewDataWithCount(AVAsset, seq_where);
+    return fetchViewDataWithCount(AVAsset, seq_query);
 }
 module.exports.fetchAssetsViewDataWithCount = fetchAssetsViewDataWithCount;
 
-const fetchInstrumentsViewDataWithCount = async (seq_where = {}) => {
+const fetchInstrumentsViewDataWithCount = async (seq_query = {}) => {
 
-    return fetchViewDataWithCount(AVInstrument, seq_where);
+    return fetchViewDataWithCount(AVInstrument, seq_query);
 }
 module.exports.fetchInstrumentsViewDataWithCount = fetchInstrumentsViewDataWithCount;
 
