@@ -5,6 +5,7 @@ const sequelize = require('../models').sequelize;
 const builder = require('../utils/AdminViewUtils');
 const AVUser = require('../models').AVUser;
 const AVAsset = require('../models').AVAsset;
+const AVInstrument = require('../models').AVInstrument;
 
 const TABLE_LOV_FIELDS = {
     'av_users': [
@@ -20,10 +21,13 @@ const TABLE_LOV_FIELDS = {
         'is_cryptocurrency',
         'long_name',
         'status'
+    ],
+    'av_instruments': [
+        'symbol'
     ]
 }
 
-
+// ************************ HELPERS ***************************//
 const fetchViewHeaderLOV = async (table, field, query) => {
 
     const allowed_fields = TABLE_LOV_FIELDS[table];
@@ -49,9 +53,19 @@ const fetchViewDataWithCount = async (model, seq_where = {}) => {
     
     return { data, total }
 }
-const fetchModelData = async (model, seq_where = {}) => model.findAll(seq_where)
+const fetchModelData = async (model, seq_where = {}) => model.findAll({ where: seq_where })
 const fetchModelCount = async (model) => model.count()
 
+const fetchMockHeaderLOV = async (header_field, query = '') => {
+    // mock data below
+    return [ 'Value 1', 'Value 2', 'Value 3', 'Value 4', 'Value 5'];
+}
+module.exports.fetchMockHeaderLOV = fetchMockHeaderLOV;
+
+
+
+
+// ************************ HEADERS ***************************//
 
 const fetchUsersViewHeaderLOV = async (header_field, query = '') => {
 
@@ -65,6 +79,18 @@ const fetchAssetsViewHeaderLOV = async (header_field, query = '') => {
 }
 module.exports.fetchAssetsViewHeaderLOV = fetchAssetsViewHeaderLOV;
 
+const fetchInstrumentsViewHeaderLOV = async (header_field, query = '') => {
+
+    return fetchViewHeaderLOV('av_instruments', header_field, query);
+}
+module.exports.fetchInstrumentsViewHeaderLOV = fetchInstrumentsViewHeaderLOV;
+
+
+
+
+
+// ************************ DATA ***************************//
+
 const fetchUsersViewDataWithCount = async (seq_where = {}) => {
 
     return fetchViewDataWithCount(AVUser, seq_where);
@@ -77,6 +103,12 @@ const fetchAssetsViewDataWithCount = async (seq_where = {}) => {
 }
 module.exports.fetchAssetsViewDataWithCount = fetchAssetsViewDataWithCount;
 
+const fetchInstrumentsViewDataWithCount = async (seq_where = {}) => {
+
+    return fetchViewDataWithCount(AVInstrument, seq_where);
+}
+module.exports.fetchInstrumentsViewDataWithCount = fetchInstrumentsViewDataWithCount;
+
 const fetchAssetView = async (asset_id) => {
 
     return _.first(await fetchModelData(AVAsset, {
@@ -86,6 +118,12 @@ const fetchAssetView = async (asset_id) => {
     }))
 }
 module.exports.fetchAssetView = fetchAssetView;
+
+
+
+
+
+// ************************ FOOTERS ***************************//
 
 const fetchUsersViewFooter = async (where_clause = '') => {
 
@@ -100,15 +138,17 @@ const fetchUsersViewFooter = async (where_clause = '') => {
         return builder.selectCountDistinct(field_expr, alias, 'av_users', where_clause)
     }), 
     //attach the more fancy footer column query as-is to avoid convoluted parametrization
-    `(${builder.selectCount('av_users', 'is_active', builder.addToWhere(where_clause, 'is_active = \'users.entity.active\''))})`);
+    builder.selectCount('av_users', 'is_active', builder.addToWhere(where_clause, 'is_active = \'users.entity.active\'')));
 
-    const footer_values = (await sequelize.query(`SELECT\n${_.join(query_parts, ',\n')};`))[0];
+    const footer_values = (await sequelize.query(builder.joinQueryParts(
+        query_parts,
+        _.concat(Object.keys(simple_fields), 'is_active')
+    )))[0];
 
     return builder.addFooterLabels(
         builder.queryReturnRowToFooterObj(footer_values), 'users');
 }
 module.exports.fetchUsersViewFooter = fetchUsersViewFooter;
-
 
 const fetchAssetsViewFooter = async (where_clause = '') => {
 
@@ -139,42 +179,22 @@ FROM
 }
 module.exports.fetchAssetsViewFooter = fetchAssetsViewFooter;
 
-const fetchMockHeaderLOV = async (header_field, query = '') => {
-    // mock data below
-    return [ 'Value 1', 'Value 2', 'Value 3', 'Value 4', 'Value 5'];
-}
-module.exports.fetchMockHeaderLOV = fetchMockHeaderLOV;
+const fetchInstrumentsViewFooter = async (where_clause = '') => {
 
-const fetchInstrumentsViewFooter = async () => {
-    // mock data below
-    let footer = [
-        {
-          "name": "id",
-          "value": "999"
-        },
-        {
-          "name": "transaction_asset_id",
-          "value": "999"
-        },
-        {
-          "name": "quote_asset_id",
-          "value": "999"
-        },
-        {
-          "name": "symbol",
-          "value": "999"
-        },
-        {
-          "name": "exchanges_connected",
-          "value": "999"
-        },
-        {
-          "name": "exchanges_failed",
-          "value": "999"
-        }
-      ];
+    const query = builder.joinQueryParts([
+        builder.selectCountDistinct('symbol', 'symbol', 'av_instruments', where_clause),
+        builder.selectSum('exchanges_connected', 'av_instruments', where_clause),
+        builder.selectSum('exchanges_failed', 'av_instruments', where_clause)
+    ], [
+        'symbol',
+        'exchanges_connected',
+        'exchanges_failed'
+    ])
 
-      return builder.addFooterLabels(footer, 'instruments')
+    const footer = (await sequelize.query(query))[0];
+
+    return builder.addFooterLabels(
+        builder.queryReturnRowToFooterObj(footer), 'instruments')
 }
 module.exports.fetchInstrumentsViewFooter = fetchInstrumentsViewFooter;
 

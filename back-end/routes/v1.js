@@ -602,14 +602,14 @@ router.get(
   stateless_auth,
   check_permissions,
   filter_reducer,
-MockController.fetchColLOV
+  InstrumentController.getInstrumentsColumnLOV
 );
 router.post(
   ROUTES.GetInstrumentsColLOV.router_string,
   stateless_auth,
   check_permissions,
   filter_reducer,
-MockController.fetchColLOV
+  InstrumentController.getInstrumentsColumnLOV
 );
 router.get(
   ROUTES.GetInstrument.router_string,
