@@ -178,7 +178,9 @@ const getInvestmentRuns = async function (req, res) {
   [err, footer] = await to(adminViewsService.fetchInvestmentRunsViewFooter(sql_where));
   if(err) return ReE(res, err.message, 422);
 
-  const { data: investment_runs, total: count } = result;
+  let { data: investment_runs, total: count } = result;
+
+  investment_runs = investment_runs.map(ir => ir.toWeb());
 
   return ReS(res, {
     investment_runs,
