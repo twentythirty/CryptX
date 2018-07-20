@@ -76,7 +76,7 @@ const getInvestmentRun = async function (req, res) {
   })
 
   return ReS(res, {
-    investment_run: investment_run
+    investment_run: mock_investment_run
   })
 };
 module.exports.getInvestmentRun = getInvestmentRun;
@@ -238,6 +238,10 @@ const getRecipeRuns = async function (req, res) {
 
   let query = req.seq_query;
   let investment_id = req.params.investment_id;
+  
+  if (investment_id) {
+    query.where.investment_run_id = investment_id;
+  };
 
   let [err, results] = await to(RecipeRun.findAndCountAll(query));
   if (err) return ReE(res, err.message, 422);

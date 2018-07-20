@@ -102,6 +102,7 @@ const fetchUsersViewFooter = async (where_clause = '') => {
     //attach the more fancy footer column query as-is to avoid convoluted parametrization
     `(${builder.selectCount('av_users', 'is_active', builder.addToWhere(where_clause, 'is_active = \'users.entity.active\''))})`);
 
+    console.log(query_parts);
     const footer_values = (await sequelize.query(`SELECT\n${_.join(query_parts, ',\n')};`))[0];
 
     return builder.addFooterLabels(

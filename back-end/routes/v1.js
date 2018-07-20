@@ -282,13 +282,13 @@ router.post(
   post_body_validator,
   InvestmentController.createInvestmentRun
 );
-router.get(
+/* router.get(
   ROUTES.GetInvestments.router_string,
   stateless_auth,
   check_permissions,
   filter_reducer,
   InvestmentController.getInvestmentRuns
-);
+); */
 //get filtered investments
 router.post(
   ROUTES.GetInvestments.router_string,
@@ -340,7 +340,7 @@ router.post(
   post_body_validator,
   InvestmentController.createRecipeRun
 );
-router.get(
+router.get( // might be deleted
   ROUTES.GetRecipeRuns.router_string,
   stateless_auth,
   check_permissions,
@@ -349,6 +349,13 @@ router.get(
 );
 router.post(
   ROUTES.GetRecipeRuns.router_string,
+  stateless_auth,
+  check_permissions,
+  filter_reducer,
+  InvestmentController.getRecipeRuns
+);
+router.post(
+  ROUTES.GetRecipeRunsOf.router_string,
   stateless_auth,
   check_permissions,
   filter_reducer,
@@ -384,7 +391,7 @@ router.get(
   check_permissions,
   OrdersController.getOrdersGroup
 ); */
-router.get(
+router.get( 
   ROUTES.GetRecipeOrders.router_string,
   stateless_auth,
   check_permissions,
@@ -431,7 +438,7 @@ router.post(
 )
 
 // Recipe run details
-router.get(
+router.get( // might be deleted
   ROUTES.GetRecipeRunDetails.router_string,
   stateless_auth,
   check_permissions,
@@ -468,7 +475,7 @@ router.get(
 );
 
 // Recipe Run deposits
-router.get(
+router.get( // might be deleted
   ROUTES.GetRecipeRunDeposits.router_string,
   stateless_auth,
   check_permissions,
@@ -504,7 +511,7 @@ router.get(
 );
 
  // Execution orders
-router.get(
+router.get( // might be deleted
   ROUTES.GetExecutionOrders.router_string,
   stateless_auth,
   check_permissions,
@@ -540,15 +547,22 @@ router.get(
 );
 
  // Execution order fills
- router.get(
+ router.post(
   ROUTES.GetExecutionOrdersFills.router_string,
   stateless_auth,
   check_permissions,
   filter_reducer,
   InvestmentController.ExecutionOrderFills
 );
+ router.get( // might be deleted
+  ROUTES.GetExecutionOrdersFillsOf.router_string,
+  stateless_auth,
+  check_permissions,
+  filter_reducer,
+  InvestmentController.ExecutionOrderFills
+);
 router.post(
-  ROUTES.GetExecutionOrdersFills.router_string,
+  ROUTES.GetExecutionOrdersFillsOf.router_string,
   stateless_auth,
   check_permissions,
   filter_reducer,
