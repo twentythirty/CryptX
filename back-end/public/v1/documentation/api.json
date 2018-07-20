@@ -67,7 +67,12 @@
               "$ref": "#/definitions/ExchangeList"
             }
           }
-        }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
       },
       "post": {
         "tags": [
@@ -96,7 +101,12 @@
               "$ref": "#/definitions/ExchangeList"
             }
           }
-        }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
       }
     },
     "/settings": {
@@ -116,7 +126,12 @@
               "$ref": "#/definitions/SystemSettingsListResponse"
             }
           }
-        }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
       }
     },
     "/settings/{setting_id}": {
@@ -154,7 +169,12 @@
               "$ref": "#/definitions/SystemSettingResponse"
             }
           }
-        }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
       }
     },
     "/liquidity_requirements/create": {
@@ -185,7 +205,12 @@
               "$ref": "#/definitions/LiquidityRequirementResponse"
             }
           }
-        }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
       }
     },
     "/liquidity_requirements/{liquidity_requirement_id}": {
@@ -214,7 +239,12 @@
               "$ref": "#/definitions/LiquidityRequirementResponse"
             }
           }
-        }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
       }
     },
     "/liquidity_requirements/all": {
@@ -233,7 +263,12 @@
               "$ref": "#/definitions/LiquidityRequirementListResponse"
             }
           }
-        }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
       },
       "post": {
         "tags": [
@@ -261,7 +296,12 @@
               "$ref": "#/definitions/InstrumentGetListResponse"
             }
           }
-        }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
       }
     },
     "/liquidity_requirements/{liquidity_requirement_id}/exchanges": {
@@ -290,7 +330,12 @@
               "$ref": "#/definitions/LiquidityRequirementExchangesResponse"
             }
           }
-        }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
       }
     },
     "/instruments/create": {
@@ -321,7 +366,12 @@
               "$ref": "#/definitions/InstrumentResponse"
             }
           }
-        }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
       }
     },
     "/instruments/{instrument_id}": {
@@ -350,7 +400,12 @@
               "$ref": "#/definitions/InstrumentGetResponse"
             }
           }
-        }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
       }
     },
     "/instruments/all": {
@@ -369,7 +424,12 @@
               "$ref": "#/definitions/InstrumentGetListResponse"
             }
           }
-        }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
       },
       "post": {
         "tags": [
@@ -397,7 +457,12 @@
               "$ref": "#/definitions/InstrumentGetListResponse"
             }
           }
-        }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
       }
     },
     "/instruments/{instrument_id}/check_mapping": {
@@ -435,7 +500,12 @@
               "$ref": "#/definitions/InstrumentExchangeMap"
             }
           }
-        }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
       }
     },
     "/instruments/{instrument_id}/add_mapping": {
@@ -473,7 +543,12 @@
               "$ref": "#/definitions/InstrumentAddMappingResponse"
             }
           }
-        }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
       }
     },
     "/instruments/{instrument_id}/exchanges": {
@@ -502,7 +577,12 @@
               "$ref": "#/definitions/InstrumentExchangeMapExpanded"
             }
           }
-        }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
       }
     },
     "/instruments/{instrument_id}/mapping_exchanges": {
@@ -531,7 +611,12 @@
               "$ref": "#/definitions/ExchangeList"
             }
           }
-        }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
       },
       "post": {
         "tags": [
@@ -567,7 +652,12 @@
               "$ref": "#/definitions/ExchangeList"
             }
           }
-        }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
       }
     },
     "/investment/create": {
@@ -598,7 +688,12 @@
               "$ref": "#/definitions/InvestmentRunResponse"
             }
           }
-        }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
       }
     },
     "/investments/{investment_id}": {
@@ -626,7 +721,12 @@
               "$ref": "#/definitions/InvestmentRunResponse"
             }
           }
-        }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
       }
     },
     "/investments/{investment_id}/stats": {
@@ -654,7 +754,12 @@
               "$ref": "#/definitions/InvestmentRunStats"
             }
           }
-        }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
       }
     },
     "/investments/all": {
@@ -673,7 +778,12 @@
               "$ref": "#/definitions/InvestmentRunListResponse"
             }
           }
-        }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
       },
       "post": {
         "tags": [
@@ -701,7 +811,12 @@
               "$ref": "#/definitions/InvestmentRunListResponse"
             }
           }
-        }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
       }
     },
     "/investments/{investment_id}/start_recipe_run": {
@@ -738,7 +853,12 @@
               "$ref": "#/definitions/RecipeRunResponse"
             }
           }
-        }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
       }
     },
     "/recipes/{recipe_id}": {
@@ -767,7 +887,12 @@
               "$ref": "#/definitions/RecipeRunWithStatsResponse"
             }
           }
-        }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
       }
     },
     "/recipes/of_investment/{investment_id}": {
@@ -796,13 +921,18 @@
               "$ref": "#/definitions/RecipeRunListResponse"
             }
           }
-        }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
       },
       "post": {
         "tags": [
           "investment"
         ],
-        "description": "Get investment run data by id",
+        "description": "Get recipe run run data by id",
         "produces": [
           "application/json"
         ],
@@ -831,7 +961,47 @@
               "$ref": "#/definitions/RecipeRunListResponse"
             }
           }
-        }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/recipes/all": {
+      "post": {
+        "tags": [
+          "investment"
+        ],
+        "description": "Get all recipe runs",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "description": "The filter definition to perform on the data set. If absent will assume empty filter and return all data",
+            "required": false,
+            "schema": {
+              "$ref": "#/definitions/EntitiesFilter"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "$ref": "#/definitions/RecipeRunListResponse"
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
       }
     },
     "/recipes/{recipe_run_id}/approve": {
@@ -869,7 +1039,12 @@
               "$ref": "#/definitions/RecipeRunResponse"
             }
           }
-        }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
       }
     },
     "/recipe_details/{recipe_detail_id}": {
@@ -898,7 +1073,12 @@
               "$ref": "#/definitions/RecipeDetailsResponse"
             }
           }
-        }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
       }
     },
     "/recipe_details/of_recipe/{recipe_id}": {
@@ -927,7 +1107,12 @@
               "$ref": "#/definitions/RecipeDetailsListResponse"
             }
           }
-        }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
       },
       "post": {
         "tags": [
@@ -963,7 +1148,12 @@
               "$ref": "#/definitions/RecipeDetailsListResponse"
             }
           }
-        }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
       }
     },
     "/orders/{recipe_order_id}": {
@@ -992,7 +1182,12 @@
               "$ref": "#/definitions/RecipeOrderResponse"
             }
           }
-        }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
       }
     },
     "/orders/of_recipe/{recipe_id}": {
@@ -1021,7 +1216,12 @@
               "$ref": "#/definitions/RecipeOrderListResponse"
             }
           }
-        }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
       },
       "post": {
         "tags": [
@@ -1057,7 +1257,48 @@
               "$ref": "#/definitions/RecipeOrderListResponse"
             }
           }
-        }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/orders/all": {
+      "post": {
+        "tags": [
+          "investment"
+        ],
+        "summary": "Get all orders",
+        "description": "Get all orders",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "description": "The filter definition to perform on the data set. If absent will assume empty filter and return all data",
+            "required": false,
+            "schema": {
+              "$ref": "#/definitions/EntitiesFilter"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "$ref": "#/definitions/RecipeOrderListResponse"
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
       }
     },
     "/orders/{order_group_id}/alter": {
@@ -1095,7 +1336,12 @@
               "$ref": "#/definitions/RecipeOrderAlterResponse"
             }
           }
-        }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
       }
     },
     "/deposits/{deposit_id}": {
@@ -1124,7 +1370,12 @@
               "$ref": "#/definitions/RecipeDepositResponse"
             }
           }
-        }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
       }
     },
     "/deposits/of_recipe/{recipe_id}": {
@@ -1153,7 +1404,12 @@
               "$ref": "#/definitions/RecipeDepositListResponse"
             }
           }
-        }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
       },
       "post": {
         "tags": [
@@ -1189,7 +1445,48 @@
               "$ref": "#/definitions/RecipeDepositListResponse"
             }
           }
-        }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/deposits/all": {
+      "post": {
+        "tags": [
+          "investment"
+        ],
+        "summary": "Get all deposits",
+        "description": "Get all deposits",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "description": "The filter definition to perform on the data set. If absent will assume empty filter and return all data",
+            "required": false,
+            "schema": {
+              "$ref": "#/definitions/EntitiesFilter"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "$ref": "#/definitions/RecipeDepositListResponse"
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
       }
     },
     "/execution_orders/{execution_order_id}": {
@@ -1218,7 +1515,12 @@
               "$ref": "#/definitions/ExecutionOrderResponse"
             }
           }
-        }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
       }
     },
     "/execution_orders/of_order/{order_id}": {
@@ -1247,7 +1549,12 @@
               "$ref": "#/definitions/ExecutionOrderListResponse"
             }
           }
-        }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
       },
       "post": {
         "tags": [
@@ -1283,7 +1590,48 @@
               "$ref": "#/definitions/ExecutionOrderListResponse"
             }
           }
-        }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/execution_orders/all": {
+      "post": {
+        "tags": [
+          "investment"
+        ],
+        "summary": "Get all execution orders",
+        "description": "Get all execution orders",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "description": "The filter definition to perform on the data set. If absent will assume empty filter and return all data",
+            "required": false,
+            "schema": {
+              "$ref": "#/definitions/EntitiesFilter"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "$ref": "#/definitions/ExecutionOrderListResponse"
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
       }
     },
     "/exec_orders_fills/{execution_order_fill_id}": {
@@ -1312,7 +1660,12 @@
               "$ref": "#/definitions/ExecutionOrderFillResponse"
             }
           }
-        }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
       }
     },
     "/exec_orders_fills/of_order/{execution_order_id}": {
@@ -1341,7 +1694,12 @@
               "$ref": "#/definitions/ExecutionOrderFillListResponse"
             }
           }
-        }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
       },
       "post": {
         "tags": [
@@ -1377,7 +1735,12 @@
               "$ref": "#/definitions/ExecutionOrderFillListResponse"
             }
           }
-        }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
       }
     },
     "/assets/{asset_id}/change_status": {
@@ -1414,7 +1777,12 @@
               "$ref": "#/definitions/AssetResponse"
             }
           }
-        }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
       }
     },
     "/assets/{asset_id}": {
@@ -1443,7 +1811,12 @@
               "$ref": "#/definitions/AssetResponse"
             }
           }
-        }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
       }
     },
     "/assets/all": {
@@ -1462,7 +1835,12 @@
               "$ref": "#/definitions/AssetListResponse"
             }
           }
-        }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
       },
       "post": {
         "tags": [
@@ -1490,7 +1868,12 @@
               "$ref": "#/definitions/AssetResponse"
             }
           }
-        }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
       }
     },
     "/assets/detailed/{asset_id}": {
@@ -1519,7 +1902,12 @@
               "$ref": "#/definitions/AssetDetailedResponse"
             }
           }
-        }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
       }
     },
     "/assets/detailed/all": {
@@ -1538,7 +1926,12 @@
               "$ref": "#/definitions/AssetDetailedListResponse"
             }
           }
-        }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
       },
       "post": {
         "tags": [
@@ -1566,7 +1959,12 @@
               "$ref": "#/definitions/AssetDetailedListResponse"
             }
           }
-        }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
       }
     },
     "/roles/create": {
@@ -2624,8 +3022,8 @@
         "tags": [
           "investment"
         ],
-        "summary": "Get a list of all values for this field in the users view table",
-        "description": "Optionally filtered list of all values for a speicfic field in the users admin view table. Used as the set of options in LOV-type headers. The POST version can be used in conjunction with header search. For users table, this `field_name` can be: `first_name`, `last_name`, `email`, `is_active`",
+        "summary": "Get a list of all values for this field in the investments run table",
+        "description": "Optionally filtered list of all values for a speicfic field in the investments run view table. Used as the set of options in LOV-type headers. The POST version can be used in conjunction with header search.",
         "produces": [
           "application/json"
         ],
@@ -2711,8 +3109,8 @@
         "tags": [
           "investment"
         ],
-        "summary": "Get a list of all values for this field in the users view table",
-        "description": "Optionally filtered list of all values for a speicfic field in the users admin view table. Used as the set of options in LOV-type headers. The POST version can be used in conjunction with header search. For users table, this `field_name` can be: `first_name`, `last_name`, `email`, `is_active`",
+        "summary": "Get a list of all values for this field in the recipe run view table",
+        "description": "Optionally filtered list of all values for a speicfic field in the recipe runs view table. Used as the set of options in LOV-type headers. The POST version can be used in conjunction with header search.",
         "produces": [
           "application/json"
         ],
@@ -2749,8 +3147,8 @@
         "tags": [
           "investment"
         ],
-        "summary": "Get a list of all values for this field in the users view table",
-        "description": "Optionally filtered list of all values for a speicfic field in the users admin view table. Used as the set of options in LOV-type headers. The POST version can be used in conjunction with header search. For users table, this `field_name` can be: `first_name`, `last_name`, `email`, `is_active`",
+        "summary": "Get a list of all values for this field in the recipes view table",
+        "description": "Optionally filtered list of all values for a specific field in the users view table. Used as the set of options in LOV-type headers. The POST version can be used in conjunction with header search.",
         "produces": [
           "application/json"
         ],
@@ -2798,8 +3196,8 @@
         "tags": [
           "investment"
         ],
-        "summary": "Get a list of all values for this field in the users view table",
-        "description": "Optionally filtered list of all values for a speicfic field in the users admin view table. Used as the set of options in LOV-type headers. The POST version can be used in conjunction with header search. For users table, this `field_name` can be: `first_name`, `last_name`, `email`, `is_active`",
+        "summary": "Get a list of all values for this field in the recipe details view table",
+        "description": "Optionally filtered list of all values for a specific field in the recipe details view table. Used as the set of options in LOV-type headers. The POST version can be used in conjunction with header search.",
         "produces": [
           "application/json"
         ],
@@ -2836,8 +3234,8 @@
         "tags": [
           "investment"
         ],
-        "summary": "Get a list of all values for this field in the users view table",
-        "description": "Optionally filtered list of all values for a speicfic field in the users admin view table. Used as the set of options in LOV-type headers. The POST version can be used in conjunction with header search. For users table, this `field_name` can be: `first_name`, `last_name`, `email`, `is_active`",
+        "summary": "Get a list of all values for this field in the recipe details view table",
+        "description": "Optionally filtered list of all values for a specific field in the recipe details view table. Used as the set of options in LOV-type headers. The POST version can be used in conjunction with header search.",
         "produces": [
           "application/json"
         ],
@@ -2885,8 +3283,8 @@
         "tags": [
           "investment"
         ],
-        "summary": "Get a list of all values for this field in the users view table",
-        "description": "Optionally filtered list of all values for a speicfic field in the users admin view table. Used as the set of options in LOV-type headers. The POST version can be used in conjunction with header search. For users table, this `field_name` can be: `first_name`, `last_name`, `email`, `is_active`",
+        "summary": "Get a list of all values for this field in the orders view table",
+        "description": "Optionally filtered list of all values for a specific field in the orders view table. Used as the set of options in LOV-type headers. The POST version can be used in conjunction with header search.",
         "produces": [
           "application/json"
         ],
@@ -2923,8 +3321,8 @@
         "tags": [
           "investment"
         ],
-        "summary": "Get a list of all values for this field in the users view table",
-        "description": "Optionally filtered list of all values for a speicfic field in the users admin view table. Used as the set of options in LOV-type headers. The POST version can be used in conjunction with header search. For users table, this `field_name` can be: `first_name`, `last_name`, `email`, `is_active`",
+        "summary": "Get a list of all values for this field in the orders view table",
+        "description": "Optionally filtered list of all values for a specific field in the orders view table. Used as the set of options in LOV-type headers. The POST version can be used in conjunction with header search.",
         "produces": [
           "application/json"
         ],
@@ -2972,8 +3370,8 @@
         "tags": [
           "investment"
         ],
-        "summary": "Get a list of all values for this field in the users view table",
-        "description": "Optionally filtered list of all values for a speicfic field in the users admin view table. Used as the set of options in LOV-type headers. The POST version can be used in conjunction with header search. For users table, this `field_name` can be: `first_name`, `last_name`, `email`, `is_active`",
+        "summary": "Get a list of all values for this field in the execution orders view table",
+        "description": "Optionally filtered list of all values for a specific field in the execution view table. Used as the set of options in LOV-type headers. The POST version can be used in conjunction with header search.",
         "produces": [
           "application/json"
         ],
@@ -3010,8 +3408,8 @@
         "tags": [
           "investment"
         ],
-        "summary": "Get a list of all values for this field in the users view table",
-        "description": "Optionally filtered list of all values for a speicfic field in the users admin view table. Used as the set of options in LOV-type headers. The POST version can be used in conjunction with header search. For users table, this `field_name` can be: `first_name`, `last_name`, `email`, `is_active`",
+        "summary": "Get a list of all values for this field in the execution orders view table",
+        "description": "Optionally filtered list of all values for a speicfic field in the execution orders view table. Used as the set of options in LOV-type headers. The POST version can be used in conjunction with header search.",
         "produces": [
           "application/json"
         ],
@@ -3059,8 +3457,8 @@
         "tags": [
           "investment"
         ],
-        "summary": "Get a list of all values for this field in the users view table",
-        "description": "Optionally filtered list of all values for a speicfic field in the users admin view table. Used as the set of options in LOV-type headers. The POST version can be used in conjunction with header search. For users table, this `field_name` can be: `first_name`, `last_name`, `email`, `is_active`",
+        "summary": "Get a list of all values for this field in the execution order fill",
+        "description": "Optionally filtered list of all values for a speicfic field in the execution order fill table. Used as the set of options in LOV-type headers. The POST version can be used in conjunction with header search.",
         "produces": [
           "application/json"
         ],
@@ -3097,8 +3495,8 @@
         "tags": [
           "investment"
         ],
-        "summary": "Get a list of all values for this field in the users view table",
-        "description": "Optionally filtered list of all values for a speicfic field in the users admin view table. Used as the set of options in LOV-type headers. The POST version can be used in conjunction with header search. For users table, this `field_name` can be: `first_name`, `last_name`, `email`, `is_active`",
+        "summary": "Get a list of all values for this field in the execution order fill table",
+        "description": "Optionally filtered list of all values for a speicfic field in the execution order fill table. Used as the set of options in LOV-type headers. The POST version can be used in conjunction with header search.",
         "produces": [
           "application/json"
         ],
@@ -4303,25 +4701,27 @@
           "example": 10
         },
         "footer": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "properties": {
-              "name": {
-                "type": "string",
-                "example": "property name"
-              },
-              "value": {
-                "type": "string",
-                "example": 10
-              },
-              "raw": {
-                "type": "boolean",
-                "example": false
-              },
-              "label": {
-                "type": "string",
-                "example": "instruments.footer.exchanges_failed"
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string",
+              "example": "property_name"
+            },
+            "value": {
+              "type": "number",
+              "example": 10
+            },
+            "template": {
+              "type": "string",
+              "example": "translation.key.property_name"
+            },
+            "args": {
+              "type": "object",
+              "properties": {
+                "property_name": {
+                  "type": "number",
+                  "example": 10
+                }
               }
             }
           }

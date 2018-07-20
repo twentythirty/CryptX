@@ -81,6 +81,10 @@ VALIDATORS = {
         asset_id: RULE_NAMES.NUM_POS,
         amount: RULE_NAMES.NUM_POS
     },
+    [ROUTE_STRINGS.InstrumentCreate]: {
+        transaction_asset_id: RULE_NAMES.NUM_POS,
+        quote_asset_id: RULE_NAMES.NUM_POS
+    },
     [ROUTE_STRINGS.ChangeSettingValues]: {
 
     }

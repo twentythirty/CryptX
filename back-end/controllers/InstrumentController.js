@@ -1,5 +1,6 @@
 'use strict';
 
+const instrumentService = require('../services/InstrumentsService');
 const adminViewService = require('../services/AdminViewsService');
 
 const createInstrument = async function (req, res) {
@@ -12,17 +13,13 @@ const createInstrument = async function (req, res) {
   if (!transaction_asset_id || !quote_asset_id)
     return ReE(res, "Both assets must be specified to create an instrument", 422);
   
-  // mock data below
-
-  let instrument_mock = {
-    id: 1,
-    transaction_asset_id: 28,
-    quote_asset_id: 2,
-    symbol: "BTC/XRP"
-  };
+  const [err, instrument] = await to(instrumentService.createInstrument(transaction_asset_id, quote_asset_id));
+  if (err) {
+    return ReE(res, err, 422);
+  }
 
   return ReS(res, {
-    instrument: instrument_mock
+    instrument: instrument
   });
 };
 module.exports.createInstrument = createInstrument;
@@ -30,19 +27,11 @@ module.exports.createInstrument = createInstrument;
 const getInstrument = async function (req, res) {
 
   let instrument_id = req.params.instrument_id;
-  // mock data below
-
-  let instrument_mock = {
-    id: instrument_id,
-    transaction_asset_id: 28,
-    quote_asset_id: 2,
-    symbol: "BTC/XRP",
-    exchanges_connected: 4,
-    exchanges_failed: 3
-  };
+  
+  const instrument = await adminViewService.fetchInstrumentView(instrument_id);
 
   return ReS(res, {
-    instrument: instrument_mock
+    instrument: instrument
   });
 };
 module.exports.getInstrument = getInstrument;
@@ -63,7 +52,7 @@ module.exports.getInstrumentsColumnLOV = getInstrumentsColumnLOV;
 
 const getInstruments = async function (req, res) {
    // mock data below
-  const instruments_and_count = await adminViewService.fetchInstrumentsViewDataWithCount(req.seq_where);
+  const instruments_and_count = await adminViewService.fetchInstrumentsViewDataWithCount(req.seq_query);
 
   const { data: instruments, total: count } = instruments_and_count;
 
