@@ -52,7 +52,9 @@
       "name": "Name",
       "surname": "Surname",
       "email": "Email",
-      "creation_date": "Creation date"
+      "creation_date": "Creation date",
+      "exchanges_connected": "Exchanges Connected",
+      "exchanges_failed": "Exchanges Failed"
     }
   },
   "assets": {
