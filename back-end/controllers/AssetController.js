@@ -72,9 +72,9 @@ module.exports.getAssetDetailed = getAssetDetailed;
 
 const getAssetsDetailed = async function (req, res) {
 
-  console.log('WHERE clause: %o', req.seq_query);
+  console.log('WHERE clause: %o', req.seq_where);
 
-  let [error, assets_with_count] = await to(adminViewsService.fetchAssetsViewDataWithCount(req.seq_query));
+  let [error, assets_with_count] = await to(adminViewsService.fetchAssetsViewDataWithCount(req.seq_where));
   if (error)
     return ReE(res, error, 422);
 
