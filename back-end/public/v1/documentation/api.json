@@ -50,6 +50,42 @@
         }
       }
     },
+    "/cold_storage/all": {
+      "post": {
+        "tags": [
+          "cold storage"
+        ],
+        "summary": "Get cold storage transfer information",
+        "description": "Get cold storage transfers information",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "description": "Filter object used to filter out data",
+            "required": false,
+            "schema": {
+              "$ref": "#/definitions/EntitiesFilter"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "$ref": "#/definitions/ColdStorageTranferListResponse"
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
     "/exchanges/all": {
       "get": {
         "tags": [
@@ -864,7 +900,7 @@
     "/recipes/{recipe_id}": {
       "get": {
         "tags": [
-          "investment"
+          "recipes"
         ],
         "summary": "Get recipe run of investment run.",
         "description": "Get investment run data by id",
@@ -898,7 +934,7 @@
     "/recipes/of_investment/{investment_id}": {
       "get": {
         "tags": [
-          "investment"
+          "recipes"
         ],
         "summary": "Get recipe runs of investment run.",
         "description": "Get investment run data by id",
@@ -930,7 +966,7 @@
       },
       "post": {
         "tags": [
-          "investment"
+          "recipes"
         ],
         "description": "Get recipe run run data by id",
         "produces": [
@@ -972,7 +1008,7 @@
     "/recipes/all": {
       "post": {
         "tags": [
-          "investment"
+          "recipes"
         ],
         "description": "Get all recipe runs",
         "produces": [
@@ -1007,7 +1043,7 @@
     "/recipes/{recipe_run_id}/approve": {
       "post": {
         "tags": [
-          "investment"
+          "recipes"
         ],
         "summary": "Approve recipe run",
         "description": "In order to continue investment into all the different cryptocurrencies proccess, recipe run must be approved first. After approving recipe run, order groups will need to be approved later after they are generated",
@@ -1050,7 +1086,8 @@
     "/recipes/{recipe_run_id}/generate_orders": {
       "post": {
         "tags": [
-          "investment"
+          "recipes",
+          "orders"
         ],
         "summary": "Generate recipe orders",
         "description": "After recipe run is confirmed further action is generating recipe orders. This route will help trigger recipe order generation in the system. After orders are generated, next step is approving them. Approved orders will be sent to exchanges.",
@@ -1093,7 +1130,7 @@
     "/recipe_details/{recipe_detail_id}": {
       "get": {
         "tags": [
-          "investment"
+          "recipe details"
         ],
         "summary": "Get recipe run of investment run.",
         "description": "Get investment run data by id",
@@ -1127,7 +1164,7 @@
     "/recipe_details/of_recipe/{recipe_id}": {
       "get": {
         "tags": [
-          "investment"
+          "recipe details"
         ],
         "summary": "Get recipe run details.",
         "description": "Get recipe run details",
@@ -1159,7 +1196,7 @@
       },
       "post": {
         "tags": [
-          "investment"
+          "recipe details"
         ],
         "summary": "Get recipe run details.",
         "description": "Get recipe run details",
@@ -1202,7 +1239,7 @@
     "/orders/{recipe_order_id}": {
       "get": {
         "tags": [
-          "investment"
+          "orders"
         ],
         "summary": "Get orders of recipe run by recipe order id",
         "description": "Get orders of recipe run by recipe order id",
@@ -1236,7 +1273,7 @@
     "/orders/of_recipe/{recipe_id}": {
       "get": {
         "tags": [
-          "investment"
+          "orders"
         ],
         "summary": "Get orders of recipe run by recipe id",
         "description": "Get orders of recipe run by recipe id",
@@ -1268,7 +1305,7 @@
       },
       "post": {
         "tags": [
-          "investment"
+          "orders"
         ],
         "summary": "Get orders of recipe run by recipe id",
         "description": "Get orders of recipe run by recipe id",
@@ -1311,7 +1348,7 @@
     "/orders/all": {
       "post": {
         "tags": [
-          "investment"
+          "orders"
         ],
         "summary": "Get all orders",
         "description": "Get all orders",
@@ -1347,7 +1384,7 @@
     "/orders/{order_group_id}/alter": {
       "post": {
         "tags": [
-          "investment"
+          "orders"
         ],
         "summary": "Approve/Reject recipe group",
         "description": "Approve or reject recipe order group by giving status code and rationale for the action.",
@@ -1390,7 +1427,7 @@
     "/deposits/{deposit_id}": {
       "get": {
         "tags": [
-          "investment"
+          "deposits"
         ],
         "summary": "Get deposits of recipe by deposit ID",
         "description": "Get deposits of recipe by deposit ID",
@@ -1424,7 +1461,7 @@
     "/deposits/of_recipe/{recipe_id}": {
       "get": {
         "tags": [
-          "investment"
+          "deposits"
         ],
         "summary": "Get recipe deposits of recipe run by recipe id",
         "description": "Get recipe deposits of recipe run by recipe id",
@@ -1456,7 +1493,7 @@
       },
       "post": {
         "tags": [
-          "investment"
+          "deposits"
         ],
         "summary": "Get recipe deposits of recipe run by recipe id",
         "description": "Get recipe deposits of recipe run by recipe id",
@@ -1499,7 +1536,7 @@
     "/deposits/all": {
       "post": {
         "tags": [
-          "investment"
+          "deposits"
         ],
         "summary": "Get all deposits",
         "description": "Get all deposits",
@@ -1535,7 +1572,7 @@
     "/execution_orders/{execution_order_id}": {
       "get": {
         "tags": [
-          "investment"
+          "execution orders"
         ],
         "summary": "Get execution order by id",
         "description": "Get execution orders by id",
@@ -1569,7 +1606,7 @@
     "/execution_orders/of_order/{order_id}": {
       "get": {
         "tags": [
-          "investment"
+          "execution orders"
         ],
         "summary": "Get execution orders of by order id",
         "description": "Get execution orders of by order id",
@@ -1601,7 +1638,7 @@
       },
       "post": {
         "tags": [
-          "investment"
+          "execution orders"
         ],
         "summary": "Get execution orders of by order id",
         "description": "Get execution orders of by order id",
@@ -1644,7 +1681,7 @@
     "/execution_orders/all": {
       "post": {
         "tags": [
-          "investment"
+          "execution orders"
         ],
         "summary": "Get all execution orders",
         "description": "Get all execution orders",
@@ -1680,7 +1717,7 @@
     "/exec_orders_fills/{execution_order_fill_id}": {
       "get": {
         "tags": [
-          "investment"
+          "execution order fills"
         ],
         "summary": "Get execution order fill by id",
         "description": "Get execution order fill by id",
@@ -1714,7 +1751,7 @@
     "/exec_orders_fills/of_order/{execution_order_id}": {
       "get": {
         "tags": [
-          "investment"
+          "execution order fills"
         ],
         "summary": "Get execution order fill by execution order id",
         "description": "Get execution order fill by execution order id",
@@ -1746,7 +1783,7 @@
       },
       "post": {
         "tags": [
-          "investment"
+          "execution order fills"
         ],
         "summary": "Get execution order fill by execution order id",
         "description": "Get execution order fill by execution order id",
@@ -3150,7 +3187,7 @@
     "/recipes/header_lov/{field_name}": {
       "get": {
         "tags": [
-          "investment"
+          "recipes"
         ],
         "summary": "Get a list of all values for this field in the recipe run view table",
         "description": "Optionally filtered list of all values for a speicfic field in the recipe runs view table. Used as the set of options in LOV-type headers. The POST version can be used in conjunction with header search.",
@@ -3188,7 +3225,7 @@
       },
       "post": {
         "tags": [
-          "investment"
+          "recipes"
         ],
         "summary": "Get a list of all values for this field in the recipes view table",
         "description": "Optionally filtered list of all values for a specific field in the users view table. Used as the set of options in LOV-type headers. The POST version can be used in conjunction with header search.",
@@ -3237,7 +3274,7 @@
     "/recipe_details/header_lov/{field_name}": {
       "get": {
         "tags": [
-          "investment"
+          "recipe details"
         ],
         "summary": "Get a list of all values for this field in the recipe details view table",
         "description": "Optionally filtered list of all values for a specific field in the recipe details view table. Used as the set of options in LOV-type headers. The POST version can be used in conjunction with header search.",
@@ -3275,7 +3312,7 @@
       },
       "post": {
         "tags": [
-          "investment"
+          "recipe details"
         ],
         "summary": "Get a list of all values for this field in the recipe details view table",
         "description": "Optionally filtered list of all values for a specific field in the recipe details view table. Used as the set of options in LOV-type headers. The POST version can be used in conjunction with header search.",
@@ -3321,10 +3358,97 @@
         ]
       }
     },
+    "/deposits/header_lov/{field_name}": {
+      "get": {
+        "tags": [
+          "deposits"
+        ],
+        "summary": "Get a list of all values for this field in the deposits view table",
+        "description": "Optionally filtered list of all values for a specific field in the deposits view table. Used as the set of options in LOV-type headers. The POST version can be used in conjunction with header search.",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "field_name",
+            "in": "path",
+            "description": "name of column field to fetch LOV for. corresponds to value used to fill column by entity.",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "schema": {
+              "$ref": "#/definitions/HeaderColListResponse"
+            }
+          },
+          "401": {
+            "description": "unauthorized - no session",
+            "schema": {
+              "$ref": "#/definitions/ApiUnauthorizezdResponse"
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      },
+      "post": {
+        "tags": [
+          "deposits"
+        ],
+        "summary": "Get a list of all values for this field in the deposits view table",
+        "description": "Optionally filtered list of all values for a specific field in the deposits view table. Used as the set of options in LOV-type headers. The POST version can be used in conjunction with header search.",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "field_name",
+            "in": "path",
+            "description": "name of column field to fetch LOV for. corresponds to value used to fill column by entity.",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "filter query",
+            "in": "body",
+            "description": "the query used to additionally filter the LOV",
+            "required": false,
+            "schema": {
+              "$ref": "#/definitions/LOVFilter"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "schema": {
+              "$ref": "#/definitions/HeaderColListResponse"
+            }
+          },
+          "401": {
+            "description": "unauthorized - no session",
+            "schema": {
+              "$ref": "#/definitions/ApiUnauthorizezdResponse"
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
     "/orders/header_lov/{field_name}": {
       "get": {
         "tags": [
-          "investment"
+          "orders"
         ],
         "summary": "Get a list of all values for this field in the orders view table",
         "description": "Optionally filtered list of all values for a specific field in the orders view table. Used as the set of options in LOV-type headers. The POST version can be used in conjunction with header search.",
@@ -3362,7 +3486,7 @@
       },
       "post": {
         "tags": [
-          "investment"
+          "orders"
         ],
         "summary": "Get a list of all values for this field in the orders view table",
         "description": "Optionally filtered list of all values for a specific field in the orders view table. Used as the set of options in LOV-type headers. The POST version can be used in conjunction with header search.",
@@ -3411,7 +3535,7 @@
     "/execution_orders/header_lov/{field_name}": {
       "get": {
         "tags": [
-          "investment"
+          "execution orders"
         ],
         "summary": "Get a list of all values for this field in the execution orders view table",
         "description": "Optionally filtered list of all values for a specific field in the execution view table. Used as the set of options in LOV-type headers. The POST version can be used in conjunction with header search.",
@@ -3449,7 +3573,7 @@
       },
       "post": {
         "tags": [
-          "investment"
+          "execution orders"
         ],
         "summary": "Get a list of all values for this field in the execution orders view table",
         "description": "Optionally filtered list of all values for a speicfic field in the execution orders view table. Used as the set of options in LOV-type headers. The POST version can be used in conjunction with header search.",
@@ -3498,7 +3622,7 @@
     "/exec_orders_fills/header_lov/{field_name}": {
       "get": {
         "tags": [
-          "investment"
+          "execution order fills"
         ],
         "summary": "Get a list of all values for this field in the execution order fill",
         "description": "Optionally filtered list of all values for a speicfic field in the execution order fill table. Used as the set of options in LOV-type headers. The POST version can be used in conjunction with header search.",
@@ -3536,7 +3660,7 @@
       },
       "post": {
         "tags": [
-          "investment"
+          "execution order fills"
         ],
         "summary": "Get a list of all values for this field in the execution order fill table",
         "description": "Optionally filtered list of all values for a speicfic field in the execution order fill table. Used as the set of options in LOV-type headers. The POST version can be used in conjunction with header search.",
@@ -3765,6 +3889,80 @@
     }
   },
   "definitions": {
+    "ColdStorageTranferListResponse": {
+      "description": "Cold storage transfer information",
+      "type": "object",
+      "allOf": [
+        {
+          "$ref": "#/definitions/ListResponse"
+        },
+        {
+          "properties": {
+            "transfers": {
+              "$ref": "#/definitions/ColdStorageTransfer"
+            }
+          }
+        }
+      ]
+    },
+    "ColdStorageTransfer": {
+      "description": "Cold storage transfer information",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "number",
+          "example": 13
+        },
+        "asset": {
+          "type": "number",
+          "example": "BTC"
+        },
+        "gross_amount": {
+          "type": "number",
+          "example": 12.05
+        },
+        "net_amount": {
+          "type": "number",
+          "example": 14
+        },
+        "exchange_withrawal_fee": {
+          "type": "number",
+          "example": 0.01
+        },
+        "status": {
+          "type": "number",
+          "example": 91
+        },
+        "cold_storage_account_id": {
+          "type": "number",
+          "example": "98512543"
+        },
+        "custodian": {
+          "type": "number",
+          "example": "ItBit"
+        },
+        "strategy": {
+          "type": "number",
+          "example": "MCI"
+        },
+        "source_exchange": {
+          "type": "number",
+          "example": "Bitstamp"
+        },
+        "source_account": {
+          "type": "number",
+          "example": "25439851"
+        },
+        "placed_timestamp": {
+          "type": "number",
+          "example": 1532097313472
+        },
+        "completed_timestamp": {
+          "type": "number",
+          "example": 1532097313472
+        }
+      }
+    },
     "InvestmentRunStats": {
       "description": "Statuses and statistics on investment run",
       "type": "object",
@@ -4960,18 +5158,25 @@
     "AssetDetailedListResponse": {
       "description": "Server response with array of detailed asset information",
       "type": "object",
-      "properties": {
-        "success": {
-          "type": "boolean",
-          "example": true
+      "allOf": [
+        {
+          "$ref": "#/definitions/ListResponse"
         },
-        "asset": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/AssetDetailed"
+        {
+          "properties": {
+            "success": {
+              "type": "boolean",
+              "example": true
+            },
+            "asset": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/AssetDetailed"
+              }
+            }
           }
         }
-      }
+      ]
     },
     "AssetDetailedResponse": {
       "description": "Server response with detailed asset information",
@@ -5028,21 +5233,22 @@
     "AssetListResponse": {
       "description": "Example of a response where list of assets are returned",
       "type": "object",
-      "allOf": [
-        {
-          "$ref": "#/definitions/ListResponse"
+      "properties": {
+        "success": {
+          "type": "boolean",
+          "example": true
         },
-        {
-          "properties": {
-            "assets": {
-              "type": "array",
-              "items": {
-                "$ref": "#/definitions/Asset"
-              }
-            }
+        "count": {
+          "type": "number",
+          "example": 20
+        },
+        "assets": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Asset"
           }
         }
-      ]
+      }
     },
     "AssetResponse": {
       "description": "Example of server response when asset is retured",

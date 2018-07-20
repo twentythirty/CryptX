@@ -781,6 +781,13 @@ router.post(
   MockController.getExchanges
 );
 
+router.post(
+  ROUTES.GetColdStorageTransfers.router_string,
+  stateless_auth,
+  check_permissions,
+  filter_reducer,
+  MockController.getColdStorageTransfers
+);
 //********* API DOCUMENTATION **********
 router.use(
   "/docs/api.json",

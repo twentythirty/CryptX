@@ -501,6 +501,11 @@ ROUTES = {
     required_permissions: [PERMISSIONS.CREATE_INVESTMENT_RUN]
   },
   
+  GetColdStorageTransfers: {
+    router_string: "/cold_storage/all",
+    permissions_matcher: ROUTE_MATCHERS.GetColdStorageTransfers,
+    required_permissions: [PERMISSIONS.CREATE_INVESTMENT_RUN]
+  },
 
   // System settings
   ChangeSettingValues: {
