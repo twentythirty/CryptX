@@ -131,7 +131,7 @@ const getUsers = async function (req, res) {
 
   console.log('WHERE clause: %o', req.seq_where);
   console.log(`SQL WHERE clause: ${req.sql_where}`);
-  let [err, result] = await to(adminViewsService.fetchUsersViewDataWithCount(req.seq_where));
+  let [err, result] = await to(adminViewsService.fetchUsersViewDataWithCount(req.seq_query));
   if (err) return ReE(res, err.message, 422);
   let footer = [];
   [err, footer] = await to(adminViewsService.fetchUsersViewFooter(req.sql_where));

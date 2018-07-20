@@ -9,7 +9,7 @@ const AVInstrument = require('../models').AVInstrument;
 
 const TABLE_LOV_FIELDS = {
     'av_users': [
-        'first_name', 
+        'first_name',
         'last_name',
         'email',
         'is_active'
@@ -36,29 +36,42 @@ const fetchViewHeaderLOV = async (table, field, query) => {
         return [];
     }
 
-    const sql = builder.selectDistinct(field, table, query? `${field} LIKE ${sequelize.escape(`%${query}%`)}`: '')
-    
+    const sql = builder.selectDistinct(field, table, query ? `${field} LIKE ${sequelize.escape(`%${query}%`)}` : '')
+
     //returns list of objects with 1 key-value pair, key being field name
-    const values = await sequelize.query(sql, { type: sequelize.QueryTypes.SELECT });
+    const values = await sequelize.query(sql, {
+        type: sequelize.QueryTypes.SELECT
+    });
 
     //extrac field values from key value pairs
     return _.map(values, field);
 }
-const fetchViewDataWithCount = async (model, seq_where = {}) => {
+const fetchViewDataWithCount = async (model, seq_query = {}) => {
 
     const [data, total] = await Promise.all([
-        fetchModelData(model, seq_where),
+        fetchModelData(model, seq_query),
         fetchModelCount(model)
     ]);
-    
-    return { data, total }
+
+    return {
+        data,
+        total
+    }
 }
-const fetchModelData = async (model, seq_where = {}) => model.findAll({ where: seq_where })
+const fetchModelData = async (model, seq_query = {}) => model.findAll(seq_query)
 const fetchModelCount = async (model) => model.count()
+const fetchSingleEntity = async (model, id) => {
+
+    return _.first(await fetchModelData(model, {
+        where: {
+            id: id
+        }
+    }))
+}
 
 const fetchMockHeaderLOV = async (header_field, query = '') => {
     // mock data below
-    return [ 'Value 1', 'Value 2', 'Value 3', 'Value 4', 'Value 5'];
+    return ['Value 1', 'Value 2', 'Value 3', 'Value 4', 'Value 5'];
 }
 module.exports.fetchMockHeaderLOV = fetchMockHeaderLOV;
 
@@ -91,35 +104,35 @@ module.exports.fetchInstrumentsViewHeaderLOV = fetchInstrumentsViewHeaderLOV;
 
 // ************************ DATA ***************************//
 
-const fetchUsersViewDataWithCount = async (seq_where = {}) => {
+const fetchUsersViewDataWithCount = async (seq_query = {}) => {
 
-    return fetchViewDataWithCount(AVUser, seq_where);
+    return fetchViewDataWithCount(AVUser, seq_query);
 }
 module.exports.fetchUsersViewDataWithCount = fetchUsersViewDataWithCount;
 
-const fetchAssetsViewDataWithCount = async (seq_where = {}) => {
+const fetchAssetsViewDataWithCount = async (seq_query = {}) => {
 
-    return fetchViewDataWithCount(AVAsset, seq_where);
+    return fetchViewDataWithCount(AVAsset, seq_query);
 }
 module.exports.fetchAssetsViewDataWithCount = fetchAssetsViewDataWithCount;
 
-const fetchInstrumentsViewDataWithCount = async (seq_where = {}) => {
+const fetchInstrumentsViewDataWithCount = async (seq_query = {}) => {
 
-    return fetchViewDataWithCount(AVInstrument, seq_where);
+    return fetchViewDataWithCount(AVInstrument, seq_query);
 }
 module.exports.fetchInstrumentsViewDataWithCount = fetchInstrumentsViewDataWithCount;
 
 const fetchAssetView = async (asset_id) => {
 
-    return _.first(await fetchModelData(AVAsset, {
-        where: {
-            id: asset_id
-        }
-    }))
+    return fetchSingleEntity(AVAsset, asset_id)
 }
 module.exports.fetchAssetView = fetchAssetView;
 
+const fetchInstrumentView = async (instrument_id) => {
 
+    return fetchSingleEntity(AVInstrument, instrument_id)
+}
+module.exports.fetchInstrumentView = fetchInstrumentView;
 
 
 
@@ -130,15 +143,15 @@ const fetchUsersViewFooter = async (where_clause = '') => {
     const simple_fields = {
         first_name: 'first_name',
         last_name: 'last_name',
-        email: 'email', 
+        email: 'email',
         created_timestamp: 'created_timestamp::date'
     }
 
     const query_parts = _.concat(_.map(simple_fields, (field_expr, alias) => {
-        return builder.selectCountDistinct(field_expr, alias, 'av_users', where_clause)
-    }), 
-    //attach the more fancy footer column query as-is to avoid convoluted parametrization
-    builder.selectCount('av_users', 'is_active', builder.addToWhere(where_clause, 'is_active = \'users.entity.active\'')));
+            return builder.selectCountDistinct(field_expr, alias, 'av_users', where_clause)
+        }),
+        //attach the more fancy footer column query as-is to avoid convoluted parametrization
+        builder.selectCount('av_users', 'is_active', builder.addToWhere(where_clause, 'is_active = \'users.entity.active\'')));
 
     const footer_values = (await sequelize.query(builder.joinQueryParts(
         query_parts,
@@ -173,7 +186,7 @@ FROM
     `
 
     const footer_values = (await sequelize.query(united_query))[0];
-    
+
     return builder.addFooterLabels(
         builder.queryReturnRowToFooterObj(footer_values), 'assets');
 }
@@ -239,49 +252,47 @@ const fetchLiquidityViewFooter = async () => {
         }
       ];
  */
-      let footer = [
-        {
-          "name": "id",
-          "value": "999"
+    let footer = [{
+            "name": "id",
+            "value": "999"
         },
         {
-          "name": "instrument",
-          "value": "999"
+            "name": "instrument",
+            "value": "999"
         },
         {
-          "name": "periodicity",
-          "value": "999"
+            "name": "periodicity",
+            "value": "999"
         },
         {
-          "name": "quote_asset",
-          "value": "999"
+            "name": "quote_asset",
+            "value": "999"
         },
         {
-          "name": "minimum_circulation",
-          "value": "999"
+            "name": "minimum_circulation",
+            "value": "999"
         },
         {
-          "name": "exchange",
-          "value": "999"
+            "name": "exchange",
+            "value": "999"
         },
         {
-          "name": "exchange_count",
-          "value": "999"
+            "name": "exchange_count",
+            "value": "999"
         },
         {
-          "name": "exchange_pass",
-          "value": "999"
+            "name": "exchange_pass",
+            "value": "999"
         }
-      ];
-      return builder.addFooterLabels(footer, 'liquidity')
+    ];
+    return builder.addFooterLabels(footer, 'liquidity')
 }
 module.exports.fetchLiquidityViewFooter = fetchLiquidityViewFooter;
 
 const fetchLiquidityExchangesViewFooter = async () => {
     // mock data below
 
-    let footer = [
-        {
+    let footer = [{
             "name": "id",
             "value": "999"
         },
@@ -319,6 +330,6 @@ const fetchLiquidityExchangesViewFooter = async () => {
         }
     ];
 
-      return builder.addFooterLabels(footer, 'liquidity_exchanges')
+    return builder.addFooterLabels(footer, 'liquidity_exchanges')
 }
 module.exports.fetchLiquidityExchangesViewFooter = fetchLiquidityExchangesViewFooter;
