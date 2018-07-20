@@ -263,7 +263,7 @@ const getLiquidityRequirementExchanges = async function (req, res) {
     passes: true 
   }));
 
-  let footer = await adminViewService.fetchLiquidityExchangesViewFooter();
+  let footer = create_mock_footer(liquidity_mock, 'liquidity')
 
   return ReS(res, {
     exchanges: liquidity_mock,
@@ -272,3 +272,18 @@ const getLiquidityRequirementExchanges = async function (req, res) {
   });
 };
 module.exports.getLiquidityRequirementExchanges = getLiquidityRequirementExchanges;
+
+const create_mock_footer = function (keys, name) {
+  // delete this function after mock data is replaced
+  let footer = [...Object.keys(keys)].map((key, index) => {
+    return {
+      "name": key,
+      "value": 999,
+      "template": name + ".footer." + key,
+      "args": {
+          [key]: 999
+      }
+    }
+  });
+  return footer;
+};
