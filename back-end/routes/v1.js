@@ -788,6 +788,13 @@ router.post(
   filter_reducer,
   MockController.getColdStorageTransfers
 );
+router.post(
+  ROUTES.GetColdStorageTransfersColLOV.router_string,
+  stateless_auth,
+  check_permissions,
+  filter_reducer,
+  MockController.fetchColLOV
+);
 //********* API DOCUMENTATION **********
 router.use(
   "/docs/api.json",

@@ -3879,6 +3879,55 @@
           }
         ]
       }
+    },
+    "/cold_storage/header_lov/{field_name}": {
+      "post": {
+        "tags": [
+          "cold storage"
+        ],
+        "summary": "Get a list of all values for this field in the cold storage table",
+        "description": "Optionally filtered list of all values for a speicfic field in the cold storage view table. Used as the set of options in LOV-type headers. The POST version can be used in conjunction with header search. For users table, this `field_name` can be: `first_name`, `last_name`, `email`, `is_active`",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "field_name",
+            "in": "path",
+            "description": "name of column field to fetch LOV for. corresponds to value used to fill column by entity.",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "filter query",
+            "in": "body",
+            "description": "the query used to additionally filter the LOV",
+            "required": false,
+            "schema": {
+              "$ref": "#/definitions/LOVFilter"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "schema": {
+              "$ref": "#/definitions/HeaderColListResponse"
+            }
+          },
+          "401": {
+            "description": "unauthorized - no session",
+            "schema": {
+              "$ref": "#/definitions/ApiUnauthorizezdResponse"
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
     }
   },
   "securityDefinitions": {

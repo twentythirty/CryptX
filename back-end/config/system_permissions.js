@@ -495,17 +495,26 @@ ROUTES = {
     required_permissions: []
   },
 
+  // route is useless right now
   CreateDeposit: {
     router_string: "/investments/:investment_id/deposit",
     permissions_matcher: ROUTE_MATCHERS.CreateDeposit,
     required_permissions: [PERMISSIONS.CREATE_INVESTMENT_RUN]
   },
   
+
+  // Cold storage
   GetColdStorageTransfers: {
     router_string: "/cold_storage/all",
     permissions_matcher: ROUTE_MATCHERS.GetColdStorageTransfers,
     required_permissions: [PERMISSIONS.CREATE_INVESTMENT_RUN]
   },
+  GetColdStorageTransfersColLOV: {
+    router_string: "/cold_storage/header_lov/:field_name",
+    permissions_matcher: ROUTE_MATCHERS.GetColdStorageTransfersColLOV,
+    required_permissions: [PERMISSIONS.CREATE_INVESTMENT_RUN]
+  },
+
 
   // System settings
   ChangeSettingValues: {
