@@ -4,4 +4,6 @@ export enum StatusClass {
   FAILED = 'failed',
   PENDING = 'pending',
   APPROVED = 'approved',
+  ACTIVE = 'active',
+  DEACTIVATED = 'deactivated'
 }

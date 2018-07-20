@@ -5,7 +5,7 @@ import { StatusClass } from '../../../shared/models/common';
 import { TimelineDetailComponent, SingleTableDataSource, TagLineItem } from '../timeline-detail/timeline-detail.component'
 import { TableDataSource, TableDataColumn } from '../../../shared/components/data-table/data-table.component';
 import { TimelineEvent } from '../timeline/timeline.component';
-import { ActionCellDataColumn, DataCellAction, DateCellComponent, BooleanCellComponent, DateCellDataColumn, BooleanCellDataColumn, NumberCellDataColumn } from '../../../shared/components/data-table-cells';
+import { ActionCellDataColumn, DataCellAction, DateCellComponent, BooleanCellComponent, DateCellDataColumn, BooleanCellDataColumn, NumberCellDataColumn, StatusCellDataColumn } from '../../../shared/components/data-table-cells';
 import { InvestmentService } from '../../../services/investment/investment.service';
 import { mergeMap } from 'rxjs/operators';
 
@@ -34,28 +34,28 @@ export class InvestmentRunDetailComponent extends TimelineDetailComponent implem
 
   public singleDataSource: SingleTableDataSource = {
     header: [
-      { column: 'id', name: 'Id' },
-      { column: 'started', name: 'Started' },
-      { column: 'updated', name: 'Updated' },
-      { column: 'completed', name: 'Completed' },
-      { column: 'creator', name: 'Creator' },
-      { column: 'strategy', name: 'Strategy' },
-      { column: 'simulated', name: 'Simulated' },
-      { column: 'deposit', name: 'Deposit' },
-      { column: 'status', name: 'Status' }
+      { column: 'id', nameKey: 'table.header.id' },
+      { column: 'started', nameKey: 'table.header.started' },
+      { column: 'updated', nameKey: 'table.header.updated' },
+      { column: 'completed', nameKey: 'table.header.completed' },
+      { column: 'creator', nameKey: 'table.header.creator' },
+      { column: 'strategy', nameKey: 'table.header.strategy' },
+      { column: 'simulated', nameKey: 'table.header.simulated' },
+      { column: 'deposit', nameKey: 'table.header.deposit' },
+      { column: 'status', nameKey: 'table.header.status' }
     ],
     body: null
   }
 
   public listDataSource: TableDataSource = {
     header: [
-      { column: 'id', name: 'Id', filter: {type: 'text', sortable: true }},
-      { column: 'created', name: 'Created', filter: {type: 'date', sortable: true }},
-      { column: 'creator', name: 'Creator', filter: {type: 'text', sortable: true }},
-      { column: 'status', name: 'Status', filter: {type: 'text', sortable: true }},
-      { column: 'desicion_by', name: 'Desicion by', filter: {type: 'text', sortable: true }},
-      { column: 'decision_time', name: 'Decision time', filter: {type: 'date', sortable: true }},
-      { column: 'rationale', name: 'Rationale', filter: {type: 'text', sortable: true }},
+      { column: 'id', nameKey: 'table.header.id', filter: {type: 'text', sortable: true }},
+      { column: 'created', nameKey: 'table.header.created', filter: {type: 'date', sortable: true }},
+      { column: 'creator', nameKey: 'table.header.creator', filter: {type: 'text', sortable: true }},
+      { column: 'status', nameKey: 'table.header.status', filter: {type: 'text', sortable: true }},
+      { column: 'decision_by', nameKey: 'table.header.decision_by', filter: {type: 'text', sortable: true }},
+      { column: 'decision_time', nameKey: 'table.header.decision_time', filter: {type: 'date', sortable: true }},
+      { column: 'rationale', nameKey: 'table.header.rationale', filter: {type: 'text', sortable: true }},
     ],
     body: null,
   };
@@ -69,21 +69,30 @@ export class InvestmentRunDetailComponent extends TimelineDetailComponent implem
     'strategy',
     new BooleanCellDataColumn({ column: 'simulated' }),
     new NumberCellDataColumn({ column: 'deposit' }),
-    'status',
+    new StatusCellDataColumn({ column: 'status', inputs: { classMap: value => {
+      return StatusClass.DEFAULT;
+    }}}),
   ];
 
   public listColumnsToShow: Array<string | TableDataColumn> = [
     'id',
     new DateCellDataColumn({ column: 'created' }),
     'creator',
-    'status',
+    new StatusCellDataColumn({ column: 'status', inputs: { classMap: value => {
+      return StatusClass.DEFAULT;
+    }}}),
     'decision_by',
     new DateCellDataColumn({ column: 'decision_time' }),
     new ActionCellDataColumn({ column: 'rationale', inputs: {
         actions: [
           new DataCellAction({
             label: 'READ',
-            exec: (row: any) => { this.readRationale(<any>row) }
+            exec: (row: any) => {
+              this.showReadModal({
+                title: 'Rationale',
+                content: row.rationale
+              })
+            }
           })
         ]
       }
@@ -112,9 +121,9 @@ export class InvestmentRunDetailComponent extends TimelineDetailComponent implem
       )
     ).subscribe(
       res => {
-        console.log(res);
-        this.listDataSource.body = res.recipe_runs;
         this.count = res.count;
+        this.listDataSource.body = res.recipe_runs;
+        this.listDataSource.footer = res.footer;
       },
       err => this.listDataSource.body = []
     )
@@ -158,7 +167,6 @@ export class InvestmentRunDetailComponent extends TimelineDetailComponent implem
       )
     ).subscribe(
       res => {
-        console.log(res);
         this.listDataSource.body.push(res);
       }
     )
@@ -179,14 +187,6 @@ export class InvestmentRunDetailComponent extends TimelineDetailComponent implem
 
   ngOnInit() {
     super.ngOnInit();
-  }
-
-  /**
-   * Additional
-   */
-
-  public readRationale(row): void {
-    alert(row.rationale)
   }
 
 }

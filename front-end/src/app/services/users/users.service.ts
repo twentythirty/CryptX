@@ -8,10 +8,14 @@ import { RoleResultData } from '../../shared/models/api/roleResultData';
 import { RolesPermissionsResultData } from '../../shared/models/api/rolesPermissionsResultData';
 import { RolesAllRequestData } from "../../shared/models/api/rolesAllRequestData";
 import { environment } from '../../../environments/environment';
+import { EntitiesFilter } from "../../shared/models/api/entitiesFilter";
+
 
 export class UsersAllResponse {
-  success: boolean
-  users: Array<User>
+  success: boolean;
+  users: Array<User>;
+  footer: Array<any>
+  count: number;
 }
 
 export class UserCreateResponse {
@@ -36,12 +40,17 @@ export class UsersService {
 
   constructor(private http: HttpClient) { }
 
-  getAllUsers(requestData: RolesAllRequestData): Observable<any>{
+  getAllUsers(requestData?: EntitiesFilter): Observable<UsersAllResponse>{
     return this.http.post<UsersAllResponse>(this.baseUrl + 'users/all', requestData)
     .do(data => {
       if (data.success) {
         return data;
       }
+    if(requestData) {
+      return this.http.post<UsersAllResponse>(this.baseUrl + `assets/detailed/all`, requestData);
+    } else {
+      return this.http.get<UsersAllResponse>(this.baseUrl + `assets/detailed/all`);
+    }
     });
   }
 

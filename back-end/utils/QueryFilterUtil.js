@@ -1,6 +1,7 @@
 'use strict';
 
 const Sequelize = require('../models').Sequelize;
+const sequelize = require('../models').sequelize;
 const Op = Sequelize.Op;
 
 /**
@@ -88,7 +89,6 @@ module.exports.toSequelizeWhere = toSequelizeWhere;
  * for making direct DB calls.
  **/
 const toWhereSQL = (filter_obj_ext) => {
-
     let final_sql = "";
 
     if (filter_obj_ext == null) {
@@ -254,6 +254,9 @@ function parse_data_type(data_type, value) {
         case 'number':
             parsed_value = parseFloat(value);
             break;
+        case 'boolean':
+            parsed_value = (String(value).toLowerCase() === 'true'); //Based on: https://stackoverflow.com/questions/263965/how-can-i-convert-a-string-to-boolean-in-javascript
+            break;
         case 'string':
         default:
             parsed_value = value;
@@ -286,14 +289,11 @@ const format_for_sql = (value) => {
     if (_.isNull(value)) {
         return `NULL`;
     }
-    if (_.isString(value)) {
-        return `'${value}'`
-    }
     if (_.isArray(value)) {
         return `${paren(_.join(_.map(value, format_for_sql), ', '))}`
     }
 
-    return `${value}`;
+    return `${sequelize.escape(value)}`;
 }
 
 /**
@@ -318,8 +318,6 @@ const add_to_where = (current_where, addition) => {
 
 
 const expr_to_sql = (field_name, expr_obj, negation = false) => {
-
-    let clause_expression = '';
 
     //supplied thing is an atom of some kind - string, array, value or null
     if (!_.isPlainObject(expr_obj)) {
@@ -378,7 +376,9 @@ const atom_to_sql_expression = (left_side, atom, negation = false) => {
  */
 const expression_op_to_sql = (expression_op, negation = false) => {
 
-    switch (expression_op) {
+    const expr = (expression_op? expression_op : '').trim().toLowerCase();
+    
+    switch (expr) {
 
         case 'lt':
             return negation ? '>=' : '<';
@@ -388,10 +388,16 @@ const expression_op_to_sql = (expression_op, negation = false) => {
             return negation ? '<=' : '>';
         case 'gte':
             return negation ? '<' : '>=';
-        case 'notIn':
+        case 'in':
+            return negation ? 'NOT IN' : 'IN';
+        case 'notin':
             return negation ? 'IN' : 'NOT IN';
+        case 'like':
+            return negation ? 'NOT LIKE' : 'LIKE';
+        case 'ilike':
+            return negation ? 'NOT iLIKE' : 'iLIKE';
         default:
-            return `${negation? 'NOT ' : ''}${expression_op}`
+            return `${negation? 'NOT ' : ''}${sequelize.escape(expression_op)}`
     }
 }
 

@@ -1,5 +1,5 @@
 import { NgModule } from '@angular/core';
-import { FormsModule } from '@angular/forms'
+import { FormsModule, ReactiveFormsModule } from '@angular/forms'
 import { CommonModule } from '@angular/common';
 
 import { Ng2FlatpickrModule } from 'ng2-flatpickr';
@@ -32,14 +32,18 @@ import { InputItemErrorMessageComponent } from './components/input-item-error-me
 import { StatusCellComponent } from './components/data-table-cells/status-cell/status-cell.component';
 import { ConfirmCellComponent } from './components/data-table-cells/confirm-cell/confirm-cell.component';
 import { MatProgressSpinnerModule } from '@angular/material';
+import { RationaleModalComponent } from './components/rationale-modal/rationale-modal.component';
+import { TranslateModule } from '@ngx-translate/core';
 
 @NgModule({
     imports: [
         CommonModule,
         FormsModule,
+        ReactiveFormsModule,
         RouterModule,
         Ng2FlatpickrModule,
         MatProgressSpinnerModule,
+        TranslateModule,
         DynamicModule.withComponents([
           ActionCellComponent,
           CurrencyCellComponent,
@@ -75,10 +79,12 @@ import { MatProgressSpinnerModule } from '@angular/material';
         BooleanCellComponent,
         InputItemErrorMessageComponent,
         StatusCellComponent,
-        ConfirmCellComponent
+        ConfirmCellComponent,
+        RationaleModalComponent
     ],
     exports: [
         MatProgressSpinnerModule,
+        TranslateModule,
         BtnComponent,
         DataTableComponent,
         ModalComponent,
@@ -94,9 +100,11 @@ import { MatProgressSpinnerModule } from '@angular/material';
         ButtonBackComponent,
         PageHeadingComponent,
         FormsModule,
+        ReactiveFormsModule,
         InputItemComponent,
         DynamicModule,
-        InputItemErrorMessageComponent
+        InputItemErrorMessageComponent,
+        RationaleModalComponent,
     ]
 })
 export class SharedModule {}

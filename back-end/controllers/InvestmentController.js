@@ -76,10 +76,46 @@ const getInvestmentRun = async function (req, res) {
   })
 
   return ReS(res, {
-    investment_run: investment_run
+    investment_run: mock_investment_run
   })
 };
 module.exports.getInvestmentRun = getInvestmentRun;
+
+const getInvestmentStats = async function(req, res) {
+
+  // mock data below
+  
+  let mock_stats = {
+    investment: {
+      id: 2,
+      status: 51,
+      strategy_type: "12",
+      timestamp: 1531989525768
+    },
+    recipe_run: {
+      id: 2,
+      status: 51,
+      timestamp: 1531989525768
+    },
+    deposits: {
+      count: 12,
+      status: 123
+    },
+    orders: {
+      count: 12,
+      status: 123
+    },
+    execution_orders: {
+      count: 12,
+      status: 123
+    }
+  }
+
+  return ReS(res, {
+    statistics: mock_stats
+  })
+}
+module.exports.getInvestmentStats = getInvestmentStats;
 
 const getInvestmentRuns = async function (req, res) {
 
@@ -202,6 +238,10 @@ const getRecipeRuns = async function (req, res) {
 
   let query = req.seq_query;
   let investment_id = req.params.investment_id;
+  
+  if (investment_id) {
+    query.where.investment_run_id = investment_id;
+  };
 
   let [err, results] = await to(RecipeRun.findAndCountAll(query));
   if (err) return ReE(res, err.message, 422);
@@ -217,37 +257,7 @@ const getRecipeRuns = async function (req, res) {
     })
   });
 
-  let footer = [
-    {
-      "name": "id",
-      "value": "999"
-    },
-    {
-      "name": "created_timestamp",
-      "value": "999"
-    },
-    {
-      "name": "approval_status",
-      "value": "999"
-    },
-    {
-      "name": "approval_timestamp",
-      "value": "999"
-    },
-    {
-      "name": "investment_run_id",
-      "value": "999"
-    }, {
-      "name": "user_created_id",
-      "value": "999"
-    }, {
-      "name": "user_created",
-      "value": "999"
-    }, {
-      "name": "approval_user",
-      "value": "999"
-    }
-  ];
+  let footer = create_mock_footer(mock_recipes[0], 'recipe_runs');
 
   return ReS(res, {
     recipe_runs: mock_recipes,
@@ -316,37 +326,7 @@ const getRecipeRunDetails = async function (req, res) {
     "target_exchange": "bitstamp"
   }));
 
-  let footer = [
-    {
-      "name": "id",
-      "value": "999"
-    },
-    {
-      "name": "investment_percentage",
-      "value": "999"
-    },
-    {
-      "name": "recipe_run_id",
-      "value": "999"
-    },
-    {
-      "name": "transaction_asset_id",
-      "value": "999"
-    },
-    {
-      "name": "target_exchange_id",
-      "value": "999"
-    }, {
-      "name": "transaction_asset",
-      "value": "999"
-    }, {
-      "name": "quote_asset",
-      "value": "999"
-    }, {
-      "name": "target_exchange",
-      "value": "999"
-    }
-  ];
+  let footer = create_mock_footer(mock_detail[0], 'recipe_details');
 
   return ReS(res, {
     recipe_details: mock_detail,
@@ -397,41 +377,7 @@ const getRecipeOrders = async function (req, res) {
 
   }));
 
-  let footer = [
-    {
-      "name": "id",
-      "value": "999"
-    },
-    {
-      "name": "recipe_order_group_id",
-      "value": "999"
-    },
-    {
-      "name": "instrument_id",
-      "value": "999"
-    },
-    {
-      "name": "instrument_name",
-      "value": "999"
-    },
-    {
-      "name": "side",
-      "value": "999"
-    },
-    {
-      "name": "price",
-      "value": "999"
-    }, {
-      "name": "quantity",
-      "value": "999"
-    }, {
-      "name": "status",
-      "value": "999"
-    }, {
-      "name": "sum_of_exhange_trading_fee",
-      "value": "999"
-    }
-  ];
+  let footer = create_mock_footer(mock_detail[0], 'orders');
 
   return ReS(res, {
     recipe_orders: mock_detail,
@@ -481,42 +427,8 @@ const getRecipeDeposits = async function (req, res) {
     status: 150,
   }));
 
-  let footer = [
-    {
-      "name": "id",
-      "value": "999"
-    },
-    {
-      "name": "transaction_asset_id",
-      "value": "999"
-    },
-    {
-      "name": "exchange_id",
-      "value": "999"
-    },
-    {
-      "name": "transaction_asset",
-      "value": "999"
-    },
-    {
-      "name": "exchange",
-      "value": "999"
-    },
-    {
-      "name": "account",
-      "value": "999"
-    },
-    {
-      "name": "amount",
-      "value": "999"
-    }, {
-      "name": "investment_percentage",
-      "value": "999"
-    }, {
-      "name": "status",
-      "value": "999"
-    }
-  ];
+  let footer = create_mock_footer(mock_detail[0], 'deposits');
+
 
   return ReS(res, {
     recipe_deposits: mock_detail,
@@ -567,44 +479,7 @@ const getExecutionOrders = async function (req, res) {
     completion_time: 1531396477062
   }));
 
-  let footer = [
-    {
-      "name": "id",
-      "value": "999"
-    },
-    {
-      "name": "instrument",
-      "value": "999"
-    },
-    {
-      "name": "side",
-      "value": "999"
-    },
-    {
-      "name": "type",
-      "value": "999"
-    },
-    {
-      "name": "price",
-      "value": "999"
-    }, {
-      "name": "total_quantity",
-      "value": "999"
-    }, {
-      "name": "exchange_trading_fee",
-      "value": "999"
-    }, {
-      "name": "status",
-      "value": "999"
-    }, {
-      "name": "submission_time",
-      "value": "999"
-    },
-    {
-      "name": "completion_time",
-      "value": "999"
-    },
-  ];
+  let footer = create_mock_footer(mock_detail[0], 'execution_order');
 
   return ReS(res, {
     execution_orders: mock_detail,
@@ -643,24 +518,7 @@ const ExecutionOrderFills = async function (req, res) {
     quantity: 3
   }));
 
-  let footer = [
-    {
-      "name": "id",
-      "value": "999"
-    },
-    {
-      "name": "fill_time",
-      "value": "999"
-    },
-    {
-      "name": "fill_price",
-      "value": "999"
-    },
-    {
-      "name": "quantity",
-      "value": "999"
-    }
-  ];
+  let footer = create_mock_footer(mock_detail[0], 'execution_order_fill');
 
   return ReS(res, {
     execution_order_fills: mock_detail,

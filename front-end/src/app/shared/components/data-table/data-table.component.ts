@@ -1,21 +1,32 @@
 import { Component, OnInit, Input, EventEmitter, Output } from '@angular/core';
+import { Observable } from 'rxjs';
 import _ from 'lodash';
 
 export interface TableDataSource {
   header: Array<{
     column: string
-    name: string
+    nameKey: string
     filter?: {
       type: 'text' | 'boolean' | 'date' | 'number'
       sortable?: boolean
       rowData?: Array<{
         value: string | boolean,
         label?: string
-      }>
-    }
+      }>,
+      rowData$?: Observable<Array<{
+        value: string | boolean,
+        label?: string
+      }>>
+    },
+    _dirty?: boolean;
   }>;
   body: Array<object>;
-  footer?: Array<string>;
+  footer?: Array<{
+    name: string
+    value: string
+    raw?: boolean
+    label?: string
+  }>;
 }
 
 /**
@@ -62,7 +73,13 @@ export class DataTableComponent implements OnInit {
     );
   }
 
-  onSetFilter(value) {
+  toggleFilter(item: any): void {
+    // Make it dirty on open
+    item._dirty = true;
+    this.filterMap[item.column] = !this.filterMap[item.column];
+  }
+
+  onSetFilter(value): void {
     this.setFilter.emit(value);
   }
 
@@ -70,8 +87,19 @@ export class DataTableComponent implements OnInit {
     this.openRow.emit(item);
   }
 
-  onToggleFilter(column) {
+  onToggleFilter(column): void {
     this.filterMap[column] = !this.filterMap[column];
+  }
+
+  getFooterData(): Array<object> {
+    return this.columnsToShow.map(col => {
+      let f = _.filter(this.dataSource.footer, ['name', (typeof col == 'string') ? col : col.column])
+      if(f) {
+        return f[0];
+      } else {
+        return {};
+      }
+    });
   }
 
   /**
@@ -79,7 +107,7 @@ export class DataTableComponent implements OnInit {
    */
 
   columnIsBasic(column: string | TableDataColumn): boolean {
-    return typeof column == 'string';
+    return typeof column == 'string' || !column.component;
   }
 
   public dynamicInputs(column: TableDataColumn, value: any, row: any): any {

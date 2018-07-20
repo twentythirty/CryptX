@@ -1,60 +1,65 @@
-<main>
-  <div class="wrapper">
-    <app-page-heading heading="{{userName}}">
-    </app-page-heading>
-    <div class="split-content">
-      <app-content-block *ngIf="user"
-        heading="User information">
-        <div class="form-item" >
-            <label class="label-name">Name</label>
-            <input type="text" placeholder="Enter name" [(ngModel)]="user.first_name">
-          </div>
-          <div class="form-item">
-            <label class="label-name">Surname</label>
-            <input type="text" placeholder="Enter surname" [(ngModel)]="user.last_name">
-          </div>
-          <div class="form-item">
-            <label class="label-name">Email</label>
-            <input type="email" placeholder="Enter email" [(ngModel)]="user.email">
-          </div>
-      </app-content-block>
-      <app-content-block 
-        heading="User roles">
-        <div class="check-list">
-          <div class="checkboxes-item" *ngFor="let role of rolelist">
-            <label class="label-name">{{role.name}}</label>
-            <div class="checkboxes-modal">
-              <app-button-checkbox 
-                [value]="role.name" 
-                [checked]="role.is_active" 
-                labelTrue="Select" 
-                labelFalse="Select" 
-                (onToggle)="addRole(role)">
-              </app-button-checkbox>
-            </div>
-          </div>
-        </div>
-      </app-content-block>
+<app-page-heading heading="{{userName}}">
+</app-page-heading>
+<div class="split-content">
+<form [formGroup]="userForm">
+<app-content-block *ngIf="user" heading="User information">
+      <app-input-item  class="form-item"
+        label="Name"
+        placeholder="Enter name"
+        [formGroup]="userForm"
+        formControlName="Firstname"
+        [(ngModel)]="user.first_name">
+      </app-input-item>
+      <app-input-item  class="form-item"
+        label="Surname"
+        placeholder="Enter surname"
+        [formGroup]="userForm"
+        formControlName="Lastname"
+        [(ngModel)]="user.last_name">
+      </app-input-item>
+      <app-input-item class="form-item"
+        label="Email"
+        placeholder="Enter email"
+        [formGroup]="userForm"
+        formControlName="Email"
+        [(ngModel)]="user.email">
+      </app-input-item>
+  </app-content-block>
+  </form>
+<form *ngIf="form" [formGroup]="form">
+<app-content-block heading="User roles">
+  <div class="check-list" [formArrayName]="'items'" [class.invalid]="!form.controls.selectedItems.valid">
+    <div class="checkboxes-item" *ngFor="let control of form.controls.items.controls; let i = index;" [formGroup]="control">
+      <label class="label-name">{{ control.controls.text.value }}</label>
+      <div class="checkboxes-modal">
+      <input class="checkall" type="checkbox" formControlName="checkbox" id="{{ control.controls.id.value }}">
+      <label [class.checked]="checked" attr.for={{control.controls.id.value}}>
+        <ng-container *ngIf="checked">
+          Select{{ labelTrue }}
+        </ng-container>
+        <ng-container *ngIf="!checked">
+          Select{{ labelFalse }}
+        </ng-container>
+      </label>
       </div>
     </div>
-</main>
+  </div>
+ <app-input-item-error-message
+        *ngIf="!this.form.controls.selectedItems.valid"
+        [errors]="form.controls.selectedItems.errors"
+  ></app-input-item-error-message>
+  </app-content-block>
+</form>
+</div>
 <app-form-action-bar>
   <div *ngIf="userId">
-    <button 
-      *ngIf="buttonName" 
-      class="btn deactive" 
-      [disabled]="loading" 
-      (click)="showDeactivateConfirm = true">
+    <button *ngIf="buttonName" class="btn deactive" (click)="showDeactivateConfirm = true">
       {{buttonName}}</button>
-    <button 
-      class="btn submit" 
-      [disabled]="loading" 
-      (click)="saveUser()">
+    <button type="button" class="btn submit" (click)="saveUser()">
       Submit</button>
   </div>
 </app-form-action-bar>
-<app-confirm 
-  *ngIf="showDeactivateConfirm" 
+<app-confirm *ngIf="showDeactivateConfirm" 
   heading="Are you sure you want {{buttonName}} this user?" 
   (onReject)="closeDeactivateConfirm()"
   (onConfirm)="deactivateUser()">

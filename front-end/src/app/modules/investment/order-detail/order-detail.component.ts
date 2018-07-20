@@ -34,27 +34,27 @@ export class OrderDetailComponent extends TimelineDetailComponent implements OnI
 
   public singleDataSource: SingleTableDataSource = {
     header: [
-      { column: 'id', name: 'Id' },
-      { column: 'creation_time', name: 'Creation time' },
-      { column: 'instrument', name: 'Instrument' },
-      { column: 'creator', name: 'Creator' },
-      { column: 'status', name: 'Status' },
-      { column: 'decision_by', name: 'Decision by' },
-      { column: 'decision_time', name: 'Decision time' },
-      { column: 'rationale', name: 'Rationale' }
+      { column: 'id', nameKey: 'table.header.id' },
+      { column: 'creation_time', nameKey: 'table.header.creation_time' },
+      { column: 'instrument', nameKey: 'table.header.instrument' },
+      { column: 'creator', nameKey: 'table.header.creator' },
+      { column: 'status', nameKey: 'table.header.status' },
+      { column: 'decision_by', nameKey: 'table.header.decision_by' },
+      { column: 'decision_time', nameKey: 'table.header.decision_time' },
+      { column: 'rationale', nameKey: 'table.header.rationale' }
     ],
     body: null
   }
 
   public listDataSource: TableDataSource = {
     header: [
-      { column: 'id', name: 'Id', filter: {type: 'text', sortable: true }},
-      { column: 'instrument', name: 'Instrument', filter: {type: 'text', sortable: true }},
-      { column: 'side', name: 'Side', filter: {type: 'text', sortable: true }},
-      { column: 'price', name: 'Price', filter: {type: 'number', sortable: true }},
-      { column: 'quantity', name: 'Quantity', filter: {type: 'number', sortable: true }},
-      { column: 'fee', name: 'Sum of exchange trading fee', filter: {type: 'number', sortable: true }},
-      { column: 'status', name: 'Status', filter: {type: 'text', sortable: true }}
+      { column: 'id', nameKey: 'table.header.id', filter: {type: 'text', sortable: true }},
+      { column: 'instrument', nameKey: 'table.header.instrument', filter: {type: 'text', sortable: true }},
+      { column: 'side', nameKey: 'table.header.side', filter: {type: 'text', sortable: true }},
+      { column: 'price', nameKey: 'table.header.price', filter: {type: 'number', sortable: true }},
+      { column: 'quantity', nameKey: 'table.header.quantity', filter: {type: 'number', sortable: true }},
+      { column: 'fee', nameKey: 'table.header.sum_of_exchange_trading_fee', filter: {type: 'number', sortable: true }},
+      { column: 'status', nameKey: 'table.header.status', filter: {type: 'text', sortable: true }}
     ],
     body: null,
   };
@@ -65,27 +65,45 @@ export class OrderDetailComponent extends TimelineDetailComponent implements OnI
     'instrument',
     'creator',
     new StatusCellDataColumn({ column: 'status', inputs: { classMap: {
-      'pending' : StatusClass.PENDING,
-      'rejected': StatusClass.REJECTED,
-      'approved': StatusClass.APPROVED
+      '41' : StatusClass.PENDING,
+      '42': StatusClass.REJECTED,
+      '43': StatusClass.APPROVED,
     }}}),
     'decision_by',
     new DateCellDataColumn({ column: 'decision_time' }),
-    'rationale'
+    new ActionCellDataColumn({ column: 'rationale', inputs: {
+        actions: [
+          new DataCellAction({
+            label: 'READ',
+            exec: (row: any) => {
+              this.showReadModal({
+                title: 'Rationale',
+                content: row.rationale
+              })
+            }
+          })
+        ]
+      }
+    }),
   ];
 
   public listColumnsToShow: Array<string | TableDataColumn> = [
     'id',
     'instrument',
-    'side',
+    new StatusCellDataColumn({ column: 'side', inputs: { classMap: value => {
+      return StatusClass.DEFAULT;
+    }}}),
     new NumberCellDataColumn({ column: 'price' }),
     new NumberCellDataColumn({ column: 'quantity' }),
     new NumberCellDataColumn({ column: 'fee' }),
     new StatusCellDataColumn({ column: 'status', inputs: { classMap: {
-      'pending' : StatusClass.PENDING,
-      'rejected': StatusClass.REJECTED,
-      'approved': StatusClass.APPROVED
-    }}})
+      '51': StatusClass.PENDING,
+      '52': StatusClass.DEFAULT,
+      '53': StatusClass.APPROVED,
+      '54': StatusClass.REJECTED,
+      '55': StatusClass.REJECTED,
+      '56': StatusClass.FAILED,
+    }}}),
   ];
 
   /**
@@ -104,16 +122,15 @@ export class OrderDetailComponent extends TimelineDetailComponent implements OnI
    * 4. Implement abstract methods to fetch data OnInit
    */
   public getAllData(): void {
-    console.log(this.requestData);
     this.route.params.pipe(
       mergeMap(
         params => this.investmentService.getAllOrders(params['id'], this.requestData)
       )
     ).subscribe(
       res => {
-        this.listDataSource.body = res.recipe_orders;
         this.count = res.count;
-        this.setListFooter(res);
+        this.listDataSource.body = res.recipe_orders;
+        this.listDataSource.footer = res.footer;
       },
       err => this.listDataSource.body = []
     )
@@ -126,11 +143,11 @@ export class OrderDetailComponent extends TimelineDetailComponent implements OnI
       )
     ).subscribe(
       res => {
-        if(res.order) {
-          this.singleDataSource.body = [ res.order ];
+        if(res.recipe) {
+          this.singleDataSource.body = [ res.recipe ];
         }
-        if(res.order_stats) {
-          this.setTagLine(res.order_stats.map(stat => {
+        if(res.recipe_stats) {
+          this.setTagLine(res.recipe_stats.map(stat => {
             return new TagLineItem(`${stat.count} ${stat.name}`)
           }))
         }

@@ -2,7 +2,6 @@
 
 const assetService = require('../services/AssetService');
 const Asset = require('../models').Asset;
-const AssetStatusChange = require('../models').AssetStatusChange;
 const Op = require('sequelize').Op;
 const adminViewsService = require('../services/AdminViewsService');
 
@@ -27,52 +26,46 @@ const getAssets = async function (req, res) {
 
   console.log('WHERE clause: %o', req.seq_query);
 
-  let [err, assets] = await to(Asset.findAll(req.seq_query));
+  let [err, result] = await to(Asset.findAndCountAll(req.seq_query));
   if (err) return ReE(res, err.message, 422);
 
+  let { rows: assets, count } = result;
   return ReS(res, {
-    assets: assets
+    assets: assets,
+    count
   })
 };
 module.exports.getAssets = getAssets;
 
 const getAssetDetailed = async function (req, res) {
 
-  let asset_id = req.params.asset_id;
-  let asset = await Asset.findOne({
-    where: {
-      id: asset_id
-    },
-    include: [{
-      model: AssetStatusChange,
-      order: [
-        ['timestamp', 'DESC']
-      ]
-    }]
-  });
-  if (!asset) return ReE(res, 'Asset not found', 404);
-
-  // mock data below assigned below
+  const asset_id = req.params.asset_id;
   
-  let new_asset_data = Object.assign(asset.toJSON(), {
-    /* symbol: 999,
-    is_cryptocurrency: 999,
-    long_name: 999,
-    is_base: 999,
-    is_deposit: 999, */
-    capitalization: 999,
-    nvt_ratio: 999,
-    market_share: 999,
-    capitalization_updated: 999,
-    status: INSTRUMENT_STATUS_CHANGES.Whitelisting
-  });
+  const single_asset_view = await adminViewsService.fetchAssetView(asset_id);
+  if (single_asset_view == null) {
+    return ReE(res, `Asset information for id ${asset_id} not found!`, 404);
+  }
 
-  let status_changes = new_asset_data.AssetStatusChanges;
-  delete new_asset_data.AssetStatusChanges;
+  const asset_history = await assetService.fetchAssetStatusHistory(single_asset_view);
+  
+  const formatted_history = _.map(asset_history, history_element => {
+
+    return {
+      asset_id: history_element.asset_id,
+      timestamp: history_element.timestamp,
+      user: {
+        id: history_element.User.id,
+        name: history_element.User.fullName(),
+        email: history_element.User.email
+      },
+      comment: history_element.comment,
+      type: `assets.status.${history_element.type}`
+    }
+  })
 
   return ReS(res, {
-    assets: new_asset_data,
-    status_changes
+    asset: single_asset_view,
+    history: formatted_history
   })
 };
 module.exports.getAssetDetailed = getAssetDetailed;
@@ -81,40 +74,38 @@ const getAssetsDetailed = async function (req, res) {
 
   console.log('WHERE clause: %o', req.seq_query);
 
-  let [err, assets] = await to(Asset.findAll(req.seq_query));
-  if (err) return ReE(res, err.message, 422);
+  let [error, assets_with_count] = await to(adminViewsService.fetchAssetsViewDataWithCount(req.seq_query));
+  if (error)
+    return ReE(res, error, 422);
 
-  // mock data below assigned below
-  [err, assets] = await to(Asset.findAll(Object.assign({ raw: true}, req.seq_query)));
-  if (err) return ReE(res, err.message, 422);
-
-  let new_asset_data = assets;
-  
-  new_asset_data.map((single_asset_data, index) => {
-    return Object.assign(single_asset_data,
-      {
-      /* symbol: 999,
-      is_cryptocurrency: 999,
-      long_name: 999,
-      is_base: 999,
-      is_deposit: 999, */
-      capitalization: 999,
-      nvt_ratio: 999,
-      market_share: 999,
-      capitalization_updated: 999,
-      status: (index % 2 == 0 ? INSTRUMENT_STATUS_CHANGES.Whitelisting : INSTRUMENT_STATUS_CHANGES.Blacklisting)
-      }, single_asset_data)
-  });
-console.log(new_asset_data);
   let footer;
-  [err, footer] = await to(adminViewsService.fetchAssetsViewFooter());
+  [error, footer] = await to(adminViewsService.fetchAssetsViewFooter(req.sql_where));
+  if (error) 
+    return ReE(res, error, 422);
+  
+  const { data: assets, total: count } = assets_with_count;
 
   return ReS(res, {
-    assets: new_asset_data,
+    assets,
+    count,
     footer
   })
 };
 module.exports.getAssetsDetailed = getAssetsDetailed;
+
+const getAssetsColumnLOV = async (req, res) => {
+
+  const field_name = req.params.field_name
+  const { query } = _.isPlainObject(req.body)? req.body : { query: '' };
+
+  const field_vals = await adminViewsService.fetchAssetsViewHeaderLOV(field_name, query);
+
+  return ReS(res, {
+    query: query,
+    lov: field_vals
+  })
+};
+module.exports.getAssetsColumnLOV = getAssetsColumnLOV;
 
 const getWhitelisted = async function (req, res) {
   
@@ -138,18 +129,3 @@ const changeAssetStatus = async function (req, res) {
   })
 };
 module.exports.changeAssetStatus = changeAssetStatus;
-/* 
-const getAssetStatusHistory = async function (req, res) {
-  
-  let asset_id = req.params.asset_id;
-  let assets = await AssetStatusChange.findAll({
-    where: {
-      asset_id: 
-    }
-  });
-  
-  if (!assets) return ReE(res, 'No assets not found', 404);
-
-  return ReS(res, { assets });
-};
-module.exports.getWhitelisted = getWhitelisted; */

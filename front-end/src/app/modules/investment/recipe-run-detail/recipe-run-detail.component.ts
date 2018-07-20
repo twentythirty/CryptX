@@ -34,26 +34,26 @@ export class RecipeRunDetailComponent extends TimelineDetailComponent implements
 
   public singleDataSource: SingleTableDataSource = {
     header: [
-      { column: 'id', name: 'Id' },
-      { column: 'creation_time', name: 'Creation time' },
-      { column: 'instrument', name: 'Instrument' },
-      { column: 'creator', name: 'Creator' },
-      { column: 'status', name: 'Status' },
-      { column: 'decision_by', name: 'Decision by' },
-      { column: 'decision_time', name: 'Decision time' },
-      { column: 'rationale', name: 'Rationale' },
-      { column: 'actions', name: 'Actions' }
+      { column: 'id', nameKey: 'table.header.id' },
+      { column: 'creation_time', nameKey: 'table.header.creation_time' },
+      { column: 'instrument', nameKey: 'table.header.instrument' },
+      { column: 'creator', nameKey: 'table.header.creator' },
+      { column: 'status', nameKey: 'table.header.status' },
+      { column: 'decision_by', nameKey: 'table.header.decision_by' },
+      { column: 'decision_time', nameKey: 'table.header.decision_time' },
+      { column: 'rationale', nameKey: 'table.header.rationale' },
+      { column: 'actions', nameKey: 'table.header.actions' }
     ],
     body: null
   }
 
   public listDataSource: TableDataSource = {
     header: [
-      { column: 'id', name: 'Id', filter: {type: 'text', sortable: true }},
-      { column: 'transaction_asset', name: 'Transaction asset', filter: {type: 'text', sortable: true }},
-      { column: 'quote_asset', name: 'Quote asset', filter: {type: 'text', sortable: true }},
-      { column: 'exchange', name: 'Exchange', filter: {type: 'text', sortable: true }},
-      { column: 'percentage', name: 'Percentage, %', filter: {type: 'number', sortable: true }}
+      { column: 'id', nameKey: 'table.header.id', filter: {type: 'text', sortable: true }},
+      { column: 'transaction_asset', nameKey: 'table.header.transaction_asset', filter: {type: 'text', sortable: true }},
+      { column: 'quote_asset', nameKey: 'table.header.quote_asset', filter: {type: 'text', sortable: true }},
+      { column: 'exchange', nameKey: 'table.header.exchange', filter: {type: 'text', sortable: true }},
+      { column: 'percentage', nameKey: 'table.header.percentage', filter: {type: 'number', sortable: true }}
     ],
     body: null,
   };
@@ -63,17 +63,30 @@ export class RecipeRunDetailComponent extends TimelineDetailComponent implements
     new DateCellDataColumn({ column: 'creation_time' }),
     'instrument',
     'creator',
-    new StatusCellDataColumn({ column: 'status', inputs: { classMap: {
-      'pending' : StatusClass.PENDING,
-      'rejected': StatusClass.REJECTED,
-      'approved': StatusClass.APPROVED
+    new StatusCellDataColumn({ column: 'approval_status', inputs: { classMap: {
+      '41' : StatusClass.PENDING,
+      '42': StatusClass.REJECTED,
+      '43': StatusClass.APPROVED,
     }}}),
     'decision_by',
     new DateCellDataColumn({ column: 'decision_time' }),
-    'rationale',
+    new ActionCellDataColumn({ column: 'rationale', inputs: {
+        actions: [
+          new DataCellAction({
+            label: 'READ',
+            exec: (row: any) => {
+              this.showReadModal({
+                title: 'Rationale',
+                content: row.rationale
+              })
+            }
+          })
+        ]
+      }
+    }),
     new ConfirmCellDataColumn({ column: 'actions', inputs: {
-      execConfirm: (row) => this.confirmRun(row),
-      execDecline: (row) => this.declineRun(row),
+      execConfirm: (row) => this.showRationaleModal(row, data => data && this.confirmRun(data)),
+      execDecline: (row) => this.showRationaleModal(row, data => data && this.declineRun(data)),
     } }),  // TODO: Actions component
   ];
 
@@ -101,15 +114,15 @@ export class RecipeRunDetailComponent extends TimelineDetailComponent implements
    * 4. Implement abstract methods to fetch data OnInit
    */
   public getAllData(): void {
-    console.log(this.requestData);
     this.route.params.pipe(
       mergeMap(
         params => this.investmentService.getAllRecipeDetails(params['id'], this.requestData)
       )
     ).subscribe(
       res => {
-        this.listDataSource.body = res.recipe_details;
         this.count = res.count;
+        this.listDataSource.body = res.recipe_details;
+        this.listDataSource.footer = res.footer;
       },
       err => this.listDataSource.body = []
     )
@@ -131,7 +144,7 @@ export class RecipeRunDetailComponent extends TimelineDetailComponent implements
           }))
         }
       },
-      err => this.singleDataSource.body = []
+      // err => this.singleDataSource.body = []
     )
   }
 
@@ -164,13 +177,22 @@ export class RecipeRunDetailComponent extends TimelineDetailComponent implements
    * Additional
    */
 
-  private confirmRun(run: any): void {
-    alert('confirmRun');
+  private confirmRun({ rationale, data }): void {
+    let run = data;
+    this.investmentService.approveRecipe(run.id, { status: true, comment: rationale }).subscribe(
+      res => {
+        // TODO
+      }
+    )
   }
 
-  private declineRun(run: any): void {
-    alert('declineRun');
+  private declineRun({ rationale, data }): void {
+    let run = data;
+    this.investmentService.approveRecipe(run.id, { status: false, comment: rationale }).subscribe(
+      res => {
+        // TODO
+      }
+    )
   }
-
 
 }

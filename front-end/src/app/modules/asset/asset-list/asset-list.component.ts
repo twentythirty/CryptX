@@ -2,8 +2,8 @@ import { Component, OnInit } from '@angular/core';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 
-import { AssetService, AssetResultData, AssetsAllResponse } from '../../../services/asset/asset.service';
-import { Asset, AssetStatusChanges, AssetStatus, AssetStatuses } from '../../../shared/models/asset';
+import { AssetService, AssetResultData, AssetsAllResponseDetailed } from '../../../services/asset/asset.service';
+import { Asset, AssetStatus } from '../../../shared/models/asset';
 import { EntitiesFilter } from '../../../shared/models/api/entitiesFilter';
 import { TableDataSource, TableDataColumn } from '../../../shared/components/data-table/data-table.component';
 import { DataTableCommonManagerComponent } from '../../../shared/components/data-table-common-manager/data-table-common-manager.component';
@@ -20,9 +20,14 @@ import {
   PercentCellDataColumn,
   NumberCellDataColumn,
   ActionCellDataColumn,
-  DataCellAction
+  DataCellAction,
+  StatusCellDataColumn
 } from '../../../shared/components/data-table-cells';
 import { AuthService } from '../../../services/auth/auth.service';
+import { ModelConstantsService } from '../../../services/model-constants/model-constants.service';
+import { StatusClass } from '../../../shared/models/common';
+
+const INSTRUMENT_STATUS_CHANGES = 'INSTRUMENT_STATUS_CHANGES';
 
 @Component({
   selector: 'app-asset-list',
@@ -33,17 +38,17 @@ export class AssetListComponent extends DataTableCommonManagerComponent implemen
 
   public assetsDataSource: TableDataSource = {
     header: [
-      { column: 'symbol', name: 'Symbol', filter: { type: 'text', sortable: true } },
-      { column: 'is_cryptocurrency', name: 'Cryptocurrency', filter: { type: 'text', sortable: true } },
-      { column: 'long_name', name: 'Long name', filter: { type: 'text', sortable: true } },
-      { column: 'is_base', name: 'Is base?', filter: { type: 'text', sortable: true } },
-      { column: 'is_deposit', name: 'Is deposit?', filter: { type: 'text', sortable: true } },
-      { column: 'capitalization', name: 'Capitalisation', filter: { type: 'text', sortable: true } },
-      { column: 'nvt_ratio', name: 'NVT ratio', filter: { type: 'text', sortable: true } },
-      { column: 'market_share', name: 'Market share', filter: { type: 'text', sortable: true } },
-      { column: 'capitalization_updated_timestamp', name: 'Capitalisation updated', filter: { type: 'text', sortable: true } },
-      { column: 'status', name: 'Status', filter: { type: 'text', sortable: true } },
-      { column: '', name: 'Action' }
+      { column: 'symbol', nameKey: 'table.header.symbol', filter: { type: 'text', sortable: true } },
+      { column: 'is_cryptocurrency', nameKey: 'table.header.cryptocurrency', filter: { type: 'boolean', sortable: true } },
+      { column: 'long_name', nameKey: 'table.header.long_name', filter: { type: 'text', sortable: true } },
+      { column: 'is_base', nameKey: 'table.header.is_base', filter: { type: 'boolean', sortable: true } },
+      { column: 'is_deposit', nameKey: 'table.header.is_deposit', filter: { type: 'boolean', sortable: true } },
+      { column: 'capitalization', nameKey: 'table.header.capitalisation', filter: { type: 'number', sortable: true } },
+      { column: 'nvt_ratio', nameKey: 'table.header.nvt_ratio', filter: { type: 'number', sortable: true } },
+      { column: 'market_share', nameKey: 'table.header.market_share', filter: { type: 'number', sortable: true } },
+      { column: 'capitalization_updated_timestamp', nameKey: 'table.header.capitalisation_updated', filter: { type: 'date', sortable: true } },
+      { column: 'status', nameKey: 'table.header.status', filter: { type: 'text', sortable: true } },
+      { column: '', nameKey: 'table.header.action' }
     ],
     body: null
   };
@@ -66,7 +71,9 @@ export class AssetListComponent extends DataTableCommonManagerComponent implemen
     new NumberCellDataColumn({ column: 'nvt_ratio' }),
     new PercentCellDataColumn({ column: 'market_share' }),
     new DateCellDataColumn({ column: 'capitalization_updated_timestamp' }),
-    'status',
+    new StatusCellDataColumn({ column: 'status', inputs: { classMap: value => {
+      return StatusClass.DEFAULT;
+    }}}),
     new ActionCellDataColumn({ column: null,
       inputs: {
         actions: [
@@ -77,12 +84,12 @@ export class AssetListComponent extends DataTableCommonManagerComponent implemen
           }),
           new DataCellAction({
             label: 'Blacklist',
-            isShown: (row: any) => this.checkPerm(['CHANGE_ASSET_STATUS']) && (!row.is_blacklisted),
+            isShown: (row: any) => this.checkPerm(['CHANGE_ASSET_STATUS']) && (!(row.status == 401)),
             exec: (row: any) => { this.blacklist(<Asset>row) }
           }),
           new DataCellAction({
             label: 'Whitelist',
-            isShown: (row: any) => this.checkPerm(['CHANGE_ASSET_STATUS']) && (row.is_blacklisted),
+            isShown: (row: any) => this.checkPerm(['CHANGE_ASSET_STATUS']) && ((row.status == 401)),
             exec: (row: any) => { this.whitelist(<Asset>row) }
           })
         ]
@@ -94,9 +101,15 @@ export class AssetListComponent extends DataTableCommonManagerComponent implemen
     public route: ActivatedRoute,
     protected assetService: AssetService,
     protected authService: AuthService,
+    protected modelConstantsService: ModelConstantsService,
     protected router: Router
   ) {
     super(route);
+  }
+
+  ngOnInit() {
+    super.ngOnInit();
+    this.getFilterLOV();
   }
 
   checkPerm (perm_code) {
@@ -104,25 +117,26 @@ export class AssetListComponent extends DataTableCommonManagerComponent implemen
   }
 
   getAllData(): void {
-    this.assetService.getAllAssets(this.requestData).subscribe(
-      (res: AssetsAllResponse) => {
-        this.assetsDataSource.body = this.populateAssetStatuses(res.assets);
+    this.assetService.getAllAssetsDetailed(this.requestData).subscribe(
+      (res: AssetsAllResponseDetailed) => {
+        this.assetsDataSource.body = res.assets;
         if(res.footer) {
-          this.assetsDataSource.footer = this.assetsColumnsToShow.map(col => {
-            let key = (typeof col == 'string') ? col : col.column;
-            return (res.footer.find(f => f.name == key) || {}).value || '';
-          })
+          this.assetsDataSource.footer = res.footer;
         }
         this.count = res.count || res.assets.length;
       }
     )
   }
 
-  private populateAssetStatuses(assets: Array<Asset>): Array<Asset> {
-    return assets.map(
-      (asset: Asset) => {
-        asset.status = AssetStatuses[asset.status + ''];
-        return asset;
+  /**
+   * Add a rowData$ Observable to text and boolean column filters
+   */
+  getFilterLOV(): void {
+    this.assetsDataSource.header.filter(
+      col => col.filter && (col.filter.type == 'text' || col.filter.type == 'boolean')
+    ).map(
+      col => {
+        col.filter.rowData$ = this.assetService.getHeaderLOV(col.column)
       }
     )
   }
@@ -132,38 +146,58 @@ export class AssetListComponent extends DataTableCommonManagerComponent implemen
   }
 
   /**
+   * Clicks
+   */
+
+  public deGreylist(asset: Asset): void {
+    this.showRationaleModal(asset, data => data && this.doDeGreylist(data));
+  }
+
+  public blacklist(asset: Asset): void {
+    this.showRationaleModal(asset, data => data && this.doBlacklist(data));
+  }
+
+  public whitelist(asset: Asset): void {
+    this.showRationaleModal(asset, data => data && this.doWhitelist(data));
+  }
+
+
+  /**
    * Actions
    */
 
-  private deGreylist(asset: Asset): void {
+  public doDeGreylist({ rationale, data }): void {
+    let asset: Asset = data;
     this.assetService.changeAssetStatus(
       asset.id,
-      new AssetStatus(AssetStatusChanges.Graylisting, '')
+      new AssetStatus(this.modelConstantsService.getGroup(INSTRUMENT_STATUS_CHANGES)['Graylisting'], rationale)
     ).subscribe(
       res => {
-        asset.status = AssetStatus['402'];
+        asset.status = this.modelConstantsService.getName(402);
       }
     )
   }
 
-  private blacklist(asset: Asset): void {
+  public doBlacklist({ rationale, data }): void {
+    let asset: Asset = data;
     this.assetService.changeAssetStatus(
       asset.id,
-      new AssetStatus(AssetStatusChanges.Blacklisting, '')
+      new AssetStatus(this.modelConstantsService.getGroup(INSTRUMENT_STATUS_CHANGES)['Blacklisting'], rationale)
     ).subscribe(
       res => {
-        asset.status = AssetStatuses['401'];
+        asset.status = this.modelConstantsService.getName(401);
       }
     )
   }
 
-  private whitelist(asset: Asset): void {
+  public doWhitelist({ rationale, data }): void {
+    let asset: Asset = data;
     this.assetService.changeAssetStatus(
       asset.id,
-      new AssetStatus(AssetStatusChanges.Whitelisting, '')
+      new AssetStatus(this.modelConstantsService.getGroup(INSTRUMENT_STATUS_CHANGES)['Whitelisting'], rationale)
     ).subscribe(
       res => {
-        asset.status = AssetStatuses['400']
+        asset.status = this.modelConstantsService.getName(400)
       }
     )
   }
@@ -173,15 +207,42 @@ export class AssetListComponent extends DataTableCommonManagerComponent implemen
    */
 
   public rowBackgroundColor = (row: Asset): string => {
-    if(row.status == AssetStatuses['401']) return '#6b6b6b';
-    if(row.status == AssetStatuses['402']) return '#aeaeae';
+    if(row.status == this.modelConstantsService.getName(401)) return '#6b6b6b';
+    if(row.status == this.modelConstantsService.getName(402)) return '#aeaeae';
     return null;
   }
 
   public rowTexColor = (row: Asset): string => {
-    if(row.status == AssetStatuses['401']) return '#ffffff';
-    if(row.status == AssetStatuses['402']) return '#f2f2f2';
+    if(row.status == this.modelConstantsService.getName(401)) return '#ffffff';
+    if(row.status == this.modelConstantsService.getName(402)) return '#f2f2f2';
     return null;
+  }
+
+  /**
+   * Rationale
+   */
+
+  public rationaleModelIsShown: boolean = false;
+  public rationaleData: any;
+  public rationaleDone: (data: any) => void;
+
+  public showRationaleModal(data: any, done?: (data: any) => void): void {
+    this.rationaleModelIsShown = true;
+    this.rationaleData = data;
+    this.rationaleDone = done;
+  }
+
+  public hideRationaleModal(): void {
+    this.rationaleModelIsShown = false;
+    this.rationaleData = null;
+    this.rationaleDone = null;
+  }
+
+  public submitRationale(data): void {
+    if(typeof this.rationaleDone == 'function') {
+      this.rationaleDone(data);
+    }
+    this.hideRationaleModal();
   }
 
 }

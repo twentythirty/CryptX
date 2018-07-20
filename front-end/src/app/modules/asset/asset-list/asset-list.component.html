@@ -1,8 +1,12 @@
 <div class="top-controls">
-  <span class="headline-title">{{count}} Cryptocurrencies</span>
+  <span class="headline-title">{{ 'assets.headline' | translate:{ count: count } }}</span>
 </div>
 <app-data-table [dataSource]="assetsDataSource" [columnsToShow]="assetsColumnsToShow" [rowBackgroundColor]="rowBackgroundColor"
   [rowTexColor]="rowTexColor" (setFilter)="onSetFilter($event)" (openRow)="openRow($event)">
 </app-data-table>
 
 <app-pagination [count]="count" [perPage]="pageSize" [page]="page"></app-pagination>
+
+<app-modal *ngIf="rationaleModelIsShown" (close)="hideRationaleModal()">
+  <app-rationale-modal [data]="rationaleData" (close)="submitRationale($event)"></app-rationale-modal>
+</app-modal>

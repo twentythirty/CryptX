@@ -196,6 +196,8 @@ const getAssetInstruments = async function (asset_id) {
 module.exports.getAssetInstruments = getAssetInstruments;
 
 const getBaseAssetPrices = async function () {
+  const ttl_threshold = SYSTEM_SETTINGS.BASE_ASSET_PRICE_TTL_THRESHOLD;
+
   let [err, prices] = await to(sequelize.query(`
   SELECT prices.symbol as symbol, AVG(prices.price) as price
   FROM
@@ -234,7 +236,7 @@ const getBaseAssetPrices = async function () {
     AND assetSell.is_base=true
     GROUP BY assetSell.symbol, imd2.bid_price, imd2.timestamp
   ) as prices
-  WHERE prices.timestamp >= NOW() - interval '15 minutes'
+  WHERE prices.timestamp >= NOW() - interval '${ttl_threshold} seconds'
   GROUP BY prices.symbol
   `, {
     type: sequelize.QueryTypes.SELECT
@@ -242,7 +244,7 @@ const getBaseAssetPrices = async function () {
 
   if (err) TE(err.message);
 
-  if (!prices.length) TE('No base asset prices in USD for past 15 minutes found!');
+  if (!prices.length) TE(`No base asset prices in USD for past ${Math.floor(ttl_threshold/60)} minutes found!`);
 
   prices.map(p => {
     Object.assign(p, {
@@ -253,3 +255,23 @@ const getBaseAssetPrices = async function () {
   return prices;
 }
 module.exports.getBaseAssetPrices = getBaseAssetPrices;
+
+const fetchAssetStatusHistory = async (asset) => {
+
+  const sorted_history = await AssetStatusChange.findAll({
+    where: {
+      asset_id: asset.id
+    },
+    include: [
+      {
+        model: User
+      }
+    ],
+    order: [
+      ['timestamp', 'DESC']
+    ]
+  })
+
+  return sorted_history;
+}
+module.exports.fetchAssetStatusHistory = fetchAssetStatusHistory;

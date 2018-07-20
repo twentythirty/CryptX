@@ -6,8 +6,15 @@ import { Asset, AssetStatus } from '../../shared/models/asset';
 import { EntitiesFilter } from '../../shared/models/api/entitiesFilter';
 import { ActionResultData } from '../../shared/models/api/actionResultData';
 import { environment } from '../../../environments/environment';
+import { map } from 'rxjs/operators';
 
 export class AssetsAllResponse {
+  success: boolean;
+  assets: Array<Asset>;
+  count: number;
+}
+
+export class AssetsAllResponseDetailed {
   success: boolean;
   assets: Array<Asset>;
   footer: Array<any>
@@ -29,9 +36,17 @@ export class AssetService {
 
   getAllAssets(requestData?: EntitiesFilter): Observable<AssetsAllResponse>{
     if(requestData) {
-      return this.http.post<AssetsAllResponse>(this.baseUrl + `assets/detailed/all`, requestData);
+      return this.http.post<AssetsAllResponse>(this.baseUrl + `assets/all`, requestData);
     } else {
-      return this.http.get<AssetsAllResponse>(this.baseUrl + `assets/detailed/all`);
+      return this.http.get<AssetsAllResponse>(this.baseUrl + `assets/all`);
+    }
+  }
+
+  getAllAssetsDetailed(requestData?: EntitiesFilter): Observable<AssetsAllResponseDetailed>{
+    if(requestData) {
+      return this.http.post<AssetsAllResponseDetailed>(this.baseUrl + `assets/detailed/all`, requestData);
+    } else {
+      return this.http.get<AssetsAllResponseDetailed>(this.baseUrl + `assets/detailed/all`);
     }
   }
 
@@ -41,6 +56,20 @@ export class AssetService {
 
   changeAssetStatus(assetId: number, status: AssetStatus): Observable<any> {
     return this.http.post<ActionResultData>(this.baseUrl + `assets/${assetId}/change_status`, status);
+  }
+
+  getHeaderLOV(column_name: string): Observable<any> {
+    return this.http.get<any>(this.baseUrl + `assets/header_lov/${column_name}`).pipe(
+      map(
+        res => {
+          if(res && res.data && Array.isArray(res.data.lov)) {
+            return res.data.lov.map(lov => {
+              return { value: lov }
+            });
+          } else return null;
+        }
+      )
+    )
   }
 
   // blacklistAsset(assetId: number, is_blacklisted: boolean): Observable<ActionResultData> {

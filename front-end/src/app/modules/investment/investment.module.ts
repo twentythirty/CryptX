@@ -11,6 +11,7 @@ import { RecipeRunDetailComponent } from './recipe-run-detail/recipe-run-detail.
 import { OrderDetailComponent } from './order-detail/order-detail.component';
 import { ExecutionOrderDetailComponent } from './execution-order-detail/execution-order-detail.component';
 import { ExecutionOrderFillDetailComponent } from './execution-order-fill-detail/execution-order-fill-detail.component';
+import { DepositDetailComponent } from './deposit-detail/deposit-detail.component';
 
 @NgModule({
   imports: [
@@ -26,7 +27,8 @@ import { ExecutionOrderFillDetailComponent } from './execution-order-fill-detail
     RecipeRunDetailComponent,
     OrderDetailComponent,
     ExecutionOrderDetailComponent,
-    ExecutionOrderFillDetailComponent
+    ExecutionOrderFillDetailComponent,
+    DepositDetailComponent
   ]
 })
 export class InvestmentModule { }

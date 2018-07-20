@@ -1,5 +1,7 @@
 "use strict";
 
+const ccxtUtils = require('../utils/CCXTUtils');
+
 /**
  * Return the symbol for whichever currency is being sold in the context of this order, out of the order currency pair. 
  * Basically checks the instrument and the order side, returning the correct part of the pair based
@@ -107,7 +109,7 @@ module.exports.JOB_BODY = async (config, log) => {
                                 execution_order_id: _.map(inactive_execution_orders, 'id')
                             }
                         })
-                    ]).then(pendingAndMappingAndFills => {
+                    ]).then(async pendingAndMappingAndFills => {
 
                         const [pending_order, exchange_mapping, execution_fills] = pendingAndMappingAndFills;
     
@@ -128,19 +130,71 @@ module.exports.JOB_BODY = async (config, log) => {
                             log(`[WARN.3B]: Current fulfilled execution order total ${realized_total} covers recipe order ${pending_order.id} quantity ${pending_order.quantity}. Skipping recipe order...`);
                             return pending_order;
                         }
-    
+
+                        log(`4a. retrieving market data with limits for ${pending_order.Instrument.symbol} for exchange with id ${pending_order.target_exchange_id}`);
+                        //Get ccxt exchange connector (thismay need to be moved, the architecture does not describe when this step should happen)
+                        const exhnage_connector = await ccxtUtils.getConnector(pending_order.target_exchange_id);
+
+                        if(!exhnage_connector) {
+                            log(`[ERROR.4A]: Failed to retrieve exchange connector with id: ${pending_order.target_exchange_id}`);
+                            return pending_order;
+                        }
+
+                        //Load market data from the connector.
+                        const exchange_markets = await exhnage_connector.loadMarkets();
+
+                        if(_.isEmpty(exchange_markets)) {
+                            log(`[ERROR.4A]: No market data is awailable for ${exchangeConnector.name}`);
+                            return pending_order;
+                        }
+
+                        //Get market based on instrument symbol.
+                        const exchange_market = exchange_markets[pending_order.Instrument.symbol];
+
+                        if(!exchange_market || !exchange_market.active) {
+                            log(`[ERROR.4A]: Market for ${pending_order.Instrument.symbol} is not available or is not active`);
+                            return pending_order;
+                        }
+
+                        const market_limits = exchange_market.limits;
+                        const amount_limit = market_limits.amount;
+                        const price_limit = market_limits.price;
+
                         const sold_symbol = get_order_sold_symbol(pending_order);
                         const base_trade_amount = trade_base[sold_symbol];
                         const fuzzy_trade_amount = Decimal(base_trade_amount).mul(Decimal(1 + (_.random(-fuzzyness, fuzzyness, true)))).toNumber();
-                        log(`4a. predicting fuzzy ${sold_symbol} amount ${fuzzy_trade_amount} for recipe order ${pending_order.id}...`);
+                        log(`4b. predicting fuzzy ${sold_symbol} amount ${fuzzy_trade_amount} for recipe order ${pending_order.id}...`);
     
                         //next total is either the fuzze amount or remainder of unfufilled order quantity, whichever is smaller
-                        const next_total = clamp(fuzzy_trade_amount, exchange_mapping.tick_size, Decimal(pending_order.quantity).minus(Decimal(realized_total)).toNumber());
-                        log(`4b. actually using clamped fuzzy total ${next_total} of ${sold_symbol} on recipe order ${pending_order.id}`);
-    
-                        const next_total_price = Decimal(pending_order.price).mul(Decimal(next_total)).toNumber();
-                        log(`4c. Current fulfilled recipe order total is ${realized_total}, adding another ${next_total}...`);
+                        let next_total = clamp(fuzzy_trade_amount, exchange_mapping.tick_size, Decimal(pending_order.quantity).minus(Decimal(realized_total)).toNumber());
+                        log(`4c. actually using clamped fuzzy total ${next_total} of ${sold_symbol} on recipe order ${pending_order.id}`);
+                    
+                        //Check if the next total is within the amount limit.
+                        if(next_total < amount_limit.min) {
+                            log(`[WARN.4C]: Next total of ${next_total} is less than the markets min limit of ${amount_limit.min}, skipping order execution`);
+                            return pending_order;
+                        }
                         
+                        if(next_total > amount_limit.max) {
+                            log(`[WARN.4C]: Next total of ${next_total} is greater than the markets max limit of ${amount_limit.max}, setting the next total to limit\`s max ${amount_limit.max}`);
+                            next_total = amount_limit.max;
+                        }
+
+                        let next_total_price = Decimal(pending_order.price).mul(Decimal(next_total)).toNumber();
+                        
+                        //Check if the next total is within the amount limit.
+                        if(next_total_price < price_limit.min) {
+                            log(`[WARN.4C]: Next total price of ${next_total_price} is less than the markets min limit of ${price_limit.min}, skipping order execution`);
+                            return pending_order;
+                        }
+                        
+                        if(next_total_price > price_limit.max) {
+                            log(`[WARN.4C]: Next total price of ${next_total_price} is greater than the markets max limit of ${price_limit.max}, setting the next total price to limit\`s max ${price_limit.max}`);
+                            next_total_price = price_limit.max;
+                        }
+
+                        log(`4d. Current fulfilled recipe order total is ${realized_total}, adding another ${next_total}...`);
+
                         //create next pending execution order and save it
                         return Promise.all([
                             Promise.resolve(pending_order),

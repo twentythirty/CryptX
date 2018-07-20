@@ -156,9 +156,9 @@ export class InvestmentService {
     return of([
       new TimelineEvent('Investment run', 'Orders filled', StatusClass.APPROVED, 'IR-001, rci', (new Date()).toUTCString(), `/run/investment/${1}`),
       new TimelineEvent('Recipe run', 'Pending', StatusClass.PENDING, 'IR-001, rci', (new Date()).toUTCString(), `/run/recipe/${1}`, true),
-      { note: 'Deposits aren\'t made yet' },
-      { note: 'Orders aren\'t made yet' },
-      { note: 'Execution orders aren\'t made yet' }
+      new TimelineEvent('Deposit management', 'Pending', StatusClass.PENDING, 'IR-001, rci', (new Date()).toUTCString(), `/run/deposit/${1}`),
+      new TimelineEvent('Order', 'Pending', StatusClass.PENDING, 'IR-001, rci', (new Date()).toUTCString(), `/run/order/${1}`),
+      new TimelineEvent('Execution order', 'Pending', StatusClass.PENDING, 'IR-001, rci', (new Date()).toUTCString(), `/run/execution-order/${1}`),
     ])
   }
 

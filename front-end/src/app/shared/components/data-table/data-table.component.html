@@ -1,12 +1,12 @@
 <table class="data-table">
   <thead *ngIf="dataSource.header?.length > 0">
     <tr>
-      <th *ngFor="let item of dataSource.header">
+      <th *ngFor="let item of dataSource.header" class="sortable">
         <a
-          (click)="filterMap[item.column] = !filterMap[item.column]"
+          (click)="toggleFilter(item)"
         >
-          {{item.name}}
-          <div class="sort-arrow"></div>
+          {{ item.nameKey | translate }}
+          <div class="sort-arrow" *ngIf="item.filter"></div>
           <span
             *ngIf="item.filter"
             [class.ucaret]="filterMap[item.column]"
@@ -15,13 +15,15 @@
         </a>
         <app-data-table-filter
           *ngIf="item.filter"
+          [dirty]="item._dirty"
+          [rowData$]="item.filter.rowData$"
           [hidden]="!item.filter || !filterMap[item.column]"
           [column]="item.column"
           [type]="item.filter.type"
           [sortable]="item.filter.sortable"
           [rowData]="item.filter.rowData"
           (onFilter)="onSetFilter($event); filterMap[item.column] = !filterMap[item.column]"
-        ></app-data-table-filter>
+        ><div class="filter-sort-box"></div></app-data-table-filter>
       </th>
     </tr>
   </thead>
@@ -37,7 +39,7 @@
       (click)="onOpenRow(item)">
         <td *ngFor="let index of columnsToShow">
           <ng-container *ngIf="columnIsBasic(index); else dynamicColumn">
-            <span>{{ item[index] || '-' }}</span>
+            <span>{{ item[index?.column || index] || '-' }}</span>
           </ng-container>
           <ng-template #dynamicColumn>
             <ndc-dynamic [ndcDynamicComponent]="index.component"
@@ -50,7 +52,7 @@
     <ng-template #listEmpty>
       <tr [style.background-color]="'white'">
         <td class="empty-col" colSpan="{{ columnsToShow.length }}">
-          <span *ngIf="dataSource.body; else loadingList">This list is empty</span>
+          <span *ngIf="dataSource.body; else loadingList">{{ 'common.list_empty' | translate }}</span>
           <ng-template #loadingList><span>
             <mat-progress-spinner
               mode="indeterminate"
@@ -64,11 +66,12 @@
     </ng-template>
   </ng-template>
 
-
   <tfoot *ngIf="dataSource.footer?.length > 0">
     <tr>
-      <td *ngFor="let item of dataSource.footer">
-        {{item}}
+      <td *ngFor="let item of getFooterData()">
+        <ng-container *ngIf="item">
+          {{ item.value }} {{ item.raw ? item.label : item.label }}
+        </ng-container>
       </td>
     </tr>
   </tfoot>

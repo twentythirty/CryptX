@@ -23,3 +23,17 @@
 <div class="step-labels-container">
   <app-timeline [timelineEvents]="timeline$ | async"></app-timeline>
 </div>
+
+<app-modal *ngIf="rationaleModalIsShown" (close)="hideRationaleModal()">
+  <app-rationale-modal [data]="rationaleData" (close)="submitRationale($event)"></app-rationale-modal>
+</app-modal>
+
+<app-modal *ngIf="readModalIsShown" (close)="hideReadModal()">
+  <span class="modal-title">{{ readData?.title }}</span>
+  <div>
+    <textarea readonly>{{ readData?.content }}</textarea>
+  </div>
+  <div>
+    <app-btn (onClick)="hideReadModal()">Close</app-btn>
+  </div>
+</app-modal>

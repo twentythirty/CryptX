@@ -25,22 +25,7 @@ export class AssetStatus {
   public user_id?: number;
 
   constructor(
-    public type: AssetStatusChanges,
+    public type: string,
     public comment: any
   ) {}
-}
-
-export enum AssetStatusChanges {
-  Whitelisting = 400,
-  Blacklisting = 401,
-  Graylisting = 402
-}
-
-export const AssetStatuses = {
-  '400': 'Whitelisted',
-  '401': 'Blacklisted',
-  '402': 'Greylisted',
-  'Whitelisted': '400',
-  'Blacklisted': '401',
-  'Greylisted': '402'
 }

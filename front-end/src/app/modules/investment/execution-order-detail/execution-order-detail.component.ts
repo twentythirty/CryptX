@@ -34,29 +34,29 @@ export class ExecutionOrderDetailComponent extends TimelineDetailComponent imple
 
   public singleDataSource: SingleTableDataSource = {
     header: [
-      { column: 'id', name: 'Id' },
-      { column: 'instrument', name: 'Instrument' },
-      { column: 'side', name: 'Side' },
-      { column: 'price', name: 'Price' },
-      { column: 'quantity', name: 'Quantity' },
-      { column: 'fee', name: 'Sum of exchange trading fee' },
-      { column: 'status', name: 'Status' }
+      { column: 'id', nameKey: 'table.header.id' },
+      { column: 'instrument', nameKey: 'table.header.instrument' },
+      { column: 'side', nameKey: 'table.header.side' },
+      { column: 'price', nameKey: 'table.header.price' },
+      { column: 'quantity', nameKey: 'table.header.quantity' },
+      { column: 'fee', nameKey: 'table.header.sum_of_exchange_trading_fee' },
+      { column: 'status', nameKey: 'table.header.status' }
     ],
     body: null
   }
 
   public listDataSource: TableDataSource = {
     header: [
-      { column: 'id', name: 'Id', filter: {type: 'text', sortable: true }},
-      { column: 'instrument', name: 'Instrument', filter: {type: 'text', sortable: true }},
-      { column: 'side', name: 'Side', filter: {type: 'text', sortable: true }},
-      { column: 'type', name: 'Type', filter: {type: 'text', sortable: true }},
-      { column: 'price', name: 'Price', filter: {type: 'number', sortable: true }},
-      { column: 'quantity', name: 'Total quantity', filter: {type: 'number', sortable: true }},
-      { column: 'fee', name: 'Exchange trading fee', filter: {type: 'number', sortable: true }},
-      { column: 'status', name: 'Status', filter: {type: 'text', sortable: true }},
-      { column: 'submission_time', name: 'Submission time', filter: {type: 'date', sortable: true }},
-      { column: 'completion_time', name: 'Completion time', filter: {type: 'date', sortable: true }}
+      { column: 'id', nameKey: 'table.header.id', filter: {type: 'text', sortable: true }},
+      { column: 'instrument', nameKey: 'table.header.instrument', filter: {type: 'text', sortable: true }},
+      { column: 'side', nameKey: 'table.header.side', filter: {type: 'text', sortable: true }},
+      { column: 'type', nameKey: 'table.header.type', filter: {type: 'text', sortable: true }},
+      { column: 'price', nameKey: 'table.header.price', filter: {type: 'number', sortable: true }},
+      { column: 'quantity', nameKey: 'table.header.total_quantity', filter: {type: 'number', sortable: true }},
+      { column: 'fee', nameKey: 'table.header.exchange_trading_fee', filter: {type: 'number', sortable: true }},
+      { column: 'status', nameKey: 'table.header.status', filter: {type: 'text', sortable: true }},
+      { column: 'submission_time', nameKey: 'table.header.submission_time', filter: {type: 'date', sortable: true }},
+      { column: 'completion_time', nameKey: 'table.header.completion_time', filter: {type: 'date', sortable: true }}
     ],
     body: null,
   };
@@ -64,29 +64,41 @@ export class ExecutionOrderDetailComponent extends TimelineDetailComponent imple
   public singleColumnsToShow: Array<string | TableDataColumn> = [
     'id',
     'instrument',
-    'side',
+    new StatusCellDataColumn({ column: 'side', inputs: { classMap: value => {
+      return StatusClass.DEFAULT;
+    }}}),
     new NumberCellDataColumn({ column: 'price' }),
     new NumberCellDataColumn({ column: 'quantity' }),
     new NumberCellDataColumn({ column: 'fee' }),
     new StatusCellDataColumn({ column: 'status', inputs: { classMap: {
-      'pending' : StatusClass.PENDING,
-      'rejected': StatusClass.REJECTED,
-      'approved': StatusClass.APPROVED
-    }}})
+      '51': StatusClass.PENDING,
+      '52': StatusClass.DEFAULT,
+      '53': StatusClass.APPROVED,
+      '54': StatusClass.REJECTED,
+      '55': StatusClass.REJECTED,
+      '56': StatusClass.FAILED,
+    }}}),
   ];
 
   public listColumnsToShow: Array<string | TableDataColumn> = [
     'id',
     'instrument',
-    'side',
-    'type',
+    new StatusCellDataColumn({ column: 'side', inputs: { classMap: value => {
+      return StatusClass.DEFAULT;
+    }}}),
+    new StatusCellDataColumn({ column: 'side', inputs: { classMap: value => {
+      return StatusClass.DEFAULT;
+    }}}),
     new NumberCellDataColumn({ column: 'price' }),
     new NumberCellDataColumn({ column: 'quantity' }),
     new NumberCellDataColumn({ column: 'fee' }),
     new StatusCellDataColumn({ column: 'status', inputs: { classMap: {
-      'pending' : StatusClass.PENDING,
-      'rejected': StatusClass.REJECTED,
-      'approved': StatusClass.APPROVED
+      '61': StatusClass.PENDING,
+      '62': StatusClass.APPROVED,
+      '63': StatusClass.APPROVED,
+      '64': StatusClass.APPROVED,
+      '65': StatusClass.REJECTED,
+      '66': StatusClass.FAILED,
     }}}),
     new DateCellDataColumn({ column: 'submission_time' }),
     new DateCellDataColumn({ column: 'completion_time' })
@@ -108,16 +120,15 @@ export class ExecutionOrderDetailComponent extends TimelineDetailComponent imple
    * 4. Implement abstract methods to fetch data OnInit
    */
   public getAllData(): void {
-    console.log(this.requestData);
     this.route.params.pipe(
       mergeMap(
         params => this.investmentService.getAllExecutionOrders(params['id'], this.requestData)
       )
     ).subscribe(
       res => {
-        this.listDataSource.body = res.execution_orders;
         this.count = res.count;
-        this.setListFooter(res);
+        this.listDataSource.body = res.execution_orders;
+        this.listDataSource.footer = res.footer;
       },
       err => this.listDataSource.body = []
     )

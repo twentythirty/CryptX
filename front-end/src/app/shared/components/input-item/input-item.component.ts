@@ -20,9 +20,15 @@ export const CUSTOM_INPUT_CONTROL_VALUE_ACCESSOR: any = {
 })
 export class InputItemComponent implements ControlValueAccessor, OnInit {
   @Input() select: boolean; // True if this will be select field
-  @Input() items: Array<string>; // select field items array
+  @Input() items: Array<{
+    value: number | string
+    name: string
+  }>; // select field items array
   @Input() formGroup: FormGroup; // reactive forms form group instance
   @Input() formControlName: string; // reactive forms form group control name
+  @Input() label: string; //input heading
+  @Input() placeholder: string;
+  @Input() type: string;
 
   //The internal data model
   private innerValue: any = '';

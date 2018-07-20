@@ -15,6 +15,7 @@ PERMISSIONS = {
   CREATE_INVESTMENT_RUN: "perm_create_investment_run",
   APPROVE_RECIPE_RUN: "perm_approve_recipe_run",
   VIEW_ORDERS: "perm_view_orders",
+  GENERATE_ORDERS: "perm_generate_orders",
   ALTER_ORDERS: "perm_alter_orders",
   CHANGE_SETTING_VALUES: "perm_change_settings",
   VIEW_SETTING_VALUES: "perm_view_settings"
@@ -37,7 +38,8 @@ CATEGORY_TO_PERM_ASSOC = {
   ],
   [PERMISSIONS_CATEGORIES.ORDERS]: [
     PERMISSIONS.VIEW_ORDERS,
-    PERMISSIONS.ALTER_ORDERS
+    PERMISSIONS.ALTER_ORDERS,
+    PERMISSIONS.GENERATE_ORDERS
   ],
   [PERMISSIONS_CATEGORIES.RECIPE_RUN]: [
     PERMISSIONS.APPROVE_RECIPE_RUN
@@ -141,6 +143,11 @@ ROUTES = {
     permissions_matcher: ROUTE_MATCHERS.GetUsersInfo,
     required_permissions: [PERMISSIONS.VIEW_USERS]
   },
+  GetUsersColLOV: {
+    router_string: "/users/header_lov/:field_name",
+    permissions_matcher: ROUTE_MATCHERS.GetUsersColLOV,
+    required_permissions: [PERMISSIONS.VIEW_USERS]
+  },
   ChangeUserInfo: {
     router_string: "/users/:user_id/edit",
     permissions_matcher: ROUTE_MATCHERS.ChangeUserInfo,
@@ -226,6 +233,11 @@ ROUTES = {
     permissions_matcher: ROUTE_MATCHERS.GetAssetsDetailed,
     required_permissions: [PERMISSIONS.VIEW_ASSETS]
   },
+  GetAssetsDetailedColLOV: { 
+    router_string: "/assets/detailed/header_lov/:field_name",
+    permissions_matcher: ROUTE_MATCHERS.GetAssetsDetailedColLOV,
+    required_permissions: [PERMISSIONS.VIEW_ASSETS]
+  },
   ChangeAssetStatus: {
     router_string: "/assets/:asset_id/change_status",
     permissions_matcher: ROUTE_MATCHERS.ChangeAssetStatus,
@@ -248,6 +260,16 @@ ROUTES = {
     permissions_matcher: ROUTE_MATCHERS.GetInvestments,
     required_permissions: [PERMISSIONS.VIEW_INVESTMENT_RUN]
   },
+  GetInvestmentsColLOV: {
+    router_string: "/investments/header_lov/:field_name",
+    permissions_matcher: ROUTE_MATCHERS.GetInvestmentsColLOV,
+    required_permissions: [PERMISSIONS.VIEW_ASSETS]
+  },
+  GetInvestmentStats: {
+    router_string: "/investments/:investment_id/stats",
+    permissions_matcher: ROUTE_MATCHERS.GetInvestmentStats,
+    required_permissions: [PERMISSIONS.VIEW_ASSETS]
+  },
   CreateDeposit: {
     router_string: "/investments/:investment_id/deposit",
     permissions_matcher: ROUTE_MATCHERS.CreateDeposit,
@@ -265,10 +287,20 @@ ROUTES = {
     permissions_matcher: ROUTE_MATCHERS.GetRecipeRun,
     required_permissions: [PERMISSIONS.VIEW_INVESTMENT_RUN]
   },
-  GetRecipeRuns: {
+  GetRecipeRunsOf: {
     router_string: "/recipes/of_investment/:investment_id",
+    permissions_matcher: ROUTE_MATCHERS.GetRecipeRunsOf, 
+    required_permissions: [PERMISSIONS.VIEW_INVESTMENT_RUN]
+  },
+  GetRecipeRuns: {
+    router_string: "/recipes/all",
     permissions_matcher: ROUTE_MATCHERS.GetRecipeRuns, 
     required_permissions: [PERMISSIONS.VIEW_INVESTMENT_RUN]
+  },
+  GetRecipeRunsColLOV: {
+    router_string: "/recipes/header_lov/:field_name",
+    permissions_matcher: ROUTE_MATCHERS.GetRecipeRunsColLOV,
+    required_permissions: [PERMISSIONS.VIEW_ASSETS]
   },
   ApproveRecipeRun: {
     router_string: "/recipes/:recipe_id/approve",
@@ -282,6 +314,11 @@ ROUTES = {
     permissions_matcher: ROUTE_MATCHERS.GetRecipeRunDetails,
     required_permissions: [PERMISSIONS.VIEW_INVESTMENT_RUN]
   },
+  GetRecipeRunDetailsColLOV: {
+    router_string: "/recipe_details/header_lov/:field_name",
+    permissions_matcher: ROUTE_MATCHERS.GetRecipeRunDetailsColLOV,
+    required_permissions: [PERMISSIONS.VIEW_ASSETS]
+  },
   GetRecipeRunDetail: {
     router_string: "/recipe_details/:recipe_detail_id",
     permissions_matcher: ROUTE_MATCHERS.GetRecipeRunDetail,
@@ -290,10 +327,20 @@ ROUTES = {
 
 
   // Recipe orders
-  GetRecipeOrders: {
+  GetRecipeOrdersOf: {
     router_string: "/orders/of_recipe/:recipe_run_id",
+    permissions_matcher: ROUTE_MATCHERS.GetRecipeOrdersOf,
+    required_permissions: [PERMISSIONS.VIEW_ORDERS]
+  },
+  GetRecipeOrders: {
+    router_string: "/orders/all",
     permissions_matcher: ROUTE_MATCHERS.GetRecipeOrders,
     required_permissions: [PERMISSIONS.VIEW_ORDERS]
+  },
+  GetRecipeOrdersColLOV: {
+    router_string: "/orders/header_lov/:field_name",
+    permissions_matcher: ROUTE_MATCHERS.GetRecipeOrdersColLOV,
+    required_permissions: [PERMISSIONS.VIEW_ASSETS]
   },
   GetRecipeOrder: {
     router_string: "/orders/:order_id",
@@ -305,12 +352,27 @@ ROUTES = {
     permissions_matcher: ROUTE_MATCHERS.AlterOrdersGroup,
     required_permissions: [PERMISSIONS.VIEW_ORDERS, PERMISSIONS.ALTER_ORDERS]
   },
+  GenerateRecipeOrders: {
+    router_string: "/orders/of_recipe/:recipe_run_id",
+    permissions_matcher: ROUTE_MATCHERS.GenerateRecipeOrders,
+    required_permissions: [PERMISSIONS.GENERATE_ORDERS]
+  },
 
    // Recipe run deposits
-  GetRecipeRunDeposits: {
+   GetRecipeRunDepositsOf: {
     router_string: "/recipe_deposits/of_recipe/:recipe_id",
+    permissions_matcher: ROUTE_MATCHERS.GetRecipeRunDepositsOf,
+    required_permissions: [PERMISSIONS.VIEW_INVESTMENT_RUN]
+  },
+  GetRecipeRunDeposits: {
+    router_string: "/recipe_deposits/all",
     permissions_matcher: ROUTE_MATCHERS.GetRecipeRunDeposits,
     required_permissions: [PERMISSIONS.VIEW_INVESTMENT_RUN]
+  },
+  GetRecipeRunDepositsColLOV: {
+    router_string: "/recipe_deposits/header_lov/:field_name",
+    permissions_matcher: ROUTE_MATCHERS.GetRecipeRunDepositsColLOV,
+    required_permissions: [PERMISSIONS.VIEW_ASSETS]
   },
   GetRecipeRunDeposit: {
     router_string: "/recipe_deposits/:recipe_detail_id",
@@ -319,10 +381,20 @@ ROUTES = {
   },
 
   // Execution orders
-  GetExecutionOrders: {
+  GetExecutionOrdersOf: {
     router_string: "/execution_orders/of_order/:order_detail_id",
+    permissions_matcher: ROUTE_MATCHERS.GetExecutionOrdersOf,
+    required_permissions: [PERMISSIONS.VIEW_INVESTMENT_RUN]
+  },
+  GetExecutionOrders: {
+    router_string: "/execution_orders/all",
     permissions_matcher: ROUTE_MATCHERS.GetExecutionOrders,
     required_permissions: [PERMISSIONS.VIEW_INVESTMENT_RUN]
+  },
+  ExecutionOrdersColLOV: {
+    router_string: "/execution_orders/header_lov/:field_name",
+    permissions_matcher: ROUTE_MATCHERS.ExecutionOrdersColLOV,
+    required_permissions: [PERMISSIONS.VIEW_ASSETS]
   },
   GetExecutionOrder: {
     router_string: "/execution_orders/:order_detail_id",
@@ -331,10 +403,20 @@ ROUTES = {
   },
 
   // Execution order fill
-  GetExecutionOrdersFills: {
+  GetExecutionOrdersFillsOf: {
     router_string: "/exec_orders_fills/of_execution_order/:execution_order_id",
+    permissions_matcher: ROUTE_MATCHERS.GetExecutionOrdersFillsOf,
+    required_permissions: [PERMISSIONS.VIEW_INVESTMENT_RUN]
+  },
+  GetExecutionOrdersFills: {
+    router_string: "/exec_orders_fills/all",
     permissions_matcher: ROUTE_MATCHERS.GetExecutionOrdersFills,
     required_permissions: [PERMISSIONS.VIEW_INVESTMENT_RUN]
+  },
+  ExecutionOrdersFillColLOV: {
+    router_string: "/exec_orders_fills/header_lov/:field_name",
+    permissions_matcher: ROUTE_MATCHERS.ExecutionOrdersFillColLOV,
+    required_permissions: [PERMISSIONS.VIEW_ASSETS]
   },
   GetExecutionOrdersFill: {
     router_string: "/exec_orders_fills/:exec_order_fill_id",
@@ -342,6 +424,7 @@ ROUTES = {
     required_permissions: [PERMISSIONS.VIEW_INVESTMENT_RUN]
   },
 
+  // Instruments
   InstrumentCreate: {
     router_string: "/instruments/create",
     permissions_matcher: ROUTE_MATCHERS.InstrumentCreate,
@@ -357,6 +440,11 @@ ROUTES = {
     permissions_matcher: ROUTE_MATCHERS.GetInstruments,
     required_permissions: []
   },
+  GetInstrumentsColLOV: {
+    router_string: "/instruments/header_lov/:field_name",
+    permissions_matcher: ROUTE_MATCHERS.GetInstrumentsColLOV,
+    required_permissions: [PERMISSIONS.VIEW_ASSETS]
+  },
   InstrumentCheckMapping: {
     router_string: "/instruments/:instrument_id/check_mapping",
     permissions_matcher: ROUTE_MATCHERS.InstrumentCheckMapping,
@@ -367,9 +455,41 @@ ROUTES = {
     permissions_matcher: ROUTE_MATCHERS.InstrumentMapExchanges,
     required_permissions: []
   },
+  InstrumentMapExchanges: {
+    router_string: "/instruments/:instrument_id/mapping_exchanges",
+    permissions_matcher: ROUTE_MATCHERS.InstrumentMappingExchanges,
+    required_permissions: []
+  },
   GetInstrumentExchanges: {
     router_string: "/instruments/:instrument_id/exchanges",
     permissions_matcher: ROUTE_MATCHERS.GetInstrumentExchanges,
+    required_permissions: []
+  },
+
+  // Liquidity requirements
+  LiquidityReqCreate: {
+    router_string: "/liquidity_requirements/create",
+    permissions_matcher: ROUTE_MATCHERS.LiquidityReqCreate,
+    required_permissions: []
+  },
+  GetLiquidityRequirement: {
+    router_string: "/liquidity_requirements/:liquidity_requirement_id",
+    permissions_matcher: ROUTE_MATCHERS.GetLiquidityRequirement,
+    required_permissions: []
+  },
+  GetLiquidityRequirements: {
+    router_string: "/liquidity_requirements/all",
+    permissions_matcher: ROUTE_MATCHERS.GetLiquidityRequirements,
+    required_permissions: []
+  },
+  GetLiquidityRequirementsColLOV: {
+    router_string: "/liquidity_requirements/header_lov/:field_name",
+    permissions_matcher: ROUTE_MATCHERS.GetLiquidityRequirementsColLOV,
+    required_permissions: [PERMISSIONS.VIEW_ASSETS]
+  },
+  GetLiquidityRequirementExchanges: {
+    router_string: "/liquidity_requirements/:liquidity_requirement_id/exchanges",
+    permissions_matcher: ROUTE_MATCHERS.GetLiquidityRequirementExchanges,
     required_permissions: []
   },
 
@@ -396,5 +516,11 @@ ROUTES = {
     router_string: "/users/login/check",
     permissions_matcher: ROUTE_MATCHERS.CheckAuth,
     required_permissions: [PERMISSIONS.VIEW_USERS]
+  },
+
+  GetExchanges: {
+    router_string: "/exchanges/all",
+    permissions_matcher: ROUTE_MATCHERS.GetExchanges,
+    required_permissions: []
   },
 };

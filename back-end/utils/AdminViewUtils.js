@@ -1,17 +1,56 @@
 'use strict';
 
 
+const whereOrEmpty = (where_clause) => `${_.isEmpty(where_clause)? '' : `WHERE ${where_clause}`}`;
+module.exports.whereOrEmpty = whereOrEmpty;
+
+const addToWhere = (where_clause = '', addition = '') => {
+
+    if (_.isEmpty(where_clause)) {
+        return addition || '';
+    }
+    if (_.isEmpty(addition)) {
+        return where_clause || '';
+    }
+
+    return `${where_clause} AND ${addition}`;
+}
+module.exports.addToWhere = addToWhere;
+
 /**
  * generate an SQL snippet that selects count fo rows from table table_expr
  */
-const selectCount = (table_expr, where_clause = '') => {
+const selectCount = (table_expr, alias = 'count', where_clause = '') => {
 
-    return `SELECT count(*)
+    return `SELECT count(*) AS ${alias}
             FROM ${table_expr}
-            ${_.isEmpty(where_clause)? '' : `WHERE ${where_clause}`}
+            ${whereOrEmpty(where_clause)}
     `
 }
 module.exports.selectCount = selectCount;
+
+/**
+ * generate an SQL snippet that selects the sum offield_expr values from table table_expr
+ */
+const selectSum = (field_expr, table_expr, where_clause = '') => {
+
+    return `SELECT SUM(${field_expr})
+            FROM ${table_expr}
+            ${whereOrEmpty(where_clause)}
+    `
+}
+module.exports.selectSum = selectSum;
+
+/**
+ * generate an SQL snippet that selects data values of columns in the fields array from table table_expr
+ */
+const selectDataRows = (fields = [], table_expr, where_clause = '') => {
+
+    return `SELECT ${fields? _.join(fields, ',\n') : '*'} FROM ${table_expr}
+            ${whereOrEmpty(where_clause)}`
+}
+module.exports.selectDataRows = selectDataRows;
+
 /**
  * generate an SQL snippet that selects distinct values on field_expr from table table_expr
  */
@@ -19,10 +58,21 @@ const selectDistinct = (field_expr, table_expr, where_clause = '') => {
 
     return `SELECT DISTINCT ${field_expr}
             FROM ${table_expr}
-            ${_.isEmpty(where_clause)? '' : `WHERE ${where_clause}`}
+            ${whereOrEmpty(where_clause)}
     `
 }
 module.exports.selectDistinct = selectDistinct;
+
+/**
+ * surround passed SELECT... expressions with parens and another SELECT statement to make it SQL-engine ready
+ * applies aliases to the queries to ensure return fields
+ */
+const joinQueryParts = (query_parts, aliases) => {
+
+    const mapping = _.zipObject(aliases, query_parts)
+    return `SELECT\n${_.join(_.map(mapping, (query_part, alias) => `(${query_part}) AS ${alias}`), ',\n')};`
+}
+module.exports.joinQueryParts = joinQueryParts;
 /** 
     Build chains of query parts like 
     ```
@@ -48,7 +98,7 @@ module.exports.selectDistinct = selectDistinct;
     (Why: https://www.postgresql.org/message-id/CAONnt+72Mtg6kyAFDTHXFWyPPY-QRbAtuREak+64Lm1KN1c-wg@mail.gmail.com)
 */
 const selectCountDistinct = (field_expr, res_alias, table_expr, where_clause = '') => {
-    return `(${selectCount(`(${selectDistinct(field_expr, table_expr, where_clause)}) AS ${res_alias}`)}) AS ${res_alias}`
+    return `${selectCount(`(${selectDistinct(field_expr, table_expr, where_clause)}) AS ${res_alias}`, res_alias)}`
 }
 module.exports.selectCountDistinct = selectCountDistinct;
 
@@ -76,30 +126,33 @@ module.exports.queryReturnRowToFooterObj = queryReturnRowToFooterObj;
 /**
  * Adds labels to supplied footer object name/value pairs.
  * 
- * Supplied `raw_mappings` map should be structures as a series of key=function items.
+ * Supplied `args_mappings` map should be structures as a series of key=function items.
  * The key is a `field_name` while the value is a single-arg function that returns
- * the correct raw label representation from the value received
+ * the args required for the template as an object of key-value-pairs
  * 
- * Any field names not mention in the raw mappings map will be considered having translation
- * keys by default.
+ * Any field names not mention in the args_mappings map will be considered having the field `value` as their only translation arg.
  * @param footer_objs 
  * @param table_name 
- * @param raw_mappings 
+ * @param args_mappings
  */
-const addFooterLabels = (footer_objs, table_name, raw_mappings = {}) => {
+const addFooterLabels = (footer_objs, table_name, args_mappings = {}) => {
 
     return _.map(footer_objs, footer_obj => {
-        if (raw_mappings[footer_obj.name]) {
-            return Object.assign({}, footer_obj, {
-                raw: true,
-                label: raw_mappings[footer_obj.name](footer_obj.value)
-            })
+
+        let template_args = {};
+
+        if (args_mappings[footer_obj.name]) {
+            template_args = args_mappings[footer_obj.name](footer_obj.value)
         } else {
-            return Object.assign({}, footer_obj, {
-                raw: false,
-                label: `${table_name}.footer.${footer_obj.name}`
-            })
+            template_args = {
+                [footer_obj.name]: footer_obj.value
+            }
         }
+
+        return Object.assign({}, footer_obj, {
+            template: `${table_name}.footer.${footer_obj.name}`,
+            args: template_args
+        })
     });
 }
 module.exports.addFooterLabels = addFooterLabels;

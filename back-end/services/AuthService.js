@@ -115,20 +115,12 @@ const changeUserInfo = async function (user_id, new_info) {
   let err, user = await User.findById(user_id);
   if (!user) TE("User with id %s not found!", user_id)
 
-  // attempt to change password if new_password is supplied.
-  if (new_info.new_password) {
-    [err, user] = await to(this.updatePassword(
-      user.id, new_info.old_password, new_info.new_password
-    ));
-    
-    if (err) TE(err.message);
-  }
-  
   //create object from allowed for editing prop names
   user = Object.assign(user, _.fromPairs(_.zipWith([
     'first_name',
     'last_name',
-    'is_active'
+    'is_active',
+    'email'
   ], (prop_name) => {
     return [
       prop_name,
@@ -140,6 +132,12 @@ const changeUserInfo = async function (user_id, new_info) {
 
   [err, user] = await to(user.save());
   if (err) TE(err.message);
+
+  let roles = new_info.roles;
+  if (roles) {
+    [err, user] = await to(this.changeUserRoles(user_id, roles));
+    if (err) return ReE(res, err.message, 422);
+  } 
 
   return user;
 }
