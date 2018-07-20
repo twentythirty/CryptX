@@ -1047,6 +1047,49 @@
         ]
       }
     },
+    "/recipes/{recipe_run_id}/generate_orders": {
+      "post": {
+        "tags": [
+          "investment"
+        ],
+        "summary": "Generate recipe orders",
+        "description": "After recipe run is confirmed further action is generating recipe orders. This route will help trigger recipe order generation in the system. After orders are generated, next step is approving them. Approved orders will be sent to exchanges.",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "recipe_run_id",
+            "in": "path",
+            "description": "Recipe run ID",
+            "required": true,
+            "type": "integer"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "description": "Body of recipe order generation",
+            "required": false,
+            "schema": {
+              "type": "object"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "$ref": "#/definitions/RecipeOrderGenerationResponse"
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
     "/recipe_details/{recipe_detail_id}": {
       "get": {
         "tags": [
@@ -4577,6 +4620,47 @@
         }
       }
     },
+    "RecipeOrderGenerationResponse": {
+      "description": "Response of recipe orders list",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "number",
+            "example": 5
+          },
+          "recipe_order_group_id": {
+            "type": "number",
+            "example": 2
+          },
+          "instrument_id": {
+            "type": "number",
+            "example": 5
+          },
+          "target_exchange_id": {
+            "type": "number",
+            "example": 6
+          },
+          "price": {
+            "type": "number",
+            "example": 0.11588
+          },
+          "quantity": {
+            "type": "number",
+            "example": 32792.54401104591
+          },
+          "side": {
+            "type": "number",
+            "example": 888
+          },
+          "status": {
+            "type": "number",
+            "example": 51
+          }
+        }
+      }
+    },
     "RecipeOrder": {
       "description": "Recipe order details",
       "type": "object",
@@ -4701,26 +4785,29 @@
           "example": 10
         },
         "footer": {
-          "type": "object",
-          "properties": {
-            "name": {
-              "type": "string",
-              "example": "property_name"
-            },
-            "value": {
-              "type": "number",
-              "example": 10
-            },
-            "template": {
-              "type": "string",
-              "example": "translation.key.property_name"
-            },
-            "args": {
-              "type": "object",
-              "properties": {
-                "property_name": {
-                  "type": "number",
-                  "example": 10
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string",
+                "example": "property_name"
+              },
+              "value": {
+                "type": "number",
+                "example": 10
+              },
+              "template": {
+                "type": "string",
+                "example": "translation.key.property_name"
+              },
+              "args": {
+                "type": "object",
+                "properties": {
+                  "property_name": {
+                    "type": "number",
+                    "example": 10
+                  }
                 }
               }
             }
