@@ -3,6 +3,8 @@
 const InvestmentRun = require('../models').InvestmentRun;
 const RecipeRun = require('../models').RecipeRun;
 const RecipeRunDetail = require('../models').RecipeRunDetail;
+const User = require('../models').User;
+const adminViewsService = require('../services/AdminViewsService');
 const investmentService = require('../services/InvestmentService');
 const DepositService = require('../services/DepositService');
 const OrdersService = require('../services/OrdersService');
@@ -25,10 +27,14 @@ const createInvestmentRun = async function (req, res) {
   );
   if (err) return ReE(res, err, 422); */
 
-  // mock data below
-  investment_run.toWeb();
-  let mock_investment_run = Object.assign(investment_run, {
+  
+  investment_run = investment_run.toWeb();
+  /*let mock_investment_run = Object.assign(investment_run, {
     user_created: 'Mock User'
+  })*/
+
+  investment_run = Object.assign(investment_run, {
+    user_created: `${req.user.first_name} ${req.user.last_name}`
   })
 
   return ReS(res, {
@@ -46,12 +52,17 @@ const createRecipeRun = async function (req, res) {
     );
   if (err) return ReE(res, err, 422);
 
-  // mock data added below
-  recipe_run.toJSON();
-  let mock_recipe_run = Object.assign(recipe_run, {
+  
+  recipe_run = recipe_run.toJSON();
+  /*let mock_recipe_run = Object.assign(recipe_run, {
     user_created: 'Mock User',
     approval_user: 'Mock User'
-  })
+  })*/
+
+  recipe_run = Object.assign(recipe_run, {
+    user_created: `${req.user.first_name} ${req.user.last_name}`,
+    approval_user: null
+  });
 
   return ReS(res, {
     recipe_run: mock_recipe_run
@@ -64,19 +75,30 @@ const getInvestmentRun = async function (req, res) {
   let investment_run_id = req.params.investment_id;
   let [err, investment_run] = await to(InvestmentRun.findById(investment_run_id,
     {
-      include: RecipeRun
+      include: [
+        {
+          model: RecipeRun
+        },
+        {
+          model: User,
+          attributes: ['first_name', 'last_name'],
+          as: 'user_created'
+        }
+      ]
     }));
 
   if (err) return ReE(res, err.message, 422);
 
-  // mock data below
-  investment_run.toWeb();
-  let mock_investment_run = Object.assign(investment_run, {
+  investment_run = investment_run.toWeb();  
+  /*let mock_investment_run = Object.assign(investment_run, {
     user_created: 'Mock User'
-  })
+  })*/
+
+  const { user_created } = investment_run;
+  investment_run.user_created = `${user_created.first_name} ${user_created.last_name}`;
 
   return ReS(res, {
-    investment_run: mock_investment_run
+    investment_run
   })
 };
 module.exports.getInvestmentRun = getInvestmentRun;
@@ -119,14 +141,14 @@ module.exports.getInvestmentStats = getInvestmentStats;
 
 const getInvestmentRuns = async function (req, res) {
 
-  let query = req.seq_query;
+  /*let query = req.seq_query;
 
   let [err, results] = await to(InvestmentRun.findAndCountAll(query));
   if (err) return ReE(res, err.message, 422);
 
   let { rows: investment_runs, count } = results;
 
-  // mock data added below
+  // mock data added below NOT ANYMORE!
 
   let mock_investment_runs = investment_runs.map((investment, index) => {
     investment = investment.toJSON();
@@ -145,10 +167,21 @@ const getInvestmentRuns = async function (req, res) {
     { "name": "status", "value": "302" },
     { "name": "deposit_usd", "value": "399" },
     { "name": "user_created_id", "value": "2" },
-  ]
+  ]*/
+
+  const { seq_query, sql_where } = req;
+
+  let [ err, result ] = await to(adminViewsService.fetchInvestmentRunsViewDataWithCount(seq_query));
+  if(err) return ReE(res, err.message, 422);
+  
+  let footer = [];
+  [err, footer] = await to(adminViewsService.fetchInvestmentRunsViewFooter(sql_where));
+  if(err) return ReE(res, err.message, 422);
+
+  const { data: investment_runs, total: count } = result;
 
   return ReS(res, {
-    investment_runs: mock_investment_runs,
+    investment_runs,
     footer,
     count
   })

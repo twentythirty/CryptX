@@ -6,6 +6,7 @@ const builder = require('../utils/AdminViewUtils');
 const AVUser = require('../models').AVUser;
 const AVAsset = require('../models').AVAsset;
 const AVInstrument = require('../models').AVInstrument;
+const AVInvestmentRun = require('../models').AVInvestmentRun;
 
 const TABLE_LOV_FIELDS = {
     'av_users': [
@@ -108,6 +109,12 @@ const fetchInstrumentsViewDataWithCount = async (seq_where = {}) => {
     return fetchViewDataWithCount(AVInstrument, seq_where);
 }
 module.exports.fetchInstrumentsViewDataWithCount = fetchInstrumentsViewDataWithCount;
+
+const fetchInvestmentRunsViewDataWithCount = async (seq_where = {}) => {
+
+    return fetchViewDataWithCount(AVInvestmentRun, seq_where);
+}
+module.exports.fetchInvestmentRunsViewDataWithCount = fetchInvestmentRunsViewDataWithCount;
 
 const fetchAssetView = async (asset_id) => {
 
@@ -322,3 +329,31 @@ const fetchLiquidityExchangesViewFooter = async () => {
       return builder.addFooterLabels(footer, 'liquidity_exchanges')
 }
 module.exports.fetchLiquidityExchangesViewFooter = fetchLiquidityExchangesViewFooter;
+
+const fetchInvestmentRunsViewFooter = async (where_clause = '') => {
+
+    const query = `
+    SELECT
+        COUNT(id) AS id,
+        SUM(completed) AS completed_timestamp,
+        COUNT(DISTINCT user_created) AS user_created,
+        COUNT(DISTINCT strategy_type) AS strategy_type,
+        SUM(is_not_simulated) AS is_simulated,
+        SUM(executing) AS status
+    FROM
+        (SELECT
+            id,
+            (CASE WHEN completed_timestamp IS NULL THEN 0 ELSE 1 END) AS completed,
+            user_created,
+            strategy_type,
+            (CASE WHEN is_simulated IS FALSE THEN 1 ELSE 0 END) AS is_not_simulated,
+            (CASE WHEN status = 307 THEN 1 ELSE 0 END) AS executing
+	    FROM av_investment_runs ${builder.whereOrEmpty(where_clause)}) AS inner_av
+    `;
+
+    const footer = (await sequelize.query(query))[0];
+    
+    return builder.addFooterLabels(
+        builder.queryReturnRowToFooterObj(footer), 'investment_runs');
+}
+module.exports.fetchInvestmentRunsViewFooter = fetchInvestmentRunsViewFooter;
