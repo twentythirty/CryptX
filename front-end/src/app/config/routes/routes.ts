@@ -14,7 +14,6 @@ import { UsersListComponent } from '../../modules/users/users-list/users-list.co
 import { UsersInfoComponent } from '../../modules/users/users-info/users-info.component';
 import { UsersAddComponent } from '../../modules/users/users-add/users-add.component';
 import { AcceptInviteComponent } from '../../modules/auth/accept-invite/accept-invite.component';
-
 import { AssetListComponent } from '../../modules/asset/asset-list/asset-list.component';
 import { AssetViewComponent } from '../../modules/asset/asset-view/asset-view.component';
 import { InvestmentRunDetailComponent } from '../../modules/investment/investment-run-detail/investment-run-detail.component';
@@ -25,6 +24,8 @@ import { ExecutionOrderFillDetailComponent } from '../../modules/investment/exec
 import { DepositDetailComponent } from '../../modules/investment/deposit-detail/deposit-detail.component';
 import { InstrumentAddComponent } from '../../modules/instruments/instrument-add/instrument-add.component';
 import { InstrumentListComponent } from '../../modules/instruments/instrument-list/instrument-list.component';
+import { LiquidityListComponent } from '../../modules/liquidity/liquidity-list/liquidity-list.component';
+import { LiquidityCreateComponent } from '../../modules/liquidity/liquidity-create/liquidity-create.component';
 
 const routes: Routes = [
   { path: 'login', component: LoginComponent },
@@ -102,13 +103,24 @@ const routes: Routes = [
   },
 
   {
-    path: 'instruments',
+    path: 'instruments/all',
     component: InstrumentListComponent,
     canActivate: [AuthGuard]
   },
   {
     path: 'instruments/create',
     component: InstrumentAddComponent,
+    canActivate: [AuthGuard]
+  },
+
+  {
+    path: 'liquidity_requirements/all',
+    component: LiquidityListComponent,
+    canActivate: [AuthGuard]
+  },
+  {
+    path: 'liquidity_requirements/create',
+    component: LiquidityCreateComponent,
     canActivate: [AuthGuard]
   },
 

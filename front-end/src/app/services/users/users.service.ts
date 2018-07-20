@@ -46,11 +46,6 @@ export class UsersService {
       if (data.success) {
         return data;
       }
-    if(requestData) {
-      return this.http.post<UsersAllResponse>(this.baseUrl + `assets/detailed/all`, requestData);
-    } else {
-      return this.http.get<UsersAllResponse>(this.baseUrl + `assets/detailed/all`);
-    }
     });
   }
 

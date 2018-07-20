@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Router } from '@angular/router';
+import { Validators } from '@angular/forms';
 
 import { Observable } from 'rxjs';
 import { of } from 'rxjs/observable/of';
@@ -11,7 +12,6 @@ import PERMISSIONS from '../../config/permissions';
 
 import { ModelConstantsService } from '../model-constants/model-constants.service';
 import { environment } from '../../../environments/environment';
-import { Validators } from "@angular/forms/";
 
 export class LoginReponse {
   success: boolean
