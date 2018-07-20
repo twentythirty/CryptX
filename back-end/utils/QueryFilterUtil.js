@@ -394,6 +394,8 @@ const expression_op_to_sql = (expression_op, negation = false) => {
             return negation ? 'IN' : 'NOT IN';
         case 'like':
             return negation ? 'NOT LIKE' : 'LIKE';
+        case 'ilike':
+            return negation ? 'NOT iLIKE' : 'iLIKE';
         default:
             return `${negation? 'NOT ' : ''}${sequelize.escape(expression_op)}`
     }

@@ -29,6 +29,21 @@ const selectCount = (table_expr, alias = 'count', where_clause = '') => {
 }
 module.exports.selectCount = selectCount;
 
+/**
+ * generate an SQL snippet that selects the sum offield_expr values from table table_expr
+ */
+const selectSum = (field_expr, table_expr, where_clause = '') => {
+
+    return `SELECT SUM(${field_expr})
+            FROM ${table_expr}
+            ${whereOrEmpty(where_clause)}
+    `
+}
+module.exports.selectSum = selectSum;
+
+/**
+ * generate an SQL snippet that selects data values of columns in the fields array from table table_expr
+ */
 const selectDataRows = (fields = [], table_expr, where_clause = '') => {
 
     return `SELECT ${fields? _.join(fields, ',\n') : '*'} FROM ${table_expr}
@@ -47,6 +62,17 @@ const selectDistinct = (field_expr, table_expr, where_clause = '') => {
     `
 }
 module.exports.selectDistinct = selectDistinct;
+
+/**
+ * surround passed SELECT... expressions with parens and another SELECT statement to make it SQL-engine ready
+ * applies aliases to the queries to ensure return fields
+ */
+const joinQueryParts = (query_parts, aliases) => {
+
+    const mapping = _.zipObject(aliases, query_parts)
+    return `SELECT\n${_.join(_.map(mapping, (query_part, alias) => `(${query_part}) AS ${alias}`), ',\n')};`
+}
+module.exports.joinQueryParts = joinQueryParts;
 /** 
     Build chains of query parts like 
     ```
@@ -72,7 +98,7 @@ module.exports.selectDistinct = selectDistinct;
     (Why: https://www.postgresql.org/message-id/CAONnt+72Mtg6kyAFDTHXFWyPPY-QRbAtuREak+64Lm1KN1c-wg@mail.gmail.com)
 */
 const selectCountDistinct = (field_expr, res_alias, table_expr, where_clause = '') => {
-    return `(${selectCount(`(${selectDistinct(field_expr, table_expr, where_clause)}) AS ${res_alias}`)}) AS ${res_alias}`
+    return `${selectCount(`(${selectDistinct(field_expr, table_expr, where_clause)}) AS ${res_alias}`, res_alias)}`
 }
 module.exports.selectCountDistinct = selectCountDistinct;
 

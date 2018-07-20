@@ -47,23 +47,32 @@ const getInstrument = async function (req, res) {
 };
 module.exports.getInstrument = getInstrument;
 
-const getInstruments = async function (req, res) {
-   // mock data below
-  let instruments_mock = [...Array(20)].map((i, index) => ({
-      id: index + 1,
-      transaction_asset_id: 28,
-      quote_asset_id: 2,
-      symbol: "BTC/XRP",
-      exchanges_connected: 4,
-      exchanges_failed: 3
-  }));
+const getInstrumentsColumnLOV = async (req, res) => {
 
-  let footer = await adminViewService.fetchInstrumentsViewFooter();
+  const field_name = req.params.field_name
+  const { query } = _.isPlainObject(req.body)? req.body : { query: '' };
+
+  const field_vals = await adminViewService.fetchInstrumentsViewHeaderLOV(field_name, query);
 
   return ReS(res, {
-    instruments: instruments_mock,
-    footer,
-    count: instruments_mock.length
+    query: query,
+    lov: field_vals
+  })
+};
+module.exports.getInstrumentsColumnLOV = getInstrumentsColumnLOV;
+
+const getInstruments = async function (req, res) {
+   // mock data below
+  const instruments_and_count = await adminViewService.fetchInstrumentsViewDataWithCount(req.seq_where);
+
+  const { data: instruments, total: count } = instruments_and_count;
+
+  let footer = await adminViewService.fetchInstrumentsViewFooter(req.sql_where);
+
+  return ReS(res, {
+    instruments,
+    count,
+    footer
   });
 };
 module.exports.getInstruments = getInstruments;
