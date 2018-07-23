@@ -378,13 +378,26 @@ const getRecipeRunDetails = async function (req, res) {
 
   let recipe_run_id = req.params.recipe_id;
 
-  let [err, recipe_run_details] = await to(RecipeRunDetail.findAll({
+  /*let [err, recipe_run_details] = await to(RecipeRunDetail.findAll({
     where: {
       recipe_run_id: recipe_run_id
     }
   }));
 
-  if (err) return ReE(res, err.message, 422);
+  if (err) return ReE(res, err.message, 422);*/
+
+  let { seq_query, sql_where } = req;
+
+  seq_query.where.recipe_run_id = recipe_run_id;
+
+  let [ err, result ] = await to(adminViewsService.fetchRecipeRunDetailsViewDataWithCount(seq_query));
+  if(err) return ReE(res, err.message, 422);
+
+  let footer = [];
+  [ err, footer ] = await to(adminViewsService.fetchRecipeRunDetailsViewFooter(sql_where));  
+  if(err) return ReE(res, err.message, 422);
+
+  
 
   // mock data below
 
@@ -400,7 +413,7 @@ const getRecipeRunDetails = async function (req, res) {
     "target_exchange": "bitstamp"
   }));
 
-  let footer = create_mock_footer(mock_detail[0], 'recipe_details');
+  footer = create_mock_footer(mock_detail[0], 'recipe_details');
 
   return ReS(res, {
     recipe_details: mock_detail,
