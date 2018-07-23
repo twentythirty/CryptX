@@ -634,39 +634,25 @@ const create_mock_footer = function (keys, name) {
 const GetInvestmentPortfolioStats = async function (req, res) {
 
   // mock data below
-  let subscription_amount = [
-    [
+  let subb_months = [2, 3, 4];
+  let subscription_amount = subb_months.map(m => {
+    return [
       {
-        type: "MCI",
-        value: 13500
+        month: m,
+        year: 2018,
+        portfolio: "MCI",
+        subscription: 9000 + (Math.random() * 10000)
       },
       {
-        type: "LCI",
-        value: 19000
+        month: m,
+        year: 2018,
+        portfolio: "LCI",
+        subscription: 11000 + (Math.random() * 10000)
       }
-    ],
-    [
-      {
-        type: "MCI",
-        value: 13500
-      },
-      {
-        type: "LCI",
-        value: 19000
-      }
-    ],
-    [
-      {
-        type: "MCI",
-        value: 13500
-      },
-      {
-        type: "LCI",
-        value: 19000
-      }
-    ],
-  ]
+    ]
+  });
 
+  // generates random data
   let currencies = ['BTC', 'ETH', 'LTC', 'BCH', 'XRP', 'EOS', 'XLM', 'ADA', 'USDT', 'Others'];
   let mci_portfolio = currencies.map((c, index) => {
     return ({
@@ -681,7 +667,7 @@ const GetInvestmentPortfolioStats = async function (req, res) {
     return {
       month: month,
       year: 2018,
-      value: port_value *= 1.3
+      value: port_value *= (1 + 0.5 * Math.random())
     }
   });
 

@@ -765,6 +765,30 @@
         ]
       }
     },
+    "/investments/portfolio_stats": {
+      "get": {
+        "tags": [
+          "investment"
+        ],
+        "description": "Get porfolio statistics, such as subscription amount, mci portfolio asset amounts in usd, and market value over time. Month values are supplied in numbers counting from 0.",
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "$ref": "#/definitions/InvestmentPortfolioStats"
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
     "/investments/{investment_id}/stats": {
       "get": {
         "tags": [
@@ -4009,6 +4033,78 @@
         "completed_timestamp": {
           "type": "number",
           "example": 1532097313472
+        }
+      }
+    },
+    "InvestmentPortfolioStats": {
+      "description": "Get portfolio statistics. Month vallues are supplied as a numbers starting from 0.",
+      "type": "object",
+      "properties": {
+        "subscription_amount": {
+          "type": "array",
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "month": {
+                  "type": "number",
+                  "description": "Month value starts from 0",
+                  "example": 2
+                },
+                "year": {
+                  "type": "number",
+                  "example": 2018
+                },
+                "portfolio": {
+                  "type": "string",
+                  "example": "MCI"
+                },
+                "subscription": {
+                  "type": "number",
+                  "example": 11358.522041484963
+                }
+              }
+            }
+          }
+        },
+        "mci_porfolio": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "symbol": {
+                "type": "string",
+                "example": "BTC"
+              },
+              "amount": {
+                "type": "number",
+                "example": 22304
+              }
+            }
+          }
+        },
+        "market_value": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "month": {
+                "type": "number",
+                "description": "Month value starts from 0",
+                "example": 3
+              },
+              "year": {
+                "type": "number",
+                "example": 2018
+              },
+              "value": {
+                "type": "number",
+                "description": "Value of porfolio",
+                "example": 12000
+              }
+            }
+          }
         }
       }
     },
