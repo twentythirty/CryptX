@@ -7,8 +7,8 @@ const Op = require('../models').Sequelize.Op;
 const uuidv4 = require('uuid/v4');
 const validator = require('validator');
 
-const createInvitation = async function (creator, role_ids, first_name, last_name, email) {
-
+const createUserAndInvitation = async function (creator, role_ids, first_name, last_name, email) {
+    
     //check if user with email already registered
     let user = await User.findOne({
         where: {
@@ -18,35 +18,41 @@ const createInvitation = async function (creator, role_ids, first_name, last_nam
     if (user) TE(`User with email ${email} already registered in system!`);
 
     //check if role is for real
-    const role = await Role.findAll({
+    const roles = await Role.findAll({
         where: {
             id: role_ids
         }
     });
-    if (!role) TE(`Role with ID ${role_ids} not found!`);
+    if (!roles) TE(`Role with ID ${role_ids} not found!`);
 
+    let err, role_associations, invitation;
+    [err, user] = await to(User.create({
+        first_name: first_name,
+        last_name: last_name,
+        email: email,
+        created_timestamp: new Date(),
+        is_active: true
+    }));
+
+    [err, role_associations] = await to(user.setRoles(roles));
+    if (err) TE(err.message);
 
     const one_week_later = new Date();
     one_week_later.setDate(new Date().getDate() + 7);
-    let [err, invitation] = await to(UserInvitation.create({
+    [err, invitation] = await to(UserInvitation.create({
         was_used: false,
         token: uuidv4(),
         token_expiry_timestamp: one_week_later,
         creator_id: creator.id,
-        first_name: first_name,
-        last_name: last_name,
         email: email,
+        user_id: user.id
     }));
         
     if (err) TE(err.message);
 
-    let role_associations;
-    [err, role_associations] = await to(invitation.setRoles(role_ids));
-    if (err) TE(err.message);
-
-    return invitation;
+    return [user, invitation];
 };
-module.exports.createInvitation = createInvitation;
+module.exports.createUserAndInvitation = createUserAndInvitation;
 
 const getValidInvitation = async function (token) {
 
@@ -64,23 +70,25 @@ const getValidInvitation = async function (token) {
     if (err) TE(err);
     if (!invitation) TE(`Unused invitation with token ${token} and valid before ${new Date()} not found!`);
 
-    let user = await User.findOne({
+    let user_filled_invitation;
+    [err, user_filled_invitation] = await to(UserInvitation.findOne({
         where: {
-            email: invitation.email
+            email: invitation.email,
+            was_used: true
         }
-    });
+    }));
     //user exists with this email - silently invalidate invitation expry and fail loudly
-    if (user) {
+    if (user_filled_invitation) {
         invitation.token_expiry_timestamp = new Date();
         invitation.save();
-        TE(`User with email ${invitation.email} already exists, revoking invitation validity!`);
+        TE(`Account is already set up. ${invitation.email} already exists, revoking invitation validity!`);
     }
 
     return invitation;
 };
 module.exports.getValidInvitation = getValidInvitation;
 
-const createUserByInvite = async function (invitation_id, password) {
+const setUpProfile = async function (invitation_id, password) {
 
     let invitation = await UserInvitation.findOne({
         where: {
@@ -91,7 +99,8 @@ const createUserByInvite = async function (invitation_id, password) {
             }
         },
         include: [{
-            model: Role
+            model: User,
+            as: 'user'
         }]
     });
     if (!invitation) TE(`No unused invitation found for id ${invitation_id} valid before ${new Date()}`);
@@ -100,23 +109,12 @@ const createUserByInvite = async function (invitation_id, password) {
     invitation.was_used = true;
     let [err, userData] = await to(invitation.save().then(invitation => {
         //invaldiated invitation, can create user now
-        return User.create({
-            first_name: invitation.first_name,
-            last_name: invitation.last_name,
-            email: invitation.email,
-            password: password,
-            created_timestamp: new Date(),
-            is_active: true
-        })
-    }).then(user => {
-        //return user after roles are set
-        return Promise.all([
-            user.setRoles(invitation.Roles),
-            Promise.resolve(user)
-        ]);
+        invitation.user.active = true;
+        invitation.user.password = password;
+        return invitation.user.save();
     }));
     if (err) TE(err);
 
-    return userData[1];
+    return userData;
 };
-module.exports.createUserByInvite = createUserByInvite;
+module.exports.setUpProfile = setUpProfile;
