@@ -4,7 +4,7 @@ import { HttpClient } from '@angular/common/http';
 
 import { EntitiesFilter } from '../../shared/models/api/entitiesFilter';
 import { environment } from '../../../environments/environment';
-import { LiquidityRequirementsCreateRequestData } from '../../shared/models/api/LiquidityRequirementsCreateRequestData';
+import { LiquidityRequirementsCreateRequestData } from '../../shared/models/api/liquidityRequirementsCreateRequestData';
 
 export class LiquidityRequirementsCreateResponse {
   success: boolean;
