@@ -457,7 +457,7 @@ ROUTES = {
     permissions_matcher: ROUTE_MATCHERS.InstrumentMapExchanges,
     required_permissions: []
   },
-  InstrumentMapExchanges: {
+  InstrumentCheckMapExchanges: {
     router_string: "/instruments/:instrument_id/mapping_exchanges",
     permissions_matcher: ROUTE_MATCHERS.InstrumentMappingExchanges,
     required_permissions: []

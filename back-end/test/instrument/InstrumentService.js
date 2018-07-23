@@ -39,6 +39,17 @@ describe('InstrumentService testing:', () => {
                     return Promise.resolve(_.find(MOCK_ASSETS, asset => asset.id == options.where.id));
                 }
             });
+            sinon.stub(InstrumentExchangeMapping, 'build').callsFake(options => {
+
+                let mock_mapping = new InstrumentExchangeMapping(options);
+
+                sinon.stub(mock_mapping, 'save').callsFake(nothing => {
+
+                    return Promise.resolve(mock_mapping);
+                });
+
+                return mock_mapping;
+            })
 
             done();
         });
@@ -46,7 +57,8 @@ describe('InstrumentService testing:', () => {
 
     after(done => {
         _.forEach([
-            Asset.findAll
+            Asset.findAll,
+            InstrumentExchangeMapping.build
         ], model => {
             if (model.restore) {
                 model.restore();
@@ -58,7 +70,9 @@ describe('InstrumentService testing:', () => {
 
     const instrumentService = require('../../services/InstrumentsService');
     const Instrument = require('../../models').Instrument;
+    const InstrumentExchangeMapping = require('../../models').InstrumentExchangeMapping;
     const Asset = require('../../models').Asset;
+    const ccxtUtils = require('../../utils/CCXTUtils');
 
     describe(' the method createInstrument shall ', done => {
 
@@ -66,7 +80,7 @@ describe('InstrumentService testing:', () => {
             chai.expect(instrumentService.createInstrument).to.exist;
         });
 
-        it(`shall reject when at least one of passed ids is null `, () => {
+        it(`reject when at least one of passed ids is null `, () => {
 
             return Promise.all(_.map([
                 [MOCK_ASSET_1.id, null],
@@ -77,7 +91,7 @@ describe('InstrumentService testing:', () => {
             }))
         });
 
-        it('shall reject reject when at least one of the asset ids doesnt work', () => {
+        it('reject reject when at least one of the asset ids doesnt work', () => {
 
             return Promise.all(_.map([
                 [MOCK_ASSET_1.id + 5, MOCK_ASSET_2.id],
@@ -88,7 +102,7 @@ describe('InstrumentService testing:', () => {
             }))
         });
 
-        it('shall reject when the provided instrument already exists', () => {
+        it('reject when the provided instrument already exists', () => {
 
             sinon.stub(Instrument, 'findOne').callsFake(options => {
 
@@ -102,7 +116,7 @@ describe('InstrumentService testing:', () => {
             });
         });
 
-        it('shall create a proper instrument when all conditions are met', () => {
+        it('create a proper instrument when all conditions are met', () => {
 
             sinon.stub(Instrument, 'findOne').callsFake(options => {
 
@@ -125,6 +139,78 @@ describe('InstrumentService testing:', () => {
                 return fulfill
             });
         })
+
+    });
+
+
+    describe(' the method addInstrumentExchangeMappings shall ', () => {
+
+        it('exist', () => {
+            chai.expect(instrumentService.addInstrumentExchangeMappings).to.exist;
+        });
+
+        it('reject bad args', () => {
+
+            return Promise.all(_.map([
+                [null, []],
+                [66, {}],
+                [null, {}]
+            ], params => chai.assert.isRejected(instrumentService.addInstrumentExchangeMappings(...params))));
+        });
+
+
+        it('reject saving mappings when an exchange lacks an identifier', () => {
+
+            sinon.stub(ccxtUtils, 'getConnector').callsFake(exchange_id => {
+
+                return Promise.resolve({
+                    markets: {}
+                })
+            });
+
+            return chai.assert.isRejected(instrumentService.addInstrumentExchangeMappings(_.random(100, false), [{
+                exchange_id: _.random(200, false),
+                external_instrument_id: MOCK_INSTRUMENT.symbol
+            }])).then(rejected => {
+
+                ccxtUtils.getConnector.restore();
+
+                return rejected;
+            });
+        });
+
+
+        it('create a mapping when params are correct', () => {
+
+            sinon.stub(ccxtUtils, 'getConnector').callsFake(exchange_id => {
+
+                return Promise.resolve({
+                    markets: {
+                        [MOCK_INSTRUMENT.symbol]: {
+                            limits: {
+                                amount: {
+                                    min: MOCK_ASSET_2.id
+                                }
+                            }
+                        }
+                    }
+                })
+            });
+
+            return chai.assert.isFulfilled(instrumentService.addInstrumentExchangeMappings(_.random(100, false), [{
+                exchange_id: _.random(200, false),
+                external_instrument_id: MOCK_INSTRUMENT.symbol
+            }])).then(fulfilled => {
+
+                ccxtUtils.getConnector.restore();
+
+                chai.assert.isArray(fulfilled);
+                chai.expect(fulfilled[0].external_instrument_id).to.eq(MOCK_INSTRUMENT.symbol);
+                chai.expect(fulfilled[0].tick_size).to.eq(MOCK_ASSET_2.id);
+
+                return fulfilled;
+            });
+        });
 
     });
 });
