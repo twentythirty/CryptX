@@ -1,7 +1,7 @@
 <table class="data-table">
   <thead *ngIf="dataSource.header?.length > 0">
     <tr>
-      <th *ngFor="let item of dataSource.header" class="sortable">
+      <th *ngFor="let item of dataSource.header">
         <a
           (click)="toggleFilter(item)"
         >
@@ -23,7 +23,7 @@
           [sortable]="item.filter.sortable"
           [rowData]="item.filter.rowData"
           (onFilter)="onSetFilter($event); filterMap[item.column] = !filterMap[item.column]"
-        ><div class="filter-sort-box"></div></app-data-table-filter>
+        ></app-data-table-filter>
       </th>
     </tr>
   </thead>

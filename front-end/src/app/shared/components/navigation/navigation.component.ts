@@ -1,4 +1,4 @@
-import { Component, OnInit} from '@angular/core';
+import { Component, OnInit, Input } from '@angular/core';
 
 import { AuthService } from '../../../services/auth/auth.service';
 import { Router } from '@angular/router';
@@ -11,7 +11,11 @@ import { Router } from '@angular/router';
 })
 export class NavigationComponent implements OnInit {
   showUserMenu: boolean = false;
+  showUserRoles: boolean = false;
   initials: String;
+
+  @Input() label: string;
+  @Input() value: string;
 
   constructor(private authService: AuthService, private router: Router) { }
 
@@ -30,6 +34,10 @@ export class NavigationComponent implements OnInit {
 
   toggleUserMenu () {
     this.showUserMenu = !this.showUserMenu;
+  }
+
+  toggleUserRoles () {
+    this.showUserRoles = !this.showUserRoles;
   }
 
 }
