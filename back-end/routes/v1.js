@@ -298,6 +298,12 @@ router.post(
   InvestmentController.getInvestmentRuns
 );
 router.get(
+  ROUTES.GetInvestmentPortfolioStats.router_string,
+  stateless_auth,
+  check_permissions,
+  InvestmentController.GetInvestmentPortfolioStats
+);
+router.get(
   ROUTES.GetInvestmentsColLOV.router_string,
   stateless_auth,
   check_permissions,

@@ -616,3 +616,66 @@ const create_mock_footer = function (keys, name) {
   });
   return footer;
 };
+
+
+const GetInvestmentPortfolioStats = async function (req, res) {
+
+  // mock data below
+  let subscription_amount = [
+    [
+      {
+        type: "MCI",
+        value: 13500
+      },
+      {
+        type: "LCI",
+        value: 19000
+      }
+    ],
+    [
+      {
+        type: "MCI",
+        value: 13500
+      },
+      {
+        type: "LCI",
+        value: 19000
+      }
+    ],
+    [
+      {
+        type: "MCI",
+        value: 13500
+      },
+      {
+        type: "LCI",
+        value: 19000
+      }
+    ],
+  ]
+
+  let currencies = ['BTC', 'ETH', 'LTC', 'BCH', 'XRP', 'EOS', 'XLM', 'ADA', 'USDT', 'Others'];
+  let mci_portfolio = currencies.map((c, index) => {
+    return ({
+      symbol: c,
+      amount: 20000 + (Math.random() * 10000)
+    })
+  });
+
+  let market_port_time = [3, 4, 5, 6, 7];
+  let port_value = 4000;
+  let portfolio_value = market_port_time.map(month => {
+    return {
+      month: month,
+      year: 2018,
+      value: port_value *= 1.3
+    }
+  });
+
+  return ReS(res, {
+    subscription_amount,
+    mci_portfolio,
+    market_value: portfolio_value
+  })
+}
+module.exports.GetInvestmentPortfolioStats = GetInvestmentPortfolioStats;
