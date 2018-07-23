@@ -11,8 +11,6 @@ module.exports = (sequelize, DataTypes) => {
             },
             token: DataTypes.STRING,
             token_expiry_timestamp: DataTypes.DATE,
-            first_name: DataTypes.STRING,
-            last_name: DataTypes.STRING,
             email: {
                 type: DataTypes.STRING,
                 allowNull: false,
@@ -31,13 +29,13 @@ module.exports = (sequelize, DataTypes) => {
     );
 
     UserInvitation.associate = function (models) {
-        UserInvitation.belongsToMany(models.Role, {
-            through: "user_invitation_role",
-            timestamps: false
-          });
         UserInvitation.belongsTo(models.User, {
             as: 'creator',
             foreignKey: 'creator_id'
+        });
+        UserInvitation.belongsTo(models.User, {
+            as: 'user',
+            foreignKey: 'user_id'
         });
     };
 
