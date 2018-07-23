@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
-import { Observable } from 'rxjs/Observable';
 import { HttpClient } from '@angular/common/http';
+import { Observable } from 'rxjs/Observable';
+import { map } from 'rxjs/operators';
 
 import { Instrument } from '../../shared/models/instrument';
 import { InstrumentCreateRequestData } from '../../shared/models/api/instrumentCreateRequestData';
@@ -39,4 +40,20 @@ export class InstrumentsService {
   createInstrument(request: InstrumentCreateRequestData): Observable<InstrumentsCreateResponse> {
     return this.http.post<InstrumentsCreateResponse>(this.baseUrl + `instruments/create`, request);
   }
+
+  getHeaderLOV(column_name: string): Observable<any> {
+    return this.http.get<any>(this.baseUrl + `instruments/header_lov/${column_name}`).pipe(
+      map(
+        res => {
+          if(res && res.lov && Array.isArray(res.lov)) {
+            return res.lov.map(lov => {
+              return { value: lov }
+            });
+          }
+          return null;
+        }
+      )
+    );
+  }
+
 }

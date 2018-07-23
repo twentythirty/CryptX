@@ -50,13 +50,13 @@
   <div class="calendar-filter" *ngIf="type === 'number'">
     <ng-container>
       <div class="form-item-caledar">
-        <label>From</label>
+        <label>{{ 'table.filter.from' | translate }}</label>
         <div class="search-input">
           <input type="number" [(ngModel)]="_filterData.values[0]" (change)="onNumberRangeChange('min')">
         </div>
       </div>
       <div class="form-item-caledar">
-        <label>To</label>
+        <label>{{ 'table.filter.to' | translate }}</label>
         <div class="search-input">
           <input type="number" [(ngModel)]="_filterData.values[1]" (change)="onNumberRangeChange('max')">
         </div>

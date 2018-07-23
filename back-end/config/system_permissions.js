@@ -265,12 +265,17 @@ ROUTES = {
   GetInvestmentsColLOV: {
     router_string: "/investments/header_lov/:field_name",
     permissions_matcher: ROUTE_MATCHERS.GetInvestmentsColLOV,
-    required_permissions: [PERMISSIONS.VIEW_ASSETS]
+    required_permissions: [PERMISSIONS.VIEW_INVESTMENT_RUN]
+  },
+  GetInvestmentPortfolioStats: {
+    router_string: "/investments/portfolio_stats",
+    permissions_matcher: ROUTE_MATCHERS.GetInvestmentPortfolioStats,
+    required_permissions: [PERMISSIONS.VIEW_INVESTMENT_RUN]
   },
   GetInvestmentStats: {
     router_string: "/investments/:investment_id/stats",
     permissions_matcher: ROUTE_MATCHERS.GetInvestmentStats,
-    required_permissions: [PERMISSIONS.VIEW_ASSETS]
+    required_permissions: [PERMISSIONS.VIEW_INVESTMENT_RUN]
   },
   CreateDeposit: {
     router_string: "/investments/:investment_id/deposit",
@@ -457,7 +462,7 @@ ROUTES = {
     permissions_matcher: ROUTE_MATCHERS.InstrumentMapExchanges,
     required_permissions: []
   },
-  InstrumentMapExchanges: {
+  InstrumentCheckMapExchanges: {
     router_string: "/instruments/:instrument_id/mapping_exchanges",
     permissions_matcher: ROUTE_MATCHERS.InstrumentMappingExchanges,
     required_permissions: []

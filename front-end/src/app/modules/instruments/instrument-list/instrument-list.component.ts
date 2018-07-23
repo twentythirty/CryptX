@@ -33,11 +33,23 @@ export class InstrumentListComponent extends DataTableCommonManagerComponent {
     public instrumentsService: InstrumentsService,
   ) {
     super(route);
+    this.getFilterLOV();
   }
 
-  openRow(): void {
-
+  /**
+   * Add a rowData$ Observable to text and boolean column filters
+   */
+  getFilterLOV(): void {
+    this.instrumentsDataSource.header.filter(
+      col => ['symbol'].includes(col.column)
+    ).map(
+      col => {
+        col.filter.rowData$ = this.instrumentsService.getHeaderLOV(col.column);
+      }
+    )
   }
+
+  openRow(): void {}
 
   getAllData(): void {
     this.instrumentsService.getAllInstruments(this.requestData).subscribe(

@@ -30,6 +30,7 @@ ROUTE_MATCHERS = {
     GetInvestment: /\/investments\/\d+$/,
     GetInvestments: /\/investments\/all$/,
     GetInvestmentsColLOV: /\/investments\/header_lov\/\w+/,
+    GetInvestmentPortfolioStats: /\/investments\/portfolio_stats/,
     GetInvestmentStats: /\/investments\/\d+\/stats/,
     GetRecipeRun: /\/recipes\/\d+$/,
     GetRecipeRunsOf: /\/recipes\/of_investment\/\d+$/,

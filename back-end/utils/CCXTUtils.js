@@ -17,14 +17,17 @@ const cache_init_promise = Exchange.findAll({}).then(exchanges => {
         con_by_id[id] = connector;
         con_by_api[api_id] = connector;
     });
+
+    return Promise.all(_.map(connectors, ([id, api_id, connector]) => connector.load_markets()))
 });
 
 /**
- * Fetch the CCXT connector corresponding to supplied exchange data.
+ * Fetch the CCXT connector corresponding to supplied exchange data. The connector will have
+ * associated markets (instruments) preloaded with data.
  * 
- * Technically async to prevent race ocnditions while the cache initializes, 
- * but should realistically always be ready immediately.
- * @param exchange_data An identifying piece of exchange data, such as exchange id, exchange api_id or full exchange object 
+ * async to prevent race conditions while the connectors cache loads.
+ * 
+ * `exchange_data` - An identifying piece of exchange data, such as exchange id, exchange api_id or full exchange object 
  */
 const getConnector = async (exchange_data) => {
     //ensure cache loaded

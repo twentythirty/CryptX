@@ -378,13 +378,26 @@ const getRecipeRunDetails = async function (req, res) {
 
   let recipe_run_id = req.params.recipe_id;
 
-  let [err, recipe_run_details] = await to(RecipeRunDetail.findAll({
+  /*let [err, recipe_run_details] = await to(RecipeRunDetail.findAll({
     where: {
       recipe_run_id: recipe_run_id
     }
   }));
 
-  if (err) return ReE(res, err.message, 422);
+  if (err) return ReE(res, err.message, 422);*/
+
+  let { seq_query, sql_where } = req;
+
+  seq_query.where.recipe_run_id = recipe_run_id;
+
+  let [ err, result ] = await to(adminViewsService.fetchRecipeRunDetailsViewDataWithCount(seq_query));
+  if(err) return ReE(res, err.message, 422);
+
+  let footer = [];
+  [ err, footer ] = await to(adminViewsService.fetchRecipeRunDetailsViewFooter(sql_where));  
+  if(err) return ReE(res, err.message, 422);
+
+  
 
   // mock data below
 
@@ -400,7 +413,7 @@ const getRecipeRunDetails = async function (req, res) {
     "target_exchange": "bitstamp"
   }));
 
-  let footer = create_mock_footer(mock_detail[0], 'recipe_details');
+  footer = create_mock_footer(mock_detail[0], 'recipe_details');
 
   return ReS(res, {
     recipe_details: mock_detail,
@@ -616,3 +629,52 @@ const create_mock_footer = function (keys, name) {
   });
   return footer;
 };
+
+
+const GetInvestmentPortfolioStats = async function (req, res) {
+
+  // mock data below
+  let subb_months = [2, 3, 4];
+  let subscription_amount = subb_months.map(m => {
+    return [
+      {
+        month: m,
+        year: 2018,
+        portfolio: "MCI",
+        subscription: 9000 + (Math.random() * 10000)
+      },
+      {
+        month: m,
+        year: 2018,
+        portfolio: "LCI",
+        subscription: 11000 + (Math.random() * 10000)
+      }
+    ]
+  });
+
+  // generates random data
+  let currencies = ['BTC', 'ETH', 'LTC', 'BCH', 'XRP', 'EOS', 'XLM', 'ADA', 'USDT', 'Others'];
+  let mci_portfolio = currencies.map((c, index) => {
+    return ({
+      symbol: c,
+      amount: 20000 + (Math.random() * 10000)
+    })
+  });
+
+  let market_port_time = [3, 4, 5, 6, 7];
+  let port_value = 4000;
+  let portfolio_value = market_port_time.map(month => {
+    return {
+      month: month,
+      year: 2018,
+      value: port_value *= (1 + 0.5 * Math.random())
+    }
+  });
+
+  return ReS(res, {
+    subscription_amount,
+    mci_portfolio,
+    market_value: portfolio_value
+  })
+}
+module.exports.GetInvestmentPortfolioStats = GetInvestmentPortfolioStats;

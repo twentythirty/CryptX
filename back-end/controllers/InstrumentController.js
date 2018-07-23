@@ -101,15 +101,23 @@ module.exports.checkInstrumentExchangeMap = checkInstrumentExchangeMap;
 const mapInstrumentsWithExchanges = async function (req, res) {
 
   let instrument_id = req.params.instrument_id;
-  let exchange_mapping = req.body.exchange_mapping;
+  let exchange_mappings = req.body.exchange_mapping;
 
-  if (!exchange_mapping || !exchange_mapping.length || !instrument_id)
-    return ReE(res, "Instrument ID and exchange mappings must be supplied to map exchanges with instrument", 422);
+  if (!_.isArray(exchange_mappings) || !instrument_id)
+    return ReE(res, "Instrument ID and exchange mappings array must be supplied to map exchanges with instrument", 422);
 
   // enforce specific exchange mapping structure
-  if (!exchange_mapping.every((map) => {
-    return typeof map === 'object' && map.exchange_id && map.external_instrument_id;
-  }));
+  if (!exchange_mappings.every((map) => {
+    return _.isObject(map) && map.exchange_id && map.external_instrument_id;
+  })) {
+   return ReE(res, `Supplied array of exchange mappings ${exchange_mappings} is supposed to contain exchange_id and external_intrument_id keys!`) 
+  };
+
+  const [error, mappings] = await to(instrumentService.addInstrumentExchangeMappings(instrument_id, exchange_mappings));
+
+  if (error) {
+    return ReE(res, error)
+  }
 
   return ReS(res, {
     message: "OK!"
