@@ -8,10 +8,32 @@
           <span class="name">
             <div>
               <button (click)="toggleUserMenu()">{{ authService.user.first_name }} {{ authService.user.last_name }} </button>
-              <div *ngIf="showUserMenu" class="user-menu">
-                  <button routerLink="/change_my_info">Change password</button>
-                  <br>
-                  <button (click)="logout()">Logout</button>
+              <div *ngIf="showUserMenu"  class="filter-sort-box display-block">
+                  <ul class="bottom-part new">
+                    <li class="new2">
+                      <button (click)="toggleUserRoles()" class="name">
+                      <a class="new3">Logged as:</a>
+                      <br>
+                      <a class="new4">Admin</a>
+                      </button>
+                      <div *ngIf="showUserRoles">
+                        <li class="checkbox">
+                          <input type="checkbox" id="1">
+                          <label for="1">Admin</label>
+                        </li>
+                        <li class="checkbox">
+                          <input type="checkbox" id="2">
+                          <label for="2">Admin</label>
+                        </li>
+                      </div>
+                    </li>
+                    <li class="new2">
+                      <button routerLink="/change_my_info">Change password</button>
+                    </li>
+                    <li class="new2">
+                      <button (click)="logout()">Logout</button>
+                    </li>
+                  </ul>
               </div>
            </div>
           </span>
@@ -23,10 +45,11 @@
       <nav>
         <a routerLinkActive="active" routerLink="/dashboard" *ngIf="checkPerm(['VIEW_INVESTMENT_RUN'])">Dashboard</a>
         <a routerLinkActive="active" href="#" *ngIf="checkPerm(['ALTER_PERMS'])">Recipe Runs</a>
-        <a routerLinkActive="active" routerLink="/assets" *ngIf="checkPerm(['VIEW_ASSETS'])">Assets</a>
+        <a routerLinkActive="active" routerLink="/assets" *ngIf="checkPerm(['VIEW_ASSETS'])">{{ 'assets.assets' | translate }}</a>
         <a routerLinkActive="active" routerLink="/users" href="#" *ngIf="checkPerm(['EDIT_USERS'])">User Management</a>
         <a routerLinkActive="active" routerLink="/roles" *ngIf="checkPerm(['VIEW_ROLES'])">Role Management</a>
-        <a routerLinkActive="active" routerLink="/instruments" *ngIf="checkPerm(['VIEW_ROLES'])">Instruments</a>
+        <a routerLinkActive="active" routerLink="/instruments/all" *ngIf="checkPerm(['VIEW_ROLES'])">{{ 'instruments.instruments' | translate }}</a>
+        <a routerLinkActive="active" routerLink="/liquidity_requirements/all" *ngIf="checkPerm(['VIEW_ROLES'])">{{ 'liquidity.liquidity_requirements' | translate }}</a>
         <a routerLinkActive="active" href="#" *ngIf="checkPerm(['VIEW_SETTING_VALUES'])">Setting Management</a>
     </nav>
     </div>

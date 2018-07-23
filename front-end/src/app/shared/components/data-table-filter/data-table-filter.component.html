@@ -1,51 +1,80 @@
-  <div class="filter">
-  <div class="filter-header">
-    <div *ngIf="!_showSearch" class="header-default">
-      <div>All</div>
-      <div *ngIf="type === 'text'">
-        <button (click)="_showSearch = !_showSearch">Search</button>
+<div class="filter-sort-box display-block">
+  <div class="top-part">
+    <div *ngIf="!_showSearch">
+      <div *ngIf="type === 'text'" class="search-in-filters new1">
+        <span class="title new">{{ 'table.filter.all' | translate }}</span>
+        <span class="ico new2" (click)="_showSearch = !_showSearch"></span>
       </div>
     </div>
-
-    <div *ngIf="type === 'text' && _showSearch">
-      <input type="text" [(ngModel)]="_filterSearchText">
-      <button (click)="cancelSearch()">X</button>
+    <div *ngIf="type === 'text' && _showSearch" class="search-in-filters">
+      <div class="search-input  display-block">
+        <input type="text" [(ngModel)]="_filterSearchText">
+        <a class="close-search" (click)="cancelSearch()"></a>
+      </div>
     </div>
   </div>
 
-  <div class="filter-body">
-    <ng-container *ngIf="(type === 'text' || type === 'boolean') && rowData && rowData?.length">
-      <div *ngFor="let item of (rowData | filter: _filterSearchText : 'value')">
+  <ul class="list-of-filters" *ngIf="(type === 'text' || type === 'boolean') && rowData && rowData?.length">
+    <ng-container>
+      <li *ngFor="let item of (rowData | filter: _filterSearchText : 'value')">
         <app-checkbox [label]="item.label ? item.label : item.value" [value]="item.value" (onToggle)="onCheckboxToggle($event)"></app-checkbox>
-      </div>
+      </li>
     </ng-container>
-    <ng-container *ngIf="type === 'date'">
-      <ng2-flatpickr [config]="_datepickerOptions" [(ngModel)]="_filterData.values[0]"></ng2-flatpickr>
+  </ul>
+
+  <div class="calendar-filter" *ngIf="type === 'date'">
+    <ng-container>
+      <div class="form-item-caledar">
+        <label>{{ 'table.filter.from' | translate }}</label>
+        <div class="input-wrap">
+          <ng2-flatpickr class="datepicker" [config]="_datepickerOptions" [(ngModel)]="_filterData.values[0]"></ng2-flatpickr>
+        </div>
+      </div>
+      <div class="form-item-caledar">
+        <label>{{ 'table.filter.to' | translate }}</label>
+        <div class="input-wrap">
+          <ng2-flatpickr class="datepicker" [config]="_datepickerOptions" [(ngModel)]="_filterData.values[1]"></ng2-flatpickr>
+        </div>
+      </div>
       <ng2-flatpickr [config]="_datepickerOptions" [(ngModel)]="_filterData.values[1]"></ng2-flatpickr>
     </ng-container>
-
-    <ng-container *ngIf="type === 'number'">
-      <div>
-        <label>From</label>
-        <input type="number" [(ngModel)]="_filterData.values[0]" (change)="onNumberRangeChange('min')">
-      </div>
-      <div>
-        <label>To</label>
-        <input type="number" [(ngModel)]="_filterData.values[1]" (change)="onNumberRangeChange('max')">
-      </div>
-    </ng-container>
   </div>
 
-  <div class="filter-footer">
-    <div *ngIf="sortable">
-      <select [(ngModel)]="_filterData.order">
-        <option value="">Select ordering</option>
+  <div class="calendar-filter" *ngIf="type === 'number'">
+  <ng-container>
+    <div class="form-item-caledar">
+      <label>From</label>
+      <div class="search-input">
+        <input type="number" [(ngModel)]="_filterData.values[0]" (change)="onNumberRangeChange('min')">
+      </div>
+    </div>
+    <div class="form-item-caledar">
+      <label>To</label>
+      <div class="search-input">
+        <input type="number" [(ngModel)]="_filterData.values[1]" (change)="onNumberRangeChange('max')">
+      </div>
+    </div>
+  </ng-container>
+  </div>
+
+
+  <div class="bottom-part">
+    <div *ngIf="sortable" class="select">
+      <select [(ngModel)]="_filterData.order" class="select-box select-hidden">
+        <option value="">{{ 'table.filter.select_ordering' | translate }}</option>
         <option value="asc">A - Z</option>
         <option value="desc">Z - A</option>
       </select>
+    <div class="select-styled" (click)=isActive()>
+      <div>{{name}}</div>
+    </div>
+    <ul *ngIf="active" class="select-options display-block">
+      <li (click) = noSort() >ORDER BY</li>
+      <li (click) = sortAsc() >A - Z</li>
+      <li (click) = sortDesc() >Z - A</li>
+    </ul>
     </div>
     <div>
-      <app-btn (onClick)="onFilterChange()">Filter</app-btn>
+      <app-btn class="btn thinner"(onClick)="onFilterChange()">{{ 'table.filter.filter' | translate }}</app-btn>
     </div>
   </div>
-</div>

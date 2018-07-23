@@ -33,6 +33,7 @@ import { AssetService } from './services/asset/asset.service';
 import { InvestmentService } from './services/investment/investment.service';
 import { InvestmentModule } from './modules/investment/investment.module';
 import { InstrumentsModule } from './modules/instruments/instruments.module';
+import { LiquidityModule } from './modules/liquidity/liquidity.module';
 
 export function HttpLoaderFactory(http: HttpClient) {
   return new TranslateHttpLoader(
@@ -67,6 +68,7 @@ export function HttpLoaderFactory(http: HttpClient) {
     AssetModule,  // TODO: Remove this when moving to lazy loaded modules
     InvestmentModule, // TODO: Remove this when moving to lazy loaded modules
     InstrumentsModule,
+    LiquidityModule,
     AppRoutingModule,
     ReactiveFormsModule
   ],

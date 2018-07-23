@@ -1,9 +1,10 @@
 <div class="top-controls">
-  <span class="headline-title">{{count}} Roles</span>
-  <a [routerLink]="['/roles/add']" class="btn start" modal-btn-open="">
-        <span>Add new role</span>
-      </a>
+  <span class="headline-title">{{count}} {{ 'roles.roles' | translate }}</span>
+  <a [routerLink]="['/roles/add']" class="btn start">
+    <span>{{ 'roles.add_new_role' | translate }}</span>
+  </a>
 </div>
+
 <app-data-table 
   [dataSource]="rolesDataSource" 
   [customRows]="true" 
@@ -15,6 +16,7 @@
     </td>
   </tr>
 </app-data-table>
+
 <app-pagination 
   [count]="count" 
   [perPage]="pageSize" 

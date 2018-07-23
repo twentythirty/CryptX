@@ -1,6 +1,12 @@
 {
   "common": {
-    "list_empty": "This list is empty"
+    "list_empty": "This list is empty",
+    "pagination": {
+      "first": "First",
+      "last": "Last"
+    },
+    "delete": "Delete",
+    "submit": "Submit"
   },
   "table": {
     "header": {
@@ -55,9 +61,51 @@
       "creation_date": "Creation date",
       "exchanges_connected": "Exchanges Connected",
       "exchanges_failed": "Exchanges Failed"
+    },
+    "filter": {
+      "all": "All",
+      "filter": "Filter",
+      "select_ordering": "Select_ordering",
+      "from": "From",
+      "to": "To"
     }
   },
+
+  "roles": {
+    "roles": "Roles",
+    "add_new_role": "Add new role",
+    "name": "Name",
+    "role_information": "Role information",
+    "enter_role_name": "Enter role name",
+    "permissions": "Permissions",
+    "role_delete_confirm_msg": "Are you sure you want delete this role?"
+  },
+
+  "liquidity": {
+    "liquidity_requirements": "Liquidity requirements",
+    "add_requirement": "Add requirement",
+    "periodicity": "Periodicity",
+    "enter_periodicity": "Enter periodicity",
+    "minimum_circulation": "Minimum circulation",
+    "enter_minimum_circulation": "Enter minimum circulation",
+    "enter_liquidity_information": "Enter liquidity information"
+  },
+
+  "instruments": {
+    "instruments": "Instruments",
+    "new_instrument": "New instrument",
+    "parameters": "Parameters",
+    "transaction_asset": "Transaction asset",
+    "quote_asset": "Quote asset",
+    "add_instrument": "Add instrument"
+  },
+
+  "exchanges": {
+    "exchange": "Exchange"
+  },
+
   "assets": {
+    "assets": "Assets",
     "headline": "{{ count }} Cryptocurrencies",
     "status": {
       "400": "Whitelisted",

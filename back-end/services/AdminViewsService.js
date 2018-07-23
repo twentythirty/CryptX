@@ -7,6 +7,8 @@ const AVUser = require('../models').AVUser;
 const AVAsset = require('../models').AVAsset;
 const AVInstrument = require('../models').AVInstrument;
 const AVInvestmentRun = require('../models').AVInvestmentRun;
+const AVRecipeRun = require('../models').AVRecipeRun;
+const AVRecipeRunDetail = require('../models').AVRecipeRunDetail;
 
 const TABLE_LOV_FIELDS = {
     'av_users': [
@@ -25,6 +27,16 @@ const TABLE_LOV_FIELDS = {
     ],
     'av_instruments': [
         'symbol'
+    ],
+    'av_investment_runs': [
+        'is_simulated',
+    ],
+    'av_recipe_runs': [
+        'approval_status'
+    ],
+    'av_recipe_run_details': [
+        'transaction_asset',
+        'quote_asset'
     ]
 }
 
@@ -99,6 +111,23 @@ const fetchInstrumentsViewHeaderLOV = async (header_field, query = '') => {
 }
 module.exports.fetchInstrumentsViewHeaderLOV = fetchInstrumentsViewHeaderLOV;
 
+const fetchInvestmentRunsViewHeaderLOV = async (header_field, query = '') => {
+
+    return fetchViewHeaderLOV('av_investment_runs', header_field, query);
+}
+module.exports.fetchInvestmentRunsViewHeaderLOV = fetchInvestmentRunsViewHeaderLOV;
+
+const fetchRecipeRunsViewHeaderLOV = async (header_field, query = '') => {
+
+    return fetchViewHeaderLOV('av_recipe_runs', header_field, query);
+}
+module.exports.fetchRecipeRunsViewHeaderLOV = fetchRecipeRunsViewHeaderLOV;
+
+const fetchRecipeRunDetailsViewHeaderLOV = async (header_field, query = '') => {
+
+    return fetchViewHeaderLOV('av_recipe_run_details', header_field, query);
+}
+module.exports.fetchRecipeRunDetailsViewHeaderLOV = fetchRecipeRunDetailsViewHeaderLOV;
 
 
 
@@ -123,11 +152,23 @@ const fetchInstrumentsViewDataWithCount = async (seq_query = {}) => {
 }
 module.exports.fetchInstrumentsViewDataWithCount = fetchInstrumentsViewDataWithCount;
 
-const fetchInvestmentRunsViewDataWithCount = async (seq_where = {}) => {
+const fetchInvestmentRunsViewDataWithCount = async (seq_query = {}) => {
 
-    return fetchViewDataWithCount(AVInvestmentRun, seq_where);
+    return fetchViewDataWithCount(AVInvestmentRun, seq_query);
 }
 module.exports.fetchInvestmentRunsViewDataWithCount = fetchInvestmentRunsViewDataWithCount;
+
+const fetchRecipeRunsViewDataWithCount = async (seq_query = {}) => {
+
+    return fetchViewDataWithCount(AVRecipeRun, seq_query);
+}
+module.exports.fetchRecipeRunsViewDataWithCount = fetchRecipeRunsViewDataWithCount;
+
+const fetchRecipeRunDetailsViewDataWithCount = async (seq_query = {}) => {
+
+    return fetchViewDataWithCount(AVRecipeRunDetail, seq_query);
+}
+module.exports.fetchRecipeRunDetailsViewDataWithCount = fetchRecipeRunDetailsViewDataWithCount;
 
 const fetchAssetView = async (asset_id) => {
 
@@ -140,6 +181,24 @@ const fetchInstrumentView = async (instrument_id) => {
     return fetchSingleEntity(AVInstrument, instrument_id)
 }
 module.exports.fetchInstrumentView = fetchInstrumentView;
+
+const fetchInvestmentRunView = async (investment__id) => {
+
+    return fetchSingleEntity(AVInvestmentRun, investment__id);
+}
+module.exports.fetchInvestmentRunView = fetchInvestmentRunView;
+
+const fetchRecipeRunView = async (recipe_run_id) => {
+
+    return fetchSingleEntity(AVRecipeRun, recipe_run_id);
+}
+module.exports.fetchRecipeRunView = fetchRecipeRunView;
+
+const fetchRecipeRunDetailView = async (recipe_run_detail_id) => {
+
+    return fetchSingleEntity(AVRecipeRunDetail, recipe_run_detail_id);
+}
+module.exports.fetchRecipeRunDetailView = fetchRecipeRunDetailView;
 
 
 
@@ -368,3 +427,48 @@ const fetchInvestmentRunsViewFooter = async (where_clause = '') => {
         builder.queryReturnRowToFooterObj(footer), 'investment_runs');
 }
 module.exports.fetchInvestmentRunsViewFooter = fetchInvestmentRunsViewFooter;
+
+const fetchRecipeRunsViewFooter = async (where_clause = '') => {
+
+    const query = `
+    SELECT
+        COUNT(id) AS id,
+        COUNT(DISTINCT user_created) as user_created,
+        SUM(pending) as approval_status
+    FROM
+        (SELECT
+            id,
+            user_created,
+            (CASE WHEN approval_status = 41 THEN 1 ELSE 0 END) AS pending
+        FROM av_recipe_runs ${builder.whereOrEmpty(where_clause)}) AS inner_av
+    `;
+
+    const footer = (await sequelize.query(query))[0];
+    
+    return builder.addFooterLabels(
+        builder.queryReturnRowToFooterObj(footer), 'recipe_runs');
+}
+module.exports.fetchRecipeRunsViewFooter = fetchRecipeRunsViewFooter;
+
+const fetchRecipeRunDetailsViewFooter = async (where_clause = '') => {
+
+    const query = `
+    SELECT
+        COUNT(id) AS id,
+        COUNT(DISTINCT transaction_asset_id) AS transaction_asset,
+        COUNT(DISTINCT qoute_asset_id) AS qoute_asset,
+        COUNT(DISTINCT target_exchange_id) AS target_exchange
+    FROM	(SELECT
+            id,
+            transaction_asset_id,
+            qoute_asset_id,
+            target_exchange_id
+        FROM av_recipe_run_details ${builder.whereOrEmpty(where_clause)}) AS inner_av
+    `;
+
+    const footer = (await sequelize.query(query))[0];
+    
+    return builder.addFooterLabels(
+        builder.queryReturnRowToFooterObj(footer), 'recipe_run_details');
+}
+module.exports.fetchRecipeRunDetailsViewFooter = fetchRecipeRunDetailsViewFooter;

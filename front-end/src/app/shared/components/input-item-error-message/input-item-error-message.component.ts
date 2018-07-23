@@ -15,16 +15,13 @@ export class InputItemErrorMessageComponent implements OnInit {
     email: () => `Invalid email address`,
   };
 
-  constructor() { }
+  constructor() {}
 
-  ngOnInit() {
-  }
+  ngOnInit() {}
 
   getErrorMessage(): string {
     for(const error in this.errors) {
-      //console.log(this.errorMessages[error]( this.errors[error] ))
       return this.errorMessages[error]( this.errors[error] );
-
     }
   }
 

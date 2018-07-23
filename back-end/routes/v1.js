@@ -298,18 +298,24 @@ router.post(
   InvestmentController.getInvestmentRuns
 );
 router.get(
+  ROUTES.GetInvestmentPortfolioStats.router_string,
+  stateless_auth,
+  check_permissions,
+  InvestmentController.GetInvestmentPortfolioStats
+);
+router.get(
   ROUTES.GetInvestmentsColLOV.router_string,
   stateless_auth,
   check_permissions,
   filter_reducer,
-MockController.fetchColLOV
+  InvestmentController.getInvestmentRunsColumnLOV
 );
 router.post(
   ROUTES.GetInvestmentsColLOV.router_string,
   stateless_auth,
   check_permissions,
   filter_reducer,
-MockController.fetchColLOV
+  InvestmentController.getInvestmentRunsColumnLOV
 );
 router.get(
   ROUTES.GetInvestment.router_string,
@@ -366,14 +372,14 @@ router.get(
   stateless_auth,
   check_permissions,
   filter_reducer,
-MockController.fetchColLOV
+  InvestmentController.getRecipeRunsColumnLOV
 );
 router.post(
   ROUTES.GetRecipeRunsColLOV.router_string,
   stateless_auth,
   check_permissions,
   filter_reducer,
-MockController.fetchColLOV
+  InvestmentController.getRecipeRunsColumnLOV
 );
 router.get(
   ROUTES.GetRecipeRun.router_string,
@@ -781,6 +787,20 @@ router.post(
   MockController.getExchanges
 );
 
+router.post(
+  ROUTES.GetColdStorageTransfers.router_string,
+  stateless_auth,
+  check_permissions,
+  filter_reducer,
+  MockController.getColdStorageTransfers
+);
+router.post(
+  ROUTES.GetColdStorageTransfersColLOV.router_string,
+  stateless_auth,
+  check_permissions,
+  filter_reducer,
+  MockController.fetchColLOV
+);
 //********* API DOCUMENTATION **********
 router.use(
   "/docs/api.json",

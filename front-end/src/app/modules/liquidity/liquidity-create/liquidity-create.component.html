@@ -1,0 +1,71 @@
+<app-page-heading
+  [heading]="'liquidity.liquidity_requirements' | translate"
+></app-page-heading>
+
+<div class="split-content horizontal">
+  <app-content-block
+    [heading]="'liquidity.enter_liquidity_information' | translate"
+  >
+    
+    <form [formGroup]="form">
+      <div class="form-item">
+        <label class="label-name">
+          {{ 'instruments.instruments' | translate }}
+        </label>
+        <input
+          ngui-auto-complete
+          formControlName="instrument_id"
+          [source]="instruments"
+          value-formatter="value"
+          list-formatter="value"
+          max-num-list="15"
+          [accept-user-input]="false"
+          (valueChanged)="assetValueChanged($event, 'instrument_id')"
+        >
+      </div>
+
+      <div class="form-item">
+        <label class="label-name">
+          {{ 'exchanges.exchange' | translate }}
+        </label>
+        <input
+          ngui-auto-complete
+          formControlName="exchange_id"
+          [source]="exchanges"
+          value-formatter="value"
+          list-formatter="value"
+          max-num-list="15"
+          [accept-user-input]="false"
+          (valueChanged)="assetValueChanged($event, 'exchange_id')"
+        >
+      </div>
+
+      <app-input-item
+        type="number"
+        class="form-item"
+        [label]="'liquidity.periodicity' | translate"
+        [placeholder]="'liquidity.enter_periodicity' | translate"
+        [formGroup]="form"
+        formControlName="periodicity"
+      ></app-input-item>
+
+      <app-input-item
+        type="number"
+        class="form-item"
+        [label]="'liquidity.minimum_circulation' | translate"
+        [placeholder]="'liquidity.enter_minimum_circulation' | translate"
+        [formGroup]="form"
+        formControlName="minimum_circulation"
+      ></app-input-item>
+    </form>
+
+  </app-content-block>
+</div>
+
+<app-form-action-bar>
+  <button
+    class="btn submit"
+    [disabled]="loading"
+    (click)="saveLiquidityRequirement()"
+  >{{ 'liquidity.add_requirement' | translate }}</button>
+</app-form-action-bar>

@@ -1,13 +1,21 @@
-<app-page-heading heading="Add new Role">
-</app-page-heading>
+<app-page-heading
+  [heading]="'roles.add_new_role' | translate"
+></app-page-heading>
+
 <div class="split-content horizontal">
-  <app-content-block heading="Role information">
-    <div class="form-item">
-      <label class="label-name">Name</label>
-      <input type="text" placeholder="Enter role name" [(ngModel)]="role.name">
-    </div>
+  <app-content-block
+    [heading]="'roles.role_information' | translate"
+  >
+    <app-input-item
+      type="text"
+      class="form-item"
+      [label]="'roles.name' | translate"
+      [placeholder]="'roles.enter_role_name' | translate"
+      [(ngModel)]="role.name"
+    ></app-input-item>
   </app-content-block>
-  <app-content-block heading="Permissions">
+
+  <app-content-block [heading]="'roles.permissions' | translate">
     <div class="no-padding-top-bottom">
       <div class="permision-list">
         <div class="checkboxes-item" *ngFor="let permBlock of permissionsMap.data; let i = index">
@@ -33,22 +41,31 @@
     </div>
   </app-content-block>
 </div>
+
 <app-form-action-bar>
   <div *ngIf="roleId">
     <button class="btn deactive" 
       [disabled]="loading" 
-      (click)="showDeleteConfirm = true">Delete</button>
+      (click)="showDeleteConfirm = true"
+    >{{ 'common.delete' | translate }}</button>
     <button class="btn submit" 
       [disabled]="loading" 
-      (click)="saveRole()">Submit</button>
+      (click)="saveRole()"
+    >{{ 'common.submit' | translate }}</button>
   </div>
+
   <div *ngIf="!roleId">
-    <button class="btn submit" [disabled]="loading" (click)="addRole()">Submit</button>
+    <button
+      class="btn submit"
+      [disabled]="loading"
+      (click)="addRole()"
+    >{{ 'common.submit' | translate }}</button>
   </div>
 </app-form-action-bar>
 
-<app-confirm *ngIf="showDeleteConfirm" 
-  heading="Are you sure you want delete this role?" 
+<app-confirm
+  *ngIf="showDeleteConfirm"
+  [heading]="'roles.role_delete_confirm_msg' | translate" 
   (onReject)="closeDeleteConfirm()"
   (onConfirm)="deleteRole()">
 </app-confirm>
