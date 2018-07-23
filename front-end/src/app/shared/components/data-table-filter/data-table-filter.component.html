@@ -22,39 +22,46 @@
     </ng-container>
   </ul>
 
-  <div class="calendar-filter" *ngIf="type === 'date'">
+  <div class="calendar-filter new3" *ngIf="type === 'date'">
     <ng-container>
-      <div class="form-item-caledar">
+      <div>
         <label>{{ 'table.filter.from' | translate }}</label>
-        <div class="input-wrap">
-          <ng2-flatpickr class="datepicker" [config]="_datepickerOptions" [(ngModel)]="_filterData.values[0]"></ng2-flatpickr>
+        <div>
+          <mat-form-field class="new3">
+            <input matInput [matDatepicker]="picker" [(ngModel)]="_filterData.values[0]" placeholder="Choose a date">
+            <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+            <mat-datepicker #picker></mat-datepicker>
+          </mat-form-field>
         </div>
       </div>
-      <div class="form-item-caledar">
+      <div>
         <label>{{ 'table.filter.to' | translate }}</label>
-        <div class="input-wrap">
-          <ng2-flatpickr class="datepicker" [config]="_datepickerOptions" [(ngModel)]="_filterData.values[1]"></ng2-flatpickr>
+        <div>
+          <mat-form-field class="new3">
+            <input matInput [matDatepicker]="picker2" [(ngModel)]="_filterData.values[1]" placeholder="Choose a date">
+            <mat-datepicker-toggle matSuffix [for]="picker2"></mat-datepicker-toggle>
+            <mat-datepicker #picker2></mat-datepicker>
+          </mat-form-field>        
         </div>
       </div>
-      <ng2-flatpickr [config]="_datepickerOptions" [(ngModel)]="_filterData.values[1]"></ng2-flatpickr>
     </ng-container>
   </div>
 
   <div class="calendar-filter" *ngIf="type === 'number'">
-  <ng-container>
-    <div class="form-item-caledar">
-      <label>From</label>
-      <div class="search-input">
-        <input type="number" [(ngModel)]="_filterData.values[0]" (change)="onNumberRangeChange('min')">
+    <ng-container>
+      <div class="form-item-caledar">
+        <label>From</label>
+        <div class="search-input">
+          <input type="number" [(ngModel)]="_filterData.values[0]" (change)="onNumberRangeChange('min')">
+        </div>
       </div>
-    </div>
-    <div class="form-item-caledar">
-      <label>To</label>
-      <div class="search-input">
-      <input type="number" [(ngModel)]="_filterData.values[1]" (change)="onNumberRangeChange('max')">
+      <div class="form-item-caledar">
+        <label>To</label>
+        <div class="search-input">
+          <input type="number" [(ngModel)]="_filterData.values[1]" (change)="onNumberRangeChange('max')">
+        </div>
       </div>
-    </div>
-  </ng-container>
+    </ng-container>
   </div>
 
 
@@ -65,16 +72,16 @@
         <option value="asc">A - Z</option>
         <option value="desc">Z - A</option>
       </select>
-    <div class="select-styled" (click)=isActive()>
-      <div>{{name}}</div>
-    </div>
-    <ul *ngIf="active" class="select-options display-block">
-      <li (click) = noSort() >ORDER BY</li>
-      <li (click) = sortAsc() >A - Z</li>
-      <li (click) = sortDesc() >Z - A</li>
-    </ul>
+      <div class="select-styled" (click)=isActive()>
+        <div>{{name}}</div>
+      </div>
+      <ul *ngIf="active" class="select-options display-block">
+        <li (click)=noSort()>ORDER BY</li>
+        <li (click)=sortAsc()>A - Z</li>
+        <li (click)=sortDesc()>Z - A</li>
+      </ul>
     </div>
     <div>
-      <app-btn class="btn thinner"(onClick)="onFilterChange()">{{ 'table.filter.filter' | translate }}</app-btn>
+      <app-btn class="btn thinner" (onClick)="onFilterChange()">{{ 'table.filter.filter' | translate }}</app-btn>
     </div>
   </div>
