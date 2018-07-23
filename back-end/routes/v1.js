@@ -471,14 +471,14 @@ router.get(
   stateless_auth,
   check_permissions,
   filter_reducer,
-MockController.fetchColLOV
+  InvestmentController.getRecipeRunDetailsColumnLOV
 );
 router.post(
   ROUTES.GetRecipeRunDetailsColLOV.router_string,
   stateless_auth,
   check_permissions,
   filter_reducer,
-MockController.fetchColLOV
+  InvestmentController.getRecipeRunDetailsColumnLOV
 );
 router.get(
   ROUTES.GetRecipeRunDetail.router_string,
