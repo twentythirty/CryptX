@@ -1,6 +1,5 @@
 import { Component, OnInit, Input, EventEmitter, Output, OnChanges } from '@angular/core';
 import _ from 'lodash';
-import { FlatpickrOptions } from 'ng2-flatpickr';
 import { Observable } from 'rxjs';
 
 export interface DataTableFilterData {
@@ -29,7 +28,6 @@ export class DataTableFilterComponent implements OnInit, OnChanges {
   };
   private _showSearch: boolean = false;
   private _filterSearchText: string = '';
-  private _datepickerOptions: FlatpickrOptions = {};
 
   active = false;
   name = 'ORDER BY'
