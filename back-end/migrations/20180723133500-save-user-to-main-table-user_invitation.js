@@ -6,8 +6,6 @@ module.exports = {
         }).then(() => {
             return queryInterface.removeColumn("user_invitation", "last_name");
         }).then(() => {
-            return queryInterface.removeColumn("user_invitation", "role_id");
-        }).then(() => {
             return queryInterface.addColumn("user_invitation", "user_id", {
                 type: Sequelize.INTEGER,
                 allowNull: true,
