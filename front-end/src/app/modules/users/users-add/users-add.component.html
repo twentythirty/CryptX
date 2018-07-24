@@ -1,32 +1,32 @@
-<app-page-heading heading="Add new user">
+<app-page-heading [heading]="'users.add_new_user' | translate">
 </app-page-heading>
 <div class="split-content">
 <form [formGroup]="userForm">
   <app-content-block heading="User information">
     <app-input-item  class="form-item"
-        label="Name"
-        placeholder="Enter name"
+        [label]="'users.name' | translate"
+        [placeholder]="'users.enter_name' | translate"
         [formGroup]="userForm"
         formControlName="Name"
         [(ngModel)]="UserName">
     </app-input-item>
     <app-input-item  class="form-item"
-        label="Surname"
-        placeholder="Enter surname"
+        [label]="'users.surname' | translate"
+        [placeholder]="'users.enter_surname' | translate"
         [formGroup]="userForm"
         formControlName="Surname"
         [(ngModel)]="UserSurname">
     </app-input-item>
     <app-input-item  class="form-item"
-        label="Email"
-        placeholder="Enter email"
+        [label]="'users.email' | translate"
+        [placeholder]="'users.enter_email' | translate"
         [formGroup]="userForm"
         formControlName="Email"
         [(ngModel)]="UserEmail">
     </app-input-item>
   </app-content-block>
 </form>
-  <app-content-block heading="User roles">
+  <app-content-block [heading]="'users.user_roles' | translate">
   <form *ngIf="form" [formGroup]="form">
   <div class="check-list" [formArrayName]="'items'" [class.invalid]="!form.controls.selectedItems.valid">
     <div class="checkboxes-item" *ngFor="let control of form.controls.items.controls; let i = index;" [formGroup]="control">
@@ -35,10 +35,10 @@
       <input class="checkall" type="checkbox" formControlName="checkbox" id="{{ control.controls.id.value }}" (click)="click()">
       <label [class.checked]="checked" attr.for={{control.controls.id.value}}>
         <ng-container *ngIf="checked">
-          Select{{ labelTrue }}
+          {{'users.select' | translate}}
         </ng-container>
         <ng-container *ngIf="!checked">
-          Select{{ labelFalse }}
+          {{'users.select' | translate}}
         </ng-container>
       </label>
       </div>
@@ -53,6 +53,6 @@
 </div>
 <div class="sticky-controls-bar">
   <div class="wrapper">
-    <button class="btn submit" [disabled]=loading (click)="saveUser()">Submit</button>
+    <button class="btn submit" [disabled]=loading (click)="saveUser()">{{'common.submit' | translate}}</button>
   </div>
 </div>
