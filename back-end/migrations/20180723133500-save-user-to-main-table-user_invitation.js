@@ -47,16 +47,6 @@ module.exports = {
                 allowNull: true
             });
         }).then(() => {
-            return queryInterface.addColumn("user_invitation", "role_id", {
-                type: Sequelize.INTEGER,
-                references: {
-                    model: "role",
-                    key: "id"
-                },
-                onUpdate: "cascade",
-                onDelete: "cascade"
-            });
-        }).then(() => {
             return queryInterface.removeColumn("user_invitation", "last_name", {
                 type: Sequelize.STRING,
                 allowNull: true
