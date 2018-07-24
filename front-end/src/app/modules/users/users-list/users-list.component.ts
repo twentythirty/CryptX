@@ -32,7 +32,7 @@ export class UsersListComponent extends DataTableCommonManagerComponent implemen
       { column: 'last_name', nameKey: 'table.header.surname', filter: { type: 'text', sortable: true, rowData: [] }},
       { column: 'email', nameKey: 'table.header.email', filter: { type: 'text', sortable: true, rowData:[] }},
       { column: 'created_timestamp', nameKey: 'table.header.creation_date', filter: { type: 'date', sortable: true}},
-      { column: 'is_active', nameKey: 'table.header.status', filter: { type: 'boolean', sortable: true, rowData: [{value: true, label: 'Active'},{value: false, label: 'Inactive'}] }}
+      { column: 'is_active', nameKey: 'table.header.status', filter: { type: 'boolean', sortable: true, rowData: [] }}
     ],
     body: [],
   };
@@ -41,11 +41,7 @@ export class UsersListComponent extends DataTableCommonManagerComponent implemen
     'last_name',
     'email',
      new DateCellDataColumn({ column: 'created_timestamp' }),
-     'is_active',
-     /*new StatusCellDataColumn({ column: 'is_active', inputs: { classMap: {
-      'users.entity.inactive': StatusClass.DEACTIVATED,
-      'users.entity.active': StatusClass.ACTIVE,
-    }}}),*/
+     new StatusCellDataColumn({ column: 'is_active'}),
   ];
 
   constructor(
@@ -55,6 +51,11 @@ export class UsersListComponent extends DataTableCommonManagerComponent implemen
 
   ) {
     super(route);
+  }
+
+  ngOnInit() {
+    super.ngOnInit();
+    this.getFilterLOV();
   }
 
   getAllData(): void {
@@ -68,6 +69,16 @@ export class UsersListComponent extends DataTableCommonManagerComponent implemen
           })
         }
     });
+  }
+
+  getFilterLOV(): void {
+    this.usersDataSource.header.filter(
+      col => col.filter && (col.filter.type == 'text' || col.filter.type == 'boolean')
+    ).map(
+      col => {
+        col.filter.rowData$ = this.userService.getHeaderLOV(col.column)
+      }
+    )
   }
 
   public openRow(users: User): void {

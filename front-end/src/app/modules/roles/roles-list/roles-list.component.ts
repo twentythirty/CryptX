@@ -1,11 +1,12 @@
 import { Component } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import 'rxjs/add/operator/filter';
 
 import { RolesService } from '../../../services/roles/roles.service';
 
-import { TableDataSource } from '../../../shared/components/data-table/data-table.component';
+import { TableDataSource, TableDataColumn } from '../../../shared/components/data-table/data-table.component';
 import { DataTableCommonManagerComponent } from '../../../shared/components/data-table-common-manager/data-table-common-manager.component';
+import { Role } from "../../../shared/models/role";
 
 @Component({
   selector: 'app-roles-list',
@@ -19,11 +20,15 @@ export class RolesListComponent extends DataTableCommonManagerComponent {
     ],
     body: []
   };
-  rolesColumnsToShow = ['name'];
+
+  public rolesColumnsToShow: Array<string | TableDataColumn> = [
+    'name',
+  ];
 
   constructor(
     public route: ActivatedRoute,
-    private rolesService: RolesService
+    private rolesService: RolesService,
+    private router: Router
   ) {
     super(route);
   }
@@ -32,7 +37,18 @@ export class RolesListComponent extends DataTableCommonManagerComponent {
     this.rolesService.getAllRoles(this.requestData).subscribe(res => {
       this.rolesDataSource.body = res.roles;
       this.count = res.count;
+      console.log(res)
+      if(res.footer) {
+        this.rolesDataSource.footer = this.rolesColumnsToShow.map(col => {
+            let key = (typeof col == 'string') ? col : col.column;
+            return res.footer.find(f => f.name == key) || '';
+        })
+      }
     });
+  }
+
+  public openRow(roles: Role): void {
+    this.router.navigate(['/roles/edit', roles.id])
   }
 
 }

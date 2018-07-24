@@ -24,6 +24,7 @@ export interface TableDataSource {
   footer?: Array<{
     name: string
     value: string
+    template: string
     raw?: boolean
     label?: string
   }>;

@@ -5,16 +5,11 @@
   </a>
 </div>
 
-<app-data-table 
-  [dataSource]="rolesDataSource" 
-  [customRows]="true" 
-  [columnsToShow]="rolesColumnsToShow" 
-  (setFilter)="onSetFilter($event)">
-  <tr *ngFor="let item of rolesDataSource.body"  [routerLink]="['/roles/edit', item.id]">
-    <td *ngFor="let index of rolesColumnsToShow">
-      {{item[index]}}
-    </td>
-  </tr>
+<app-data-table
+  [dataSource]="rolesDataSource"
+  [columnsToShow]="rolesColumnsToShow"
+  (setFilter)="onSetFilter($event)"
+  (openRow)="openRow($event)">
 </app-data-table>
 
 <app-pagination 

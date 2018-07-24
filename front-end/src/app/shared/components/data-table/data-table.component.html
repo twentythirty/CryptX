@@ -70,7 +70,10 @@
     <tr>
       <td *ngFor="let item of getFooterData()">
         <ng-container *ngIf="item">
-          {{ item.value }} {{ item.raw ? item.label : item.label }}
+          <span class="upper-case"> {{ item.value}} {{item.template | translate}} </span>
+        </ng-container>
+        <ng-container *ngIf="!item">
+          -
         </ng-container>
       </td>
     </tr>

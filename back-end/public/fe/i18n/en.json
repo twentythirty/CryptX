@@ -6,7 +6,9 @@
       "last": "Last"
     },
     "delete": "Delete",
-    "submit": "Submit"
+    "submit": "Submit",
+    "confirm": "Confirm",
+    "cancel": "Cancel"
   },
   "table": {
     "header": {
@@ -78,7 +80,10 @@
     "role_information": "Role information",
     "enter_role_name": "Enter role name",
     "permissions": "Permissions",
-    "role_delete_confirm_msg": "Are you sure you want delete this role?"
+    "role_delete_confirm_msg": "Are you sure you want delete this role?",
+     "footer": {
+      "roles": "Names"
+     }
   },
 
   "liquidity": {
@@ -97,7 +102,12 @@
     "parameters": "Parameters",
     "transaction_asset": "Transaction asset",
     "quote_asset": "Quote asset",
-    "add_instrument": "Add instrument"
+    "add_instrument": "Add instrument",
+    "footer": {
+      "symbol": "Instruments",
+      "exchanges_connected": "Connected",
+      "exchanges_failed": "Failed"
+    }
   },
 
   "exchanges": {
@@ -113,16 +123,21 @@
       "402": "Blacklisted"
     },
     "footer": {
-      "capitalization": "${{ total }} TOTAL"
+      "capitalization": "${{ total }} total",
+      "status": "Blacklisted",
+      "is_deposit": "Deposit",
+      "is_base": "Base",
+      "symbol": "Items",
+      "is_cryptocurrency": "Cryptos"
     }
   },
 
   "users": {
     "users": "Users",
     "headline": "{{ count }} Users",
-    "status": {
-      "users.entity.inactive": "Active",
-      "users.entity.active": "Deactivated"
+    "entity": {
+      "inactive": "Deactivated",
+      "active": "Active"
     },
     "add_new_user": "Add new user",
     "user_information": "User information",
@@ -134,7 +149,14 @@
     "enter_email": "Enter email",
     "user_roles": "User roles",
     "select": "Select",
-    "user_deactivate_confirm_msg": "Are you sure you want {{buttonName}} this user?"
+    "user_deactivate_confirm_msg": "Are you sure you want {{buttonName}} this user?",
+    "footer": {
+      "first_name": "Names",
+      "last_name": "Surnames",
+      "email": "Emails",
+      "created_timestamp": "Dates",
+      "is_active": "Active"
+    }
   },
 
   "auth": {
