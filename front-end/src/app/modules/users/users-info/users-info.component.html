@@ -1,25 +1,26 @@
 <app-page-heading heading="{{userName}}">
 </app-page-heading>
+
 <div class="split-content">
 <form [formGroup]="userForm">
-<app-content-block *ngIf="user" heading="User information">
+<app-content-block *ngIf="user" [heading]="'users.user_information' | translate">
       <app-input-item  class="form-item"
-        label="Name"
-        placeholder="Enter name"
+        [label]="'users.name' | translate"
+        [placeholder]="'users.enter_name' | translate"
         [formGroup]="userForm"
         formControlName="Firstname"
         [(ngModel)]="user.first_name">
       </app-input-item>
       <app-input-item  class="form-item"
-        label="Surname"
-        placeholder="Enter surname"
+        [label]="'users.surname' | translate"
+        [placeholder]="'users.enter_surname' | translate"
         [formGroup]="userForm"
         formControlName="Lastname"
         [(ngModel)]="user.last_name">
       </app-input-item>
       <app-input-item class="form-item"
-        label="Email"
-        placeholder="Enter email"
+        [label]="'users.email' | translate"
+        [placeholder]="'users.enter_email' | translate"
         [formGroup]="userForm"
         formControlName="Email"
         [(ngModel)]="user.email">
@@ -27,7 +28,7 @@
   </app-content-block>
   </form>
 <form *ngIf="form" [formGroup]="form">
-<app-content-block heading="User roles">
+<app-content-block [heading]="'users.user_roles' | translate">
   <div class="check-list" [formArrayName]="'items'" [class.invalid]="!form.controls.selectedItems.valid">
     <div class="checkboxes-item" *ngFor="let control of form.controls.items.controls; let i = index;" [formGroup]="control">
       <label class="label-name">{{ control.controls.text.value }}</label>
@@ -35,10 +36,10 @@
       <input class="checkall" type="checkbox" formControlName="checkbox" id="{{ control.controls.id.value }}">
       <label [class.checked]="checked" attr.for={{control.controls.id.value}}>
         <ng-container *ngIf="checked">
-          Select{{ labelTrue }}
+          {{'users.select' | translate}}
         </ng-container>
         <ng-container *ngIf="!checked">
-          Select{{ labelFalse }}
+          {{'users.select' | translate }}
         </ng-container>
       </label>
       </div>
@@ -56,11 +57,11 @@
     <button *ngIf="buttonName" class="btn deactive" (click)="showDeactivateConfirm = true">
       {{buttonName}}</button>
     <button type="button" class="btn submit" (click)="saveUser()">
-      Submit</button>
+       {{'common.submit' | translate}}</button>
   </div>
 </app-form-action-bar>
 <app-confirm *ngIf="showDeactivateConfirm" 
-  heading="Are you sure you want {{buttonName}} this user?" 
+  [heading]="'users.user_deactivate_confirm_msg' | translate: {buttonName: buttonName}" 
   (onReject)="closeDeactivateConfirm()"
   (onConfirm)="deactivateUser()">
 </app-confirm>
