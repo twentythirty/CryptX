@@ -158,7 +158,7 @@ export class AuthService {
   }
 
   changeInfo (new_info: Object) {
-    return this.http.post<any>(this.baseUrl + 'users/me/edit', new_info).pipe(
+    return this.http.post<any>(this.baseUrl + 'users/me/change_password', new_info).pipe(
       tap(response => {
         this.user = response.user;
       })

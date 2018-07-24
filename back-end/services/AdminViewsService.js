@@ -480,12 +480,12 @@ const fetchRecipeRunDetailsViewFooter = async (where_clause = '') => {
     SELECT
         COUNT(id) AS id,
         COUNT(DISTINCT transaction_asset_id) AS transaction_asset,
-        COUNT(DISTINCT qoute_asset_id) AS qoute_asset,
+        COUNT(DISTINCT quote_asset_id) AS quote_asset,
         COUNT(DISTINCT target_exchange_id) AS target_exchange
     FROM	(SELECT
             id,
             transaction_asset_id,
-            qoute_asset_id,
+            quote_asset_id,
             target_exchange_id
         FROM av_recipe_run_details ${builder.whereOrEmpty(where_clause)}) AS inner_av
     `;

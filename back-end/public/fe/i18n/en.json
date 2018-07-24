@@ -116,6 +116,13 @@
       "capitalization": "${{ total }} TOTAL"
     }
   },
+  "auth": {
+    "user_information": "User information",
+    "old_password": "Old password",
+    "new_password": "New password",
+    "repeat_password": "Repeat new password",
+    "enter_here": "Enter here"
+  },
   "error": {
 
   }

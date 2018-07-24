@@ -343,8 +343,9 @@ module.exports.getRecipeRunsColumnLOV = getRecipeRunsColumnLOV;
 
 const getRecipeRunDetail = async function (req, res) {
 
-  /* let recipe_detail_id = req.params.recipe_detail_id;
+  const recipe_detail_id = req.params.recipe_detail_id;
 
+  /*
   let [err, recipe_run_detail] = await to(RecipeRunDetail.findOne({
     where: {
       id: recipe_detail_id
@@ -354,6 +355,12 @@ const getRecipeRunDetail = async function (req, res) {
   if (err) return ReE(res, err.message, 422);
   if (recipe_run_detail)
     return ReE(res, "Recipe detail not found", 422) */
+
+  const [ err, recipe_detail ] = await to(adminViewsService.fetchRecipeRunDetailView(recipe_detail_id));
+  if(err) return ReE(res, err.message, 422);
+  if(!recipe_detail) return ReE(res, `Recipe detail wasno found with id ${recipe_detail_id}`, 422);
+
+
   // mock data below
   let recipe_run_detail = {
     "id": 1,
@@ -368,7 +375,7 @@ const getRecipeRunDetail = async function (req, res) {
   }
 
   return ReS(res, {
-    recipe_detail: recipe_run_detail
+    recipe_detail
   })
 };
 module.exports.getRecipeRunDetail = getRecipeRunDetail;
@@ -397,7 +404,7 @@ const getRecipeRunDetails = async function (req, res) {
   [ err, footer ] = await to(adminViewsService.fetchRecipeRunDetailsViewFooter(sql_where));  
   if(err) return ReE(res, err.message, 422);
 
-  
+  const { data: recipe_details, total: count } = result;
 
   // mock data below
 
@@ -413,15 +420,31 @@ const getRecipeRunDetails = async function (req, res) {
     "target_exchange": "bitstamp"
   }));
 
-  footer = create_mock_footer(mock_detail[0], 'recipe_details');
+  //footer = create_mock_footer(mock_detail[0], 'recipe_details');
 
   return ReS(res, {
-    recipe_details: mock_detail,
+    recipe_details,
     footer,
-    count: 20
+    count
   })
 };
 module.exports.getRecipeRunDetails = getRecipeRunDetails;
+
+const getRecipeRunDetailsColumnLOV = async (req, res) => {
+
+  const field_name = req.params.field_name;
+  const { query } = _.isPlainObject(req.body) ? req.body : { query: '' };
+
+  const [ err, field_vals ] = await to(adminViewsService.fetchRecipeRunDetailsViewHeaderLOV(field_name, query));
+  if(err) return ReE(res, err.message, 422);
+
+  return ReS(res, {
+    query: query,
+    lov: field_vals
+  })
+
+};
+module.exports.getRecipeRunDetailsColumnLOV = getRecipeRunDetailsColumnLOV;
 
 
 const getRecipeOrder = async function (req, res) {
