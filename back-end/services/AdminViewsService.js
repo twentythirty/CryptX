@@ -9,6 +9,7 @@ const AVInstrument = require('../models').AVInstrument;
 const AVInvestmentRun = require('../models').AVInvestmentRun;
 const AVRecipeRun = require('../models').AVRecipeRun;
 const AVRecipeRunDetail = require('../models').AVRecipeRunDetail;
+const AVInstrumentExchange = require('../models').AVInstrumentExchange;
 
 const TABLE_LOV_FIELDS = {
     'av_users': [
@@ -73,11 +74,11 @@ const fetchViewDataWithCount = async (model, seq_query = {}) => {
 }
 const fetchModelData = async (model, seq_query = {}) => model.findAll(seq_query)
 const fetchModelCount = async (model) => model.count()
-const fetchSingleEntity = async (model, id) => {
+const fetchSingleEntity = async (model, id, alias = 'id') => {
 
     return _.first(await fetchModelData(model, {
         where: {
-            id: id
+            [alias]: id
         }
     }))
 }
@@ -151,6 +152,12 @@ const fetchInstrumentsViewDataWithCount = async (seq_query = {}) => {
     return fetchViewDataWithCount(AVInstrument, seq_query);
 }
 module.exports.fetchInstrumentsViewDataWithCount = fetchInstrumentsViewDataWithCount;
+
+const fetchInstrumentExchangesViewDataWithCount = async (seq_query = {}) => {
+
+    return fetchViewDataWithCount(AVInstrumentExchange, seq_query);
+}
+module.exports.fetchInstrumentExchangesViewDataWithCount = fetchInstrumentExchangesViewDataWithCount;
 
 const fetchInvestmentRunsViewDataWithCount = async (seq_query = {}) => {
 
@@ -276,6 +283,23 @@ const fetchInstrumentsViewFooter = async (where_clause = '') => {
         builder.queryReturnRowToFooterObj(footer), 'instruments')
 }
 module.exports.fetchInstrumentsViewFooter = fetchInstrumentsViewFooter;
+
+const fetchInstrumentExchangesViewFooter = async (where_clause = '') => {
+
+    const query = builder.joinQueryParts([
+        builder.selectCountDistinct('exchange_name', 'exchange_names', 'av_instruments_exchanges', where_clause),
+        builder.selectCountDistinct('external_instrument', 'external_instruments', 'av_instruments_exchanges', where_clause)
+    ], [
+        'exchange_names',
+        'external_instruments'
+    ])
+
+    const footer = (await sequelize.query(query))[0];
+
+    return builder.addFooterLabels(
+        builder.queryReturnRowToFooterObj(footer), 'instruments_exchanges')
+}
+module.exports.fetchInstrumentExchangesViewFooter = fetchInstrumentExchangesViewFooter;
 
 const fetchLiquidityViewFooter = async () => {
     // mock data below
@@ -422,7 +446,7 @@ const fetchInvestmentRunsViewFooter = async (where_clause = '') => {
     `;
 
     const footer = (await sequelize.query(query))[0];
-    
+
     return builder.addFooterLabels(
         builder.queryReturnRowToFooterObj(footer), 'investment_runs');
 }
@@ -444,7 +468,7 @@ const fetchRecipeRunsViewFooter = async (where_clause = '') => {
     `;
 
     const footer = (await sequelize.query(query))[0];
-    
+
     return builder.addFooterLabels(
         builder.queryReturnRowToFooterObj(footer), 'recipe_runs');
 }
@@ -467,7 +491,7 @@ const fetchRecipeRunDetailsViewFooter = async (where_clause = '') => {
     `;
 
     const footer = (await sequelize.query(query))[0];
-    
+
     return builder.addFooterLabels(
         builder.queryReturnRowToFooterObj(footer), 'recipe_run_details');
 }

@@ -588,7 +588,7 @@
       }
     },
     "/instruments/{instrument_id}/exchanges": {
-      "get": {
+      "post": {
         "tags": [
           "instrument"
         ],
@@ -4461,42 +4461,45 @@
     "InstrumentExchangeMapExpanded": {
       "description": "Servers response with basic instrument information.",
       "type": "object",
-      "properties": {
-        "success": {
-          "type": "boolean",
-          "example": true
-        },
-        "mapping_data": {
-          "type": "array",
-          "items": {
-            "allOf": [
-              {
-                "$ref": "#/definitions/InstrumentExchangeMap"
-              },
-              {
-                "properties": {
-                  "exchange_name": {
-                    "type": "string",
-                    "example": "Bitstamp0"
-                  },
-                  "last_week_vol": {
-                    "type": "number",
-                    "example": 86100
-                  },
-                  "last_updated": {
-                    "type": "number",
-                    "example": 1531486061727
-                  },
-                  "liquidity_rules": {
-                    "type": "number",
-                    "example": 3
-                  }
+        "allOf": [
+          {
+              "$ref": "#/definitions/ListResponse"
+          },
+          {
+            "properties": {
+              "mapping_data": {
+                "type": "array",
+                "items": {
+                  "allOf": [
+                    {
+                      "$ref": "#/definitions/InstrumentExchangeMap"
+                    },
+                    {
+                      "properties": {
+                        "exchange_name": {
+                          "type": "string",
+                          "example": "Bitstamp0"
+                        },
+                        "last_week_vol": {
+                          "type": "number",
+                          "example": 86100
+                        },
+                        "last_updated": {
+                          "type": "number",
+                          "example": 1531486061727
+                        },
+                        "liquidity_rules": {
+                          "type": "number",
+                          "example": 3
+                        }
+                      }
+                    }
+                  ]
                 }
               }
-            ]
+            }
           }
-        }
-      }
+        ]
     },
     "InstrumentExchangeMapResponse": {
       "description": "Servers response with basic instrument information.",

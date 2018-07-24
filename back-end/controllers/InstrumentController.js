@@ -2,6 +2,7 @@
 
 const instrumentService = require('../services/InstrumentsService');
 const adminViewService = require('../services/AdminViewsService');
+const adminViewUtils = require('../utils/AdminViewUtils');
 
 const createInstrument = async function (req, res) {
  
@@ -127,23 +128,20 @@ module.exports.mapInstrumentsWithExchanges = mapInstrumentsWithExchanges;
 
 const getInstrumentExchanges = async function (req, res) {
  
-  let instrument_id = req.params.instrument_id;
+  const instrument_id = req.params.instrument_id;
+  const seq_query = Object.assign({ where: {} }, req.seq_query);
+  //add instrument id to search conditions
+  seq_query.where['instrument_id'] = instrument_id;
+  const { data: instrument_exchanges, total: count} = await adminViewService.fetchInstrumentExchangesViewDataWithCount(seq_query);
 
-  // mock data below
-  let mapping_data = [...Array(8)].map((map, index) => ({
-    instrument_id,
-    exchange_id: index,
-    exchange_name: "Bitstamp" + index,
-    external_instrument: "BTC/XRP",
-    current_price: 7422.46,
-    last_day_vol: 12300,
-    last_week_vol: 86100,
-    last_updated: 1531486061727,
-    liquidity_rules: 3
-  }));
+  //add instrument id to search condition
+  let sql_where = adminViewUtils.addToWhere(req.sql_where, `instrument_id = ${instrument_id}`);
+  const instrument_exchanges_footer = await adminViewService.fetchInstrumentExchangesViewFooter(sql_where)
 
   return ReS(res, {
-    mapping_data
+    count,
+    mapping_data: instrument_exchanges,
+    footer: instrument_exchanges_footer
   });
 };
 module.exports.getInstrumentExchanges = getInstrumentExchanges;
