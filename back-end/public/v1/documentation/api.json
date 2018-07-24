@@ -626,7 +626,7 @@
         "tags": [
           "instrument"
         ],
-        "summary": "Get list of exchanges instrument can be mapped with",
+        "summary": "**!!!ROUTE DEPRECATED!!!**",
         "description": "Get list of exchanges instrument can be mapped with",
         "parameters": [
           {
@@ -658,7 +658,7 @@
         "tags": [
           "instrument"
         ],
-        "summary": "Get list of exchanges instrument can be mapped with",
+        "summary": "**!!!ROUTE DEPRECATED!!!**",
         "description": "Get list of exchanges instrument can be mapped with",
         "produces": [
           "application/json"
