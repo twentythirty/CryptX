@@ -25,6 +25,43 @@ describe('InstrumentService testing:', () => {
         quote_asset_id: MOCK_ASSET_2.id
     }
     const MOCK_ASSETS = [MOCK_ASSET_1, MOCK_ASSET_2];
+    const MOCK_EXISTING_REQUIREMENT_1 = {
+        id: 1,
+        instrument_id: 1,
+        minimum_volume: _.random(),
+        periodicity_in_days: _.random(7, 21, false),
+        exchange: null
+    };
+    const MOCK_EXISTING_REQUIREMENT_2 = {
+        id: 2,
+        instrument_id: 2,
+        minimum_circulation: _.random(),
+        periodicity: _.random(7, 21, false),
+        exchange: 1
+    };
+    const MOCK_REQUIREMENT_1 = {
+        instrument_id: 1,
+        periodicity: _.random(7, 21, false),
+        minimum_circulation: _.random(),
+        exchange_id: 1
+    };
+    const MOCK_REQUIREMENT_2 = {
+        instrument_id: 2,
+        periodicity: _.random(7, 21, false),
+        minimum_circulation: _.random(),
+        exchange_id: 1
+    };
+    const MOCK_REQUIREMENT_3 = {
+        instrument_id: 3,
+        periodicity: _.random(7, 21, false),
+        minimum_circulation: _.random()
+    };
+    const MOCK_REQUIREMENT_4 = {
+        instrument_id: 2,
+        periodicity: _.random(7, 21, false),
+        minimum_circulation: _.random(),
+        exchange_id: 2
+    };
 
     //ensure working DB before test
     before(done => {
@@ -50,6 +87,21 @@ describe('InstrumentService testing:', () => {
 
                 return mock_mapping;
             })
+            sinon.stub(InstrumentLiquidityRequirement, 'findAll').callsFake(options => {
+                const { instrument_id } = options.where;
+
+                switch(instrument_id) {
+                    case 1:
+                        return Promise.resolve([MOCK_EXISTING_REQUIREMENT_1]);
+                    case 2:
+                        return Promise.resolve([MOCK_EXISTING_REQUIREMENT_2]);
+                    default:
+                        return Promise.resolve([]);
+                }
+            });
+            sinon.stub(InstrumentLiquidityRequirement, 'create').callsFake(requirement => {
+                return Promise.resolve(Object.assign({ id: 4 }, requirement));
+            })
 
             done();
         });
@@ -58,7 +110,9 @@ describe('InstrumentService testing:', () => {
     after(done => {
         _.forEach([
             Asset.findAll,
-            InstrumentExchangeMapping.build
+            InstrumentExchangeMapping.build,
+            InstrumentLiquidityRequirement.findAll,
+            InstrumentLiquidityRequirement.create
         ], model => {
             if (model.restore) {
                 model.restore();
@@ -71,6 +125,7 @@ describe('InstrumentService testing:', () => {
     const instrumentService = require('../../services/InstrumentsService');
     const Instrument = require('../../models').Instrument;
     const InstrumentExchangeMapping = require('../../models').InstrumentExchangeMapping;
+    const InstrumentLiquidityRequirement = require('../../models').InstrumentLiquidityRequirement;
     const Asset = require('../../models').Asset;
     const ccxtUtils = require('../../utils/CCXTUtils');
 
@@ -210,6 +265,64 @@ describe('InstrumentService testing:', () => {
 
                 return fulfilled;
             });
+        });
+
+    });
+
+    describe(' the method createLiquidityRequirement shall ', () => {
+
+        it('exists', () => {
+            chai.expect(instrumentService.createLiquidityRequirement).to.exist;
+        });
+
+        it('reject bad args', () => {
+            return Promise.all(_.map([
+                ['ads', -1, '321'],
+                [null, 123, 123],
+                [43, 'a', 2],
+                [45, -1, 5],
+                [46, 2, {}]
+            ], args => {
+                chai.assert.isRejected(instrumentService.createLiquidityRequirement(...args));
+            }));
+        });
+
+        it('reject saving when a requirement exists for all exchanges', () => {
+            return chai.assert.isRejected(instrumentService.createLiquidityRequirement(...Object.values(MOCK_REQUIREMENT_1)));
+        });
+
+        it('reject saving when a requirement exists for a specific exchange', () => {
+            return chai.assert.isRejected(instrumentService.createLiquidityRequirement(...Object.values(MOCK_REQUIREMENT_2)));
+        });
+
+        it('create a requirement when it does not exist', () => {
+            return chai.assert.isFulfilled(instrumentService.createLiquidityRequirement(...Object.values(MOCK_REQUIREMENT_3))
+            .then(requirement => {
+
+                chai.assert.isObject(requirement);
+                chai.expect(requirement.instrument_id).to.equal(MOCK_REQUIREMENT_3.instrument_id);
+                chai.expect(requirement.minimum_volume).to.equal(MOCK_REQUIREMENT_3.minimum_circulation);
+                chai.expect(requirement.periodicity_in_days).to.equal(MOCK_REQUIREMENT_3.periodicity);
+                chai.expect(requirement.exchange).to.be.null;
+
+                return requirement;
+
+            }));
+        });
+
+        it('create a requirement when one already exists, but for a different exchange', () => {
+            return chai.assert.isFulfilled(instrumentService.createLiquidityRequirement(...Object.values(MOCK_REQUIREMENT_4))
+            .then(requirement => {
+
+                chai.assert.isObject(requirement);
+                chai.expect(requirement.instrument_id).to.equal(MOCK_REQUIREMENT_4.instrument_id);
+                chai.expect(requirement.minimum_volume).to.equal(MOCK_REQUIREMENT_4.minimum_circulation);
+                chai.expect(requirement.periodicity_in_days).to.equal(MOCK_REQUIREMENT_4.periodicity);
+                chai.expect(requirement.exchange).to.equal(MOCK_REQUIREMENT_4.exchange_id);
+
+                return requirement;
+
+            }));
         });
 
     });

@@ -159,10 +159,14 @@ const createLiquidityRequirement = async function (req, res) {
   } = req.body;
 
   if (!instrument_id || 
-    !exchange_id || 
+    //!exchange_id || 
     !periodicity || 
     !minimum_circulation)
     return ReE(res, "Please fill all values: instrument_id, exchange_id, periodicity, minimum_circulation", 422);
+  
+  const [ err, liquidity_requirement ] = to(instrumentService.createLiquidityRequirement(instrument_id, periodicity, minimum_circulation, exchange_id || null));
+  if(err) return ReE(res, err.message, 422);
+
 
   // mock data below
 

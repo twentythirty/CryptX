@@ -3,6 +3,7 @@
 const Instrument = require('../models').Instrument;
 const InstrumentExchangeMapping = require('../models').InstrumentExchangeMapping;
 const Asset = require('../models').Asset;
+const InstrumentLiquidityRequirement = require('../models').InstrumentLiquidityRequirement;
 const ccxtUtil = require('../utils/CCXTUtils');
 
 
@@ -110,3 +111,39 @@ const addInstrumentExchangeMappings = async (instrument_id, exchange_mappings) =
     return saved_models;
 };
 module.exports.addInstrumentExchangeMappings = addInstrumentExchangeMappings;
+
+const createLiquidityRequirement = async (instrument_id, periodicity, minimum_circulation, exchange_id = null) => {
+
+    if(!_.isNumber(instrument_id) || 
+    (!_.isNumber(periodicity) || periodicity < 1) || 
+    (!_.isNumber(minimum_circulation) || minimum_circulation < 0)) {
+        TE('instrument_id, periodicity or minimum_circulation are not valid.');
+    }
+    
+    const existingRequirements = await InstrumentLiquidityRequirement.findAll({
+        where: {
+            instrument_id: instrument_id
+        }
+    });
+
+    for(let requirement of existingRequirements) {
+        const exchange = requirement.exchange;
+
+        if(!exchange) TE(`A requirement for instrument with id ${instrument_id} already exists for all exchanges`);
+    
+        if(exchange === exchange_id) TE(`A requirement for instrument with id ${instrument_id} and exchange with id ${exchange_id} already exists`);
+    }
+
+    const [ err, liquidity_requirement ] = await to(InstrumentLiquidityRequirement.create({
+        instrument_id,
+        minimum_volume: minimum_circulation,
+        periodicity_in_days: periodicity,
+        exchange: exchange_id
+    }));
+
+    if(err) TE(`error occurred while saving models ${models}: ${error}`);
+
+    return liquidity_requirement;
+
+};
+module.exports.createLiquidityRequirement = createLiquidityRequirement;
