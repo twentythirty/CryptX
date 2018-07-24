@@ -9,6 +9,7 @@ const AVInstrument = require('../models').AVInstrument;
 const AVInvestmentRun = require('../models').AVInvestmentRun;
 const AVRecipeRun = require('../models').AVRecipeRun;
 const AVRecipeRunDetail = require('../models').AVRecipeRunDetail;
+const AVInstrumentExchange = require('../models').AVInstrumentExchange;
 
 const TABLE_LOV_FIELDS = {
     'av_users': [
@@ -73,11 +74,11 @@ const fetchViewDataWithCount = async (model, seq_query = {}) => {
 }
 const fetchModelData = async (model, seq_query = {}) => model.findAll(seq_query)
 const fetchModelCount = async (model) => model.count()
-const fetchSingleEntity = async (model, id) => {
+const fetchSingleEntity = async (model, id, alias = 'id') => {
 
     return _.first(await fetchModelData(model, {
         where: {
-            id: id
+            [alias]: id
         }
     }))
 }
@@ -151,6 +152,12 @@ const fetchInstrumentsViewDataWithCount = async (seq_query = {}) => {
     return fetchViewDataWithCount(AVInstrument, seq_query);
 }
 module.exports.fetchInstrumentsViewDataWithCount = fetchInstrumentsViewDataWithCount;
+
+const fetchInstrumentExchangesViewDataWithCount = async (seq_query = {}) => {
+
+    return fetchViewDataWithCount(AVInstrumentExchange, seq_query);
+}
+module.exports.fetchInstrumentExchangesViewDataWithCount = fetchInstrumentExchangesViewDataWithCount;
 
 const fetchInvestmentRunsViewDataWithCount = async (seq_query = {}) => {
 
@@ -277,6 +284,23 @@ const fetchInstrumentsViewFooter = async (where_clause = '') => {
 }
 module.exports.fetchInstrumentsViewFooter = fetchInstrumentsViewFooter;
 
+const fetchInstrumentExchangesViewFooter = async (where_clause = '') => {
+
+    const query = builder.joinQueryParts([
+        builder.selectCountDistinct('exchange_name', 'exchange_names', 'av_instruments_exchanges', where_clause),
+        builder.selectCountDistinct('external_instrument', 'external_instruments', 'av_instruments_exchanges', where_clause)
+    ], [
+        'exchange_names',
+        'external_instruments'
+    ])
+
+    const footer = (await sequelize.query(query))[0];
+
+    return builder.addFooterLabels(
+        builder.queryReturnRowToFooterObj(footer), 'instruments_exchanges')
+}
+module.exports.fetchInstrumentExchangesViewFooter = fetchInstrumentExchangesViewFooter;
+
 const fetchLiquidityViewFooter = async () => {
     // mock data below
     /* let footer = [
@@ -402,7 +426,7 @@ module.exports.fetchLiquidityExchangesViewFooter = fetchLiquidityExchangesViewFo
 
 const fetchInvestmentRunsViewFooter = async (where_clause = '') => {
 
-    const query = `
+    const raw_query = `
     SELECT
         COUNT(id) AS id,
         SUM(completed) AS completed_timestamp,
@@ -421,8 +445,26 @@ const fetchInvestmentRunsViewFooter = async (where_clause = '') => {
 	    FROM av_investment_runs ${builder.whereOrEmpty(where_clause)}) AS inner_av
     `;
 
+    const view = 'av_investment_runs';
+
+    const query = builder.joinQueryParts([
+        builder.selectCount(view, 'id', where_clause),
+        builder.selectCount(view, 'completed_timestamp', 'completed_timestamp IS NOT NULL'),
+        builder.selectCountDistinct('user_created', 'user_created', view, where_clause),
+        builder.selectCountDistinct('strategy_type', 'strategy_type', view, where_clause),
+        builder.selectCount(view, 'is_simulated', 'is_simulated IS FALSE'),
+        builder.selectCount(view, 'status', `status=${MODEL_CONST.INVESTMENT_RUN_STATUSES.OrdersExecuting}`)
+    ], [
+        'id',
+        'completed_timestamp',
+        'user_created',
+        'strategy_type',
+        'is_simulated',
+        'status'
+    ]);
+
     const footer = (await sequelize.query(query))[0];
-    
+
     return builder.addFooterLabels(
         builder.queryReturnRowToFooterObj(footer), 'investment_runs');
 }
@@ -430,7 +472,7 @@ module.exports.fetchInvestmentRunsViewFooter = fetchInvestmentRunsViewFooter;
 
 const fetchRecipeRunsViewFooter = async (where_clause = '') => {
 
-    const query = `
+    const raw_query = `
     SELECT
         COUNT(id) AS id,
         COUNT(DISTINCT user_created) as user_created,
@@ -443,8 +485,20 @@ const fetchRecipeRunsViewFooter = async (where_clause = '') => {
         FROM av_recipe_runs ${builder.whereOrEmpty(where_clause)}) AS inner_av
     `;
 
+    const view = 'av_recipe_runs';
+
+    const query = builder.joinQueryParts([
+        builder.selectCount(view, 'id', where_clause),
+        builder.selectCountDistinct('user_created', 'user_created', view, where_clause),
+        builder.selectCount(view, 'approval_status', `approval_status=${MODEL_CONST.RECIPE_RUN_STATUSES.Pending}`)
+    ], [
+        'id',
+        'user_created',
+        'approval_status'
+    ]);
+
     const footer = (await sequelize.query(query))[0];
-    
+
     return builder.addFooterLabels(
         builder.queryReturnRowToFooterObj(footer), 'recipe_runs');
 }
@@ -452,7 +506,7 @@ module.exports.fetchRecipeRunsViewFooter = fetchRecipeRunsViewFooter;
 
 const fetchRecipeRunDetailsViewFooter = async (where_clause = '') => {
 
-    const query = `
+    const raw_query = `
     SELECT
         COUNT(id) AS id,
         COUNT(DISTINCT transaction_asset_id) AS transaction_asset,
@@ -466,8 +520,22 @@ const fetchRecipeRunDetailsViewFooter = async (where_clause = '') => {
         FROM av_recipe_run_details ${builder.whereOrEmpty(where_clause)}) AS inner_av
     `;
 
+    const view = 'av_recipe_run_details';
+
+    const query = builder.joinQueryParts([
+        builder.selectCount(view, 'id',where_clause),
+        builder.selectCountDistinct('transaction_asset_id', 'transaction_asset', view, where_clause),
+        builder.selectCountDistinct('quote_asset_id', 'quote_asset', view, where_clause),
+        builder.selectCountDistinct('target_exchange_id', 'target_exchange', view, where_clause)
+    ], [
+        'id',
+        'transaction_asset',
+        'quote_asset',
+        'target_exchange'
+    ]);
+
     const footer = (await sequelize.query(query))[0];
-    
+
     return builder.addFooterLabels(
         builder.queryReturnRowToFooterObj(footer), 'recipe_run_details');
 }

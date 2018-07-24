@@ -104,7 +104,7 @@ const addInstrumentExchangeMappings = async (instrument_id, exchange_mappings) =
     const [error, saved_models] = await to(Promise.all(_.map(models, m => m.save())));
 
     if (error) {
-        TE(`error occurred whilesaving models ${models}: ${error}`);
+        TE(`error occurred while saving models ${models}: ${error}`);
     }
 
     return saved_models;

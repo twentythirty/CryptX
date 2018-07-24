@@ -116,6 +116,34 @@
       "capitalization": "${{ total }} TOTAL"
     }
   },
+
+  "users": {
+    "users": "Users",
+    "headline": "{{ count }} Users",
+    "status": {
+      "users.entity.inactive": "Active",
+      "users.entity.active": "Deactivated"
+    },
+    "add_new_user": "Add new user",
+    "user_information": "User information",
+    "name": "Name",
+    "enter_name": "Enter name",
+    "surname": "Surname",
+    "enter_surname": "Enter surname",
+    "email": "Email",
+    "enter_email": "Enter email",
+    "user_roles": "User roles",
+    "select": "Select",
+    "user_deactivate_confirm_msg": "Are you sure you want {{buttonName}} this user?"
+  },
+
+  "auth": {
+    "user_information": "User information",
+    "old_password": "Old password",
+    "new_password": "New password",
+    "repeat_password": "Repeat new password",
+    "enter_here": "Enter here"
+  },
   "error": {
 
   }
