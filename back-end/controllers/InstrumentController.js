@@ -4,6 +4,8 @@ const instrumentService = require('../services/InstrumentsService');
 const adminViewService = require('../services/AdminViewsService');
 const adminViewUtils = require('../utils/AdminViewUtils');
 
+const InstrumentLiquidityRequirement = require('../models').InstrumentLiquidityRequirement;
+
 const createInstrument = async function (req, res) {
  
   let {
@@ -267,10 +269,25 @@ module.exports.getLiquidityRequirementsColumnLOV = getLiquidityRequirementsColum
 
 const getLiquidityRequirementExchanges = async function (req, res) {
  
-  let liquidity_requirement_id = req.params.liquidity_requirement_id
+  const liquidity_requirement_id = req.params.liquidity_requirement_id
 
-  if (!liquidity_requirement_id)
-    return ReE(res, "Not found", 422);
+  let [ err, liquidity_requirement ] = await to(InstrumentLiquidityRequirement.findById(liquidity_requirement_id));
+  if(err) return ReE(res, err.message, 422);
+  if(!liquidity_requirement) return ReE(res, `Liquidity requirement with id ${liquidity_requirement_id} was not found`, 422);
+
+  const seq_query = {
+    where: { instrument_id: liquidity_requirement.instrument_id }
+  };
+
+  let result;
+  [ err, result ] = await to(adminViewService.fetchLiquidityExchangesViewDataWithCount(seq_query));
+  if(err) return ReE(res, err.message, 422);
+
+  const { data: exchanges, total: count } = result;
+
+  let footer = [];
+  [ err, footer ] = await to(adminViewService.fetchLiquidityExchangesViewFooter(`instrument_id=${liquidity_requirement.instrument_id}`));
+  if(err) return ReE(res, err.message, 422);
 
   // mock data below
 
@@ -286,11 +303,11 @@ const getLiquidityRequirementExchanges = async function (req, res) {
     passes: true 
   }));
 
-  let footer = create_mock_footer(liquidity_mock, 'liquidity')
+  //let footer = create_mock_footer(liquidity_mock, 'liquidity')
 
   return ReS(res, {
-    exchanges: liquidity_mock,
-    count: liquidity_mock.length,
+    exchanges,
+    count,
     footer
   });
 };
