@@ -162,11 +162,10 @@ const createLiquidityRequirement = async function (req, res) {
     //!exchange_id || 
     !periodicity || 
     !minimum_circulation)
-    return ReE(res, "Please fill all values: instrument_id, exchange_id, periodicity, minimum_circulation", 422);
+    return ReE(res, "Please fill all values: instrument_id, periodicity, minimum_circulation", 422);
   
-  const [ err, liquidity_requirement ] = to(instrumentService.createLiquidityRequirement(instrument_id, periodicity, minimum_circulation, exchange_id || null));
+  const [ err, liquidity_requirement ] = await to(instrumentService.createLiquidityRequirement(instrument_id, periodicity, minimum_circulation, exchange_id));
   if(err) return ReE(res, err.message, 422);
-
 
   // mock data below
 
@@ -183,17 +182,18 @@ const createLiquidityRequirement = async function (req, res) {
   };
 
   return ReS(res, {
-    liquidity_requirement: liquidity_mock
+    liquidity_requirement
   });
 };
 module.exports.createLiquidityRequirement = createLiquidityRequirement;
 
 const getLiquidityRequirement = async function (req, res) {
  
-  let liquidity_req_id = req.params.liquidity_requirement_id
+  const liquidity_req_id = req.params.liquidity_requirement_id
 
-  if (!liquidity_req_id)
-    return ReE(res, "Not found", 422);
+  const [ err, liquidity_requirement ] = await to(adminViewService.fetchInstrumentLiquidityRequirementView(liquidity_req_id));
+  if(err) return ReE(res, err.message, 422);
+  if(!liquidity_requirement) return ReE(res, `Liquidity requirement with id ${liquidity_req_id} was not found`);
 
   // mock data below
 
@@ -209,7 +209,7 @@ const getLiquidityRequirement = async function (req, res) {
   };
 
   return ReS(res, {
-    liquidity_requirement: liquidity_mock
+    liquidity_requirement
   });
 };
 module.exports.getLiquidityRequirement = getLiquidityRequirement;
@@ -217,8 +217,18 @@ module.exports.getLiquidityRequirement = getLiquidityRequirement;
 
 const getLiquidityRequirements = async function (req, res) {
  
-  // mock data below
+  const { seq_query, sql_where } = req;
 
+  let [ err, result ] = await to(adminViewService.fetchInstrumentLiquidityRequirementsViewDataWithCount(seq_query));
+  if(err) return ReE(res, err.message, 422);
+
+  let footer = [];
+  [ err, footer ] = await to(adminViewService.fetchLiquidityViewFooter(sql_where));
+  if(err) return ReE(res, err.message, 422);
+
+  const { total: count, data: liquidity_requirements } = result;
+
+  // mock data below
   let liquidity_mock = [...Array(20)].map((map, index) => ({
     id: index,
     instrument: "BTC/ETH",
@@ -230,16 +240,30 @@ const getLiquidityRequirements = async function (req, res) {
     exchange_pass: 2
   }));
 
-  let footer = await adminViewService.fetchLiquidityViewFooter();
+  //let footer = await adminViewService.fetchLiquidityViewFooter();
 
   return ReS(res, {
-    liquidity_requirements: liquidity_mock,
-    count: liquidity_mock.length,
+    liquidity_requirements,
+    count,
     footer  
   });
 };
 module.exports.getLiquidityRequirements = getLiquidityRequirements;
 
+const getLiquidityRequirementsColumnLOV = async function (req, res) {
+
+  const field_name = req.params.field_name
+  const { query } = _.isPlainObject(req.body)? req.body : { query: '' };
+
+  const field_vals = await adminViewService.fetchInstrumentLiquidityRequirementsViewHeaderLOV(field_name, query);
+
+  return ReS(res, {
+    query: query,
+    lov: field_vals
+  })
+
+}
+module.exports.getLiquidityRequirementsColumnLOV = getLiquidityRequirementsColumnLOV;
 
 const getLiquidityRequirementExchanges = async function (req, res) {
  
