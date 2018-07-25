@@ -290,14 +290,14 @@ const fetchInstrumentExchangesViewFooter = async (where_clause = '') => {
         builder.selectCountDistinct('exchange_name', 'exchange_names', 'av_instruments_exchanges', where_clause),
         builder.selectCountDistinct('external_instrument', 'external_instruments', 'av_instruments_exchanges', where_clause)
     ], [
-        'exchange_names',
-        'external_instruments'
+        'exchanges',
+        'identifiers'
     ])
 
     const footer = (await sequelize.query(query))[0];
 
     return builder.addFooterLabels(
-        builder.queryReturnRowToFooterObj(footer), 'instruments_exchanges')
+        builder.queryReturnRowToFooterObj(footer), 'table')
 }
 module.exports.fetchInstrumentExchangesViewFooter = fetchInstrumentExchangesViewFooter;
 
