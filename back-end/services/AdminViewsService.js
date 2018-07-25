@@ -33,13 +33,15 @@ const TABLE_LOV_FIELDS = {
     ],
     'av_investment_runs': [
         'is_simulated',
+        'user_created'
     ],
     'av_recipe_runs': [
         'approval_status'
     ],
     'av_recipe_run_details': [
         'transaction_asset',
-        'quote_asset'
+        'quote_asset',
+        'target_exchange'
     ],
     'av_instrument_liquidity_requirements': [
         'instrument',
