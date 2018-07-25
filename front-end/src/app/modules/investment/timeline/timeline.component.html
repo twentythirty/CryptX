@@ -1,17 +1,19 @@
-<a class="step-label"
-  *ngFor="let event of timelineEvents"
-  (click)="openEvent(event)" [class.clickable]="event.routerLink" [class.active]="event.isCurrent">
-  <ng-container *ngIf="!event.note; else noteOnly">
-    <span class="title">{{ event.title }}</span>
-    <label class="{{ event.statusClass }}">{{ event.status }}</label>
-    <div class="data">
-      <span>{{ event.id }}</span><br>
-      <span>{{ (event.date | date:'dd MMMM, yyyy hh:mm') || '-' }}</span>
-    </div>
-  </ng-container>
-  <ng-template #noteOnly>
-    <div class="data data-note">
-      <span>{{ event.note }}</span>
-    </div>
-  </ng-template>
-</a>
+<ng-container *ngFor="let key of keys(timelineEvents)">
+  <a class="step-label"
+    *ngIf="timelineEvents[key] as event"
+    (click)="openEvent(key, event)" [class.active]="event.isCurrent">
+    <ng-container *ngIf="!event.note; else noteOnly">
+      <span class="title">{{ ('investment.' + key) | translate }} <span *ngIf="event.count != null">({{ event.count }})</span></span>
+      <label class="{{ event.statusClass }}">{{ (event.status + '') | translate }}</label>
+      <div class="data">
+        <span *ngIf="event.strategy_type">{{ (event.strategy_type + '') | translate }}</span><br>
+        <span *ngIf="event.date">{{ (event.date | date:'dd MMMM, yyyy hh:mm') || '-' }}</span>
+      </div>
+    </ng-container>
+    <ng-template #noteOnly>
+      <div class="data data-note">
+        <span>{{ event.note | translate }}</span>
+      </div>
+    </ng-template>
+  </a>
+</ng-container>
