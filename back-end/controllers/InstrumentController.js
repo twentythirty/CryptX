@@ -1,6 +1,8 @@
 'use strict';
 
+const instrumentService = require('../services/InstrumentsService');
 const adminViewService = require('../services/AdminViewsService');
+const adminViewUtils = require('../utils/AdminViewUtils');
 
 const createInstrument = async function (req, res) {
  
@@ -12,17 +14,13 @@ const createInstrument = async function (req, res) {
   if (!transaction_asset_id || !quote_asset_id)
     return ReE(res, "Both assets must be specified to create an instrument", 422);
   
-  // mock data below
-
-  let instrument_mock = {
-    id: 1,
-    transaction_asset_id: 28,
-    quote_asset_id: 2,
-    symbol: "BTC/XRP"
-  };
+  const [err, instrument] = await to(instrumentService.createInstrument(transaction_asset_id, quote_asset_id));
+  if (err) {
+    return ReE(res, err, 422);
+  }
 
   return ReS(res, {
-    instrument: instrument_mock
+    instrument: instrument
   });
 };
 module.exports.createInstrument = createInstrument;
@@ -30,19 +28,11 @@ module.exports.createInstrument = createInstrument;
 const getInstrument = async function (req, res) {
 
   let instrument_id = req.params.instrument_id;
-  // mock data below
-
-  let instrument_mock = {
-    id: instrument_id,
-    transaction_asset_id: 28,
-    quote_asset_id: 2,
-    symbol: "BTC/XRP",
-    exchanges_connected: 4,
-    exchanges_failed: 3
-  };
+  
+  const instrument = await adminViewService.fetchInstrumentView(instrument_id);
 
   return ReS(res, {
-    instrument: instrument_mock
+    instrument: instrument
   });
 };
 module.exports.getInstrument = getInstrument;
@@ -63,7 +53,7 @@ module.exports.getInstrumentsColumnLOV = getInstrumentsColumnLOV;
 
 const getInstruments = async function (req, res) {
    // mock data below
-  const instruments_and_count = await adminViewService.fetchInstrumentsViewDataWithCount(req.seq_where);
+  const instruments_and_count = await adminViewService.fetchInstrumentsViewDataWithCount(req.seq_query);
 
   const { data: instruments, total: count } = instruments_and_count;
 
@@ -112,15 +102,23 @@ module.exports.checkInstrumentExchangeMap = checkInstrumentExchangeMap;
 const mapInstrumentsWithExchanges = async function (req, res) {
 
   let instrument_id = req.params.instrument_id;
-  let exchange_mapping = req.body.exchange_mapping;
+  let exchange_mappings = req.body.exchange_mapping;
 
-  if (!exchange_mapping || !exchange_mapping.length || !instrument_id)
-    return ReE(res, "Instrument ID and exchange mappings must be supplied to map exchanges with instrument", 422);
+  if (!_.isArray(exchange_mappings) || !instrument_id)
+    return ReE(res, "Instrument ID and exchange mappings array must be supplied to map exchanges with instrument", 422);
 
   // enforce specific exchange mapping structure
-  if (!exchange_mapping.every((map) => {
-    return typeof map === 'object' && map.exchange_id && map.external_instrument_id;
-  }));
+  if (!exchange_mappings.every((map) => {
+    return _.isObject(map) && map.exchange_id && map.external_instrument_id;
+  })) {
+   return ReE(res, `Supplied array of exchange mappings ${exchange_mappings} is supposed to contain exchange_id and external_intrument_id keys!`) 
+  };
+
+  const [error, mappings] = await to(instrumentService.addInstrumentExchangeMappings(instrument_id, exchange_mappings));
+
+  if (error) {
+    return ReE(res, error)
+  }
 
   return ReS(res, {
     message: "OK!"
@@ -130,23 +128,20 @@ module.exports.mapInstrumentsWithExchanges = mapInstrumentsWithExchanges;
 
 const getInstrumentExchanges = async function (req, res) {
  
-  let instrument_id = req.params.instrument_id;
+  const instrument_id = req.params.instrument_id;
+  const seq_query = Object.assign({ where: {} }, req.seq_query);
+  //add instrument id to search conditions
+  seq_query.where['instrument_id'] = instrument_id;
+  const { data: instrument_exchanges, total: count} = await adminViewService.fetchInstrumentExchangesViewDataWithCount(seq_query);
 
-  // mock data below
-  let mapping_data = [...Array(8)].map((map, index) => ({
-    instrument_id,
-    exchange_id: index,
-    exchange_name: "Bitstamp" + index,
-    external_instrument: "BTC/XRP",
-    current_price: 7422.46,
-    last_day_vol: 12300,
-    last_week_vol: 86100,
-    last_updated: 1531486061727,
-    liquidity_rules: 3
-  }));
+  //add instrument id to search condition
+  let sql_where = adminViewUtils.addToWhere(req.sql_where, `instrument_id = ${instrument_id}`);
+  const instrument_exchanges_footer = await adminViewService.fetchInstrumentExchangesViewFooter(sql_where)
 
   return ReS(res, {
-    mapping_data
+    count,
+    mapping_data: instrument_exchanges,
+    footer: instrument_exchanges_footer
   });
 };
 module.exports.getInstrumentExchanges = getInstrumentExchanges;
@@ -164,10 +159,14 @@ const createLiquidityRequirement = async function (req, res) {
   } = req.body;
 
   if (!instrument_id || 
-    !exchange_id || 
+    //!exchange_id || 
     !periodicity || 
     !minimum_circulation)
     return ReE(res, "Please fill all values: instrument_id, exchange_id, periodicity, minimum_circulation", 422);
+  
+  const [ err, liquidity_requirement ] = to(instrumentService.createLiquidityRequirement(instrument_id, periodicity, minimum_circulation, exchange_id || null));
+  if(err) return ReE(res, err.message, 422);
+
 
   // mock data below
 

@@ -9,6 +9,7 @@ import { RolesPermissionsResultData } from '../../shared/models/api/rolesPermiss
 import { RolesAllRequestData } from "../../shared/models/api/rolesAllRequestData";
 import { environment } from '../../../environments/environment';
 import { EntitiesFilter } from "../../shared/models/api/entitiesFilter";
+import { map } from 'rxjs/operators';
 
 
 export class UsersAllResponse {
@@ -46,11 +47,6 @@ export class UsersService {
       if (data.success) {
         return data;
       }
-    if(requestData) {
-      return this.http.post<UsersAllResponse>(this.baseUrl + `assets/detailed/all`, requestData);
-    } else {
-      return this.http.get<UsersAllResponse>(this.baseUrl + `assets/detailed/all`);
-    }
     });
   }
 
@@ -83,5 +79,20 @@ export class UsersService {
         return data.message;
       }
     });
+  }
+
+  getHeaderLOV(column_name: string): Observable<any> {
+    return this.http.get<any>(this.baseUrl + `users/header_lov/${column_name}`).pipe(
+      map(
+        res => {
+          if(res && res && Array.isArray(res.lov)) {
+            return res.lov.map(lov => {
+              return { value: lov }
+            });
+          } else {console.log("else")
+            return null};
+        }
+      )
+    )
   }
 }

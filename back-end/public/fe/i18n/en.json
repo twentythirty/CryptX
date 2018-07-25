@@ -1,6 +1,14 @@
 {
   "common": {
-    "list_empty": "This list is empty"
+    "list_empty": "This list is empty",
+    "pagination": {
+      "first": "First",
+      "last": "Last"
+    },
+    "delete": "Delete",
+    "submit": "Submit",
+    "confirm": "Confirm",
+    "cancel": "Cancel"
   },
   "table": {
     "header": {
@@ -55,9 +63,59 @@
       "creation_date": "Creation date",
       "exchanges_connected": "Exchanges Connected",
       "exchanges_failed": "Exchanges Failed"
+    },
+    "filter": {
+      "all": "All",
+      "filter": "Filter",
+      "select_ordering": "Select_ordering",
+      "from": "From",
+      "to": "To"
     }
   },
+
+  "roles": {
+    "roles": "Roles",
+    "add_new_role": "Add new role",
+    "name": "Name",
+    "role_information": "Role information",
+    "enter_role_name": "Enter role name",
+    "permissions": "Permissions",
+    "role_delete_confirm_msg": "Are you sure you want delete this role?",
+     "footer": {
+      "roles": "Names"
+     }
+  },
+
+  "liquidity": {
+    "liquidity_requirements": "Liquidity requirements",
+    "add_requirement": "Add requirement",
+    "periodicity": "Periodicity",
+    "enter_periodicity": "Enter periodicity",
+    "minimum_circulation": "Minimum circulation",
+    "enter_minimum_circulation": "Enter minimum circulation",
+    "enter_liquidity_information": "Enter liquidity information"
+  },
+
+  "instruments": {
+    "instruments": "Instruments",
+    "new_instrument": "New instrument",
+    "parameters": "Parameters",
+    "transaction_asset": "Transaction asset",
+    "quote_asset": "Quote asset",
+    "add_instrument": "Add instrument",
+    "footer": {
+      "symbol": "Instruments",
+      "exchanges_connected": "Connected",
+      "exchanges_failed": "Failed"
+    }
+  },
+
+  "exchanges": {
+    "exchange": "Exchange"
+  },
+
   "assets": {
+    "assets": "Assets",
     "headline": "{{ count }} Cryptocurrencies",
     "status": {
       "400": "Whitelisted",
@@ -65,8 +123,48 @@
       "402": "Blacklisted"
     },
     "footer": {
-      "capitalization": "${{ total }} TOTAL"
+      "capitalization": "${{ total }} total",
+      "status": "Blacklisted",
+      "is_deposit": "Deposit",
+      "is_base": "Base",
+      "symbol": "Items",
+      "is_cryptocurrency": "Cryptos"
     }
+  },
+
+  "users": {
+    "users": "Users",
+    "headline": "{{ count }} Users",
+    "entity": {
+      "inactive": "Deactivated",
+      "active": "Active"
+    },
+    "add_new_user": "Add new user",
+    "user_information": "User information",
+    "name": "Name",
+    "enter_name": "Enter name",
+    "surname": "Surname",
+    "enter_surname": "Enter surname",
+    "email": "Email",
+    "enter_email": "Enter email",
+    "user_roles": "User roles",
+    "select": "Select",
+    "user_deactivate_confirm_msg": "Are you sure you want {{buttonName}} this user?",
+    "footer": {
+      "first_name": "Names",
+      "last_name": "Surnames",
+      "email": "Emails",
+      "created_timestamp": "Dates",
+      "is_active": "Active"
+    }
+  },
+
+  "auth": {
+    "user_information": "User information",
+    "old_password": "Old password",
+    "new_password": "New password",
+    "repeat_password": "Repeat new password",
+    "enter_here": "Enter here"
   },
   "error": {
 

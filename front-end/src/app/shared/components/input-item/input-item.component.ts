@@ -54,10 +54,15 @@ export class InputItemComponent implements ControlValueAccessor, OnInit {
   }
 
   ngOnInit() {
-    this.fieldControl = this.formGroup.get( this.formControlName );
+    if (this.formGroup) {
+      this.fieldControl = this.formGroup.get( this.formControlName );
+    }
   }
 
   isInvalid(): boolean {
+    if (!this.fieldControl) {
+      return true;
+    }
     return this.fieldControl.invalid && (this.fieldControl.dirty || this.fieldControl.touched);
   }
 

@@ -1,8 +1,6 @@
 import { NgModule } from '@angular/core';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms'
 import { CommonModule } from '@angular/common';
-
-import { Ng2FlatpickrModule } from 'ng2-flatpickr';
 import { DynamicModule } from 'ng-dynamic-component';
 
 import { BtnComponent } from './components/btn/btn.component'
@@ -31,7 +29,7 @@ import { BooleanCellComponent } from './components/data-table-cells/boolean-cell
 import { InputItemErrorMessageComponent } from './components/input-item-error-message/input-item-error-message.component';
 import { StatusCellComponent } from './components/data-table-cells/status-cell/status-cell.component';
 import { ConfirmCellComponent } from './components/data-table-cells/confirm-cell/confirm-cell.component';
-import { MatProgressSpinnerModule } from '@angular/material';
+import { MatProgressSpinnerModule, MatDatepickerModule, MatFormFieldModule, MatNativeDateModule, MatInputModule } from '@angular/material';
 import { RationaleModalComponent } from './components/rationale-modal/rationale-modal.component';
 import { TranslateModule } from '@ngx-translate/core';
 
@@ -41,9 +39,12 @@ import { TranslateModule } from '@ngx-translate/core';
         FormsModule,
         ReactiveFormsModule,
         RouterModule,
-        Ng2FlatpickrModule,
         MatProgressSpinnerModule,
         TranslateModule,
+        MatDatepickerModule,
+        MatFormFieldModule,
+        MatNativeDateModule,
+        MatInputModule,
         DynamicModule.withComponents([
           ActionCellComponent,
           CurrencyCellComponent,

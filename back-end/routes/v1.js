@@ -298,18 +298,24 @@ router.post(
   InvestmentController.getInvestmentRuns
 );
 router.get(
+  ROUTES.GetInvestmentPortfolioStats.router_string,
+  stateless_auth,
+  check_permissions,
+  InvestmentController.GetInvestmentPortfolioStats
+);
+router.get(
   ROUTES.GetInvestmentsColLOV.router_string,
   stateless_auth,
   check_permissions,
   filter_reducer,
-MockController.fetchColLOV
+  InvestmentController.getInvestmentRunsColumnLOV
 );
 router.post(
   ROUTES.GetInvestmentsColLOV.router_string,
   stateless_auth,
   check_permissions,
   filter_reducer,
-MockController.fetchColLOV
+  InvestmentController.getInvestmentRunsColumnLOV
 );
 router.get(
   ROUTES.GetInvestment.router_string,
@@ -340,13 +346,13 @@ router.post(
   post_body_validator,
   InvestmentController.createRecipeRun
 );
-router.get( // might be deleted
+/* router.get( // might be deleted
   ROUTES.GetRecipeRuns.router_string,
   stateless_auth,
   check_permissions,
   filter_reducer,
   InvestmentController.getRecipeRuns
-);
+); */
 router.post(
   ROUTES.GetRecipeRuns.router_string,
   stateless_auth,
@@ -366,14 +372,14 @@ router.get(
   stateless_auth,
   check_permissions,
   filter_reducer,
-MockController.fetchColLOV
+  InvestmentController.getRecipeRunsColumnLOV
 );
 router.post(
   ROUTES.GetRecipeRunsColLOV.router_string,
   stateless_auth,
   check_permissions,
   filter_reducer,
-MockController.fetchColLOV
+  InvestmentController.getRecipeRunsColumnLOV
 );
 router.get(
   ROUTES.GetRecipeRun.router_string,
@@ -391,16 +397,24 @@ router.get(
   check_permissions,
   OrdersController.getOrdersGroup
 ); */
-router.get( 
-  ROUTES.GetRecipeOrders.router_string,
+/* router.get( 
+  ROUTES.GetRecipeOrdersOf.router_string,
   stateless_auth,
   check_permissions,
+  InvestmentController.getRecipeOrders
+); */
+router.post(
+  ROUTES.GetRecipeOrdersOf.router_string,
+  stateless_auth,
+  check_permissions,
+  filter_reducer,
   InvestmentController.getRecipeOrders
 );
 router.post(
   ROUTES.GetRecipeOrders.router_string,
   stateless_auth,
   check_permissions,
+  filter_reducer,
   InvestmentController.getRecipeOrders
 );
 router.get(
@@ -438,13 +452,13 @@ router.post(
 )
 
 // Recipe run details
-router.get( // might be deleted
+/* router.get( // might be deleted
   ROUTES.GetRecipeRunDetails.router_string,
   stateless_auth,
   check_permissions,
   filter_reducer,
   InvestmentController.getRecipeRunDetails
-);
+); */
 router.post(
   ROUTES.GetRecipeRunDetails.router_string,
   stateless_auth,
@@ -457,14 +471,14 @@ router.get(
   stateless_auth,
   check_permissions,
   filter_reducer,
-MockController.fetchColLOV
+  InvestmentController.getRecipeRunDetailsColumnLOV
 );
 router.post(
   ROUTES.GetRecipeRunDetailsColLOV.router_string,
   stateless_auth,
   check_permissions,
   filter_reducer,
-MockController.fetchColLOV
+  InvestmentController.getRecipeRunDetailsColumnLOV
 );
 router.get(
   ROUTES.GetRecipeRunDetail.router_string,
@@ -475,8 +489,15 @@ router.get(
 );
 
 // Recipe Run deposits
-router.get( // might be deleted
+/* router.get( // might be deleted
   ROUTES.GetRecipeRunDeposits.router_string,
+  stateless_auth,
+  check_permissions,
+  filter_reducer,
+  InvestmentController.getRecipeDeposits
+); */
+router.post(
+  ROUTES.GetRecipeRunDepositsOf.router_string,
   stateless_auth,
   check_permissions,
   filter_reducer,
@@ -511,8 +532,15 @@ router.get(
 );
 
  // Execution orders
-router.get( // might be deleted
+/* router.get( // might be deleted
   ROUTES.GetExecutionOrders.router_string,
+  stateless_auth,
+  check_permissions,
+  filter_reducer,
+  InvestmentController.getExecutionOrders
+); */
+router.post(
+  ROUTES.GetExecutionOrdersOf.router_string,
   stateless_auth,
   check_permissions,
   filter_reducer,
@@ -533,14 +561,14 @@ router.get(
 MockController.fetchColLOV
 );
 router.post(
-  ROUTES.ExecutionOrdersFillColLOV.router_string,
+  ROUTES.ExecutionOrdersColLOV.router_string,
   stateless_auth,
   check_permissions,
   filter_reducer,
 MockController.fetchColLOV
 );
 router.get(
-  ROUTES.ExecutionOrdersFillColLOV.router_string,
+  ROUTES.GetExecutionOrder.router_string,
   stateless_auth,
   check_permissions,
   InvestmentController.getExecutionOrder
@@ -554,13 +582,13 @@ router.get(
   filter_reducer,
   InvestmentController.ExecutionOrderFills
 );
- router.get( // might be deleted
+/*  router.get( // might be deleted
   ROUTES.GetExecutionOrdersFillsOf.router_string,
   stateless_auth,
   check_permissions,
   filter_reducer,
   InvestmentController.ExecutionOrderFills
-);
+); */
 router.post(
   ROUTES.GetExecutionOrdersFillsOf.router_string,
   stateless_auth,
@@ -759,6 +787,20 @@ router.post(
   MockController.getExchanges
 );
 
+router.post(
+  ROUTES.GetColdStorageTransfers.router_string,
+  stateless_auth,
+  check_permissions,
+  filter_reducer,
+  MockController.getColdStorageTransfers
+);
+router.post(
+  ROUTES.GetColdStorageTransfersColLOV.router_string,
+  stateless_auth,
+  check_permissions,
+  filter_reducer,
+  MockController.fetchColLOV
+);
 //********* API DOCUMENTATION **********
 router.use(
   "/docs/api.json",

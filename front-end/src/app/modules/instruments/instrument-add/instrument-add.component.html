@@ -1,15 +1,17 @@
 <app-page-heading
-  heading="New instrument"
+  [heading]="'instruments.new_instrument' | translate"
 ></app-page-heading>
 
 <div class="split-content horizontal">
   <app-content-block
-    heading="Parameters"
+    [heading]="'instruments.parameters' | translate"
   >
     
     <form [formGroup]="form">
       <div class="form-item">
-        <label class="label-name">Transaction asset</label>
+        <label class="label-name">
+          {{ 'instruments.transaction_asset' | translate }}
+        </label>
         <input
           ngui-auto-complete
           formControlName="transaction_asset_id"
@@ -23,7 +25,9 @@
       </div>
 
       <div class="form-item">
-        <label class="label-name">Quote asset</label>
+        <label class="label-name">
+          {{ 'instruments.quote_asset' | translate }}
+        </label>
         <input
           ngui-auto-complete
           formControlName="quote_asset_id"
@@ -45,5 +49,5 @@
     class="btn submit"
     [disabled]="loading"
     (click)="saveInstrument()"
-  >Add instrument</button>
+  >{{ 'instruments.add_instrument' | translate }}</button>
 </app-form-action-bar>

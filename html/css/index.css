@@ -230,6 +230,9 @@ body {
 main {
   padding-top: 40px; }
 
+.display-block {
+  display: block !important; }
+
 body.sticky-bottom {
   padding-bottom: 130px; }
 
@@ -1171,10 +1174,10 @@ body.sticky-bottom {
     display: inline-block; }
     .step-labels-container .step-label:last-child {
       margin-bottom: 0; }
-      .step-labels-container .step-label:last-child::before {
-        background-image: url("../img/icons/step-label-oval.svg");
-        background-position: center center;
-        background-repeat: no-repeat; }
+    .step-labels-container .step-label.active::before {
+      background-image: url("../img/icons/step-label-oval.svg");
+      background-position: center center;
+      background-repeat: no-repeat; }
     .step-labels-container .step-label::after {
       content: "";
       width: 10px;

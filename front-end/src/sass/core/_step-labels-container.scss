@@ -28,9 +28,9 @@
         display: inline-block;
 
         &:last-child{
-          margin-bottom: 0;
+            margin-bottom: 0;
         }
-
+        
         &.active::before {
             @include backgroundC("icons/step-label-oval.svg");
         }

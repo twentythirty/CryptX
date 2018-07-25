@@ -1,7 +1,7 @@
 <table class="data-table">
   <thead *ngIf="dataSource.header?.length > 0">
     <tr>
-      <th *ngFor="let item of dataSource.header" class="sortable">
+      <th *ngFor="let item of dataSource.header">
         <a
           (click)="toggleFilter(item)"
         >
@@ -23,7 +23,7 @@
           [sortable]="item.filter.sortable"
           [rowData]="item.filter.rowData"
           (onFilter)="onSetFilter($event); filterMap[item.column] = !filterMap[item.column]"
-        ><div class="filter-sort-box"></div></app-data-table-filter>
+        ></app-data-table-filter>
       </th>
     </tr>
   </thead>
@@ -70,7 +70,10 @@
     <tr>
       <td *ngFor="let item of getFooterData()">
         <ng-container *ngIf="item">
-          {{ item.value }} {{ item.raw ? item.label : item.label }}
+          <span class="upper-case"> {{ item.value}} {{item.template | translate}} </span>
+        </ng-container>
+        <ng-container *ngIf="!item">
+          -
         </ng-container>
       </td>
     </tr>

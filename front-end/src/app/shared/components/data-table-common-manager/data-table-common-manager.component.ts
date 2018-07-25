@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import _ from 'lodash';
 
-import { RolesAllRequestData } from '../../../shared/models/api/rolesAllRequestData';
+import { RolesAllRequestData } from '../../models/api/rolesAllRequestData';
 
 @Component({
   selector: 'app-data-table-common-manager',

@@ -1,4 +1,4 @@
-.topbar {
+/*.topbar {
   background: #fff;
   box-shadow: 0 2px 6px rgba(0,0,0,0.15);
   height: 40px;
@@ -12,7 +12,7 @@
   position: relative;
   box-shadow: 0 2px 6px rgba(0,0,0,0.2);
   padding: 5px;
-}
+}*/
 
 button {
     background: none;
@@ -23,3 +23,26 @@ button {
     cursor: pointer;
     outline: inherit;
 }
+
+.new {
+  text-align: left;
+  background-color: white!important;
+}
+
+.new2{
+  border-bottom: 1px solid #DFE4E6;
+  padding-top: 15px;
+  padding-bottom: 15px;
+  color: #78909C;
+  font-size: small;
+}
+
+.new3 {
+font-size: x-small;
+}
+
+.new4{
+  color: black;
+  font-size: small;
+}
+

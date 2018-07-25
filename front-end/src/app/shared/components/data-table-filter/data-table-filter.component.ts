@@ -1,6 +1,5 @@
 import { Component, OnInit, Input, EventEmitter, Output, OnChanges } from '@angular/core';
 import _ from 'lodash';
-import { FlatpickrOptions } from 'ng2-flatpickr';
 import { Observable } from 'rxjs';
 
 export interface DataTableFilterData {
@@ -29,7 +28,9 @@ export class DataTableFilterComponent implements OnInit, OnChanges {
   };
   private _showSearch: boolean = false;
   private _filterSearchText: string = '';
-  private _datepickerOptions: FlatpickrOptions = {};
+
+  active = false;
+  name = 'ORDER BY'
 
   @Input() column: string;
   @Input() type: string = 'text';
@@ -50,7 +51,6 @@ export class DataTableFilterComponent implements OnInit, OnChanges {
   constructor() {}
 
   ngOnInit() {
-
   }
 
   ngOnChanges(changes) {
@@ -153,6 +153,28 @@ export class DataTableFilterComponent implements OnInit, OnChanges {
     this._showSearch = !this._showSearch;
   }
 
+  isActive(){
+    this.active = !this.active;
+  }
+
+  sortAsc(){
+    this.isActive();
+    this._filterData.order = 'asc';
+    this.name = 'A - Z'
+  }
+
+  sortDesc(){
+    this.isActive();
+    this._filterData.order = 'desc';
+    this.name = 'Z - A'
+  }
+
+  noSort(){
+    this.isActive();
+    this._filterData.order = ''
+    this.name = 'ORDER BY'
+  }
+
   onCheckboxToggle({ value }) {
     this._filterData.values = _.xor(this._filterData.values, [value]);
   }
@@ -185,5 +207,4 @@ export class DataTableFilterComponent implements OnInit, OnChanges {
       )
     }
   }
-
 }

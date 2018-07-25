@@ -1,43 +1,46 @@
 <div class="pagination" *ngIf="count > 0">
   <ul class="pager-nav left-nav">
     <li>
-        <a class="to-jump item">
-          <button 
-            (click)="onFirst()"
-            [disabled]="page == 1"
-            [ngClass]="{ 'disabled': page == 1 }"
-          ></button>
-        First</a>
-        <a class="prev item">
-          <button
-            [disabled]="page == 1"
-            (click)="onPrev()"
-            [ngClass]="{ 'disabled': page == 1 }"
-          ></button>
-        </a>
+      <button 
+        (click)="onFirst()"
+        [disabled]="page == 1"
+        class="to-jump item"
+        [class.disabled]="page == 1"
+      >{{ 'common.pagination.first' | translate }}</button>
+
+      <button
+        [disabled]="page == 1"
+        (click)="onPrev()"
+        class="prev item"
+        [class.disabled]="page == 1"
+      ></button>
     </li>
   </ul>
+
   <ul class="pages">
-    <a class="item"
-    *ngFor="let pageNum of getPages()"
-    (click)="onPage(pageNum)"
-    [ngClass]="{ 'active': pageNum == page }"
-  >{{ pageNum }}</a>
+    <a
+      *ngFor="let pageNum of getPages()"
+      (click)="onPage(pageNum)"
+      class="item"
+      [class.active]="pageNum == page"
+    >{{ pageNum }}</a>
   </ul>
+
   <ul class="pager-nav right-nav">
     <li>
-        <button class="next item"
-          (click)="onNext()"
-          [disabled]="isLastPage()"
-          [ngClass]="{ 'disabled': isLastPage() }"
-        ></button>
-        <a class="to-jump item">
-        <button 
-          (click)="onLast()"
-          [disabled]="isLastPage()"
-          [ngClass]="{ 'disabled': isLastPage() }"
-        ></button>
-        Last</a>
+      <button
+        (click)="onNext()"
+        [disabled]="isLastPage()"
+        class="next item"
+        [class.disabled]="isLastPage()"
+      ></button>
+
+      <button
+        (click)="onLast()"
+        [disabled]="isLastPage()"
+        class="to-jump item"
+        [class.disabled]="isLastPage()"
+      >{{ 'common.pagination.last' | translate }}</button>
     </li>
   </ul>
 </div>

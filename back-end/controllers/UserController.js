@@ -33,12 +33,12 @@ const issueInvitation = async function (req, res) {
     first_name,
     last_name,
     email,
-    role_id// array or role ids
+    role_ids// array or role ids
   } = req.body;
   
-  let [err, invitation] = await to(inviteService.createInvitation(
+  let [err, user] = await to(inviteService.createUserAndInvitation(
     req.user,
-    role_id,
+    role_ids,
     first_name,
     last_name,
     email));
@@ -86,7 +86,7 @@ const createByInvite = async function (req, res) {
     password
   } = req.body;
 
-  let [err, user] = await to(inviteService.createUserByInvite(invitation_id, password));
+  let [err, user] = await to(inviteService.setUpProfile(invitation_id, password));
   if (err) {
     return ReE(res, err, 422);
   }
@@ -131,7 +131,7 @@ const getUsers = async function (req, res) {
 
   console.log('WHERE clause: %o', req.seq_where);
   console.log(`SQL WHERE clause: ${req.sql_where}`);
-  let [err, result] = await to(adminViewsService.fetchUsersViewDataWithCount(req.seq_where));
+  let [err, result] = await to(adminViewsService.fetchUsersViewDataWithCount(req.seq_query));
   if (err) return ReE(res, err.message, 422);
   let footer = [];
   [err, footer] = await to(adminViewsService.fetchUsersViewFooter(req.sql_where));

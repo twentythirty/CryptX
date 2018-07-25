@@ -3,6 +3,8 @@
 const InvestmentRun = require('../models').InvestmentRun;
 const RecipeRun = require('../models').RecipeRun;
 const RecipeRunDetail = require('../models').RecipeRunDetail;
+const User = require('../models').User;
+const adminViewsService = require('../services/AdminViewsService');
 const investmentService = require('../services/InvestmentService');
 const DepositService = require('../services/DepositService');
 const OrdersService = require('../services/OrdersService');
@@ -25,10 +27,14 @@ const createInvestmentRun = async function (req, res) {
   );
   if (err) return ReE(res, err, 422); */
 
-  // mock data below
-  investment_run.toWeb();
-  let mock_investment_run = Object.assign(investment_run, {
+  
+  investment_run = investment_run.toWeb();
+  /*let mock_investment_run = Object.assign(investment_run, {
     user_created: 'Mock User'
+  })*/
+
+  investment_run = Object.assign(investment_run, {
+    user_created: `${req.user.first_name} ${req.user.last_name}`
   })
 
   return ReS(res, {
@@ -46,12 +52,17 @@ const createRecipeRun = async function (req, res) {
     );
   if (err) return ReE(res, err, 422);
 
-  // mock data added below
-  recipe_run.toJSON();
-  let mock_recipe_run = Object.assign(recipe_run, {
+  
+  recipe_run = recipe_run.toJSON();
+  /*let mock_recipe_run = Object.assign(recipe_run, {
     user_created: 'Mock User',
     approval_user: 'Mock User'
-  })
+  })*/
+
+  recipe_run = Object.assign(recipe_run, {
+    user_created: `${req.user.first_name} ${req.user.last_name}`,
+    approval_user: null
+  });
 
   return ReS(res, {
     recipe_run: mock_recipe_run
@@ -62,22 +73,19 @@ module.exports.createRecipeRun = createRecipeRun;
 const getInvestmentRun = async function (req, res) {
 
   let investment_run_id = req.params.investment_id;
-  let [err, investment_run] = await to(InvestmentRun.findById(investment_run_id,
-    {
-      include: RecipeRun
-    }));
+  let [err, investment_run] = await to(adminViewsService.fetchInvestmentRunView(investment_run_id));
 
   if (err) return ReE(res, err.message, 422);
+  if (!investment_run) return ReE(res, `Invetsment run not found with id: ${investment_run_id}`, 422);
 
-  // mock data below
-  investment_run.toWeb();
-  let mock_investment_run = Object.assign(investment_run, {
+  investment_run = investment_run.toWeb();  
+  /*let mock_investment_run = Object.assign(investment_run, {
     user_created: 'Mock User'
-  })
+  })*/
 
   return ReS(res, {
-    investment_run: mock_investment_run
-  })
+    investment_run
+  });
 };
 module.exports.getInvestmentRun = getInvestmentRun;
 
@@ -119,14 +127,14 @@ module.exports.getInvestmentStats = getInvestmentStats;
 
 const getInvestmentRuns = async function (req, res) {
 
-  let query = req.seq_query;
+  /*let query = req.seq_query;
 
   let [err, results] = await to(InvestmentRun.findAndCountAll(query));
   if (err) return ReE(res, err.message, 422);
 
   let { rows: investment_runs, count } = results;
 
-  // mock data added below
+  // mock data added below NOT ANYMORE!
 
   let mock_investment_runs = investment_runs.map((investment, index) => {
     investment = investment.toJSON();
@@ -145,15 +153,44 @@ const getInvestmentRuns = async function (req, res) {
     { "name": "status", "value": "302" },
     { "name": "deposit_usd", "value": "399" },
     { "name": "user_created_id", "value": "2" },
-  ]
+  ]*/
+
+  const { seq_query, sql_where } = req;
+
+  let [ err, result ] = await to(adminViewsService.fetchInvestmentRunsViewDataWithCount(seq_query));
+  if(err) return ReE(res, err.message, 422);
+  
+  let footer = [];
+  [err, footer] = await to(adminViewsService.fetchInvestmentRunsViewFooter(sql_where));
+  if(err) return ReE(res, err.message, 422);
+
+  let { data: investment_runs, total: count } = result;
+
+  investment_runs = investment_runs.map(ir => ir.toWeb());
 
   return ReS(res, {
-    investment_runs: mock_investment_runs,
+    investment_runs,
     footer,
     count
   })
 };
 module.exports.getInvestmentRuns = getInvestmentRuns;
+
+const getInvestmentRunsColumnLOV = async (req, res) => {
+
+  const field_name = req.params.field_name;
+  const { query } = _.isPlainObject(req.body) ? req.body : { query: '' };
+
+  const [ err, field_vals ] = await to(adminViewsService.fetchInvestmentRunsViewHeaderLOV(field_name, query));
+  if(err) return ReE(res, err.message, 422);
+
+  return ReS(res, {
+    query: query,
+    lov: field_vals
+  })
+
+};
+module.exports.getInvestmentRunsColumnLOV = getInvestmentRunsColumnLOV;
 
 const changeRecipeRunStatus = async function (req, res) {
 
@@ -168,14 +205,19 @@ const changeRecipeRunStatus = async function (req, res) {
   if (err) return ReE(res, err.message, 422);
 
   // mock data added below
-  recipe_run.toWeb();
-  let mock_recipe_run = Object.assign(recipe_run, {
-    user_created: 'Mock User',
-    approval_user: 'Mock User'
+  recipe_run = recipe_run.toWeb();
+
+  let user_created = {};
+  [ err, user_created ] = await to(User.findById(recipe_run.user_created_id));
+  if(err) return ReE(res, err.message, 422);
+
+  recipe_run = Object.assign(recipe_run, {
+    user_created: user_created.fullName(),
+    approval_user: req.user.fullName()
   })
 
   return ReS(res, {
-    recipe_run: mock_recipe_run
+    recipe_run
   })
 };
 module.exports.changeRecipeRunStatus = changeRecipeRunStatus;
@@ -199,18 +241,20 @@ module.exports.addDeposit = addDeposit;
 const getRecipeRun = async function (req, res) {
 
   let recipe_run_id = req.params.recipe_id;
-  let [err, recipe_run] = await to(RecipeRun.findById(recipe_run_id));
-
+  //let [err, recipe_run] = await to(RecipeRun.findById(recipe_run_id));
+  let [ err, recipe_run ] = await to(adminViewsService.fetchRecipeRunView(recipe_run_id));
   if (err) return ReE(res, err.message, 422);
 
   if (!recipe_run) 
     return ReE(res, "Recipe not found", 422);
   // mock data added below
+ 
   recipe_run.toWeb();
-  let mock_recipe_run = Object.assign(recipe_run, {
+
+  /*let mock_recipe_run = Object.assign(recipe_run, {
     user_created: 'Mock User',
     approval_user: 'Mock User'
-  })
+  })*/
 
   let countDetails = [
     { 
@@ -228,7 +272,7 @@ const getRecipeRun = async function (req, res) {
   ]
 
   return ReS(res, {
-    recipe_run: mock_recipe_run,
+    recipe_run,
     recipe_stats: countDetails
   })
 };
@@ -236,13 +280,13 @@ module.exports.getRecipeRun = getRecipeRun;
 
 const getRecipeRuns = async function (req, res) {
 
-  let query = req.seq_query;
-  let investment_id = req.params.investment_id;
+  let { seq_query, sql_where } = req;
+  const investment_id = req.params.investment_id;
   
   if (investment_id) {
-    query.where.investment_run_id = investment_id;
+    seq_query.where.investment_run_id = investment_id;
   };
-
+  /*
   let [err, results] = await to(RecipeRun.findAndCountAll(query));
   if (err) return ReE(res, err.message, 422);
 
@@ -258,19 +302,50 @@ const getRecipeRuns = async function (req, res) {
   });
 
   let footer = create_mock_footer(mock_recipes[0], 'recipe_runs');
+  */
+
+  let err, result;
+
+  [ err, result ] = await to(adminViewsService.fetchRecipeRunsViewDataWithCount(seq_query));
+  if(err) return ReE(res, err.message, 422);
+
+  let footer = [];
+  [ err, footer ] = await to(adminViewsService.fetchRecipeRunsViewFooter(sql_where));
+  if(err) return ReE(res, err.message, 422);
+
+  let { data: recipe_runs, total: count } = result;
+
+  recipe_runs = recipe_runs.map(rr => rr.toWeb());
 
   return ReS(res, {
-    recipe_runs: mock_recipes,
+    recipe_runs,
     footer,
     count
   });
 };
 module.exports.getRecipeRuns = getRecipeRuns;
 
+const getRecipeRunsColumnLOV = async (req, res) => {
+
+  const field_name = req.params.field_name;
+  const { query } = _.isPlainObject(req.body) ? req.body : { query: '' };
+
+  const [ err, field_vals ] = await to(adminViewsService.fetchRecipeRunsViewHeaderLOV(field_name, query));
+  if(err) return ReE(res, err.message, 422);
+
+  return ReS(res, {
+    query: query,
+    lov: field_vals
+  })
+
+};
+module.exports.getRecipeRunsColumnLOV = getRecipeRunsColumnLOV;
+
 const getRecipeRunDetail = async function (req, res) {
 
-  /* let recipe_detail_id = req.params.recipe_detail_id;
+  const recipe_detail_id = req.params.recipe_detail_id;
 
+  /*
   let [err, recipe_run_detail] = await to(RecipeRunDetail.findOne({
     where: {
       id: recipe_detail_id
@@ -280,6 +355,12 @@ const getRecipeRunDetail = async function (req, res) {
   if (err) return ReE(res, err.message, 422);
   if (recipe_run_detail)
     return ReE(res, "Recipe detail not found", 422) */
+
+  const [ err, recipe_detail ] = await to(adminViewsService.fetchRecipeRunDetailView(recipe_detail_id));
+  if(err) return ReE(res, err.message, 422);
+  if(!recipe_detail) return ReE(res, `Recipe detail wasno found with id ${recipe_detail_id}`, 422);
+
+
   // mock data below
   let recipe_run_detail = {
     "id": 1,
@@ -294,7 +375,7 @@ const getRecipeRunDetail = async function (req, res) {
   }
 
   return ReS(res, {
-    recipe_detail: recipe_run_detail
+    recipe_detail
   })
 };
 module.exports.getRecipeRunDetail = getRecipeRunDetail;
@@ -304,13 +385,26 @@ const getRecipeRunDetails = async function (req, res) {
 
   let recipe_run_id = req.params.recipe_id;
 
-  let [err, recipe_run_details] = await to(RecipeRunDetail.findAll({
+  /*let [err, recipe_run_details] = await to(RecipeRunDetail.findAll({
     where: {
       recipe_run_id: recipe_run_id
     }
   }));
 
-  if (err) return ReE(res, err.message, 422);
+  if (err) return ReE(res, err.message, 422);*/
+
+  let { seq_query, sql_where } = req;
+
+  seq_query.where.recipe_run_id = recipe_run_id;
+
+  let [ err, result ] = await to(adminViewsService.fetchRecipeRunDetailsViewDataWithCount(seq_query));
+  if(err) return ReE(res, err.message, 422);
+
+  let footer = [];
+  [ err, footer ] = await to(adminViewsService.fetchRecipeRunDetailsViewFooter(sql_where));  
+  if(err) return ReE(res, err.message, 422);
+
+  const { data: recipe_details, total: count } = result;
 
   // mock data below
 
@@ -326,15 +420,31 @@ const getRecipeRunDetails = async function (req, res) {
     "target_exchange": "bitstamp"
   }));
 
-  let footer = create_mock_footer(mock_detail[0], 'recipe_details');
+  //footer = create_mock_footer(mock_detail[0], 'recipe_details');
 
   return ReS(res, {
-    recipe_details: mock_detail,
+    recipe_details,
     footer,
-    count: 20
+    count
   })
 };
 module.exports.getRecipeRunDetails = getRecipeRunDetails;
+
+const getRecipeRunDetailsColumnLOV = async (req, res) => {
+
+  const field_name = req.params.field_name;
+  const { query } = _.isPlainObject(req.body) ? req.body : { query: '' };
+
+  const [ err, field_vals ] = await to(adminViewsService.fetchRecipeRunDetailsViewHeaderLOV(field_name, query));
+  if(err) return ReE(res, err.message, 422);
+
+  return ReS(res, {
+    query: query,
+    lov: field_vals
+  })
+
+};
+module.exports.getRecipeRunDetailsColumnLOV = getRecipeRunDetailsColumnLOV;
 
 
 const getRecipeOrder = async function (req, res) {
@@ -527,3 +637,67 @@ const ExecutionOrderFills = async function (req, res) {
   })
 };
 module.exports.ExecutionOrderFills = ExecutionOrderFills;
+
+const create_mock_footer = function (keys, name) {
+  // delete this function after mock data is replaced
+  let footer = [...Object.keys(keys)].map((key, index) => {
+    return {
+      "name": key,
+      "value": 999,
+      "template": name + ".footer." + key,
+      "args": {
+          [key]: 999
+      }
+    }
+  });
+  return footer;
+};
+
+
+const GetInvestmentPortfolioStats = async function (req, res) {
+
+  // mock data below
+  let subb_months = [2, 3, 4];
+  let subscription_amount = subb_months.map(m => {
+    return [
+      {
+        month: m,
+        year: 2018,
+        portfolio: "MCI",
+        subscription: 9000 + (Math.random() * 10000)
+      },
+      {
+        month: m,
+        year: 2018,
+        portfolio: "LCI",
+        subscription: 11000 + (Math.random() * 10000)
+      }
+    ]
+  });
+
+  // generates random data
+  let currencies = ['BTC', 'ETH', 'LTC', 'BCH', 'XRP', 'EOS', 'XLM', 'ADA', 'USDT', 'Others'];
+  let mci_portfolio = currencies.map((c, index) => {
+    return ({
+      symbol: c,
+      amount: 20000 + (Math.random() * 10000)
+    })
+  });
+
+  let market_port_time = [3, 4, 5, 6, 7];
+  let port_value = 4000;
+  let portfolio_value = market_port_time.map(month => {
+    return {
+      month: month,
+      year: 2018,
+      value: port_value *= (1 + 0.5 * Math.random())
+    }
+  });
+
+  return ReS(res, {
+    subscription_amount,
+    mci_portfolio,
+    market_value: portfolio_value
+  })
+}
+module.exports.GetInvestmentPortfolioStats = GetInvestmentPortfolioStats;
