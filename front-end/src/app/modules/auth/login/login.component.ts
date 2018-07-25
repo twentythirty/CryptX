@@ -79,13 +79,15 @@ export class LoginComponent implements OnInit {
     console.log("SshowPasswordReset = false")
 
     this.showPasswordReset = false;
-
+    this.password_reset_sent = false;
+    this.reset_email = '';
+    this.loginForm2.reset();
     console.log(this.showPasswordReset);
   }
 
   requestPasswordReset() {
+    this.password_reset_sent = true;
     this.authService.requestPasswordReset(this.reset_email).subscribe(response => {
-      this.password_reset_sent = true;
     }, error => {
       if(error.error) {
         this.password_reset_status = error.error.error;
