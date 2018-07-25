@@ -283,7 +283,9 @@ const getLiquidityRequirementExchanges = async function (req, res) {
   [ err, result ] = await to(adminViewService.fetchLiquidityExchangesViewDataWithCount(seq_query));
   if(err) return ReE(res, err.message, 422);
 
-  const { data: exchanges, total: count } = result;
+  let { data: exchanges, total: count } = result;
+
+  exchanges = exchanges.map(ex => ex.toWeb());
 
   let footer = [];
   [ err, footer ] = await to(adminViewService.fetchLiquidityExchangesViewFooter(`instrument_id=${liquidity_requirement.instrument_id}`));

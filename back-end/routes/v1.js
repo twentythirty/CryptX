@@ -684,7 +684,7 @@ router.get(
 router.post(
   ROUTES.LiquidityReqCreate.router_string,
   stateless_auth,
-  //check_permissions,
+  check_permissions,
   post_body_validator,
   InstrumentController.createLiquidityRequirement
 );
