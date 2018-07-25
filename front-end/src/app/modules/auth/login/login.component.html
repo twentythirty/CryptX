@@ -38,14 +38,15 @@
             formControlName="Email"
             [(ngModel)]="reset_email">
           </app-input-item>
-        <p *ngIf=!loading2>{{ password_reset_status }}</p>
+        <!--<p *ngIf=!loading2>{{ password_reset_status }}</p>-->
         <div class="btn-wrap btn-right">
+            <br>
             <button class="btn submit" [disabled] = loading2 type="submit" (click)="requestPasswordReset()">Submit</button>
          </div>
       </form>
     </div>
     <div *ngIf="password_reset_sent">
-      <span class="label label-after-title">Email sent.
-      <br>Please check your inbox.</span>
+      <span class="label label-after-title">If this user exists, then a confirmation link will shortly be sent to {{reset_email}}
+      <br><br>Please check your inbox.</span>
     </div>
 </app-modal>

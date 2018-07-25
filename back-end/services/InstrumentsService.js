@@ -141,7 +141,7 @@ const createLiquidityRequirement = async (instrument_id, periodicity, minimum_ci
         exchange: exchange_id
     }));
 
-    if(err) TE(`error occurred while saving models ${models}: ${error}`);
+    if(err) TE(`error occurred while saving Liquidity Requirement : ${err.message}`);
 
     return liquidity_requirement;
 

@@ -25,8 +25,7 @@ export interface TableDataSource {
     name: string
     value: string
     template: string
-    raw?: boolean
-    label?: string
+    args?: object
   }>;
 }
 
@@ -54,6 +53,7 @@ export class TableDataColumn {
 })
 export class DataTableComponent implements OnInit {
   private filterMap: Object;
+  total
 
   @Input() dataSource: TableDataSource;
   @Input() columnsToShow: Array<string | TableDataColumn>;
@@ -95,10 +95,15 @@ export class DataTableComponent implements OnInit {
   getFooterData(): Array<object> {
     return this.columnsToShow.map(col => {
       let f = _.filter(this.dataSource.footer, ['name', (typeof col == 'string') ? col : col.column])
-      if(f) {
-        return f[0];
+      if(f.length) {
+       if (f[0].args[Object.keys(f[0].args)[0]]){
+          f[0].args = (f[0].args[Object.keys(f[0].args)[0]])
+        }else {
+          f[0].args = '';
+        }
+        return f[0]
       } else {
-        return {};
+        return null;
       }
     });
   }
