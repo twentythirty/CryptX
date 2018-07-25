@@ -73,6 +73,19 @@
     }
   },
 
+  "investment": {
+    "investment": "Investment run",
+    "recipe_run": "Recipe run",
+    "deposits": "Deposits",
+    "orders": "Orders",
+    "execution_orders": "Execution_orders",
+    "no_investment": "There is no investment run",
+    "no_recipe_run": "There is no recipe run",
+    "no_deposits": "Deposits aren't made yet",
+    "no_orders": "Orders are not created yet",
+    "no_execution_orders": "Execution orders are not created yet"
+  },
+
   "roles": {
     "roles": "Roles",
     "add_new_role": "Add new role",

@@ -7,7 +7,7 @@ import { TableDataSource, TableDataColumn } from '../../../shared/components/dat
 import { TimelineEvent } from '../timeline/timeline.component';
 import { ActionCellDataColumn, DataCellAction, DateCellComponent, BooleanCellComponent, DateCellDataColumn, BooleanCellDataColumn, NumberCellDataColumn, StatusCellDataColumn } from '../../../shared/components/data-table-cells';
 import { InvestmentService } from '../../../services/investment/investment.service';
-import { mergeMap } from 'rxjs/operators';
+import { mergeMap, map } from 'rxjs/operators';
 
 /**
  * 0. Set HTML and SCSS files in component decorator
@@ -150,7 +150,11 @@ export class InvestmentRunDetailComponent extends TimelineDetailComponent implem
   }
 
   protected getTimelineData(): void {
-    this.timeline$ = this.investmentService.getTimelineData();
+    this.timeline$ = this.route.params.pipe(
+      mergeMap(
+        params => this.investmentService.getInvestmentStats(params['id'])
+      )
+    )
   }
 
   /**

@@ -8,7 +8,7 @@ import { TimelineEvent } from '../timeline/timeline.component';
 import { TableDataSource, TableDataColumn } from '../../../shared/components/data-table/data-table.component';
 import { DateCellDataColumn, StatusCellDataColumn, PercentCellDataColumn } from '../../../shared/components/data-table-cells';
 import { InvestmentService } from '../../../services/investment/investment.service';
-import { mergeMap } from 'rxjs/operators';
+import { mergeMap, map } from 'rxjs/operators';
 
 @Component({
   selector: 'app-deposit-detail',
@@ -133,7 +133,11 @@ export class DepositDetailComponent extends TimelineDetailComponent implements O
   }
 
   protected getTimelineData(): void {
-    this.timeline$ = this.investmentService.getTimelineData();
+    this.timeline$ = this.route.params.pipe(
+      mergeMap(
+        params => this.investmentService.getRecipeDepositStats(params['id'])
+      )
+    )
   }
 
   /**

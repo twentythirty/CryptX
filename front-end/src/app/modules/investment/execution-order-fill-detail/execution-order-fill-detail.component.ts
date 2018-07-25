@@ -7,7 +7,7 @@ import { TimelineDetailComponent, SingleTableDataSource, TagLineItem } from '../
 import { TableDataSource, TableDataColumn } from '../../../shared/components/data-table/data-table.component';
 import { TimelineEvent } from '../timeline/timeline.component';
 import { ActionCellDataColumn, DataCellAction, DateCellDataColumn, PercentCellDataColumn, StatusCellDataColumn, ConfirmCellDataColumn, NumberCellDataColumn } from '../../../shared/components/data-table-cells';
-import { mergeMap } from 'rxjs/operators';
+import { mergeMap, map } from 'rxjs/operators';
 import { InvestmentService } from '../../../services/investment/investment.service';
 
 /**
@@ -140,7 +140,11 @@ export class ExecutionOrderFillDetailComponent extends TimelineDetailComponent i
   }
 
   protected getTimelineData(): void {
-    this.timeline$ = this.investmentService.getTimelineData();
+    this.timeline$ = this.route.params.pipe(
+      mergeMap(
+        params => this.investmentService.getExecOrdersFillStats(params['id'])
+      )
+    )
   }
 
   /**

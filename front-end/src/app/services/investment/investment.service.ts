@@ -7,6 +7,7 @@ import { EntitiesFilter } from '../../shared/models/api/entitiesFilter';
 import { of } from 'rxjs/observable/of';
 import { TimelineEvent } from '../../modules/investment/timeline/timeline.component';
 import { StatusClass } from '../../shared/models/common';
+import { map } from 'rxjs/operators';
 
 @Injectable()
 export class InvestmentService {
@@ -28,59 +29,31 @@ export class InvestmentService {
    */
 
   getAllInvestments(requestData?: EntitiesFilter): Observable<any>{
-    if(requestData) {
-      return this.http.post<any>(this.baseUrl + `investments/all`, requestData);
-    } else {
-      return this.http.get<any>(this.baseUrl + `investments/all`);
-    }
+    return this.http.post<any>(this.baseUrl + `investments/all`, requestData);
   }
 
   getAllRecipes(investment_id: any, requestData?: EntitiesFilter): Observable<any>{
-    if(requestData) {
-      return this.http.post<any>(this.baseUrl + `recipes/of_investment/${investment_id}`, requestData);
-    } else {
-      return this.http.get<any>(this.baseUrl + `recipes/of_investment/${investment_id}`);
-    }
+    return this.http.post<any>(this.baseUrl + `recipes/of_investment/${investment_id}`, requestData);
   }
 
   getAllRecipeDetails(recipe_id: any, requestData?: EntitiesFilter): Observable<any>{
-    if(requestData) {
-      return this.http.post<any>(this.baseUrl + `recipe_details/of_recipe/${recipe_id}`, requestData);
-    } else {
-      return this.http.get<any>(this.baseUrl + `recipe_details/of_recipe/${recipe_id}`);
-    }
+    return this.http.post<any>(this.baseUrl + `recipe_details/of_recipe/${recipe_id}`, requestData);
   }
 
   getAllOrders(recipe_run_id: any, requestData?: EntitiesFilter): Observable<any>{
-    if(requestData) {
-      return this.http.post<any>(this.baseUrl + `orders/of_recipe/${recipe_run_id}`, requestData);
-    } else {
-      return this.http.get<any>(this.baseUrl + `orders/of_recipe/${recipe_run_id}`);
-    }
+    return this.http.post<any>(this.baseUrl + `orders/of_recipe/${recipe_run_id}`, requestData);
   }
 
   getAllRecipeDeposits(recipe_id: any, requestData?: EntitiesFilter): Observable<any>{
-    if(requestData) {
-      return this.http.post<any>(this.baseUrl + `recipe_deposits/of_recipe/${recipe_id}`, requestData);
-    } else {
-      return this.http.get<any>(this.baseUrl + `recipe_deposits/of_recipe/${recipe_id}`);
-    }
+    return this.http.post<any>(this.baseUrl + `recipe_deposits/of_recipe/${recipe_id}`, requestData);
   }
 
   getAllExecutionOrders(order_detail_id: any, requestData?: EntitiesFilter): Observable<any>{
-    if(requestData) {
-      return this.http.post<any>(this.baseUrl + `execution_orders/of_order/${order_detail_id}`, requestData);
-    } else {
-      return this.http.get<any>(this.baseUrl + `execution_orders/of_order/${order_detail_id}`);
-    }
+    return this.http.post<any>(this.baseUrl + `execution_orders/of_order/${order_detail_id}`, requestData);
   }
 
   getAllExecOrdersFills(execution_order_id: any, requestData?: EntitiesFilter): Observable<any>{
-    if(requestData) {
-      return this.http.post<any>(this.baseUrl + `exec_orders_fills/of_execution_order/${execution_order_id}`, requestData);
-    } else {
-      return this.http.get<any>(this.baseUrl + `exec_orders_fills/of_execution_order/${execution_order_id}`);
-    }
+    return this.http.post<any>(this.baseUrl + `exec_orders_fills/of_execution_order/${execution_order_id}`, requestData);
   }
 
   /**
@@ -109,6 +82,60 @@ export class InvestmentService {
 
   getSingleExecOrdersFill(exec_order_fill_id: number): Observable<any> {
     return this.http.get<any>(this.baseUrl + `exec_orders_fills/${exec_order_fill_id}`);
+  }
+
+  /**
+   * Get stats
+   */
+
+  getInvestmentStats(investment_id: number): Observable<any> {
+    return this.http.get<any>(this.baseUrl + `investments/${investment_id}/stats`).pipe(
+      map(this.statsMap),
+      map(stats => {stats['investment'].isCurrent = true; return stats;})
+    );
+  }
+
+  getRecipeStats(recipe_id: number): Observable<any> {
+    return this.http.get<any>(this.baseUrl + `recipes/${recipe_id}/stats`).pipe(
+      map(this.statsMap),
+      map(stats => {stats['recipe_run'].isCurrent = true; return stats;})
+    );
+  }
+
+  getOrderStats(order_id: number): Observable<any> {
+    return this.http.get<any>(this.baseUrl + `orders/${order_id}/stats`).pipe(
+      map(this.statsMap),
+      map(stats => {stats['orders'].isCurrent = true; return stats;})
+    );
+  }
+
+  getRecipeDepositStats(recipe_detail_id: number): Observable<any> {
+    return this.http.get<any>(this.baseUrl + `recipe_deposits/${recipe_detail_id}/stats`).pipe(
+      map(this.statsMap),
+      map(stats => {stats['deposits'].isCurrent = true; return stats;})
+    );
+  }
+
+  getExecutionOrderStats(order_detail_id: number): Observable<any> {
+    return this.http.get<any>(this.baseUrl + `execution_orders/${order_detail_id}/stats`).pipe(
+      map(this.statsMap),
+      map(stats => {stats['execution_orders'].isCurrent = true; return stats;})
+    );
+  }
+
+  getExecOrdersFillStats(exec_order_fill_id: number): Observable<any> {
+    return this.http.get<any>(this.baseUrl + `exec_orders_fills/${exec_order_fill_id}/stats`).pipe(
+      map(this.statsMap),
+      map(stats => {stats['execution_orders'].isCurrent = true; return stats;})
+    );
+  }
+
+  private statsMap = (res) => {
+    let stats = res.statistics || {};
+    for(let key of ['investment', 'recipe_run', 'deposits', 'orders', 'execution_orders']) {
+      if(!stats[key]) stats[key] = { note: 'investment.no_' + key }
+    }
+    return stats;
   }
 
   /**
@@ -150,16 +177,5 @@ export class InvestmentService {
   /**
    * Timeline data
    */
-
-  // TODO: Normal API route
-  getTimelineData(): Observable<Array<TimelineEvent>> {
-    return of([
-      new TimelineEvent('Investment run', 'Orders filled', StatusClass.APPROVED, 'IR-001, rci', (new Date()).toUTCString(), `/run/investment/${1}`),
-      new TimelineEvent('Recipe run', 'Pending', StatusClass.PENDING, 'IR-001, rci', (new Date()).toUTCString(), `/run/recipe/${1}`, true),
-      new TimelineEvent('Deposit management', 'Pending', StatusClass.PENDING, 'IR-001, rci', (new Date()).toUTCString(), `/run/deposit/${1}`),
-      new TimelineEvent('Order', 'Pending', StatusClass.PENDING, 'IR-001, rci', (new Date()).toUTCString(), `/run/order/${1}`),
-      new TimelineEvent('Execution order', 'Pending', StatusClass.PENDING, 'IR-001, rci', (new Date()).toUTCString(), `/run/execution-order/${1}`),
-    ])
-  }
 
 }
