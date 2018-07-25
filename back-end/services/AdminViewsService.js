@@ -10,6 +10,7 @@ const AVInvestmentRun = require('../models').AVInvestmentRun;
 const AVRecipeRun = require('../models').AVRecipeRun;
 const AVRecipeRunDetail = require('../models').AVRecipeRunDetail;
 const AVInstrumentExchange = require('../models').AVInstrumentExchange;
+const AVInstrumentLiquidityRequirement = require('../models').AVInstrumentLiquidityRequirement;
 
 const TABLE_LOV_FIELDS = {
     'av_users': [
@@ -38,6 +39,12 @@ const TABLE_LOV_FIELDS = {
     'av_recipe_run_details': [
         'transaction_asset',
         'quote_asset'
+    ],
+    'av_instrument_liquidity_requirements': [
+        'instrument',
+        'periodicity',
+        'quote_asset',
+        'exchange'
     ]
 }
 
@@ -130,6 +137,12 @@ const fetchRecipeRunDetailsViewHeaderLOV = async (header_field, query = '') => {
 }
 module.exports.fetchRecipeRunDetailsViewHeaderLOV = fetchRecipeRunDetailsViewHeaderLOV;
 
+const fetchInstrumentLiquidityRequirementsViewHeaderLOV = async (header_field, query = '') => {
+
+    return fetchViewHeaderLOV('av_instrument_liquidity_requirements', header_field, query);
+}
+module.exports.fetchInstrumentLiquidityRequirementsViewHeaderLOV = fetchInstrumentLiquidityRequirementsViewHeaderLOV;
+
 
 
 
@@ -177,6 +190,12 @@ const fetchRecipeRunDetailsViewDataWithCount = async (seq_query = {}) => {
 }
 module.exports.fetchRecipeRunDetailsViewDataWithCount = fetchRecipeRunDetailsViewDataWithCount;
 
+const fetchInstrumentLiquidityRequirementsViewDataWithCount = async (seq_query = {}) => {
+
+    return fetchViewDataWithCount(AVInstrumentLiquidityRequirement, seq_query);
+}
+module.exports.fetchInstrumentLiquidityRequirementsViewDataWithCount = fetchInstrumentLiquidityRequirementsViewDataWithCount;
+
 const fetchAssetView = async (asset_id) => {
 
     return fetchSingleEntity(AVAsset, asset_id)
@@ -206,6 +225,12 @@ const fetchRecipeRunDetailView = async (recipe_run_detail_id) => {
     return fetchSingleEntity(AVRecipeRunDetail, recipe_run_detail_id);
 }
 module.exports.fetchRecipeRunDetailView = fetchRecipeRunDetailView;
+
+const fetchInstrumentLiquidityRequirementView = async (liquidity_requirement_id) => {
+
+    return fetchSingleEntity(AVInstrumentLiquidityRequirement, liquidity_requirement_id);
+}
+module.exports.fetchInstrumentLiquidityRequirementView = fetchInstrumentLiquidityRequirementView;
 
 
 
@@ -301,48 +326,9 @@ const fetchInstrumentExchangesViewFooter = async (where_clause = '') => {
 }
 module.exports.fetchInstrumentExchangesViewFooter = fetchInstrumentExchangesViewFooter;
 
-const fetchLiquidityViewFooter = async () => {
+const fetchLiquidityViewFooter = async (where_clause = '') => {
     // mock data below
-    /* let footer = [
-        {
-          "name": "id",
-          "value": "999"
-        },
-        {
-          "name": "exchange_id",
-          "value": "999"
-        },
-        {
-          "name": "exchange",
-          "value": "999"
-        },
-        {
-          "name": "instrument",
-          "value": "999"
-        },
-        {
-          "name": "instrument_identifier",
-          "value": "999"
-        },
-        {
-          "name": "last_day_vol",
-          "value": "999"
-        },
-        {
-          "name": "last_week_vol",
-          "value": "999"
-        },
-        {
-          "name": "last_updated",
-          "value": "999"
-        },
-        {
-          "name": "passes",
-          "value": "999"
-        }
-      ];
- */
-    let footer = [{
+    /*let footer = [{
             "name": "id",
             "value": "999"
         },
@@ -375,7 +361,22 @@ const fetchLiquidityViewFooter = async () => {
             "value": "999"
         }
     ];
-    return builder.addFooterLabels(footer, 'liquidity')
+    return builder.addFooterLabels(footer, 'liquidity')*/
+
+    const view = 'av_instrument_liquidity_requirements';
+
+    const query = builder.joinQueryParts([
+        builder.selectCountDistinct('instrument_id', 'instrument', view, where_clause),
+        builder.selectCountDistinct('quote_asset', 'quote_asset', view, where_clause),
+    ], [
+        'instrument',
+        'quote_asset'
+    ]);
+
+    const footer = (await sequelize.query(query))[0];
+
+    return builder.addFooterLabels(
+        builder.queryReturnRowToFooterObj(footer), 'instrument_liquidity_requirements');
 }
 module.exports.fetchLiquidityViewFooter = fetchLiquidityViewFooter;
 

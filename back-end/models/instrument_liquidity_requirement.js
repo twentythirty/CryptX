@@ -15,6 +15,9 @@ module.exports = (sequelize, DataTypes) => {
 
     InstrumentLiquidityRequirement.associate = function(models) {
         InstrumentLiquidityRequirement.belongsTo(models.Instrument);
+        InstrumentLiquidityRequirement.belongsTo(models.Exchange, {
+            foreignKey: 'exchange'
+        })
     }
 
     return InstrumentLiquidityRequirement;
