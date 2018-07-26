@@ -4,6 +4,7 @@
 const sequelize = require('../models').sequelize;
 const builder = require('../utils/AdminViewUtils');
 const AVUser = require('../models').AVUser;
+const Role = require('../models').Role;
 const AVAsset = require('../models').AVAsset;
 const AVInstrument = require('../models').AVInstrument;
 const AVInvestmentRun = require('../models').AVInvestmentRun;
@@ -290,6 +291,21 @@ const fetchUsersViewFooter = async (where_clause = '') => {
         builder.queryReturnRowToFooterObj(footer_values), 'users');
 }
 module.exports.fetchUsersViewFooter = fetchUsersViewFooter;
+
+const fetchRoleFooter = async (where_clause = '') => {
+
+    const query = builder.joinQueryParts([
+        builder.selectCountDistinct('name', 'names', 'role', where_clause)
+    ], [
+        'names'
+    ]);
+
+    const footer = (await sequelize.query(query))[0];
+
+    return builder.addFooterLabels(
+        builder.queryReturnRowToFooterObj(footer), 'roles');
+}
+module.exports.fetchRoleFooter = fetchRoleFooter;
 
 const fetchAssetsViewFooter = async (where_clause = '') => {
 
