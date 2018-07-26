@@ -60,11 +60,7 @@ export class PasswordResetComponent implements OnInit {
   }
 
   changePassword () {
-    if (!this.pass.new_password || !this.pass.new_password) {
-      this.status = "Fields can't be empty";
-      return false;
-    }
-
+    if (this.resetForm.valid){
     if (!this.passwordsMatch()) {
       this.status = "Passwords doesn't match";
       return false;
@@ -76,6 +72,20 @@ export class PasswordResetComponent implements OnInit {
     }, error => {
       if(error.error) {
         this.status = error.error.error;
+      }
+    });
+    }else {
+      this.markAsTouched(this.resetForm)
+    }
+  }
+
+  markAsTouched(group) {
+    Object.keys(group.controls).map((field) => {
+      const control = group.get(field);
+      if (control instanceof FormControl) {
+        control.markAsTouched({ onlySelf: true });
+      } else if (control instanceof FormGroup) {
+        this.markAsTouched(control);
       }
     });
   }

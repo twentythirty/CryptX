@@ -44,6 +44,7 @@ export class EditInfoComponent implements OnInit {
   }
 
   updateInfo () {
+    if (this.userForm.valid){
     if (!this.passwordsMatch()) {
       this.message = "Passwords doesn't match";
       return false;
@@ -56,6 +57,20 @@ export class EditInfoComponent implements OnInit {
         this.message = error.error.error;
       }
     })
+    }else {
+      this.markAsTouched(this.userForm)
+    }
+  }
+
+  markAsTouched(group) {
+    Object.keys(group.controls).map((field) => {
+      const control = group.get(field);
+      if (control instanceof FormControl) {
+        control.markAsTouched({ onlySelf: true });
+      } else if (control instanceof FormGroup) {
+        this.markAsTouched(control);
+      }
+    });
   }
 
   passwordsMatch () {

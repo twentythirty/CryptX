@@ -5,48 +5,47 @@
   <form (ngSubmit)="authenticate()" action class="the-form login-form" [formGroup]="loginForm">
    
    <app-input-item class="form-item with-icons icon-login"
-        placeholder="Login"
+        [placeholder]="'auth.login' | translate"
         [formGroup]="loginForm"
         formControlName="Firstname"
         [(ngModel)]="username">
     </app-input-item>
     <app-input-item class="form-item with-icons icon-password"
-        placeholder="Password"
+        [placeholder]="'auth.password' | translate"
         type = "password"
         [formGroup]="loginForm"
         formControlName="Lastname"
         [(ngModel)]="password">
     </app-input-item>
-    <a (click)="showPassReset()" class="forgot-pass">Forgot password?</a>
+    <a (click)="showPassReset()" class="forgot-pass">{{'auth.forgot_password' | translate}}</a>
     <p *ngIf= !loading>
       {{ status }}
     </p>
     <div class="btn-wrap btn-right">
-        <button class="btn" [disabled] = loading type="submit">Login</button>
+        <button class="btn" [disabled] = loading type="submit">{{'common.login' | translate}}</button>
     </div>
   </form>
 </div>
 
-<app-modal *ngIf="showPasswordReset" (close)="hidePassReset()" heading="Please enter your Email">
+<app-modal *ngIf="showPasswordReset" (close)="hidePassReset()" heading="{{'auth.please_enter_email' | translate}}">
     <div *ngIf="!password_reset_sent">
-      <form [formGroup]="loginForm2">
-          <span class="label label-after-title">We will contact you soon</span>
+      <form [formGroup]="loginForm2" (ngSubmit)="requestPasswordReset()">
+          <span class="label label-after-title">{{'auth.contact_you_soon' | translate}}</span>
           <app-input-item class="form-item"
-            placeholder="Enter email"
+            [placeholder]="'users.enter_email' | translate"
             type = "text"
             [formGroup]="loginForm2"
             formControlName="Email"
             [(ngModel)]="reset_email">
           </app-input-item>
-        <!--<p *ngIf=!loading2>{{ password_reset_status }}</p>-->
         <div class="btn-wrap btn-right">
             <br>
-            <button class="btn submit" [disabled] = loading2 type="submit" (click)="requestPasswordReset()">Submit</button>
+            <button class="btn submit" [disabled] = loading2 type="submit">{{'common.submit' | translate}}</button>
          </div>
       </form>
     </div>
     <div *ngIf="password_reset_sent">
-      <span class="label label-after-title">If this user exists, then a confirmation link will shortly be sent to {{reset_email}}
-      <br><br>Please check your inbox.</span>
+      <span class="label label-after-title">{{'auth.password_reset_msg' | translate:{ reset_email: reset_email } }}
+      <br><br>{{'auth.check_your_inbox' | translate}}</span>
     </div>
 </app-modal>

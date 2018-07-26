@@ -8,7 +8,9 @@
     "delete": "Delete",
     "submit": "Submit",
     "confirm": "Confirm",
-    "cancel": "Cancel"
+    "cancel": "Cancel",
+    "login": "Login",
+    "change_password": "Change password"
   },
   "table": {
     "header": {
@@ -177,7 +179,19 @@
     "old_password": "Old password",
     "new_password": "New password",
     "repeat_password": "Repeat new password",
-    "enter_here": "Enter here"
+    "enter_here": "Enter here",
+    "login": "Login",
+    "password": "Password",
+    "forgot_password": "Forgot password?",
+    "password_reset_msg": "If this user exists, then a confirmation link will shortly be sent to {{reset_email}}",
+    "check_your_inbox": "Please check your inbox.",
+    "contact_you_soon": "We will contact you soon",
+    "please_enter_email": "Please enter your Email",
+    "enter_your_new_password": "ENTER YOUR NEW PASSWORD",
+    "enter_new_password": "Enter new password",
+    "repeat_new_password": "Repeat new password",
+    "successfully_changed": "Successfully changed your password.",
+    "you_can_login_now": "You can login now"
   },
   "error": {
 

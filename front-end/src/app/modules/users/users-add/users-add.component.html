@@ -26,8 +26,8 @@
     </app-input-item>
   </app-content-block>
 </form>
+<form *ngIf="form" [formGroup]="form">
   <app-content-block [heading]="'users.user_roles' | translate">
-  <form *ngIf="form" [formGroup]="form">
   <div class="check-list" [formArrayName]="'items'" [class.invalid]="!form.controls.selectedItems.valid">
     <div class="checkboxes-item" *ngFor="let control of form.controls.items.controls; let i = index;" [formGroup]="control">
       <label class="label-name">{{ control.controls.text.value }}</label>
@@ -48,11 +48,11 @@
        *ngIf="show"
         [errors]="form.controls.selectedItems.errors"
   ></app-input-item-error-message>
-</form>
   </app-content-block>
+</form>
 </div>
 <div class="sticky-controls-bar">
   <div class="wrapper">
-    <button class="btn submit" [disabled]=loading (click)="saveUser()">{{'common.submit' | translate}}</button>
+    <button type="submit" class="btn submit" [disabled]=loading (click)="saveUser()">{{'common.submit' | translate}}</button>
   </div>
 </div>

@@ -58,25 +58,41 @@ export class UsersAddComponent implements OnInit {
   }
 
   saveUser(){
-    this.invite.first_name = this.UserName;
-    this.invite.last_name = this.UserSurname;
-    this.invite.email = this.UserEmail;
-    this.invite.role_id = this.form.controls.selectedItems.value;
-    this.usersService.sendInvite(this.invite).subscribe(
-      data => {
-        if(data.success){
-          this.loading=false;
-          this.router.navigate(['/users']);
-        }else{
-          console.log(data.message)
-          this.loading=true;
-        }
-      }, error => {
-        console.log('Error', error);
-      }, () => {
-        this.loading = false;
-      }); 
-  }
+      if (this.form.valid && this.userForm.valid){
+        this.invite.first_name = this.UserName;
+        this.invite.last_name = this.UserSurname;
+        this.invite.email = this.UserEmail;
+        this.invite.role_id = this.form.controls.selectedItems.value;
+        this.usersService.sendInvite(this.invite).subscribe(
+        data => {
+              if(data.success){
+                this.loading=false;
+                this.router.navigate(['/users']);
+              }else{
+                console.log(data.message)
+                this.loading=true;
+              }
+            }, error => {
+              console.log('Error', error);
+            }, () => {
+              this.loading = false;
+            }); 
+      } else {
+        this.markAsTouched(this.userForm);
+        this.show = true;
+      }
+    }
+
+      markAsTouched(group) {
+        Object.keys(group.controls).map((field) => {
+          const control = group.get(field);
+          if (control instanceof FormControl) {
+            control.markAsTouched({ onlySelf: true });
+          } else if (control instanceof FormGroup) {
+            this.markAsTouched(control);
+          }
+        });
+      }
 
   add(){
     let checkboxGroup = new FormArray(this.rolelist.map(item => new FormGroup({
@@ -84,7 +100,6 @@ export class UsersAddComponent implements OnInit {
       text: new FormControl(item.name),
       checkbox: new FormControl(false)
     })));
-    
     // create a hidden reuired formControl to keep status of checkbox group
     let hiddenControl = new FormControl(this.mapItems(checkboxGroup.value), this.authService.getValidators('\\/users\\/invite','role_id'));
     // update checkbox group's value to hidden formcontrol
