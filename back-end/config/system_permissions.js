@@ -382,8 +382,18 @@ ROUTES = {
     required_permissions: [PERMISSIONS.VIEW_ASSETS]
   },
   GetRecipeRunDeposit: {
-    router_string: "/deposits/:recipe_detail_id",
+    router_string: "/deposits/:deposit_id",
     permissions_matcher: ROUTE_MATCHERS.GetRecipeRunDeposit,
+    required_permissions: [PERMISSIONS.VIEW_INVESTMENT_RUN]
+  },
+  SubmitRecipeRunDeposit: {
+    router_string: "/deposits/:deposit_id/submit",
+    permissions_matcher: ROUTE_MATCHERS.SubmitRecipeRunDeposit,
+    required_permissions: [PERMISSIONS.VIEW_INVESTMENT_RUN]
+  },
+  ApproveRecipeRunDeposit: {
+    router_string: "/deposits/:deposit_id/approve",
+    permissions_matcher: ROUTE_MATCHERS.ApproveRecipeRunDeposit,
     required_permissions: [PERMISSIONS.VIEW_INVESTMENT_RUN]
   },
 

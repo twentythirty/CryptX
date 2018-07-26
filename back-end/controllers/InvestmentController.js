@@ -6,7 +6,6 @@ const RecipeRunDetail = require('../models').RecipeRunDetail;
 const User = require('../models').User;
 const adminViewsService = require('../services/AdminViewsService');
 const investmentService = require('../services/InvestmentService');
-const DepositService = require('../services/DepositService');
 const OrdersService = require('../services/OrdersService');
 
 const createInvestmentRun = async function (req, res) {
@@ -221,22 +220,6 @@ const changeRecipeRunStatus = async function (req, res) {
   })
 };
 module.exports.changeRecipeRunStatus = changeRecipeRunStatus;
-
-const addDeposit = async function (req, res) {
-
-  let investment_run_id = req.params.investment_id,
-    asset_id = req.body.asset_id,
-    amount = req.body.amount;
-
-  let [err, deposit] = await to(DepositService.saveDeposit(investment_run_id, asset_id, amount));
-  if (err) return ReE(res, err.message);
-
-  return ReS(res, {
-    deposit
-  });
-}
-module.exports.addDeposit = addDeposit;
-
 
 const getRecipeRun = async function (req, res) {
 
@@ -542,57 +525,6 @@ const getRecipeOrdersColumnLOV = async function (req, res) {
 
 };
 module.exports.getRecipeOrdersColumnLOV = getRecipeOrdersColumnLOV;
-
-const getRecipeDeposit = async function (req, res) {
-
-  // mock data below
-
-  let mock_detail = {
-    id: 1,
-    transaction_asset_id: 2,
-    exchange_id: 1,
-    transaction_asset: "BTC",
-    exchange: "BITSTAMP",
-    account: "1541154",
-    amount: 165165,
-    investment_percentage: 64,
-    status: 150,
-  };
-
-  return ReS(res, {
-    recipe_deposit: mock_detail
-  })
-};
-module.exports.getRecipeDeposit = getRecipeDeposit;
-
-
-const getRecipeDeposits = async function (req, res) {
-
-  // mock data below
-
-  let mock_detail = [...Array(20)].map((detail, index) => ({
-    id: index,
-    transaction_asset_id: 2,
-    exchange_id: 1,
-    transaction_asset: "BTC",
-    exchange: "BITSTAMP",
-    account: "1541154",
-    amount: 165165,
-    investment_percentage: 64,
-    status: 150,
-  }));
-
-  let footer = create_mock_footer(mock_detail[0], 'deposits');
-
-
-  return ReS(res, {
-    recipe_deposits: mock_detail,
-    footer,
-    count: 20
-  })
-};
-module.exports.getRecipeDeposits = getRecipeDeposits;
-
 
 const getExecutionOrder = async function (req, res) {
 

@@ -8,6 +8,7 @@ const InvestmentController = require('./../controllers/InvestmentController');
 const OrdersController = require('./../controllers/OrdersController');
 const SystemController = require('./../controllers/SystemController');
 const InstrumentController = require('./../controllers/InstrumentController');
+const DepositController = require('./../controllers/DepositController');
 const MockController = require('./../controllers/MockController');
 
 // const custom 	        = require('./../middleware/custom');
@@ -489,26 +490,40 @@ router.get(
 );
 
 // Recipe Run deposits
+router.post(
+  ROUTES.SubmitRecipeRunDeposit.router_string,
+  stateless_auth,
+  check_permissions,
+  post_body_validator,
+  DepositController.submitDeposit
+);
+router.post(
+  ROUTES.ApproveRecipeRunDeposit.router_string,
+  stateless_auth,
+  check_permissions,
+  post_body_validator,
+  DepositController.approveDeposit
+);
 /* router.get( // might be deleted
   ROUTES.GetRecipeRunDeposits.router_string,
   stateless_auth,
   check_permissions,
   filter_reducer,
-  InvestmentController.getRecipeDeposits
+  DepositController.getRecipeDeposits
 ); */
 router.post(
   ROUTES.GetRecipeRunDepositsOf.router_string,
   stateless_auth,
   check_permissions,
   filter_reducer,
-  InvestmentController.getRecipeDeposits
+  DepositController.getRecipeDeposits
 );
 router.post(
   ROUTES.GetRecipeRunDeposits.router_string,
   stateless_auth,
   check_permissions,
   filter_reducer,
-  InvestmentController.getRecipeDeposits
+  DepositController.getRecipeDeposits
 );
 router.get(
   ROUTES.GetRecipeRunDepositsColLOV.router_string,
@@ -528,7 +543,7 @@ router.get(
   ROUTES.GetRecipeRunDeposit.router_string,
   stateless_auth,
   check_permissions,
-  InvestmentController.getRecipeDeposit
+  DepositController.getRecipeDeposit
 );
 
  // Execution orders
@@ -726,15 +741,6 @@ router.get(
   stateless_auth,
   check_permissions,
   InstrumentController.getLiquidityRequirementExchanges
-);
-
-
-router.post(
-  ROUTES.CreateDeposit.router_string,
-  stateless_auth,
-  check_permissions,
-  post_body_validator,
-  InvestmentController.addDeposit
 );
 
 // System Settings
