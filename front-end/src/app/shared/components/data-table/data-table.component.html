@@ -70,7 +70,7 @@
     <tr>
       <td *ngFor="let item of getFooterData()">
         <ng-container *ngIf="item">
-          <span class="upper-case"> {{item.value}} {{ item.template | translate:{ total: item.args } }} </span>
+          <span class="upper-case">{{ item.template | translate: item.args }} </span>
         </ng-container>
         <ng-container *ngIf="!item">
           -

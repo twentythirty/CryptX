@@ -6,6 +6,7 @@ const Permission = require('../models').Permission;
 const PermissionsCategory = require('../models').PermissionsCategory;
 const sequelize = require('sequelize');
 const Op = sequelize.Op;
+const adminViewService = require('../services/AdminViewsService');
 
 const createRole = async function (req, res) {
     const role_name = req.body.name,
@@ -70,9 +71,12 @@ const getRoles = async function(req, res) {
     
     let { rows: roles, count } = result;
 
+    let footer = await adminViewService.fetchRoleFooter(req.seq_where);
+
     return ReS(res, {
       roles: await Promise.all(roles.map(u => u.toWeb())),
-      count
+      count,
+      footer
     });
 };
 

@@ -80,8 +80,8 @@
       "to": "To"
     },
     "footer": {
-      "exchange_id": "Exchanges",
-      "external_instrument": "Identifiers"
+      "exchange_id": "{{ exchange_id }} Exchanges",
+      "external_instrument": "{{ external_instrument }} Identifiers"
     }
   },
 
@@ -129,9 +129,9 @@
     "quote_asset": "Quote asset",
     "add_instrument": "Add instrument",
     "footer": {
-      "symbol": "Instruments",
-      "exchanges_connected": "Connected",
-      "exchanges_failed": "Failed"
+      "symbol": "{{ symbol }} Instruments",
+      "exchanges_connected": "{{ exchanges_connected }} Connected",
+      "exchanges_failed": "{{ exchanges_failed }} Failed"
     }
   },
 
