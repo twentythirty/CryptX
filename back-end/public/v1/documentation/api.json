@@ -50,6 +50,49 @@
         }
       }
     },
+    "/cold_storage/{cold_storage_transfer_id}/approve": {
+      "post": {
+        "tags": [
+          "cold storage"
+        ],
+        "summary": "Approve cold storage transfer",
+        "description": "Approve cold storage transfer. After approving, system will initiate transfer.",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "cold_storage_transfer_id",
+            "in": "path",
+            "description": "ID of cold storage transfer",
+            "required": true,
+            "type": "integer"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "description": "Coldstorage transfer body",
+            "required": false,
+            "schema": {
+              "type": "object"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "$ref": "#/definitions/ColdStorageTranferListResponse"
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
     "/cold_storage/all": {
       "post": {
         "tags": [
@@ -76,6 +119,114 @@
             "description": "success",
             "schema": {
               "$ref": "#/definitions/ColdStorageTranferListResponse"
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/cold_storage/custodians/all": {
+      "post": {
+        "tags": [
+          "cold storage"
+        ],
+        "summary": "Get list of custodians",
+        "description": "Get list of custodians",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "description": "Filter object used to filter out data",
+            "required": false,
+            "schema": {
+              "$ref": "#/definitions/EntitiesFilter"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "$ref": "#/definitions/ColdStorageCustodianListResponse"
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/cold_storage/accounts/all": {
+      "post": {
+        "tags": [
+          "cold storage"
+        ],
+        "summary": "Get list of cold storage accounts",
+        "description": "Get list of cold storage accounts",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "description": "Filter object used to filter out data",
+            "required": false,
+            "schema": {
+              "$ref": "#/definitions/EntitiesFilter"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "$ref": "#/definitions/ColdStorageAccountListResponse"
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/cold_storage/accounts/add": {
+      "post": {
+        "tags": [
+          "cold storage"
+        ],
+        "summary": "Add cold storage accounts",
+        "description": "Add cold storage accounts",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "description": "Data needed to add cold storage account",
+            "required": false,
+            "schema": {
+              "$ref": "#/definitions/AddColdStorageAccountParams"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "$ref": "#/definitions/ColdStorageAccountResponse"
             }
           }
         },
@@ -1438,6 +1589,92 @@
             "description": "success",
             "schema": {
               "$ref": "#/definitions/RecipeOrderAlterResponse"
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/deposits/{deposit_id}/submit": {
+      "post": {
+        "tags": [
+          "deposits"
+        ],
+        "summary": "Submit deposit information",
+        "description": "Even though deposits are created, they do not hold any actual amounts until they are filled. This route will help to add deposit information such as amount deposited and fee that was deducted. User who added the deposit will be automatically",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "deposit_id",
+            "in": "path",
+            "description": "ID of deposit that will deposit information will be assigned to.",
+            "required": true,
+            "type": "integer"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "description": "Deposit information",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/SubmitDepositInfo"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "$ref": "#/definitions/RecipeDepositResponse"
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/deposits/{deposit_id}/approve": {
+      "post": {
+        "tags": [
+          "deposits"
+        ],
+        "summary": "Approve recipe deposit",
+        "description": "Even after recipe deposits are added they need to also be approved. After approving deposits reipe orders could be generated.",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "deposit_id",
+            "in": "path",
+            "description": "ID of deposit that will deposit information will be assigned to.",
+            "required": true,
+            "type": "integer"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "description": "Deposit information",
+            "required": false,
+            "schema": {
+              "type": "object"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "$ref": "#/definitions/RecipeDepositResponse"
             }
           }
         },
@@ -3952,6 +4189,104 @@
           }
         ]
       }
+    },
+    "/cold_storage/accounts/header_lov/{field_name}": {
+      "post": {
+        "tags": [
+          "cold storage"
+        ],
+        "summary": "Get a list of all values for this field in the cold storage accounts table",
+        "description": "Optionally filtered list of all values for a speicfic field in the cold storage view table. Used as the set of options in LOV-type headers. The POST version can be used in conjunction with header search. For users table, this `field_name` can be: `first_name`, `last_name`, `email`, `is_active`",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "field_name",
+            "in": "path",
+            "description": "name of column field to fetch LOV for. corresponds to value used to fill column by entity.",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "filter query",
+            "in": "body",
+            "description": "the query used to additionally filter the LOV",
+            "required": false,
+            "schema": {
+              "$ref": "#/definitions/LOVFilter"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "schema": {
+              "$ref": "#/definitions/HeaderColListResponse"
+            }
+          },
+          "401": {
+            "description": "unauthorized - no session",
+            "schema": {
+              "$ref": "#/definitions/ApiUnauthorizezdResponse"
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/cold_storage/custodians/header_lov/{field_name}": {
+      "post": {
+        "tags": [
+          "cold storage"
+        ],
+        "summary": "Get a list of all values for this field in the cold storage custodians table",
+        "description": "Optionally filtered list of all values for a speicfic field in the cold storage view table. Used as the set of options in LOV-type headers. The POST version can be used in conjunction with header search. For users table, this `field_name` can be: `first_name`, `last_name`, `email`, `is_active`",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "field_name",
+            "in": "path",
+            "description": "name of column field to fetch LOV for. corresponds to value used to fill column by entity.",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "filter query",
+            "in": "body",
+            "description": "the query used to additionally filter the LOV",
+            "required": false,
+            "schema": {
+              "$ref": "#/definitions/LOVFilter"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "schema": {
+              "$ref": "#/definitions/HeaderColListResponse"
+            }
+          },
+          "401": {
+            "description": "unauthorized - no session",
+            "schema": {
+              "$ref": "#/definitions/ApiUnauthorizezdResponse"
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
     }
   },
   "securityDefinitions": {
@@ -3962,6 +4297,135 @@
     }
   },
   "definitions": {
+    "AddColdStorageAccountParams": {
+      "description": "Cold storage transfer information",
+      "type": "object",
+      "properties": {
+        "strategy_type": {
+          "type": "number",
+          "example": 102
+        },
+        "asset_id": {
+          "type": "number",
+          "example": 21
+        },
+        "custodian_id": {
+          "type": "number",
+          "example": 33
+        },
+        "address": {
+          "type": "string",
+          "example": "1F1tAaz5x1HUXrCNLbtMDqcw6o5GNn4xqX"
+        }
+      }
+    },
+    "ColdStorageAccountListResponse": {
+      "description": "Cold storage transfer information",
+      "type": "object",
+      "allOf": [
+        {
+          "$ref": "#/definitions/ListResponse"
+        },
+        {
+          "properties": {
+            "accounts": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/ColdStorageAccount"
+              }
+            }
+          }
+        }
+      ]
+    },
+    "ColdStorageAccountResponse": {
+      "description": "Cold storage transfer information",
+      "type": "object",
+      "properties": {
+        "status": {
+          "type": "boolean",
+          "example": true
+        },
+        "account": {
+          "$ref": "#/definitions/ColdStorageAccount"
+        }
+      }
+    },
+    "ColdStorageAccount": {
+      "description": "Cold storage account",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "number",
+          "example": 18
+        },
+        "asset_id": {
+          "type": "number",
+          "example": 2
+        },
+        "asset": {
+          "type": "string",
+          "example": "Bitcoin"
+        },
+        "strategy_type": {
+          "type": "number",
+          "example": 101
+        },
+        "address": {
+          "type": "string",
+          "example": "x98m1b4B4Kdk4n2kmadmIxSaiu"
+        },
+        "custodian": {
+          "type": "string",
+          "example": "Custodian ID"
+        },
+        "balance": {
+          "type": "number",
+          "example": 32
+        },
+        "balance_usd": {
+          "type": "number",
+          "example": 186800
+        },
+        "update_timestamp": {
+          "type": "number",
+          "example": 1532606182713
+        }
+      }
+    },
+    "ColdStorageCustodianListResponse": {
+      "description": "Cold storage transfer information",
+      "type": "object",
+      "allOf": [
+        {
+          "$ref": "#/definitions/ListResponse"
+        },
+        {
+          "properties": {
+            "custodians": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/ColdStorageCustodian"
+              }
+            }
+          }
+        }
+      ]
+    },
+    "ColdStorageCustodian": {
+      "description": "Cold storage transfer information",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "number",
+          "example": 4
+        },
+        "name": {
+          "type": "string",
+          "example": "Custodian name"
+        }
+      }
+    },
     "ColdStorageTranferListResponse": {
       "description": "Cold storage transfer information",
       "type": "object",
@@ -3972,7 +4436,10 @@
         {
           "properties": {
             "transfers": {
-              "$ref": "#/definitions/ColdStorageTransfer"
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/ColdStorageTransfer"
+              }
             }
           }
         }
@@ -4461,45 +4928,45 @@
     "InstrumentExchangeMapExpanded": {
       "description": "Servers response with basic instrument information.",
       "type": "object",
-        "allOf": [
-          {
-              "$ref": "#/definitions/ListResponse"
-          },
-          {
-            "properties": {
-              "mapping_data": {
-                "type": "array",
-                "items": {
-                  "allOf": [
-                    {
-                      "$ref": "#/definitions/InstrumentExchangeMap"
-                    },
-                    {
-                      "properties": {
-                        "exchange_name": {
-                          "type": "string",
-                          "example": "Bitstamp0"
-                        },
-                        "last_week_vol": {
-                          "type": "number",
-                          "example": 86100
-                        },
-                        "last_updated": {
-                          "type": "number",
-                          "example": 1531486061727
-                        },
-                        "liquidity_rules": {
-                          "type": "number",
-                          "example": 3
-                        }
+      "allOf": [
+        {
+          "$ref": "#/definitions/ListResponse"
+        },
+        {
+          "properties": {
+            "mapping_data": {
+              "type": "array",
+              "items": {
+                "allOf": [
+                  {
+                    "$ref": "#/definitions/InstrumentExchangeMap"
+                  },
+                  {
+                    "properties": {
+                      "exchange_name": {
+                        "type": "string",
+                        "example": "Bitstamp0"
+                      },
+                      "last_week_vol": {
+                        "type": "number",
+                        "example": 86100
+                      },
+                      "last_updated": {
+                        "type": "number",
+                        "example": 1531486061727
+                      },
+                      "liquidity_rules": {
+                        "type": "number",
+                        "example": 3
                       }
                     }
-                  ]
-                }
+                  }
+                ]
               }
             }
           }
-        ]
+        }
+      ]
     },
     "InstrumentExchangeMapResponse": {
       "description": "Servers response with basic instrument information.",
@@ -4861,6 +5328,20 @@
         },
         "recipe_deposit": {
           "$ref": "#/definitions/RecipeDeposit"
+        }
+      }
+    },
+    "SubmitDepositInfo": {
+      "description": "Parameters for adding deposit information",
+      "type": "object",
+      "properties": {
+        "amount": {
+          "type": "number",
+          "example": 15.12
+        },
+        "deposit_management_fee": {
+          "type": "number",
+          "example": 1.1
         }
       }
     },

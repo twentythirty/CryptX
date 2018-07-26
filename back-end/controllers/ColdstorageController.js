@@ -106,7 +106,7 @@ const addColdstorageAccount = async function (req, res) {
     return ReE(res, "strategy_type, asset_id, custodian_id and address must be supplied")
   
   let mock_account = {
-    id: index +1, 
+    id: 1, 
     asset_id: asset_id,
     asset: "Bitcoin",
     strategy_type: strategy_type,
