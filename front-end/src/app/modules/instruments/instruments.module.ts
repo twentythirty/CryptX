@@ -10,11 +10,13 @@ import { InstrumentAddComponent } from './instrument-add/instrument-add.componen
 import { InstrumentListComponent } from './instrument-list/instrument-list.component';
 
 import { InstrumentsService } from '../../services/instruments/instruments.service';
+import { InstrumentInfoComponent } from './instrument-info/instrument-info.component';
 
 @NgModule({
   declarations: [
     InstrumentAddComponent,
     InstrumentListComponent,
+    InstrumentInfoComponent,
   ],
   imports: [
     CommonModule,

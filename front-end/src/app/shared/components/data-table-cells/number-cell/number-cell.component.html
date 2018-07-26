@@ -1,1 +1,1 @@
-<span>{{ (value | number:digitsInfo:locale) || '-' }}</span>
+<span>{{ (value | number:digitsInfo:locale) || '-' }}<span *ngIf="suffix && value"> {{ suffix }}</span></span>

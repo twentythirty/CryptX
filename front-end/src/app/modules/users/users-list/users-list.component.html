@@ -1,15 +1,17 @@
 <div class="top-controls">
-  <span class="headline-title">{{ 'users.headline' | translate:{ count: count } }}</span>
-  <a [routerLink]="['/users/add']" class="btn start" modal-btn-open="">
-        <span>{{ 'users.add_new_user' | translate }}</span>
-      </a>
+  <span class="headline-title">{{count}} Users</span>
+  <a [routerLink]="['/users/add']" class="btn start">
+    <span>Add new user</span>
+  </a>
 </div>
+
 <app-data-table
   [dataSource]="usersDataSource"
   [columnsToShow]="usersColumnsToShow"
   (setFilter)="onSetFilter($event)"
   (openRow)="openRow($event)">
 </app-data-table>
+
 <app-pagination 
   [count]="count"  
   [perPage]="pageSize" 

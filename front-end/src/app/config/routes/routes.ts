@@ -24,6 +24,7 @@ import { ExecutionOrderFillDetailComponent } from '../../modules/investment/exec
 import { DepositDetailComponent } from '../../modules/investment/deposit-detail/deposit-detail.component';
 import { InstrumentAddComponent } from '../../modules/instruments/instrument-add/instrument-add.component';
 import { InstrumentListComponent } from '../../modules/instruments/instrument-list/instrument-list.component';
+import { InstrumentInfoComponent } from '../../modules/instruments/instrument-info/instrument-info.component';
 import { LiquidityListComponent } from '../../modules/liquidity/liquidity-list/liquidity-list.component';
 import { LiquidityCreateComponent } from '../../modules/liquidity/liquidity-create/liquidity-create.component';
 
@@ -110,6 +111,11 @@ const routes: Routes = [
   {
     path: 'instruments/create',
     component: InstrumentAddComponent,
+    canActivate: [AuthGuard]
+  },
+  {
+    path: 'instrument/:id',
+    component: InstrumentInfoComponent,
     canActivate: [AuthGuard]
   },
 

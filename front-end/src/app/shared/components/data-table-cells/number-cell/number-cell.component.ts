@@ -5,6 +5,7 @@ export class NumberCellDataColumn extends TableDataColumn {
   component? = NumberCellComponent;
   inputs?: {
     value?: boolean;
+    suffix?: string;
     digitsInfo?: string;
     locale?: string;
   }
@@ -24,6 +25,7 @@ export class NumberCellDataColumn extends TableDataColumn {
 export class NumberCellComponent implements OnInit {
 
   @Input() value: number;
+  @Input() suffix: string;
 
   /**
    * Inputs specific to Angular DecimalPipe

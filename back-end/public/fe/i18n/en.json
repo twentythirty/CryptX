@@ -10,7 +10,8 @@
     "confirm": "Confirm",
     "cancel": "Cancel",
     "login": "Login",
-    "change_password": "Change password"
+    "change_password": "Change password",
+    "save_changes": "Save changes"
   },
   "table": {
     "header": {
@@ -64,7 +65,12 @@
       "email": "Email",
       "creation_date": "Creation date",
       "exchanges_connected": "Exchanges Connected",
-      "exchanges_failed": "Exchanges Failed"
+      "exchanges_failed": "Exchanges Failed",
+      "identifier": "Identifier",
+      "current_price": "Current price",
+      "last_day_vol": "Last day Volume",
+      "last_7days_vol": "Last 7 days Volume",
+      "last_updated": "Last Updated"
     },
     "filter": {
       "all": "All",
@@ -72,6 +78,10 @@
       "select_ordering": "Select_ordering",
       "from": "From",
       "to": "To"
+    },
+    "footer": {
+      "exchange_id": "Exchanges",
+      "external_instrument": "Identifiers"
     }
   },
 
@@ -96,9 +106,9 @@
     "enter_role_name": "Enter role name",
     "permissions": "Permissions",
     "role_delete_confirm_msg": "Are you sure you want delete this role?",
-     "footer": {
+    "footer": {
       "roles": "Names"
-     }
+    }
   },
 
   "liquidity": {
@@ -126,7 +136,10 @@
   },
 
   "exchanges": {
-    "exchange": "Exchange"
+    "exchange": "Exchange",
+    "mapping": "Mapping",
+    "new_mapping": "New mapping",
+    "exchange_delete_confirm_msg": "Are you sure you want delete this exchange?"
   },
 
   "assets": {

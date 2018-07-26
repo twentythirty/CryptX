@@ -23,7 +23,7 @@ export class DataTableCommonManagerComponent implements OnInit {
 
   constructor(
     public route: ActivatedRoute
-  ) { }
+  ) {}
 
   ngOnInit() {
     this.route.queryParams
