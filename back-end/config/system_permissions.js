@@ -529,8 +529,31 @@ ROUTES = {
     permissions_matcher: ROUTE_MATCHERS.GetColdStorageTransfersColLOV,
     required_permissions: [PERMISSIONS.CREATE_INVESTMENT_RUN]
   },
-
-
+  ApproveColdStorageTransfer: {
+    router_string: "/cold_storage/:transfer_id/approve",
+    permissions_matcher: ROUTE_MATCHERS.GetColdStorageTransfers,
+    required_permissions: [PERMISSIONS.CREATE_INVESTMENT_RUN]
+  },
+  GetColdStorageCustodians: {
+    router_string: "/cold_storage/custodians/all",
+    permissions_matcher: ROUTE_MATCHERS.GetColdStorageTransfers,
+    required_permissions: [PERMISSIONS.CREATE_INVESTMENT_RUN]
+  },
+  GetColdStorageCustodiansColLOV: {
+    router_string: "/cold_storage/custodians/header_lov/:fields_name",
+    permissions_matcher: ROUTE_MATCHERS.GetColdStorageTransfers,
+    required_permissions: [PERMISSIONS.CREATE_INVESTMENT_RUN]
+  },
+  GetColdstorageAccounts: {
+    router_string: "/cold_storage/accounts/all",
+    permissions_matcher: ROUTE_MATCHERS.GetColdStorageTransfers,
+    required_permissions: [PERMISSIONS.CREATE_INVESTMENT_RUN]
+  },
+  GetColdstorageAccountsColLOV: {
+    router_string: "/cold_storage/accounts/header_lov/:fields_name",
+    permissions_matcher: ROUTE_MATCHERS.GetColdStorageTransfers,
+    required_permissions: [PERMISSIONS.CREATE_INVESTMENT_RUN]
+  },
   // System settings
   ChangeSettingValues: {
     router_string: "/settings/:setting_id",
