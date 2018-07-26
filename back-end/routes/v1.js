@@ -9,6 +9,7 @@ const OrdersController = require('./../controllers/OrdersController');
 const SystemController = require('./../controllers/SystemController');
 const InstrumentController = require('./../controllers/InstrumentController');
 const DepositController = require('./../controllers/DepositController');
+const ColdstorageController = require('./../controllers/ColdstorageController');
 const MockController = require('./../controllers/MockController');
 
 // const custom 	        = require('./../middleware/custom');
@@ -798,13 +799,45 @@ router.post(
   stateless_auth,
   check_permissions,
   filter_reducer,
-  MockController.getColdStorageTransfers
+  ColdstorageController.getColdStorageTransfers
 );
 router.post(
   ROUTES.GetColdStorageTransfersColLOV.router_string,
   stateless_auth,
   check_permissions,
   filter_reducer,
+  MockController.fetchColLOV
+);
+router.post(
+  ROUTES.ApproveColdStorageTransfer.router_string,
+  stateless_auth,
+  check_permissions,
+  ColdstorageController.approveColdStorageTransfer
+);
+router.post(
+  ROUTES.GetColdStorageCustodians.router_string,
+  stateless_auth,
+  check_permissions,
+  filter_reducer,
+  ColdstorageController.getCustodians
+);
+router.post(
+  ROUTES.GetColdStorageCustodiansColLOV.router_string,
+  stateless_auth,
+  check_permissions,
+  MockController.fetchColLOV
+);
+router.post(
+  ROUTES.GetColdstorageAccounts.router_string,
+  stateless_auth,
+  check_permissions,
+  filter_reducer,
+  ColdstorageController.getColdstorageAccounts
+);
+router.post(
+  ROUTES.GetColdstorageAccountsColLOV.router_string,
+  stateless_auth,
+  check_permissions,
   MockController.fetchColLOV
 );
 //********* API DOCUMENTATION **********
