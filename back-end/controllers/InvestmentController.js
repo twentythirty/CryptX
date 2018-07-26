@@ -596,6 +596,15 @@ module.exports.getRecipeDeposits = getRecipeDeposits;
 
 const getExecutionOrder = async function (req, res) {
 
+  //This will replace the mock data once the fees are resolved.
+  /*const execution_order_id = req.params.order_detail_id;
+
+  let [ err, execution_order ] = await to(adminViewsService.fetchExecutionOrderView(execution_order_id));
+  if(err) return ReE(res, err.message, 422);
+  if(!execution_order) return ReE(res, err.message, 422);
+
+  execution_order = execution_order.toWeb();*/
+
   // mock data below
 
   let mock_detail = {
@@ -620,6 +629,26 @@ module.exports.getExecutionOrder = getExecutionOrder;
 
 const getExecutionOrders = async function (req, res) {
 
+  //This will replace the mock dataonce the fees are resolved.
+  /*let { seq_query, sql_where } = req;
+  const recipe_order_id = req.params.order_detail_id;
+
+  if(recipe_order_id) {
+    if(!_.isPlainObject(seq_query)) seq_query = { where: {} };
+    seq_query.where.recipe_order_id = recipe_order_id;
+  }
+
+  let [ err, result ] = await to(adminViewsService.fetchExecutionOrdersViewDataWithCount(seq_query));
+  if(err) return ReE(res, err.message, 422);
+
+  let footer = [];
+  [ err, footer ] = await to(adminViewsService.fetchExecutionOrdersViewFooter(sql_where));
+  if(err) return ReE(res, err.message, 422);
+
+  let { data: execution_orders, total: count } = result;
+  
+  execution_orders = execution_orders.map(eo => eo.toWeb())*/
+
   // mock data below
   let mock_detail = [...Array(20)].map((detail, index) => ({
     id: index,
@@ -634,15 +663,31 @@ const getExecutionOrders = async function (req, res) {
     completion_time: 1531396477062
   }));
 
-  let footer = create_mock_footer(mock_detail[0], 'execution_order');
+  let mock_footer = create_mock_footer(mock_detail[0], 'execution_order');
 
   return ReS(res, {
     execution_orders: mock_detail,
-    footer,
+    footer: mock_footer,
     count: 20
   })
 };
 module.exports.getExecutionOrders = getExecutionOrders;
+
+const getExecutionOrdersColumnLOV = async function (req, res) {
+
+  const field_name = req.params.field_name;
+  const { query } = _.isPlainObject(req.body) ? req.body : { query: '' };
+
+  const [ err, field_vals ] = await to(adminViewsService.fetchExecutionOrdersViewHeaderLOV(field_name, query));
+  if(err) return ReE(res, err.message, 422);
+
+  return ReS(res, {
+    query: query,
+    lov: field_vals
+  })
+
+};
+module.exports.getExecutionOrdersColumnLOV = getExecutionOrdersColumnLOV;
 
 
 const ExecutionOrderFill = async function (req, res) {
