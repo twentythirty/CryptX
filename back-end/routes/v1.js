@@ -828,6 +828,12 @@ router.post(
   MockController.fetchColLOV
 );
 router.post(
+  ROUTES.AddColdstorageAccount.router_string,
+  stateless_auth,
+  check_permissions,
+  ColdstorageController.addColdstorageAccount
+);
+router.post(
   ROUTES.GetColdstorageAccounts.router_string,
   stateless_auth,
   check_permissions,

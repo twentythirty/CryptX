@@ -544,6 +544,11 @@ ROUTES = {
     permissions_matcher: ROUTE_MATCHERS.GetColdStorageTransfers,
     required_permissions: [PERMISSIONS.CREATE_INVESTMENT_RUN]
   },
+  AddColdstorageAccount: {
+    router_string: "/cold_storage/accounts/create",
+    permissions_matcher: ROUTE_MATCHERS.GetColdStorageTransfers,
+    required_permissions: [PERMISSIONS.CREATE_INVESTMENT_RUN]
+  },
   GetColdstorageAccounts: {
     router_string: "/cold_storage/accounts/all",
     permissions_matcher: ROUTE_MATCHERS.GetColdStorageTransfers,

@@ -93,6 +93,36 @@ const getCustodians = async function (req, res) {
 };
 module.exports.getCustodians = getCustodians;
 
+const addColdstorageAccount = async function (req, res) {
+
+  let {
+    strategy_type,
+    asset_id,
+    custodian_id,
+    address
+  } = req.body;
+
+  if (strategy_type == null || asset_id == null || custodian_id  == null || address == null)
+    return ReE(res, "strategy_type, asset_id, custodian_id and address must be supplied")
+  
+  let mock_account = {
+    id: index +1, 
+    asset_id: asset_id,
+    asset: "Bitcoin",
+    strategy_type: strategy_type,
+    address: "x98m1b4B4Kdk4n2kmadmIxSaiu",
+    custodian: "Custodian ID",
+    balance: 32,
+    balance_usd: 186800,
+    update_timestamp: 1532606182713
+  };
+
+  return ReS(res, {
+    account: mock_account
+  });
+};
+module.exports.addColdstorageAccount = addColdstorageAccount;
+
 const getColdstorageAccounts = async function (req, res) {
 
   let mock_accounts = [...Array(20)].map((cust, index) => ({
