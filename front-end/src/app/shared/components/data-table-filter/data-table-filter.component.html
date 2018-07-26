@@ -82,6 +82,6 @@
       </ul>
     </div>
     <div>
-      <app-btn class="btn thinner" (onClick)="onFilterChange()">{{ 'table.filter.filter' | translate }}</app-btn>
+      <app-btn [thinner]="true" (onClick)="onFilterChange()">{{ 'table.filter.filter' | translate }}</app-btn>
     </div>
   </div>

@@ -74,7 +74,7 @@
     },
     "filter": {
       "all": "All",
-      "filter": "Filter",
+      "filter": "FILTER",
       "select_ordering": "Select_ordering",
       "from": "From",
       "to": "To"
@@ -151,12 +151,12 @@
       "402": "Blacklisted"
     },
     "footer": {
-      "capitalization": "${{ total }} total",
-      "status": "Blacklisted",
-      "is_deposit": "Deposit",
-      "is_base": "Base",
-      "symbol": "Items",
-      "is_cryptocurrency": "Cryptos"
+      "capitalization": "${{ capitalisation }} total",
+      "status": "{{ status }} Blacklisted",
+      "is_deposit": "{{ is_deposit }} Deposit",
+      "is_base": "{{is_base}} Base",
+      "symbol": "{{symbol}} Items",
+      "is_cryptocurrency": "{{is_cryptocurency}}Cryptos"
     }
   },
 
@@ -179,11 +179,11 @@
     "select": "Select",
     "user_deactivate_confirm_msg": "Are you sure you want {{buttonName}} this user?",
     "footer": {
-      "first_name": "Names",
-      "last_name": "Surnames",
-      "email": "Emails",
-      "created_timestamp": "Dates",
-      "is_active": "Active"
+      "first_name": "{{first_name}} Names",
+      "last_name": "{{last_name}} Surnames",
+      "email": "{{email}} Emails",
+      "created_timestamp": "{{created_timestamp}} Dates",
+      "is_active": "{{is_active}} Active"
     }
   },
 
