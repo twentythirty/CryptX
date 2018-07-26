@@ -37,7 +37,6 @@ export class RolesListComponent extends DataTableCommonManagerComponent {
     this.rolesService.getAllRoles(this.requestData).subscribe(res => {
       this.rolesDataSource.body = res.roles;
       this.count = res.count;
-      console.log(res)
       if(res.footer) {
         this.rolesDataSource.footer = this.rolesColumnsToShow.map(col => {
             let key = (typeof col == 'string') ? col : col.column;

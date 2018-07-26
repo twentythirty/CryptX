@@ -11,23 +11,6 @@
               <div *ngIf="showUserMenu"  class="filter-sort-box display-block">
                   <ul class="bottom-part new">
                     <li class="new2">
-                      <button (click)="toggleUserRoles()" class="name">
-                      <a class="new3">Logged as:</a>
-                      <br>
-                      <a class="new4">Admin</a>
-                      </button>
-                      <div *ngIf="showUserRoles">
-                        <li class="checkbox">
-                          <input type="checkbox" id="1">
-                          <label for="1">Admin</label>
-                        </li>
-                        <li class="checkbox">
-                          <input type="checkbox" id="2">
-                          <label for="2">Admin</label>
-                        </li>
-                      </div>
-                    </li>
-                    <li class="new2">
                       <button routerLink="/change_my_info">Change password</button>
                     </li>
                     <li class="new2">

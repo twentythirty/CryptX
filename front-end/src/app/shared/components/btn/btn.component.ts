@@ -6,7 +6,7 @@ import { Component, Input, Output, EventEmitter } from '@angular/core';
   styleUrls: ['./btn.component.scss']
 })
 export class BtnComponent {
-  @Input('big') big: boolean;
+  @Input('thinner') thinner: boolean;
 
   @Output() onClick = new EventEmitter<void>();
 
