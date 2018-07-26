@@ -32,6 +32,8 @@ import { ConfirmCellComponent } from './components/data-table-cells/confirm-cell
 import { MatProgressSpinnerModule, MatDatepickerModule, MatFormFieldModule, MatNativeDateModule, MatInputModule } from '@angular/material';
 import { RationaleModalComponent } from './components/rationale-modal/rationale-modal.component';
 import { TranslateModule } from '@ngx-translate/core';
+import { InputCellComponent } from './components/data-table-cells/input-cell/input-cell.component';
+import { SelectCellComponent } from './components/data-table-cells/select-cell/select-cell.component';
 
 @NgModule({
     imports: [
@@ -51,6 +53,8 @@ import { TranslateModule } from '@ngx-translate/core';
           PercentCellComponent,
           NumberCellComponent,
           DateCellComponent,
+          InputCellComponent,
+          SelectCellComponent,
           BooleanCellComponent,
           StatusCellComponent,
           ConfirmCellComponent
@@ -81,7 +85,9 @@ import { TranslateModule } from '@ngx-translate/core';
         InputItemErrorMessageComponent,
         StatusCellComponent,
         ConfirmCellComponent,
-        RationaleModalComponent
+        RationaleModalComponent,
+        InputCellComponent,
+        SelectCellComponent,
     ],
     exports: [
         MatProgressSpinnerModule,
@@ -106,6 +112,8 @@ import { TranslateModule } from '@ngx-translate/core';
         DynamicModule,
         InputItemErrorMessageComponent,
         RationaleModalComponent,
+        InputCellComponent,
+        SelectCellComponent,
     ]
 })
 export class SharedModule {}

@@ -94,7 +94,7 @@ export class DataTableComponent implements OnInit {
 
   getFooterData(): Array<object> {
     return this.columnsToShow.map(col => {
-      let f = _.filter(this.dataSource.footer, ['name', (typeof col == 'string') ? col : col.column])
+      let f = _.filter(this.dataSource.footer, ['name', (typeof col == 'string') ? col : col.column]);
       if(f.length) {
        if (f[0].args[Object.keys(f[0].args)[0]]){
           f[0].args = (f[0].args[Object.keys(f[0].args)[0]])

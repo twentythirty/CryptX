@@ -1,10 +1,11 @@
 import { Component } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 
 import { DataTableCommonManagerComponent } from '../../../shared/components/data-table-common-manager/data-table-common-manager.component';
 import { TableDataSource, TableDataColumn } from '../../../shared/components/data-table/data-table.component';
 
 import { InstrumentsService } from '../../../services/instruments/instruments.service';
+import { Instrument } from '../../../shared/models/instrument';
 
 @Component({
   selector: 'app-instrument-list',
@@ -31,6 +32,7 @@ export class InstrumentListComponent extends DataTableCommonManagerComponent {
   constructor(
     public route: ActivatedRoute,
     public instrumentsService: InstrumentsService,
+    public router: Router,
   ) {
     super(route);
     this.getFilterLOV();
@@ -39,7 +41,7 @@ export class InstrumentListComponent extends DataTableCommonManagerComponent {
   /**
    * Add a rowData$ Observable to text and boolean column filters
    */
-  getFilterLOV(): void {
+  private getFilterLOV(): void {
     this.instrumentsDataSource.header.filter(
       col => ['symbol'].includes(col.column)
     ).map(
@@ -49,20 +51,21 @@ export class InstrumentListComponent extends DataTableCommonManagerComponent {
     )
   }
 
-  openRow(): void {}
+  public openRow(instrument: Instrument): void {
+    this.router.navigate(['/instrument', instrument.id]);
+  }
 
   getAllData(): void {
     this.instrumentsService.getAllInstruments(this.requestData).subscribe(
       data => {
-        this.instrumentsDataSource.body = data.instruments;
+        Object.assign(this.instrumentsDataSource, {
+          body: data.instruments,
+          footer: data.footer
+        });
         this.count = data.count;
-
-        if (data.footer) {
-          this.instrumentsDataSource.footer = data.footer;
-        }
       },
-      error => {
-        console.log(error);
+      err => {
+        console.log(err);
       }
     );
   }

@@ -58,14 +58,12 @@ export class InstrumentAddComponent implements OnInit {
     this.instrumentsService.createInstrument(request).subscribe(
       data => {
         if (data.success) {
-          this.router.navigate(['/instruments/all']);
+          this.router.navigate(['/instrument/', data.instrument.id]);
         } else {
           console.log(data.error);
         }
       },
-      error => {
-        console.log(error);
-      },
+      err => {},
       () => {
         this.loading = false;
       }
