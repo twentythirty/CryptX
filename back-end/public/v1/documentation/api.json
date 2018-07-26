@@ -940,8 +940,8 @@
         ]
       }
     },
-    "/investments/{investment_id}/stats": {
-      "get": {
+    "/investments/timeline": {
+      "post": {
         "tags": [
           "investment"
         ],
@@ -951,11 +951,13 @@
         ],
         "parameters": [
           {
-            "name": "investment_id",
-            "in": "path",
-            "description": "identifier of investment run to fecth",
-            "required": true,
-            "type": "integer"
+            "name": "body",
+            "in": "body",
+            "description": "ID of any investment run data to calculate investment run statistics/timeline. Only one of the ID is needed to find investment run. If more IDs are specified, then they will be ignored.",
+            "required": false,
+            "schema": {
+              "$ref": "#/definitions/InvestmentRunStatsRequest"
+            }
           }
         ],
         "responses": {
@@ -4572,6 +4574,28 @@
               }
             }
           }
+        }
+      }
+    },
+    "InvestmentRunStatsRequest": {
+      "description": "Investment run timeline query object",
+      "type": "object",
+      "properties": {
+        "investment_run_id": {
+          "type": "number",
+          "example": 2
+        },
+        "recipe_run_id": {
+          "type": "number",
+          "example": 2
+        },
+        "recipe_order_id": {
+          "type": "number",
+          "example": 2
+        },
+        "execution_order_id": {
+          "type": "number",
+          "example": 2
         }
       }
     },

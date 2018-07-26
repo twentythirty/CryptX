@@ -273,7 +273,7 @@ ROUTES = {
     required_permissions: [PERMISSIONS.VIEW_INVESTMENT_RUN]
   },
   GetInvestmentStats: {
-    router_string: "/investments/:investment_id/stats",
+    router_string: "/investments/timeline",
     permissions_matcher: ROUTE_MATCHERS.GetInvestmentStats,
     required_permissions: [PERMISSIONS.VIEW_INVESTMENT_RUN]
   },

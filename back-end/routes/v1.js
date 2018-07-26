@@ -325,7 +325,7 @@ router.get(
   check_permissions,
   InvestmentController.getInvestmentRun
 );
-router.get(
+router.post(
   ROUTES.GetInvestmentStats.router_string,
   stateless_auth,
   check_permissions,
