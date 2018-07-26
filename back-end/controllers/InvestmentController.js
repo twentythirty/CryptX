@@ -449,6 +449,15 @@ module.exports.getRecipeRunDetailsColumnLOV = getRecipeRunDetailsColumnLOV;
 
 const getRecipeOrder = async function (req, res) {
 
+  //This will replace the mock data once we know how to calculate the sum of fees.
+  /*const recipe_order_id = req.params.order_id;
+
+  let [ err, recipe_order ] = await to(adminViewsService.fetchRecipeOrderView(recipe_order_id));
+  if(err) return ReE(res, err.message, 422);
+  if(!recipe_order) return ReE(res, err.message, 422);
+
+  recipe_order = recipe_order.toWeb();*/
+
   // mock data below
 
   let mock_detail = {
@@ -472,6 +481,27 @@ module.exports.getRecipeOrder = getRecipeOrder;
 
 const getRecipeOrders = async function (req, res) {
 
+  //This will replace the mock data once we know how to calculate the sum of fees.
+  /*let { seq_query, sql_where } = req;
+  const recipe_id = req.params.recipe_run_id;
+
+  if(recipe_id) {
+    if(!_.isPlainObject(seq_query)) seq_query = { where: {} };
+    seq_query.where.recipe_run_id = recipe_id;
+  }
+
+  let [ err, result ] = await to(adminViewsService.fetchRecipeOrdersViewDataWithCount(seq_query));
+  if(err) return ReE(res, err.message, 422);
+
+  let footer = [];
+  [ err, footer ] = await to(adminViewsService.fetchRecipeOrdersViewFooter(sql_where));
+  if(err) return ReE(res, err.message, 422);
+
+  let { data: recipe_orders, total: count } = result;
+  
+  recipe_orders = recipe_orders.map(ro => ro.toWeb());*/
+  
+
   // mock data below
 
   let mock_detail = [...Array(20)].map((detail, index) => ({
@@ -487,16 +517,31 @@ const getRecipeOrders = async function (req, res) {
 
   }));
 
-  let footer = create_mock_footer(mock_detail[0], 'orders');
+  let mock_footer = create_mock_footer(mock_detail[0], 'orders');
 
   return ReS(res, {
     recipe_orders: mock_detail,
-    footer,
-    count: 10
+    footer: mock_footer,
+    count: 20
   })
 };
 module.exports.getRecipeOrders = getRecipeOrders;
 
+const getRecipeOrdersColumnLOV = async function (req, res) {
+
+  const field_name = req.params.field_name;
+  const { query } = _.isPlainObject(req.body) ? req.body : { query: '' };
+
+  const [ err, field_vals ] = await to(adminViewsService.fetchRecipeOrdersViewHeaderLOV(field_name, query));
+  if(err) return ReE(res, err.message, 422);
+
+  return ReS(res, {
+    query: query,
+    lov: field_vals
+  })
+
+};
+module.exports.getRecipeOrdersColumnLOV = getRecipeOrdersColumnLOV;
 
 const getRecipeDeposit = async function (req, res) {
 

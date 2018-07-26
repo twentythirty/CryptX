@@ -12,6 +12,7 @@ const AVRecipeRunDetail = require('../models').AVRecipeRunDetail;
 const AVInstrumentExchange = require('../models').AVInstrumentExchange;
 const AVInstrumentLiquidityRequirement = require('../models').AVInstrumentLiquidityRequirement;
 const AVLiquidityRequirementExchange = require('../models').AVLiquidityRequirementExchange;
+const AVRecipeOrder = require('../models').AVRecipeOrder;
 
 const TABLE_LOV_FIELDS = {
     'av_users': [
@@ -48,6 +49,13 @@ const TABLE_LOV_FIELDS = {
         'periodicity',
         'quote_asset',
         'exchange'
+    ],
+    'av_recipe_orders': [
+        'investment_id',
+        'instrument',
+        'side',
+        'exchange',
+        'status'
     ]
 }
 
@@ -146,6 +154,11 @@ const fetchInstrumentLiquidityRequirementsViewHeaderLOV = async (header_field, q
 }
 module.exports.fetchInstrumentLiquidityRequirementsViewHeaderLOV = fetchInstrumentLiquidityRequirementsViewHeaderLOV;
 
+const fetchRecipeOrdersViewHeaderLOV = async (header_field, query = '') => {
+
+    return fetchViewHeaderLOV('av_recipe_orders', header_field, query);
+}
+module.exports.fetchRecipeOrdersViewHeaderLOV = fetchRecipeOrdersViewHeaderLOV;
 
 
 
@@ -204,6 +217,11 @@ const fetchLiquidityExchangesViewDataWithCount = async (seq_query = {}) => {
 }
 module.exports.fetchLiquidityExchangesViewDataWithCount = fetchLiquidityExchangesViewDataWithCount;
 
+const fetchRecipeOrdersViewDataWithCount = async (seq_query = {}) => {
+    return fetchViewDataWithCount(AVRecipeOrder, seq_query);
+}
+module.exports.fetchRecipeOrdersViewDataWithCount = fetchRecipeOrdersViewDataWithCount;
+
 const fetchAssetView = async (asset_id) => {
 
     return fetchSingleEntity(AVAsset, asset_id)
@@ -240,6 +258,11 @@ const fetchInstrumentLiquidityRequirementView = async (liquidity_requirement_id)
 }
 module.exports.fetchInstrumentLiquidityRequirementView = fetchInstrumentLiquidityRequirementView;
 
+const fetchRecipeOrderView = async (recipe_order_id) => {
+
+    return fetchSingleEntity(AVRecipeOrder, recipe_order_id);
+}
+module.exports.fetchRecipeOrderView = fetchRecipeOrderView;
 
 // ************************ FOOTERS ***************************//
 
@@ -546,7 +569,7 @@ const fetchRecipeRunDetailsViewFooter = async (where_clause = '') => {
     const view = 'av_recipe_run_details';
 
     const query = builder.joinQueryParts([
-        builder.selectCount(view, 'id',where_clause),
+        builder.selectCount(view, 'id', where_clause),
         builder.selectCountDistinct('transaction_asset_id', 'transaction_asset', view, where_clause),
         builder.selectCountDistinct('quote_asset_id', 'quote_asset', view, where_clause),
         builder.selectCountDistinct('target_exchange_id', 'target_exchange', view, where_clause)
@@ -563,3 +586,29 @@ const fetchRecipeRunDetailsViewFooter = async (where_clause = '') => {
         builder.queryReturnRowToFooterObj(footer), 'recipe_run_details');
 }
 module.exports.fetchRecipeRunDetailsViewFooter = fetchRecipeRunDetailsViewFooter;
+
+const fetchRecipeOrdersViewFooter = async (where_clause = '') => {
+
+    const view = 'av_recipe_orders';
+
+    const query = builder.joinQueryParts([
+        builder.selectCount(view, 'id', where_clause),
+        builder.selectCountDistinct('investment_id', 'investment_id', view, where_clause),
+        builder.selectCountDistinct('instrument_id', 'instrument', view, where_clause),
+        builder.selectCountDistinct('target_exchange_id', 'exchange', view, where_clause),
+        builder.selectCount(view, 'status', `status=${MODEL_CONST.RECIPE_ORDER_STATUSES.Pending}`)
+    ], [
+        'id',
+        'investment_id',
+        'instrument',
+        'exchange',
+        'status'
+    ]);
+
+    const footer = (await sequelize.query(query))[0];
+
+    return builder.addFooterLabels(
+        builder.queryReturnRowToFooterObj(footer), 'recipe_orders');
+
+}
+module.exports.fetchRecipeOrdersViewFooter = fetchRecipeOrdersViewFooter;
