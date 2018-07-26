@@ -70,7 +70,11 @@
       "current_price": "Current price",
       "last_day_vol": "Last day Volume",
       "last_7days_vol": "Last 7 days Volume",
-      "last_updated": "Last Updated"
+      "last_updated": "Last Updated",
+      "periodicity": "Periodicity",
+      "minimum_circulation": "Minimum Circulation",
+      "exchange_count": "Number of Exchanges",
+      "exchange_not_pass": "Exchanges that do not Meet Requirements"
     },
     "filter": {
       "all": "All",
@@ -119,6 +123,12 @@
     "minimum_circulation": "Minimum circulation",
     "enter_minimum_circulation": "Enter minimum circulation",
     "enter_liquidity_information": "Enter liquidity information"
+  },
+  "instrument_liquidity_requirements": {
+    "footer": {
+      "instrument": "{{ instrument }} instruments",
+      "quote_asset": "{{ quote_asset }} asset"
+    }
   },
 
   "instruments": {

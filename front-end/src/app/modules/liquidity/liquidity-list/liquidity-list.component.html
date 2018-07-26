@@ -1,10 +1,20 @@
 <div class="top-controls">
-  <span class="headline-title">{{ 7 }} {{ 'liquidity.liquidity_requirements' | translate }}</span>
+  <span class="headline-title">{{ count }} {{ 'liquidity.liquidity_requirements' | translate }}</span>
+
   <a [routerLink]="['/liquidity_requirements/create']" class="btn start">
     <span>{{ 'liquidity.add_requirement' | translate }}</span>
   </a>
 </div>
 
-<p>
-  liquidity-list works!
-</p>
+<app-data-table
+  [dataSource]="liquidityDataSource"
+  [columnsToShow]="liquidityColumnsToShow"
+  (setFilter)="onSetFilter($event)"
+  (openRow)="openRow($event)"
+></app-data-table>
+
+<app-pagination
+  [count]="count"
+  [perPage]="pageSize"
+  [page]="page"
+></app-pagination>
