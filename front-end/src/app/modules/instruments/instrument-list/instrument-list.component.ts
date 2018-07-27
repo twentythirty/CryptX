@@ -19,7 +19,7 @@ export class InstrumentListComponent extends DataTableCommonManagerComponent {
       { column: 'exchanges_connected', nameKey: 'table.header.exchanges_connected', filter: { type: 'number', sortable: true }},
       { column: 'exchanges_failed', nameKey: 'table.header.exchanges_connected', filter: { type: 'number', sortable: true }},
     ],
-    body: [],
+    body: null,
   };
 
   public instrumentsColumnsToShow: Array<TableDataColumn> = [

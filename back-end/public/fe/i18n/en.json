@@ -74,7 +74,8 @@
       "periodicity": "Periodicity",
       "minimum_circulation": "Minimum Circulation",
       "exchange_count": "Number of Exchanges",
-      "exchange_not_pass": "Exchanges that do not Meet Requirements"
+      "exchange_not_pass": "Exchanges that do not Meet Requirements",
+      "liquidity_status": "Liquidity status"
     },
     "filter": {
       "all": "All",
@@ -130,8 +131,20 @@
       "quote_asset": "{{ quote_asset }} asset"
     }
   },
+  "liquidity_exchanges": {
+    "status": {
+      "lacking": "Lacking",
+      "meets_liquidity_requirements": "MeetsLiquidityRequirements"
+    },
+    "footer": {
+      "exchange": "{{ exchange }} Exchanges",
+      "instrument_identifier": "{{ instrument_identifier }} Identifiers",
+      "passes": "{{ passes }} Lacking"
+    }
+  },
 
   "instruments": {
+    "instrument_mapping": "Instrument mapping",
     "instruments": "Instruments",
     "new_instrument": "New instrument",
     "parameters": "Parameters",
@@ -147,6 +160,7 @@
 
   "exchanges": {
     "exchange": "Exchange",
+    "exchanges": "Exchanges",
     "mapping": "Mapping",
     "new_mapping": "New mapping",
     "exchange_delete_confirm_msg": "Are you sure you want delete this exchange?"

@@ -32,9 +32,9 @@
         <a routerLinkActive="active" routerLink="/users" href="#" *ngIf="checkPerm(['EDIT_USERS'])">User Management</a>
         <a routerLinkActive="active" routerLink="/roles" *ngIf="checkPerm(['VIEW_ROLES'])">Role Management</a>
         <a routerLinkActive="active" routerLink="/instruments/all" *ngIf="checkPerm(['VIEW_ROLES'])">{{ 'instruments.instruments' | translate }}</a>
-        <a routerLinkActive="active" routerLink="/liquidity_requirements/all" *ngIf="checkPerm(['VIEW_ROLES'])">{{ 'liquidity.liquidity_requirements' | translate }}</a>
+        <a routerLinkActive="active" routerLink="/liquidity_requirements" *ngIf="checkPerm(['VIEW_ROLES'])">{{ 'liquidity.liquidity_requirements' | translate }}</a>
         <a routerLinkActive="active" href="#" *ngIf="checkPerm(['VIEW_SETTING_VALUES'])">Setting Management</a>
-    </nav>
+      </nav>
     </div>
     </div>
 </header>
