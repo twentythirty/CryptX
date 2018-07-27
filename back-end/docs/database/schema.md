@@ -105,7 +105,7 @@ id PK int
 exchange_id int FK >- exchange.id # Exchange on which the account is based
 asset_id int FK >- asset.id # Asset in which acount is denominated
 account_type enum
-external_identifier varchar # External identifier of the account, e.g. account's address
+address varchar # Address of crypto currency wallet in exchange
 
 cold_storage_account # This table defines accounts available for cold storage of cryptocurrencies
 -
