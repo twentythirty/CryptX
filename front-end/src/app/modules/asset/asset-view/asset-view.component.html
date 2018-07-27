@@ -1,17 +1,17 @@
-<app-page-heading backButton="true">Blacklisting</app-page-heading>
+<app-page-heading
+  [heading]="'assets.assets' | translate"
+></app-page-heading>
 
-<app-content-block heading="Asset">
-  <app-data-table
-    [dataSource]="assetsDataSource"
-    [columnsToShow]="assetsColumnsToShow"
-    [rowBackgroundColor]="rowBackgroundColor"
-    [rowTexColor]="rowTexColor"
-    (setFilter)="onSetFilter($event)">
-  </app-data-table>
-</app-content-block>
+<app-data-table
+  [dataSource]="assetsDataSource"
+  [columnsToShow]="assetsColumnsToShow"
+  [rowBackgroundColor]="rowBackgroundColor"
+  [rowTexColor]="rowTexColor"
+  (setFilter)="onSetFilter($event)"
+></app-data-table>
 
 <div *ngIf="activityLog as log">
-  <h2>Blacklisting activity log</h2>
+  <h2>{{ 'assets.blacklisting_activity_log' | translate }}</h2>
   <p [ngPlural]="log.length">
     <ng-template ngPluralCase="=0">No changes have been done</ng-template>
     <ng-template ngPluralCase="=1">{{ log.length }} change has been done</ng-template>

@@ -1,6 +1,8 @@
 import { Component, OnInit } from '@angular/core';
-import { AssetService, AssetResultData } from '../../../services/asset/asset.service';
+import { CurrencyPipe } from '@angular/common';
 import { ActivatedRoute, Params, Router } from '@angular/router';
+
+import { AssetService, AssetResultData } from '../../../services/asset/asset.service';
 import { Asset, AssetStatus } from '../../../shared/models/asset';
 import { AssetListComponent } from '../asset-list/asset-list.component';
 import { AuthService } from '../../../services/auth/auth.service';
@@ -23,9 +25,10 @@ export class AssetViewComponent extends AssetListComponent implements OnInit {
     protected authService: AuthService,
     protected modelConstantsService: ModelConstantsService,
     protected router: Router,
+    protected currencyPipe: CurrencyPipe,
     private modelConstants: ModelConstantsService
   ) {
-    super(route, assetService, authService, modelConstantsService, router);
+    super(route, assetService, authService, modelConstantsService, router, currencyPipe);
   }
 
   ngOnInit() {
@@ -40,8 +43,8 @@ export class AssetViewComponent extends AssetListComponent implements OnInit {
         this.assetId = params.assetId;
         this.assetService.getAsset(this.assetId).subscribe(
           (res: AssetResultData) => {
-            this.assetsDataSource.body = [res.assets];
-            this.activityLog = res.status_changes
+            this.assetsDataSource.body = [res.asset];
+            this.activityLog = res.history;
             this.count = 1;
           }
         )

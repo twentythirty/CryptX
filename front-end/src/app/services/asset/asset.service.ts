@@ -23,8 +23,8 @@ export class AssetsAllResponseDetailed {
 
 export class AssetResultData {
   success: boolean;
-  assets: Asset;
-  status_changes: Array<AssetStatus>;
+  asset: Asset;
+  history: Array<AssetStatus>;
 }
 
 @Injectable()
@@ -59,11 +59,12 @@ export class AssetService {
   }
 
   getHeaderLOV(column_name: string): Observable<any> {
-    return this.http.get<any>(this.baseUrl + `assets/header_lov/${column_name}`).pipe(
+    return this.http.get<any>(this.baseUrl + `assets/detailed/header_lov/${column_name}`).pipe(
       map(
         res => {
-          if(res && res.data && Array.isArray(res.data.lov)) {
-            return res.data.lov.map(lov => {
+          if(res && Array.isArray(res.lov)) {
+            console.log(res.lov);
+            return res.lov.map(lov => {
               return { value: lov }
             });
           } else return null;
