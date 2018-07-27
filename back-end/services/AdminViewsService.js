@@ -497,7 +497,7 @@ const fetchLiquidityExchangesViewFooter = async (where_clause = '') => {
     const query = builder.joinQueryParts([
         builder.selectCountDistinct('exchange_id', 'exchange', view, where_clause),
         builder.selectCountDistinct('instrument_identifier', 'instrument_identifier', view, where_clause),
-        builder.selectCount(view, 'passes', 'passes = \'liquidity_exchanges.status.meets_liquidity_requirements\'')
+        builder.selectCount(view, 'passes', builder.addToWhere('passes = \'liquidity_exchanges.status.lacking\''))
     ], [
         'exchange',
         'instrument_identifier',
