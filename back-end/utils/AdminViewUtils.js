@@ -1,9 +1,23 @@
 'use strict';
 
-
+/**
+ * Transforms `where_clause` string into digestable SQL by prepending the WHERE keyword if the string
+ * has content
+ * 
+ * Otherwise returns an empty string not to confuse the SQL engine.
+ */
 const whereOrEmpty = (where_clause) => `${_.isEmpty(where_clause)? '' : `WHERE ${where_clause}`}`;
 module.exports.whereOrEmpty = whereOrEmpty;
 
+/**
+ * Adds `addition` to existing WHERE clause list being built for later query.
+ * 
+ * if there is no addition, returns the current `where_clause`.
+ * 
+ * If there is no current clause, returns `addition`.
+ * 
+ * Otherwise, uses an AND junction.
+ */
 const addToWhere = (where_clause = '', addition = '') => {
 
     if (_.isEmpty(where_clause)) {

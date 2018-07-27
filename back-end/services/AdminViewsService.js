@@ -497,7 +497,7 @@ const fetchLiquidityExchangesViewFooter = async (where_clause = '') => {
     const query = builder.joinQueryParts([
         builder.selectCountDistinct('exchange_id', 'exchange', view, where_clause),
         builder.selectCountDistinct('instrument_identifier', 'instrument_identifier', view, where_clause),
-        builder.selectCount(view, 'passes', 'passes = true')
+        builder.selectCount(view, 'passes', builder.addToWhere('passes = true'))
     ], [
         'exchange',
         'instrument_identifier',
@@ -536,11 +536,11 @@ const fetchInvestmentRunsViewFooter = async (where_clause = '') => {
 
     const query = builder.joinQueryParts([
         builder.selectCount(view, 'id', where_clause),
-        builder.selectCount(view, 'completed_timestamp', 'completed_timestamp IS NOT NULL'),
+        builder.selectCount(view, 'completed_timestamp', builder.addToWhere('completed_timestamp IS NOT NULL')),
         builder.selectCountDistinct('user_created', 'user_created', view, where_clause),
         builder.selectCountDistinct('strategy_type', 'strategy_type', view, where_clause),
-        builder.selectCount(view, 'is_simulated', 'is_simulated IS FALSE'),
-        builder.selectCount(view, 'status', `status=${MODEL_CONST.INVESTMENT_RUN_STATUSES.OrdersExecuting}`)
+        builder.selectCount(view, 'is_simulated', builder.addToWhere('is_simulated IS FALSE')),
+        builder.selectCount(view, 'status', builder.addToWhere(`status=${MODEL_CONST.INVESTMENT_RUN_STATUSES.OrdersExecuting}`))
     ], [
         'id',
         'completed_timestamp',
@@ -577,7 +577,7 @@ const fetchRecipeRunsViewFooter = async (where_clause = '') => {
     const query = builder.joinQueryParts([
         builder.selectCount(view, 'id', where_clause),
         builder.selectCountDistinct('user_created', 'user_created', view, where_clause),
-        builder.selectCount(view, 'approval_status', `approval_status=${MODEL_CONST.RECIPE_RUN_STATUSES.Pending}`)
+        builder.selectCount(view, 'approval_status', builder.addToWhere(`approval_status=${MODEL_CONST.RECIPE_RUN_STATUSES.Pending}`))
     ], [
         'id',
         'user_created',
@@ -637,7 +637,7 @@ const fetchRecipeOrdersViewFooter = async (where_clause = '') => {
         builder.selectCountDistinct('investment_id', 'investment_id', view, where_clause),
         builder.selectCountDistinct('instrument_id', 'instrument', view, where_clause),
         builder.selectCountDistinct('target_exchange_id', 'exchange', view, where_clause),
-        builder.selectCount(view, 'status', `status=${MODEL_CONST.RECIPE_ORDER_STATUSES.Pending}`)
+        builder.selectCount(view, 'status', builder.addToWhere(`status=${MODEL_CONST.RECIPE_ORDER_STATUSES.Pending}`))
     ], [
         'id',
         'investment_id',
@@ -662,7 +662,7 @@ const fetchExecutionOrdersViewFooter = async (where_clause = '') => {
         builder.selectCount(view, 'id', where_clause),
         builder.selectCountDistinct('instrument_id', 'instrument', view, where_clause),
         builder.selectCountDistinct('exchange_id', 'exchange', view, where_clause),
-        builder.selectCount(view, 'status', `status=${MODEL_CONST.EXECUTION_ORDER_STATUSES.Pending}`)
+        builder.selectCount(view, 'status', builder.addToWhere(`status=${MODEL_CONST.EXECUTION_ORDER_STATUSES.Pending}`))
     ], [
         'id',
         'instrument',
