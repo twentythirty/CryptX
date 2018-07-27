@@ -13,7 +13,7 @@ module.exports = (sequelize, DataTypes) => {
             last_day_vol: DataTypes.FLOAT,
             last_week_vol: DataTypes.FLOAT,
             last_updated: DataTypes.DATE,
-            passes: DataTypes.BOOLEAN
+            passes: DataTypes.STRING
         },
         //common global model props
         modelProps('av_liquidity_requirement_exchanges', 'Liquidity requirement exchanges of the CryptX system')
