@@ -2,7 +2,7 @@ export class Asset {
   public id: number;
   public symbol: string;
   public long_name: string;
-  public is_base: boolean;
+  public is_base: boolean | string;
   public is_deposit: boolean;
 
   public capitalization: number;

@@ -169,18 +169,31 @@
   "assets": {
     "assets": "Assets",
     "headline": "{{ count }} Cryptocurrencies",
+    "blacklisting_activity_log": "Blacklisting activity log",
+    "is_cryptocurrency": {
+      "no": "No",
+      "yes": "Yes"
+    },
+    "is_base": {
+      "no": "No",
+      "yes": "Yes"
+    },
+    "is_deposit": {
+      "no": "No",
+      "yes": "Yes"
+    },
     "status": {
       "400": "Whitelisted",
       "401": "Graylisted",
       "402": "Blacklisted"
     },
     "footer": {
-      "capitalization": "${{ capitalisation }} total",
+      "capitalization": "{{ capitalization }} total",
       "status": "{{ status }} Blacklisted",
       "is_deposit": "{{ is_deposit }} Deposit",
-      "is_base": "{{is_base}} Base",
-      "symbol": "{{symbol}} Items",
-      "is_cryptocurrency": "{{is_cryptocurency}}Cryptos"
+      "is_base": "{{ is_base }} Base",
+      "symbol": "{{ symbol }} Items",
+      "is_cryptocurrency": "{{ is_cryptocurrency }} Cryptos"
     }
   },
 

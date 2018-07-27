@@ -1,21 +1,14 @@
 import { Component, OnInit } from '@angular/core';
-import { Observable } from 'rxjs';
-import { map } from 'rxjs/operators';
+import { CurrencyPipe } from '@angular/common';
+import _ from 'lodash';
 
-import { AssetService, AssetResultData, AssetsAllResponseDetailed } from '../../../services/asset/asset.service';
+import { AssetService, AssetsAllResponseDetailed } from '../../../services/asset/asset.service';
 import { Asset, AssetStatus } from '../../../shared/models/asset';
-import { EntitiesFilter } from '../../../shared/models/api/entitiesFilter';
 import { TableDataSource, TableDataColumn } from '../../../shared/components/data-table/data-table.component';
 import { DataTableCommonManagerComponent } from '../../../shared/components/data-table-common-manager/data-table-common-manager.component';
 import { ActivatedRoute, Router } from '@angular/router';
 import {
-  BooleanCellDataColumn,
-  BooleanCellComponent,
   CurrencyCellDataColumn,
-  CurrencyCellComponent,
-  NumberCellComponent,
-  PercentCellComponent,
-  DateCellComponent,
   DateCellDataColumn,
   PercentCellDataColumn,
   NumberCellDataColumn,
@@ -46,7 +39,7 @@ export class AssetListComponent extends DataTableCommonManagerComponent implemen
       { column: 'capitalization', nameKey: 'table.header.capitalisation', filter: { type: 'number', sortable: true } },
       { column: 'nvt_ratio', nameKey: 'table.header.nvt_ratio', filter: { type: 'number', sortable: true } },
       { column: 'market_share', nameKey: 'table.header.market_share', filter: { type: 'number', sortable: true } },
-      { column: 'capitalization_updated_timestamp', nameKey: 'table.header.capitalisation_updated', filter: { type: 'date', sortable: true } },
+      { column: 'capitalization_updated', nameKey: 'table.header.capitalisation_updated', filter: { type: 'date', sortable: true } },
       { column: 'status', nameKey: 'table.header.status', filter: { type: 'text', sortable: true } },
       { column: '', nameKey: 'table.header.action' }
     ],
@@ -61,16 +54,16 @@ export class AssetListComponent extends DataTableCommonManagerComponent implemen
    * component used. This config would be perfectly valid only by passing an object
    * that fits the type TableDataColumn, without constructing DataColumn classes, too.
    */
-  public assetsColumnsToShow: Array<string | TableDataColumn> = [
-    'symbol',
-    new BooleanCellDataColumn({ column: 'is_cryptocurrency' }),
-    'long_name',
-    new BooleanCellDataColumn({ column: 'is_base' }),
-    new BooleanCellDataColumn({ column: 'is_deposit' }),
+  public assetsColumnsToShow: Array<TableDataColumn> = [
+    new TableDataColumn({ column: 'symbol' }),
+    new StatusCellDataColumn({ column: 'is_cryptocurrency' }),
+    new TableDataColumn({ column: 'long_name' }),
+    new StatusCellDataColumn({ column: 'is_base' }),
+    new StatusCellDataColumn({ column: 'is_deposit' }),
     new CurrencyCellDataColumn({ column: 'capitalization' }),
     new NumberCellDataColumn({ column: 'nvt_ratio' }),
     new PercentCellDataColumn({ column: 'market_share' }),
-    new DateCellDataColumn({ column: 'capitalization_updated_timestamp' }),
+    new DateCellDataColumn({ column: 'capitalization_updated' }),
     new StatusCellDataColumn({ column: 'status', inputs: { classMap: value => {
       return StatusClass.DEFAULT;
     }}}),
@@ -102,7 +95,8 @@ export class AssetListComponent extends DataTableCommonManagerComponent implemen
     protected assetService: AssetService,
     protected authService: AuthService,
     protected modelConstantsService: ModelConstantsService,
-    protected router: Router
+    protected router: Router,
+    protected currencyPipe: CurrencyPipe,
   ) {
     super(route);
   }
@@ -119,10 +113,15 @@ export class AssetListComponent extends DataTableCommonManagerComponent implemen
   getAllData(): void {
     this.assetService.getAllAssetsDetailed(this.requestData).subscribe(
       (res: AssetsAllResponseDetailed) => {
-        this.assetsDataSource.body = res.assets;
-        if(res.footer) {
-          this.assetsDataSource.footer = res.footer;
-        }
+        Object.assign(this.assetsDataSource, {
+          body: res.assets,
+          footer: res.footer.map(item => {
+            if( item.name === 'capitalization' ) {
+              item.args = _.mapValues(item.args, val => this.currencyPipe.transform(val, 'USD', 'symbol', '1.0-0'));
+            }
+            return item;
+          })
+        });
         this.count = res.count || res.assets.length;
       }
     )
@@ -133,7 +132,7 @@ export class AssetListComponent extends DataTableCommonManagerComponent implemen
    */
   getFilterLOV(): void {
     this.assetsDataSource.header.filter(
-      col => col.filter && (col.filter.type == 'text' || col.filter.type == 'boolean')
+      col => ['is_base', 'is_deposit', 'status'].includes(col.column)
     ).map(
       col => {
         col.filter.rowData$ = this.assetService.getHeaderLOV(col.column)
@@ -207,14 +206,16 @@ export class AssetListComponent extends DataTableCommonManagerComponent implemen
    */
 
   public rowBackgroundColor = (row: Asset): string => {
-    if(row.status == this.modelConstantsService.getName(401)) return '#6b6b6b';
-    if(row.status == this.modelConstantsService.getName(402)) return '#aeaeae';
+    const status = _.replace(row.status, 'assets.status.', '');
+    if(status == 401) return '#6b6b6b';
+    if(status == 402) return '#aeaeae';
     return null;
   }
 
   public rowTexColor = (row: Asset): string => {
-    if(row.status == this.modelConstantsService.getName(401)) return '#ffffff';
-    if(row.status == this.modelConstantsService.getName(402)) return '#f2f2f2';
+    const status = _.replace(row.status, 'assets.status.', '');
+    if(status == 401) return '#ffffff';
+    if(status == 402) return '#f2f2f2';
     return null;
   }
 
