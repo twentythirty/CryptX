@@ -8,6 +8,18 @@ import { environment } from '../../../environments/environment';
 import { LiquidityRequirementsCreateRequestData } from '../../shared/models/api/liquidityRequirementsCreateRequestData';
 import { LiquidityRequirement } from '../../shared/models/liquidityRequirement';
 
+export class LiquidityResponse {
+  success: boolean;
+  liquidity_requirement: LiquidityRequirement;
+}
+
+export class ExchangesResponse {
+  success: boolean;
+  count: number;
+  footer: Array<any>;
+  exchanges: Array<any>;
+}
+
 export class LiquidityRequirementsCreateResponse {
   success: boolean;
   liquidity_requirement: any;
@@ -29,6 +41,14 @@ export class LiquidityService {
   constructor(
     private http: HttpClient,
   ) {}
+
+  getLiquidity(liquidityId: number): Observable<LiquidityResponse>{
+    return this.http.get<LiquidityResponse>(this.baseUrl + `liquidity_requirements/${liquidityId}`);
+  }
+
+  getExchanges(liquidityId: number): Observable<ExchangesResponse>{
+    return this.http.get<ExchangesResponse>(this.baseUrl + `liquidity_requirements/${liquidityId}/exchanges`);
+  }
 
   getAllLiquidities(request?: EntitiesFilter): Observable<LiquiditiesAllResponse>{
     if (request) {

@@ -18,7 +18,7 @@ export class RolesListComponent extends DataTableCommonManagerComponent {
     header: [
       { column: 'name', nameKey: 'table.header.role_name', filter: { type: 'text', sortable: true } }
     ],
-    body: []
+    body: null,
   };
 
   public rolesColumnsToShow: Array<string | TableDataColumn> = [
@@ -47,7 +47,7 @@ export class RolesListComponent extends DataTableCommonManagerComponent {
   }
 
   public openRow(roles: Role): void {
-    this.router.navigate(['/roles/edit', roles.id])
+    this.router.navigate(['/roles/edit', roles.id]);
   }
 
 }

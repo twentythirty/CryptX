@@ -34,7 +34,7 @@ export class UsersListComponent extends DataTableCommonManagerComponent implemen
       { column: 'created_timestamp', nameKey: 'table.header.creation_date', filter: { type: 'date', sortable: true}},
       { column: 'is_active', nameKey: 'table.header.status', filter: { type: 'boolean', sortable: true, rowData: [] }}
     ],
-    body: [],
+    body: null,
   };
   public usersColumnsToShow: Array<string | TableDataColumn> = [
     'first_name',
