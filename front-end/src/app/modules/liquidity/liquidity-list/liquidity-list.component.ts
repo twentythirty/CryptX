@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 
 import { TableDataSource, TableDataColumn } from '../../../shared/components/data-table/data-table.component';
 import { DataTableCommonManagerComponent } from '../../../shared/components/data-table-common-manager/data-table-common-manager.component';
@@ -25,7 +25,6 @@ export class LiquidityListComponent extends DataTableCommonManagerComponent impl
       { column: 'exchange_not_pass', nameKey: 'table.header.exchange_not_pass', filter: { type: 'number', sortable: true } },
     ],
     body: null,
-    footer: null,
   };
 
   public liquidityColumnsToShow: Array<TableDataColumn> = [
@@ -40,6 +39,7 @@ export class LiquidityListComponent extends DataTableCommonManagerComponent impl
 
   constructor(
     public route: ActivatedRoute,
+    private router: Router,
     private liquidityService: LiquidityService,
   ) {
     super(route);
@@ -73,7 +73,7 @@ export class LiquidityListComponent extends DataTableCommonManagerComponent impl
   }
 
   openRow(liquidity: LiquidityRequirement): void {
-    console.log('liquidity', liquidity);
+    this.router.navigate(['/liquidity_requirements/preview', liquidity.id])
   }
 
 }

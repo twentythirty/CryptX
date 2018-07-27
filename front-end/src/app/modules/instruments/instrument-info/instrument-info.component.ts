@@ -176,8 +176,10 @@ export class InstrumentInfoComponent extends DataTableCommonManagerComponent imp
       )
     ).subscribe(
       res => {
-        this.mappingDataSource.body = res.mapping_data.map(data => Object.assign(data, { valid: true }) );
-        this.mappingDataSource.footer = res.footer;
+        Object.assign(this.mappingDataSource, {
+          body: res.mapping_data.map(data => Object.assign(data, { valid: true }) ),
+          footer: res.footer
+        });
       },
       err => this.mappingDataSource.body = []
     );

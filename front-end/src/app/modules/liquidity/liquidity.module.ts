@@ -10,11 +10,13 @@ import { LiquidityCreateComponent } from './liquidity-create/liquidity-create.co
 import { RouterModule } from '@angular/router';
 import { LiquidityService } from '../../services/liquidity/liquidity.service';
 import { ExchangesService } from '../../services/exchanges/exchanges.service';
+import { LiquidityInfoComponent } from './liquidity-info/liquidity-info.component';
 
 @NgModule({
   declarations: [
     LiquidityListComponent,
     LiquidityCreateComponent,
+    LiquidityInfoComponent,
   ],
   imports: [
     CommonModule,

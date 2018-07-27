@@ -27,6 +27,7 @@ import { InstrumentListComponent } from '../../modules/instruments/instrument-li
 import { InstrumentInfoComponent } from '../../modules/instruments/instrument-info/instrument-info.component';
 import { LiquidityListComponent } from '../../modules/liquidity/liquidity-list/liquidity-list.component';
 import { LiquidityCreateComponent } from '../../modules/liquidity/liquidity-create/liquidity-create.component';
+import { LiquidityInfoComponent } from '../../modules/liquidity/liquidity-info/liquidity-info.component';
 
 const routes: Routes = [
   { path: 'login', component: LoginComponent },
@@ -120,13 +121,18 @@ const routes: Routes = [
   },
 
   {
-    path: 'liquidity_requirements/all',
+    path: 'liquidity_requirements',
     component: LiquidityListComponent,
     canActivate: [AuthGuard]
   },
   {
     path: 'liquidity_requirements/create',
     component: LiquidityCreateComponent,
+    canActivate: [AuthGuard]
+  },
+  {
+    path: 'liquidity_requirements/preview/:id',
+    component: LiquidityInfoComponent,
     canActivate: [AuthGuard]
   },
 
