@@ -18,12 +18,12 @@
   </ul>
 
   <ul class="pages">
-    <a
-      *ngFor="let pageNum of getPages()"
-      (click)="onPage(pageNum)"
-      class="item"
-      [class.active]="pageNum == page"
-    >{{ pageNum }}</a>
+    <li *ngFor="let pageNum of getPages()">
+      <a class="item"
+        [class.active]="pageNum == page"        
+        (click)="onPage(pageNum)"
+      >{{ pageNum }}</a>
+    </li>
   </ul>
 
   <ul class="pager-nav right-nav">
