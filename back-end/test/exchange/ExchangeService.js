@@ -119,7 +119,7 @@ describe('ExchangeService testing', () => {
                     chai.expect(account.account_type).to.equal(Trading);
                     chai.expect(account.asset_id).to.equal(1);
                     chai.expect(account.exchange_id).to.equal(1);
-                    chai.expect(account.external_identifier).to.equal('1231232323');
+                    chai.expect(account.address).to.equal('1231232323');
 
                     return account;
                 }));

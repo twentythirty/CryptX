@@ -5,7 +5,7 @@ module.exports = (sequelize, DataTypes) => {
     var ExchangeAccount = sequelize.define(
         'ExchangeAccount',
         {
-            external_identifier: DataTypes.STRING,
+            address: DataTypes.STRING,
             account_type: DataTypes.SMALLINT
         },
         modelProps(

@@ -25,7 +25,10 @@ const createExchangeAccount = async (account_type, asset_id, exchange_id, extern
         }),
         ExchangeAccount.count({
             where: {
-                account_type, asset_id, exchange_id, external_identifier
+                account_type, 
+                asset_id, 
+                exchange_id, 
+                address: external_identifier
             }
         })
     ]));
@@ -42,7 +45,7 @@ const createExchangeAccount = async (account_type, asset_id, exchange_id, extern
         account_type,
         asset_id,
         exchange_id,
-        external_identifier
+        address: external_identifier
     });
 
 };
