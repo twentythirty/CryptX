@@ -1,5 +1,6 @@
 'use strict';
 
+const MockController = require('./MockController');
 const DepositService = require('../services/DepositService');
 
 const submitDeposit = async function (req, res) {
@@ -127,8 +128,7 @@ const getRecipeDeposits = async function (req, res) {
     status: 151
   }));
 
-  let footer = create_mock_footer(mock_detail[0], 'deposits');
-
+  let footer = MockController.create_mock_footer(mock_detail[0], 'deposits');
 
   return ReS(res, {
     recipe_deposits: mock_detail,
