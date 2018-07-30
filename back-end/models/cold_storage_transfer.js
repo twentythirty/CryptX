@@ -18,6 +18,11 @@ module.exports = (sequelize, DataTypes) => {
       amount: {
         type: DataTypes.DECIMAL,
         allowNull: false
+      },
+      fee: {
+        type: DataTypes.DECIMAL,
+        allowNull: false,
+        defaultValue: 0.0
       }
     },
     modelProps(
