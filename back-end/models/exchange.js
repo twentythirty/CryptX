@@ -19,5 +19,12 @@ module.exports = (sequelize, DataTypes) => {
     });
   };
 
+  Exchange.prototype.toWeb = function(send_roles = true) {
+    let json = this.toJSON();
+    delete json.api_id;
+    
+    return json;
+  };
+
   return Exchange;
 };

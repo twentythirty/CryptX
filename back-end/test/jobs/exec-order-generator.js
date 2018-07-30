@@ -281,7 +281,7 @@ describe('Execution Order generator job', () => {
             const fills_num = _.random(1, 9, false);
             return Promise.resolve(_.map(Array(fills_num).fill(PENDING_ORDER_QNTY / (fills_num - 1)), (qnty, idx) => {
                 return new ExecutionOrderFill({
-                    quantity: qnty,
+                    filled_quantity: qnty,
                     id: idx
                 });
             }))
@@ -353,7 +353,7 @@ describe('Execution Order generator job', () => {
         sinon.stub(ExecutionOrderFill, 'findAll').callsFake(options => {
             return Promise.resolve([
                 new ExecutionOrderFill({
-                    quantity: 1,
+                    filled_quantity: 1,
                     id: 1
                 })
             ])
@@ -425,7 +425,7 @@ describe('Execution Order generator job', () => {
         sinon.stub(ExecutionOrderFill, 'findAll').callsFake(options => {
             return Promise.resolve([
                 new ExecutionOrderFill({
-                    quantity: 1,
+                    filled_quantity: 1,
                     id: 1
                 })
             ])

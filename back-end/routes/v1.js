@@ -10,6 +10,7 @@ const SystemController = require('./../controllers/SystemController');
 const InstrumentController = require('./../controllers/InstrumentController');
 const DepositController = require('./../controllers/DepositController');
 const ColdstorageController = require('./../controllers/ColdstorageController');
+const ExchangeController = require('./../controllers/ExchangeController');
 const MockController = require('./../controllers/MockController');
 
 // const custom 	        = require('./../middleware/custom');
@@ -773,13 +774,15 @@ router.get(
   ROUTES.GetExchanges.router_string,
   stateless_auth,
   check_permissions,
-  MockController.getExchanges
+  filter_reducer,
+  ExchangeController.getExchanges
 );
 router.post(
   ROUTES.GetExchanges.router_string,
   stateless_auth,
   check_permissions,
-  MockController.getExchanges
+  filter_reducer,
+  ExchangeController.getExchanges
 );
 router.get(
   ROUTES.InstrumentMapExchanges.router_string,
