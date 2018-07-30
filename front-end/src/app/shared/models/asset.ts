@@ -9,7 +9,8 @@ export class Asset {
   public nvt_ratio: number;
   public market_share: number;
   public capitalization_updated: any;
-  public status: (string | number);
+  public status: string;
+  public statusCode?: number;
 
   // Not yet implemented
   public capitalization_updated_timestamp: number;

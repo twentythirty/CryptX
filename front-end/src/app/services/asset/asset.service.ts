@@ -1,12 +1,13 @@
 import { Injectable } from '@angular/core';
-import { Observable } from 'rxjs/Observable';
 import { HttpClient } from '@angular/common/http';
+import { Observable } from 'rxjs/Observable';
+import { map } from 'rxjs/operators';
+import _ from 'lodash';
 
 import { Asset, AssetStatus } from '../../shared/models/asset';
 import { EntitiesFilter } from '../../shared/models/api/entitiesFilter';
 import { ActionResultData } from '../../shared/models/api/actionResultData';
 import { environment } from '../../../environments/environment';
-import { map } from 'rxjs/operators';
 
 export class AssetsAllResponse {
   success: boolean;
@@ -17,7 +18,7 @@ export class AssetsAllResponse {
 export class AssetsAllResponseDetailed {
   success: boolean;
   assets: Array<Asset>;
-  footer: Array<any>
+  footer: Array<any>;
   count: number;
 }
 
@@ -32,9 +33,11 @@ export class AssetService {
 
   private baseUrl: string = environment.baseUrl;
 
-  constructor(private http: HttpClient) { }
+  constructor(
+    private http: HttpClient
+  ) {}
 
-  getAllAssets(requestData?: EntitiesFilter): Observable<AssetsAllResponse>{
+  getAllAssets(requestData?: EntitiesFilter): Observable<AssetsAllResponse> {
     if(requestData) {
       return this.http.post<AssetsAllResponse>(this.baseUrl + `assets/all`, requestData);
     } else {
@@ -42,11 +45,13 @@ export class AssetService {
     }
   }
 
-  getAllAssetsDetailed(requestData?: EntitiesFilter): Observable<AssetsAllResponseDetailed>{
+  getAllAssetsDetailed(requestData?: EntitiesFilter): Observable<AssetsAllResponseDetailed> {
     if(requestData) {
-      return this.http.post<AssetsAllResponseDetailed>(this.baseUrl + `assets/detailed/all`, requestData);
+      return this.http.post<AssetsAllResponseDetailed>(this.baseUrl + `assets/detailed/all`, requestData)
+        .do(this.addStatusCode);
     } else {
-      return this.http.get<AssetsAllResponseDetailed>(this.baseUrl + `assets/detailed/all`);
+      return this.http.get<AssetsAllResponseDetailed>(this.baseUrl + `assets/detailed/all`)
+        .do(this.addStatusCode);
     }
   }
 
@@ -71,6 +76,14 @@ export class AssetService {
         }
       )
     )
+  }
+
+  private addStatusCode(data) {
+    data.assets.map(asset => {
+      asset.statusCode = _.toNumber( asset.status.replace('assets.status.', '') );
+      return asset;
+    });
+    return data;
   }
 
   // blacklistAsset(assetId: number, is_blacklisted: boolean): Observable<ActionResultData> {

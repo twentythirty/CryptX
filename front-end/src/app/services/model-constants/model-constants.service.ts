@@ -8,7 +8,6 @@ export class ModelConstantsService {
 
   setConstants(values: Object) {
     this.model_constants = values;
-    //console.log(this.model_constants);
   }
 
   /** Gets whole model_constants object */
@@ -16,10 +15,7 @@ export class ModelConstantsService {
     return this.model_constants
   }
 
-  /** Get name of constant through its value. Group name is required because
-   * model constants are grouped. It ensures that even if same constant value
-   * might be accidentally be defined several times, it won't affect functionality.
-   * @param group_name name of group constant is defined in
+  /** Get name of constant through its value.
    * @param value constan number that will be used to find name by
    */
   getName(value: any) {
