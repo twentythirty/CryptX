@@ -25,6 +25,7 @@ const create_mock_footer = function (keys, name) {
   });
   return footer;
 };
+module.exports.create_mock_footer = create_mock_footer;
 
 const getExchanges = async function (req, res) {
   
