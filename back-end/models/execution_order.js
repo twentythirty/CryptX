@@ -36,6 +36,11 @@ module.exports = (sequelize, DataTypes) => {
             failed_attempts: {
                 type: DataTypes.INTEGER,
                 allowNull: false
+            },
+            fee: {
+                type: DataTypes.DECIMAL,
+                allowNull: false,
+                defaultValue: 0.0
             }
         },
         modelProps(
