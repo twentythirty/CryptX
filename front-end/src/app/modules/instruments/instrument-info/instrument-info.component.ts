@@ -1,8 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import _ from 'lodash';
 import { Observable } from 'rxjs';
 import { mergeMap } from 'rxjs/operators';
+import _ from 'lodash';
 
 import { InstrumentsService } from '../../../services/instruments/instruments.service';
 import { ExchangesService } from '../../../services/exchanges/exchanges.service';
@@ -177,9 +177,12 @@ export class InstrumentInfoComponent extends DataTableCommonManagerComponent imp
     ).subscribe(
       res => {
         Object.assign(this.mappingDataSource, {
-          body: res.mapping_data.map(data => Object.assign(data, { valid: true }) ),
-          footer: res.footer
+          body: res.mapping_data.map(data => Object.assign(data, { valid: true }) )
         });
+
+        if(_.isEmpty(this.mappingDataSource.body)) {
+          this.mappingDataSource.body.push( new InstrumentExchangeMap() );
+        }
       },
       err => this.mappingDataSource.body = []
     );
@@ -258,7 +261,7 @@ export class InstrumentInfoComponent extends DataTableCommonManagerComponent imp
 
     this.route.params.pipe(
       mergeMap(
-        params => this.instrumentsService.addMapping(params['id'], exchange_mapping)
+        params => this.instrumentsService.addMapping(params['id'], request)
       )
     ).subscribe(
       data => {
