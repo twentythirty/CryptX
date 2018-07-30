@@ -32,7 +32,7 @@ export class UsersListComponent extends DataTableCommonManagerComponent implemen
       { column: 'last_name', nameKey: 'table.header.surname', filter: { type: 'text', sortable: true, rowData: [] }},
       { column: 'email', nameKey: 'table.header.email', filter: { type: 'text', sortable: true, rowData:[] }},
       { column: 'created_timestamp', nameKey: 'table.header.creation_date', filter: { type: 'date', sortable: true}},
-      { column: 'is_active', nameKey: 'table.header.status', filter: { type: 'boolean', sortable: true, rowData: [] }}
+      { column: 'is_active', nameKey: 'table.header.status', filter: { type: 'text', sortable: true, rowData: [] }}
     ],
     body: null,
   };
