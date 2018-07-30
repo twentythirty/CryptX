@@ -1,12 +1,11 @@
 import { Component, OnInit } from '@angular/core';
 import { CurrencyPipe } from '@angular/common';
+import { ActivatedRoute, Router } from '@angular/router';
 import _ from 'lodash';
 
 import { AssetService, AssetsAllResponseDetailed } from '../../../services/asset/asset.service';
-import { Asset, AssetStatus } from '../../../shared/models/asset';
 import { TableDataSource, TableDataColumn } from '../../../shared/components/data-table/data-table.component';
 import { DataTableCommonManagerComponent } from '../../../shared/components/data-table-common-manager/data-table-common-manager.component';
-import { ActivatedRoute, Router } from '@angular/router';
 import {
   CurrencyCellDataColumn,
   DateCellDataColumn,
@@ -18,6 +17,7 @@ import {
 } from '../../../shared/components/data-table-cells';
 import { AuthService } from '../../../services/auth/auth.service';
 import { ModelConstantsService } from '../../../services/model-constants/model-constants.service';
+import { Asset, AssetStatus } from '../../../shared/models/asset';
 import { StatusClass } from '../../../shared/models/common';
 
 const INSTRUMENT_STATUS_CHANGES = 'INSTRUMENT_STATUS_CHANGES';
@@ -32,10 +32,10 @@ export class AssetListComponent extends DataTableCommonManagerComponent implemen
   public assetsDataSource: TableDataSource = {
     header: [
       { column: 'symbol', nameKey: 'table.header.symbol', filter: { type: 'text', sortable: true } },
-      { column: 'is_cryptocurrency', nameKey: 'table.header.cryptocurrency', filter: { type: 'boolean', sortable: true } },
+      { column: 'is_cryptocurrency', nameKey: 'table.header.cryptocurrency', filter: { type: 'text', sortable: true } },
       { column: 'long_name', nameKey: 'table.header.long_name', filter: { type: 'text', sortable: true } },
-      { column: 'is_base', nameKey: 'table.header.is_base', filter: { type: 'boolean', sortable: true } },
-      { column: 'is_deposit', nameKey: 'table.header.is_deposit', filter: { type: 'boolean', sortable: true } },
+      { column: 'is_base', nameKey: 'table.header.is_base', filter: { type: 'text', sortable: true } },
+      { column: 'is_deposit', nameKey: 'table.header.is_deposit', filter: { type: 'text', sortable: true } },
       { column: 'capitalization', nameKey: 'table.header.capitalisation', filter: { type: 'number', sortable: true } },
       { column: 'nvt_ratio', nameKey: 'table.header.nvt_ratio', filter: { type: 'number', sortable: true } },
       { column: 'market_share', nameKey: 'table.header.market_share', filter: { type: 'number', sortable: true } },
@@ -77,12 +77,12 @@ export class AssetListComponent extends DataTableCommonManagerComponent implemen
           }),
           new DataCellAction({
             label: 'Blacklist',
-            isShown: (row: any) => this.checkPerm(['CHANGE_ASSET_STATUS']) && (!(row.status == 401)),
+            isShown: (row: any) => this.checkPerm(['CHANGE_ASSET_STATUS']) && (!(row.statusCode === 401)),
             exec: (row: any) => { this.blacklist(<Asset>row) }
           }),
           new DataCellAction({
             label: 'Whitelist',
-            isShown: (row: any) => this.checkPerm(['CHANGE_ASSET_STATUS']) && ((row.status == 401)),
+            isShown: (row: any) => this.checkPerm(['CHANGE_ASSET_STATUS']) && ((row.statusCode === 401)),
             exec: (row: any) => { this.whitelist(<Asset>row) }
           })
         ]
@@ -167,36 +167,42 @@ export class AssetListComponent extends DataTableCommonManagerComponent implemen
 
   public doDeGreylist({ rationale, data }): void {
     let asset: Asset = data;
+
     this.assetService.changeAssetStatus(
       asset.id,
       new AssetStatus(this.modelConstantsService.getGroup(INSTRUMENT_STATUS_CHANGES)['Graylisting'], rationale)
     ).subscribe(
       res => {
-        asset.status = this.modelConstantsService.getName(402);
+        asset.status = 'assets.status.402';
+        asset.statusCode = 402;
       }
     )
   }
 
   public doBlacklist({ rationale, data }): void {
     let asset: Asset = data;
+
     this.assetService.changeAssetStatus(
       asset.id,
       new AssetStatus(this.modelConstantsService.getGroup(INSTRUMENT_STATUS_CHANGES)['Blacklisting'], rationale)
     ).subscribe(
       res => {
-        asset.status = this.modelConstantsService.getName(401);
+        asset.status = 'assets.status.401';
+        asset.statusCode = 401;
       }
     )
   }
 
   public doWhitelist({ rationale, data }): void {
     let asset: Asset = data;
+
     this.assetService.changeAssetStatus(
       asset.id,
       new AssetStatus(this.modelConstantsService.getGroup(INSTRUMENT_STATUS_CHANGES)['Whitelisting'], rationale)
     ).subscribe(
       res => {
-        asset.status = this.modelConstantsService.getName(400)
+        asset.status = 'assets.status.400';
+        asset.statusCode = 400;
       }
     )
   }
@@ -206,16 +212,14 @@ export class AssetListComponent extends DataTableCommonManagerComponent implemen
    */
 
   public rowBackgroundColor = (row: Asset): string => {
-    const status = _.replace(row.status, 'assets.status.', '');
-    if(status == 401) return '#6b6b6b';
-    if(status == 402) return '#aeaeae';
+    if(row.statusCode == 401) return '#6b6b6b';
+    if(row.statusCode == 402) return '#aeaeae';
     return null;
   }
 
   public rowTexColor = (row: Asset): string => {
-    const status = _.replace(row.status, 'assets.status.', '');
-    if(status == 401) return '#ffffff';
-    if(status == 402) return '#f2f2f2';
+    if(row.statusCode == 401) return '#ffffff';
+    if(row.statusCode == 402) return '#f2f2f2';
     return null;
   }
 
