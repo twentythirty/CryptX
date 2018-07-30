@@ -7,10 +7,10 @@ module.exports = (sequelize, DataTypes) => {
       started_timestamp: DataTypes.DATE,
       updated_timestamp: DataTypes.DATE,
       completed_timestamp: DataTypes.DATE,
-      strategy_type: DataTypes.SMALLINT,
-      is_simulated: DataTypes.BOOLEAN,
+      strategy_type: DataTypes.STRING,
+      is_simulated: DataTypes.STRING,
       user_created: DataTypes.STRING,
-      status: DataTypes.SMALLINT
+      status: DataTypes.STRING
     },
     //common global model props
     modelProps('av_investment_runs', 'Investment runs of the CryptX system')
