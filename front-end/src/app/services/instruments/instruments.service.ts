@@ -83,7 +83,7 @@ export class InstrumentsService {
   }
 
   addMapping(instrumentId: number, request: AddMappingRequestData): Observable<AddMappingResponse> {
-    return this.http.post<AddMappingResponse>(this.baseUrl + `instruments/${instrumentId}/check_mapping`, request);
+    return this.http.post<AddMappingResponse>(this.baseUrl + `instruments/${instrumentId}/add_mapping`, request);
   }
 
   getHeaderLOV(column_name: string): Observable<any> {
