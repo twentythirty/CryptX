@@ -4,9 +4,9 @@ const Asset = require('../models').Asset;
 const Exchange = require('../models').Exchange;
 const ExchangeAccount = require('../models').ExchangeAccount;
 
-const createExchangeAccount = async (type, asset_id, exchange_id, external_identifier) => {
+const createExchangeAccount = async (account_type, asset_id, exchange_id, external_identifier) => {
     if (
-        !type ||
+        !account_type ||
         !asset_id ||
         !exchange_id ||
         !external_identifier
@@ -14,9 +14,9 @@ const createExchangeAccount = async (type, asset_id, exchange_id, external_ident
 
     const account_types = Object.values(MODEL_CONST.EXCHANGE_ACCOUNT_TYPES);
 
-    if (!account_types.includes(type)) TE(`Invalid account type`);
-
-    let [err, [found_asset, found_exchange, found_account]] = await to(Promise.all([
+    if (!account_types.includes(account_type)) TE(`Invalid account type`);
+    
+    let [err, result] = await to(Promise.all([
         Asset.count({
             where: { id: asset_id }
         }),
@@ -25,18 +25,21 @@ const createExchangeAccount = async (type, asset_id, exchange_id, external_ident
         }),
         ExchangeAccount.count({
             where: {
-                type, asset_id, exchange_id
+                account_type, asset_id, exchange_id
             }
         })
     ]));
 
     if (err) TE(err.message);
+
+    const [ found_asset, found_exchange, found_account ] = result;
+
     if (!found_asset) TE(`Asset not found with id ${asset_id}`);
     if (!found_exchange) TE(`Exchange not found with id ${exchange_id}`);
     if (found_account) TE(`Exchange account already exists with the specified parameters`);
 
     return ExchangeAccount.create({
-        type,
+        account_type,
         asset_id,
         exchange_id,
         external_identifier

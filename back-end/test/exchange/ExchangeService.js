@@ -53,9 +53,9 @@ describe('ExchangeService testing', () => {
             });
 
             sinon.stub(ExchangeAccount, 'count').callsFake(options => {
-                const type = options.where.type;
+                const account_type = options.where.account_type;
 
-                switch (type) {
+                switch (account_type) {
                     case Withdrawal:
                         return Promise.resolve(1);
                     default:
@@ -114,10 +114,14 @@ describe('ExchangeService testing', () => {
         it('create a new Exchange Account if all of the params are valid', () => {
             return chai.assert.isFulfilled(ExchangeService.createExchangeAccount(Trading, 1, 1, '1231232323')
                 .then(account => {
-                    chai.expect(account.type).to.equal(Trading);
+                    chai.expect(ExchangeAccount.create.calledOnce).to.be.true;
+
+                    chai.expect(account.account_type).to.equal(Trading);
                     chai.expect(account.asset_id).to.equal(1);
                     chai.expect(account.exchange_id).to.equal(1);
-                    chai.expect(account.external_identifier).to.equal('1231232323')
+                    chai.expect(account.external_identifier).to.equal('1231232323');
+
+                    return account;
                 }));
         });
 

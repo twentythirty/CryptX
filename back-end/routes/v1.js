@@ -769,33 +769,40 @@ router.get(
   UserController.checkAuth
 );
 
+//Exchanges
+router.get(
+  ROUTES.GetExchanges.router_string,
+  stateless_auth,
+  check_permissions,
+  filter_reducer,
+  ExchangeController.getExchanges
+);
+router.post(
+  ROUTES.GetExchanges.router_string,
+  stateless_auth,
+  check_permissions,
+  filter_reducer,
+  ExchangeController.getExchanges
+);
+router.get(
+  ROUTES.InstrumentMapExchanges.router_string,
+  stateless_auth,
+  check_permissions,
+  MockController.getExchanges
+);
+router.post(
+  ROUTES.InstrumentMapExchanges.router_string,
+  stateless_auth,
+  check_permissions,
+  MockController.getExchanges
+);
+router.post(
+  ROUTES.CreateExchangeAccount.router_string,
+  stateless_auth,
+  check_permissions,
+  ExchangeController.createExchangeAccount
+);
 
-router.get(
-  ROUTES.GetExchanges.router_string,
-  stateless_auth,
-  check_permissions,
-  filter_reducer,
-  ExchangeController.getExchanges
-);
-router.post(
-  ROUTES.GetExchanges.router_string,
-  stateless_auth,
-  check_permissions,
-  filter_reducer,
-  ExchangeController.getExchanges
-);
-router.get(
-  ROUTES.InstrumentMapExchanges.router_string,
-  stateless_auth,
-  check_permissions,
-  MockController.getExchanges
-);
-router.post(
-  ROUTES.InstrumentMapExchanges.router_string,
-  stateless_auth,
-  check_permissions,
-  MockController.getExchanges
-);
 
 router.post(
   ROUTES.GetColdStorageTransfers.router_string,
