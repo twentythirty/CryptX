@@ -70,7 +70,7 @@ const fetch_exchange_deposits = async (recipe_run_id, exchange_ids) => {
                 _.fromPairs(_.map(deposits, deposit => {
                     return [
                         deposit.asset_id,
-                        deposit.actual_amount
+                        deposit.amount
                     ]
                 }))
             ]

@@ -5,8 +5,7 @@ module.exports = (sequelize, DataTypes) => {
     "RecipeRunDeposit",
     {
       creation_timestamp: DataTypes.DATE,
-      planned_amount: DataTypes.DECIMAL,
-      actual_amount: DataTypes.DECIMAL,
+      amount: DataTypes.DECIMAL,
       completion_timestamp: {
         type: DataTypes.DATE,
         allowNull: true

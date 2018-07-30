@@ -79,6 +79,7 @@ ROUTE_MATCHERS = {
     ViewSettingValues: /\/settings$/,
     CheckAuth: /\/users\/login\/check$/,
     GetExchanges: /\/exchanges\/all$/,
+    CreateExchangeAccount: /\/exchanges\/d+\/accounts\/create/,
     GetColdStorageTransfers: /\/cold_storage\/all$/,
     GetColdStorageTransfersColLOV: /\/cold_storage\/header_lov\/\w+$/,
     ApproveColdStorageTransfers: /\/cold_storage\/\d+\/approve$/,

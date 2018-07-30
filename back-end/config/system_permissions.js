@@ -582,4 +582,10 @@ ROUTES = {
     permissions_matcher: ROUTE_MATCHERS.GetExchanges,
     required_permissions: []
   },
+
+  CreateExchangeAccount: {
+    router_string: '/exchanges/:exchange_id/accounts/create',
+    permissions_matcher: ROUTE_MATCHERS.CreateExchangeAccount,
+    required_permissions: []
+  }
 };

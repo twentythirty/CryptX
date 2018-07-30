@@ -275,3 +275,4 @@ const fetchAssetStatusHistory = async (asset) => {
   return sorted_history;
 }
 module.exports.fetchAssetStatusHistory = fetchAssetStatusHistory;
+

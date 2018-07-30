@@ -65,4 +65,5 @@ describe('AssetService testing', () => {
       }, "Doesn't return correct number of assets");
     });
   });
+
 });
