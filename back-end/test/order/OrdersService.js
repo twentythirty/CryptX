@@ -175,7 +175,7 @@ describe('OrdersService testing', () => {
                                     target_exchange_account_id: exchange_account_id,
                                     asset_id: asset_id,
                                     recipe_run_id: TEST_RECIPE_RUN.id,
-                                    actual_amount: _.random(0, 500, true)
+                                    amount: _.random(0, 500, true)
                                 })
                             })
                         }))
@@ -260,7 +260,7 @@ describe('OrdersService testing', () => {
                                     target_exchange_account_id: exchange_account_id,
                                     asset_id: asset_id,
                                     recipe_run_id: TEST_RECIPE_RUN.id,
-                                    actual_amount: _.random(0, 500, true)
+                                    amount: _.random(0, 500, true)
                                 })
                             })
                         }))
@@ -280,7 +280,7 @@ describe('OrdersService testing', () => {
                                     target_exchange_account_id: exchange_account_id,
                                     asset_id: asset_id,
                                     recipe_run_id: TEST_RECIPE_RUN.id,
-                                    actual_amount: _.random(0, 500, true)
+                                    amount: _.random(0, 500, true)
                                 })
                             })
                         }))
