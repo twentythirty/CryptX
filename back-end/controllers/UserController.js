@@ -272,6 +272,12 @@ const sendPasswordResetToken = async function (req, res) {
   let email = req.body.email;
   let [err, user] = await to(authService.sendPasswordResetToken(email));
   if (err) return ReE(res, err, 404);
+
+  //service could have failed silently
+  //return an OK response, but an empty one
+  if (user == null) {
+    return ReS(res, { message: `Password reset token created if ${email} is a valid user` })
+  }
   
   let email_result;
   [err, email_result] = await to(mailUtil.sendMail(
@@ -287,7 +293,7 @@ const sendPasswordResetToken = async function (req, res) {
 
   if (err) return ReE(res, err, 422);
 
-  return ReS(res, {message: 'Password reset token created'});
+  return ReS(res, { message: `Password reset token created if ${email} is a valid user` })
 }
 module.exports.sendPasswordResetToken = sendPasswordResetToken;
 

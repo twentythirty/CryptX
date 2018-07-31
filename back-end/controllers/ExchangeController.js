@@ -22,9 +22,9 @@ module.exports.getExchanges = getExchanges;
 
 const createExchangeAccount = async (req, res) => {
   const exchange_id = parseInt(req.params.exchange_id); 
-  const { account_type, asset_id, external_identifier } = req.body;
+  const { account_type, asset_id, address } = req.body;
 
-  const [ err, exchange_account ] = await to(ExchangeService.createExchangeAccount(account_type, asset_id, exchange_id, external_identifier));
+  const [ err, exchange_account ] = await to(ExchangeService.createExchangeAccount(account_type, asset_id, exchange_id, address));
   if(err) return ReE(res, err.message, 422);
 
   return ReS(res, { exchange_account });

@@ -23,6 +23,7 @@ describe('ExchangeService testing', () => {
     const Asset = require('./../../models').Asset;
     const Exchange = require('./../../models').Exchange;
     const ExchangeAccount = require('./../../models').ExchangeAccount;
+    const InstrumentExchangeMapping = require('./../../models').InstrumentExchangeMapping
 
     describe('and method createExchangeAccount shall', () => {
 
@@ -30,10 +31,10 @@ describe('ExchangeService testing', () => {
 
         before(done => {
 
-            sinon.stub(Asset, 'count').callsFake(options => {
-                const asset_id = options.where.id;
+            sinon.stub(InstrumentExchangeMapping, 'count').callsFake(options => {
+                const exchange_id = options.where.exchange_id;
 
-                switch (asset_id) {
+                switch (exchange_id) {
                     case 1:
                         return Promise.resolve(1);
                     default:
@@ -72,7 +73,7 @@ describe('ExchangeService testing', () => {
         });
 
         after(done => {
-            Asset.count.restore();
+            InstrumentExchangeMapping.count.restore();
             Exchange.count.restore();
             ExchangeAccount.count.restore();
             ExchangeAccount.create.restore();
@@ -100,7 +101,7 @@ describe('ExchangeService testing', () => {
         });
 
         it('reject if the asset does not exist', () => {
-            return chai.assert.isRejected(ExchangeService.createExchangeAccount(Trading, 2, 1, '111'));
+            return chai.assert.isRejected(ExchangeService.createExchangeAccount(Trading, 2, 2, '111'));
         });
 
         it('reject if the exchange does not exist', () => {

@@ -103,53 +103,26 @@ module.exports.JOB_BODY = async (config, log) => {
                                 instrument_id: pending_order.instrument_id 
                             }
                         }),
+                        //fetch CCXT connector for this exchange with markets preloaded
+                        ccxtUtils.getConnector(pending_order.target_exchange_id),
                         //fetch all finished execution order fills for all non-active execution orders
                         ExecutionOrderFill.findAll({
                             where: {
                                 execution_order_id: _.map(inactive_execution_orders, 'id')
                             }
                         })
-                    ]).then(async pendingAndMappingAndFills => {
+                    ]).then(pendingAndMappingAndFills => {
 
-                        const [pending_order, exchange_mapping, execution_fills] = pendingAndMappingAndFills;
-    
-                        //if there is no mapping we quit early
-                        if (exchange_mapping == null || exchange_mapping.tick_size == null) {
-                            log(`Exchange ${pending_order.exchange_id} and instrument ${pending_order.instrument_id} in recipe order ${pending_order.id} have no associating exchange mapping tick size! Skipping order...`);
-                            return pending_order;
-                        }
-    
-                        //sum of realzied total, as decimals for accuracy
-                        const realized_total =
-                            _.map(execution_fills, 'filled_quantity')
-                            .map(qty => Decimal(qty))
-                            .reduce((acc, current) => acc.plus(current), Decimal(0))
-                            .toNumber();
-        
-                        if (realized_total >= pending_order.quantity) {
-                            log(`[WARN.3B]: Current fulfilled execution order total ${realized_total} covers recipe order ${pending_order.id} quantity ${pending_order.quantity}. Skipping recipe order...`);
-                            return pending_order;
-                        }
+                        const [pending_order, exchange_mapping, exchange_connector, execution_fills] = pendingAndMappingAndFills;
 
                         log(`4a. retrieving market data with limits for ${pending_order.Instrument.symbol} for exchange with id ${pending_order.target_exchange_id}`);
-                        //Get ccxt exchange connector (thismay need to be moved, the architecture does not describe when this step should happen)
-                        const exhnage_connector = await ccxtUtils.getConnector(pending_order.target_exchange_id);
 
-                        if(!exhnage_connector) {
+                        if(!exchange_connector) {
                             log(`[ERROR.4A]: Failed to retrieve exchange connector with id: ${pending_order.target_exchange_id}`);
                             return pending_order;
                         }
-
-                        //Load market data from the connector.
-                        const exchange_markets = await exhnage_connector.loadMarkets();
-
-                        if(_.isEmpty(exchange_markets)) {
-                            log(`[ERROR.4A]: No market data is awailable for ${exchangeConnector.name}`);
-                            return pending_order;
-                        }
-
                         //Get market based on instrument symbol.
-                        const exchange_market = exchange_markets[pending_order.Instrument.symbol];
+                        const exchange_market = exchange_connector.markets[pending_order.Instrument.symbol];
 
                         if(!exchange_market || !exchange_market.active) {
                             log(`[ERROR.4A]: Market for ${pending_order.Instrument.symbol} is not available or is not active`);
@@ -159,6 +132,24 @@ module.exports.JOB_BODY = async (config, log) => {
                         const market_limits = exchange_market.limits;
                         const amount_limit = market_limits.amount;
                         const price_limit = market_limits.price;
+    
+                        //if there is no mapping we quit early
+                        if (exchange_mapping == null || exchange_mapping.tick_size == null) {
+                            log(`[ERROR.3A] Exchange ${pending_order.exchange_id} and instrument ${pending_order.instrument_id} in recipe order ${pending_order.id} have no associating exchange mapping tick size! Skipping order...`);
+                            return pending_order;
+                        }
+    
+                        //sum of realzied total, as decimals for accuracy
+                        const realized_total =
+                            _.map(execution_fills, 'quantity')
+                            .map(qty => Decimal(qty))
+                            .reduce((acc, current) => acc.plus(current), Decimal(0))
+                            .toNumber();
+        
+                        if (realized_total >= pending_order.quantity) {
+                            log(`[WARN.3B]: Current fulfilled execution order total ${realized_total} covers recipe order ${pending_order.id} quantity ${pending_order.quantity}. Skipping recipe order...`);
+                            return pending_order;
+                        }
 
                         const sold_symbol = get_order_sold_symbol(pending_order);
                         const base_trade_amount = trade_base[sold_symbol];
@@ -184,13 +175,15 @@ module.exports.JOB_BODY = async (config, log) => {
                         
                         //Check if the next total is within the amount limit.
                         if(next_total_price < price_limit.min) {
-                            log(`[WARN.4C]: Next total price of ${next_total_price} is less than the markets min limit of ${price_limit.min}, skipping order execution`);
+                            log(`[ERROR.4C]: Next total price of ${next_total_price} is less than the markets min limit of ${price_limit.min}, skipping order execution`);
                             return pending_order;
                         }
                         
+                        //because the price is predetermined we cant clamp here - doing so would sell asset below market value and minimize profits, so better to log the error
+                        //and exit, let the user manually fix this situation
                         if(next_total_price > price_limit.max) {
-                            log(`[WARN.4C]: Next total price of ${next_total_price} is greater than the markets max limit of ${price_limit.max}, setting the next total price to limit\`s max ${price_limit.max}`);
-                            next_total_price = price_limit.max;
+                            log(`[ERROR.4C]: Next total price of ${next_total_price} is greater than the markets max limit of ${price_limit.max}, skipping order execution`);
+                            return pending_order;
                         }
 
                         log(`4d. Current fulfilled recipe order total is ${realized_total}, adding another ${next_total}...`);

@@ -64,7 +64,7 @@ export class DepositInfoComponent extends DepositListComponent implements OnInit
   }
 
   dataColumn() {
-    if (!_.find(this.depositDataSource.header, col => col.column == 'action')){
+   /* if (!_.find(this.depositDataSource.header, col => col.column == 'action')){
       if (this.depositDataSource.body[0].status === 151) { //pakeisti į 150
         this.depositDataSource.header.push({ column: 'action', nameKey: 'table.header.action' })
         this.depositColumnsToShow.push(
@@ -83,7 +83,7 @@ export class DepositInfoComponent extends DepositListComponent implements OnInit
             }
           }));
       }
-    }
+    }*/
   }
 
   hideConfirm() {

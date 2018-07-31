@@ -23,7 +23,7 @@ import { PreRequestAuthInterceptor, PostRequestAuthInterceptor, PostRequestError
 import { appInitialization } from './config/app-initialization';
 import { AppRoutingModule } from './config/routes/routes';
 import { AuthModule } from './modules/auth/auth.module';
-import { DashboardModule } from './modules/dashboard/dashboard.component';
+import { DashboardModule } from './modules/dashboard/dashboard.module';
 import { AuthGuard } from './config/routes/route-auth.guard';
 import { PermissionGuard } from './config/routes/route-permission.guard';
 import { RolesModule } from './modules/roles/roles.module';

@@ -35,6 +35,7 @@ import { TranslateModule } from '@ngx-translate/core';
 import { InputCellComponent } from './components/data-table-cells/input-cell/input-cell.component';
 import { SelectCellComponent } from './components/data-table-cells/select-cell/select-cell.component';
 import { TimelineComponent } from './components/timeline/timeline.component';
+import { ButtonRadioComponent } from './components/button-radio/button-radio.component';
 
 @NgModule({
     imports: [
@@ -89,7 +90,8 @@ import { TimelineComponent } from './components/timeline/timeline.component';
         RationaleModalComponent,
         InputCellComponent,
         SelectCellComponent,
-        TimelineComponent
+        TimelineComponent,
+        ButtonRadioComponent
     ],
     exports: [
         MatProgressSpinnerModule,
@@ -116,7 +118,8 @@ import { TimelineComponent } from './components/timeline/timeline.component';
         RationaleModalComponent,
         InputCellComponent,
         SelectCellComponent,
-        TimelineComponent
+        TimelineComponent,
+        ButtonRadioComponent,
     ]
 })
 export class SharedModule {}

@@ -1,10 +1,9 @@
-<div class="modal" modal-popup-open="rationale" style="display: block;">
-        <div class="modal-content">
-            <div class="step-box step1">
-                <a (click)="closeModal()" class="close-modal"></a>
-                <span class="modal-title" *ngIf="heading">{{heading}}</span>
-                  <ng-content>
-                  </ng-content>
-            </div>
-        </div>
+<div class="modal display-block" (click)="closeModal()">
+	<div class="modal-content" (click)="stopPropagation($event)">
+		<div class="step-box step1">
+			<a (click)="closeModal()" class="close-modal"></a>
+			<span class="modal-title" *ngIf="heading">{{ heading }}</span>
+			<ng-content></ng-content>
+		</div>
+	</div>
 </div>

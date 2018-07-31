@@ -136,12 +136,12 @@ describe('Recipe Order status changer job', () => {
         {
             id: 100,
             execution_order_id: FILLED_EXEC_ORD_ID,
-            filled_quantity: COMPLETE_ORD_QNTY / 2
+            quantity: COMPLETE_ORD_QNTY / 2
         },
         {
             id: 101,
             execution_order_id: FILLED_EXEC_ORD_ID,
-            filled_quantity: COMPLETE_ORD_QNTY / 2
+            quantity: COMPLETE_ORD_QNTY / 2
         },
     ];
 
