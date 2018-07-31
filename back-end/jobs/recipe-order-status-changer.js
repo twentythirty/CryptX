@@ -84,7 +84,7 @@ module.exports.JOB_BODY = async (config, log) => {
                     log(`3.[${recipe_order.id}]. Checking ${execution_order_fills.length} execution order fills of order ${recipe_order.id}...`);
 
                     const fills_sum_decimal =
-                            _.map(execution_order_fills, 'filled_quantity')
+                            _.map(execution_order_fills, 'quantity')
                             .map(qty => Decimal(qty))
                             .reduce((acc, current) => acc.plus(current), Decimal(0));
 

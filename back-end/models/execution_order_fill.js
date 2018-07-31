@@ -4,8 +4,13 @@ module.exports = (sequelize, DataTypes) => {
     var ExecutionOrderFill = sequelize.define(
         'ExecutionOrderFill',
         {
-            fill_timestamp: DataTypes.DATE,
-            filled_quantity: DataTypes.DECIMAL,
+            timestamp: DataTypes.DATE,
+            quantity: DataTypes.DECIMAL,
+            fee: {
+                type: DataTypes.DECIMAL,
+                allowNull: false,
+                defaultValue: 0.0
+            },
             //price: DataTypes.DECIMAL,
             external_identifier: DataTypes.STRING,
         },

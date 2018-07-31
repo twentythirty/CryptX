@@ -478,10 +478,10 @@ describe('Execution Order Fills fetcher job', () => {
         sinon.stub(ExecutionOrderFill, 'findAll').callsFake(() => {
             return Promise.resolve([{
                 external_identifier: _.find(MOCK_TRADES, { id: '1' }).id,
-                fill_timestamp: new Date()
+                timestamp: new Date()
             }, {
                 external_identifier: _.find(MOCK_TRADES, { id: '2' }).id,
-                fill_timestamp: new Date()
+                timestamp: new Date()
             }]);
         });
 
@@ -516,7 +516,7 @@ describe('Execution Order Fills fetcher job', () => {
         sinon.stub(ExecutionOrderFill, 'findAll').callsFake(() => {
             return Promise.resolve([{
                 external_identifier: _.find(MOCK_TRADES, { id: '1' }).id,
-                fill_timestamp: new Date()
+                timestamp: new Date()
             }]);
         });
 
@@ -533,9 +533,9 @@ describe('Execution Order Fills fetcher job', () => {
 
             chai.expect(new_fill).to.be.an('object', 'bulkCreate did not receive a trade object');
             chai.expect(new_fill.execution_order_id).to.equal(order.id);
-            chai.expect(new_fill.fill_timestamp).to.equal(trade.timestamp);
+            chai.expect(new_fill.timestamp).to.equal(trade.timestamp);
             chai.expect(new_fill.external_identifier).to.equal(trade.id);
-            chai.expect(new_fill.filled_quantity).to.equal(trade.amount);
+            chai.expect(new_fill.quantity).to.equal(trade.amount);
         });
         
     });
@@ -604,9 +604,9 @@ describe('Execution Order Fills fetcher job', () => {
 
             chai.expect(new_fill).to.be.an('object', 'bulkCreate did not receive a trade object');
             chai.expect(new_fill.execution_order_id).to.equal(order.id);
-            chai.expect(new_fill.fill_timestamp).to.be.a('date');
+            chai.expect(new_fill.timestamp).to.be.a('date');
             chai.expect(new_fill.external_identifier).to.be.undefined;
-            chai.expect(new_fill.filled_quantity).to.equal(mocked_order.filled - sum_of_fills);
+            chai.expect(new_fill.quantity).to.equal(mocked_order.filled - sum_of_fills);
         });
         
     });
@@ -649,9 +649,9 @@ describe('Execution Order Fills fetcher job', () => {
 
             chai.expect(new_fill).to.be.an('object', 'bulkCreate did not receive a trade object');
             chai.expect(new_fill.execution_order_id).to.equal(order.id);
-            chai.expect(new_fill.fill_timestamp).to.equal(trade.timestamp);
+            chai.expect(new_fill.timestamp).to.equal(trade.timestamp);
             chai.expect(new_fill.external_identifier).to.equal(trade.id);
-            chai.expect(new_fill.filled_quantity).to.equal(trade.amount);
+            chai.expect(new_fill.quantity).to.equal(trade.amount);
         });
 
     });

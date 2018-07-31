@@ -121,7 +121,7 @@ module.exports.JOB_BODY = async (config, log) => {
     
                         //sum of realzied total, as decimals for accuracy
                         const realized_total =
-                            _.map(execution_fills, 'filled_quantity')
+                            _.map(execution_fills, 'quantity')
                             .map(qty => Decimal(qty))
                             .reduce((acc, current) => acc.plus(current), Decimal(0))
                             .toNumber();

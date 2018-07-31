@@ -117,7 +117,7 @@ module.exports.handleFillsWithTrades = async (placed_order, exchange, log, Execu
         where: {
             execution_order_id: placed_order.id
         },
-        order: [ [ 'fill_timestamp', 'DESC' ] ]
+        order: [ [ 'timestamp', 'DESC' ] ]
     }));
 
     if(err) {
@@ -128,7 +128,7 @@ module.exports.handleFillsWithTrades = async (placed_order, exchange, log, Execu
 
     //To minimize the amount of retrieved trade entries, we will only take the ones since the last fill
     //or if there are no fills, then take the placement timestamp.
-    const since = order_fills[0] ? order_fills[0].fill_timestamp : placed_order.placed_timestamp;
+    const since = order_fills[0] ? order_fills[0].timestamp : placed_order.placed_timestamp;
 
     log(`4. Fetching trades from the exchange from ${since}.`);
     let trades = [];
@@ -173,8 +173,8 @@ module.exports.handleFillsWithTrades = async (placed_order, exchange, log, Execu
     const new_fills = new_trades.map(trade => {
         return {
             execution_order_id: placed_order.id,
-            fill_timestamp: trade.timestamp,
-            filled_quantity: trade.amount,
+            timestamp: trade.timestamp,
+            quantity: trade.amount,
             external_identifier: String(trade.id)
         }
     });
@@ -200,7 +200,7 @@ module.exports.handleFillsWithTrades = async (placed_order, exchange, log, Execu
 module.exports.handleFillsWithoutTrades = async (placed_order, external_order, log, ExecutionOrderFill) => {
 
     log(`3. Calculating the current sum of fills for order ${placed_order.id}`);
-    let [ err, fill_amount_sum ] = await to(ExecutionOrderFill.sum('filled_quantity', {
+    let [ err, fill_amount_sum ] = await to(ExecutionOrderFill.sum('quantity', {
         where: {
             execution_order_id: placed_order.id
         }
@@ -218,8 +218,8 @@ module.exports.handleFillsWithoutTrades = async (placed_order, external_order, l
         let new_fill;
         [ err, new_fill ] = await to(ExecutionOrderFill.create({
             execution_order_id: placed_order.id,
-            fill_timestamp: new Date(),
-            filled_quantity: external_order.filled - fill_amount_sum
+            timestamp: new Date(),
+            quantity: external_order.filled - fill_amount_sum
         }));
 
         if(err) {
@@ -256,7 +256,7 @@ const updateOrderStatus = async (placed_order, log, ExecutionOrderFill) => {
     }
 
     //Calculate the current sum of fills
-    const [ err, fill_amount_sum ] = await to(ExecutionOrderFill.sum('filled_quantity', {
+    const [ err, fill_amount_sum ] = await to(ExecutionOrderFill.sum('quantity', {
         where: {
             execution_order_id: placed_order.id
         }
