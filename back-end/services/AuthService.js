@@ -219,8 +219,9 @@ const sendPasswordResetToken = async function (email) {
     }
   }));
 
-  if(!user) TE('User not found');
-  if(!user.is_active) TE('User is inactive');
+  //if there is no user found for this email or the user is inactive,
+  //we need to fail silently for security reasons
+  if(!user || !user.is_active) return null;
 
   user.reset_password_token_hash = uuidv4();
   user.reset_password_token_expiry_timestamp = new Date(
