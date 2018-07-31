@@ -5,35 +5,56 @@
     </li>
   </ul>
 </app-page-heading>
+
 <div class="left-part-dashboard">
   <span class="headline-title">{{ singleTitle }}</span>
-  <app-data-table [dataSource]="singleDataSource" [columnsToShow]="singleColumnsToShow" (openRow)="openSingleRow($event)">
-  </app-data-table>
+
+  <app-data-table
+    [dataSource]="singleDataSource"
+    [columnsToShow]="singleColumnsToShow"
+    (openRow)="openSingleRow($event)"
+  ></app-data-table>
+  
   <div class="top-controls">
     <span class="headline-title">{{ listTitle }}</span>
     <a *ngIf="addTitle" (click)="addAction()" class="btn start">
       <span>{{ addTitle }}</span>
     </a>
   </div>
-  <app-data-table [dataSource]="listDataSource" [columnsToShow]="listColumnsToShow" (setFilter)="onSetFilter($event)" (openRow)="openListRow($event)">
-  </app-data-table>
-  <app-pagination [count]="count" [perPage]="pageSize" [page]="page"></app-pagination>
+
+  <app-data-table
+    [dataSource]="listDataSource"
+    [columnsToShow]="listColumnsToShow"
+    [emptyText]="listTableEmptyText | translate"
+    (setFilter)="onSetFilter($event)"
+    (openRow)="openListRow($event)"
+  ></app-data-table>
+
+  <app-pagination
+    [count]="count"
+    [perPage]="pageSize"
+    [page]="page"
+  ></app-pagination>
 </div>
+
 <!-- If there is no step-labels, hide whole container -->
 <div class="step-labels-container">
-    <app-timeline [timelineEvents]="timeline$ | async"></app-timeline>
+  <app-timeline [timelineEvents]="timeline$ | async"></app-timeline>
 </div>
 
 <app-modal *ngIf="rationaleModalIsShown" (close)="hideRationaleModal()">
   <app-rationale-modal [data]="rationaleData" (close)="submitRationale($event)"></app-rationale-modal>
 </app-modal>
 
-<app-modal *ngIf="readModalIsShown" (close)="hideReadModal()">
-  <span class="modal-title">{{ readData?.title }}</span>
+<app-modal
+  *ngIf="readModalIsShown"
+  [heading]="readData?.title"
+  (close)="hideReadModal()"
+>
   <div>
     <textarea readonly>{{ readData?.content }}</textarea>
   </div>
   <div>
-    <app-btn (onClick)="hideReadModal()">Close</app-btn>
+    <app-btn (onClick)="hideReadModal()">{{ 'common.done' | translate }}</app-btn>
   </div>
 </app-modal>

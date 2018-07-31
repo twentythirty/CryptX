@@ -56,6 +56,7 @@ export abstract class TimelineDetailComponent extends DataTableCommonManagerComp
   public abstract singleTitle: string;
   public abstract listTitle: string;
   public addTitle: string;  // Optional
+  public listTableEmptyText: string; // Optional
 
   /**
    * 2. Abstract attributes to preset data structure
