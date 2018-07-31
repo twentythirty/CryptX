@@ -1,6 +1,7 @@
 import { Component, OnInit, Input, EventEmitter, Output } from '@angular/core';
 import { Observable } from 'rxjs';
 import _ from 'lodash';
+import { TranslateService } from '@ngx-translate/core';
 
 export interface TableDataSource {
   header: Array<{
@@ -53,11 +54,11 @@ export class TableDataColumn {
 })
 export class DataTableComponent implements OnInit {
   private filterMap: Object;
-  total
 
   @Input() dataSource: TableDataSource;
   @Input() columnsToShow: Array<string | TableDataColumn>;
   @Input() customRows: boolean = false;
+  @Input() emptyText: string;
 
   @Input() rowBackgroundColor: (row: any) => string = (row) => null;
   @Input() rowTexColor: (row: any) => string = (row) => null;
@@ -65,9 +66,18 @@ export class DataTableComponent implements OnInit {
   @Output() setFilter = new EventEmitter<object>();
   @Output() openRow = new EventEmitter<any>();
 
-  constructor() {}
+  constructor(
+    private translate: TranslateService
+  ) {}
 
   ngOnInit() {
+    // use default empty table disclaimer text if no custom is given
+    if(!this.emptyText) {
+      this.translate.get('common.list_empty').subscribe(data => {
+        this.emptyText = data;
+      });
+    }
+
     this.filterMap = _.zipObject(
       this.columnsToShow.map(el => (typeof el == 'string') ? el : el.column ),
       _.fill( Array(this.columnsToShow.length), false )

@@ -52,7 +52,7 @@
     <ng-template #listEmpty>
       <tr [style.background-color]="'white'">
         <td class="empty-col" colSpan="{{ columnsToShow.length }}">
-          <span *ngIf="dataSource.body; else loadingList">{{ 'common.list_empty' | translate }}</span>
+          <span *ngIf="dataSource.body; else loadingList">{{ emptyText }}</span>
           <ng-template #loadingList><span>
             <mat-progress-spinner
               mode="indeterminate"
