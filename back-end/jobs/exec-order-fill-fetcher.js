@@ -90,7 +90,7 @@ module.exports.JOB_BODY = async (config, log) => {
 
                 if(has_trades) {
                     log(`[WARN.2C] Fetching trades is supported from exchange ${exchange.name} for order ${placed_order.id}`);
-                    return module.exports.handleFillsWithTrades(placed_order, exchange, log, ExecutionOrderFill);
+                    return module.exports.handleFillsWithTrades(placed_order, exchange, external_order, log, ExecutionOrderFill);
                 }
 
                 else {
@@ -110,7 +110,7 @@ module.exports.JOB_BODY = async (config, log) => {
  * @param {Object} exchange Exchange where the order was placed.
  * @param {Object} ExecutionOrderFill Fill model.
  */
-module.exports.handleFillsWithTrades = async (placed_order, exchange, log, ExecutionOrderFill) => {
+module.exports.handleFillsWithTrades = async (placed_order, exchange, external_order, log, ExecutionOrderFill) => {
 
     log('3. Fetching current fills in the database')
     let [ err, order_fills ] = await to(ExecutionOrderFill.findAll({
@@ -152,8 +152,10 @@ module.exports.handleFillsWithTrades = async (placed_order, exchange, log, Execu
     //Since there is not good way to link the trade to a specific execution order.
     if(!hadOrderIdentifier) {
         log(`[WARN.4B] Exchange ${exchange.name} trades don't have the order identifier, switching to tradeless fills method for order ${placed_order.id}`);
-        return module.exports.handleFillsWithoutTrades(placed_order, exchange, log, ExecutionOrderFill);
+        return module.exports.handleFillsWithoutTrades(placed_order, external_order, log, ExecutionOrderFill);
     }
+
+    log(`5. Filtering ${trades.length} trade for new trades.`);
 
     //Check if the trade contains its own identifier (For what ever reason, it might not)
     //Currently, all of the exchanges in use (at least the ones that support trade fetching, have unique ids)
@@ -166,10 +168,11 @@ module.exports.handleFillsWithTrades = async (placed_order, exchange, log, Execu
     const new_trades = _.filter(order_trades, trade => _.findIndex(order_fills, { external_identifier: String(trade.id) }) === -1);
 
     if(!new_trades.length) {
-        log(`[WARN.4C] No new trades found for order ${placed_order.id}, skipping...`);
+        log(`[WARN.5A] No new trades found for order ${placed_order.id}, skipping...`);
         return updateOrderStatus(placed_order, log, ExecutionOrderFill);
     }
 
+    log(`[WARN.5B] Found ${new_trades.length} trades, saving to database`);
     const new_fills = new_trades.map(trade => {
         return {
             execution_order_id: placed_order.id,
@@ -179,11 +182,10 @@ module.exports.handleFillsWithTrades = async (placed_order, exchange, log, Execu
         }
     });
 
-    log(`5. Attempting to save ${new_fills.length} new fills.`);
     let saved_fills = [];
     [ err, saved_fills ] = await to(ExecutionOrderFill.bulkCreate(new_fills));
     if(err) {
-        log(`[ERROR.5A] Error occured during new fill saving: ${err.message}`);
+        log(`[ERROR.5C] Error occured during new fill saving: ${err.message}`);
         placed_order.failed_attempts++;
     }
     
@@ -244,9 +246,9 @@ module.exports.handleFillsWithoutTrades = async (placed_order, external_order, l
  */
 const updateOrderStatus = async (placed_order, log, ExecutionOrderFill) => {
 
-    const { Failed, PartiallyFilled, FullyFilled } = MODEL_CONST.EXECUTION_ORDER_STATUSES; 
+    const { Failed, Placed, PartiallyFilled, FullyFilled } = MODEL_CONST.EXECUTION_ORDER_STATUSES; 
 
-    log(`6. Checking for Execution order ${placed_order.id} status changes.`);
+    log(`6. Checking for Execution order ${placed_order.id} failed attempts exceed the tolerance number.`);
 
     //Check if the placed order should be considered failed.
     if(placed_order.failed_attempts > SYSTEM_SETTINGS.EXEC_ORD_FAIL_TOLERANCE) {
@@ -255,6 +257,7 @@ const updateOrderStatus = async (placed_order, log, ExecutionOrderFill) => {
         return placed_order.save();
     }
 
+    log(`7. Checking for Execution order ${placed_order.id} status changes.`);
     //Calculate the current sum of fills
     const [ err, fill_amount_sum ] = await to(ExecutionOrderFill.sum('quantity', {
         where: {
@@ -263,7 +266,7 @@ const updateOrderStatus = async (placed_order, log, ExecutionOrderFill) => {
     }));
 
     if(err) {
-        log(`[ERROR.6A] Error occured during the calculation of the sum of current fills for order ${placed_order.id}`);
+        log(`[ERROR.7A] Error occured during the calculation of the sum of current fills for order ${placed_order.id}`);
         placed_order.failed_attempts++;
     }
 
@@ -276,8 +279,8 @@ const updateOrderStatus = async (placed_order, log, ExecutionOrderFill) => {
     }*/
 
     //If there is some filling and the order is not marked as PartiallyFilled, update the status then.
-    if(fill_amount_sum > 0 && placed_order.status !== PartiallyFilled) {
-        log(`[WARN.6C] Order ${placed_order.id} has received it's first fill/fills. Marking it as "PartiallyFilled"`);
+    if(fill_amount_sum > 0 && placed_order.status === Placed) {
+        log(`[WARN.7A] Order ${placed_order.id} has received it's first fill/fills. Marking it as "PartiallyFilled"`);
         placed_order.status = PartiallyFilled;
     }
 
@@ -320,13 +323,14 @@ const fetchOrderFromExchange = (placed_order, exchange, log) => {
             if(err) return reject(err);
         }
 
-        let external_orders = placed_order;
+        let external_orders = [];
 
         //Second best scenario will retrieve using open only orders (still less orders to check then with all orders)
-        if(can_fetch_open_orders && !external_order) {
+        //NOTE: currently removed, as with openOrders, we can't get orders that failed or got fully filled.
+        /*if(can_fetch_open_orders && !external_order) {
             [ err, external_orders ] = await to(exchnage.fetchOpenOrders(symbol, since));
             if(err) return reject(err);
-        }
+        }*/
 
         //Worst case scenario will take all orders and filter out the correct one.
         if(can_fetch_open_orders && !external_orders.length && !external_order) {
