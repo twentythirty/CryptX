@@ -522,7 +522,7 @@ describe("AuthService testing", () => {
       })
     });
 
-    it('throw error if user is not active', () => {
+    it('fail silently if user is not active', () => {
 
       if(User.findOne.restore)
         User.findOne.restore();
@@ -537,7 +537,9 @@ describe("AuthService testing", () => {
         return Promise.resolve(user);
       });
 
-      return chai.assert.isRejected(AuthService.sendPasswordResetToken(USER_ID));
+      return AuthService.sendPasswordResetToken(USER_ID).then(resolved => {
+        return chai.expect(resolved).to.be.null;
+      });
     });
   });
 
