@@ -1,27 +1,27 @@
 
 const ccxtUtils = require('../CCXTUtils');
 
-const api_id = "huobipro"; 
+const api_id = "okex"; 
 const _connector = ccxtUtils.getConnector(api_id);
 
 /** This exchange uses cost(amount we want to spend) instead of amount to buy cryptocurrency. Cost will be deducted from
  * base asset and amount of asset we get will be calculated by exchange.
  * 
- * @param {string} external_instrument_id - eg. "XRP/BTC" or "EOS/ETH"
- * @param {string} side - word "buy" or "sell".
- * @param {object} order - whole execution order object.
+ * @param {*} external_instrument_id - eg. "XRP/BTC" or "EOS/ETH"
+ * @param {*} side - word "buy" or "sell".
+ * @param {*} order - whole execution order object.
  * @returns {promise} - Example result
  * {
  *   id: '123',
- *   timestamp: 1532435312978,
- *   datetime: '2018-07-24T12:28:32.978Z',
+ *   timestamp: 1532938747205,
+ *   datetime: '2018-07-30T08:19:07.205Z',
  *   lastTradeTimestamp: undefined,
  *   status: undefined,
  *   symbol: 'XRP/BTC',
  *   type: 'market',
  *   side: 'buy',
- *   price: 0.0001,
- *   amount: 1,
+ *   price: 0.00001,
+ *   amount: 2.123456798,
  *   filled: undefined,
  *   remaining: undefined,
  *   cost: undefined,
@@ -31,9 +31,8 @@ const _connector = ccxtUtils.getConnector(api_id);
  */
 const createMarketOrder = async function (external_instrument_id, side, execution_order) {
   console.log(`Creating market order for ${api_id}`);
-  const order_type = "market";
-  
-  return false;//_connector.createOrder(external_instrument_id, order_type, side, order.total_quantity, order.price);
+
+  return false; //_connector.createOrder(external_instrument_id, order_type, side, execution_order.total_quantity, execution_order.price);
 }
 module.exports.createMarketOrder = createMarketOrder;
 
