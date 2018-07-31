@@ -5,6 +5,7 @@ const RecipeRun = require('../models').RecipeRun;
 const RecipeRunDetail = require('../models').RecipeRunDetail;
 const User = require('../models').User;
 const adminViewsService = require('../services/AdminViewsService');
+const adminViewUtils = require('../utils/AdminViewUtils');
 const investmentService = require('../services/InvestmentService');
 const OrdersService = require('../services/OrdersService');
 
@@ -622,43 +623,52 @@ const getExecutionOrdersColumnLOV = async function (req, res) {
 module.exports.getExecutionOrdersColumnLOV = getExecutionOrdersColumnLOV;
 
 
-const ExecutionOrderFill = async function (req, res) {
+const getExecutionOrderFill = async function (req, res) {
 
-  // mock data below
+    const execution_order_fill_id = req.params.exec_order_fill_id;
 
-  let mock_detail = {
-    id: 1,
-    fill_time: 1531396477062,
-    fill_price: 10.05,
-    quantity: 3
-  }
+    const execution_order_fill = await adminViewsService.fetchExecutionOrderFillView(execution_order_fill_id);
+
+    return ReS(res, {
+      execution_order_fill
+    })
+};
+module.exports.getExecutionOrderFill = getExecutionOrderFill;
+
+const getExecutionOrderFills = async function (req, res) {
+
+  const execution_order_id = req.params.execution_order_id;
+
+  let seq_query = Object.assign({}, req.seq_query);
+  seq_query.where[execution_order_id] = execution_order_id;
+
+  const sql_where = adminViewUtils.addToWhere(req.sql_where, `execution_order_id = ${execution_order_id}`);
+
+  const { data: execution_order_fills, total: count} = await adminViewsService.fetchExecutionOrderFillsViewDataWithCount(seq_query);
+  const footer = await adminViewsService.fetchExecutionOrderFillsViewsFooter(sql_where);
 
   return ReS(res, {
-    execution_order_fill: mock_detail
+    execution_order_fills,
+    footer,
+    count
   })
 };
-module.exports.ExecutionOrderFill = ExecutionOrderFill;
+module.exports.getExecutionOrderFills = getExecutionOrderFills;
 
-const ExecutionOrderFills = async function (req, res) {
 
-  // mock data below
+const getExecutionOrderFillsColumnLOV = async function (req, res) {
 
-  let mock_detail = [...Array(20)].map((detail, index) => ({
-    id: index,
-    fill_time: 1531396477062,
-    fill_price: 10.05,
-    quantity: 3
-  }));
+  const field_name = req.params.field_name
+  const { query } = _.isPlainObject(req.body)? req.body : { query: '' };
 
-  let footer = create_mock_footer(mock_detail[0], 'execution_order_fill');
+  const field_vals = adminViewsService.fetchExecutionOrderFillsViewHeaderLOV(field_name, query);
 
   return ReS(res, {
-    execution_order_fills: mock_detail,
-    footer: footer,
-    count: 20
+    query: query,
+    lov: field_vals
   })
-};
-module.exports.ExecutionOrderFills = ExecutionOrderFills;
+}
+module.exports.getExecutionOrderFillsColumnLOV = getExecutionOrderFillsColumnLOV;
 
 const create_mock_footer = function (keys, name) {
   // delete this function after mock data is replaced

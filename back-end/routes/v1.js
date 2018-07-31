@@ -592,46 +592,32 @@ router.get(
 );
 
  // Execution order fills
- router.post(
-  ROUTES.GetExecutionOrdersFills.router_string,
-  stateless_auth,
-  check_permissions,
-  filter_reducer,
-  InvestmentController.ExecutionOrderFills
-);
-/*  router.get( // might be deleted
-  ROUTES.GetExecutionOrdersFillsOf.router_string,
-  stateless_auth,
-  check_permissions,
-  filter_reducer,
-  InvestmentController.ExecutionOrderFills
-); */
 router.post(
   ROUTES.GetExecutionOrdersFillsOf.router_string,
   stateless_auth,
   check_permissions,
   filter_reducer,
-  InvestmentController.ExecutionOrderFills
+  InvestmentController.getExecutionOrderFills
 );
 router.get(
   ROUTES.ExecutionOrdersFillColLOV.router_string,
   stateless_auth,
   check_permissions,
   filter_reducer,
-MockController.fetchColLOV
+  InvestmentController.getExecutionOrderFillsColumnLOV
 );
 router.post(
   ROUTES.ExecutionOrdersFillColLOV.router_string,
   stateless_auth,
   check_permissions,
   filter_reducer,
-MockController.fetchColLOV
+  InvestmentController.getExecutionOrderFillsColumnLOV
 );
 router.get(
   ROUTES.GetExecutionOrdersFill.router_string,
   stateless_auth,
   check_permissions,
-  InvestmentController.ExecutionOrderFill
+  InvestmentController.getExecutionOrderFill
 );
 
 // Instruments

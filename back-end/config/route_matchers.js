@@ -59,7 +59,6 @@ ROUTE_MATCHERS = {
     ExecutionOrdersColLOV: /\/execution_orders\/header_lov\/\w+/,
     GetExecutionOrder: /\/execution_orders\/\d+$/,
     GetExecutionOrdersFillsOf: /\/exec_orders_fills\/of_order\/\d+$/,
-    GetExecutionOrdersFills: /\/exec_orders_fills\/all$/,
     ExecutionOrdersFillColLOV: /\/exec_orders_fills\/header_lov\/\w+/,
     GetExecutionOrdersFill: /\/exec_orders_fills\/\d+$/,
     InstrumentCreate: /\/instruments\/create/,

@@ -25,3 +25,18 @@ const saveDeposit = async function (investment_run_id, asset_id, amount) {
   return deposit;
 }
 module.exports.saveDeposit = saveDeposit;
+
+
+const generateRecipeRunDeposits = async function (approved_recipe_run) {
+
+  if (!approved_recipe_run 
+    || approved_recipe_run.status == null 
+    || approved_recipe_run.status !== RECIPE_RUN_STATUSES.Approved) {
+
+      TE(`Bad input! submitted input must be a recipe run object with status ${RECIPE_RUN_STATUSES.Approved} (Approved)! GOt: ${approved_recipe_run}`)
+  }
+
+  
+
+}
+module.exports.generateRecipeRunDeposits = generateRecipeRunDeposits;

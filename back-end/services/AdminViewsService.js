@@ -15,6 +15,7 @@ const AVInstrumentLiquidityRequirement = require('../models').AVInstrumentLiquid
 const AVLiquidityRequirementExchange = require('../models').AVLiquidityRequirementExchange;
 const AVRecipeOrder = require('../models').AVRecipeOrder;
 const AVExecutionOrder = require('../models').AVExecutionOrder;
+const AVExecutionOrderFill = require('../models').AVExecutionOrderFill;
 
 const TABLE_LOV_FIELDS = {
     'av_users': [
@@ -174,6 +175,12 @@ const fetchExecutionOrdersViewHeaderLOV = async (header_field, query = '') => {
 }
 module.exports.fetchExecutionOrdersViewHeaderLOV = fetchExecutionOrdersViewHeaderLOV;
 
+const fetchExecutionOrderFillsViewHeaderLOV = async (header_field, query ='') => {
+
+    return fetchViewHeaderLOV('av_execution_order_fills', header_field, query);
+}
+module.exports.fetchExecutionOrderFillsViewHeaderLOV = fetchExecutionOrderFillsViewHeaderLOV;
+
 
 
 // ************************ DATA ***************************//
@@ -227,19 +234,28 @@ const fetchInstrumentLiquidityRequirementsViewDataWithCount = async (seq_query =
 module.exports.fetchInstrumentLiquidityRequirementsViewDataWithCount = fetchInstrumentLiquidityRequirementsViewDataWithCount;
 
 const fetchLiquidityExchangesViewDataWithCount = async (seq_query = {}) => {
+
     return fetchViewDataWithCount(AVLiquidityRequirementExchange, seq_query);
 }
 module.exports.fetchLiquidityExchangesViewDataWithCount = fetchLiquidityExchangesViewDataWithCount;
 
 const fetchRecipeOrdersViewDataWithCount = async (seq_query = {}) => {
+
     return fetchViewDataWithCount(AVRecipeOrder, seq_query);
 }
 module.exports.fetchRecipeOrdersViewDataWithCount = fetchRecipeOrdersViewDataWithCount;
 
 const fetchExecutionOrdersViewDataWithCount = async (seq_query = {}) => {
+
     return fetchViewDataWithCount(AVExecutionOrder, seq_query);
 }
 module.exports.fetchExecutionOrdersViewDataWithCount = fetchExecutionOrdersViewDataWithCount;
+
+const fetchExecutionOrderFillsViewDataWithCount = async (seq_query = {}) => {
+
+    return fetchViewDataWithCount(AVExecutionOrderFill, seq_query);
+}
+module.exports.fetchExecutionOrderFillsViewDataWithCount = fetchExecutionOrderFillsViewDataWithCount;
 
 const fetchAssetView = async (asset_id) => {
 
@@ -288,6 +304,12 @@ const fetchExecutionOrderView = async (execution_order_id) => {
     return fetchSingleEntity(AVExecutionOrder, execution_order_id);
 }
 module.exports.fetchExecutionOrderView = fetchExecutionOrderView;
+
+const fetchExecutionOrderFillView = async (execution_order_fill_id) => {
+
+    return fetchSingleEntity(AVExecutionOrderFill, execution_order_fill_id);
+}
+module.exports.fetchExecutionOrderFillView = fetchExecutionOrderFillView;
 
 
 // ************************ FOOTERS ***************************//
@@ -677,3 +699,25 @@ const fetchExecutionOrdersViewFooter = async (where_clause = '') => {
 
 }
 module.exports.fetchExecutionOrdersViewFooter = fetchExecutionOrdersViewFooter;
+
+const fetchExecutionOrderFillsViewsFooter = async (where_clause = '') => {
+
+    const view = 'av_execution_order_fills';
+
+    const query = builder.joinQueryParts([
+        builder.selectCountDistinct('id', 'id', view, where_clause),
+        builder.selectSum('fill_price', view, where_clause),
+        builder.selectSum('quantity', view, where_clause)
+    ], [
+        'id',
+        'fill_price',
+        'quantity'
+    ])
+
+    const footer = (await sequelize.query(query))[0];
+
+    return builder.addFooterLabels(
+        builder.queryReturnRowToFooterObj(footer), 'execution_order_fills'
+    )
+}
+module.exports.fetchExecutionOrderFillsViewsFooter = fetchExecutionOrderFillsViewsFooter;

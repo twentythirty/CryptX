@@ -1,5 +1,6 @@
 'use strict';
 
+const depositService = require('../services/DepositService');
 const InvestmentRun = require('../models').InvestmentRun;
 const RecipeRun = require('../models').RecipeRun;
 const RecipeRunDetail = require('../models').RecipeRunDetail;
@@ -264,13 +265,12 @@ const changeRecipeRunStatus = async function (user_id, recipe_run_id, status_con
   [err, recipe_run] = await to(recipe_run.save());
   if (err) TE(err.message);
 
-  /*It should not generate recipe orders upon approval. Now this should be done
-  manually by the user on a sepereate route.  */
+  //approving recipe run that was not approved before, try generate empty deposits
+  if (status_constant == RECIPE_RUN_STATUSES.Approved && old_status !== status_constant) { 
+    
+    depositService.generateRecipeRunDeposits(recipe_run);
 
-  //approving recipe run that was not approved before, try generate orders async
-  /* if (status_constant == RECIPE_RUN_STATUSES.Approved && old_status !== status_constant) { */
-    //OrdersService.generateApproveRecipeOrders(recipe_run.id);
-  /* } */
+  }
 
   return recipe_run;
 };
