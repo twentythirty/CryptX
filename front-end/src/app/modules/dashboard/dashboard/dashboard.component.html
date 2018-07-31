@@ -1,0 +1,46 @@
+<p>
+  dashboard works!
+  <br><br>
+  This is just a demonstration of how getting model constants works in FE(visible in files only):<br>
+  Getting name:
+  {{ modelConstants.getName('RECIPE_RUN_STATUSES', 43) }}
+  <br>
+  Getting all names in group:
+  {{ modelConstants.getNames('RECIPE_RUN_STATUSES') }}
+  <br>
+  Getting whole group:
+  {{ this.modelConstants.getGroup('RECIPE_RUN_STATUSES') | json }}
+</p>
+
+
+<a (click)="addInvestmentRun()" class="btn start">
+  <span>Start new run</span>
+</a>
+
+<div class="top-controls">
+  <span class="headline-title">{{ count }} {{ 'investment.investments' | translate }}</span>
+  <a
+    class="btn start"
+    (click)="showNewInvestmentModal = true"
+  >
+    <span>{{ 'investment.start_new_run' | translate }}</span>
+  </a>
+</div>  
+
+<app-data-table
+  [dataSource]="investmentsDataSource"
+  [columnsToShow]="investmentsColumnsToShow"
+  (setFilter)="onSetFilter($event)"
+  (openRow)="openRow($event)"
+></app-data-table>
+
+<app-pagination
+  [count]="count"
+  [perPage]="pageSize"
+  [page]="page"
+></app-pagination>
+
+<app-investment-new
+  *ngIf="showNewInvestmentModal"
+  (close)="closeNewInvestmentModal()"
+></app-investment-new>

@@ -34,6 +34,7 @@ import { RationaleModalComponent } from './components/rationale-modal/rationale-
 import { TranslateModule } from '@ngx-translate/core';
 import { InputCellComponent } from './components/data-table-cells/input-cell/input-cell.component';
 import { SelectCellComponent } from './components/data-table-cells/select-cell/select-cell.component';
+import { ButtonRadioComponent } from './components/button-radio/button-radio.component';
 
 @NgModule({
     imports: [
@@ -88,6 +89,7 @@ import { SelectCellComponent } from './components/data-table-cells/select-cell/s
         RationaleModalComponent,
         InputCellComponent,
         SelectCellComponent,
+        ButtonRadioComponent,
     ],
     exports: [
         MatProgressSpinnerModule,
@@ -114,6 +116,7 @@ import { SelectCellComponent } from './components/data-table-cells/select-cell/s
         RationaleModalComponent,
         InputCellComponent,
         SelectCellComponent,
+        ButtonRadioComponent,
     ]
 })
 export class SharedModule {}

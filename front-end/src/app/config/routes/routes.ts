@@ -6,7 +6,7 @@ import { PermissionGuard } from './route-permission.guard';
 
 import { LoginComponent } from '../../modules/auth/login/login.component';
 import { PasswordResetComponent } from '../../modules/auth/password-reset/password-reset.component';
-import { DashboardComponent } from '../../modules/dashboard/dashboard.component';
+import { DashboardComponent } from '../../modules/dashboard/dashboard/dashboard.component';
 import { EditInfoComponent } from '../../modules/auth/edit-info/edit-info.component';
 import { RolesAddComponent } from '../../modules/roles/roles-add/roles-add.component';
 import { RolesListComponent } from '../../modules/roles/roles-list/roles-list.component';

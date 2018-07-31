@@ -32,6 +32,21 @@ export class InvestmentService {
     return this.http.post<any>(this.baseUrl + `investments/all`, requestData);
   }
 
+  getAllInvestmentsHeaderLOV(column_name: string): Observable<any> {
+    return this.http.get<any>(this.baseUrl + `investments/header_lov/${column_name}`).pipe(
+      map(
+        res => {
+          if(res && res.lov && Array.isArray(res.lov)) {
+            return res.lov.map(lov => {
+              return { value: lov }
+            });
+          }
+          return null;
+        }
+      )
+    );
+  }
+
   getAllRecipes(investment_id: any, requestData?: EntitiesFilter): Observable<any>{
     return this.http.post<any>(this.baseUrl + `recipes/of_investment/${investment_id}`, requestData);
   }

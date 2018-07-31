@@ -75,7 +75,8 @@
       "minimum_circulation": "Minimum Circulation",
       "exchange_count": "Number of Exchanges",
       "exchange_not_pass": "Exchanges that do not Meet Requirements",
-      "liquidity_status": "Liquidity status"
+      "liquidity_status": "Liquidity status",
+      "portfolio": "Portfolio"
     },
     "filter": {
       "all": "All",
@@ -92,6 +93,8 @@
 
   "investment": {
     "investment": "Investment run",
+    "investments": "Investment runs",
+    "start_new_run": "Start new run",
     "recipe_run": "Recipe run",
     "deposits": "Deposits",
     "orders": "Orders",
@@ -100,7 +103,35 @@
     "no_recipe_run": "There is no recipe run",
     "no_deposits": "Deposits aren't made yet",
     "no_orders": "Orders are not created yet",
-    "no_execution_orders": "Execution orders are not created yet"
+    "no_execution_orders": "Execution orders are not created yet",
+    "is_simulated": {
+      "yes": "Yes",
+      "no": "No"
+    },
+    "strategy": {
+      "101": "LCI",
+      "102": "MCI"
+    },
+    "status": {
+      "301": "Initiated",
+      "302": "Recipe Run",
+      "303": "Recipe Approved",
+      "304": "Deposits Completed",
+      "305": "Orders Generated",
+      "306": "Orders Approved",
+      "307": "Orders Executing",
+      "308": "Orders Filled"
+    }
+  },
+  "investment_runs": {
+    "footer": {
+      "id": "{{ id }} Items",
+      "completed_timestamp": "{{ completed_timestamp }} Completed",
+      "user_created": "{{ user_created }} Creator",
+      "strategy_type": "{{ strategy_type }} Portfolios",
+      "is_simulated": "{{ is_simulated }} Real",
+      "status": "{{ status }} Executing"
+    }
   },
 
   "roles": {
