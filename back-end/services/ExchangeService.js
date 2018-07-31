@@ -4,13 +4,13 @@ const Asset = require('../models').Asset;
 const Exchange = require('../models').Exchange;
 const ExchangeAccount = require('../models').ExchangeAccount;
 
-const createExchangeAccount = async (account_type, asset_id, exchange_id, external_identifier) => {
+const createExchangeAccount = async (account_type, asset_id, exchange_id, address) => {
     if (
         !account_type ||
         !asset_id ||
         !exchange_id ||
-        !external_identifier
-    ) TE('Creating an exchange account requires to specify an account type, asset id, exchange id and external identifier (account address)');
+        !address
+    ) TE('Creating an exchange account requires to specify an account type, asset id, exchange id and wallet address');
 
     const account_types = Object.values(MODEL_CONST.EXCHANGE_ACCOUNT_TYPES);
 
@@ -28,7 +28,7 @@ const createExchangeAccount = async (account_type, asset_id, exchange_id, extern
                 account_type, 
                 asset_id, 
                 exchange_id, 
-                address: external_identifier
+                address
             }
         })
     ]));
@@ -45,7 +45,7 @@ const createExchangeAccount = async (account_type, asset_id, exchange_id, extern
         account_type,
         asset_id,
         exchange_id,
-        address: external_identifier
+        address
     });
 
 };
