@@ -126,6 +126,7 @@
     }
   },
   "investment_runs": {
+    "empty_list_text": "No investment runs have been created yet",
     "footer": {
       "id": "{{ id }} Items",
       "completed_timestamp": "{{ completed_timestamp }} Completed",
