@@ -91,7 +91,8 @@ import { ButtonRadioComponent } from './components/button-radio/button-radio.com
         InputCellComponent,
         SelectCellComponent,
         TimelineComponent,
-        ButtonRadioComponent
+        ButtonRadioComponent,
+
     ],
     exports: [
         MatProgressSpinnerModule,

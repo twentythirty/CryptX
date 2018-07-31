@@ -77,7 +77,8 @@
       "liquidity_status": "Liquidity status",
       "transaction_asset_id": "Investment run ID",
       "transaction_asset": "quote asset",
-      "portfolio": "Portfolio"
+      "portfolio": "Portfolio",
+      "transaction_asset": "quote asset"
     },
     "filter": {
       "all": "All",
