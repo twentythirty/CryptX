@@ -12,6 +12,7 @@ const ccxtUtils = require('../../utils/CCXTUtils');
 
 const execOrderFillFetcher= require('../../jobs/exec-order-fill-fetcher');
 
+const sequelize = require('../../models/index').sequelize;
 const Instrument = require('../../models').Instrument;
 const ExecutionOrder = require('../../models').ExecutionOrder;
 const ExecutionOrderFill = require('../../models').ExecutionOrderFill;
@@ -115,6 +116,16 @@ const MOCK_ORDERS = [{
     filled: 10,
     remaining: 0,
     status: 'closed'
+}, {
+    id: '6',
+    symbol: 'ETH/BTC',
+    amount: 10,
+    filled: 5,
+    remaining: 5,
+    status: 'open',
+    fee: {
+        cost: 1
+    }
 }];
 
 const MOCK_TRADES = [{
@@ -122,25 +133,37 @@ const MOCK_TRADES = [{
     timestamp: 1502962946216,
     symbol: MOCK_ORDERS[0].symbol,
     order: MOCK_ORDERS[0].id,
-    amount: 5
+    amount: 5,
+    fee: {
+        cost: 1
+    }
 }, {
     id: '2',
     timestamp: 1502962946216,
     symbol: MOCK_ORDERS[0].symbol,
     order: MOCK_ORDERS[0].id,
-    amount: 2
+    amount: 2,
+    fee: {
+        cost: 2
+    }
 }, {
     id: '3',
     timestamp: 1502962946216,
     symbol: MOCK_ORDERS[4].symbol,
     order: MOCK_ORDERS[4].id,
-    amount: 5
+    amount: 5,
+    fee: {
+        cost: 3
+    }
 }, {
     id: '4',
     timestamp: 1502962946216,
     symbol: MOCK_ORDERS[4].symbol,
     order: null,
-    amount: 4
+    amount: 4,
+    fee: {
+        cost: 2
+    }
 }];
 
 const BASE_ORDER = {
@@ -156,7 +179,8 @@ const BASE_ORDER = {
     total_quantity: 1,
     price: 1,
     type: 'market',
-    side: 1
+    side: 1,
+    fee: 0
 };
 
 describe('Execution Order Fills fetcher job', () => {
@@ -166,7 +190,8 @@ describe('Execution Order Fills fetcher job', () => {
             ExecutionOrder: ExecutionOrder,
             Instrument: Instrument,
             ExecutionOrderFill: ExecutionOrderFill
-        }
+        },
+        sequelize: sequelize
     };
 
     before(done => {
@@ -242,6 +267,10 @@ describe('Execution Order Fills fetcher job', () => {
                 return Promise.resolve(connector);
             });
 
+            sinon.stub(sequelize, 'query').callsFake(query => {
+                return Promise.resolve(query);
+            });
+
             done();
         });
     });
@@ -261,6 +290,7 @@ describe('Execution Order Fills fetcher job', () => {
 
     after(done => {
         ccxtUtils.getConnector.restore();
+        sequelize.query.restore();
         done();
     });
 
@@ -528,14 +558,18 @@ describe('Execution Order Fills fetcher job', () => {
 
             chai.expect(ExecutionOrderFill.bulkCreate.calledOnce).to.be.true;
             
+            const [ placed_order ] = orders;
             const new_fill = bulkCreate.args[0][0][0];
             const trade = _.find(MOCK_TRADES, { id: '2' });
+            
+            chai.expect(placed_order.fee).to.equal(new_fill.fee);
 
             chai.expect(new_fill).to.be.an('object', 'bulkCreate did not receive a trade object');
             chai.expect(new_fill.execution_order_id).to.equal(order.id);
             chai.expect(new_fill.timestamp).to.equal(trade.timestamp);
             chai.expect(new_fill.external_identifier).to.equal(trade.id);
             chai.expect(new_fill.quantity).to.equal(trade.amount);
+            chai.expect(new_fill.fee).to.equal(trade.fee.cost);
         });
         
     });
@@ -568,7 +602,7 @@ describe('Execution Order Fills fetcher job', () => {
 
     });
 
-    it('shall create a new fill when it filled amount exceeds the sum of fills inside the database andmark the order as PartiallyFilled.', () => {
+    it('shall create a new fill when it filled amount exceeds the sum of fills inside the database and mark the order as PartiallyFilled.', () => {
         
         let order = Object.assign({}, BASE_ORDER, {
             exchange_id: 2,
@@ -607,6 +641,45 @@ describe('Execution Order Fills fetcher job', () => {
             chai.expect(new_fill.timestamp).to.be.a('date');
             chai.expect(new_fill.external_identifier).to.be.undefined;
             chai.expect(new_fill.quantity).to.equal(mocked_order.filled - sum_of_fills);
+        });
+        
+    });
+
+    it('shall update the order fills fees when it received a fee and the sum of fills is greater than 0 and the fills were emulated', () => {
+        
+        let order = Object.assign({}, BASE_ORDER, {
+            exchange_id: 2,
+            external_identifier: '6'
+        });
+
+        const mocked_order = _.find(MOCK_ORDERS, { id: '6' });
+        const sum_of_fills = mocked_order.filled / 5;
+
+        sinon.stub(ExecutionOrder, 'findAll').callsFake(options => {
+            stubSave(order);
+            stubChanged(order, false);
+            return Promise.resolve([order]);
+        })
+
+        sinon.stub(ExecutionOrderFill, 'sum').callsFake(() => {
+            return Promise.resolve(sum_of_fills);
+        });
+
+        const bulkCreate = sinon.stub(ExecutionOrderFill, 'create').callsFake(options => {
+            return Promise.resolve(options);
+        });
+
+        const expected_query =  `
+            UPDATE execution_order_fill AS eof
+            SET fee = ${mocked_order.fee.cost} * quantity / ${sum_of_fills}
+            WHERE eof.execution_order_id = ${order.id}
+        `;
+
+        return execOrderFillFetcher.JOB_BODY(stubbed_config, console.log).then(orders => {
+
+            const called_query = sequelize.query.args[0][0];
+
+            chai.expect(called_query).to.equal(expected_query);
         });
         
     });

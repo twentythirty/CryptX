@@ -21,7 +21,7 @@ export class DashboardComponent extends DataTableCommonManagerComponent implemen
 
   public investmentsDataSource: TableDataSource = {
     header: [
-      { column: 'id', nameKey: 'table.header.id' },
+      { column: 'id', nameKey: 'table.header.id', filter: { type: 'text', sortable: true } },
       { column: 'started_timestamp', nameKey: 'table.header.creation_time', filter: { type: 'date', sortable: true } },
       { column: 'updated_timestamp', nameKey: 'table.header.updated', filter: { type: 'date', sortable: true } },
       { column: 'completed_timestamp', nameKey: 'table.header.completion_time', filter: { type: 'date', sortable: true } },
@@ -77,7 +77,7 @@ export class DashboardComponent extends DataTableCommonManagerComponent implemen
    */
   getFilterLOV(): void {
     this.investmentsDataSource.header.filter(
-      col => ['user_created', 'strategy_type', 'is_simulated', 'status'].includes(col.column)
+      col => ['strategy_type', 'is_simulated', 'status'].includes(col.column)
     ).map(
       col => {
         col.filter.rowData$ = this.investmentService.getAllInvestmentsHeaderLOV(col.column);

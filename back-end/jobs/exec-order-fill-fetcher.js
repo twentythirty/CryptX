@@ -34,13 +34,13 @@ module.exports.JOB_BODY = async (config, log) => {
                 if(err) {
                     log(`[ERROR.1A] Error occured during exchange connection fetching: ${err.message}`);
                     placed_order.failed_attempts++;
-                    return updateOrderStatus(placed_order, log, ExecutionOrderFill);
+                    return updateOrderStatus(placed_order, log, config);
                 }
 
                 if(!exchange) {
                     log(`[ERROR.1B] Error: could not find an exchange connector for order ${placed_order.id}`);
                     placed_order.failed_attempts++;
-                    return updateOrderStatus(placed_order, log, ExecutionOrderFill);
+                    return updateOrderStatus(placed_order, log, config);
                 }
                 
                 //Fetch the order object from the exchange.
@@ -52,13 +52,13 @@ module.exports.JOB_BODY = async (config, log) => {
                 if(err){
                     log(`[ERROR.2A] Error occured during order fetching from the exchange: ${err.message}`);
                     placed_order.failed_attempts++; 
-                    return updateOrderStatus(placed_order, log, ExecutionOrderFill);
+                    return updateOrderStatus(placed_order, log, config);
                 }
 
                 if(!external_order) {
                     log(`[ERROR.2B] Error: could not fetch order from exchange with id ${placed_order.id} and external identifier ${placed_order.external_identifier}`);
                     placed_order.failed_attempts++; //Not marked as Failed, in case it's only a connection issue.
-                    return updateOrderStatus(placed_order, log, ExecutionOrderFill);
+                    return updateOrderStatus(placed_order, log, config);
                 }
 
                 /** 
@@ -70,7 +70,7 @@ module.exports.JOB_BODY = async (config, log) => {
                 if(external_order.status === 'closed' && external_order.remaining > 0) {
                     log(`[WARN.2A] Execution order ${placed_order.id} was closed on the exchange before getting filled, marking as Failed`);
                     placed_order.status = Failed;
-                    return updateOrderStatus(placed_order, log, ExecutionOrderFill);
+                    return updateOrderStatus(placed_order, log, config);
                 }
 
                 /**
@@ -90,12 +90,12 @@ module.exports.JOB_BODY = async (config, log) => {
 
                 if(has_trades) {
                     log(`[WARN.2C] Fetching trades is supported from exchange ${exchange.name} for order ${placed_order.id}`);
-                    return module.exports.handleFillsWithTrades(placed_order, exchange, external_order, log, ExecutionOrderFill);
+                    return module.exports.handleFillsWithTrades(placed_order, exchange, external_order, log, config);
                 }
 
                 else {
                     log(`[WARN.2D] Fetching trades is not supported for exchange ${exchange.name}, calculating fills by order details instead ${placed_order.id}`);
-                    return module.exports.handleFillsWithoutTrades(placed_order, external_order, log, ExecutionOrderFill);
+                    return module.exports.handleFillsWithoutTrades(placed_order, external_order, log, config);
                 }
 
             })
@@ -108,9 +108,11 @@ module.exports.JOB_BODY = async (config, log) => {
  * NOTE: this is set to exports immediately in order to use in tests with sinon. Might need a cleaner solution. 
  * @param {Object} placed_order Order associated with the exchange.
  * @param {Object} exchange Exchange where the order was placed.
- * @param {Object} ExecutionOrderFill Fill model.
+ * @param {Object} config job config.
  */
-module.exports.handleFillsWithTrades = async (placed_order, exchange, external_order, log, ExecutionOrderFill) => {
+module.exports.handleFillsWithTrades = async (placed_order, exchange, external_order, log, config) => {
+
+    const ExecutionOrderFill = config.models.ExecutionOrderFill;
 
     log('3. Fetching current fills in the database')
     let [ err, order_fills ] = await to(ExecutionOrderFill.findAll({
@@ -123,7 +125,7 @@ module.exports.handleFillsWithTrades = async (placed_order, exchange, external_o
     if(err) {
         log(`[ERROR.3A] Error occured execution order fill fetching from the database: ${err.message}`);
         placed_order.failed_attempts++;
-        return updateOrderStatus(placed_order, log, ExecutionOrderFill);
+        return updateOrderStatus(placed_order, log, config);
     }
 
     //To minimize the amount of retrieved trade entries, we will only take the ones since the last fill
@@ -137,12 +139,12 @@ module.exports.handleFillsWithTrades = async (placed_order, exchange, external_o
     if(err) {
         log(`[ERROR.4A] Error occured while attepting to fetch recent trades: ${err.message}`);
         placed_order.failed_attempts++;
-        return updateOrderStatus(placed_order, log, ExecutionOrderFill);
+        return updateOrderStatus(placed_order, log, config);
     }
 
     if(!trades.length) {
         log(`[WARN.4A] No trades fetched, skipping...`);
-        return updateOrderStatus(placed_order, log, ExecutionOrderFill);
+        return updateOrderStatus(placed_order, log, config);
     }
 
     //Check if exchange supports order identifiers for trades;
@@ -152,7 +154,7 @@ module.exports.handleFillsWithTrades = async (placed_order, exchange, external_o
     //Since there is not good way to link the trade to a specific execution order.
     if(!hadOrderIdentifier) {
         log(`[WARN.4B] Exchange ${exchange.name} trades don't have the order identifier, switching to tradeless fills method for order ${placed_order.id}`);
-        return module.exports.handleFillsWithoutTrades(placed_order, external_order, log, ExecutionOrderFill);
+        return module.exports.handleFillsWithoutTrades(placed_order, external_order, log, config);
     }
 
     log(`5. Filtering ${trades.length} trade for new trades.`);
@@ -169,16 +171,19 @@ module.exports.handleFillsWithTrades = async (placed_order, exchange, external_o
 
     if(!new_trades.length) {
         log(`[WARN.5A] No new trades found for order ${placed_order.id}, skipping...`);
-        return updateOrderStatus(placed_order, log, ExecutionOrderFill);
+        return updateOrderStatus(placed_order, log, config);
     }
 
     log(`[WARN.5B] Found ${new_trades.length} trades, saving to database`);
     const new_fills = new_trades.map(trade => {
+        const fee = trade.fee ? trade.fee.cost : 0;
+        placed_order.fee += fee;
         return {
             execution_order_id: placed_order.id,
             timestamp: trade.timestamp,
             quantity: trade.amount,
-            external_identifier: String(trade.id)
+            external_identifier: String(trade.id),
+            fee: fee
         }
     });
 
@@ -189,7 +194,7 @@ module.exports.handleFillsWithTrades = async (placed_order, exchange, external_o
         placed_order.failed_attempts++;
     }
     
-    return updateOrderStatus(placed_order, log, ExecutionOrderFill);
+    return updateOrderStatus(placed_order, log, config);
 }
 
 /**
@@ -197,9 +202,18 @@ module.exports.handleFillsWithTrades = async (placed_order, exchange, external_o
  * with the sum of fills in the database.
  * @param {Object} placed_order Order associated with the exchange.
  * @param {Object} external_order Order object from the exchange.
- * @param {Object} ExecutionOrderFill Fill model.
+ * @param {Object} config job config.
  */
-module.exports.handleFillsWithoutTrades = async (placed_order, external_order, log, ExecutionOrderFill) => {
+module.exports.handleFillsWithoutTrades = async (placed_order, external_order, log, config) => {
+
+    const ExecutionOrderFill = config.models.ExecutionOrderFill;
+    //Add a flag to the Execution order, marking that its fills were emulated. Will be used for fees.
+    placed_order.emulated_fills = true;
+
+    //Check if the external_order has the order fee
+    if(external_order.fee) {
+        placed_order.fee = external_order.fee.cost;
+    }
 
     log(`3. Calculating the current sum of fills for order ${placed_order.id}`);
     let [ err, fill_amount_sum ] = await to(ExecutionOrderFill.sum('quantity', {
@@ -211,7 +225,7 @@ module.exports.handleFillsWithoutTrades = async (placed_order, external_order, l
     if(err) {
         log(`[ERROR.3A] Error occured during fill amount summing: ${err.message}`);
         placed_order.failed_attempts++;
-        return updateOrderStatus(placed_order, log, ExecutionOrderFill);
+        return updateOrderStatus(placed_order, log, config);
     }
 
     log(`4. Checking for differences in the received order details and the current fill sum.`);
@@ -227,15 +241,15 @@ module.exports.handleFillsWithoutTrades = async (placed_order, external_order, l
         if(err) {
             log(`[ERROR.4A] Error occured during the insertion of a new fill entry: ${err.message}`);
             placed_order.failed_attempts++;
-            return updateOrderStatus(placed_order, log, ExecutionOrderFill);
+            return updateOrderStatus(placed_order, log, config);
         }
 
-        return updateOrderStatus(placed_order, log, ExecutionOrderFill);
+        return updateOrderStatus(placed_order, log, config);
     }
 
     else {
         log(`[WARN.4B] Filled amount does not exceed current sum of fills, skipping..`)
-        return updateOrderStatus(placed_order, log, ExecutionOrderFill);
+        return updateOrderStatus(placed_order, log, config);
     }
 }
 
@@ -244,7 +258,10 @@ module.exports.handleFillsWithoutTrades = async (placed_order, external_order, l
  * @param {*} placed_order
  * @param {Object} ExecutionOrderFill Fill model.
  */
-const updateOrderStatus = async (placed_order, log, ExecutionOrderFill) => {
+const updateOrderStatus = async (placed_order, log, config) => {
+
+    const sequelize = config.sequelize;
+    const ExecutionOrderFill = config.models.ExecutionOrderFill;
 
     const { Failed, Placed, PartiallyFilled, FullyFilled } = MODEL_CONST.EXECUTION_ORDER_STATUSES; 
 
@@ -259,7 +276,7 @@ const updateOrderStatus = async (placed_order, log, ExecutionOrderFill) => {
 
     log(`7. Checking for Execution order ${placed_order.id} status changes.`);
     //Calculate the current sum of fills
-    const [ err, fill_amount_sum ] = await to(ExecutionOrderFill.sum('quantity', {
+    let [ err, fill_amount_sum ] = await to(ExecutionOrderFill.sum('quantity', {
         where: {
             execution_order_id: placed_order.id
         }
@@ -268,6 +285,16 @@ const updateOrderStatus = async (placed_order, log, ExecutionOrderFill) => {
     if(err) {
         log(`[ERROR.7A] Error occured during the calculation of the sum of current fills for order ${placed_order.id}`);
         placed_order.failed_attempts++;
+    }
+
+    if(placed_order.emulated_fills && placed_order.fee && fill_amount_sum) {
+        [ err ] = await to(sequelize.query(`
+            UPDATE execution_order_fill AS eof
+            SET fee = ${placed_order.fee} * quantity / ${fill_amount_sum}
+            WHERE eof.execution_order_id = ${placed_order.id}
+        `));
+
+        if(err) log(`[ERROR.7B] Error occured during fill fee calculation and update: ${err.message}`);
     }
 
     //If the sum is greater or equal to the required total quantity, mark the order as FullyFilled.
