@@ -6,7 +6,7 @@ module.exports = (sequelize, DataTypes) => {
         {
             investment_run_id: DataTypes.SMALLINT,
             created_timestamp: DataTypes.DATE,
-            approval_status: DataTypes.SMALLINT,
+            approval_status: DataTypes.STRING,
             approval_comment: DataTypes.STRING,
             approval_timestamp: DataTypes.DATE,
             user_created_id: DataTypes.SMALLINT,

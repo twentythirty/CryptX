@@ -599,7 +599,7 @@ const fetchRecipeRunsViewFooter = async (where_clause = '') => {
     const query = builder.joinQueryParts([
         builder.selectCount(view, 'id', where_clause),
         builder.selectCountDistinct('user_created', 'user_created', view, where_clause),
-        builder.selectCount(view, 'approval_status', builder.addToWhere(`approval_status=${MODEL_CONST.RECIPE_RUN_STATUSES.Pending}`))
+        builder.selectCount(view, 'approval_status', builder.addToWhere(`approval_status='recipes.status.${MODEL_CONST.RECIPE_RUN_STATUSES.Pending}'`))
     ], [
         'id',
         'user_created',
