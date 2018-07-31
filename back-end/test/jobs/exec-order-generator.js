@@ -82,21 +82,19 @@ describe('Execution Order generator job', () => {
         sinon.stub(ccxtUtils, 'getConnector').callsFake(exhange => {
             const connector = {
                 name: 'Mock exchange',
-                loadMarkets: () => {
-                    return {
-                        'LTC/BTC': {
-                            limits: {
-                                amount: {
-                                    min: 0,
-                                    max: 1000000
-                                },
-                                price: {
-                                    min: 0, //Set to 0 to make sure tests with random price pass always.
-                                    max: 1000000
-                                }
+                markets: {
+                    'LTC/BTC': {
+                        limits: {
+                            amount: {
+                                min: 0,
+                                max: 1000000
                             },
-                            active: true
-                        }
+                            price: {
+                                min: 0, //Set to 0 to make sure tests with random price pass always.
+                                max: 1000000
+                            }
+                        },
+                        active: true
                     }
                 }
             };
@@ -136,7 +134,7 @@ describe('Execution Order generator job', () => {
         target_exchange_id: 77
     });
     const EXECUTION_ORDER_IDS = [7845, 3248, 6314, 1111];
-    
+
     const TEST_PENDING_EXECUTION_ORDER = {
         id: EXECUTION_ORDER_IDS[0],
         status: EXECUTION_ORDER_STATUSES.Pending
@@ -176,7 +174,7 @@ describe('Execution Order generator job', () => {
             restoreSymbols(RecipeOrder.findAll);
 
             const [failed_recipe, execution_orders] = processed_recipes;
-            
+
             chai.expect(failed_recipe).to.deep.equal(empty_order, "Order should not have changed!");
             //should not ahve generated any new execution orders!
             chai.expect(execution_orders).to.be.undefined;
@@ -309,23 +307,22 @@ describe('Execution Order generator job', () => {
         sinon.stub(ccxtUtils, 'getConnector').callsFake(exhange => {
             const connector = {
                 name: 'Mock exchange',
-                loadMarkets: () => {
-                    return {
-                        'LTC/BTC': {
-                            limits: {
-                                amount: {
-                                    min: 400,
-                                    max: 1000000
-                                },
-                                price: {
-                                    min: 400,
-                                    max: 1000000
-                                }
+                markets: {
+                    'LTC/BTC': {
+                        limits: {
+                            amount: {
+                                min: 400,
+                                max: 1000000
                             },
-                            active: true
-                        }
+                            price: {
+                                min: 400,
+                                max: 1000000
+                            }
+                        },
+                        active: true
                     }
                 }
+
             };
 
             return Promise.resolve(connector);
@@ -333,7 +330,7 @@ describe('Execution Order generator job', () => {
 
 
         let not_completed_order = Object.assign({
-                
+
         }, TEST_SYMBOL_PENDING_ORDER_BASE, {
             id: PENDING_ORDER_IDS[2]
         });
@@ -366,38 +363,37 @@ describe('Execution Order generator job', () => {
                 ExecutionOrderFill.findAll,
                 InstrumentExchangeMapping.find
             );
-            
+
             const [failed_recipe, execution_orders] = processed_recipes;
-            
+
             chai.expect(failed_recipe).to.deep.equal(not_completed_order, "Order should not have changed!");
-  
+
             chai.expect(execution_orders).to.be.undefined;
         });
 
     });
 
-    it("will create next step of execution orders with the total set to the markers max limit", () =>{
+    it("will create next step of execution orders with the total set to the markers max limit", () => {
         ccxtUtils.getConnector.restore();
         sinon.stub(ccxtUtils, 'getConnector').callsFake(exhange => {
             const connector = {
                 name: 'Mock exchange',
-                loadMarkets: () => {
-                    return {
-                        'LTC/BTC': {
-                            limits: {
-                                amount: {
-                                    min: 0,
-                                    max: 0.1
-                                },
-                                price: {
-                                    min: 0,
-                                    max: 0.1
-                                }
+                markets: {
+                    'LTC/BTC': {
+                        limits: {
+                            amount: {
+                                min: 0,
+                                max: 0.1
                             },
-                            active: true
-                        }
+                            price: {
+                                min: 0,
+                                max: 0.1
+                            }
+                        },
+                        active: true
                     }
                 }
+
             };
 
             return Promise.resolve(connector);
@@ -405,7 +401,7 @@ describe('Execution Order generator job', () => {
 
 
         let not_completed_order = Object.assign({
-  
+
         }, TEST_SYMBOL_PENDING_ORDER_BASE, {
             id: PENDING_ORDER_IDS[3]
         });
@@ -443,10 +439,12 @@ describe('Execution Order generator job', () => {
                 ExecutionOrderFill.findAll,
                 InstrumentExchangeMapping.find,
                 ExecutionOrder.create
-            );  
+            );
             //console.log(processed_recipes);
-            const [[recipe, execution_order]] = processed_recipes;
-            
+            const [
+                [recipe, execution_order]
+            ] = processed_recipes;
+
             chai.expect(execution_order).to.be.not.undefined;
             chai.expect(execution_order.total_quantity).to.equal(0.1);
         });
