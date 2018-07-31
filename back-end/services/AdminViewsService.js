@@ -36,7 +36,9 @@ const TABLE_LOV_FIELDS = {
     ],
     'av_investment_runs': [
         'is_simulated',
-        'user_created'
+        'user_created',
+        'strategy_type',
+        'status'
     ],
     'av_recipe_runs': [
         'approval_status'
