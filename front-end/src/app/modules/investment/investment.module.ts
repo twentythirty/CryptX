@@ -5,7 +5,7 @@ import { InvestmentRoutingModule } from './investment-routing.module';
 import { RouterModule } from '@angular/router';
 import { SharedModule } from '../../shared/shared.module';
 import { BrowserModule } from '@angular/platform-browser';
-import { TimelineComponent } from './timeline/timeline.component';
+//import { TimelineComponent } from './timeline/timeline.component';
 import { InvestmentRunDetailComponent } from './investment-run-detail/investment-run-detail.component';
 import { RecipeRunDetailComponent } from './recipe-run-detail/recipe-run-detail.component';
 import { OrderDetailComponent } from './order-detail/order-detail.component';
@@ -22,7 +22,7 @@ import { DepositDetailComponent } from './deposit-detail/deposit-detail.componen
     // InvestmentRoutingModule
   ],
   declarations: [
-    TimelineComponent,
+    //TimelineComponent,
     InvestmentRunDetailComponent,
     RecipeRunDetailComponent,
     OrderDetailComponent,

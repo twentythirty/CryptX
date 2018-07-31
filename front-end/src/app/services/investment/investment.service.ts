@@ -5,9 +5,11 @@ import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../environments/environment';
 import { EntitiesFilter } from '../../shared/models/api/entitiesFilter';
 import { of } from 'rxjs/observable/of';
-import { TimelineEvent } from '../../modules/investment/timeline/timeline.component';
+import { TimelineEvent } from '../../shared/components/timeline/timeline.component';
 import { StatusClass } from '../../shared/models/common';
-import { map } from 'rxjs/operators';
+import { map, tap } from 'rxjs/operators';
+import 'rxjs/Rx';
+
 
 @Injectable()
 export class InvestmentService {
@@ -137,6 +139,15 @@ export class InvestmentService {
     }
     return stats;
   }
+  /**
+   * Get timeline data
+   * Only one of the ID is needed to find investment run
+   */
+
+  getAllTimelineData(investment_run: object): Observable<any> {
+    return this.http.post<any>(this.baseUrl + 'investments/timeline', investment_run)
+      .map(res => res.statistics)  
+  }
 
   /**
    * Start recipe run
@@ -152,6 +163,9 @@ export class InvestmentService {
 
   getRecipeDetails(recipe_id: any): Observable<any> {
     return this.http.get<any>(this.baseUrl + `recipes/${recipe_id}/details`)
+    .do ( data => {
+      return data.statistics;
+    });
   }
 
   approveRecipe(recipe_id: any, data: any): Observable<any> {

@@ -36,10 +36,10 @@ export class UsersListComponent extends DataTableCommonManagerComponent implemen
     ],
     body: null,
   };
-  public usersColumnsToShow: Array<string | TableDataColumn> = [
-    'first_name',
-    'last_name',
-    'email',
+  public usersColumnsToShow:  Array<TableDataColumn> = [
+     new TableDataColumn({ column: 'first_name' }),
+     new TableDataColumn({ column: 'last_name' }),
+     new TableDataColumn({ column: 'email' }),
      new DateCellDataColumn({ column: 'created_timestamp' }),
      new StatusCellDataColumn({ column: 'is_active'}),
   ];

@@ -1,7 +1,7 @@
 <div class="top-controls">
-  <span class="headline-title">{{count}} Users</span>
+  <span class="headline-title">{{'users.headline' | translate: {count: count} }}</span>
   <a [routerLink]="['/users/add']" class="btn start">
-    <span>Add new user</span>
+    <span>{{'users.add_new_user' | translate}}</span>
   </a>
 </div>
 

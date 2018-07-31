@@ -21,9 +21,10 @@ export class RolesListComponent extends DataTableCommonManagerComponent {
     body: null,
   };
 
-  public rolesColumnsToShow: Array<string | TableDataColumn> = [
-    'name',
+  public rolesColumnsToShow:  Array<TableDataColumn> = [
+    new TableDataColumn({ column: 'name' }),
   ];
+
 
   constructor(
     public route: ActivatedRoute,

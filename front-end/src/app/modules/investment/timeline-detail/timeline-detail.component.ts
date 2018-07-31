@@ -4,7 +4,7 @@ import { Observable } from 'rxjs';
 
 import { DataTableCommonManagerComponent } from '../../../shared/components/data-table-common-manager/data-table-common-manager.component';
 import { TableDataColumn, TableDataSource } from '../../../shared/components/data-table/data-table.component';
-import { TimelineEvent } from '../timeline/timeline.component';
+import { TimelineEvent } from '../../../shared/components/timeline/timeline.component';
 
 /**
  * Usage:

@@ -4,7 +4,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { StatusClass } from '../../../shared/models/common';
 import { TimelineDetailComponent, SingleTableDataSource, TagLineItem } from '../timeline-detail/timeline-detail.component'
 import { TableDataSource, TableDataColumn } from '../../../shared/components/data-table/data-table.component';
-import { TimelineEvent } from '../timeline/timeline.component';
+import { TimelineEvent } from '../../../shared/components/timeline/timeline.component';
 import { ActionCellDataColumn, DataCellAction, DateCellComponent, BooleanCellComponent, DateCellDataColumn, BooleanCellDataColumn, NumberCellDataColumn, StatusCellDataColumn } from '../../../shared/components/data-table-cells';
 import { InvestmentService } from '../../../services/investment/investment.service';
 import { mergeMap, map } from 'rxjs/operators';
@@ -60,13 +60,13 @@ export class InvestmentRunDetailComponent extends TimelineDetailComponent implem
     body: null,
   };
 
-  public singleColumnsToShow: Array<string | TableDataColumn> = [
-    'id',
+  public singleColumnsToShow: Array<TableDataColumn> = [
+    new TableDataColumn({ column: 'id' }),
     new DateCellDataColumn({ column: 'started' }),
     new DateCellDataColumn({ column: 'updated' }),
     new DateCellDataColumn({ column: 'completed' }),
-    'creator',
-    'strategy',
+    new TableDataColumn({ column: 'creator' }),
+    new TableDataColumn({ column: 'strategy' }),
     new BooleanCellDataColumn({ column: 'simulated' }),
     new NumberCellDataColumn({ column: 'deposit' }),
     new StatusCellDataColumn({ column: 'status', inputs: { classMap: value => {
@@ -74,14 +74,14 @@ export class InvestmentRunDetailComponent extends TimelineDetailComponent implem
     }}}),
   ];
 
-  public listColumnsToShow: Array<string | TableDataColumn> = [
-    'id',
+  public listColumnsToShow: Array<TableDataColumn> = [
+    new TableDataColumn({ column: 'id' }),
     new DateCellDataColumn({ column: 'created' }),
-    'creator',
+    new TableDataColumn({ column: 'creator' }),
     new StatusCellDataColumn({ column: 'status', inputs: { classMap: value => {
       return StatusClass.DEFAULT;
     }}}),
-    'decision_by',
+    new TableDataColumn({ column: 'decision_by' }),
     new DateCellDataColumn({ column: 'decision_time' }),
     new ActionCellDataColumn({ column: 'rationale', inputs: {
         actions: [
@@ -152,7 +152,7 @@ export class InvestmentRunDetailComponent extends TimelineDetailComponent implem
   protected getTimelineData(): void {
     this.timeline$ = this.route.params.pipe(
       mergeMap(
-        params => this.investmentService.getInvestmentStats(params['id'])
+        params => this.investmentService.getAllTimelineData({ "investment_run_id": params['id'] })
       )
     )
   }

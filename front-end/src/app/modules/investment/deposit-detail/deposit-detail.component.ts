@@ -4,7 +4,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { StatusClass } from '../../../shared/models/common';
 
 import { TimelineDetailComponent, SingleTableDataSource, TagLineItem } from '../timeline-detail/timeline-detail.component';
-import { TimelineEvent } from '../timeline/timeline.component';
+import { TimelineEvent } from '../../../shared/components/timeline/timeline.component';
 import { TableDataSource, TableDataColumn } from '../../../shared/components/data-table/data-table.component';
 import { DateCellDataColumn, StatusCellDataColumn, PercentCellDataColumn } from '../../../shared/components/data-table-cells';
 import { InvestmentService } from '../../../services/investment/investment.service';
@@ -135,7 +135,7 @@ export class DepositDetailComponent extends TimelineDetailComponent implements O
   protected getTimelineData(): void {
     this.timeline$ = this.route.params.pipe(
       mergeMap(
-        params => this.investmentService.getRecipeDepositStats(params['id'])
+        params => this.investmentService.getAllTimelineData({ "deposits_id": params['id'] })
       )
     )
   }

@@ -28,6 +28,8 @@ import { InstrumentInfoComponent } from '../../modules/instruments/instrument-in
 import { LiquidityListComponent } from '../../modules/liquidity/liquidity-list/liquidity-list.component';
 import { LiquidityCreateComponent } from '../../modules/liquidity/liquidity-create/liquidity-create.component';
 import { LiquidityInfoComponent } from '../../modules/liquidity/liquidity-info/liquidity-info.component';
+import { DepositListComponent } from "../../modules/deposit/deposit-list/deposit-list.component";
+import { DepositInfoComponent } from "../../modules/deposit/deposit-info/deposit-info.component";
 
 const routes: Routes = [
   { path: 'login', component: LoginComponent },
@@ -134,6 +136,17 @@ const routes: Routes = [
     path: 'liquidity_requirements/preview/:id',
     component: LiquidityInfoComponent,
     canActivate: [AuthGuard]
+  },
+
+  {
+    path: 'deposits/all',
+    component: DepositListComponent,
+    canActivate: [AuthGuard],
+  },
+  {
+    path: 'deposits/view/:depositId',
+    component: DepositInfoComponent,
+    canActivate: [AuthGuard],
   },
 
 

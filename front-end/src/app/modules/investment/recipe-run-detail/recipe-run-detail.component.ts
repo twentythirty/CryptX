@@ -5,7 +5,7 @@ import { StatusClass } from '../../../shared/models/common';
 
 import { TimelineDetailComponent, SingleTableDataSource, TagLineItem } from '../timeline-detail/timeline-detail.component'
 import { TableDataSource, TableDataColumn } from '../../../shared/components/data-table/data-table.component';
-import { TimelineEvent } from '../timeline/timeline.component';
+import { TimelineEvent } from '../../../shared/components/timeline/timeline.component';
 import { ActionCellDataColumn, DataCellAction, DateCellDataColumn, PercentCellDataColumn, StatusCellDataColumn, ConfirmCellDataColumn } from '../../../shared/components/data-table-cells';
 import { mergeMap, map } from 'rxjs/operators';
 import { InvestmentService } from '../../../services/investment/investment.service';
@@ -58,17 +58,17 @@ export class RecipeRunDetailComponent extends TimelineDetailComponent implements
     body: null,
   };
 
-  public singleColumnsToShow: Array<string | TableDataColumn> = [
-    'id',
+  public singleColumnsToShow: Array<TableDataColumn> = [
+    new TableDataColumn({ column: 'id' }),
     new DateCellDataColumn({ column: 'creation_time' }),
-    'instrument',
-    'creator',
+    new TableDataColumn({ column: 'instrument' }),
+    new TableDataColumn({ column: 'creator' }),
     new StatusCellDataColumn({ column: 'approval_status', inputs: { classMap: {
       '41' : StatusClass.PENDING,
       '42': StatusClass.REJECTED,
       '43': StatusClass.APPROVED,
     }}}),
-    'decision_by',
+    new TableDataColumn({ column: 'decision_by' }),
     new DateCellDataColumn({ column: 'decision_time' }),
     new ActionCellDataColumn({ column: 'rationale', inputs: {
         actions: [
@@ -90,11 +90,11 @@ export class RecipeRunDetailComponent extends TimelineDetailComponent implements
     } }),  // TODO: Actions component
   ];
 
-  public listColumnsToShow: Array<string | TableDataColumn> = [
-    'id',
-    'transaction_asset',
-    'quote_asset',
-    'exchange',
+  public listColumnsToShow: Array<TableDataColumn> = [
+    new TableDataColumn({ column: 'id' }),
+    new TableDataColumn({ column: 'transaction_asset' }),
+    new TableDataColumn({ column: 'quote_asset' }),
+    new TableDataColumn({ column: 'exchange' }),
     new PercentCellDataColumn({ column: 'percentage' })
   ];
 
@@ -151,7 +151,7 @@ export class RecipeRunDetailComponent extends TimelineDetailComponent implements
   protected getTimelineData(): void {
     this.timeline$ = this.route.params.pipe(
       mergeMap(
-        params => this.investmentService.getRecipeStats(params['id'])
+        params => this.investmentService.getAllTimelineData({ "recipe_run_id": params['id'] })
       )
     )
   }

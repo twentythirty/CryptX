@@ -1,3 +1,5 @@
+declare function require(path: string);
+
 import { Component, OnInit, Input, Output, EventEmitter } from '@angular/core';
 import { TableDataColumn } from '../../data-table/data-table.component';
 
@@ -32,6 +34,7 @@ export class ActionCellDataColumn extends TableDataColumn {
   styleUrls: ['./action-cell.component.scss']
 })
 export class ActionCellComponent implements OnInit {
+  image = require('Images/action-true.svg');
 
   @Input() value: any;
   @Input() row: any;

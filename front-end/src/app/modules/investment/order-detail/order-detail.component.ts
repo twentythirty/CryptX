@@ -5,7 +5,7 @@ import { StatusClass } from '../../../shared/models/common';
 
 import { TimelineDetailComponent, SingleTableDataSource, TagLineItem } from '../timeline-detail/timeline-detail.component'
 import { TableDataSource, TableDataColumn } from '../../../shared/components/data-table/data-table.component';
-import { TimelineEvent } from '../timeline/timeline.component';
+import { TimelineEvent } from '../../../shared/components/timeline/timeline.component';
 import { ActionCellDataColumn, DataCellAction, DateCellDataColumn, PercentCellDataColumn, StatusCellDataColumn, ConfirmCellDataColumn, NumberCellDataColumn } from '../../../shared/components/data-table-cells';
 import { mergeMap, map } from 'rxjs/operators';
 import { InvestmentService } from '../../../services/investment/investment.service';
@@ -59,17 +59,17 @@ export class OrderDetailComponent extends TimelineDetailComponent implements OnI
     body: null,
   };
 
-  public singleColumnsToShow: Array<string | TableDataColumn> = [
-    'id',
+  public singleColumnsToShow: Array<TableDataColumn> = [
+    new TableDataColumn({ column: 'id' }),
     new DateCellDataColumn({ column: 'creation_time' }),
-    'instrument',
-    'creator',
+    new TableDataColumn({ column: 'instrument' }),
+    new TableDataColumn({ column: 'creator' }),
     new StatusCellDataColumn({ column: 'status', inputs: { classMap: {
       '41' : StatusClass.PENDING,
       '42': StatusClass.REJECTED,
       '43': StatusClass.APPROVED,
     }}}),
-    'decision_by',
+    new TableDataColumn({ column: 'decision_by' }),
     new DateCellDataColumn({ column: 'decision_time' }),
     new ActionCellDataColumn({ column: 'rationale', inputs: {
         actions: [
@@ -87,9 +87,9 @@ export class OrderDetailComponent extends TimelineDetailComponent implements OnI
     }),
   ];
 
-  public listColumnsToShow: Array<string | TableDataColumn> = [
-    'id',
-    'instrument',
+  public listColumnsToShow: Array<TableDataColumn> = [
+    new TableDataColumn({ column: 'id' }),
+    new TableDataColumn({ column: 'instrument' }),
     new StatusCellDataColumn({ column: 'side', inputs: { classMap: value => {
       return StatusClass.DEFAULT;
     }}}),
@@ -159,7 +159,7 @@ export class OrderDetailComponent extends TimelineDetailComponent implements OnI
   protected getTimelineData(): void {
     this.timeline$ = this.route.params.pipe(
       mergeMap(
-        params => this.investmentService.getOrderStats(params['id'])
+        params => this.investmentService.getAllTimelineData({ "recipe_order_id": params['id'] })
       )
     )
   }

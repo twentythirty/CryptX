@@ -34,7 +34,8 @@
         <a routerLinkActive="active" routerLink="/instruments/all" *ngIf="checkPerm(['VIEW_ROLES'])">{{ 'instruments.instruments' | translate }}</a>
         <a routerLinkActive="active" routerLink="/liquidity_requirements" *ngIf="checkPerm(['VIEW_ROLES'])">{{ 'liquidity.liquidity_requirements' | translate }}</a>
         <a routerLinkActive="active" href="#" *ngIf="checkPerm(['VIEW_SETTING_VALUES'])">Setting Management</a>
-      </nav>
+        <a routerLinkActive="active" routerLink="/deposits/all" *ngIf="checkPerm(['ALTER_PERMS'])">Deposit</a>
+    </nav>
     </div>
     </div>
 </header>

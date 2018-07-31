@@ -32,7 +32,6 @@
       "decision_by": "Decision by",
       "decision_time": "Decision time",
       "rationale": "Rationale",
-      "transaction_asset": "Transaction asset",
       "exchange": "Exchange",
       "account": "Account",
       "amount": "Amount",
@@ -75,7 +74,9 @@
       "minimum_circulation": "Minimum Circulation",
       "exchange_count": "Number of Exchanges",
       "exchange_not_pass": "Exchanges that do not Meet Requirements",
-      "liquidity_status": "Liquidity status"
+      "liquidity_status": "Liquidity status",
+      "transaction_asset_id": "Investment run ID",
+      "transaction_asset": "quote asset"
     },
     "filter": {
       "all": "All",
@@ -243,6 +244,32 @@
     "successfully_changed": "Successfully changed your password.",
     "you_can_login_now": "You can login now"
   },
+  "deposits": {
+    "header": "Deposits",
+    "please_specify_amount": "Please specify amount",
+    "please_specify_management_fee": "Please specify management fee",
+    "placeholder_amount": "4.55",
+    "placeholder_management_fee": "4.85",
+    "are_you_sure_want_to_approve": "Are you sure want to approve this deposit?",
+    "status": {
+      "150": "Pending",
+      "151": "Completed"
+    },
+    "deposit": "Deposit",
+    "deposit_management_activity_log": "Deposit management activity log",
+    "footer": {
+      "id": "{{id}} items",
+      "transaction_asset_id": "{{transaction_asset_id}} ids",
+      "exchange_id": "{{assets}} assets",
+      "transaction_asset": "",
+      "exchange": "",
+      "account": "{{account}} accounts",
+      "amount": "",
+      "investment_percentage": "",
+      "status": "{{status}} pending"
+    }
+  },
+
   "error": {
 
   }

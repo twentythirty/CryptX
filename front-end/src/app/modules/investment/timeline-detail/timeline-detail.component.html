@@ -21,7 +21,7 @@
 </div>
 <!-- If there is no step-labels, hide whole container -->
 <div class="step-labels-container">
-  <app-timeline [timelineEvents]="timeline$ | async"></app-timeline>
+    <app-timeline [timelineEvents]="timeline$ | async"></app-timeline>
 </div>
 
 <app-modal *ngIf="rationaleModalIsShown" (close)="hideRationaleModal()">

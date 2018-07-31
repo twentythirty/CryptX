@@ -5,7 +5,7 @@ import { StatusClass } from '../../../shared/models/common';
 
 import { TimelineDetailComponent, SingleTableDataSource, TagLineItem } from '../timeline-detail/timeline-detail.component'
 import { TableDataSource, TableDataColumn } from '../../../shared/components/data-table/data-table.component';
-import { TimelineEvent } from '../timeline/timeline.component';
+import { TimelineEvent } from '../../../shared/components/timeline/timeline.component';
 import { ActionCellDataColumn, DataCellAction, DateCellDataColumn, PercentCellDataColumn, StatusCellDataColumn, ConfirmCellDataColumn, NumberCellDataColumn } from '../../../shared/components/data-table-cells';
 import { mergeMap, map } from 'rxjs/operators';
 import { InvestmentService } from '../../../services/investment/investment.service';
@@ -61,9 +61,10 @@ export class ExecutionOrderDetailComponent extends TimelineDetailComponent imple
     body: null,
   };
 
-  public singleColumnsToShow: Array<string | TableDataColumn> = [
-    'id',
-    'instrument',
+  public singleColumnsToShow: Array<TableDataColumn> = [
+   
+    new TableDataColumn({column: 'id' }),
+    new TableDataColumn({column: 'instrument' }),
     new StatusCellDataColumn({ column: 'side', inputs: { classMap: value => {
       return StatusClass.DEFAULT;
     }}}),
@@ -80,9 +81,9 @@ export class ExecutionOrderDetailComponent extends TimelineDetailComponent imple
     }}}),
   ];
 
-  public listColumnsToShow: Array<string | TableDataColumn> = [
-    'id',
-    'instrument',
+  public listColumnsToShow: Array<TableDataColumn> = [
+    new TableDataColumn({column: 'id' }),
+    new TableDataColumn({column: 'instrument' }),
     new StatusCellDataColumn({ column: 'side', inputs: { classMap: value => {
       return StatusClass.DEFAULT;
     }}}),
@@ -157,7 +158,7 @@ export class ExecutionOrderDetailComponent extends TimelineDetailComponent imple
   protected getTimelineData(): void {
     this.timeline$ = this.route.params.pipe(
       mergeMap(
-        params => this.investmentService.getExecutionOrderStats(params['id'])
+        params => this.investmentService.getAllTimelineData({ "execution_order_id": params['id'] })
       )
     )
   }
