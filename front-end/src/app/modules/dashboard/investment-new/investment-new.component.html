@@ -3,4 +3,15 @@
   (close)="onClose()"
 >
 
+  <app-button-radio
+    name="is_simulated"
+    [value]="false"
+    label="Real-time"
+  ></app-button-radio>
+  <app-button-radio
+    name="is_simulated"
+    [value]="true"
+    label="Simulated"
+  ></app-button-radio>
+
 </app-modal>

@@ -86,18 +86,18 @@ export class DashboardComponent extends DataTableCommonManagerComponent implemen
   }
 
 
-  addInvestmentRun(): void {
-    this.investmentService.createInvestmentRun({
-      // user_id,
-      strategy_type: 101,
-      is_simulated: false,
-      deposit_usd: 150000
-    }).subscribe(
-      res => {
-        this.router.navigate(['/run/investment/' + res.id]);
-      }
-    )
-  }
+  // addInvestmentRun(): void {
+  //   this.investmentService.createInvestmentRun({
+  //     // user_id,
+  //     strategy_type: 101,
+  //     is_simulated: false,
+  //     deposit_usd: 150000
+  //   }).subscribe(
+  //     res => {
+  //       this.router.navigate(['/run/investment/' + res.id]);
+  //     }
+  //   )
+  // }
 
   openRow(investment: any): void {
     this.router.navigate(['/run/investment', investment.id]);
