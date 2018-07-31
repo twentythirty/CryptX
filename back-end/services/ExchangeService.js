@@ -1,8 +1,12 @@
 'use strict';
 
+const { or } = require('sequelize').Op;
+
 const Asset = require('../models').Asset;
 const Exchange = require('../models').Exchange;
 const ExchangeAccount = require('../models').ExchangeAccount;
+const Instrument = require('../models').Instrument;
+const InstrumentExchangeMapping = require('../models').InstrumentExchangeMapping;
 
 const createExchangeAccount = async (account_type, asset_id, exchange_id, address) => {
     if (
@@ -17,8 +21,15 @@ const createExchangeAccount = async (account_type, asset_id, exchange_id, addres
     if (!account_types.includes(account_type)) TE(`Invalid account type`);
     
     let [err, result] = await to(Promise.all([
-        Asset.count({
-            where: { id: asset_id }
+        InstrumentExchangeMapping.count({
+            where: { exchange_id },
+            include: [{
+                model: Instrument,
+                required: true,
+                where: {
+                    [or]: [ { quote_asset_id: asset_id }, { transaction_asset_id: asset_id } ]
+                }
+            }]
         }),
         Exchange.count({
             where: { id: exchange_id }
@@ -37,8 +48,8 @@ const createExchangeAccount = async (account_type, asset_id, exchange_id, addres
 
     const [ found_asset, found_exchange, found_account ] = result;
 
-    if (!found_asset) TE(`Asset not found with id ${asset_id}`);
     if (!found_exchange) TE(`Exchange not found with id ${exchange_id}`);
+    if (!found_asset) TE(`Asset not found with id ${asset_id} or it is not available on the selected exchange`);
     if (found_account) TE(`Exchange account already exists with the specified parameters`);
 
     return ExchangeAccount.create({
