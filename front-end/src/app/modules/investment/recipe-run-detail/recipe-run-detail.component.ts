@@ -1,13 +1,21 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
+import { mergeMap, map } from 'rxjs/operators';
 
 import { StatusClass } from '../../../shared/models/common';
 
 import { TimelineDetailComponent, SingleTableDataSource, TagLineItem } from '../timeline-detail/timeline-detail.component'
 import { TableDataSource, TableDataColumn } from '../../../shared/components/data-table/data-table.component';
 import { TimelineEvent } from '../../../shared/components/timeline/timeline.component';
-import { ActionCellDataColumn, DataCellAction, DateCellDataColumn, PercentCellDataColumn, StatusCellDataColumn, ConfirmCellDataColumn } from '../../../shared/components/data-table-cells';
-import { mergeMap, map } from 'rxjs/operators';
+import {
+  ActionCellDataColumn,
+  DataCellAction,
+  DateCellDataColumn,
+  PercentCellDataColumn,
+  StatusCellDataColumn,
+  ConfirmCellDataColumn
+} from '../../../shared/components/data-table-cells';
+
 import { InvestmentService } from '../../../services/investment/investment.service';
 
 /**
@@ -45,17 +53,6 @@ export class RecipeRunDetailComponent extends TimelineDetailComponent implements
       { column: 'actions', nameKey: 'table.header.actions' }
     ],
     body: null
-  }
-
-  public listDataSource: TableDataSource = {
-    header: [
-      { column: 'id', nameKey: 'table.header.id', filter: {type: 'text', sortable: true }},
-      { column: 'transaction_asset', nameKey: 'table.header.transaction_asset', filter: {type: 'text', sortable: true }},
-      { column: 'quote_asset', nameKey: 'table.header.quote_asset', filter: {type: 'text', sortable: true }},
-      { column: 'exchange', nameKey: 'table.header.exchange', filter: {type: 'text', sortable: true }},
-      { column: 'percentage', nameKey: 'table.header.percentage', filter: {type: 'number', sortable: true }}
-    ],
-    body: null,
   };
 
   public singleColumnsToShow: Array<TableDataColumn> = [
@@ -71,24 +68,34 @@ export class RecipeRunDetailComponent extends TimelineDetailComponent implements
     new TableDataColumn({ column: 'decision_by' }),
     new DateCellDataColumn({ column: 'decision_time' }),
     new ActionCellDataColumn({ column: 'rationale', inputs: {
-        actions: [
-          new DataCellAction({
-            label: 'READ',
-            exec: (row: any) => {
-              this.showReadModal({
-                title: 'Rationale',
-                content: row.rationale
-              })
-            }
-          })
-        ]
-      }
-    }),
+      actions: [
+        new DataCellAction({
+          label: 'READ',
+          exec: (row: any) => {
+            this.showReadModal({
+              title: 'Rationale',
+              content: row.rationale
+            })
+          }
+        })
+      ]
+    }}),
     new ConfirmCellDataColumn({ column: 'actions', inputs: {
       execConfirm: (row) => this.showRationaleModal(row, data => data && this.confirmRun(data)),
       execDecline: (row) => this.showRationaleModal(row, data => data && this.declineRun(data)),
     } }),  // TODO: Actions component
   ];
+
+  public listDataSource: TableDataSource = {
+    header: [
+      { column: 'id', nameKey: 'table.header.id', filter: {type: 'text', sortable: true }},
+      { column: 'transaction_asset', nameKey: 'table.header.transaction_asset', filter: {type: 'text', sortable: true }},
+      { column: 'quote_asset', nameKey: 'table.header.quote_asset', filter: {type: 'text', sortable: true }},
+      { column: 'exchange', nameKey: 'table.header.exchange', filter: {type: 'text', sortable: true }},
+      { column: 'percentage', nameKey: 'table.header.percentage', filter: {type: 'number', sortable: true }}
+    ],
+    body: null
+  };
 
   public listColumnsToShow: Array<TableDataColumn> = [
     new TableDataColumn({ column: 'id' }),
@@ -105,7 +112,7 @@ export class RecipeRunDetailComponent extends TimelineDetailComponent implements
   constructor(
     public route: ActivatedRoute,
     private router: Router,
-    private investmentService: InvestmentService
+    private investmentService: InvestmentService,
   ) {
     super(route);
   }

@@ -9,6 +9,7 @@
     "submit": "Submit",
     "confirm": "Confirm",
     "cancel": "Cancel",
+    "done": "Done",
     "login": "Login",
     "change_password": "Change password",
     "save_changes": "Save changes"
@@ -104,6 +105,7 @@
     "no_recipe_run": "There is no recipe run",
     "no_deposits": "Deposits aren't made yet",
     "no_orders": "Orders are not created yet",
+    "no_recipe_runs": "No recipe runs have been created yet",
     "no_execution_orders": "Execution orders are not created yet",
     "is_simulated": {
       "yes": "Yes",
@@ -133,6 +135,14 @@
       "strategy_type": "{{ strategy_type }} Portfolios",
       "is_simulated": "{{ is_simulated }} Real",
       "status": "{{ status }} Executing"
+    }
+  },
+
+  "recipes": {
+    "status": {
+      "41": "Pending",
+      "42": "Rejected",
+      "43": "Approved"
     }
   },
 

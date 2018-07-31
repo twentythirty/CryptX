@@ -1,13 +1,19 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
+import { mergeMap, map } from 'rxjs/operators';
 
 import { StatusClass } from '../../../shared/models/common';
 import { TimelineDetailComponent, SingleTableDataSource, TagLineItem } from '../timeline-detail/timeline-detail.component'
 import { TableDataSource, TableDataColumn } from '../../../shared/components/data-table/data-table.component';
 import { TimelineEvent } from '../../../shared/components/timeline/timeline.component';
-import { ActionCellDataColumn, DataCellAction, DateCellComponent, BooleanCellComponent, DateCellDataColumn, BooleanCellDataColumn, NumberCellDataColumn, StatusCellDataColumn } from '../../../shared/components/data-table-cells';
+import {
+  ActionCellDataColumn,
+  DataCellAction,
+  DateCellDataColumn,
+  NumberCellDataColumn,
+  StatusCellDataColumn
+} from '../../../shared/components/data-table-cells';
 import { InvestmentService } from '../../../services/investment/investment.service';
-import { mergeMap, map } from 'rxjs/operators';
 
 /**
  * 0. Set HTML and SCSS files in component decorator
@@ -26,6 +32,7 @@ export class InvestmentRunDetailComponent extends TimelineDetailComponent implem
   public singleTitle: string = 'Investment run';
   public listTitle: string = 'Recipe runs';
   public addTitle: string = 'Start new run';
+  public listTableEmptyText: string = 'investment.no_recipe_runs'; // custom data-table message on empty data set
 
   /**
    * 2. Implement abstract attributes to preset data structure
@@ -35,68 +42,67 @@ export class InvestmentRunDetailComponent extends TimelineDetailComponent implem
   public singleDataSource: SingleTableDataSource = {
     header: [
       { column: 'id', nameKey: 'table.header.id' },
-      { column: 'started', nameKey: 'table.header.started' },
-      { column: 'updated', nameKey: 'table.header.updated' },
-      { column: 'completed', nameKey: 'table.header.completed' },
-      { column: 'creator', nameKey: 'table.header.creator' },
-      { column: 'strategy', nameKey: 'table.header.strategy' },
-      { column: 'simulated', nameKey: 'table.header.simulated' },
-      { column: 'deposit', nameKey: 'table.header.deposit' },
+      { column: 'started_timestamp', nameKey: 'table.header.started' },
+      { column: 'updated_timestamp', nameKey: 'table.header.updated' },
+      { column: 'completed_timestamp', nameKey: 'table.header.completed' },
+      { column: 'user_created', nameKey: 'table.header.creator' },
+      { column: 'strategy_type', nameKey: 'table.header.strategy' },
+      { column: 'is_simulated', nameKey: 'table.header.simulated' },
+      { column: 'deposit_usd', nameKey: 'table.header.deposit' },
       { column: 'status', nameKey: 'table.header.status' }
     ],
     body: null
   }
 
-  public listDataSource: TableDataSource = {
-    header: [
-      { column: 'id', nameKey: 'table.header.id', filter: {type: 'text', sortable: true }},
-      { column: 'created', nameKey: 'table.header.created', filter: {type: 'date', sortable: true }},
-      { column: 'creator', nameKey: 'table.header.creator', filter: {type: 'text', sortable: true }},
-      { column: 'status', nameKey: 'table.header.status', filter: {type: 'text', sortable: true }},
-      { column: 'decision_by', nameKey: 'table.header.decision_by', filter: {type: 'text', sortable: true }},
-      { column: 'decision_time', nameKey: 'table.header.decision_time', filter: {type: 'date', sortable: true }},
-      { column: 'rationale', nameKey: 'table.header.rationale', filter: {type: 'text', sortable: true }},
-    ],
-    body: null,
-  };
-
   public singleColumnsToShow: Array<TableDataColumn> = [
     new TableDataColumn({ column: 'id' }),
-    new DateCellDataColumn({ column: 'started' }),
-    new DateCellDataColumn({ column: 'updated' }),
-    new DateCellDataColumn({ column: 'completed' }),
-    new TableDataColumn({ column: 'creator' }),
-    new TableDataColumn({ column: 'strategy' }),
-    new BooleanCellDataColumn({ column: 'simulated' }),
-    new NumberCellDataColumn({ column: 'deposit' }),
+    new DateCellDataColumn({ column: 'started_timestamp' }),
+    new DateCellDataColumn({ column: 'updated_timestamp' }),
+    new DateCellDataColumn({ column: 'completed_timestamp' }),
+    new TableDataColumn({ column: 'user_created' }),
+    new StatusCellDataColumn({ column: 'strategy_type' }),
+    new StatusCellDataColumn({ column: 'is_simulated' }),
+    new NumberCellDataColumn({ column: 'deposit_usd' }),
     new StatusCellDataColumn({ column: 'status', inputs: { classMap: value => {
       return StatusClass.DEFAULT;
     }}}),
   ];
 
+  public listDataSource: TableDataSource = {
+    header: [
+      { column: 'id', nameKey: 'table.header.id' },
+      { column: 'created_timestamp', nameKey: 'table.header.created' },
+      { column: 'user_created', nameKey: 'table.header.creator' },
+      { column: 'approval_status', nameKey: 'table.header.status' },
+      { column: 'approval_user', nameKey: 'table.header.decision_by' },
+      { column: 'approval_timestamp', nameKey: 'table.header.decision_time' },
+      { column: 'approval_comment', nameKey: 'table.header.rationale' },
+    ],
+    body: null
+  };
+
   public listColumnsToShow: Array<TableDataColumn> = [
     new TableDataColumn({ column: 'id' }),
-    new DateCellDataColumn({ column: 'created' }),
-    new TableDataColumn({ column: 'creator' }),
-    new StatusCellDataColumn({ column: 'status', inputs: { classMap: value => {
+    new DateCellDataColumn({ column: 'created_timestamp' }),
+    new TableDataColumn({ column: 'user_created' }),
+    new StatusCellDataColumn({ column: 'approval_status', inputs: { classMap: value => {
       return StatusClass.DEFAULT;
     }}}),
-    new TableDataColumn({ column: 'decision_by' }),
-    new DateCellDataColumn({ column: 'decision_time' }),
-    new ActionCellDataColumn({ column: 'rationale', inputs: {
-        actions: [
-          new DataCellAction({
-            label: 'READ',
-            exec: (row: any) => {
-              this.showReadModal({
-                title: 'Rationale',
-                content: row.rationale
-              })
-            }
-          })
-        ]
-      }
-    }),
+    new TableDataColumn({ column: 'approval_user' }),
+    new DateCellDataColumn({ column: 'approval_timestamp' }),
+    new ActionCellDataColumn({ column: 'approval_comment', inputs: {
+      actions: [
+        new DataCellAction({
+          label: 'READ',
+          exec: (row: any) => {
+            this.showReadModal({
+              title: 'Rationale',
+              content: row.approval_comment
+            })
+          }
+        })
+      ]
+    }}),
   ];
 
   /**
@@ -121,9 +127,8 @@ export class InvestmentRunDetailComponent extends TimelineDetailComponent implem
       )
     ).subscribe(
       res => {
-        this.count = res.count;
         this.listDataSource.body = res.recipe_runs;
-        this.listDataSource.footer = res.footer;
+        this.count = res.count;
       },
       err => this.listDataSource.body = []
     )
@@ -162,7 +167,6 @@ export class InvestmentRunDetailComponent extends TimelineDetailComponent implem
    */
 
   public addAction(): void {
-
     let recipeRun = {};
 
     this.route.params.pipe(
