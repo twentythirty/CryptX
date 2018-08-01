@@ -7,6 +7,9 @@ const pure_me_exp = /\/(me(?!\w+))/;
 
 let check_permissions = async function(req, res, next) {
   let route = Object.values(ROUTES).find(route => {
+    if (typeof route.permissions_matcher === "undefined") {
+      debugger;
+    }
     return route.permissions_matcher.test(req.path);
   });
   

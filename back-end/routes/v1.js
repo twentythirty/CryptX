@@ -754,6 +754,12 @@ router.get(
   check_permissions,
   UserController.checkAuth
 );
+router.get(
+  ROUTES.Logout.router_string,
+  stateless_auth,
+  check_permissions,
+  UserController.logout
+);
 
 //Exchanges
 router.get(

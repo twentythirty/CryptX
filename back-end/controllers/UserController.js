@@ -115,6 +115,17 @@ const login = async function (req, res) {
 };
 module.exports.login = login;
 
+const logout = async function (req, res) {
+
+  let [err, sessions] = await to(authService.terminateUserSessions(req.user.id));
+
+  if (err) return ReE(res, err.message, 422);
+
+  return ReS(res, {
+    message: "OK!"
+  });
+};
+module.exports.logout = logout;
 /** 
  * fetch proper DB-friendly numeric user id from request parameters.
  * 

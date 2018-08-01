@@ -576,6 +576,11 @@ ROUTES = {
     permissions_matcher: ROUTE_MATCHERS.CheckAuth,
     required_permissions: [PERMISSIONS.VIEW_USERS]
   },
+  Logout: {
+    router_string: "/logout",
+    permissions_matcher: ROUTE_MATCHERS.Logout,
+    required_permissions: []
+  },
 
   GetExchanges: {
     router_string: "/exchanges/all",
