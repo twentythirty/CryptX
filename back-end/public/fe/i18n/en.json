@@ -77,7 +77,7 @@
       "exchange_not_pass": "Exchanges that do not Meet Requirements",
       "liquidity_status": "Liquidity status",
       "transaction_asset_id": "Investment run ID",
-      "transaction_asset": "Transaction asset",
+      "transaction_asset": "quote asset",
       "portfolio": "Portfolio"
     },
     "filter": {
@@ -107,13 +107,21 @@
     "no_orders": "Orders are not created yet",
     "no_recipe_runs": "No recipe runs have been created yet",
     "no_execution_orders": "Execution orders are not created yet",
+    "enter_usd": "Enter amount, USD",
+    "enter_btc": "Enter amount, BTC",
+    "enter_eth": "Enter amount, ETH",
+    "total_investment_amount": "Total investment amount",
+    "amount_in_btc": "Amount in BTC",
+    "amount_in_eth": "Amount in ETH",
+    "please_select_investment_mode": "Please select investment mode",
+    "please_select_investment_run_portfolio": "Please select investment run portfolio",
     "is_simulated": {
       "yes": "Yes",
       "no": "No"
     },
     "strategy": {
-      "101": "LCI",
-      "102": "MCI"
+      "101": "MCI",
+      "102": "LCI"
     },
     "status": {
       "301": "Initiated",

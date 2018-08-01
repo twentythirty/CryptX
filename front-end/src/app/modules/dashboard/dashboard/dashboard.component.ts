@@ -85,7 +85,6 @@ export class DashboardComponent extends DataTableCommonManagerComponent implemen
     )
   }
 
-
   // addInvestmentRun(): void {
   //   this.investmentService.createInvestmentRun({
   //     // user_id,
