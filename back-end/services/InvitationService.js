@@ -23,7 +23,7 @@ const createUserAndInvitation = async function (creator, role_ids, first_name, l
             id: role_ids
         }
     });
-    if (!roles) TE(`Role with ID ${role_ids} not found!`);
+    if (_.isEmpty(roles)) TE(`No roles with ids ${role_ids} found!`);
 
     let err, role_associations, invitation;
     [err, user] = await to(User.create({
