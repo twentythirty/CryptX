@@ -681,7 +681,7 @@ const fetchExecutionOrdersViewFooter = async (where_clause = '') => {
         builder.selectCount(view, 'id', where_clause),
         builder.selectCountDistinct('instrument_id', 'instrument', view, where_clause),
         builder.selectCountDistinct('exchange_id', 'exchange', view, where_clause),
-        builder.selectCount(view, 'status', builder.addToWhere(`status=${MODEL_CONST.EXECUTION_ORDER_STATUSES.Pending}`))
+        builder.selectCount(view, 'status', builder.addToWhere(where_clause, `status='execution_orders.status.${MODEL_CONST.EXECUTION_ORDER_STATUSES.Pending}'`))
     ], [
         'id',
         'instrument',

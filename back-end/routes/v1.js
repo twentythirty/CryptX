@@ -575,14 +575,14 @@ router.get(
   stateless_auth,
   check_permissions,
   filter_reducer,
-MockController.fetchColLOV
+  InvestmentController.getExecutionOrdersColumnLOV
 );
 router.post(
   ROUTES.ExecutionOrdersColLOV.router_string,
   stateless_auth,
   check_permissions,
   filter_reducer,
-MockController.fetchColLOV
+  InvestmentController.getExecutionOrdersColumnLOV
 );
 router.get(
   ROUTES.GetExecutionOrder.router_string,

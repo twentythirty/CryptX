@@ -411,13 +411,13 @@ module.exports.getRecipeOrdersColumnLOV = getRecipeOrdersColumnLOV;
 const getExecutionOrder = async function (req, res) {
 
   //This will replace the mock data once the fees are resolved.
-  /*const execution_order_id = req.params.order_detail_id;
+  const execution_order_id = req.params.order_detail_id;
 
   let [ err, execution_order ] = await to(adminViewsService.fetchExecutionOrderView(execution_order_id));
   if(err) return ReE(res, err.message, 422);
   if(!execution_order) return ReE(res, err.message, 422);
 
-  execution_order = execution_order.toWeb();*/
+  execution_order = execution_order.toWeb();
 
   // mock data below
 
@@ -435,7 +435,7 @@ const getExecutionOrder = async function (req, res) {
   };
 
   return ReS(res, {
-    execution_order: mock_detail
+    execution_order
   })
 };
 module.exports.getExecutionOrder = getExecutionOrder;
@@ -444,12 +444,13 @@ module.exports.getExecutionOrder = getExecutionOrder;
 const getExecutionOrders = async function (req, res) {
 
   //This will replace the mock dataonce the fees are resolved.
-  /*let { seq_query, sql_where } = req;
+  let { seq_query, sql_where } = req;
   const recipe_order_id = req.params.order_detail_id;
 
   if(recipe_order_id) {
     if(!_.isPlainObject(seq_query)) seq_query = { where: {} };
     seq_query.where.recipe_order_id = recipe_order_id;
+    sql_where = `recipe_order_id = ${recipe_order_id}`
   }
 
   let [ err, result ] = await to(adminViewsService.fetchExecutionOrdersViewDataWithCount(seq_query));
@@ -461,7 +462,7 @@ const getExecutionOrders = async function (req, res) {
 
   let { data: execution_orders, total: count } = result;
   
-  execution_orders = execution_orders.map(eo => eo.toWeb())*/
+  execution_orders = execution_orders.map(eo => eo.toWeb())
 
   // mock data below
   let mock_detail = [...Array(20)].map((detail, index) => ({
@@ -480,9 +481,9 @@ const getExecutionOrders = async function (req, res) {
   let mock_footer = create_mock_footer(mock_detail[0], 'execution_order');
 
   return ReS(res, {
-    execution_orders: mock_detail,
-    footer: mock_footer,
-    count: 20
+    execution_orders,
+    footer,
+    count
   })
 };
 module.exports.getExecutionOrders = getExecutionOrders;

@@ -77,7 +77,7 @@
       "exchange_not_pass": "Exchanges that do not Meet Requirements",
       "liquidity_status": "Liquidity status",
       "transaction_asset_id": "Investment run ID",
-      "transaction_asset": "quote asset",
+      "transaction_asset": "Transaction asset",
       "portfolio": "Portfolio"
     },
     "filter": {
@@ -137,12 +137,46 @@
       "status": "{{ status }} Executing"
     }
   },
+  "recipe_run_details": {
+    "footer": {
+      "id": "{{ id }} Items",
+      "transaction_asset": "{{ transaction_asset }} Assets",
+      "quote_asset": "{{ quote_asset }} Assets",
+      "target_exchange": "{{ target_exchange }} Exchanges"
+    }
+  },
 
   "recipes": {
     "status": {
       "41": "Pending",
       "42": "Rejected",
       "43": "Approved"
+    }
+  },
+
+  "execution_orders": {
+    "side": {
+      "buy": "Buy",
+      "sell": "Sell"
+    },
+    "type": {
+      "71": "Market",
+      "72": "Limit",
+      "73": "Stop"
+    },
+    "status": {
+      "61": "Pending",
+      "62": "Placed",
+      "63": "FullyFilled",
+      "64": "PartiallyFilled",
+      "65": "Cancelled",
+      "66": "Failed"
+    },
+    "footer": {
+      "id": "{{ id }} Items",
+      "instrument": "{{ instrument }} Instruments",
+      "exchange": "{{ exchange }} Exchanges",
+      "status":"{{ status }} Pending"
     }
   },
 
