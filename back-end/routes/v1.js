@@ -409,41 +409,41 @@ router.get(
 router.post(
   ROUTES.GetRecipeOrdersOf.router_string,
   stateless_auth,
-  check_permissions,
+  //check_permissions,
   filter_reducer,
   InvestmentController.getRecipeOrders
 );
 router.post(
   ROUTES.GetRecipeOrders.router_string,
   stateless_auth,
-  check_permissions,
+  //check_permissions,
   filter_reducer,
   InvestmentController.getRecipeOrders
 );
 router.get(
   ROUTES.GetRecipeOrdersColLOV.router_string,
   stateless_auth,
-  check_permissions,
+  //check_permissions,
   filter_reducer,
-MockController.fetchColLOV
+  InvestmentController.getRecipeOrdersColumnLOV
 );
 router.post(
   ROUTES.GetRecipeOrdersColLOV.router_string,
   stateless_auth,
-  check_permissions,
+  //check_permissions,
   filter_reducer,
-MockController.fetchColLOV
+  InvestmentController.getRecipeOrdersColumnLOV
 );
 router.get(
   ROUTES.GetRecipeOrder.router_string,
   stateless_auth,
-  check_permissions,
+  //check_permissions,
   InvestmentController.getRecipeOrder
 );
 router.post(
   ROUTES.AlterOrdersGroup.router_string,
   stateless_auth,
-  check_permissions,
+  //check_permissions,
   post_body_validator,
   OrdersController.changeOrdersGroupStatus
 );

@@ -154,6 +154,28 @@
     }
   },
 
+  "orders": {
+    "side": {
+      "0": "Buy",
+      "1": "Sell"
+    },
+    "status": {
+      "51": "Pending",
+      "52": "Executing",
+      "53": "Completed",
+      "54": "Rejected",
+      "55": "Cancelled",
+      "56": "Failed"
+    },
+    "footer": {
+      "id": "{{ id }} Items",
+      "investment_id": "{{ investment_id }} IDs",
+      "instrument": "{{ instrument }} Instruments",
+      "exchange": "{{ exchange }} Exchanges",
+      "status":"{{ status }} Pending"
+    }
+  },
+
   "execution_orders": {
     "side": {
       "buy": "Buy",
