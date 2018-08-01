@@ -1,11 +1,11 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router, Params } from "@angular/router";
+import { FormsModule, FormGroup, FormControl, Validators } from '@angular/forms';
 import { DepositService, DepositResultData, DepositResponseData } from "../../../services/deposit/deposit.service";
 import { Deposit, DepositStatus } from "../../../shared/models/deposit";
 import { DepositListComponent } from "../deposit-list/deposit-list.component";
 import { TableDataColumn } from "../../../shared/components/data-table/data-table.component";
 import { ActionCellDataColumn, DataCellAction } from "../../../shared/components/data-table-cells/index";
-import { FormsModule, FormGroup, FormControl, Validators } from '@angular/forms';
 import { InvestmentService } from "../../../services/investment/investment.service";
 import { mergeMap } from "rxjs/operators";
 import { Observable } from "rxjs/Rx";
@@ -32,10 +32,12 @@ export class DepositInfoComponent extends DepositListComponent implements OnInit
     Management_fee: new FormControl('', [Validators.required]),
   });
 
-  constructor(public route: ActivatedRoute,
+  constructor(
+    public route: ActivatedRoute,
     protected depositService: DepositService,
     protected router: Router,
-    protected investmentService: InvestmentService) {
+    protected investmentService: InvestmentService,
+  ) {
     super(route, depositService, router);
   }
 
@@ -108,7 +110,8 @@ export class DepositInfoComponent extends DepositListComponent implements OnInit
           } else {
             console.log(res.deposit)
           }
-        }, error => {
+        },
+        error => {
           console.log('Error', error);
         }, () => {
         });
@@ -120,6 +123,7 @@ export class DepositInfoComponent extends DepositListComponent implements OnInit
   markAsTouched(group) {
     Object.keys(group.controls).map((field) => {
       const control = group.get(field);
+
       if (control instanceof FormControl) {
         control.markAsTouched({ onlySelf: true });
       } else if (control instanceof FormGroup) {
@@ -140,7 +144,8 @@ export class DepositInfoComponent extends DepositListComponent implements OnInit
         } else {
           console.log(data.deposit)
         }
-      }, error => {
+      },
+      error => {
         console.log('Error', error);
       }, () => {
       });

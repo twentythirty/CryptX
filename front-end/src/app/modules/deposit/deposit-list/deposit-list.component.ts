@@ -1,11 +1,13 @@
 import { Component, OnInit } from '@angular/core';
+import { ActivatedRoute, Router } from "@angular/router";
+
 import { DataTableCommonManagerComponent } from "../../../shared/components/data-table-common-manager/data-table-common-manager.component";
 import { TableDataSource, TableDataColumn } from "../../../shared/components/data-table/data-table.component";
+import { StatusCellDataColumn, PercentCellDataColumn, NumberCellDataColumn } from "../../../shared/components/data-table-cells/index";
 import { StatusClass } from "../../../shared/models/common";
-import { StatusCellDataColumn, PercentCellDataColumn, NumberCellDataColumn, ActionCellDataColumn, DataCellAction } from "../../../shared/components/data-table-cells/index";
-import { ActivatedRoute, Router } from "@angular/router";
-import { DepositService } from "../../../services/deposit/deposit.service";
 import { Deposit } from "../../../shared/models/deposit";
+
+import { DepositService } from "../../../services/deposit/deposit.service";
 
 @Component({
   selector: 'app-deposit-list',
@@ -18,7 +20,7 @@ export class DepositListComponent extends DataTableCommonManagerComponent implem
     header: [
       { column: 'id', nameKey: 'table.header.id', filter: { type: 'text', sortable: true } },
       { column: 'transaction_asset_id', nameKey: 'table.header.transaction_asset_id', filter: { type: 'text', sortable: true } },
-      { column: 'transaction_asset', nameKey: 'table.header.transaction_asset', filter: { type: 'text', sortable: true } },
+      { column: 'quote_asset', nameKey: 'table.header.quote_asset', filter: { type: 'text', sortable: true } },
       { column: 'exchange', nameKey: 'table.header.exchange', filter: { type: 'text', sortable: true } },
       { column: 'account', nameKey: 'table.header.account', filter: { type: 'text', sortable: true } },
       { column: 'amount', nameKey: 'table.header.amount', filter: { type: 'number', sortable: true } },
@@ -31,7 +33,7 @@ export class DepositListComponent extends DataTableCommonManagerComponent implem
   public depositColumnsToShow: Array<TableDataColumn> = [
     new TableDataColumn({ column: 'id' }),
     new TableDataColumn({ column: 'transaction_asset_id' }),
-    new TableDataColumn({ column: 'transaction_asset' }),
+    new TableDataColumn({ column: 'quote_asset' }),
     new TableDataColumn({ column: 'exchange' }),
     new TableDataColumn({ column: 'account' }),
     new NumberCellDataColumn({ column: 'amount'}),
@@ -42,9 +44,11 @@ export class DepositListComponent extends DataTableCommonManagerComponent implem
     }}}),
   ];
 
-  constructor(public route: ActivatedRoute,
-              protected depositService: DepositService,
-              protected router: Router,) { 
+  constructor(
+    public route: ActivatedRoute,
+    protected depositService: DepositService,
+    protected router: Router,
+  ) { 
     super(route);
   }
 
@@ -55,11 +59,11 @@ export class DepositListComponent extends DataTableCommonManagerComponent implem
 
   getAllData(): void {
     this.depositService.getAllDeposits(this.requestData).subscribe(
-      (res) => {
-        this.depositDataSource.body = res.recipe_deposits;
-        if(res.footer) {
-          this.depositDataSource.footer = res.footer;
-        }
+      res => {
+        Object.assign(this.depositDataSource, {
+          body: res.recipe_deposits,
+          footer: res.footer
+        });
         this.count = res.count || res.recipe_deposits.length;
       }
     )
@@ -76,7 +80,7 @@ export class DepositListComponent extends DataTableCommonManagerComponent implem
   }
 
   public openRow(deposit: Deposit): void {
-    this.router.navigate(['/deposits/view', deposit.id])
+    this.router.navigate(['/deposits/view', deposit.id]);
   }
 
 }

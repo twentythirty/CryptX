@@ -367,11 +367,8 @@
       "id": "{{id}} items",
       "transaction_asset_id": "{{transaction_asset_id}} ids",
       "exchange_id": "{{assets}} assets",
-      "transaction_asset": "",
-      "exchange": "",
+      "quote_asset": "{{ quote_asset }} assets",
       "account": "{{account}} accounts",
-      "amount": "",
-      "investment_percentage": "",
       "status": "{{status}} pending"
     }
   },
