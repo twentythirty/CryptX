@@ -3,7 +3,19 @@
 const send_grid = require('@sendgrid/mail')
 send_grid.setApiKey(process.env.SENDGRID_API_KEY);
 
-const BASE_URL = 'https://cryptx-app-staging.herokuapp.com';
+const environment_base_url = () => {
+
+    if (process.env.NODE_ENV == 'test') {
+        return 'https://cryptx-app-staging.herokuapp.com';
+    }
+    if (process.env.NODE_ENV == 'production') {
+        return 'https://cryptx-app.herokuapp.com';
+    }
+
+    return 'http://localhost:3000';
+}
+
+const BASE_URL = environment_base_url();
 
 /**
  * This link leads email readers to a URL of the Angular FE application.
@@ -23,12 +35,11 @@ const INVITE_BASE_URL = `${BASE_URL}/#/invitation?token=`
 module.exports.invitationMailHTML = (invitation) => {
 
     return `
-    <p>Hello, ${invitation.first_name} ${invitation.last_name}!</p>
+    <p>Hello ${invitation.full_name},</p>
     <br/>
-    <p>We are HAPPY to invite you into the <b>CryptX</b> investment runners family!
-    <p>To create your account and start managing investments, please follow this invitation link:<p/>
+    <br/>
+    <p>Administrator of CryptX has sent you an invitation to join the team. To accept the invitation, please use the following link:<br/>
     <p><a href="${INVITE_BASE_URL + invitation.token}">${INVITE_BASE_URL + invitation.token}</a> <br/></p>
-    <p>This invitation will expire in 7 days (at <u>${invitation.token_expiry_timestamp}</u>).</p>
     <br/>
     Have a good day,<br/>
     CryptX Team

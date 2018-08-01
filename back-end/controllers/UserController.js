@@ -49,11 +49,11 @@ const issueInvitation = async function (req, res) {
   let email_result;
   [err, email_result] = await to(mailUtil.sendMail(
     email,
-    `Invitation to CryptX`,
-    mailUtil.invitationMailHTML(Object.assign({
-      first_name: user.first_name,
-      last_name: user.last_name
-    }, invitation))
+    `You have been invited to join CryptX!`,
+    mailUtil.invitationMailHTML({
+      full_name: user.full_name(),
+      token: invitation.token
+    })
   ));
 
   if (err) {
