@@ -146,6 +146,32 @@
     }
   },
 
+  "execution_orders": {
+    "side": {
+      "buy": "Buy",
+      "sell": "Sell"
+    },
+    "type": {
+      "71": "Market",
+      "72": "Limit",
+      "73": "Stop"
+    },
+    "status": {
+      "61": "Pending",
+      "62": "Placed",
+      "63": "FullyFilled",
+      "64": "PartiallyFilled",
+      "65": "Cancelled",
+      "66": "Failed"
+    },
+    "footer": {
+      "id": "{{ id }} Items",
+      "instrument": "{{ instrument }} Instruments",
+      "exchange": "{{ exchange }} Exchanges",
+      "status":"{{ status }} Pending"
+    }
+  },
+
   "roles": {
     "roles": "Roles",
     "add_new_role": "Add new role",
