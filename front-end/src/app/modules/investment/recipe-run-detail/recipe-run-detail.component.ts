@@ -43,13 +43,12 @@ export class RecipeRunDetailComponent extends TimelineDetailComponent implements
   public singleDataSource: SingleTableDataSource = {
     header: [
       { column: 'id', nameKey: 'table.header.id' },
-      { column: 'creation_time', nameKey: 'table.header.creation_time' },
-      { column: 'instrument', nameKey: 'table.header.instrument' },
-      { column: 'creator', nameKey: 'table.header.creator' },
-      { column: 'status', nameKey: 'table.header.status' },
-      { column: 'decision_by', nameKey: 'table.header.decision_by' },
-      { column: 'decision_time', nameKey: 'table.header.decision_time' },
-      { column: 'rationale', nameKey: 'table.header.rationale' },
+      { column: 'created_timestamp', nameKey: 'table.header.creation_time' },
+      { column: 'user_created', nameKey: 'table.header.creator' },
+      { column: 'approval_status', nameKey: 'table.header.status' },
+      { column: 'approval_user', nameKey: 'table.header.decision_by' },
+      { column: 'approval_timestamp', nameKey: 'table.header.decision_time' },
+      { column: 'approval_comment', nameKey: 'table.header.rationale' },
       { column: 'actions', nameKey: 'table.header.actions' }
     ],
     body: null
@@ -57,24 +56,23 @@ export class RecipeRunDetailComponent extends TimelineDetailComponent implements
 
   public singleColumnsToShow: Array<TableDataColumn> = [
     new TableDataColumn({ column: 'id' }),
-    new DateCellDataColumn({ column: 'creation_time' }),
-    new TableDataColumn({ column: 'instrument' }),
-    new TableDataColumn({ column: 'creator' }),
+    new DateCellDataColumn({ column: 'created_timestamp' }),
+    new TableDataColumn({ column: 'user_created' }),
     new StatusCellDataColumn({ column: 'approval_status', inputs: { classMap: {
       '41' : StatusClass.PENDING,
       '42': StatusClass.REJECTED,
       '43': StatusClass.APPROVED,
     }}}),
-    new TableDataColumn({ column: 'decision_by' }),
-    new DateCellDataColumn({ column: 'decision_time' }),
-    new ActionCellDataColumn({ column: 'rationale', inputs: {
+    new TableDataColumn({ column: 'approval_user' }),
+    new DateCellDataColumn({ column: 'approval_timestamp' }),
+    new ActionCellDataColumn({ column: 'approval_comment', inputs: {
       actions: [
         new DataCellAction({
           label: 'READ',
           exec: (row: any) => {
             this.showReadModal({
               title: 'Rationale',
-              content: row.rationale
+              content: row.approval_comment
             })
           }
         })
@@ -91,8 +89,8 @@ export class RecipeRunDetailComponent extends TimelineDetailComponent implements
       { column: 'id', nameKey: 'table.header.id', filter: {type: 'text', sortable: true }},
       { column: 'transaction_asset', nameKey: 'table.header.transaction_asset', filter: {type: 'text', sortable: true }},
       { column: 'quote_asset', nameKey: 'table.header.quote_asset', filter: {type: 'text', sortable: true }},
-      { column: 'exchange', nameKey: 'table.header.exchange', filter: {type: 'text', sortable: true }},
-      { column: 'percentage', nameKey: 'table.header.percentage', filter: {type: 'number', sortable: true }}
+      { column: 'target_exchange', nameKey: 'table.header.exchange', filter: {type: 'text', sortable: true }},
+      { column: 'investment_percentage', nameKey: 'table.header.percentage', filter: {type: 'number', sortable: true }}
     ],
     body: null
   };
@@ -101,8 +99,8 @@ export class RecipeRunDetailComponent extends TimelineDetailComponent implements
     new TableDataColumn({ column: 'id' }),
     new TableDataColumn({ column: 'transaction_asset' }),
     new TableDataColumn({ column: 'quote_asset' }),
-    new TableDataColumn({ column: 'exchange' }),
-    new PercentCellDataColumn({ column: 'percentage' })
+    new TableDataColumn({ column: 'target_exchange' }),
+    new PercentCellDataColumn({ column: 'investment_percentage' })
   ];
 
   /**

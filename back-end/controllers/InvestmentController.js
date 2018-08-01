@@ -22,23 +22,13 @@ const createInvestmentRun = async function (req, res) {
   );
   if (err) return ReE(res, err, 422);
 
-  /* [err, recipe_run] = await to(
+  /* [err, recipe_run] = await to( // generate recipe run right after genrating investment run
     investmentService.createRecipeRun(req.user.id, investment_run.id, strategy_type)
   );
   if (err) return ReE(res, err, 422); */
 
-  
-  investment_run = investment_run.toWeb();
-  /*let mock_investment_run = Object.assign(investment_run, {
-    user_created: 'Mock User'
-  })*/
-
-  investment_run = Object.assign(investment_run, {
-    user_created: `${req.user.first_name} ${req.user.last_name}`
-  })
-
   return ReS(res, {
-    investment_run: mock_investment_run
+    investment_run: investment_run.toWeb()
   })
 };
 module.exports.createInvestmentRun = createInvestmentRun;
@@ -51,21 +41,11 @@ const createRecipeRun = async function (req, res) {
       investmentService.createRecipeRun(req.user.id, investment_run_id)
     );
   if (err) return ReE(res, err, 422);
-
   
   recipe_run = recipe_run.toJSON();
-  /*let mock_recipe_run = Object.assign(recipe_run, {
-    user_created: 'Mock User',
-    approval_user: 'Mock User'
-  })*/
-
-  recipe_run = Object.assign(recipe_run, {
-    user_created: `${req.user.first_name} ${req.user.last_name}`,
-    approval_user: null
-  });
 
   return ReS(res, {
-    recipe_run: mock_recipe_run
+    recipe_run: recipe_run
   })
 };
 module.exports.createRecipeRun = createRecipeRun;
@@ -76,12 +56,9 @@ const getInvestmentRun = async function (req, res) {
   let [err, investment_run] = await to(adminViewsService.fetchInvestmentRunView(investment_run_id));
 
   if (err) return ReE(res, err.message, 422);
-  if (!investment_run) return ReE(res, `Invetsment run not found with id: ${investment_run_id}`, 422);
+  if (!investment_run) return ReE(res, `Investment run not found with id: ${investment_run_id}`, 422);
 
   investment_run = investment_run.toWeb();  
-  /*let mock_investment_run = Object.assign(investment_run, {
-    user_created: 'Mock User'
-  })*/
 
   return ReS(res, {
     investment_run
@@ -126,34 +103,6 @@ const getInvestmentStats = async function(req, res) {
 module.exports.getInvestmentStats = getInvestmentStats;
 
 const getInvestmentRuns = async function (req, res) {
-
-  /*let query = req.seq_query;
-
-  let [err, results] = await to(InvestmentRun.findAndCountAll(query));
-  if (err) return ReE(res, err.message, 422);
-
-  let { rows: investment_runs, count } = results;
-
-  // mock data added below NOT ANYMORE!
-
-  let mock_investment_runs = investment_runs.map((investment, index) => {
-    investment = investment.toJSON();
-    return Object.assign(investment, {
-      user_created: 'Mock User',
-    })
-  });
-
-  let footer = [
-    { "name": "id", "value": "15" },
-    { "name": "started_timestamp", "value": "1531404392947" },
-    { "name": "updated_timestamp", "value": "1531404392947" },
-    { "name": "completed_timestamp", "value": "null" },
-    { "name": "strategy_type", "value": "102" },
-    { "name": "is_simulated", "value": "true" },
-    { "name": "status", "value": "302" },
-    { "name": "deposit_usd", "value": "399" },
-    { "name": "user_created_id", "value": "2" },
-  ]*/
 
   const { seq_query, sql_where } = req;
 
@@ -231,29 +180,8 @@ const getRecipeRun = async function (req, res) {
 
   if (!recipe_run) 
     return ReE(res, "Recipe not found", 422);
-  // mock data added below
  
   recipe_run.toWeb();
-
-  /*let mock_recipe_run = Object.assign(recipe_run, {
-    user_created: 'Mock User',
-    approval_user: 'Mock User'
-  })*/
-
-  let countDetails = [
-    { 
-      name: "Orders",
-      count: 999
-    },
-    { 
-      name: "Execution Orders",
-      count: 999
-    },
-    { 
-      name: "Deposits",
-      count: 999
-    }
-  ]
 
   return ReS(res, {
     recipe_run,
@@ -270,23 +198,6 @@ const getRecipeRuns = async function (req, res) {
   if (investment_id) {
     seq_query.where.investment_run_id = investment_id;
   };
-  /*
-  let [err, results] = await to(RecipeRun.findAndCountAll(query));
-  if (err) return ReE(res, err.message, 422);
-
-  let { rows: recipe_runs, count } = results;
-
-  // mock data below
-  let mock_recipes = recipe_runs.map((recipe, index) => {
-    recipe = recipe.toWeb();
-    return Object.assign(recipe, {
-      user_created: 'Mock User',
-      approval_user: 'Mock User'
-    })
-  });
-
-  let footer = create_mock_footer(mock_recipes[0], 'recipe_runs');
-  */
 
   let err, result;
 
@@ -344,20 +255,6 @@ const getRecipeRunDetail = async function (req, res) {
   if(err) return ReE(res, err.message, 422);
   if(!recipe_detail) return ReE(res, `Recipe detail wasno found with id ${recipe_detail_id}`, 422);
 
-
-  // mock data below
-  let recipe_run_detail = {
-    "id": 1,
-    "investment_percentage": "5.67945412594929",
-    "recipe_run_id": 5,
-    "transaction_asset_id": 2,
-    "quote_asset_id": 2,
-    "target_exchange_id": 5,
-    "transaction_asset": "BTC",
-    "quote_asset": "XRP",
-    "target_exchange": "bitstamp"
-  }
-
   return ReS(res, {
     recipe_detail
   })
@@ -389,22 +286,6 @@ const getRecipeRunDetails = async function (req, res) {
   if(err) return ReE(res, err.message, 422);
 
   const { data: recipe_details, total: count } = result;
-
-  // mock data below
-
-  let mock_detail = [...Array(20)].map((detail, index) => ({
-    "id": index + 1,
-    "investment_percentage": "55.67945412594929",
-    "recipe_run_id": 5,
-    "transaction_asset_id": 2,
-    "quote_asset_id": 2,
-    "target_exchange_id": 5,
-    "transaction_asset": "BTC",
-    "quote_asset": "XRP",
-    "target_exchange": "bitstamp"
-  }));
-
-  //footer = create_mock_footer(mock_detail[0], 'recipe_details');
 
   return ReS(res, {
     recipe_details,
