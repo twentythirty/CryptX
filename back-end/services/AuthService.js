@@ -225,7 +225,7 @@ const sendPasswordResetToken = async function (email) {
 
   user.reset_password_token_hash = uuidv4();
   user.reset_password_token_expiry_timestamp = new Date(
-    new Date().getTime() + (24 * 60 * 60 * 1000)
+    new Date().getTime() + (60 * 60 * 1000) // current time + 1 hour
   );
   
   [err, user] = await to(user.save());
