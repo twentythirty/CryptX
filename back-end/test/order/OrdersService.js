@@ -88,8 +88,8 @@ describe('OrdersService testing', () => {
         return _.map(TEST_INSTRUMENTS, instrument => {
 
             return {
-                tisk_size: 0.00001,
-                exchnage_id: exchange_id,
+                tick_size: 0.00001,
+                exchange_id: exchange_id,
                 instrument_id: instrument.id,
                 external_instrument_id: `TST${instrument.transaction_asset_id - 800 + 1}/TST${instrument.quote_asset_id - 800 +1}`
             }
