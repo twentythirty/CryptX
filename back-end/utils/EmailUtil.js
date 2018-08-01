@@ -44,7 +44,7 @@ module.exports.passwordResetMailHTML = (details) => {
     <p>Password reset request was made for your account.</p>
     <p>To reset you password, please use this link:</p>
     <p><a href="${RESET_PASSWORD_BASE_URL + details.token}">${RESET_PASSWORD_BASE_URL + details.token}</a></p>
-    <p>This link to reset your password is going to be valid for 24 hours.
+    <p>This link to reset your password is going to be valid for 1 hour.
     `;
 }
 

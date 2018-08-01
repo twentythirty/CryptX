@@ -282,7 +282,7 @@ const sendPasswordResetToken = async function (req, res) {
   let email_result;
   [err, email_result] = await to(mailUtil.sendMail(
     email,
-    `Reset your password in CryptX`,
+    `Reset your CryptX password`,
     mailUtil.passwordResetMailHTML({
       token: user.reset_password_token_hash,
       email: user.email,
