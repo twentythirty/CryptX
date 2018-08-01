@@ -1,14 +1,13 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router, Params } from "@angular/router";
+import { Observable } from "rxjs/Rx";
+import { mergeMap } from "rxjs/operators";
+
 import { FormsModule, FormGroup, FormControl, Validators } from '@angular/forms';
 import { DepositService, DepositResultData, DepositResponseData } from "../../../services/deposit/deposit.service";
 import { Deposit, DepositStatus } from "../../../shared/models/deposit";
 import { DepositListComponent } from "../deposit-list/deposit-list.component";
-import { TableDataColumn } from "../../../shared/components/data-table/data-table.component";
-import { ActionCellDataColumn, DataCellAction } from "../../../shared/components/data-table-cells/index";
 import { InvestmentService } from "../../../services/investment/investment.service";
-import { mergeMap } from "rxjs/operators";
-import { Observable } from "rxjs/Rx";
 import { TimelineEvent } from "../../../shared/components/timeline/timeline.component";
 
 
@@ -58,14 +57,14 @@ export class DepositInfoComponent extends DepositListComponent implements OnInit
             this.depositDataSource.body = [res.recipe_deposit];
             this.activityLog = res.status_changes
             this.count = 1;
-            this.dataColumn();
+            this.appendActionColumn();
           }
         )
       }
-      )
+    )
   }
 
-  dataColumn() {
+  appendActionColumn() {
    /* if (!_.find(this.depositDataSource.header, col => col.column == 'action')){
       if (this.depositDataSource.body[0].status === 151) { //pakeisti į 150
         this.depositDataSource.header.push({ column: 'action', nameKey: 'table.header.action' })

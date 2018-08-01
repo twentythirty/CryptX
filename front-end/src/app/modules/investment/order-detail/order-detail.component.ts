@@ -6,7 +6,13 @@ import { StatusClass } from '../../../shared/models/common';
 import { TimelineDetailComponent, SingleTableDataSource, TagLineItem } from '../timeline-detail/timeline-detail.component'
 import { TableDataSource, TableDataColumn } from '../../../shared/components/data-table/data-table.component';
 import { TimelineEvent } from '../../../shared/components/timeline/timeline.component';
-import { ActionCellDataColumn, DataCellAction, DateCellDataColumn, PercentCellDataColumn, StatusCellDataColumn, ConfirmCellDataColumn, NumberCellDataColumn } from '../../../shared/components/data-table-cells';
+import {
+  ActionCellDataColumn,
+  DataCellAction,
+  DateCellDataColumn,
+  StatusCellDataColumn,
+  NumberCellDataColumn,
+} from '../../../shared/components/data-table-cells';
 import { mergeMap, map } from 'rxjs/operators';
 import { InvestmentService } from '../../../services/investment/investment.service';
 
@@ -35,50 +41,35 @@ export class OrderDetailComponent extends TimelineDetailComponent implements OnI
   public singleDataSource: SingleTableDataSource = {
     header: [
       { column: 'id', nameKey: 'table.header.id' },
-      { column: 'creation_time', nameKey: 'table.header.creation_time' },
-      { column: 'instrument', nameKey: 'table.header.instrument' },
-      { column: 'creator', nameKey: 'table.header.creator' },
-      { column: 'status', nameKey: 'table.header.status' },
-      { column: 'decision_by', nameKey: 'table.header.decision_by' },
-      { column: 'decision_time', nameKey: 'table.header.decision_time' },
-      { column: 'rationale', nameKey: 'table.header.rationale' }
+      { column: 'created_timestamp', nameKey: 'table.header.creation_time' },
+      { column: 'user_created', nameKey: 'table.header.creator' },
+      { column: 'approval_status', nameKey: 'table.header.status' },
+      { column: 'approval_user', nameKey: 'table.header.decision_by' },
+      { column: 'approval_timestamp', nameKey: 'table.header.decision_time' },
+      { column: 'approval_comment', nameKey: 'table.header.rationale' }
     ],
     body: null
-  }
-
-  public listDataSource: TableDataSource = {
-    header: [
-      { column: 'id', nameKey: 'table.header.id', filter: {type: 'text', sortable: true }},
-      { column: 'instrument', nameKey: 'table.header.instrument', filter: {type: 'text', sortable: true }},
-      { column: 'side', nameKey: 'table.header.side', filter: {type: 'text', sortable: true }},
-      { column: 'price', nameKey: 'table.header.price', filter: {type: 'number', sortable: true }},
-      { column: 'quantity', nameKey: 'table.header.quantity', filter: {type: 'number', sortable: true }},
-      { column: 'fee', nameKey: 'table.header.sum_of_exchange_trading_fee', filter: {type: 'number', sortable: true }},
-      { column: 'status', nameKey: 'table.header.status', filter: {type: 'text', sortable: true }}
-    ],
-    body: null,
   };
 
   public singleColumnsToShow: Array<TableDataColumn> = [
     new TableDataColumn({ column: 'id' }),
-    new DateCellDataColumn({ column: 'creation_time' }),
-    new TableDataColumn({ column: 'instrument' }),
-    new TableDataColumn({ column: 'creator' }),
-    new StatusCellDataColumn({ column: 'status', inputs: { classMap: {
-      '41' : StatusClass.PENDING,
-      '42': StatusClass.REJECTED,
-      '43': StatusClass.APPROVED,
+    new DateCellDataColumn({ column: 'created_timestamp' }),
+    new TableDataColumn({ column: 'user_created' }),
+    new StatusCellDataColumn({ column: 'approval_status', inputs: { classMap: {
+      'recipes.status.41' : StatusClass.PENDING,
+      'recipes.status.42': StatusClass.REJECTED,
+      'recipes.status.43': StatusClass.APPROVED,
     }}}),
-    new TableDataColumn({ column: 'decision_by' }),
-    new DateCellDataColumn({ column: 'decision_time' }),
-    new ActionCellDataColumn({ column: 'rationale', inputs: {
+    new TableDataColumn({ column: 'approval_user' }),
+    new DateCellDataColumn({ column: 'approval_timestamp' }),
+    new ActionCellDataColumn({ column: 'approval_comment', inputs: {
         actions: [
           new DataCellAction({
             label: 'READ',
             exec: (row: any) => {
               this.showReadModal({
                 title: 'Rationale',
-                content: row.rationale
+                content: row.approval_comment
               })
             }
           })
@@ -87,22 +78,37 @@ export class OrderDetailComponent extends TimelineDetailComponent implements OnI
     }),
   ];
 
+  public listDataSource: TableDataSource = {
+    header: [
+      { column: 'id', nameKey: 'table.header.id', filter: { type: 'text', sortable: true }},
+      { column: 'instrument', nameKey: 'table.header.instrument', filter: { type: 'text', sortable: true }},
+      { column: 'side', nameKey: 'table.header.side', filter: { type: 'text', sortable: true }},
+      { column: 'exchange', nameKey: 'table.header.exchange', filter: { type: 'text', sortable: true }},
+      { column: 'price', nameKey: 'table.header.price', filter: { type: 'number', sortable: true }},
+      { column: 'quantity', nameKey: 'table.header.total_quantity', filter: { type: 'number', sortable: true }},
+      { column: 'sum_of_exchange_trading_fee', nameKey: 'table.header.sum_of_exchange_trading_fee', filter: { type: 'number', sortable: true }},
+      { column: 'status', nameKey: 'table.header.status', filter: { type: 'text', sortable: true }}
+    ],
+    body: null,
+  };
+
   public listColumnsToShow: Array<TableDataColumn> = [
     new TableDataColumn({ column: 'id' }),
     new TableDataColumn({ column: 'instrument' }),
     new StatusCellDataColumn({ column: 'side', inputs: { classMap: value => {
       return StatusClass.DEFAULT;
     }}}),
+    new TableDataColumn({ column: 'exchange' }),
     new NumberCellDataColumn({ column: 'price' }),
     new NumberCellDataColumn({ column: 'quantity' }),
-    new NumberCellDataColumn({ column: 'fee' }),
+    new NumberCellDataColumn({ column: 'sum_of_exchange_trading_fee' }),
     new StatusCellDataColumn({ column: 'status', inputs: { classMap: {
-      '51': StatusClass.PENDING,
-      '52': StatusClass.DEFAULT,
-      '53': StatusClass.APPROVED,
-      '54': StatusClass.REJECTED,
-      '55': StatusClass.REJECTED,
-      '56': StatusClass.FAILED,
+      'orders.status.51': StatusClass.PENDING,
+      'orders.status.52': StatusClass.DEFAULT,
+      'orders.status.53': StatusClass.APPROVED,
+      'orders.status.54': StatusClass.REJECTED,
+      'orders.status.55': StatusClass.REJECTED,
+      'orders.status.56': StatusClass.FAILED,
     }}}),
   ];
 
@@ -113,9 +119,17 @@ export class OrderDetailComponent extends TimelineDetailComponent implements OnI
   constructor(
     public route: ActivatedRoute,
     private router: Router,
-    private investmentService: InvestmentService
+    private investmentService: InvestmentService,
   ) {
     super(route);
+  }
+
+  /**
+   * + If custom ngOnInit() is needed, call super.ngOnInit() to
+   * perform parent component class initialization
+   */
+  ngOnInit() {
+    super.ngOnInit();
   }
 
   /**
@@ -128,9 +142,11 @@ export class OrderDetailComponent extends TimelineDetailComponent implements OnI
       )
     ).subscribe(
       res => {
+        Object.assign(this.listDataSource, {
+          body: res.recipe_orders,
+          footer: res.footer
+        });
         this.count = res.count;
-        this.listDataSource.body = res.recipe_orders;
-        this.listDataSource.footer = res.footer;
       },
       err => this.listDataSource.body = []
     )
@@ -143,9 +159,10 @@ export class OrderDetailComponent extends TimelineDetailComponent implements OnI
       )
     ).subscribe(
       res => {
-        if(res.recipe) {
-          this.singleDataSource.body = [ res.recipe ];
+        if(res.recipe_run) {
+          this.singleDataSource.body = [res.recipe_run];
         }
+
         if(res.recipe_stats) {
           this.setTagLine(res.recipe_stats.map(stat => {
             return new TagLineItem(`${stat.count} ${stat.name}`)
@@ -159,7 +176,7 @@ export class OrderDetailComponent extends TimelineDetailComponent implements OnI
   protected getTimelineData(): void {
     this.timeline$ = this.route.params.pipe(
       mergeMap(
-        params => this.investmentService.getAllTimelineData({ "recipe_order_id": params['id'] })
+        params => this.investmentService.getAllTimelineData({ recipe_order_id: params['id'] })
       )
     )
   }
@@ -169,20 +186,12 @@ export class OrderDetailComponent extends TimelineDetailComponent implements OnI
    */
 
   public openSingleRow(row: any): void {
-    this.router.navigate([`/run/recipe/${row.id}`])
+    this.router.navigate([`/run/recipe/${row.id}`]);
   }
 
   public openListRow(row: any): void {
-    this.router.navigate([`/run/execution-order/${row.id}`])
+    this.router.navigate([`/run/execution-order/${row.id}`]);
   }
 
-  /**
-   * + If custom ngOnInit() is needed, call super.ngOnInit() to
-   * perform parent component class initialization
-   */
-
-  ngOnInit() {
-    super.ngOnInit();
-  }
 
 }

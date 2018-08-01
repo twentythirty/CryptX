@@ -41,9 +41,9 @@
       "side": "Side",
       "price": "Price",
       "quantity": "Quantity",
+      "total_quantity": "Total quantity",
       "sum_of_exchange_trading_fee": "Sum of exchange trading fee",
       "type": "Type",
-      "total_quantity": "Total quantity",
       "exchange_trading_fee": "Exchange trading fee",
       "submission_time": "Submission time",
       "completion_time": "Completion time",
@@ -164,8 +164,8 @@
 
   "orders": {
     "side": {
-      "0": "Buy",
-      "1": "Sell"
+      "999": "Buy",
+      "888": "Sell"
     },
     "status": {
       "51": "Pending",
@@ -181,6 +181,14 @@
       "instrument": "{{ instrument }} Instruments",
       "exchange": "{{ exchange }} Exchanges",
       "status":"{{ status }} Pending"
+    }
+  },
+  "recipe_orders": {
+    "footer": {
+      "id": "{{ id }} items",
+      "instrument": "{{ instrument }} instruments",
+      "exchange": "{{ exchange }} exchanges",
+      "status": "{{ status }} executing"
     }
   },
 
