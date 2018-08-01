@@ -1,14 +1,21 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
+import { mergeMap, map } from 'rxjs/operators';
 
 import { StatusClass } from '../../../shared/models/common';
 
 import { TimelineDetailComponent, SingleTableDataSource, TagLineItem } from '../timeline-detail/timeline-detail.component';
 import { TimelineEvent } from '../../../shared/components/timeline/timeline.component';
 import { TableDataSource, TableDataColumn } from '../../../shared/components/data-table/data-table.component';
-import { DateCellDataColumn, StatusCellDataColumn, PercentCellDataColumn } from '../../../shared/components/data-table-cells';
+import {
+  DateCellDataColumn,
+  StatusCellDataColumn,
+  PercentCellDataColumn,
+  DataCellAction,
+  ActionCellDataColumn
+} from '../../../shared/components/data-table-cells';
+
 import { InvestmentService } from '../../../services/investment/investment.service';
-import { mergeMap, map } from 'rxjs/operators';
 
 @Component({
   selector: 'app-deposit-detail',
@@ -32,46 +39,58 @@ export class DepositDetailComponent extends TimelineDetailComponent implements O
     header: [
       { column: 'id', nameKey: 'table.header.id' },
       { column: 'created_timestamp', nameKey: 'table.header.creation_time' },
-      { column: 'user_created_id', nameKey: 'table.header.creator' },
+      { column: 'user_created', nameKey: 'table.header.creator' },
       { column: 'approval_status', nameKey: 'table.header.status' },
-      { column: 'approval_user_id', nameKey: 'table.header.decision_by' },
+      { column: 'approval_user', nameKey: 'table.header.decision_by' },
       { column: 'approval_timestamp', nameKey: 'table.header.decision_time' },
       { column: 'approval_comment', nameKey: 'table.header.rationale' },
     ],
-    body: null,
+    body: null
   };
 
   public singleColumnsToShow: Array<TableDataColumn> = [
     new TableDataColumn({ column: 'id' }),
     new DateCellDataColumn({ column: 'created_timestamp' }),
-    new TableDataColumn({ column: 'user_created_id' }),
+    new TableDataColumn({ column: 'user_created' }),
     new StatusCellDataColumn({ column: 'approval_status', inputs: { classMap: {
-      '41' : StatusClass.PENDING,
-      '42': StatusClass.REJECTED,
-      '43': StatusClass.APPROVED,
+      'recipes.status.41' : StatusClass.PENDING,
+      'recipes.status.42': StatusClass.REJECTED,
+      'recipes.status.43': StatusClass.APPROVED,
     }}}),
-    new TableDataColumn({ column: 'approval_user_id' }),
+    new TableDataColumn({ column: 'approval_user' }),
     new DateCellDataColumn({ column: 'approval_timestamp' }),
-    new TableDataColumn({ column: 'approval_comment' }),
+    new ActionCellDataColumn({ column: 'approval_comment', inputs: {
+      actions: [
+        new DataCellAction({
+          label: 'READ',
+          exec: (row: any) => {
+            this.showReadModal({
+              title: 'Rationale',
+              content: row.approval_comment
+            })
+          }
+        })
+      ]
+    }}),
   ];
 
 
   public listDataSource: TableDataSource = {
     header: [
       { column: 'id', nameKey: 'table.header.id', filter: {type: 'text', sortable: true }},
-      { column: 'transaction_asset', nameKey: 'table.header.transaction_asset', filter: {type: 'text', sortable: true }},
+      { column: 'quote_asset', nameKey: 'table.header.quote_asset', filter: {type: 'text', sortable: true }},
       { column: 'exchange', nameKey: 'table.header.exchange', filter: {type: 'text', sortable: true }},
       { column: 'account', nameKey: 'table.header.account', filter: {type: 'text', sortable: true }},
       { column: 'amount', nameKey: 'table.header.amount', filter: {type: 'number', sortable: true }},
       { column: 'investment_percentage', nameKey: 'table.header.investment_percentage', filter: {type: 'number', sortable: true }},
       { column: 'status', nameKey: 'table.header.status' },
     ],
-    body: null,
+    body: null
   };
 
   public listColumnsToShow: Array<TableDataColumn> = [
     new TableDataColumn({ column: 'id' }),
-    new TableDataColumn({ column: 'transaction_asset' }),
+    new TableDataColumn({ column: 'quote_asset' }),
     new TableDataColumn({ column: 'exchange' }),
     new TableDataColumn({ column: 'account' }),
     new TableDataColumn({ column: 'amount' }),

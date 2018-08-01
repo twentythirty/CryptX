@@ -280,3 +280,28 @@ const resetPassword = async function (user_id, new_password) {
   return user;
 }
 module.exports.resetPassword = resetPassword;
+
+const terminateUserSessions = async function (user_id) {
+
+  let [err, user_sessions] = await to(UserSession.findAll({
+    where: {
+      expiry_timestamp: {
+        [Op.gt]: new Date()
+      }
+    }
+  }));
+
+  if (err) TE(err.message);
+
+  [err, user_sessions] = await to(Promise.all(
+    user_sessions.map(session => {
+      session.expiry_timestamp = new Date();
+
+      return session.save();
+    })
+  ));
+  if (err) TE(err.message);
+
+  return user_sessions;
+}
+module.exports.terminateUserSessions = terminateUserSessions;
