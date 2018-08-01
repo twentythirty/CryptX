@@ -194,6 +194,14 @@ describe('Execution Order Fills fetcher job', () => {
         sequelize: sequelize
     };
 
+    beforeEach(done => {
+        sinon.stub(sequelize, 'query').callsFake(query => {
+            return Promise.resolve(query);
+        });
+
+        done();
+    });
+
     before(done => {
         app.dbPromise.then(migrations => {
             console.log('Migrations: %o', migrations);
@@ -267,10 +275,6 @@ describe('Execution Order Fills fetcher job', () => {
                 return Promise.resolve(connector);
             });
 
-            sinon.stub(sequelize, 'query').callsFake(query => {
-                return Promise.resolve(query);
-            });
-
             done();
         });
     });
@@ -283,14 +287,14 @@ describe('Execution Order Fills fetcher job', () => {
             ExecutionOrderFill.create,
             ExecutionOrderFill.bulkCreate,
             execOrderFillFetcher.handleFillsWithoutTrades,
-            execOrderFillFetcher.handleFillsWithTrades
+            execOrderFillFetcher.handleFillsWithTrades,
+            sequelize.query
         );
         done();
     });
 
     after(done => {
         ccxtUtils.getConnector.restore();
-        sequelize.query.restore();
         done();
     });
 
@@ -645,9 +649,10 @@ describe('Execution Order Fills fetcher job', () => {
         
     });
 
-    it('shall update the order fills fees when it received a fee and the sum of fills is greater than 0 and the fills were emulated', () => {
+    it('shall update the order fills price and fees when it received a fee and the sum of fills is greater than 0 and the fills were emulated', () => {
         
         let order = Object.assign({}, BASE_ORDER, {
+            id: 2,
             exchange_id: 2,
             external_identifier: '6'
         });
@@ -669,9 +674,11 @@ describe('Execution Order Fills fetcher job', () => {
             return Promise.resolve(options);
         });
 
+        const price_to_spread = sum_of_fills * order.price / order.total_quantity;
+
         const expected_query =  `
             UPDATE execution_order_fill AS eof
-            SET fee = ${mocked_order.fee.cost} * quantity / ${sum_of_fills}
+            SET fee = ${mocked_order.fee.cost} * quantity / ${sum_of_fills}, price = ${price_to_spread} * quantity / ${sum_of_fills}
             WHERE eof.execution_order_id = ${order.id}
         `;
 
