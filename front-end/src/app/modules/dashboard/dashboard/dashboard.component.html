@@ -40,4 +40,5 @@
 <app-investment-new
   *ngIf="showNewInvestmentModal"
   (close)="closeNewInvestmentModal()"
+  (onComplete)="getAllData()"
 ></app-investment-new>

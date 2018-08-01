@@ -59,9 +59,9 @@ export class RecipeRunDetailComponent extends TimelineDetailComponent implements
     new DateCellDataColumn({ column: 'created_timestamp' }),
     new TableDataColumn({ column: 'user_created' }),
     new StatusCellDataColumn({ column: 'approval_status', inputs: { classMap: {
-      '41' : StatusClass.PENDING,
-      '42': StatusClass.REJECTED,
-      '43': StatusClass.APPROVED,
+      'recipes.status.41': StatusClass.PENDING,
+      'recipes.status.42': StatusClass.REJECTED,
+      'recipes.status.43': StatusClass.APPROVED,
     }}}),
     new TableDataColumn({ column: 'approval_user' }),
     new DateCellDataColumn({ column: 'approval_timestamp' }),

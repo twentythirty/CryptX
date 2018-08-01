@@ -184,8 +184,7 @@ const getRecipeRun = async function (req, res) {
   recipe_run.toWeb();
 
   return ReS(res, {
-    recipe_run,
-    recipe_stats: countDetails
+    recipe_run
   })
 };
 module.exports.getRecipeRun = getRecipeRun;
@@ -315,13 +314,13 @@ module.exports.getRecipeRunDetailsColumnLOV = getRecipeRunDetailsColumnLOV;
 const getRecipeOrder = async function (req, res) {
 
   //This will replace the mock data once we know how to calculate the sum of fees.
-  /*const recipe_order_id = req.params.order_id;
+  const recipe_order_id = req.params.order_id;
 
   let [ err, recipe_order ] = await to(adminViewsService.fetchRecipeOrderView(recipe_order_id));
   if(err) return ReE(res, err.message, 422);
   if(!recipe_order) return ReE(res, err.message, 422);
 
-  recipe_order = recipe_order.toWeb();*/
+  recipe_order = recipe_order.toWeb();
 
   // mock data below
 
@@ -338,7 +337,7 @@ const getRecipeOrder = async function (req, res) {
   };
 
   return ReS(res, {
-    recipe_order: mock_detail
+    recipe_order
   })
 };
 module.exports.getRecipeOrder = getRecipeOrder;
@@ -347,12 +346,13 @@ module.exports.getRecipeOrder = getRecipeOrder;
 const getRecipeOrders = async function (req, res) {
 
   //This will replace the mock data once we know how to calculate the sum of fees.
-  /*let { seq_query, sql_where } = req;
+  let { seq_query, sql_where } = req;
   const recipe_id = req.params.recipe_run_id;
 
   if(recipe_id) {
     if(!_.isPlainObject(seq_query)) seq_query = { where: {} };
     seq_query.where.recipe_run_id = recipe_id;
+    sql_where = `recipe_run_id = ${recipe_id}`;
   }
 
   let [ err, result ] = await to(adminViewsService.fetchRecipeOrdersViewDataWithCount(seq_query));
@@ -364,7 +364,7 @@ const getRecipeOrders = async function (req, res) {
 
   let { data: recipe_orders, total: count } = result;
   
-  recipe_orders = recipe_orders.map(ro => ro.toWeb());*/
+  recipe_orders = recipe_orders.map(ro => ro.toWeb());
   
 
   // mock data below
@@ -385,9 +385,9 @@ const getRecipeOrders = async function (req, res) {
   let mock_footer = create_mock_footer(mock_detail[0], 'orders');
 
   return ReS(res, {
-    recipe_orders: mock_detail,
-    footer: mock_footer,
-    count: 20
+    recipe_orders,
+    footer,
+    count
   })
 };
 module.exports.getRecipeOrders = getRecipeOrders;
@@ -450,7 +450,7 @@ const getExecutionOrders = async function (req, res) {
   if(recipe_order_id) {
     if(!_.isPlainObject(seq_query)) seq_query = { where: {} };
     seq_query.where.recipe_order_id = recipe_order_id;
-    sql_where = `recipe_order_id = ${recipe_order_id}`
+    sql_where = `recipe_order_id = ${recipe_order_id}`;
   }
 
   let [ err, result ] = await to(adminViewsService.fetchExecutionOrdersViewDataWithCount(seq_query));

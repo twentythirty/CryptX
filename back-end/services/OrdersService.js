@@ -135,6 +135,7 @@ const generateApproveRecipeOrders = async (recipe_run_id) => {
             instrument_id: Object.keys(instruments_by_id)
         }
     }), 'instrument_id');
+    const flat_exchange_mappings_list = _.flatMap(Object.values(grouped_exchanges));
 
     //get latest ask/bid for those pairs (first element in group is latest)
     //grouped into {
@@ -148,7 +149,8 @@ const generateApproveRecipeOrders = async (recipe_run_id) => {
     const grouped_market_data = _.groupBy(await InstrumentMarketData.findAll({
         where: {
             instrument_id: Object.keys(grouped_exchanges),
-            exchange_id:  _.map(_.flatMap(grouped_exchanges), 'exchange_id') /* 
+            //extract value lists from grouped association, flatten those lists and extract property from entries
+            exchange_id:  _.map(flat_exchange_mappings_list, 'exchange_id') /* 
 -----------------------------------------------------------------------------------------------------------------
             applied fix. Need to assure if this is fix works as intended.
             before exchange_id was: _.flatMap(_.map(grouped_exchanges, 'exchange_id'));
@@ -204,6 +206,7 @@ const generateApproveRecipeOrders = async (recipe_run_id) => {
     if (err || !orders_group) TE(`error creating orders group: ${err}`, err);
 
     let results = [];
+    
     //create saving futures for orders from recipe run details
     [err, results] = await to(Promise.all(_.map(valid_recipe_run_details, recipe_run_detail => {
 
@@ -212,13 +215,30 @@ const generateApproveRecipeOrders = async (recipe_run_id) => {
         //then we use the bid price and make a buy order
         const buy_order = recipe_run_detail.transaction_asset_id == market_data_key[0].transaction_asset_id;
         const market_data = grouped_market_data[market_data_key][0];
-        //get correct price/order side
-        const price = (buy_order ? market_data.bid_price : market_data.ask_price);
+        //get correct price/order side, use precise decision if possible
+        const price = (buy_order ? market_data.bid_price : Decimal(1).div(Decimal(market_data.bid_price)).toNumber() );
         const side = buy_order ? ORDER_SIDES.Buy : ORDER_SIDES.Sell;
         //get deposit in base currency
-        const deposit = exchange_deposits[recipe_run_detail.target_exchange_id][recipe_run_detail.quote_asset_id];
-        //amount of currency to buy
-        const qnty = Decimal(deposit).div(Decimal(price)).toNumber();
+        const qnty_deposit_decimal = Decimal(
+            //fetch deposit on this exchange for qither quote or tx asset (based on order side)
+            exchange_deposits[recipe_run_detail.target_exchange_id][buy_order? recipe_run_detail.quote_asset_id : recipe_run_detail.transaction_asset_id]
+            //multiply by investment percentage specified in recipe detail
+        ).mul(Decimal(recipe_run_detail.investment_percentage));
+        //get mapping tick size as decimal
+        const correct_mapping = _.find(
+            flat_exchange_mappings_list, 
+            { 
+                instrument_id: market_data.instrument_id, 
+                exchange_id: recipe_run_detail.target_exchange_id 
+            }
+        );
+        const tick_size_decimal = correct_mapping == null? null : Decimal(correct_mapping.tick_size);
+        //round qnty to same dp as tick size, rounding down (only perform rounding if tick size was defined)
+        //divide by price if this is a buy order
+        const qnty = (
+            tick_size_decimal == null? 
+            qnty_deposit_decimal : qnty_deposit_decimal.toDP(tick_size_decimal.dp(), Decimal.ROUND_HALF_DOWN)
+        ).div(buy_order? Decimal(price) : Decimal(1))
 
         return RecipeOrder.create({
             recipe_order_group_id: orders_group.id,

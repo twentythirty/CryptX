@@ -425,11 +425,6 @@ ROUTES = {
     permissions_matcher: ROUTE_MATCHERS.GetExecutionOrdersFillsOf,
     required_permissions: [PERMISSIONS.VIEW_INVESTMENT_RUN]
   },
-  GetExecutionOrdersFills: {
-    router_string: "/exec_orders_fills/all",
-    permissions_matcher: ROUTE_MATCHERS.GetExecutionOrdersFills,
-    required_permissions: [PERMISSIONS.VIEW_INVESTMENT_RUN]
-  },
   ExecutionOrdersFillColLOV: {
     router_string: "/exec_orders_fills/header_lov/:field_name",
     permissions_matcher: ROUTE_MATCHERS.ExecutionOrdersFillColLOV,

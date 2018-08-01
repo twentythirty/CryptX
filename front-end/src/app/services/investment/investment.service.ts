@@ -62,7 +62,7 @@ export class InvestmentService {
   }
 
   getAllRecipeDeposits(recipe_id: any, requestData?: EntitiesFilter): Observable<any>{
-    return this.http.post<any>(this.baseUrl + `recipe_deposits/of_recipe/${recipe_id}`, requestData);
+    return this.http.post<any>(this.baseUrl + `deposits/of_recipe/${recipe_id}`, requestData);
   }
 
   getAllExecutionOrders(order_detail_id: any, requestData?: EntitiesFilter): Observable<any>{

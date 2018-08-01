@@ -66,7 +66,7 @@ export class LoginComponent implements OnInit {
       this.loading = false;
     }
     }else {
-          this.markAsTouched(this.loginForm);
+      this.markAsTouched(this.loginForm);
     }
   }
 

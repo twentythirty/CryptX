@@ -172,7 +172,7 @@ const BASE_ORDER = {
     external_identifier: 1,
     exchange_id: 1,
     failed_attempts: 0,
-    instrument: {
+    Instrument: {
         symbol: 'ETH/BTC'
     },
     status: Placed,
