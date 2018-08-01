@@ -184,8 +184,7 @@ const getRecipeRun = async function (req, res) {
   recipe_run.toWeb();
 
   return ReS(res, {
-    recipe_run,
-    recipe_stats: countDetails
+    recipe_run
   })
 };
 module.exports.getRecipeRun = getRecipeRun;
