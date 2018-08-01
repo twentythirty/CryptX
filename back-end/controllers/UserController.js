@@ -36,7 +36,7 @@ const issueInvitation = async function (req, res) {
     role_ids// array or role ids
   } = req.body;
   
-  let [err, user] = await to(inviteService.createUserAndInvitation(
+  let [err, user_and_invite] = await to(inviteService.createUserAndInvitation(
     req.user,
     role_ids,
     first_name,
@@ -44,11 +44,16 @@ const issueInvitation = async function (req, res) {
     email));
   if (err) return ReE(res, err, 422);
 
+  const [user, invitation] = user_and_invite;
+
   let email_result;
   [err, email_result] = await to(mailUtil.sendMail(
     email,
     `Invitation to CryptX`,
-    mailUtil.invitationMailHTML(invitation)
+    mailUtil.invitationMailHTML(Object.assign({
+      first_name: user.first_name,
+      last_name: user.last_name
+    }, invitation))
   ));
 
   if (err) {
