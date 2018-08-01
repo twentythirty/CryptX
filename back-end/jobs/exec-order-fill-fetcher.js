@@ -1,7 +1,7 @@
 'use strict'
 
 const ccxtUtils = require('../utils/CCXTUtils');
-const { eq, ne } = require('sequelize').Op;
+const { eq, ne, in: opIn } = require('sequelize').Op;
 
 module.exports.SCHEDULE = '0 */5 * * * *';
 module.exports.NAME = 'FETCH_EXEC_OR_FILLS';
@@ -17,15 +17,15 @@ module.exports.JOB_BODY = async (config, log) => {
     log('1. Fetching all Placed or PartiallyFilled execution orders.')
     return ExecutionOrder.findAll({
         where: {
-            status: [ Placed, PartiallyFilled ],
+            status: { [opIn]: [ Placed, PartiallyFilled ] },
             placed_timestamp: { [ne]: null },
             external_identifier: { [ne]: null }
         },
         include: {
-            model: Instrument,
-            as: 'instrument'
+            model: Instrument
         }
     }).then(placed_orders => {
+ 
         return Promise.all(
             _.map(placed_orders, async placed_order => {
 
@@ -100,6 +100,8 @@ module.exports.JOB_BODY = async (config, log) => {
 
             })
         );
+    }, error => {
+        log(`[ERROR.1A] Error occured while querying the database for execution orders: ${err.message}`);
     });
 };
 
@@ -134,7 +136,7 @@ module.exports.handleFillsWithTrades = async (placed_order, exchange, external_o
 
     log(`4. Fetching trades from the exchange from ${since}.`);
     let trades = [];
-    [ err, trades ] = await to(exchange.fetchMyTrades(placed_order.instrument.symbol, since));
+    [ err, trades ] = await to(exchange.fetchMyTrades(placed_order.Instrument.symbol, since));
 
     if(err) {
         log(`[ERROR.4A] Error occured while attepting to fetch recent trades: ${err.message}`);
@@ -343,8 +345,8 @@ const fetchOrderFromExchange = (placed_order, exchange, log) => {
     return new Promise(async (resolve, reject) => {
         let external_order = null;
         let err = null;
-
-        const symbol = placed_order.instrument.symbol;
+  
+        const symbol = placed_order.Instrument.symbol;
         const since = placed_order.placed_timestamp;
 
         const can_fetch_by_id = exchange.has['fetchOrder'];
