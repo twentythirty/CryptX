@@ -183,7 +183,8 @@ module.exports.handleFillsWithTrades = async (placed_order, exchange, external_o
             timestamp: trade.timestamp,
             quantity: trade.amount,
             external_identifier: String(trade.id),
-            fee: fee
+            fee: fee,
+            price: trade.price
         }
     });
 
@@ -256,7 +257,8 @@ module.exports.handleFillsWithoutTrades = async (placed_order, external_order, l
 /**
  * Updates the status of the order based on the situation.
  * @param {*} placed_order
- * @param {Object} ExecutionOrderFill Fill model.
+ * @param {*} log logger
+ * @param {Object} config job config.
  */
 const updateOrderStatus = async (placed_order, log, config) => {
 
@@ -274,7 +276,7 @@ const updateOrderStatus = async (placed_order, log, config) => {
         return placed_order.save();
     }
 
-    log(`7. Checking for Execution order ${placed_order.id} status changes.`);
+    log(`7. Analyzing the currrent Execution order ${placed_order.id} after checking for new fills.`);
     //Calculate the current sum of fills
     let [ err, fill_amount_sum ] = await to(ExecutionOrderFill.sum('quantity', {
         where: {
@@ -287,15 +289,27 @@ const updateOrderStatus = async (placed_order, log, config) => {
         placed_order.failed_attempts++;
     }
 
-    if(placed_order.emulated_fills && placed_order.fee && fill_amount_sum) {
+    /**
+     * In case when the trades were unavailable (or the trades did not point to any orders)
+     * The job will spread the Execution order price based on the current amount sum of fills and their individual amount
+     * The job will also spread the current order fee(if it exists) across the fills based on their filld amount.
+     */
+    if(placed_order.emulated_fills && fill_amount_sum) {
+        /**
+         * Currently the Execution order holds the price which is expected upon being fully filled.
+         * We first need to how much the current fills are worth.
+         */
+        const price_to_spread = fill_amount_sum * placed_order.price / placed_order.total_quantity;
+
         [ err ] = await to(sequelize.query(`
             UPDATE execution_order_fill AS eof
-            SET fee = ${placed_order.fee} * quantity / ${fill_amount_sum}
+            SET ${placed_order.fee ? `fee = ${placed_order.fee} * quantity / ${fill_amount_sum}, ` : ''}price = ${price_to_spread} * quantity / ${fill_amount_sum}
             WHERE eof.execution_order_id = ${placed_order.id}
         `));
 
-        if(err) log(`[ERROR.7B] Error occured during fill fee calculation and update: ${err.message}`);
+        if(err) log(`[ERROR.7B] Error occured during fill price/fee calculation and update: ${err.message}`);
     }
+
 
     //If the sum is greater or equal to the required total quantity, mark the order as FullyFilled.
     //For now, just to be safe, if the order is filled will be done in the first step using the exchange order object.
