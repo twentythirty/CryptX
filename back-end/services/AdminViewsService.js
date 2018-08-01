@@ -91,10 +91,7 @@ const fetchViewHeaderLOV = async (table, field, query) => {
 }
 const fetchViewDataWithCount = async (model, seq_query = {}) => {
 
-    const [data, total] = await Promise.all([
-        fetchModelData(model, seq_query),
-        fetchModelCount(model)
-    ]);
+    const { rows: data, count: total } = await model.findAndCountAll(seq_query);
 
     return {
         data,
@@ -102,7 +99,7 @@ const fetchViewDataWithCount = async (model, seq_query = {}) => {
     }
 }
 const fetchModelData = async (model, seq_query = {}) => model.findAll(seq_query)
-const fetchModelCount = async (model) => model.count()
+const fetchModelCount = async (model, seq_query = {}) => model.count(seq_query)
 const fetchSingleEntity = async (model, id, alias = 'id') => {
 
     return _.first(await fetchModelData(model, {
@@ -659,7 +656,7 @@ const fetchRecipeOrdersViewFooter = async (where_clause = '') => {
         builder.selectCountDistinct('investment_id', 'investment_id', view, where_clause),
         builder.selectCountDistinct('instrument_id', 'instrument', view, where_clause),
         builder.selectCountDistinct('target_exchange_id', 'exchange', view, where_clause),
-        builder.selectCount(view, 'status', builder.addToWhere(`status=${MODEL_CONST.RECIPE_ORDER_STATUSES.Pending}`))
+        builder.selectCount(view, 'status', builder.addToWhere(where_clause, `status='orders.status.${MODEL_CONST.RECIPE_ORDER_STATUSES.Pending}'`))
     ], [
         'id',
         'investment_id',
@@ -684,7 +681,7 @@ const fetchExecutionOrdersViewFooter = async (where_clause = '') => {
         builder.selectCount(view, 'id', where_clause),
         builder.selectCountDistinct('instrument_id', 'instrument', view, where_clause),
         builder.selectCountDistinct('exchange_id', 'exchange', view, where_clause),
-        builder.selectCount(view, 'status', builder.addToWhere(`status=${MODEL_CONST.EXECUTION_ORDER_STATUSES.Pending}`))
+        builder.selectCount(view, 'status', builder.addToWhere(where_clause, `status='execution_orders.status.${MODEL_CONST.EXECUTION_ORDER_STATUSES.Pending}'`))
     ], [
         'id',
         'instrument',
