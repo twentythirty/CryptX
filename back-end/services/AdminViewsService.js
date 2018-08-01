@@ -91,10 +91,7 @@ const fetchViewHeaderLOV = async (table, field, query) => {
 }
 const fetchViewDataWithCount = async (model, seq_query = {}) => {
 
-    const [data, total] = await Promise.all([
-        fetchModelData(model, seq_query),
-        fetchModelCount(model)
-    ]);
+    const { rows: data, count: total } = await model.findAndCountAll(seq_query);
 
     return {
         data,
@@ -102,7 +99,7 @@ const fetchViewDataWithCount = async (model, seq_query = {}) => {
     }
 }
 const fetchModelData = async (model, seq_query = {}) => model.findAll(seq_query)
-const fetchModelCount = async (model) => model.count()
+const fetchModelCount = async (model, seq_query = {}) => model.count(seq_query)
 const fetchSingleEntity = async (model, id, alias = 'id') => {
 
     return _.first(await fetchModelData(model, {
