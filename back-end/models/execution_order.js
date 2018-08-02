@@ -56,6 +56,7 @@ module.exports = (sequelize, DataTypes) => {
         ExecutionOrder.belongsToMany(models.ColdStorageAccount, {
             through: models.ColdStorageTransfer
         })
+        ExecutionOrder.hasMany(models.ExecutionOrderFill);
     };
 
     ExecutionOrder.prototype.isActive = function() {

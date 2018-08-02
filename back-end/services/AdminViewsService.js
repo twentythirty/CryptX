@@ -14,6 +14,7 @@ const AVInstrumentExchange = require('../models').AVInstrumentExchange;
 const AVInstrumentLiquidityRequirement = require('../models').AVInstrumentLiquidityRequirement;
 const AVLiquidityRequirementExchange = require('../models').AVLiquidityRequirementExchange;
 const AVRecipeDeposit = require('../models').AVRecipeDeposit;
+const AVRecipeOrdersGroup = require('../models').AVRecipeOrdersGroup;
 const AVRecipeOrder = require('../models').AVRecipeOrder;
 const AVExecutionOrder = require('../models').AVExecutionOrder;
 const AVExecutionOrderFill = require('../models').AVExecutionOrderFill;
@@ -311,6 +312,12 @@ const fetchInstrumentLiquidityRequirementView = async (liquidity_requirement_id)
     return fetchSingleEntity(AVInstrumentLiquidityRequirement, liquidity_requirement_id);
 }
 module.exports.fetchInstrumentLiquidityRequirementView = fetchInstrumentLiquidityRequirementView;
+
+const fetchRecipeOrdersGroupView = async (recipe_orders_group_id) => {
+
+    return fetchSingleEntity(AVRecipeOrdersGroup, recipe_orders_group_id);
+}
+module.exports.fetchRecipeOrdersGroupView = fetchRecipeOrdersGroupView;
 
 const fetchRecipeOrderView = async (recipe_order_id) => {
 

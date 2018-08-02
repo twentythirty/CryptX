@@ -1447,6 +1447,40 @@
         ]
       }
     },
+    "/orders/groups/{order_group_id}": {
+      "get": {
+        "tags": [
+          "orders"
+        ],
+        "summary": "Get orders group info by id",
+        "description": "Get orders group info by recipe order group id",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "order_group_id",
+            "in": "path",
+            "description": "ID of orders group",
+            "required": true,
+            "type": "integer"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "$ref": "#/definitions/RecipeOrderGroupResponse"
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
     "/orders/of_recipe/{recipe_id}": {
       "get": {
         "tags": [
@@ -1494,6 +1528,81 @@
             "name": "recipe_id",
             "in": "path",
             "description": "ID of recipe run to get details of",
+            "required": true,
+            "type": "integer"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "description": "The filter definition to perform on the data set. If absent will assume empty filter and return all data",
+            "required": false,
+            "schema": {
+              "$ref": "#/definitions/EntitiesFilter"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "$ref": "#/definitions/RecipeOrderListResponse"
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/orders/of_group/{recipe_order_group_id}": {
+      "get": {
+        "tags": [
+          "orders"
+        ],
+        "summary": "Get orders of recipe order group by orders group id",
+        "description": "Get orders of recipe order group by order group id",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "recipe_order_group_id",
+            "in": "path",
+            "description": "ID of the recipe order group to get orders of",
+            "required": true,
+            "type": "integer"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "$ref": "#/definitions/RecipeOrderListResponse"
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      },
+      "post": {
+        "tags": [
+          "orders"
+        ],
+        "summary": "Get orders of recipe order group by orders group id",
+        "description": "Get orders of recipe order group by order group id",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "recipe_order_group_id",
+            "in": "path",
+            "description": "ID of the recipe order group to get orders of",
             "required": true,
             "type": "integer"
           },
@@ -5471,6 +5580,19 @@
         }
       }
     },
+    "RecipeOrderGroupResponse": {
+      "description": "Recipe order group response",
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean",
+          "example": true
+        },
+        "recipe_order_group": {
+          "$ref": "#/definitions/RecipeOrderGroup"
+        }
+      }
+    },
     "RecipeOrderGenerationResponse": {
       "description": "Response of recipe orders list",
       "type": "array",
@@ -5547,6 +5669,30 @@
         "sum_of_exhange_trading_fee": {
           "type": "number",
           "example": 100
+        }
+      }
+    },
+    "RecipeOrderGroup": {
+      "description": "Recipe order group details",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "number",
+          "example": 4
+        },
+        "created_timestamp": {
+          "type": "number",
+          "example": 15683498502378
+        },
+        "status": {
+          "type": "number",
+          "example": 51
+        },
+        "approval_user": {
+          "type": "string"
+        },
+        "approval_comment": {
+          "type": "string"
         }
       }
     },

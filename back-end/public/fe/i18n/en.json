@@ -53,10 +53,12 @@
       "started": "Started",
       "updated": "Updated",
       "completed": "Completed",
+      "completed_time": "Completed time",
       "strategy": "Strategy",
       "simulated": "Simulated",
       "deposit": "Deposit",
       "created": "Created",
+      "created_time": "Created time",
       "actions": "Actions",
       "quote_asset": "Quote asset",
       "percentage": "Percentage, %",
@@ -164,6 +166,7 @@
   },
 
   "orders": {
+    "orders": "Orders",
     "side": {
       "999": "Buy",
       "888": "Sell"
@@ -189,7 +192,8 @@
       "id": "{{ id }} items",
       "instrument": "{{ instrument }} instruments",
       "exchange": "{{ exchange }} exchanges",
-      "status": "{{ status }} executing"
+      "status": "{{ status }} executing",
+      "investment_id": "{{ investment_id }} ids"
     }
   },
 
