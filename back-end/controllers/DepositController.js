@@ -2,6 +2,7 @@
 
 const MockController = require('./MockController');
 const DepositService = require('../services/DepositService');
+const AdminViewService = require('../services/AdminViewsService');
 
 const submitDeposit = async function (req, res) {
 
@@ -91,6 +92,12 @@ const approveDeposit = async function (req, res) {
 
 const getRecipeDeposit = async function (req, res) {
 
+  const { deposit_id } = req.params;
+
+  const [ err, recipe_deposit ] = await to(AdminViewService.fetchRecipeDepositView(deposit_id));
+  if(err) return ReE(res, err.message, 422);
+  if(!recipe_deposit) return ReE(res, `Recipe deposit with id ${deposit_id} not found`, 422);
+
   // mock data below
 
   let mock_detail = {
@@ -106,13 +113,30 @@ const getRecipeDeposit = async function (req, res) {
   };
   
   return ReS(res, {
-    recipe_deposit: mock_detail
+    recipe_deposit
   })
 };
 module.exports.getRecipeDeposit = getRecipeDeposit;
 
 
 const getRecipeDeposits = async function (req, res) {
+
+  const recipe_run_id = req.params.recipe_id;
+  let { seq_query, sql_where } = req;
+
+  if(recipe_run_id && _.isPlainObject(seq_query)) {
+    _.isPlainObject(seq_query.where) ? seq_query.where.recipe_run_id = recipe_run_id : seq_query.where = { recipe_run_id };
+    sql_where = `recipe_run_id = ${recipe_run_id}`;
+  }
+
+  let [ err, result ] = await to(AdminViewService.fetchRecipeDepositsViewDataWithCount(seq_query));
+  if(err) return ReE(res, err.message, 422);
+
+  const { data: recipe_deposits, total: count } = result;
+
+  let footer = [];
+  [ err, footer ] = await to(AdminViewService.fetchRecipeDepositsViewsFooter(sql_where));
+  if(err) return ReE(res, err.message, 422);
 
   // mock data below
 
@@ -128,12 +152,28 @@ const getRecipeDeposits = async function (req, res) {
     status: 151
   }));
 
-  let footer = MockController.create_mock_footer(mock_detail[0], 'deposits');
+  let mock_footer = MockController.create_mock_footer(mock_detail[0], 'deposits');
 
   return ReS(res, {
-    recipe_deposits: mock_detail,
+    recipe_deposits,
     footer,
-    count: 20
+    count
   })
 };
 module.exports.getRecipeDeposits = getRecipeDeposits;
+
+const getRecipeDepositsColumnLOV = async (req, res) => {
+
+  const field_name = req.params.field_name;
+  const { query } = _.isPlainObject(req.body) ? req.body : { query: '' };
+
+  const [ err, field_vals ] = await to(AdminViewService.fetchRecipeDepositsViewHeaderLOV(field_name, query));
+  if(err) return ReE(res, err.message, 422);
+
+  return ReS(res, {
+    query: query,
+    lov: field_vals
+  });
+
+};
+module.exports.getRecipeDepositsColumnLOV = getRecipeDepositsColumnLOV;
