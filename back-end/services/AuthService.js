@@ -57,11 +57,15 @@ const authUser = async function (credentials, clientIP) {
   );
   if (err) TE(err.message);
 
-  if (!user) TE("Not registered");
-  if (!user.is_active) TE("User deactivated");
+  const bad_user_pass_pair = "Invalid username/password pair";
+
+  if (!user) TE(bad_user_pass_pair);
 
   [err, user] = await to(user.comparePassword(credentials.password));
-  if (err) TE(err.message);
+  if (err) TE(bad_user_pass_pair);
+
+  //user entered valid credentials but is blocked in system, let them know
+  if (!user.is_active) TE("User deactivated");
 
   //user valid, lets make a session
   [err, session] = await to(
