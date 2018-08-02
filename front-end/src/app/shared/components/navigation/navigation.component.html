@@ -11,16 +11,15 @@
               <div *ngIf="showUserMenu"  class="filter-sort-box display-block">
                   <ul class="bottom-part new">
                     <li class="new2">
-                      <button routerLink="/change_my_info">Change password</button>
+                      <button routerLink="/change_my_info">{{'common.change_password' |translate}}</button>
                     </li>
                     <li class="new2">
-                      <button (click)="logout()">Logout</button>
+                      <button (click)="logout()">{{'common.logout' | translate}}</button>
                     </li>
                   </ul>
               </div>
            </div>
           </span>
-          <span class="role">Admin</span>
         </div>
       </div>
     </div>

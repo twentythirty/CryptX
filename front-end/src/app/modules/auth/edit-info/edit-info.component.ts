@@ -44,7 +44,7 @@ export class EditInfoComponent implements OnInit {
   }
 
   updateInfo () {
-    if (this.userForm.valid){
+   if (this.userForm.valid){
     if (!this.passwordsMatch()) {
       this.message = "Passwords doesn't match";
       return false;

@@ -28,8 +28,12 @@ export class NavigationComponent implements OnInit {
   }
 
   logout () {
-    this.authService.deauthorize();
-    this.router.navigate(['login']);
+    this.authService.logOut().subscribe(res =>{
+      if (res.success){
+        this.authService.deauthorize();
+        this.router.navigate(['login']);
+      }
+    });
   }
 
   toggleUserMenu () {

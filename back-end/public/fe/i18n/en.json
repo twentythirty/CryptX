@@ -12,6 +12,7 @@
     "done": "Done",
     "login": "Login",
     "change_password": "Change password",
+    "logout": "Logout",
     "save_changes": "Save changes"
   },
   "table": {

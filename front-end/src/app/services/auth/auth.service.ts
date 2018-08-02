@@ -101,8 +101,13 @@ export class AuthService {
     return localStorage.getItem('token');
   }
 
+  logOut(){
+    return this.http.get<any>(this.baseUrl + '/logout');
+  }
+
   deauthorize () {
     localStorage.removeItem('token');
+    localStorage.removeItem('validators');
     delete this.user;
     delete this.permissions;
   }

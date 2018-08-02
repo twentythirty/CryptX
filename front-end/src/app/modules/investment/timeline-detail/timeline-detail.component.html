@@ -52,9 +52,9 @@
   (close)="hideReadModal()"
 >
   <div>
-    <textarea readonly>{{ readData?.content }}</textarea>
+    <textarea class="textarea" readonly>{{ readData?.content }}</textarea>
   </div>
-  <div>
-    <app-btn (onClick)="hideReadModal()">{{ 'common.done' | translate }}</app-btn>
+  <div class="padding-modal">
+    <app-btn class="right" (onClick)="hideReadModal()">{{ 'common.done' | translate }}</app-btn>
   </div>
 </app-modal>
