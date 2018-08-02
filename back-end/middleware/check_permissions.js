@@ -17,25 +17,34 @@ let check_permissions = async function(req, res, next) {
     console.log("Matched route: %o", route);
     let user = req.user;
     //copy of permissions array
-    let reqPermissions = route.required_permissions;
+    let req_permissions = route.required_permissions;
     //mathed "me!"
     if (pure_me_exp.test(req.path)) {
       console.log("Matched 'me', skipping personal permissions...")
-      reqPermissions = _.difference(reqPermissions, PERMISSIONS.PERSONAL);
+      req_permissions = _.difference(req_permissions, PERMISSIONS.PERSONAL);
     }
     let roles = await user.getRoles();
-    let permissionsLists = await Promise.all(
+    let permissions_list = await Promise.all(
       roles.map(role => role.getPermissions())
     );
-    let myPermissions = _.flatMap(permissionsLists, list =>
+    let my_permissions = _.flatMap(permissions_list, list =>
       list.map(permission => permission.code)
     );
-
+    const lacking_permissions = _.difference(req_permissions, my_permissions);
     //all permissions present, we good
-    if (reqPermissions.every(perm => myPermissions.includes(perm))) {
+    if (_.isEmpty(lacking_permissions)) {
       return next();
     } else {
-      return ReE(res, "Missing required permissions for path!", 403);
+      if (process.env.NODE_ENV == 'production') {
+        return ReE(res, "Missing required permissions for path!", 403);
+      } else {
+        return ReE(res, {
+          reason: `Missing required permissions for route regex ${route.permissions_matcher}`,
+          need_permissions: req_permissions,
+          missing_permissions: lacking_permissions,
+          present_permissions: my_permissions
+        }, 403)
+      }
     }
   }
 
