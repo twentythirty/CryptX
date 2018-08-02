@@ -334,9 +334,14 @@ ROUTES = {
 
 
   // Recipe orders
-  GetRecipeOrdersOf: {
+  GetRecipeOrdersOfRecipe: {
     router_string: "/orders/of_recipe/:recipe_run_id",
-    permissions_matcher: ROUTE_MATCHERS.GetRecipeOrdersOf,
+    permissions_matcher: ROUTE_MATCHERS.GetRecipeOrdersOfRecipe,
+    required_permissions: [PERMISSIONS.VIEW_ORDERS]
+  },
+  GetRecipeOrdersOfGroup: {
+    router_string: "/orders/of_group/:recipe_order_group_id",
+    permissions_matcher: ROUTE_MATCHERS.GetRecipeOrdersOfGroup,
     required_permissions: [PERMISSIONS.VIEW_ORDERS]
   },
   GetRecipeOrders: {
@@ -351,6 +356,11 @@ ROUTES = {
   },
   GetRecipeOrder: {
     router_string: "/orders/:order_id",
+    permissions_matcher: ROUTE_MATCHERS.GetRecipeOrder,
+    required_permissions: [PERMISSIONS.VIEW_ORDERS]
+  },
+  GetRecipeOrdersGroup: {
+    router_string: "/orders/groups/:order_group_id",
     permissions_matcher: ROUTE_MATCHERS.GetRecipeOrder,
     required_permissions: [PERMISSIONS.VIEW_ORDERS]
   },

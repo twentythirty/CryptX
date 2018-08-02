@@ -3,6 +3,7 @@
 const RecipeOrderGroup = require('../models').RecipeOrderGroup;
 const RecipeOrder = require('../models').RecipeOrder;
 const RecipeRun = require('../models').RecipeRun;
+const adminViewService = require('../services/AdminViewsService');
 const ordersService = require('../services/OrdersService');
 
 const getOrdersGroup = async (req, res) => {
@@ -72,3 +73,116 @@ const generateRecipeRunOrders = async (req, res) => {
     return ReS(res, result, 200);
 };
 module.exports.generateRecipeRunOrders = generateRecipeRunOrders;
+
+const getRecipeOrder = async function (req, res) {
+
+    //This will replace the mock data once we know how to calculate the sum of fees.
+    const recipe_order_id = req.params.order_id;
+  
+    let [ err, recipe_order ] = await to(adminViewsService.fetchRecipeOrderView(recipe_order_id));
+    if(err) return ReE(res, err.message, 422);
+    if(!recipe_order) return ReE(res, err.message, 422);
+  
+    recipe_order = recipe_order.toWeb();
+  
+    // mock data below
+  
+    let mock_detail = {
+      id: 1,
+      recipe_order_group_id: "31",
+      instrument_id: "12",
+      instrument_name: "BTC/ETH",
+      side: "999",
+      price: 100,
+      quantity: 7,
+      status: 51,
+      sum_of_exhange_trading_fee: 100
+    };
+  
+    return ReS(res, {
+      recipe_order
+    })
+  };
+  module.exports.getRecipeOrder = getRecipeOrder;
+
+  const getRecipeOrders = async function(req, res) {
+
+  }
+  module.exports.getRecipeOrders = getRecipeOrders;
+
+  const getRecipeOrdersGroup = async function(req, res) {
+
+  }
+  module.exports.getRecipeOrdersGroup = getRecipeOrdersGroup;
+
+  const getRecipeOrdersOfGroup = async function(req, res) {
+
+  }
+  module.exports.getRecipeOrdersGroup = getRecipeOrdersOfGroup;
+  
+  
+  const getRecipeOrdersOfRecipe = async function (req, res) {
+  
+    //This will replace the mock data once we know how to calculate the sum of fees.
+    let { seq_query, sql_where } = req;
+    const recipe_id = req.params.recipe_run_id;
+  
+    if(recipe_id) {
+      if(!_.isPlainObject(seq_query)) seq_query = { where: {} };
+      if (!_.isPlainObject(seq_query.where)) seq_query.where = {};
+      seq_query.where.recipe_run_id = recipe_id;
+      sql_where = adminViewUtils.addToWhere(sql_where, `recipe_run_id = ${recipe_id}`);
+    }
+  
+    let [ err, result ] = await to(adminViewsService.fetchRecipeOrdersViewDataWithCount(seq_query));
+    if(err) return ReE(res, err.message, 422);
+  
+    let footer = [];
+    [ err, footer ] = await to(adminViewsService.fetchRecipeOrdersViewFooter(sql_where));
+    if(err) return ReE(res, err.message, 422);
+  
+    let { data: recipe_orders, total: count } = result;
+    
+    recipe_orders = recipe_orders.map(ro => ro.toWeb());
+    
+  
+    // mock data below
+  
+    let mock_detail = [...Array(20)].map((detail, index) => ({
+      id: index + 1,
+      recipe_order_group_id: "31",
+      instrument_id: "12",
+      instrument_name: "BTC/XRP",
+      side: "999",
+      price: 100,
+      quantity: 7,
+      status: 51,
+      sum_of_exhange_trading_fee: 100,
+  
+    }));
+  
+    let mock_footer = create_mock_footer(mock_detail[0], 'orders');
+  
+    return ReS(res, {
+      recipe_orders,
+      footer,
+      count
+    })
+  };
+  module.exports.getRecipeOrdersRecipe = getRecipeOrdersOfRecipe;
+  
+  const getRecipeOrdersColumnLOV = async function (req, res) {
+  
+    const field_name = req.params.field_name;
+    const { query } = _.isPlainObject(req.body) ? req.body : { query: '' };
+  
+    const [ err, field_vals ] = await to(adminViewsService.fetchRecipeOrdersViewHeaderLOV(field_name, query));
+    if(err) return ReE(res, err.message, 422);
+  
+    return ReS(res, {
+      query: query,
+      lov: field_vals
+    })
+  
+  };
+  module.exports.getRecipeOrdersColumnLOV = getRecipeOrdersColumnLOV;
