@@ -26,7 +26,7 @@ module.exports = (sequelize, DataTypes) => {
       
         let json = this.toJSON();
 
-        json.submission_time = json.submission_time.getTime();
+        json.submission_time = json.submission_time ? json.submission_time.getTime() : json.submission_time;
         json.completion_time = json.completion_time ? json.completion_time.getTime() : json.completion_time;
 
         return json;
