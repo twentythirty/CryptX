@@ -507,19 +507,19 @@ router.post(
   post_body_validator,
   DepositController.approveDeposit
 );
-/* router.get( // might be deleted
-  ROUTES.GetRecipeRunDeposits.router_string,
-  stateless_auth,
-  check_permissions,
-  filter_reducer,
-  DepositController.getRecipeDeposits
-); */
 router.post(
   ROUTES.GetRecipeRunDepositsOf.router_string,
   stateless_auth,
   check_permissions,
   filter_reducer,
   DepositController.getRecipeDeposits
+);
+router.post(
+  ROUTES.GetInvestmentRunDepositsOf.router_string,
+  stateless_auth,
+  check_permissions,
+  filter_reducer,
+  DepositController.getInvestmentRunDeposits
 );
 router.post(
   ROUTES.GetRecipeRunDeposits.router_string,

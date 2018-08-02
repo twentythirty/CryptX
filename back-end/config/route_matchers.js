@@ -53,6 +53,7 @@ ROUTE_MATCHERS = {
     SubmitRecipeRunDeposit: /\/deposits\/\d+\/submit$/,
     ApproveRecipeRunDeposit: /\/deposits\/\d+\/approve$/,
     GetRecipeRunDepositsOf: /\/deposits\/of_recipe\/\d+$/,
+    GetInvestmentRunDepositsOf: /\/deposits\/of_investment_run\/\d+$/,
     GetRecipeRunDeposits: /\/deposits\/all$/,
     GetRecipeRunDepositsColLOV: /\/deposits\/header_lov\/\w+/,
     GetRecipeRunDeposit: /\/deposits\/\d+$/,

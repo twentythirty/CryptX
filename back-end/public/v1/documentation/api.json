@@ -1905,6 +1905,81 @@
         ]
       }
     },
+    "/deposits/of_investment_run/{investment_run_id}": {
+      "get": {
+        "tags": [
+          "deposits"
+        ],
+        "summary": "Get recipe deposits of recipe run by investment run id",
+        "description": "Get recipe deposits of recipe run by investment run id",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "investment_run_id",
+            "in": "path",
+            "description": "ID of investment run to get recipe deposits of",
+            "required": true,
+            "type": "integer"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "$ref": "#/definitions/RecipeDepositListResponse"
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      },
+      "post": {
+        "tags": [
+          "deposits"
+        ],
+        "summary": "Get recipe deposits of recipe run by investment run id",
+        "description": "Get recipe deposits of recipe run by investment run id",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "investment_run_id",
+            "in": "path",
+            "description": "ID of investment run to get recipe deposits of",
+            "required": true,
+            "type": "integer"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "description": "The filter definition to perform on the data set. If absent will assume empty filter and return all data",
+            "required": false,
+            "schema": {
+              "$ref": "#/definitions/EntitiesFilter"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "$ref": "#/definitions/RecipeDepositListResponse"
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
     "/deposits/all": {
       "post": {
         "tags": [

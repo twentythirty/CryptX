@@ -98,20 +98,6 @@ const getRecipeDeposit = async function (req, res) {
   const [ err, recipe_deposit ] = await to(AdminViewService.fetchRecipeDepositView(deposit_id));
   if(err) return ReE(res, err.message, 422);
   if(!recipe_deposit) return ReE(res, `Recipe deposit with id ${deposit_id} not found`, 422);
-
-  // mock data below
-
-  let mock_detail = {
-    id: 1,
-    quote_asset: "Bitcoin",
-    exchange: "Bitstamp",
-    account: "aoisdmfs392m9asdf0m0r0m8sd",
-    amount: 12.33,
-    investment_percentage: 9.99,
-    deposit_management_fee: 4.12,
-    depositor_user: "John Doe",
-    status: 151
-  };
   
   return ReS(res, {
     recipe_deposit
@@ -141,22 +127,6 @@ const getRecipeDeposits = async function (req, res) {
   [ err, footer ] = await to(AdminViewService.fetchRecipeDepositsViewsFooter(sql_where));
   if(err) return ReE(res, err.message, 422);
 
-  // mock data below
-
-  let mock_detail = [...Array(20)].map((detail, index) => ({
-    id: index,
-    quote_asset: "Bitcoin",
-    exchange: "Bitstamp",
-    account: "aoisdmfs392m9asdf0m0r0m8sd",
-    amount: 12.33,
-    investment_percentage: 9.99,
-    deposit_management_fee: 4.12,
-    depositor_user: "John Doe",
-    status: 151
-  }));
-
-  let mock_footer = MockController.create_mock_footer(mock_detail[0], 'deposits');
-
   return ReS(res, {
     recipe_deposits,
     footer,
@@ -164,6 +134,34 @@ const getRecipeDeposits = async function (req, res) {
   })
 };
 module.exports.getRecipeDeposits = getRecipeDeposits;
+
+const getInvestmentRunDeposits = async function (req, res) {
+
+  const investment_run_id = req.params.investment_run_id;
+
+  let { seq_query, sql_where } = req;
+
+  if(!_.isPlainObject(seq_query)) seq_query = { where: {} };
+  if (!_.isPlainObject(seq_query.where)) seq_query.where = {};
+  seq_query.where.investment_run_id = investment_run_id;
+  sql_where = adminViewUtils.addToWhere(sql_where, `investment_run_id = ${investment_run_id}`);
+
+  let [ err, result ] = await to(AdminViewService.fetchRecipeDepositsViewDataWithCount(seq_query));
+  if(err) return ReE(res, err.message, 422);
+
+  const { data: recipe_deposits, total: count } = result;
+
+  let footer = [];
+  [ err, footer ] = await to(AdminViewService.fetchRecipeDepositsViewsFooter(sql_where));
+  if(err) return ReE(res, err.message, 422);
+
+  return ReS(res, {
+    recipe_deposits,
+    footer,
+    count
+  })
+}
+module.exports.getInvestmentRunDeposits = getInvestmentRunDeposits;
 
 const getRecipeDepositsColumnLOV = async (req, res) => {
 

@@ -381,6 +381,11 @@ ROUTES = {
     permissions_matcher: ROUTE_MATCHERS.GetRecipeRunDepositsOf,
     required_permissions: [PERMISSIONS.VIEW_INVESTMENT_RUN]
   },
+  GetInvestmentRunDepositsOf: {
+    router_string: "/deposits/of_investment_run/:investment_run_id",
+    permissions_matcher: ROUTE_MATCHERS.GetInvestmentRunDepositsOf,
+    required_permissions: [PERMISSIONS.VIEW_INVESTMENT_RUN]
+  },
   GetRecipeRunDeposits: {
     router_string: "/deposits/all",
     permissions_matcher: ROUTE_MATCHERS.GetRecipeRunDeposits,
