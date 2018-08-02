@@ -46,7 +46,7 @@ export class EditInfoComponent implements OnInit {
   updateInfo () {
    if (this.userForm.valid){
     if (!this.passwordsMatch()) {
-      this.message = "Passwords doesn't match";
+      this.message = "New password was not repeated correctly";
       return false;
     }
     this.authService.changeInfo(this.user_info).subscribe(response => {

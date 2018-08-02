@@ -87,7 +87,7 @@ export class AcceptInviteComponent implements OnInit {
 
   fulfillInvitation() {
     if (this.userInfoForm.value.password != this.userInfoForm.value.password_repeat) {
-      this.message = "Passwords do not match";
+      this.message = "New password was not repeated correctly";
       return;
     }
     if (this.userInfoForm.valid) {
