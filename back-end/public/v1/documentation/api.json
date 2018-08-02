@@ -945,7 +945,7 @@
         "tags": [
           "investment"
         ],
-        "description": "Get statistics and statuses of investment run",
+        "description": "Get timeline of investment run by its or any of its related entity ids(investment_run_id, recipe_run_id, recipe_order_id, execution_order_id). Calculates and returns information about investment run. If investment run has no certain type of entities, it will return null value in its position.",
         "produces": [
           "application/json"
         ],
@@ -964,7 +964,11 @@
           "200": {
             "description": "success",
             "schema": {
-              "$ref": "#/definitions/InvestmentRunStats"
+              "oneOf": [
+                {
+                  "$ref": "#/definitions/InvestmentRunTimeline"
+                }
+              ]
             }
           }
         },
@@ -4783,86 +4787,135 @@
         }
       }
     },
-    "InvestmentRunStats": {
+    "InvestmentRunTimeline": {
       "description": "Statuses and statistics on investment run",
       "type": "object",
       "properties": {
-        "investment": {
+        "timeline": {
           "type": "object",
           "properties": {
-            "id": {
-              "type": "number",
-              "example": 2
+            "investment_run": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "number",
+                  "example": 12
+                },
+                "started_timestamp": {
+                  "type": "number",
+                  "example": 1530255424125
+                },
+                "updated_timestamp": {
+                  "type": "number",
+                  "example": 1530255424135
+                },
+                "completed_timestamp": {
+                  "type": "number",
+                  "example": null
+                },
+                "strategy_type": {
+                  "type": "string",
+                  "example": "investment.strategy.102"
+                },
+                "is_simulated": {
+                  "type": "number",
+                  "example": true
+                },
+                "status": {
+                  "type": "string",
+                  "example": "investment.status.307"
+                },
+                "deposit_usd": {
+                  "type": "number",
+                  "example": "399"
+                },
+                "user_created_id": {
+                  "type": "number",
+                  "example": 2
+                }
+              }
             },
-            "status": {
-              "type": "number",
-              "example": 51
+            "recipe_run": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "number",
+                  "example": 5
+                },
+                "created_timestamp": {
+                  "type": "number",
+                  "example": 1530255424172
+                },
+                "approval_status": {
+                  "type": "string",
+                  "example": "recipes.status.43"
+                },
+                "approval_timestamp": {
+                  "type": "number",
+                  "example": 1533139579735
+                },
+                "approval_comment": {
+                  "type": "string",
+                  "example": "I approve this recipe because"
+                },
+                "investment_run_id": {
+                  "type": "number",
+                  "example": 15
+                },
+                "user_created_id": {
+                  "type": "number",
+                  "example": 2
+                },
+                "approval_user_id": {
+                  "type": "number",
+                  "example": 2
+                }
+              }
             },
-            "strategy_type": {
-              "type": "number",
-              "example": 12
+            "recipe_deposits": {
+              "type": "object",
+              "properties": {
+                "count": {
+                  "type": "number",
+                  "example": 7
+                },
+                "status": {
+                  "type": "string",
+                  "example": "deposits.status.151"
+                }
+              }
             },
-            "timestamp": {
-              "type": "number",
-              "example": null
+            "recipe_orders": {
+              "type": "object",
+              "properties": {
+                "count": {
+                  "type": "number",
+                  "example": 3
+                },
+                "status": {
+                  "type": "string",
+                  "example": "order.status.51"
+                }
+              }
+            },
+            "execution_orders": {
+              "type": "object",
+              "properties": {
+                "count": {
+                  "type": "number",
+                  "example": 4
+                },
+                "execution_order_status": {
+                  "type": "string",
+                  "example": "execution_orders_timeline.status.307"
+                }
+              }
             }
           }
         },
-        "recipe_run": {
-          "type": "object",
-          "properties": {
-            "id": {
-              "type": "number",
-              "example": 2
-            },
-            "status": {
-              "type": "number",
-              "example": 51
-            },
-            "timestamp": {
-              "type": "number",
-              "example": 1531989525768
-            }
-          }
-        },
-        "deposits": {
-          "type": "object",
-          "properties": {
-            "count": {
-              "type": "number",
-              "example": 12
-            },
-            "status": {
-              "type": "number",
-              "example": 123
-            }
-          }
-        },
-        "orders": {
-          "type": "object",
-          "properties": {
-            "count": {
-              "type": "number",
-              "example": 12
-            },
-            "status": {
-              "type": "number",
-              "example": 123
-            }
-          }
-        },
-        "execution_orders": {
-          "type": "object",
-          "properties": {
-            "count": {
-              "type": "number",
-              "example": 12
-            },
-            "status": {
-              "type": "number",
-              "example": 123
-            }
-          }
+        "status": {
+          "type": "boolean",
+          "example": true
         }
       }
     },
