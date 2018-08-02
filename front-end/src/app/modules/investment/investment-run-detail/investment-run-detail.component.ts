@@ -85,8 +85,10 @@ export class InvestmentRunDetailComponent extends TimelineDetailComponent implem
     new TableDataColumn({ column: 'id' }),
     new DateCellDataColumn({ column: 'created_timestamp' }),
     new TableDataColumn({ column: 'user_created' }),
-    new StatusCellDataColumn({ column: 'approval_status', inputs: { classMap: value => {
-      return StatusClass.DEFAULT;
+    new StatusCellDataColumn({ column: 'approval_status', inputs: { classMap: {
+      'recipes.status.41' : StatusClass.PENDING,
+      'recipes.status.42': StatusClass.REJECTED,
+      'recipes.status.43': StatusClass.APPROVED,
     }}}),
     new TableDataColumn({ column: 'approval_user' }),
     new DateCellDataColumn({ column: 'approval_timestamp' }),
