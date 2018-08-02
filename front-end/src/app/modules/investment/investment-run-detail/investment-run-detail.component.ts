@@ -176,7 +176,9 @@ export class InvestmentRunDetailComponent extends TimelineDetailComponent implem
       )
     ).subscribe(
       res => {
-        this.listDataSource.body.push(res.recipe_run);
+        if (res.success){
+          this.getAllData();
+        }
       }
     )
   }
