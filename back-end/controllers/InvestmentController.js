@@ -276,8 +276,10 @@ const getRecipeRunDetails = async function (req, res) {
   let { seq_query, sql_where } = req;
 
   if(recipe_run_id && _.isPlainObject(seq_query)) {
-    _.isPlainObject(seq_query.where) ? seq_query.where.recipe_run_id = recipe_run_id : seq_query = { recipe_run_id };
-    sql_where = `recipe_run_id=${recipe_run_id}`;
+    if(!_.isPlainObject(seq_query)) seq_query = { where: {} };
+    if (!_.isPlainObject(seq_query.where)) seq_query.where = {};
+    seq_query.where.recipe_run_id = recipe_run_id;
+    sql_where = adminViewUtils.addToWhere(sql_where, `recipe_run_id=${recipe_run_id}`);
   }
   
 
@@ -355,8 +357,9 @@ const getRecipeOrders = async function (req, res) {
 
   if(recipe_id) {
     if(!_.isPlainObject(seq_query)) seq_query = { where: {} };
+    if (!_.isPlainObject(seq_query.where)) seq_query.where = {};
     seq_query.where.recipe_run_id = recipe_id;
-    sql_where = `recipe_run_id = ${recipe_id}`;
+    sql_where = adminViewUtils.addToWhere(sql_where, `recipe_run_id = ${recipe_id}`);
   }
 
   let [ err, result ] = await to(adminViewsService.fetchRecipeOrdersViewDataWithCount(seq_query));
@@ -453,8 +456,9 @@ const getExecutionOrders = async function (req, res) {
 
   if(recipe_order_id) {
     if(!_.isPlainObject(seq_query)) seq_query = { where: {} };
+    if (!_.isPlainObject(seq_query.where)) seq_query.where = {};
     seq_query.where.recipe_order_id = recipe_order_id;
-    sql_where = `recipe_order_id = ${recipe_order_id}`;
+    sql_where = adminViewUtils.addToWhere(sql_where, `recipe_order_id = ${recipe_order_id}`);
   }
 
   let [ err, result ] = await to(adminViewsService.fetchExecutionOrdersViewDataWithCount(seq_query));
