@@ -1,4 +1,3 @@
-<div *ngIf="!done">
   <div *ngIf="token.validityChecked">
     <div *ngIf="!token.isValid">
       {{ message }}
@@ -8,7 +7,7 @@
         <div class="top">
           <img [src]="imageLogo" class="logo">
         </div>
-        <div *ngIf="!test">
+        <div *ngIf="!done">
           <form [formGroup]="userInfoForm" (ngSubmit)="fulfillInvitation()">
             <div class="part-header">
               <br> Hello, {{ invitationInfo.first_name }} {{ invitationInfo.last_name }}
@@ -23,7 +22,7 @@
             </app-input-item>
             <p>{{ message }}</p>
             <div class="btn-wrap btn-right">
-              <button class="btn" type="submit" (click)="testing()">Sign up</button>
+              <button class="btn" type="submit">Sign up</button>
             </div>
           </form>
         </div>
@@ -37,4 +36,3 @@
       </div>
     </div>
   </div>
-</div>
