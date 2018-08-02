@@ -35,6 +35,7 @@ import { InvestmentModule } from './modules/investment/investment.module';
 import { InstrumentsModule } from './modules/instruments/instruments.module';
 import { LiquidityModule } from './modules/liquidity/liquidity.module';
 import { DepositModule } from "./modules/deposit/deposit.module";
+import { OrdersModule } from './modules/orders/orders.module';
 
 export function HttpLoaderFactory(http: HttpClient) {
   return new TranslateHttpLoader(
@@ -73,6 +74,7 @@ export function HttpLoaderFactory(http: HttpClient) {
     AppRoutingModule,
     ReactiveFormsModule,
     DepositModule,
+    OrdersModule,
   ],
   providers: [
     {

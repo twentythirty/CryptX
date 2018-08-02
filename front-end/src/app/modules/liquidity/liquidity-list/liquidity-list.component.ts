@@ -43,6 +43,7 @@ export class LiquidityListComponent extends DataTableCommonManagerComponent impl
     private liquidityService: LiquidityService,
   ) {
     super(route);
+    
     this.getFilterLOV();
   }
 
