@@ -399,13 +399,19 @@ router.post(
   stateless_auth,
   check_permissions,
   filter_reducer,
-  OrdersController.getRecipeOrdersRecipe
+  OrdersController.getRecipeOrdersOfRecipe
 );
 router.post(
   ROUTES.GetRecipeOrdersOfGroup.router_string,
   stateless_auth,
   check_permissions,
   filter_reducer,
+  OrdersController.getRecipeOrdersOfGroup
+);
+router.get(
+  ROUTES.GetRecipeOrdersGroup.router_string,
+  stateless_auth,
+  check_permissions,
   OrdersController.getRecipeOrdersGroup
 );
 router.post(
@@ -434,12 +440,6 @@ router.get(
   stateless_auth,
   check_permissions,
   OrdersController.getRecipeOrder
-);
-router.get(
-  ROUTES.GetRecipeOrdersGroup.router_string,
-  stateless_auth,
-  check_permissions,
-  OrdersController.getRecipeOrdersGroup
 );
 router.post(
   ROUTES.AlterOrdersGroup.router_string,
