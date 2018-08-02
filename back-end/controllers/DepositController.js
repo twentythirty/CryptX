@@ -2,6 +2,7 @@
 
 const MockController = require('./MockController');
 const DepositService = require('../services/DepositService');
+const adminViewUtils = require('../utils/AdminViewUtils');
 const AdminViewService = require('../services/AdminViewsService');
 
 const submitDeposit = async function (req, res) {
@@ -125,8 +126,10 @@ const getRecipeDeposits = async function (req, res) {
   let { seq_query, sql_where } = req;
 
   if(recipe_run_id && _.isPlainObject(seq_query)) {
-    _.isPlainObject(seq_query.where) ? seq_query.where.recipe_run_id = recipe_run_id : seq_query.where = { recipe_run_id };
-    sql_where = `recipe_run_id = ${recipe_run_id}`;
+    if(!_.isPlainObject(seq_query)) seq_query = { where: {} };
+    if (!_.isPlainObject(seq_query.where)) seq_query.where = {};
+    seq_query.where.recipe_run_id = recipe_run_id;
+    sql_where = adminViewUtils.addToWhere(sql_where, `recipe_run_id = ${recipe_run_id}`);
   }
 
   let [ err, result ] = await to(AdminViewService.fetchRecipeDepositsViewDataWithCount(seq_query));
