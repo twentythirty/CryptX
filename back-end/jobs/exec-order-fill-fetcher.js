@@ -101,7 +101,7 @@ module.exports.JOB_BODY = async (config, log) => {
             })
         );
     }, error => {
-        log(`[ERROR.1A] Error occured while querying the database for execution orders: ${err.message}`);
+        log(`[ERROR.1A] Error occured while querying the database for execution orders: ${error.message}`);
     });
 };
 
