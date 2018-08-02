@@ -82,7 +82,7 @@ const getRecipeOrder = async function (req, res) {
   
     let [ err, recipe_order ] = await to(adminViewsService.fetchRecipeOrderView(recipe_order_id));
     if(err) return ReE(res, err.message, 422);
-    if(!recipe_order) return ReE(res, err.message, 404);
+    if(!recipe_order) return ReE(res, `Order not found for id ${recipe_order_id}`, 404);
   
     recipe_order = recipe_order.toWeb();
   
