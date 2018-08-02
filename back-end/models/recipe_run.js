@@ -33,6 +33,8 @@ module.exports = (sequelize, DataTypes) => {
       as: 'approval_user',
       foreignKey: 'approval_user_id'
     });
+    RecipeRun.hasMany(models.RecipeOrderGroup);
+    RecipeRun.hasMany(models.RecipeRunDeposit)
   };
 
   RecipeRun.prototype.toWeb = function() {

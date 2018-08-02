@@ -12,6 +12,11 @@ const AssetService = require('./AssetService');
 const OrdersService = require('./OrdersService');
 const Op = require('sequelize').Op;
 const sequelize = require('../models').sequelize;
+const RecipeOrder = require('../models').RecipeOrder;
+const RecipeOrderGroup = require('../models').RecipeOrderGroup;
+const ExecutionOrder = require('../models').ExecutionOrder;
+const ExecutionOrderFill = require('../models').ExecutionOrderFill;
+const RecipeRunDeposit = require('../models').RecipeRunDeposit;
 
 const createInvestmentRun = async function (user_id, strategy_type, is_simulated = true, deposit_usd) {
   // check for valid strategy type
@@ -275,3 +280,139 @@ const changeRecipeRunStatus = async function (user_id, recipe_run_id, status_con
   return recipe_run;
 };
 module.exports.changeRecipeRunStatus = changeRecipeRunStatus;
+
+const findInvestmentRunFromAssociations = async function (entities) {
+  
+  // property names show how value can be served, value show what db table is used.
+  let allowed_entities = {
+    "investment_run_id": 'investment_run',
+    "recipe_run_id": 'recipe_run',
+    "recipe_order_id": 'recipe_order',
+    "execution_order_id": 'execution_order'
+  };
+
+  if (!Object.keys(entities).length) TE('No id was supplied. Please supply atleast one ID.')
+  
+  let foundClosestEntity = Object.keys(entities).find(entity => {
+    return Object.keys(allowed_entities).includes(entity);
+  });
+
+  let investment_run = await sequelize.query(`
+    SELECT investment_run.*
+    FROM investment_run
+    JOIN recipe_run ON recipe_run.investment_run_id=investment_run.id
+    JOIN recipe_order_group ON recipe_order_group.recipe_run_id=recipe_run.id
+    JOIN recipe_order ON recipe_order.recipe_order_group_id=recipe_order_group.id
+    JOIN execution_order ON execution_order.recipe_order_id=recipe_order.id
+    WHERE ${allowed_entities[foundClosestEntity]}.id=:entity_id
+  `,{
+    replacements: { entity_id: entities[foundClosestEntity] },
+    plain: true, // assign as single value, not array
+    model: InvestmentRun
+  });
+
+  /* if (err) TE(err.message); */
+
+  return investment_run;
+};
+module.exports.findInvestmentRunFromAssociations = findInvestmentRunFromAssociations;
+
+const getWholeInvestmentRun = async function (investment_run_id) {
+  let [err, all_investment_data] = await to(InvestmentRun.find({
+    where: {
+      id: investment_run_id
+    },
+    include: [{
+      model: RecipeRun,
+      include: [
+        {
+          model: RecipeOrderGroup,
+          include: [{
+            model: RecipeOrder,
+            include: [{
+              model: ExecutionOrder,
+              include: [{
+                model: ExecutionOrderFill
+              }]
+            }]
+          }]
+        },
+        {
+          model: RecipeRunDeposit
+        }
+      ]
+    }]
+  }))
+
+  if (err) TE(err);
+
+  return all_investment_data;
+};
+module.exports.getWholeInvestmentRun = getWholeInvestmentRun;
+
+const getInvestmentRunTimeline = async function (investment_run_id) {
+
+
+  let [err, whole_investment] = await to(this.getWholeInvestmentRun(investment_run_id));
+  if (err) return ReE(res, err.message, 422);
+
+  whole_investment = whole_investment.toJSON();
+
+  // prepare investment run data
+  let prepared_investment_run = Object.assign({}, whole_investment);
+  delete prepared_investment_run.RecipeRuns;
+
+  prepared_investment_run.status = `investment.status.${prepared_investment_run.status}`;
+  prepared_investment_run.strategy_type = `investment.strategy.${prepared_investment_run.strategy_type}`;
+  prepared_investment_run.started_timestamp = prepared_investment_run.started_timestamp.getTime();
+  prepared_investment_run.updated_timestamp = prepared_investment_run.updated_timestamp.getTime();
+
+  // prepare recipe run data
+  let recipe_runs = whole_investment.RecipeRuns,
+    prepared_recipe_run;
+
+  if (recipe_runs.length) {
+    prepared_recipe_run = Object.assign({}, _.maxBy(recipe_runs, rr => { // finds newest by created_timestamp
+      rr.created_timestamp = rr.created_timestamp.getTime();
+      return rr.created_timestamp;
+    }));
+  
+    delete prepared_recipe_run.RecipeOrderGroups;
+    delete prepared_recipe_run.RecipeRunDeposits;
+    prepared_recipe_run.approval_timestamp = prepared_recipe_run.approval_timestamp.getTime();
+    prepared_recipe_run.approval_status = `recipes.status.${prepared_recipe_run.approval_status}`;
+  } else {
+    return { // no recipe runs found. Return to avoid further calculations that could cause errors.
+      investment_run: prepared_investment_run,
+      recipe_run: prepared_recipe_run,
+      recipe_deposits: null,
+      recipe_orders: null,
+      execution_orders: null
+    }
+  }
+
+  // prepare recipe deposit data
+  let prepared_recipe_deposits = Object.assign({}, whole_investment).RecipeRuns.map(recipe_run => {
+    return recipe_run.RecipeRunDeposits;
+  })
+
+  console.log(prepared_recipe_deposits);
+
+  // prepare recipe order data
+  let prepared_recipe_orders;
+  
+
+  // prepare execution order data
+  let prepared_execution_orders;
+
+  //
+  
+  return {
+    investment_run: prepared_investment_run,
+    recipe_run: prepared_recipe_run,
+    recipe_deposits: prepared_recipe_deposits,
+    recipe_orders: prepared_recipe_orders,
+    execution_orders: prepared_execution_orders
+  }
+}
+module.exports.getInvestmentRunTimeline = getInvestmentRunTimeline;
