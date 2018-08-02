@@ -1,3 +1,5 @@
+declare function require(path: string);
+
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { InviteService } from './invite.service';
@@ -45,6 +47,8 @@ export class AcceptInviteComponent implements OnInit {
   };
   userInfoForm: FormGroup;
 
+  imageLogo = require('Images/Logo.png');
+
   constructor(private route: ActivatedRoute, private inviteService: InviteService) { }
 
   ngOnInit() {
@@ -63,9 +67,9 @@ export class AcceptInviteComponent implements OnInit {
     });
   }
 
-  checkTokenValidity () {
+  checkTokenValidity() {
     this.inviteService.checkToken(this.token.value).pipe(
-      tap (() => {
+      tap(() => {
         this.token.validityChecked = true;
       })
     ).subscribe((data: InvitationCheckSuccessResponse) => {
@@ -74,7 +78,7 @@ export class AcceptInviteComponent implements OnInit {
       this.token.isValid = true;
     }, error => {
       this.token.isValid = false;
-      if(error.error) {
+      if (error.error) {
         this.message = error.error.error;
       }
       console.log(error);
@@ -82,28 +86,37 @@ export class AcceptInviteComponent implements OnInit {
   }
 
 
-  fulfillInvitation  () {
-    if(this.userInfoForm.invalid) {
-      this.message = "Password is required";
-      return ;
+  fulfillInvitation() {
+    if (this.userInfoForm.value.password != this.userInfoForm.value.password_repeat) {
+      this.message = "Passwords do not match";
+      return;
     }
+    if (this.userInfoForm.valid) {
+      let data = {
+        "invitation_id": this.invitationInfo.id,
+        "password": this.userInfoForm.value.password
+      }
 
-    if(this.userInfoForm.value.password != this.userInfoForm.value.password_repeat) {
-      this.message = "Passwords doesn't match";
-      return ;
+      this.inviteService.fulfillInvitation(data).subscribe(data => {
+        this.done = true;
+      }, error => {
+        if (error.error) {
+          this.message = error.error.error;
+        }
+      });
+    } else {
+      this.markAsTouched(this.userInfoForm)
     }
-
-    let data = {
-      "invitation_id": this.invitationInfo.id,
-      "password": this.userInfoForm.value.password
-    }
-
-    this.inviteService.fulfillInvitation(data).subscribe(data => {
-      this.done = true;
-    }, error => {
-      if(error.error) {
-        this.message = error.error.error;
+  }
+  markAsTouched(group) {
+    Object.keys(group.controls).map((field) => {
+      const control = group.get(field);
+      if (control instanceof FormControl) {
+        control.markAsTouched({ onlySelf: true });
+      } else if (control instanceof FormGroup) {
+        this.markAsTouched(control);
       }
     });
   }
+
 }
