@@ -371,17 +371,7 @@ const getInvestmentRunTimeline = async function (investment_run_id) {
   let recipe_runs = whole_investment.RecipeRuns,
     prepared_recipe_run;
 
-  if (recipe_runs.length) {
-    prepared_recipe_run = Object.assign({}, _.maxBy(recipe_runs, rr => { // finds newest by created_timestamp
-      rr.created_timestamp = rr.created_timestamp.getTime();
-      return rr.created_timestamp;
-    }));
-  
-    delete prepared_recipe_run.RecipeOrderGroups;
-    delete prepared_recipe_run.RecipeRunDeposits;
-    prepared_recipe_run.approval_timestamp = prepared_recipe_run.approval_timestamp.getTime();
-    prepared_recipe_run.approval_status = `recipes.status.${prepared_recipe_run.approval_status}`;
-  } else {
+  if (!recipe_runs.length) {
     return { // no recipe runs found. Return to avoid further calculations that could cause errors.
       investment_run: prepared_investment_run,
       recipe_run: prepared_recipe_run,
@@ -391,20 +381,135 @@ const getInvestmentRunTimeline = async function (investment_run_id) {
     }
   }
 
+  prepared_recipe_run = Object.assign({}, _.maxBy(recipe_runs, rr => { // finds newest by created_timestamp
+    rr.created_timestamp = rr.created_timestamp.getTime();
+    return rr.created_timestamp;
+  }));
+
+  delete prepared_recipe_run.RecipeOrderGroups;
+  delete prepared_recipe_run.RecipeRunDeposits;
+  prepared_recipe_run.approval_timestamp = prepared_recipe_run.approval_timestamp.getTime();
+  prepared_recipe_run.approval_status = `recipes.status.${prepared_recipe_run.approval_status}`;
+
   // prepare recipe deposit data
-  let prepared_recipe_deposits = Object.assign({}, whole_investment).RecipeRuns.map(recipe_run => {
+  let recipe_deposits = Object.assign({}, whole_investment).RecipeRuns.map(recipe_run => {
     return recipe_run.RecipeRunDeposits;
   })
+  recipe_deposits = _.flatten(_.flatten(recipe_deposits));
 
-  console.log(prepared_recipe_deposits);
+  if (!recipe_deposits.length) {
+    return { // no recipe runs found. Return to avoid further calculations that could cause errors.
+      investment_run: prepared_investment_run,
+      recipe_run: prepared_recipe_run,
+      recipe_deposits: null,
+      recipe_orders: null,
+      execution_orders: null
+    }
+  }
+
+  let prepared_recipe_deposits = {
+    count: recipe_deposits.length + 1,
+    status: 'deposits.status.' + (
+      recipe_deposits.some(deposit => deposit.status === RECIPE_RUN_DEPOSIT_STATUSES.Pending) ?
+      RECIPE_RUN_DEPOSIT_STATUSES.Pending :
+      RECIPE_RUN_DEPOSIT_STATUSES.Completed
+    )
+  }
 
   // prepare recipe order data
-  let prepared_recipe_orders;
+
+  // get all recipe order groups
+  // find newest group
+
+  let recipes = Object.assign({}, whole_investment).RecipeRuns; 
+  let recipe_orders = _.maxBy(_.flatten(recipes.map(recipe_run => { // beauty
+    return recipe_run.RecipeOrderGroups;
+  })), rog => rog.created_timestamp.getTime()).RecipeOrders;
   
+  if (!recipe_orders.length) {
+    return { // no recipe runs found. Return to avoid further calculations that could cause errors.
+      investment_run: prepared_investment_run,
+      recipe_run: prepared_recipe_run,
+      recipe_deposits: prepared_recipe_deposits,
+      recipe_orders: null,
+      execution_orders: null
+    }
+  }
 
-  // prepare execution order data
-  let prepared_execution_orders;
+  let recipe_orders_status;
+  if (recipe_orders.every(order => order.status === RECIPE_ORDER_STATUSES.Pending)) {
+    recipe_orders_status = RECIPE_ORDER_STATUSES.Pending;
+  } else if (recipe_orders.every(order => order.status === RECIPE_ORDER_STATUSES.Completed)) {
+    recipe_orders_status = RECIPE_ORDER_STATUSES.Completed;
+  } else if (recipe_orders.some(order => order.status === RECIPE_ORDER_STATUSES.Executing)) {
+    recipe_orders_status = RECIPE_ORDER_STATUSES.Executing;
+  }
 
+  let prepared_recipe_orders = {
+    count: recipe_orders.length + 1,
+    status: `order.status.${recipe_orders_status}`
+  };
+
+  // prepare execution order data 
+  let execution_orders = _.flatten(recipes.map(recipe_run => { 
+    
+    return _.flatten(
+      recipe_run.RecipeOrderGroups.map(recipe_order_group => {
+
+        return _.flatten(
+          recipe_order_group.RecipeOrders.map(recipe_order => {
+
+            return recipe_order.ExecutionOrders;
+          })
+        );
+      })
+    )
+  }));
+ 
+  if (!execution_orders.length) {
+    return {
+      investment_run: prepared_investment_run,
+      recipe_run: prepared_recipe_run,
+      recipe_deposits: prepared_recipe_deposits,
+      recipe_orders: prepared_recipe_orders,
+      execution_orders: null
+    }
+  }
+
+  let execution_order_status;
+  if (execution_orders.every(exec_order => exec_order.status === EXECUTION_ORDER_STATUSES.Failed)) {
+    execution_order_status = EXECUTION_ORDER_STATUSES.Failed;
+  } else if (whole_investment.status === INVESTMENT_RUN_STATUSES.OrdersFilled) {
+    execution_order_status = INVESTMENT_RUN_STATUSES.OrdersFilled;
+  } else if (whole_investment.status === INVESTMENT_RUN_STATUSES.OrdersExecuting) {
+    execution_order_status = INVESTMENT_RUN_STATUSES.OrdersExecuting;
+  }
+  let prepared_execution_orders = {
+    count: execution_orders.length + 1,
+    execution_order_status: `execution_orders_timeline.status.${execution_order_status}`
+  };
+  // investmetn < recipes < recipe_groups < recipe_orders < execution_orders
+
+  /* EXECUTION_ORDER_STATUSES: {
+    Pending: 61,
+    Placed: 62,
+    FullyFilled: 63,
+    PartiallyFilled: 64,
+    Cancelled: 65,
+    Failed: 66
+  }, 
+  
+  INVESTMENT_RUN_STATUSES: {
+    Initiated: 301,
+    RecipeRun: 302,
+    RecipeApproved: 303,
+    DepositsCompleted: 304,
+    OrdersGenerated: 305,
+    OrdersApproved: 306,
+    OrdersExecuting: 307,
+    OrdersFilled: 308
+  },
+  */
   //
   
   return {
