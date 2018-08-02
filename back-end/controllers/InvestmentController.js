@@ -275,7 +275,11 @@ const getRecipeRunDetails = async function (req, res) {
 
   let { seq_query, sql_where } = req;
 
-  seq_query.where.recipe_run_id = recipe_run_id;
+  if(recipe_run_id && _.isPlainObject(seq_query)) {
+    _.isPlainObject(seq_query.where) ? seq_query.where.recipe_run_id = recipe_run_id : seq_query = { recipe_run_id };
+    sql_where = `recipe_run_id=${recipe_run_id}`;
+  }
+  
 
   let [ err, result ] = await to(adminViewsService.fetchRecipeRunDetailsViewDataWithCount(seq_query));
   if(err) return ReE(res, err.message, 422);
