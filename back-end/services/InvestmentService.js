@@ -356,40 +356,41 @@ const getInvestmentRunTimeline = async function (investment_run_id) {
   let [err, whole_investment] = await to(this.getWholeInvestmentRun(investment_run_id));
   if (err) return ReE(res, err.message, 422);
 
+  if (!whole_investment) TE("Investment run not found!");
   whole_investment = whole_investment.toJSON();
 
   // prepare investment run data
-  let prepared_investment_run = Object.assign({}, whole_investment);
-  delete prepared_investment_run.RecipeRuns;
+  let investment_run_data = Object.assign({}, whole_investment);
+  delete investment_run_data.RecipeRuns;
 
-  prepared_investment_run.status = `investment.status.${prepared_investment_run.status}`;
-  prepared_investment_run.strategy_type = `investment.strategy.${prepared_investment_run.strategy_type}`;
-  prepared_investment_run.started_timestamp = prepared_investment_run.started_timestamp.getTime();
-  prepared_investment_run.updated_timestamp = prepared_investment_run.updated_timestamp.getTime();
+  investment_run_data.status = `investment.status.${investment_run_data.status}`;
+  investment_run_data.strategy_type = `investment.strategy.${investment_run_data.strategy_type}`;
+  investment_run_data.started_timestamp = investment_run_data.started_timestamp.getTime();
+  investment_run_data.updated_timestamp = investment_run_data.updated_timestamp.getTime();
 
   // prepare recipe run data
   let recipe_runs = whole_investment.RecipeRuns,
-    prepared_recipe_run;
+    recipe_run_data;
 
   if (!recipe_runs.length) {
     return { // no recipe runs found. Return to avoid further calculations that could cause errors.
-      investment_run: prepared_investment_run,
-      recipe_run: prepared_recipe_run,
+      investment_run: investment_run_data,
+      recipe_run: recipe_run_data,
       recipe_deposits: null,
       recipe_orders: null,
       execution_orders: null
     }
   }
 
-  prepared_recipe_run = Object.assign({}, _.maxBy(recipe_runs, rr => { // finds newest by created_timestamp
+  recipe_run_data = Object.assign({}, _.maxBy(recipe_runs, rr => { // finds newest by created_timestamp
     rr.created_timestamp = rr.created_timestamp.getTime();
     return rr.created_timestamp;
   }));
 
-  delete prepared_recipe_run.RecipeOrderGroups;
-  delete prepared_recipe_run.RecipeRunDeposits;
-  prepared_recipe_run.approval_timestamp = prepared_recipe_run.approval_timestamp.getTime();
-  prepared_recipe_run.approval_status = `recipes.status.${prepared_recipe_run.approval_status}`;
+  delete recipe_run_data.RecipeOrderGroups;
+  delete recipe_run_data.RecipeRunDeposits;
+  recipe_run_data.approval_timestamp = recipe_run_data.approval_timestamp.getTime();
+  recipe_run_data.approval_status = `recipes.status.${recipe_run_data.approval_status}`;
 
   // prepare recipe deposit data
   let recipe_deposits = Object.assign({}, whole_investment).RecipeRuns.map(recipe_run => {
@@ -398,17 +399,17 @@ const getInvestmentRunTimeline = async function (investment_run_id) {
   recipe_deposits = _.flatten(_.flatten(recipe_deposits));
 
   if (!recipe_deposits.length) {
-    return { // no recipe runs found. Return to avoid further calculations that could cause errors.
-      investment_run: prepared_investment_run,
-      recipe_run: prepared_recipe_run,
+    return { // no deposits found. Return current status
+      investment_run: investment_run_data,
+      recipe_run: recipe_run_data,
       recipe_deposits: null,
       recipe_orders: null,
       execution_orders: null
     }
   }
 
-  let prepared_recipe_deposits = {
-    count: recipe_deposits.length + 1,
+  let deposit_stats = {
+    count: recipe_deposits.length,
     status: 'deposits.status.' + (
       recipe_deposits.some(deposit => deposit.status === RECIPE_RUN_DEPOSIT_STATUSES.Pending) ?
       RECIPE_RUN_DEPOSIT_STATUSES.Pending :
@@ -417,37 +418,34 @@ const getInvestmentRunTimeline = async function (investment_run_id) {
   }
 
   // prepare recipe order data
-
-  // get all recipe order groups
-  // find newest group
-
   let recipes = Object.assign({}, whole_investment).RecipeRuns; 
   let recipe_orders = _.maxBy(_.flatten(recipes.map(recipe_run => { // beauty
     return recipe_run.RecipeOrderGroups;
   })), rog => rog.created_timestamp.getTime()).RecipeOrders;
   
   if (!recipe_orders.length) {
-    return { // no recipe runs found. Return to avoid further calculations that could cause errors.
-      investment_run: prepared_investment_run,
-      recipe_run: prepared_recipe_run,
-      recipe_deposits: prepared_recipe_deposits,
+    return { // no recipe orders found. Return current status
+      investment_run: investment_run_data,
+      recipe_run: recipe_run_data,
+      recipe_deposits: deposit_stats,
       recipe_orders: null,
       execution_orders: null
     }
   }
 
-  let recipe_orders_status;
+  let order_status;
+
   if (recipe_orders.every(order => order.status === RECIPE_ORDER_STATUSES.Pending)) {
-    recipe_orders_status = RECIPE_ORDER_STATUSES.Pending;
+    order_status = RECIPE_ORDER_STATUSES.Pending;
   } else if (recipe_orders.every(order => order.status === RECIPE_ORDER_STATUSES.Completed)) {
-    recipe_orders_status = RECIPE_ORDER_STATUSES.Completed;
+    order_status = RECIPE_ORDER_STATUSES.Completed;
   } else if (recipe_orders.some(order => order.status === RECIPE_ORDER_STATUSES.Executing)) {
-    recipe_orders_status = RECIPE_ORDER_STATUSES.Executing;
+    order_status = RECIPE_ORDER_STATUSES.Executing;
   }
 
   let prepared_recipe_orders = {
-    count: recipe_orders.length + 1,
-    status: `order.status.${recipe_orders_status}`
+    count: recipe_orders.length,
+    status: `order.status.${order_status}`
   };
 
   // prepare execution order data 
@@ -467,57 +465,34 @@ const getInvestmentRunTimeline = async function (investment_run_id) {
   }));
  
   if (!execution_orders.length) {
-    return {
-      investment_run: prepared_investment_run,
-      recipe_run: prepared_recipe_run,
-      recipe_deposits: prepared_recipe_deposits,
+    return { // no execution orders found. Return current status
+      investment_run: investment_run_data,
+      recipe_run: recipe_run_data,
+      recipe_deposits: deposit_stats,
       recipe_orders: prepared_recipe_orders,
       execution_orders: null
     }
   }
 
-  let execution_order_status;
+  let exec_order_status;
   if (execution_orders.every(exec_order => exec_order.status === EXECUTION_ORDER_STATUSES.Failed)) {
-    execution_order_status = EXECUTION_ORDER_STATUSES.Failed;
+    exec_order_status = EXECUTION_ORDER_STATUSES.Failed;
   } else if (whole_investment.status === INVESTMENT_RUN_STATUSES.OrdersFilled) {
-    execution_order_status = INVESTMENT_RUN_STATUSES.OrdersFilled;
+    exec_order_status = INVESTMENT_RUN_STATUSES.OrdersFilled;
   } else if (whole_investment.status === INVESTMENT_RUN_STATUSES.OrdersExecuting) {
-    execution_order_status = INVESTMENT_RUN_STATUSES.OrdersExecuting;
+    exec_order_status = INVESTMENT_RUN_STATUSES.OrdersExecuting;
   }
-  let prepared_execution_orders = {
-    count: execution_orders.length + 1,
-    execution_order_status: `execution_orders_timeline.status.${execution_order_status}`
+  let exec_order_data = {
+    count: execution_orders.length,
+    execution_order_status: `execution_orders_timeline.status.${exec_order_status}`
   };
-  // investmetn < recipes < recipe_groups < recipe_orders < execution_orders
-
-  /* EXECUTION_ORDER_STATUSES: {
-    Pending: 61,
-    Placed: 62,
-    FullyFilled: 63,
-    PartiallyFilled: 64,
-    Cancelled: 65,
-    Failed: 66
-  }, 
-  
-  INVESTMENT_RUN_STATUSES: {
-    Initiated: 301,
-    RecipeRun: 302,
-    RecipeApproved: 303,
-    DepositsCompleted: 304,
-    OrdersGenerated: 305,
-    OrdersApproved: 306,
-    OrdersExecuting: 307,
-    OrdersFilled: 308
-  },
-  */
-  //
   
   return {
-    investment_run: prepared_investment_run,
-    recipe_run: prepared_recipe_run,
-    recipe_deposits: prepared_recipe_deposits,
+    investment_run: investment_run_data,
+    recipe_run: recipe_run_data,
+    recipe_deposits: deposit_stats,
     recipe_orders: prepared_recipe_orders,
-    execution_orders: prepared_execution_orders
+    execution_orders: exec_order_data
   }
 }
 module.exports.getInvestmentRunTimeline = getInvestmentRunTimeline;

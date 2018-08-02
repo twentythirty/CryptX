@@ -71,6 +71,8 @@ const getInvestmentStats = async function(req, res) {
   let [err, investment_run] = await to(investmentService.findInvestmentRunFromAssociations(req.body));
   if (err) return ReE(res, err, 422);
 
+  if (!investment_run) return ReE(res, "Investment run not found!");
+
   let timeline;
   [err, timeline] = await to(investmentService.getInvestmentRunTimeline(investment_run.id));
   if (err) return ReE(res, err.message, 422);
