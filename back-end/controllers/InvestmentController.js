@@ -303,7 +303,7 @@ const getExecutionOrder = async function (req, res) {
 
   let [ err, execution_order ] = await to(adminViewsService.fetchExecutionOrderView(execution_order_id));
   if(err) return ReE(res, err.message, 422);
-  if(!execution_order) return ReE(res, err.message, 422);
+  if(!execution_order) return ReE(res, `Can't find execution order for id ${execution_order_id}`, 404);
 
   execution_order = execution_order.toWeb();
 
