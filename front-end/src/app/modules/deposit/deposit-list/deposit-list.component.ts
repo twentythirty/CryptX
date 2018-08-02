@@ -19,7 +19,7 @@ export class DepositListComponent extends DataTableCommonManagerComponent implem
   public depositDataSource: TableDataSource = {
     header: [
       { column: 'id', nameKey: 'table.header.id', filter: { type: 'text', sortable: true } },
-      { column: 'transaction_asset_id', nameKey: 'table.header.transaction_asset_id', filter: { type: 'text', sortable: true } },
+      { column: 'investment_run_id', nameKey: 'table.header.investment_run_id', filter: { type: 'text', sortable: true } },
       { column: 'quote_asset', nameKey: 'table.header.quote_asset', filter: { type: 'text', sortable: true } },
       { column: 'exchange', nameKey: 'table.header.exchange', filter: { type: 'text', sortable: true } },
       { column: 'account', nameKey: 'table.header.account', filter: { type: 'text', sortable: true } },
@@ -32,15 +32,15 @@ export class DepositListComponent extends DataTableCommonManagerComponent implem
 
   public depositColumnsToShow: Array<TableDataColumn> = [
     new TableDataColumn({ column: 'id' }),
-    new TableDataColumn({ column: 'transaction_asset_id' }),
+    new TableDataColumn({ column: 'investment_run_id' }),
     new TableDataColumn({ column: 'quote_asset' }),
     new TableDataColumn({ column: 'exchange' }),
     new TableDataColumn({ column: 'account' }),
     new NumberCellDataColumn({ column: 'amount'}),
     new PercentCellDataColumn({ column: 'investment_percentage' }),
     new StatusCellDataColumn({ column: 'status', inputs: { classMap: {
-      '150' : StatusClass.PENDING,
-      '151': StatusClass.APPROVED,
+      'deposits.status.150' : StatusClass.PENDING,
+      'deposits.status.151': StatusClass.APPROVED,
     }}}),
   ];
 

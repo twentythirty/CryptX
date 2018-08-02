@@ -96,8 +96,8 @@ export class DepositDetailComponent extends TimelineDetailComponent implements O
     new TableDataColumn({ column: 'amount' }),
     new PercentCellDataColumn({ column: 'investment_percentage' }),
     new StatusCellDataColumn({ column: 'status', inputs: { classMap: {
-      '150': StatusClass.PENDING,
-      '151': StatusClass.APPROVED,
+      'deposits.status.150': StatusClass.PENDING,
+      'deposits.status.151': StatusClass.APPROVED,
     }}}),
   ];
 
@@ -154,7 +154,7 @@ export class DepositDetailComponent extends TimelineDetailComponent implements O
   protected getTimelineData(): void {
     this.timeline$ = this.route.params.pipe(
       mergeMap(
-        params => this.investmentService.getAllTimelineData({ "deposits_id": params['id'] })
+        params => this.investmentService.getAllTimelineData({ deposits_id: params['id'] })
       )
     )
   }
