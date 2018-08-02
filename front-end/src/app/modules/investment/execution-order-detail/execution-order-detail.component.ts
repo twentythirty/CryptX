@@ -1,13 +1,13 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
+import { mergeMap, map } from 'rxjs/operators';
 
 import { StatusClass } from '../../../shared/models/common';
 
 import { TimelineDetailComponent, SingleTableDataSource, TagLineItem } from '../timeline-detail/timeline-detail.component'
 import { TableDataSource, TableDataColumn } from '../../../shared/components/data-table/data-table.component';
 import { TimelineEvent } from '../../../shared/components/timeline/timeline.component';
-import { ActionCellDataColumn, DataCellAction, DateCellDataColumn, PercentCellDataColumn, StatusCellDataColumn, ConfirmCellDataColumn, NumberCellDataColumn } from '../../../shared/components/data-table-cells';
-import { mergeMap, map } from 'rxjs/operators';
+import { DateCellDataColumn, StatusCellDataColumn, NumberCellDataColumn } from '../../../shared/components/data-table-cells';
 import { InvestmentService } from '../../../services/investment/investment.service';
 
 /**
@@ -37,69 +37,68 @@ export class ExecutionOrderDetailComponent extends TimelineDetailComponent imple
       { column: 'id', nameKey: 'table.header.id' },
       { column: 'instrument', nameKey: 'table.header.instrument' },
       { column: 'side', nameKey: 'table.header.side' },
+      { column: 'exchange', nameKey: 'table.header.exchange' },
       { column: 'price', nameKey: 'table.header.price' },
-      { column: 'quantity', nameKey: 'table.header.quantity' },
-      { column: 'fee', nameKey: 'table.header.sum_of_exchange_trading_fee' },
+      { column: 'quantity', nameKey: 'table.header.total_quantity' },
+      { column: 'sum_of_exchange_trading_fee', nameKey: 'table.header.sum_of_exchange_trading_fee' },
       { column: 'status', nameKey: 'table.header.status' }
     ],
     body: null
-  }
+  };
+
+  public singleColumnsToShow: Array<TableDataColumn> = [
+    new TableDataColumn({column: 'id' }),
+    new TableDataColumn({column: 'instrument' }),
+    new StatusCellDataColumn({ column: 'side', inputs: { classMap: value => {
+      return StatusClass.DEFAULT;
+    }}}),
+    new TableDataColumn({ column: 'exchange' }),
+    new NumberCellDataColumn({ column: 'price' }),
+    new NumberCellDataColumn({ column: 'quantity' }),
+    new NumberCellDataColumn({ column: 'sum_of_exchange_trading_fee' }),
+    new StatusCellDataColumn({ column: 'status', inputs: { classMap: {
+      'orders.status.51': StatusClass.PENDING,
+      'orders.status.52': StatusClass.DEFAULT,
+      'orders.status.53': StatusClass.APPROVED,
+      'orders.status.54': StatusClass.REJECTED,
+      'orders.status.55': StatusClass.REJECTED,
+      'orders.status.56': StatusClass.FAILED,
+    }}}),
+  ];
 
   public listDataSource: TableDataSource = {
     header: [
       { column: 'id', nameKey: 'table.header.id', filter: {type: 'text', sortable: true }},
       { column: 'instrument', nameKey: 'table.header.instrument', filter: {type: 'text', sortable: true }},
       { column: 'side', nameKey: 'table.header.side', filter: {type: 'text', sortable: true }},
+      { column: 'exchange', nameKey: 'table.header.exchange', filter: {type: 'text', sortable: true }},
       { column: 'type', nameKey: 'table.header.type', filter: {type: 'text', sortable: true }},
       { column: 'price', nameKey: 'table.header.price', filter: {type: 'number', sortable: true }},
-      { column: 'quantity', nameKey: 'table.header.total_quantity', filter: {type: 'number', sortable: true }},
-      { column: 'fee', nameKey: 'table.header.exchange_trading_fee', filter: {type: 'number', sortable: true }},
+      { column: 'total_quantity', nameKey: 'table.header.total_quantity', filter: {type: 'number', sortable: true }},
+      { column: 'exchange_trading_fee', nameKey: 'table.header.exchange_trading_fee', filter: {type: 'number', sortable: true }},
       { column: 'status', nameKey: 'table.header.status', filter: {type: 'text', sortable: true }},
       { column: 'submission_time', nameKey: 'table.header.submission_time', filter: {type: 'date', sortable: true }},
       { column: 'completion_time', nameKey: 'table.header.completion_time', filter: {type: 'date', sortable: true }}
     ],
-    body: null,
+    body: null
   };
-
-  public singleColumnsToShow: Array<TableDataColumn> = [
-   
-    new TableDataColumn({column: 'id' }),
-    new TableDataColumn({column: 'instrument' }),
-    new StatusCellDataColumn({ column: 'side', inputs: { classMap: value => {
-      return StatusClass.DEFAULT;
-    }}}),
-    new NumberCellDataColumn({ column: 'price' }),
-    new NumberCellDataColumn({ column: 'quantity' }),
-    new NumberCellDataColumn({ column: 'fee' }),
-    new StatusCellDataColumn({ column: 'status', inputs: { classMap: {
-      '51': StatusClass.PENDING,
-      '52': StatusClass.DEFAULT,
-      '53': StatusClass.APPROVED,
-      '54': StatusClass.REJECTED,
-      '55': StatusClass.REJECTED,
-      '56': StatusClass.FAILED,
-    }}}),
-  ];
 
   public listColumnsToShow: Array<TableDataColumn> = [
     new TableDataColumn({column: 'id' }),
     new TableDataColumn({column: 'instrument' }),
-    new StatusCellDataColumn({ column: 'side', inputs: { classMap: value => {
-      return StatusClass.DEFAULT;
-    }}}),
-    new StatusCellDataColumn({ column: 'side', inputs: { classMap: value => {
-      return StatusClass.DEFAULT;
-    }}}),
+    new StatusCellDataColumn({ column: 'side' }),
+    new TableDataColumn({ column: 'exchange' }),
+    new StatusCellDataColumn({ column: 'type' }),
     new NumberCellDataColumn({ column: 'price' }),
-    new NumberCellDataColumn({ column: 'quantity' }),
-    new NumberCellDataColumn({ column: 'fee' }),
+    new NumberCellDataColumn({ column: 'total_quantity' }),
+    new NumberCellDataColumn({ column: 'exchange_trading_fee' }),
     new StatusCellDataColumn({ column: 'status', inputs: { classMap: {
-      '61': StatusClass.PENDING,
-      '62': StatusClass.APPROVED,
-      '63': StatusClass.APPROVED,
-      '64': StatusClass.APPROVED,
-      '65': StatusClass.REJECTED,
-      '66': StatusClass.FAILED,
+      'execution_orders.status.61': StatusClass.PENDING,
+      'execution_orders.status.62': StatusClass.APPROVED,
+      'execution_orders.status.63': StatusClass.APPROVED,
+      'execution_orders.status.64': StatusClass.APPROVED,
+      'execution_orders.status.65': StatusClass.REJECTED,
+      'execution_orders.status.66': StatusClass.FAILED,
     }}}),
     new DateCellDataColumn({ column: 'submission_time' }),
     new DateCellDataColumn({ column: 'completion_time' })
@@ -115,6 +114,30 @@ export class ExecutionOrderDetailComponent extends TimelineDetailComponent imple
     private investmentService: InvestmentService
   ) {
     super(route);
+
+    this.getFilterLOV();
+  }
+
+  /**
+   * + If custom ngOnInit() is needed, call super.ngOnInit() to
+   * perform parent component class initialization
+   */
+
+  ngOnInit() {
+    super.ngOnInit();
+  }
+
+  /**
+    * Add a rowData$ Observable to text and boolean column filters
+    */
+  private getFilterLOV(): void {
+    this.listDataSource.header.filter(
+      col => ['instrument', 'side', 'exchange', 'type', 'status'].includes(col.column)
+    ).map(
+      col => {
+        col.filter.rowData$ = this.investmentService.getAllExecutionOrdersHeaderLOV(col.column);
+      }
+    );
   }
 
   /**
@@ -127,9 +150,11 @@ export class ExecutionOrderDetailComponent extends TimelineDetailComponent imple
       )
     ).subscribe(
       res => {
+        Object.assign(this.listDataSource, {
+          body: res.execution_orders,
+          footer: res.footer
+        });
         this.count = res.count;
-        this.listDataSource.body = res.execution_orders;
-        this.listDataSource.footer = res.footer;
       },
       err => this.listDataSource.body = []
     )
@@ -158,7 +183,7 @@ export class ExecutionOrderDetailComponent extends TimelineDetailComponent imple
   protected getTimelineData(): void {
     this.timeline$ = this.route.params.pipe(
       mergeMap(
-        params => this.investmentService.getAllTimelineData({ "execution_order_id": params['id'] })
+        params => this.investmentService.getAllTimelineData({ execution_order_id: params['id'] })
       )
     )
   }
@@ -171,16 +196,8 @@ export class ExecutionOrderDetailComponent extends TimelineDetailComponent imple
   }
 
   public openListRow(row: any): void {
-    this.router.navigate([`/run/execution-order-fill/${row.id}`])
+    this.router.navigate([`/run/execution-order-fill/${row.id}`]);
   }
 
-  /**
-   * + If custom ngOnInit() is needed, call super.ngOnInit() to
-   * perform parent component class initialization
-   */
-
-  ngOnInit() {
-    super.ngOnInit();
-  }
 
 }

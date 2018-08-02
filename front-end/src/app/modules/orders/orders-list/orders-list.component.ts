@@ -7,6 +7,7 @@ import { NumberCellDataColumn, StatusCellDataColumn, DateCellDataColumn } from '
 import { StatusClass } from '../../../shared/models/common';
 
 import { OrdersService } from '../../../services/orders/orders.service';
+import { Order } from '../../../shared/models/order';
 
 @Component({
   selector: 'app-orders-list',
@@ -62,19 +63,18 @@ export class OrdersListComponent extends DataTableCommonManagerComponent impleme
     this.getFilterLOV();
   }
 
-/**
-   * Add a rowData$ Observable to text and boolean column filters
-  */
- private getFilterLOV(): void {
-  this.ordersDataSource.header.filter(
-    col => ['instrument', 'side', 'exchange', 'status'].includes(col.column)
-  ).map(
-    col => {
-      col.filter.rowData$ = this.ordersService.getHeaderLOV(col.column);
-    }
-  )
-}
-
+  /**
+    * Add a rowData$ Observable to text and boolean column filters
+    */
+  private getFilterLOV(): void {
+    this.ordersDataSource.header.filter(
+      col => ['instrument', 'side', 'exchange', 'status'].includes(col.column)
+    ).map(
+      col => {
+        col.filter.rowData$ = this.ordersService.getHeaderLOV(col.column);
+      }
+    );
+  }
 
   getAllData(): void {
     this.ordersService.getAllOrders(this.requestData).subscribe(
@@ -88,8 +88,8 @@ export class OrdersListComponent extends DataTableCommonManagerComponent impleme
     );
   }
 
-  openRow(order): void {
-    //this.router.navigate(['//preview', order.id])
+  openRow(order: Order): void {
+    this.router.navigate(['/run/execution-order', order.id]);
   }
 
 

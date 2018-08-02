@@ -66,6 +66,7 @@ const TABLE_LOV_FIELDS = {
     ],
     'av_execution_orders': [
         'instrument',
+        'side',
         'exchange',
         'type',
         'status'
