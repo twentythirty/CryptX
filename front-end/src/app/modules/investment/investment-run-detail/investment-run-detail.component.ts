@@ -86,7 +86,7 @@ export class InvestmentRunDetailComponent extends TimelineDetailComponent implem
     new DateCellDataColumn({ column: 'created_timestamp' }),
     new TableDataColumn({ column: 'user_created' }),
     new StatusCellDataColumn({ column: 'approval_status', inputs: { classMap: {
-      'recipes.status.41' : StatusClass.PENDING,
+      'recipes.status.41': StatusClass.PENDING,
       'recipes.status.42': StatusClass.REJECTED,
       'recipes.status.43': StatusClass.APPROVED,
     }}}),
@@ -176,7 +176,9 @@ export class InvestmentRunDetailComponent extends TimelineDetailComponent implem
       )
     ).subscribe(
       res => {
-        this.listDataSource.body.push(res.recipe_run);
+        if (res.success){
+          this.getAllData();
+        }
       }
     )
   }

@@ -30,7 +30,8 @@ export class DataTableFilterComponent implements OnInit, OnChanges {
   private _filterSearchText: string = '';
 
   active = false;
-  name = 'ORDER BY'
+  name = 'ORDER BY';
+  rowDataLoading: boolean = false;
 
   @Input() column: string;
   @Input() type: string = 'text';
@@ -56,7 +57,7 @@ export class DataTableFilterComponent implements OnInit, OnChanges {
   ngOnChanges(changes) {
     // Runs when filter becomes dirty
     if(!changes.dirty.previousValue && (changes.dirty.currentValue === true)) {
-      this.getrowData$();
+      this.getRowData$();
     }
   }
 
@@ -191,8 +192,10 @@ export class DataTableFilterComponent implements OnInit, OnChanges {
   /**
    * If we have a rowData$ Observable, replace rowData items
    */
-  getrowData$(): void {
+  getRowData$(): void {
     if(this.rowData$ && (typeof this.rowData$.subscribe == 'function')) {
+      this.rowDataLoading = true;
+
       this.rowData$.subscribe(
         res => {
           if(!Array.isArray(res)) {
@@ -201,8 +204,11 @@ export class DataTableFilterComponent implements OnInit, OnChanges {
           if(!Array.isArray(this.rowData)) {
             this.rowData = [];
           }
+          
           this.rowData.splice(0, this.rowData.length);
           this.rowData.push(...res);
+
+          this.rowDataLoading = false;
         }
       )
     }

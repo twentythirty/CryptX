@@ -13,6 +13,8 @@ module.exports = (sequelize, DataTypes) => {
             account: DataTypes.STRING,
             amount: DataTypes.FLOAT,
             investment_percentage: DataTypes.FLOAT,
+            deposit_management_fee: DataTypes.FLOAT,
+            depositor_user: DataTypes.STRING,
             status: DataTypes.STRING
         },
         //common global model props

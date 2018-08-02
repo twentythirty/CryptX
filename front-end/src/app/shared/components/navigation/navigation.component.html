@@ -27,13 +27,14 @@
       <nav>
         <a routerLinkActive="active" routerLink="/dashboard" *ngIf="checkPerm(['VIEW_INVESTMENT_RUN'])">Dashboard</a>
         <a routerLinkActive="active" href="#" *ngIf="checkPerm(['ALTER_PERMS'])">Recipe Runs</a>
+        <a routerLinkActive="active" routerLink="/orders" *ngIf="checkPerm(['ALTER_PERMS'])">{{ 'orders.orders' | translate }}</a>
         <a routerLinkActive="active" routerLink="/assets" *ngIf="checkPerm(['VIEW_ASSETS'])">{{ 'assets.assets' | translate }}</a>
-        <a routerLinkActive="active" routerLink="/users" href="#" *ngIf="checkPerm(['EDIT_USERS'])">User Management</a>
+        <a routerLinkActive="active" routerLink="/users" *ngIf="checkPerm(['EDIT_USERS'])">User Management</a>
         <a routerLinkActive="active" routerLink="/roles" *ngIf="checkPerm(['VIEW_ROLES'])">Role Management</a>
-        <a routerLinkActive="active" routerLink="/instruments/all" *ngIf="checkPerm(['VIEW_ROLES'])">{{ 'instruments.instruments' | translate }}</a>
+        <a routerLinkActive="active" routerLink="/instruments" *ngIf="checkPerm(['VIEW_ROLES'])">{{ 'instruments.instruments' | translate }}</a>
         <a routerLinkActive="active" routerLink="/liquidity_requirements" *ngIf="checkPerm(['VIEW_ROLES'])">{{ 'liquidity.liquidity_requirements' | translate }}</a>
         <a routerLinkActive="active" href="#" *ngIf="checkPerm(['VIEW_SETTING_VALUES'])">Setting Management</a>
-        <a routerLinkActive="active" routerLink="/deposits/all" *ngIf="checkPerm(['ALTER_PERMS'])">Deposit</a>
+        <a routerLinkActive="active" routerLink="/deposits" *ngIf="checkPerm(['ALTER_PERMS'])">Deposit</a>
     </nav>
     </div>
     </div>

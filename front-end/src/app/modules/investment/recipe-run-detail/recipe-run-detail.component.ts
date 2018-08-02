@@ -188,7 +188,7 @@ export class RecipeRunDetailComponent extends TimelineDetailComponent implements
 
   private confirmRun({ rationale, data }): void {
     let run = data;
-    this.investmentService.approveRecipe(run.id, { status: true, comment: rationale }).subscribe(
+    this.investmentService.approveRecipe(run.id, { status: 43, comment: rationale }).subscribe(
       res => {
         // TODO
       }
@@ -197,7 +197,7 @@ export class RecipeRunDetailComponent extends TimelineDetailComponent implements
 
   private declineRun({ rationale, data }): void {
     let run = data;
-    this.investmentService.approveRecipe(run.id, { status: false, comment: rationale }).subscribe(
+    this.investmentService.approveRecipe(run.id, { status: 42, comment: rationale }).subscribe(
       res => {
         // TODO
       }
