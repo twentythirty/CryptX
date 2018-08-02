@@ -107,7 +107,7 @@ export class AcceptInviteComponent implements OnInit {
       this.markAsTouched(this.userInfoForm)
     }
   }
-  
+
   markAsTouched(group) {
     Object.keys(group.controls).map((field) => {
       const control = group.get(field);

@@ -1,4 +1,4 @@
-  <div *ngIf="token.validityChecked">
+<div *ngIf="token.validityChecked">
     <div *ngIf="!token.isValid">
       {{ message }}
     </div>
@@ -10,29 +10,29 @@
         <div *ngIf="!done">
           <form [formGroup]="userInfoForm" (ngSubmit)="fulfillInvitation()">
             <div class="part-header">
-              <br> Hello, {{ invitationInfo.first_name }} {{ invitationInfo.last_name }}
-              <br> To be able to use CryptX you have to set up you account.
-              <br> All you have to do in enter your password.
+              <br> {{'auth.invitation.hello' | translate}}
+              <br> {{'auth.invitation.to_able_account_msg' | translate}}
+              <br> {{'auth.invitation.enter_password_msg' | translate}}
             </div>
-            <app-input-item class="form-item with-icons icon-password" [placeholder]="'New password'" type="password" [formGroup]="userInfoForm"
+            <app-input-item class="form-item with-icons icon-password" [placeholder]="'auth.invitation.new_password_placeholder' | translate" type="password" [formGroup]="userInfoForm"
               formControlName="password">
             </app-input-item>
-            <app-input-item class="form-item with-icons icon-password" [placeholder]="'Repeat new password'" type="password" [formGroup]="userInfoForm"
+            <app-input-item class="form-item with-icons icon-password" [placeholder]="'auth.invitation.repeat_password_placeholder' | translate" type="password" [formGroup]="userInfoForm"
               formControlName="password_repeat">
             </app-input-item>
             <p>{{ message }}</p>
             <div class="btn-wrap btn-right">
-              <button class="btn" type="submit">Sign up</button>
+              <button class="btn" type="submit">{{'common.sign_up' | translate}}</button>
             </div>
           </form>
         </div>
         <div class="new" *ngIf="done">
-          <div class="part-header">You've set up your account!</div>
+          <div class="part-header">{{'auth.invitation.set_up_account_msg' | translate}}</div>
           <br>
-          <div class="part-header">You can now login</div>
+          <div class="part-header">{{'auth.invitation.login_msg' | translate}}</div>
           <br>
           <button class="btn" routerLink="/login" md-button>{{'common.login' | translate}}</button>
         </div>
       </div>
-    </div>
   </div>
+</div>
