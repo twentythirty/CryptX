@@ -73,7 +73,6 @@ export class AcceptInviteComponent implements OnInit {
         this.token.validityChecked = true;
       })
     ).subscribe((data: InvitationCheckSuccessResponse) => {
-      console.log(data);
       this.invitationInfo = data.invitation;
       this.token.isValid = true;
     }, error => {
@@ -88,7 +87,7 @@ export class AcceptInviteComponent implements OnInit {
 
   fulfillInvitation() {
     if (this.userInfoForm.value.password != this.userInfoForm.value.password_repeat) {
-      this.message = "Passwords do not match";
+      this.message = "New password was not repeated correctly";
       return;
     }
     if (this.userInfoForm.valid) {
@@ -108,6 +107,7 @@ export class AcceptInviteComponent implements OnInit {
       this.markAsTouched(this.userInfoForm)
     }
   }
+
   markAsTouched(group) {
     Object.keys(group.controls).map((field) => {
       const control = group.get(field);

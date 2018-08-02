@@ -43,7 +43,7 @@ export class LiquidityListComponent extends DataTableCommonManagerComponent impl
     private liquidityService: LiquidityService,
   ) {
     super(route);
-    
+
     this.getFilterLOV();
   }
 
@@ -74,7 +74,7 @@ export class LiquidityListComponent extends DataTableCommonManagerComponent impl
   }
 
   openRow(liquidity: LiquidityRequirement): void {
-    this.router.navigate(['/liquidity_requirements/preview', liquidity.id])
+    this.router.navigate(['/liquidity_requirements/preview', liquidity.id]);
   }
 
 }

@@ -394,51 +394,52 @@ router.get(
 
 
 // Recipe orders
-/* router.get( // original
-  ROUTES.GetRecipeOrders.router_string,
-  stateless_auth,
-  check_permissions,
-  OrdersController.getOrdersGroup
-); */
-/* router.get( 
-  ROUTES.GetRecipeOrdersOf.router_string,
-  stateless_auth,
-  check_permissions,
-  InvestmentController.getRecipeOrders
-); */
 router.post(
-  ROUTES.GetRecipeOrdersOf.router_string,
+  ROUTES.GetRecipeOrdersOfRecipe.router_string,
   stateless_auth,
   check_permissions,
   filter_reducer,
-  InvestmentController.getRecipeOrders
+  OrdersController.getRecipeOrdersOfRecipe
+);
+router.post(
+  ROUTES.GetRecipeOrdersOfGroup.router_string,
+  stateless_auth,
+  check_permissions,
+  filter_reducer,
+  OrdersController.getRecipeOrdersOfGroup
+);
+router.get(
+  ROUTES.GetRecipeOrdersGroup.router_string,
+  stateless_auth,
+  check_permissions,
+  OrdersController.getRecipeOrdersGroup
 );
 router.post(
   ROUTES.GetRecipeOrders.router_string,
   stateless_auth,
   check_permissions,
   filter_reducer,
-  InvestmentController.getRecipeOrders
+  OrdersController.getRecipeOrders
 );
 router.get(
   ROUTES.GetRecipeOrdersColLOV.router_string,
   stateless_auth,
   check_permissions,
   filter_reducer,
-  InvestmentController.getRecipeOrdersColumnLOV
+  OrdersController.getRecipeOrdersColumnLOV
 );
 router.post(
   ROUTES.GetRecipeOrdersColLOV.router_string,
   stateless_auth,
   check_permissions,
   filter_reducer,
-  InvestmentController.getRecipeOrdersColumnLOV
+  OrdersController.getRecipeOrdersColumnLOV
 );
 router.get(
   ROUTES.GetRecipeOrder.router_string,
   stateless_auth,
   check_permissions,
-  InvestmentController.getRecipeOrder
+  OrdersController.getRecipeOrder
 );
 router.post(
   ROUTES.AlterOrdersGroup.router_string,
