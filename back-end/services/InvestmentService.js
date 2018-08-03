@@ -296,22 +296,23 @@ const findInvestmentRunFromAssociations = async function (entities) {
   let foundClosestEntity = Object.keys(entities).find(entity => {
     return Object.keys(allowed_entities).includes(entity);
   });
+  let id_to_find = entities[foundClosestEntity];
 
-  let investment_run = await sequelize.query(`
+  let [err, investment_run] = await to(sequelize.query(`
     SELECT investment_run.*
     FROM investment_run
-    JOIN recipe_run ON recipe_run.investment_run_id=investment_run.id
-    JOIN recipe_order_group ON recipe_order_group.recipe_run_id=recipe_run.id
-    JOIN recipe_order ON recipe_order.recipe_order_group_id=recipe_order_group.id
-    JOIN execution_order ON execution_order.recipe_order_id=recipe_order.id
+    LEFT JOIN recipe_run ON recipe_run.investment_run_id=investment_run.id
+    LEFT JOIN recipe_order_group ON recipe_order_group.recipe_run_id=recipe_run.id
+    LEFT JOIN recipe_order ON recipe_order.recipe_order_group_id=recipe_order_group.id
+    LEFT JOIN execution_order ON execution_order.recipe_order_id=recipe_order.id
     WHERE ${allowed_entities[foundClosestEntity]}.id=:entity_id
   `,{
-    replacements: { entity_id: entities[foundClosestEntity] },
+    replacements: { entity_id: id_to_find },
     plain: true, // assign as single value, not array
     model: InvestmentRun
-  });
+  }));
 
-  /* if (err) TE(err.message); */
+  if (err) TE(err.message);
 
   return investment_run;
 };
@@ -375,7 +376,7 @@ const getInvestmentRunTimeline = async function (investment_run_id) {
   if (!recipe_runs.length) {
     return { // no recipe runs found. Return to avoid further calculations that could cause errors.
       investment_run: investment_run_data,
-      recipe_run: recipe_run_data,
+      recipe_run: null,
       recipe_deposits: null,
       recipe_orders: null,
       execution_orders: null
