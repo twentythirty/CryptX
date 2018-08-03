@@ -127,6 +127,7 @@ timestamp timestamp # Timestamp when the information was retrieved
 asset_id FK int FK >- asset.id # Asset for which the infromation was retrieved
 capitalization_usd decimal # Total market capitalization of the asset in USD
 market_share_percentage decimal # Market cap of the asset as percentage of total capitalization of whole market
+daily_volume_usd decimal # 24 hour asset trade volume in US dollars
 
 instrument_market_data
 -
@@ -169,6 +170,16 @@ depositor_user_id int FK >- user.id # Depositor who made the deposit
 completion_timestamp timestamp # Time when deposit was completed
 target_exchange_account_id int FK >- exchange.id # Exchange account to which deposit will be made
 status enum # Status of the deposit. Possible values: PENDING, COMPLETED
+
+deposit_history # History of changes to recipe run deposit
+-
+id PK int
+deposit_id int FK >- recipe_run_deposit.id 
+user_id int FK >- user.id # User which performed the action
+action enum # Possible actions ChangedAmount, ChangedFee, ChangedStatus
+value_before varchar # value after action
+value_after varchar # value before action
+timestamp date # Time action was performed
 
 recipe_run
 -
