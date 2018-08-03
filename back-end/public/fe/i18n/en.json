@@ -168,6 +168,8 @@
 
   "orders": {
     "orders": "Orders",
+    "generate_orders": "Generate orders",
+    "orders_not_generated": "Orders aren't generated yet",
     "side": {
       "999": "Buy",
       "888": "Sell"

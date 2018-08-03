@@ -56,7 +56,9 @@ export abstract class TimelineDetailComponent extends DataTableCommonManagerComp
   public abstract singleTitle: string;
   public abstract listTitle: string;
   public addTitle: string;  // Optional
+  public singleTableEmptyText: string; // Optional
   public listTableEmptyText: string; // Optional
+  public showGenerateOrders: boolean = false; // Optional
 
   /**
    * 2. Abstract attributes to preset data structure
@@ -107,6 +109,10 @@ export abstract class TimelineDetailComponent extends DataTableCommonManagerComp
    * 5. Abstract methods to handle user actions
    */
   public addAction(): void {
+    // Do nothing by default
+  }
+
+  public generateOrders(): void {
     // Do nothing by default
   }
 

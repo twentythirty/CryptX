@@ -4,8 +4,9 @@ import { TableDataColumn } from '../../data-table/data-table.component';
 export class ConfirmCellDataColumn extends TableDataColumn {
   component? = ConfirmCellComponent;
   inputs?: {
-    value?: boolean;
-    row?: any;
+    value?: boolean,
+    row?: any,
+    show: (row: any) => void,
     execConfirm?: (row: any) => void,
     execDecline?: (row: any) => void
   }
@@ -25,6 +26,7 @@ export class ConfirmCellComponent implements OnInit {
 
   @Input() value?: boolean;
   @Input() row?: any;
+  @Input() show: (row: any) => void = (row) => null;
   @Input() execConfirm?: (row: any) => void = (row) => null;
   @Input() execDecline?: (row: any) => void = (row) => null;
 

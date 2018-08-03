@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
+import { mergeMap, map } from 'rxjs/operators';
 
 import { StatusClass } from '../../../shared/models/common';
 
@@ -12,26 +13,31 @@ import {
   DateCellDataColumn,
   StatusCellDataColumn,
   NumberCellDataColumn,
+  ConfirmCellDataColumn,
 } from '../../../shared/components/data-table-cells';
-import { mergeMap, map } from 'rxjs/operators';
+
 import { InvestmentService } from '../../../services/investment/investment.service';
+import { OrdersService } from '../../../services/orders/orders.service';
 
 /**
  * 0. Set HTML and SCSS files in component decorator
  */
 @Component({
-  selector: 'app-order-detail',
+  selector: 'app-order-group',
   templateUrl: '../timeline-detail/timeline-detail.component.html',
   styleUrls: ['../timeline-detail/timeline-detail.component.scss']
 })
-export class OrderDetailComponent extends TimelineDetailComponent implements OnInit {
+export class OrderGroupComponent extends TimelineDetailComponent implements OnInit {
 
   /**
    * 1. Implement abstract attributes to display titles
    */
   public pageTitle: string = 'Recipe orders';
-  public singleTitle: string = 'Recipe run';
-  public listTitle: string = 'Orders';
+  public singleTitle: string = 'Orders';
+  public listTitle: string = '';
+  public singleTableEmptyText: string = 'orders.orders_not_generated';
+  public listTableEmptyText: string = 'orders.orders_not_generated';
+  public showGenerateOrders = true;
 
   /**
    * 2. Implement abstract attributes to preset data structure
@@ -42,11 +48,10 @@ export class OrderDetailComponent extends TimelineDetailComponent implements OnI
     header: [
       { column: 'id', nameKey: 'table.header.id' },
       { column: 'created_timestamp', nameKey: 'table.header.creation_time' },
-      { column: 'user_created', nameKey: 'table.header.creator' },
-      { column: 'approval_status', nameKey: 'table.header.status' },
+      { column: 'status', nameKey: 'table.header.status' },
       { column: 'approval_user', nameKey: 'table.header.decision_by' },
-      { column: 'approval_timestamp', nameKey: 'table.header.decision_time' },
-      { column: 'approval_comment', nameKey: 'table.header.rationale' }
+      { column: 'approval_comment', nameKey: 'table.header.rationale' },
+      { column: 'actions', nameKey: 'table.header.actions' },
     ],
     body: null
   };
@@ -54,14 +59,12 @@ export class OrderDetailComponent extends TimelineDetailComponent implements OnI
   public singleColumnsToShow: Array<TableDataColumn> = [
     new TableDataColumn({ column: 'id' }),
     new DateCellDataColumn({ column: 'created_timestamp' }),
-    new TableDataColumn({ column: 'user_created' }),
-    new StatusCellDataColumn({ column: 'approval_status', inputs: { classMap: {
+    new StatusCellDataColumn({ column: 'status', inputs: { classMap: {
       'recipes.status.41' : StatusClass.PENDING,
       'recipes.status.42': StatusClass.REJECTED,
       'recipes.status.43': StatusClass.APPROVED,
     }}}),
     new TableDataColumn({ column: 'approval_user' }),
-    new DateCellDataColumn({ column: 'approval_timestamp' }),
     new ActionCellDataColumn({ column: 'approval_comment', inputs: {
         actions: [
           new DataCellAction({
@@ -76,6 +79,11 @@ export class OrderDetailComponent extends TimelineDetailComponent implements OnI
         ]
       }
     }),
+    new ConfirmCellDataColumn({ column: 'actions', inputs: {
+      show: (row) => !row.approval_user, // change to check by status
+      execConfirm: (row) => this.showRationaleModal(row, data => data && this.alterGroup(data, 83)),
+      execDecline: (row) => this.showRationaleModal(row, data => data && this.alterGroup(data, 82)),
+    }}),
   ];
 
   public listDataSource: TableDataSource = {
@@ -120,6 +128,7 @@ export class OrderDetailComponent extends TimelineDetailComponent implements OnI
     public route: ActivatedRoute,
     private router: Router,
     private investmentService: InvestmentService,
+    private ordersService: OrdersService,
   ) {
     super(route);
   }
@@ -138,7 +147,7 @@ export class OrderDetailComponent extends TimelineDetailComponent implements OnI
   public getAllData(): void {
     this.route.params.pipe(
       mergeMap(
-        params => this.investmentService.getAllOrders(params['id'], this.requestData)
+        params => this.ordersService.getAllOrdersByGroupId(params['id'], this.requestData)
       )
     ).subscribe(
       res => {
@@ -153,24 +162,34 @@ export class OrderDetailComponent extends TimelineDetailComponent implements OnI
   }
 
   protected getSingleData(): void {
-    this.route.params.pipe(
-      mergeMap(
-        params => this.investmentService.getSingleRecipe(params['id'])
-      )
-    ).subscribe(
-      res => {
-        if(res.recipe_run) {
-          this.singleDataSource.body = [res.recipe_run];
-        }
+    // mock
+    this.singleDataSource.body = [{
+      "id": 1,
+      "created_timestamp": 15683498502378,
+      "status": 51,
+      "approval_user": "test user",
+      "approval_comment": "test approval comment"
+    }];
 
-        if(res.recipe_stats) {
-          this.setTagLine(res.recipe_stats.map(stat => {
-            return new TagLineItem(`${stat.count} ${stat.name}`)
-          }))
-        }
-      },
-      err => this.singleDataSource.body = []
-    )
+    // this.route.params.pipe(
+    //   mergeMap(
+    //     params => this.ordersService.getOrderGroupOfRecipe(params['id'])
+    //   )
+    // ).subscribe(
+    //   res => {
+    //     if(res.recipe_order_group) {
+    //       this.singleDataSource.body = [res.recipe_order_group];
+    //       this.showGenerateOrders = false; // hide Generate orders button
+    //     }
+
+    //     if(res.recipe_stats) {
+    //       this.setTagLine(res.recipe_stats.map(stat => {
+    //         return new TagLineItem(`${stat.count} ${stat.name}`)
+    //       }))
+    //     }
+    //   },
+    //   err => this.singleDataSource.body = []
+    // );
   }
 
   protected getTimelineData(): void {
@@ -186,12 +205,42 @@ export class OrderDetailComponent extends TimelineDetailComponent implements OnI
    */
 
   public openSingleRow(row: any): void {
-    this.router.navigate([`/run/recipe/${row.id}`]);
+    //this.router.navigate([`/run/recipe/${row.id}`]);
   }
 
   public openListRow(row: any): void {
     this.router.navigate([`/run/execution-order/${row.id}`]);
   }
 
+  public generateOrders() {
+    console.log('generateOrders');
+    this.route.params.pipe(
+      mergeMap(
+        params => this.ordersService.generateOrders(params['id'])
+      )
+    ).subscribe(
+      res => {
+        // todo
+      },
+      err => this.singleDataSource.body = []
+    );
+  }
+
+  // approve or reject order group (depends on status)
+  private alterGroup(data, status) {
+    const requestData = {
+      status: status,
+      comment: data.rationale
+    };
+
+    this.ordersService.alterOrderGroup(data.data.id, requestData).subscribe(
+      res => {
+        // update tables information
+        this.getSingleData();
+        this.getAllData();
+        this.getTimelineData();
+      }
+    );
+  }
 
 }

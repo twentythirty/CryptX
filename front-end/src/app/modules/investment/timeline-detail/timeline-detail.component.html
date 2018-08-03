@@ -7,11 +7,17 @@
 </app-page-heading>
 
 <div class="left-part-dashboard">
-  <span class="headline-title">{{ singleTitle }}</span>
+  <div class="top-controls">
+    <span class="headline-title">{{ singleTitle }}</span>
+    <a *ngIf="showGenerateOrders" (click)="generateOrders()" class="btn start">
+      <span>{{ 'orders.generate_orders' | translate }}</span>
+    </a>
+  </div>
 
   <app-data-table
     [dataSource]="singleDataSource"
     [columnsToShow]="singleColumnsToShow"
+    [emptyText]="singleTableEmptyText | translate"
     (openRow)="openSingleRow($event)"
   ></app-data-table>
   

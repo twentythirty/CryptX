@@ -79,6 +79,7 @@ export class RecipeRunDetailComponent extends TimelineDetailComponent implements
       ]
     }}),
     new ConfirmCellDataColumn({ column: 'actions', inputs: {
+      show: (row) => true,
       execConfirm: (row) => this.showRationaleModal(row, data => data && this.confirmRun(data)),
       execDecline: (row) => this.showRationaleModal(row, data => data && this.declineRun(data)),
     } }),  // TODO: Actions component
@@ -86,11 +87,11 @@ export class RecipeRunDetailComponent extends TimelineDetailComponent implements
 
   public listDataSource: TableDataSource = {
     header: [
-      { column: 'id', nameKey: 'table.header.id', filter: {type: 'text', sortable: true }},
-      { column: 'transaction_asset', nameKey: 'table.header.transaction_asset', filter: {type: 'text', sortable: true }},
-      { column: 'quote_asset', nameKey: 'table.header.quote_asset', filter: {type: 'text', sortable: true }},
-      { column: 'target_exchange', nameKey: 'table.header.exchange', filter: {type: 'text', sortable: true }},
-      { column: 'investment_percentage', nameKey: 'table.header.percentage', filter: {type: 'number', sortable: true }}
+      { column: 'id', nameKey: 'table.header.id', filter: { type: 'text', sortable: true }},
+      { column: 'transaction_asset', nameKey: 'table.header.transaction_asset', filter: { type: 'text', sortable: true }},
+      { column: 'quote_asset', nameKey: 'table.header.quote_asset', filter: { type: 'text', sortable: true }},
+      { column: 'target_exchange', nameKey: 'table.header.exchange', filter: { type: 'text', sortable: true }},
+      { column: 'investment_percentage', nameKey: 'table.header.percentage', filter: { type: 'number', sortable: true }}
     ],
     body: null
   };
