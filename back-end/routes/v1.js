@@ -556,19 +556,19 @@ router.get(
 );
 
  // Execution orders
-/* router.get( // might be deleted
-  ROUTES.GetExecutionOrders.router_string,
-  stateless_auth,
-  check_permissions,
-  filter_reducer,
-  InvestmentController.getExecutionOrders
-); */
 router.post(
-  ROUTES.GetExecutionOrdersOf.router_string,
+  ROUTES.GetExecutionOrdersOfRecipeOrder.router_string,
   stateless_auth,
   check_permissions,
   filter_reducer,
-  InvestmentController.getExecutionOrders
+  InvestmentController.getExecutionOrdersOfRecipeOrder
+);
+router.post(
+  ROUTES.GetExecutionOrdersOfInvestmentRun.router_string,
+  stateless_auth,
+  check_permissions,
+  filter_reducer,
+  InvestmentController.getExecutionOrdersOfInvestmentRun
 );
 router.post(
   ROUTES.GetExecutionOrders.router_string,

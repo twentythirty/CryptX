@@ -418,9 +418,14 @@ ROUTES = {
   },
 
   // Execution orders
-  GetExecutionOrdersOf: {
+  GetExecutionOrdersOfRecipeOrder: {
     router_string: "/execution_orders/of_order/:order_detail_id",
-    permissions_matcher: ROUTE_MATCHERS.GetExecutionOrdersOf,
+    permissions_matcher: ROUTE_MATCHERS.GetExecutionOrdersOfRecipeOrder,
+    required_permissions: [PERMISSIONS.VIEW_INVESTMENT_RUN]
+  },
+  GetExecutionOrdersOfInvestmentRun: {
+    router_string: "/execution_orders/of_investment_run/:investment_run_id",
+    permissions_matcher: ROUTE_MATCHERS.GetExecutionOrdersOfInvestmentRun,
     required_permissions: [PERMISSIONS.VIEW_INVESTMENT_RUN]
   },
   GetExecutionOrders: {

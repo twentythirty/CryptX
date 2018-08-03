@@ -290,10 +290,32 @@ const getExecutionOrder = async function (req, res) {
 };
 module.exports.getExecutionOrder = getExecutionOrder;
 
-
 const getExecutionOrders = async function (req, res) {
 
-  //This will replace the mock dataonce the fees are resolved.
+  const { seq_query, sql_where } = req;
+
+  let [ err, result ] = await to(adminViewsService.fetchExecutionOrdersViewDataWithCount(seq_query));
+  if(err) return ReE(res, err.message, 422);
+  
+  let footer = [];
+  [err, footer] = await to(adminViewsService.fetchExecutionOrdersViewFooter(sql_where));
+  if(err) return ReE(res, err.message, 422);
+
+  let { data: execution_orders, total: count } = result;
+
+  execution_orders = execution_orders.map(eo => eo.toWeb());
+
+  return ReS(res, {
+    execution_orders,
+    footer,
+    count
+  })
+
+}
+module.exports.getExecutionOrders = getExecutionOrders;
+
+const getExecutionOrdersOfRecipeOrder = async function (req, res) {
+
   let { seq_query, sql_where } = req;
   const recipe_order_id = req.params.order_detail_id;
 
@@ -302,6 +324,8 @@ const getExecutionOrders = async function (req, res) {
     if (!_.isPlainObject(seq_query.where)) seq_query.where = {};
     seq_query.where.recipe_order_id = recipe_order_id;
     sql_where = adminViewUtils.addToWhere(sql_where, `recipe_order_id = ${recipe_order_id}`);
+  } else {
+    return ReE(res, `Valid order id not found in path! saw ${recipe_order_id}`)
   }
 
   let [ err, result ] = await to(adminViewsService.fetchExecutionOrdersViewDataWithCount(seq_query));
@@ -321,7 +345,40 @@ const getExecutionOrders = async function (req, res) {
     count
   })
 };
-module.exports.getExecutionOrders = getExecutionOrders;
+module.exports.getExecutionOrdersOfRecipeOrder = getExecutionOrdersOfRecipeOrder;
+
+const getExecutionOrdersOfInvestmentRun = async function (req, res) {
+
+  let { seq_query, sql_where } = req;
+  const investment_run_id = req.params.investment_run_id;
+
+  if(investment_run_id) {
+    if(!_.isPlainObject(seq_query)) seq_query = { where: {} };
+    if (!_.isPlainObject(seq_query.where)) seq_query.where = {};
+    seq_query.where.investment_run_id = investment_run_id;
+    sql_where = adminViewUtils.addToWhere(sql_where, `investment_run_id = ${investment_run_id}`);
+  } else {
+    return ReE(res, `Valid investment run id not found in path! saw: ${investment_run_id}`)
+  }
+
+  let [ err, result ] = await to(adminViewsService.fetchExecutionOrdersViewDataWithCount(seq_query));
+  if(err) return ReE(res, err.message, 422);
+
+  let footer = [];
+  [ err, footer ] = await to(adminViewsService.fetchExecutionOrdersViewFooter(sql_where));
+  if(err) return ReE(res, err.message, 422);
+
+  let { data: execution_orders, total: count } = result;
+  
+  execution_orders = execution_orders.map(eo => eo.toWeb())
+
+  return ReS(res, {
+    execution_orders,
+    footer,
+    count
+  })
+};
+module.exports.getExecutionOrdersOfInvestmentRun = getExecutionOrdersOfInvestmentRun;
 
 const getExecutionOrdersColumnLOV = async function (req, res) {
 

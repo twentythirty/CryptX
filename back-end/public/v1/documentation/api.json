@@ -2010,7 +2010,7 @@
       }
     },
     "/execution_orders/of_order/{order_id}": {
-      "get": {
+      "post": {
         "tags": [
           "execution orders"
         ],
@@ -2026,6 +2026,15 @@
             "description": "ID of order to get details of",
             "required": true,
             "type": "integer"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "description": "The filter definition to perform on the data set. If absent will assume empty filter and return all data",
+            "required": false,
+            "schema": {
+              "$ref": "#/definitions/EntitiesFilter"
+            }
           }
         ],
         "responses": {
@@ -2041,21 +2050,23 @@
             "bearer": []
           }
         ]
-      },
+      }
+    },
+    "/execution_orders/of_investment_run/{investment_run_id}": {
       "post": {
         "tags": [
           "execution orders"
         ],
-        "summary": "Get execution orders of by order id",
-        "description": "Get execution orders of by order id",
+        "summary": "Get execution orders by id of investment run they are in",
+        "description": "Get execution orders investment run id",
         "produces": [
           "application/json"
         ],
         "parameters": [
           {
-            "name": "order_id",
+            "name": "investment_run_id",
             "in": "path",
-            "description": "ID of order to get details of",
+            "description": "ID of investment run to get execution orders of",
             "required": true,
             "type": "integer"
           },
