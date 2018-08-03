@@ -179,7 +179,7 @@ user_id int FK >- user.id # User which performed the action
 action enum # Possible actions ChangedAmount, ChangedFee, ChangedStatus
 value_before varchar # value after action
 value_after varchar # value before action
-timestamp date # Time action was performed
+timestamp timestamp # Time action was performed
 
 recipe_run
 -
