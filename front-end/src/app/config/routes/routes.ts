@@ -31,6 +31,7 @@ import { LiquidityInfoComponent } from '../../modules/liquidity/liquidity-info/l
 import { DepositListComponent } from "../../modules/deposit/deposit-list/deposit-list.component";
 import { DepositInfoComponent } from "../../modules/deposit/deposit-info/deposit-info.component";
 import { OrdersListComponent } from '../../modules/orders/orders-list/orders-list.component';
+import { ExecutionOrdersComponent } from "../../modules/investment/execution-orders/execution-orders.component";
 
 const routes: Routes = [
   { path: 'login', component: LoginComponent },
@@ -101,7 +102,8 @@ const routes: Routes = [
       { path: 'deposit/:id', component: DepositDetailComponent },
       { path: 'order/:id', component: OrderDetailComponent },
       { path: 'execution-order/:id', component: ExecutionOrderDetailComponent },
-      { path: 'execution-order-fill/:id', component: ExecutionOrderFillDetailComponent }
+      { path: 'execution-order-fill/:id', component: ExecutionOrderFillDetailComponent },
+      { path: 'execution-orders/:id', component: ExecutionOrdersComponent},
     ],
     canActivate: [AuthGuard, PermissionGuard],
     data: { requiredPermission: ['VIEW_INVESTMENT_RUN']}

@@ -200,8 +200,8 @@
 
   "execution_orders": {
     "side": {
-      "buy": "Buy",
-      "sell": "Sell"
+      "999": "Buy",
+      "888": "Sell"
     },
     "type": {
       "71": "Market",

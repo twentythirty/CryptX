@@ -12,6 +12,7 @@ import { OrderDetailComponent } from './order-detail/order-detail.component';
 import { ExecutionOrderDetailComponent } from './execution-order-detail/execution-order-detail.component';
 import { ExecutionOrderFillDetailComponent } from './execution-order-fill-detail/execution-order-fill-detail.component';
 import { DepositDetailComponent } from './deposit-detail/deposit-detail.component';
+import { ExecutionOrdersComponent } from './execution-orders/execution-orders.component';
 
 @NgModule({
   imports: [
@@ -28,7 +29,8 @@ import { DepositDetailComponent } from './deposit-detail/deposit-detail.componen
     OrderDetailComponent,
     ExecutionOrderDetailComponent,
     ExecutionOrderFillDetailComponent,
-    DepositDetailComponent
+    DepositDetailComponent,
+    ExecutionOrdersComponent,
   ]
 })
 export class InvestmentModule { }
