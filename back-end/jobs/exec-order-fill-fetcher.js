@@ -238,7 +238,8 @@ module.exports.handleFillsWithoutTrades = async (placed_order, external_order, l
         [ err, new_fill ] = await to(ExecutionOrderFill.create({
             execution_order_id: placed_order.id,
             timestamp: new Date(),
-            quantity: external_order.filled - fill_amount_sum
+            quantity: external_order.filled - fill_amount_sum,
+            price: placed_order.price
         }));
 
         if(err) {
@@ -296,16 +297,11 @@ const updateOrderStatus = async (placed_order, log, config) => {
      * The job will spread the Execution order price based on the current amount sum of fills and their individual amount
      * The job will also spread the current order fee(if it exists) across the fills based on their filld amount.
      */
-    if(placed_order.emulated_fills && fill_amount_sum) {
-        /**
-         * Currently the Execution order holds the price which is expected upon being fully filled.
-         * We first need to how much the current fills are worth.
-         */
-        const price_to_spread = fill_amount_sum * placed_order.price / placed_order.total_quantity;
+    if(placed_order.emulated_fills && fill_amount_sum && placed_order.fee) {
 
         [ err ] = await to(sequelize.query(`
             UPDATE execution_order_fill AS eof
-            SET ${placed_order.fee ? `fee = ${placed_order.fee} * quantity / ${fill_amount_sum}, ` : ''}price = ${price_to_spread} * quantity / ${fill_amount_sum}
+            SET fee = ${placed_order.fee} * quantity / ${fill_amount_sum}
             WHERE eof.execution_order_id = ${placed_order.id}
         `));
 

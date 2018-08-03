@@ -89,33 +89,38 @@ const MOCK_ORDERS = [{
     symbol: 'ETH/BTC',
     amount: 10,
     filled: 6,
-    status: 'open'
+    status: 'open',
+    price: 13223
 }, {
     id: '2',
     symbol: 'ETH/BTC',
     amount: 10,
     filled: 10,
-    status: 'open'
+    status: 'open',
+    price: 13223    
 }, {
     id: '3',
     symbol: 'ETH/BTC',
     amount: 10,
     filled: 0,
-    status: 'open'
+    status: 'open',
+    price: 13223
 }, {
     id: '4',
     symbol: 'ETH/BTC',
     amount: 10,
     filled: 0,
     remaining: 10,
-    status: 'closed'
+    status: 'closed',
+    price: 13223
 }, {
     id: '5',
     symbol: 'ETH/BTC',
     amount: 10,
     filled: 10,
     remaining: 0,
-    status: 'closed'
+    status: 'closed',
+    price: 13223
 }, {
     id: '6',
     symbol: 'ETH/BTC',
@@ -123,6 +128,7 @@ const MOCK_ORDERS = [{
     filled: 5,
     remaining: 5,
     status: 'open',
+    price: 13223,
     fee: {
         cost: 1
     }
@@ -645,6 +651,7 @@ describe('Execution Order Fills fetcher job', () => {
             chai.expect(new_fill.timestamp).to.be.a('date');
             chai.expect(new_fill.external_identifier).to.be.undefined;
             chai.expect(new_fill.quantity).to.equal(mocked_order.filled - sum_of_fills);
+            chai.expect(new_fill.price).to.equal(partially_filled_order.price);
         });
         
     });
@@ -678,7 +685,7 @@ describe('Execution Order Fills fetcher job', () => {
 
         const expected_query =  `
             UPDATE execution_order_fill AS eof
-            SET fee = ${mocked_order.fee.cost} * quantity / ${sum_of_fills}, price = ${price_to_spread} * quantity / ${sum_of_fills}
+            SET fee = ${mocked_order.fee.cost} * quantity / ${sum_of_fills}
             WHERE eof.execution_order_id = ${order.id}
         `;
 
