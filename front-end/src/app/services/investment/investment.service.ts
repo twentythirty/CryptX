@@ -89,6 +89,21 @@ export class InvestmentService {
     return this.http.post<any>(this.baseUrl + `exec_orders_fills/of_execution_order/${execution_order_id}`, requestData);
   }
 
+  getAllExecutionOrdersFillsHeaderLOV(column_name: string): Observable<any> {
+    return this.http.get<any>(this.baseUrl + `execution_orders_fills/header_lov/${column_name}`).pipe(
+      map(
+        res => {
+          if(res && res.lov && Array.isArray(res.lov)) {
+            return res.lov.map(lov => {
+              return { value: lov }
+            });
+          }
+          return null;
+        }
+      )
+    );
+  }
+
   /**
    * Get single entities
    */

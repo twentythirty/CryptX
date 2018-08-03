@@ -37,6 +37,7 @@ export class ExecutionOrderFillDetailComponent extends TimelineDetailComponent i
       { column: 'id', nameKey: 'table.header.id' },
       { column: 'instrument', nameKey: 'table.header.instrument' },
       { column: 'side', nameKey: 'table.header.side' },
+      { column: 'exchange', nameKey: 'table.header.exchange'},
       { column: 'type', nameKey: 'table.header.type' },
       { column: 'price', nameKey: 'table.header.price' },
       { column: 'quantity', nameKey: 'table.header.total_quantity' },
@@ -51,7 +52,7 @@ export class ExecutionOrderFillDetailComponent extends TimelineDetailComponent i
   public listDataSource: TableDataSource = {
     header: [
       { column: 'id', nameKey: 'table.header.id', filter: {type: 'text', sortable: true }},
-      { column: 'fill_time', nameKey: 'table.header.fill_time', filter: {type: 'text', sortable: true }},
+      { column: 'fill_time', nameKey: 'table.header.fill_time', filter: {type: 'date', sortable: true }},
       { column: 'fill_price', nameKey: 'table.header.fill_price', filter: {type: 'number', sortable: true }},
       { column: 'quantity', nameKey: 'table.header.quantity', filter: {type: 'number', sortable: true }}
     ],
@@ -64,19 +65,20 @@ export class ExecutionOrderFillDetailComponent extends TimelineDetailComponent i
     new StatusCellDataColumn({ column: 'side', inputs: { classMap: value => {
       return StatusClass.DEFAULT;
     }}}),
-    new StatusCellDataColumn({ column: 'side', inputs: { classMap: value => {
+    new TableDataColumn({column: 'exchange'}),
+    new StatusCellDataColumn({ column: 'type', inputs: { classMap: value => {
       return StatusClass.DEFAULT;
     }}}),
     new NumberCellDataColumn({ column: 'price' }),
-    new NumberCellDataColumn({ column: 'quantity' }),
-    new NumberCellDataColumn({ column: 'fee' }),
+    new NumberCellDataColumn({ column: 'total_quantity' }),
+    new NumberCellDataColumn({ column: 'exchange_trading_fee' }),
     new StatusCellDataColumn({ column: 'status', inputs: { classMap: {
-      '61': StatusClass.PENDING,
-      '62': StatusClass.APPROVED,
-      '63': StatusClass.APPROVED,
-      '64': StatusClass.APPROVED,
-      '65': StatusClass.REJECTED,
-      '66': StatusClass.FAILED,
+      'execution_orders.status.61': StatusClass.PENDING,
+      'execution_orders.status.62': StatusClass.APPROVED,
+      'execution_orders.status.63': StatusClass.APPROVED,
+      'execution_orders.status.64': StatusClass.APPROVED,
+      'execution_orders.status.65': StatusClass.REJECTED,
+      'execution_orders.status.66': StatusClass.FAILED,
     }}}),
     new DateCellDataColumn({ column: 'submission_time' }),
     new DateCellDataColumn({ column: 'completion_time' })
@@ -99,6 +101,8 @@ export class ExecutionOrderFillDetailComponent extends TimelineDetailComponent i
     private investmentService: InvestmentService
   ) {
     super(route);
+
+    this.getFilterLOV();
   }
 
   /**
@@ -117,6 +121,16 @@ export class ExecutionOrderFillDetailComponent extends TimelineDetailComponent i
       },
       err => this.listDataSource.body = []
     )
+  }
+
+  private getFilterLOV(): void {
+    this.listDataSource.header.filter(
+      col => ['id', 'fill_time', 'fill_price', 'quantity'].includes(col.column)
+    ).map(
+      col => {
+        col.filter.rowData$ = this.investmentService.getAllExecutionOrdersFillsHeaderLOV(col.column);
+      }
+    );
   }
 
   protected getSingleData(): void {
