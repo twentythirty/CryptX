@@ -408,8 +408,9 @@ const getInvestmentRunTimeline = async function (investment_run_id) {
     }
   }
 
-  let deposits_have_atleast_one_perding_status = deposit => deposit.status == RECIPE_RUN_DEPOSIT_STATUSES.Pending;
-  let deposit_status = deposits_have_atleast_one_perding_status ?
+
+  let deposit_status = 
+    recipe_deposits.some(deposit => deposit.status == RECIPE_RUN_DEPOSIT_STATUSES.Pending) ?
     RECIPE_RUN_DEPOSIT_STATUSES.Pending :
     RECIPE_RUN_DEPOSIT_STATUSES.Completed;
   let deposit_stats = {
@@ -477,7 +478,7 @@ const getInvestmentRunTimeline = async function (investment_run_id) {
   }
 
   let exec_order_status;
-  if (execution_orders.every(exec_order => exec_order.status === EXECUTION_ORDER_STATUSES.Failed)) {
+  if (execution_orders.some(exec_order => exec_order.status === EXECUTION_ORDER_STATUSES.Failed)) {
     exec_order_status = EXECUTION_ORDER_STATUSES.Failed;
   } else if (whole_investment.status === INVESTMENT_RUN_STATUSES.OrdersFilled) {
     exec_order_status = INVESTMENT_RUN_STATUSES.OrdersFilled;
@@ -486,7 +487,7 @@ const getInvestmentRunTimeline = async function (investment_run_id) {
   }
   let exec_order_data = {
     count: execution_orders.length,
-    execution_order_status: `execution_orders_timeline.status.${exec_order_status}`
+    status: `execution_orders_timeline.status.${exec_order_status}`
   };
   
   return {
