@@ -61,6 +61,20 @@ module.exports.passwordResetMailHTML = (details) => {
 
 module.exports.send_grid = send_grid;
 
+module.exports.passwordChangeNotification = (details) => {
+
+    return `
+    <p>Dear ${details.full_name},</p>
+    <p>Your password has been successfully changed.</p>
+    <p>IP address: <b>${details.ip_address}</b><br/>
+    Datetime: <i>${details.change_time}</i><br/>
+    </p>
+    <p>If you did not make this change or if you believe an unauthorized person made a change on your account, please immediately contact the system administrator.<br/>
+    </p>
+    <p>CryptX team</p>
+    `
+}
+
 module.exports.sendMail = async (to, subject, content, is_html = true) => {
 
     let msg = {

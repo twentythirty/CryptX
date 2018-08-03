@@ -264,6 +264,16 @@ const changePassword = async function (req, res) {
   [err, status] = await to(authService.expireOtherSessions(user_id, req.headers.authorization));
   if (err) return ReE(res, err, 403);
 
+  mailUtil.sendMail(
+    user.email,
+    `Password change notification`,
+    mailUtil.passwordChangeNotification({
+      full_name: user.full_name(),
+      change_time: new Date(),
+      ip_address: req.ip
+    })
+  );
+
   return ReS(res, {
     user: user.toWeb()
   });
@@ -334,6 +344,16 @@ const resetPassword = async function (req, res) {
 
   [err, user] = await to(authService.resetPassword(user.id, password));
   if (err) return ReE(res, err, 422);
+
+  mailUtil.sendMail(
+    user.email,
+    `Password change notification`,
+    mailUtil.passwordChangeNotification({
+      full_name: user.full_name(),
+      change_time: new Date(),
+      ip_address: req.ip
+    })
+  )
 
   return ReS(res, {message: 'Password successfully changed'});
 };
