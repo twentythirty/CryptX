@@ -485,4 +485,269 @@ describe('InvestmentService testing:', () => {
       return chai.assert.isRejected(investmentService.generateRecipeDetails(STRATEGY_TYPE));
     });
   });
+
+  describe('and method getInvestmentRunTimeline shall', () => {
+    let INVESTMENT_RUN = {
+      id: 2,
+      strategy_type: 101,
+      is_simulated: true,
+      user_created_id: 2,
+      started_timestamp: new Date(),
+      updated_timestamp: new Date(),
+      status: 301,
+      deposit_usd: 150
+    };
+
+    let RECIPE_RUN = {
+      id: 5,
+      created_timestamp: new Date(),
+      approval_status: 43,
+      approval_timestamp: new Date(),
+      approval_comment: "Approved",
+      investment_run_id: 15,
+      user_created_id: 2,
+      approval_user_id: 2
+    };
+
+    let RECIPE_ORDER_GROUP = {
+      id: 2,
+      recipe_run_id: 2,
+      approval_status: 81,
+      created_timestamp: new Date()
+    };
+
+    let RECIPE_DEPOSIT = {
+      id: 4,
+      amount: "3800",
+      asset_id: 2,
+      completion_timestamp: new Date(),
+      creation_timestamp: new Date(),
+      depositor_user_id: 2,
+      recipe_run_id: 5,
+      status: 151,
+      target_exchange_account_id: 3
+    };
+
+    let RECIPE_ORDER = {
+      id:12,
+      instrument_id:1,
+      price:"2",
+      quantity:"6",
+      recipe_order_group_id:2,
+      side:999,
+      status:51,
+      target_exchange_id:2
+    };
+
+    let EXECUTION_ORDER = {
+      id: 4,
+      external_identifier: null,
+      side: 999,
+      type: 71,
+      price: '0.01',
+      total_quantity: '5',
+      status: 61,
+      placed_timestamp: null,
+      completed_timestamp: null,
+      time_in_force: null,
+      recipe_order_id: 2,
+      instrument_id: 3,
+      exchange_id: 6,
+      failed_attempts: 4
+    };
+
+    const INVESTMENT_ID = { // is used for building certain type of object
+      NORMAL: 1,
+      NO_RECIPES: 2,
+      NO_DEPOSITS: 3,
+      NO_ORDERS: 4,
+      NO_EXEC_ORDERS: 5,
+      DEPOSIT_PENDING: 6,
+      DEPOSIT_COMPLETED: 7,
+      ORDERS_PENDING: 8,
+      ORDERS_COMPLETED: 9,
+      ORDERS_EXECUTING: 10,
+      EXEC_ORDERS_FAILED: 11,
+      EXEC_ORDERS_FILLED: 12,
+      EXEC_ORDERS_EXECUTING: 13
+    };
+    let RECIPE_RUNS_COUNT = 5;
+    let DEPOSITS_PER_RECIPE = 5;
+    let ORDER_GROUPS_PER_RECIPE = 5;
+    let ORDERS_PER_GROUP = 50;
+    let EXECUTION_ORDERS_PER_ORDER = 1;
+
+    beforeEach(() => {
+      sinon.stub(investmentService, 'getWholeInvestmentRun').callsFake((inv_id) => {
+        let whole_investment = Object.assign({}, INVESTMENT_RUN);
+
+        if(inv_id == INVESTMENT_ID.EXEC_ORDERS_FILLED) whole_investment.status = 308; 
+        if(inv_id == INVESTMENT_ID.EXEC_ORDERS_EXECUTING) whole_investment.status = 307; 
+
+        whole_investment.RecipeRuns = [...Array(inv_id != INVESTMENT_ID.NO_RECIPES ? RECIPE_RUNS_COUNT : 0)].map(() => {
+          let recipe_runs = Object.assign({}, RECIPE_RUN);
+
+          recipe_runs.RecipeRunDeposits = [...Array(inv_id != INVESTMENT_ID.NO_DEPOSITS ? DEPOSITS_PER_RECIPE : 0)].map(
+            (depo, depo_index) => {
+              let deposit = Object.assign(RECIPE_DEPOSIT);
+              if (inv_id == INVESTMENT_ID.DEPOSIT_PENDING)
+                deposit.status = 150; // Pending, assigned to first deposit only
+              else 
+                deposit.status = 151; // Completed
+              return deposit;
+            }
+          );
+
+          recipe_runs.RecipeOrderGroups = [...Array(ORDER_GROUPS_PER_RECIPE)].map(
+            () => {
+              let recipe_order_group = Object.assign(RECIPE_ORDER_GROUP);
+
+              recipe_order_group.RecipeOrders = [...Array(inv_id != 4 ? ORDERS_PER_GROUP : 0)].map(
+                (ord, order_index) => {
+                  let order = Object.assign({}, RECIPE_ORDER);
+                  if(inv_id == INVESTMENT_ID.ORDERS_EXECUTING) order.status = 52; // Executing, assigned to first deposit only
+                  if(inv_id == INVESTMENT_ID.ORDERS_PENDING) order.status = 51; // Pending
+                  if(inv_id == INVESTMENT_ID.ORDERS_COMPLETED) order.status = 53; // Completed
+
+                  order.ExecutionOrders = [...Array(inv_id != 5 ? EXECUTION_ORDERS_PER_ORDER : 0)].map(
+                    () => {
+                      let exec_order = Object.assign({}, EXECUTION_ORDER);
+                      if(inv_id == INVESTMENT_ID.EXEC_ORDERS_FAILED) exec_order.status = 66;
+                      
+                      return exec_order;
+                    }
+                  );
+
+                  return order;
+                }
+              );
+
+              return recipe_order_group;
+            }
+          );
+
+          return recipe_runs;
+        });
+
+        whole_investment.toJSON = () => {
+          delete whole_investment.toJSON;
+          return whole_investment;
+        }
+        return Promise.resolve(whole_investment);
+      }); 
+    });
+
+    afterEach(() => {
+      investmentService.getWholeInvestmentRun.restore();
+    })
+
+    it('it should throw if investment run is not found', () => {
+      if(investmentService.getWholeInvestmentRun.restore)
+        investmentService.getWholeInvestmentRun.restore();
+
+      sinon.stub(investmentService, 'getWholeInvestmentRun').returns(Promise.resolve(null));
+
+      return chai.assert.isRejected(investmentService.getInvestmentRunTimeline(INVESTMENT_RUN_ID));
+    })
+
+    it('it should return investment run if investment run is found', () => {
+
+      return investmentService.getInvestmentRunTimeline(INVESTMENT_RUN_ID).then(result => {
+        chai.assert.isObject(result.investment_run);
+        /* chai.expect(result.investment_run).to.be.equal(INVESTMENT_RUN); */
+      });
+    })
+
+    it('it should return null in recipe property if there are no recipe runs', () => {
+
+      return investmentService.getInvestmentRunTimeline(INVESTMENT_ID.NO_RECIPES).then(result => {
+        chai.assert.isUndefined(result.recipe_run);
+      });
+    })
+
+    it('it should return null in deposits property if deposits not found', () => {
+
+      return investmentService.getInvestmentRunTimeline(INVESTMENT_ID.NO_DEPOSITS).then(result => {
+        chai.assert.isNull(result.recipe_deposits);
+      });
+    })
+
+    it('it should return null in orders property if there are no orders', () => {
+
+      return investmentService.getInvestmentRunTimeline(INVESTMENT_ID.NO_DEPOSITS).then(result => {
+        chai.assert.isNull(result.recipe_orders);
+      });
+    })
+
+    it('it should return null in execution orders property if there are no orders', () => {
+
+      return investmentService.getInvestmentRunTimeline(INVESTMENT_ID.NO_EXEC_ORDERS).then(result => {
+        chai.assert.isNull(result.execution_orders);
+      });
+    })
+
+    it('it should count recipe deposits and have status PENDING if at least one of deposits have status PENDING', () => {
+
+      return investmentService.getInvestmentRunTimeline(INVESTMENT_ID.DEPOSIT_PENDING).then(result => {
+        chai.assert.isNumber(result.recipe_deposits.count);
+        chai.expect(result.recipe_deposits.status).to.be.equal('deposits.status.150');
+      });
+    });
+
+    it('it should count recipe deposits and have status COMPLETED if all of deposits have status COMPLETED', () => {
+
+      return investmentService.getInvestmentRunTimeline(INVESTMENT_ID.DEPOSIT_COMPLETED).then(result => {
+        chai.assert.isNumber(result.recipe_deposits.count);
+        chai.expect(result.recipe_deposits.status).to.be.equal('deposits.status.151');
+      });
+    });
+
+    it('it should count recipe orders and have status PENDING if all related orders have status PENDING', () => {
+
+      return investmentService.getInvestmentRunTimeline(INVESTMENT_ID.ORDERS_PENDING).then(result => {
+        chai.assert.isNumber(result.recipe_orders.count);
+        chai.expect(result.recipe_orders.status).to.be.equal('order.status.51');
+      });
+    });
+
+    it('it should count recipe orders and have status COMPLETED if all related orders have status COMPLETED', () => {
+
+      return investmentService.getInvestmentRunTimeline(INVESTMENT_ID.ORDERS_COMPLETED).then(result => {
+        chai.assert.isNumber(result.recipe_orders.count);
+        chai.expect(result.recipe_orders.status).to.be.equal('order.status.53');
+      });
+    });
+
+    it('it should count recipe orders and have status EXECUTION if atleast one of related orders have status EXECUTING', () => {
+
+      return investmentService.getInvestmentRunTimeline(INVESTMENT_ID.ORDERS_EXECUTING).then(result => {
+        chai.assert.isNumber(result.recipe_orders.count);
+        chai.expect(result.recipe_orders.status).to.be.equal('order.status.52');
+      });
+    });
+
+    it('it should count execution orders and return status FAILED if at least one of orders have status FAILED', () => {
+
+      return investmentService.getInvestmentRunTimeline(INVESTMENT_ID.EXEC_ORDERS_FAILED).then(result => {
+        chai.assert.isNumber(result.execution_orders.count);
+        chai.expect(result.execution_orders.status).to.be.equal('execution_orders_timeline.status.66');
+      });
+    });
+
+    it('it should count execution orders and return status FILLED if investment run status is ORDERSFILLED', () => {
+
+      return investmentService.getInvestmentRunTimeline(INVESTMENT_ID.EXEC_ORDERS_FILLED).then(result => {
+        chai.assert.isNumber(result.execution_orders.count);
+        chai.expect(result.execution_orders.status).to.be.equal('execution_orders_timeline.status.308');
+      });
+    });
+
+    it('it should count execution orders and return status EXECUTING if investment run status is EXECUTING', () => {
+
+      return investmentService.getInvestmentRunTimeline(INVESTMENT_ID.EXEC_ORDERS_EXECUTING).then(result => {
+        chai.assert.isNumber(result.execution_orders.count);
+        chai.expect(result.execution_orders.status).to.be.equal('execution_orders_timeline.status.307');
+      });
+    });
+  });
 });

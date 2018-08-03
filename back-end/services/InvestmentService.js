@@ -397,7 +397,7 @@ const getInvestmentRunTimeline = async function (investment_run_id) {
   let recipe_deposits = Object.assign({}, whole_investment).RecipeRuns.map(recipe_run => {
     return recipe_run.RecipeRunDeposits;
   })
-  recipe_deposits = _.flatten(_.flatten(recipe_deposits));
+  recipe_deposits = _.flatten(_.flatten(recipe_deposits)); 
 
   if (!recipe_deposits.length) {
     return { // no deposits found. Return current status
@@ -409,16 +409,18 @@ const getInvestmentRunTimeline = async function (investment_run_id) {
     }
   }
 
+
+  let deposit_status = 
+    recipe_deposits.some(deposit => deposit.status == RECIPE_RUN_DEPOSIT_STATUSES.Pending) ?
+    RECIPE_RUN_DEPOSIT_STATUSES.Pending :
+    RECIPE_RUN_DEPOSIT_STATUSES.Completed;
   let deposit_stats = {
     count: recipe_deposits.length,
-    status: 'deposits.status.' + (
-      recipe_deposits.some(deposit => deposit.status === RECIPE_RUN_DEPOSIT_STATUSES.Pending) ?
-      RECIPE_RUN_DEPOSIT_STATUSES.Pending :
-      RECIPE_RUN_DEPOSIT_STATUSES.Completed
-    )
-  }
+    status: `deposits.status.${deposit_status}`
+  };
 
   // prepare recipe order data
+  // collects all recipe orders into single flat array
   let recipes = Object.assign({}, whole_investment).RecipeRuns; 
   let recipe_orders = _.maxBy(_.flatten(recipes.map(recipe_run => { // beauty
     return recipe_run.RecipeOrderGroups;
@@ -450,6 +452,7 @@ const getInvestmentRunTimeline = async function (investment_run_id) {
   };
 
   // prepare execution order data 
+  // collects all execution orders into single flat array
   let execution_orders = _.flatten(recipes.map(recipe_run => { 
     
     return _.flatten(
@@ -476,7 +479,7 @@ const getInvestmentRunTimeline = async function (investment_run_id) {
   }
 
   let exec_order_status;
-  if (execution_orders.every(exec_order => exec_order.status === EXECUTION_ORDER_STATUSES.Failed)) {
+  if (execution_orders.some(exec_order => exec_order.status === EXECUTION_ORDER_STATUSES.Failed)) {
     exec_order_status = EXECUTION_ORDER_STATUSES.Failed;
   } else if (whole_investment.status === INVESTMENT_RUN_STATUSES.OrdersFilled) {
     exec_order_status = INVESTMENT_RUN_STATUSES.OrdersFilled;
@@ -485,7 +488,7 @@ const getInvestmentRunTimeline = async function (investment_run_id) {
   }
   let exec_order_data = {
     count: execution_orders.length,
-    execution_order_status: `execution_orders_timeline.status.${exec_order_status}`
+    status: `execution_orders_timeline.status.${exec_order_status}`
   };
   
   return {
