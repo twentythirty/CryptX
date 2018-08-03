@@ -556,7 +556,7 @@ describe('InvestmentService testing:', () => {
       failed_attempts: 4
     };
 
-    const INVESTMENT_ID = {
+    const INVESTMENT_ID = { // is used for building certain type of object
       NORMAL: 1,
       NO_RECIPES: 2,
       NO_DEPOSITS: 3,
@@ -584,8 +584,10 @@ describe('InvestmentService testing:', () => {
           recipe_runs.RecipeRunDeposits = [...Array(inv_id != INVESTMENT_ID.NO_DEPOSITS ? DEPOSITS_PER_RECIPE : 0)].map(
             (depo, depo_index) => {
               let deposit = Object.assign(RECIPE_DEPOSIT);
-              if (inv_id == INVESTMENT_ID.DEPOSIT_PENDING && depo_index == 1) deposit.status = 150; // Pending, assigned to first deposit only
-              else deposit.status = 151; // Completed
+              if (inv_id == INVESTMENT_ID.DEPOSIT_PENDING && depo_index == 1)
+                deposit.status = 150; // Pending, assigned to first deposit only
+              else 
+                deposit.status = 151; // Completed
               return deposit;
             }
           );
@@ -595,13 +597,13 @@ describe('InvestmentService testing:', () => {
               let recipe_order_group = Object.assign(RECIPE_ORDER_GROUP);
 
               recipe_order_group.RecipeOrders = [...Array(inv_id != 4 ? ORDERS_PER_GROUP : 0)].map(
-                () => {
-                  let orders = Object.assign({}, RECIPE_ORDER);
-                  if(inv_id == INVESTMENT_ID.ORDERS_PENDING) orders = 51;
-                  if(inv_id == INVESTMENT_ID.ORDERS_PENDING) orders = 51;
-                  if(inv_id == INVESTMENT_ID.ORDERS_PENDING) orders = 51;
+                (ord, order_index) => {
+                  let order = Object.assign({}, RECIPE_ORDER);
+                  if(inv_id == INVESTMENT_ID.ORDERS_EXECUTING && order_index == 0) order.status = 52; // Executing, assigned to first deposit only
+                  if(inv_id == INVESTMENT_ID.ORDERS_PENDING) order.status = 51; // Pending
+                  if(inv_id == INVESTMENT_ID.ORDERS_COMPLETED) order.status = 53; // Completed
 
-                  orders.ExecutionOrders = [...Array(inv_id != 5 ? EXECUTION_ORDERS_PER_ORDER : 0)].map(
+                  order.ExecutionOrders = [...Array(inv_id != 5 ? EXECUTION_ORDERS_PER_ORDER : 0)].map(
                     () => {
                       let exec_order = Object.assign({}, EXECUTION_ORDER);
 
@@ -609,7 +611,7 @@ describe('InvestmentService testing:', () => {
                     }
                   );
 
-                  return orders;
+                  return order;
                 }
               );
 
@@ -677,21 +679,44 @@ describe('InvestmentService testing:', () => {
       });
     })
 
-    it('it should count recipe deposits and have status PENDING if at least one of deposits have status PENDING', () => {
+    /* it('it should count recipe deposits and have status PENDING if at least one of deposits have status PENDING', () => {
 
       return investmentService.getInvestmentRunTimeline(INVESTMENT_ID.DEPOSIT_PENDING).then(result => {
         chai.assert.isNumber(result.recipe_deposits.count);
         chai.expect(result.recipe_deposits.status).to.be.equal('deposits.status.150');
       });
-    });
+    }); */
 
-    it('it should count recipe deposits and have status COMPLETED if all of deposits have status COMPLETED', () => {
+    /* it('it should count recipe deposits and have status COMPLETED if all of deposits have status COMPLETED', () => {
 
       return investmentService.getInvestmentRunTimeline(INVESTMENT_ID.DEPOSIT_COMPLETED).then(result => {
         chai.assert.isNumber(result.recipe_deposits.count);
         chai.expect(result.recipe_deposits.status).to.be.equal('deposits.status.151');
       });
+    }); */
+
+    it('it should count recipe orders and have status PENDING if all related orders have status PENDING', () => {
+
+      return investmentService.getInvestmentRunTimeline(INVESTMENT_ID.ORDERS_PENDING).then(result => {
+        chai.assert.isNumber(result.recipe_orders.count);
+        chai.expect(result.recipe_orders.status).to.be.equal('order.status.51');
+      });
     });
 
+    it('it should count recipe orders and have status COMPLETED if all related orders have status COMPLETED', () => {
+
+      return investmentService.getInvestmentRunTimeline(INVESTMENT_ID.ORDERS_COMPLETED).then(result => {
+        chai.assert.isNumber(result.recipe_orders.count);
+        chai.expect(result.recipe_orders.status).to.be.equal('order.status.53');
+      });
+    });
+
+    it('it should count recipe orders and have status EXECUTION if atleast one of related orders have status EXECUTING', () => {
+
+      return investmentService.getInvestmentRunTimeline(INVESTMENT_ID.ORDERS_EXECUTING).then(result => {
+        chai.assert.isNumber(result.recipe_orders.count);
+        chai.expect(result.recipe_orders.status).to.be.equal('order.status.52');
+      });
+    });
   });
 });

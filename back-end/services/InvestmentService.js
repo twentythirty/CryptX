@@ -396,7 +396,7 @@ const getInvestmentRunTimeline = async function (investment_run_id) {
   let recipe_deposits = Object.assign({}, whole_investment).RecipeRuns.map(recipe_run => {
     return recipe_run.RecipeRunDeposits;
   })
-  recipe_deposits = _.flatten(_.flatten(recipe_deposits));
+  recipe_deposits = _.flatten(_.flatten(recipe_deposits)); 
 
   if (!recipe_deposits.length) {
     return { // no deposits found. Return current status
@@ -408,16 +408,17 @@ const getInvestmentRunTimeline = async function (investment_run_id) {
     }
   }
 
+  let deposits_have_atleast_one_perding_status = deposit => deposit.status == RECIPE_RUN_DEPOSIT_STATUSES.Pending;
+  let deposit_status = deposits_have_atleast_one_perding_status ?
+    RECIPE_RUN_DEPOSIT_STATUSES.Pending :
+    RECIPE_RUN_DEPOSIT_STATUSES.Completed;
   let deposit_stats = {
     count: recipe_deposits.length,
-    status: 'deposits.status.' + (
-      recipe_deposits.some(deposit => deposit.status === RECIPE_RUN_DEPOSIT_STATUSES.Pending) ?
-      RECIPE_RUN_DEPOSIT_STATUSES.Pending :
-      RECIPE_RUN_DEPOSIT_STATUSES.Completed
-    )
-  }
+    status: `deposits.status.${deposit_status}`
+  };
 
   // prepare recipe order data
+  // collects all recipe orders into single flat array
   let recipes = Object.assign({}, whole_investment).RecipeRuns; 
   let recipe_orders = _.maxBy(_.flatten(recipes.map(recipe_run => { // beauty
     return recipe_run.RecipeOrderGroups;
@@ -449,6 +450,7 @@ const getInvestmentRunTimeline = async function (investment_run_id) {
   };
 
   // prepare execution order data 
+  // collects all execution orders into single flat array
   let execution_orders = _.flatten(recipes.map(recipe_run => { 
     
     return _.flatten(
