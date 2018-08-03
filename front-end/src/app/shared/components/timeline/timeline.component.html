@@ -1,19 +1,76 @@
-<ng-container *ngFor="let key of keys(timelineEvents)">
+<ng-container *ngIf="timelineEvents">
   <a class="step-label"
-    *ngIf="timelineEvents[key] as event"
-    (click)="openEvent(key, event)" [class.active]="event.isCurrent">
-    <ng-container *ngIf="!event.note; else noteOnly">
-      <span class="title">{{ ('investment.' + key) | translate }} <span *ngIf="event.count != null">({{ event.count }})</span></span>
-      <label class="{{ event.statusClass }}">{{ (event.status + '') | translate }}</label>
+    [class.active]="isActive('investment_run')"
+    (click)="openEvent('investment_run', timelineEvents.investment_run)"
+  >
+    <ng-container *ngIf="timelineEvents.investment_run as item">
+      <span class="title">{{ 'investment.investment' | translate }}</span>
+      <label class="">{{ item.status | translate }}</label>
       <div class="data">
-        <span *ngIf="event.strategy_type">{{ (event.strategy_type + '') | translate }}</span><br>
-        <span *ngIf="event.date">{{ (event.date | date:'dd MMMM, yyyy hh:mm') || '-' }}</span>
+        <span *ngIf="item.id">{{ item.id }}, </span>
+        <span *ngIf="item.strategy_type">{{ item.strategy_type | translate }}</span>
+        <div>
+          <span *ngIf="item.started_timestamp">{{ (item.started_timestamp | date:'dd MMMM, yyyy hh:mm') || '-' }}</span>
+        </div>
       </div>
     </ng-container>
-    <ng-template #noteOnly>
-      <div class="data data-note">
-        <span>{{ event.note | translate }}</span>
+  </a>
+
+  <a class="step-label"
+    [class.active]="isActive('recipe_run')"
+    (click)="openEvent('recipe_run', timelineEvents.recipe_run)"
+  >
+    <ng-container *ngIf="timelineEvents.recipe_run as item; else recipeRunsNotCreated">
+      <span class="title">{{ 'investment.recipe_run' | translate }}</span>
+      <label class="">{{ item.approval_status | translate }}</label>
+      <div class="data">
+        <span *ngIf="item.id">{{ item.id }}</span>
+        <div>
+          <span *ngIf="item.created_timestamp">{{ (item.created_timestamp | date:'dd MMMM, yyyy hh:mm') || '-' }}</span>
+        </div>
       </div>
+    </ng-container>
+    <ng-template #recipeRunsNotCreated>
+      {{ 'recipes.recipe_runs_not_created' | translate }}
+    </ng-template>
+  </a>
+
+  <a class="step-label"
+    [class.active]="isActive('recipe_deposits')"
+    (click)="openEvent('recipe_deposits', timelineEvents.recipe_deposits)"
+  >
+    <ng-container *ngIf="timelineEvents.recipe_deposits as item; else depositsNotCreated">
+      <span class="title">{{ 'investment.deposits' | translate }} ({{ item.count }})</span>
+      <label class="">{{ item.status | translate }}</label>
+    </ng-container>
+    <ng-template #depositsNotCreated>
+      {{ 'deposits.deposits_not_created' | translate }}
+    </ng-template>
+  </a>
+
+  <a class="step-label"
+    [class.active]="isActive('recipe_orders')"
+    (click)="openEvent('recipe_orders', timelineEvents.recipe_orders)"
+  >
+    <ng-container *ngIf="timelineEvents.recipe_orders as item; else ordersNotCreated">
+      <span class="title">{{ 'investment.orders' | translate }} ({{ item.count }})</span>
+      <label class="">{{ item.status | translate }}</label>
+    </ng-container>
+    <ng-template #ordersNotCreated>
+      {{ 'orders.orders_not_created' | translate }}
+    </ng-template>
+  </a>
+
+  <a class="step-label"
+    [class.active]="isActive('execution_orders')"
+    (click)="openEvent('execution_orders', timelineEvents.execution_orders)"
+  >
+    <ng-container *ngIf="timelineEvents.execution_orders as item; else executionOrdersNotCreated">
+      <span class="title">{{ 'investment.execution_orders' | translate }} ({{ item.count }})</span>
+      <label class="">{{ item.status | translate }}</label>
+    </ng-container>
+    <ng-template #executionOrdersNotCreated>
+      {{ 'execution_orders.exe_orders_not_created' | translate }}
     </ng-template>
   </a>
 </ng-container>

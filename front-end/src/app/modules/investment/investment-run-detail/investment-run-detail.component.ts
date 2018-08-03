@@ -159,9 +159,11 @@ export class InvestmentRunDetailComponent extends TimelineDetailComponent implem
   protected getTimelineData(): void {
     this.timeline$ = this.route.params.pipe(
       mergeMap(
-        params => this.investmentService.getAllTimelineData({ "investment_run_id": params['id'] })
+        params => this.investmentService.getAllTimelineData({ investment_run_id: params['id'] })
       )
-    )
+    ).do(res => {
+      console.log('timeline$ res', res);
+    });
   }
 
   /**

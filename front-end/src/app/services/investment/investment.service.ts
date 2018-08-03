@@ -1,14 +1,10 @@
 import { Injectable } from '@angular/core';
-import { Observable } from 'rxjs/Observable';
 import { HttpClient } from '@angular/common/http';
+import { Observable } from 'rxjs/Observable';
+import { map } from 'rxjs/operators/map';
 
 import { environment } from '../../../environments/environment';
 import { EntitiesFilter } from '../../shared/models/api/entitiesFilter';
-import { of } from 'rxjs/observable/of';
-import { TimelineEvent } from '../../shared/components/timeline/timeline.component';
-import { StatusClass } from '../../shared/models/common';
-import { map, tap } from 'rxjs/operators';
-import 'rxjs/Rx';
 
 
 @Injectable()
@@ -196,8 +192,9 @@ export class InvestmentService {
    */
 
   getAllTimelineData(investment_run: object): Observable<any> {
-    return this.http.post<any>(this.baseUrl + 'investments/timeline', investment_run)
-      .map(res => res.statistics)  
+    return this.http.post<any>(this.baseUrl + 'investments/timeline', investment_run).pipe(
+      map(res => res.timeline)
+    );
   }
 
   /**

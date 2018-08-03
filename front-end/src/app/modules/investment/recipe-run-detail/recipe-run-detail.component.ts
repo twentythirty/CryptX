@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { mergeMap, map } from 'rxjs/operators';
+import { mergeMap } from 'rxjs/operators/mergeMap';
 
 import { StatusClass } from '../../../shared/models/common';
 
@@ -126,9 +126,11 @@ export class RecipeRunDetailComponent extends TimelineDetailComponent implements
       )
     ).subscribe(
       res => {
+        Object.assign(this.listDataSource, {
+          body: res.recipe_details,
+          footer: res.footer
+        });
         this.count = res.count;
-        this.listDataSource.body = res.recipe_details;
-        this.listDataSource.footer = res.footer;
       },
       err => this.listDataSource.body = []
     )
@@ -157,9 +159,11 @@ export class RecipeRunDetailComponent extends TimelineDetailComponent implements
   protected getTimelineData(): void {
     this.timeline$ = this.route.params.pipe(
       mergeMap(
-        params => this.investmentService.getAllTimelineData({ "recipe_run_id": params['id'] })
+        params => this.investmentService.getAllTimelineData({ recipe_run_id: params['id'] })
       )
-    )
+    ).do(res => {
+      console.log('timeline res', res);
+    });
   }
 
   /**

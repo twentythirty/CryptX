@@ -34,19 +34,20 @@ export class TimelineEvent {
 export class TimelineComponent implements OnInit {
 
   @Input() timelineEvents: {
-    investment: TimelineEvent,
+    investment_run: TimelineEvent,
     recipe_run: TimelineEvent,
-    deposits: TimelineEvent,
-    orders: TimelineEvent,
+    recipe_deposits: TimelineEvent,
+    recipe_orders: TimelineEvent,
     execution_orders: TimelineEvent
   }
 
   constructor(
     private router: Router
-  ) { }
-
-  ngOnInit() {
+  ) {
+    console.log('status enum', Object.keys(StatusClass));
   }
+
+  ngOnInit() {}
 
   public keys(obj: any): Array<string> {
     if(obj) {
@@ -56,13 +57,26 @@ export class TimelineComponent implements OnInit {
     }
   }
 
+  public isActive(key: string): boolean {
+    let routePart;
+
+    switch(key) {
+      case 'investment_run':   routePart = 'run/investment'; break;
+      case 'recipe_run':       routePart = 'run/recipe'; break;
+      case 'recipe_deposits':  routePart = 'run/deposit'; break;
+      case 'recipe_orders':    routePart = 'run/order'; break;
+      case 'execution_orders': routePart = 'run/execution-order'; break;
+    }
+    return this.router.isActive(routePart, false);
+  }
+
   public openEvent(key: string, event: TimelineEvent): void {
-    if(event.id || event.count) {
+    if(event) {
       switch(key) {
-        case 'investment': this.router.navigate([`/run/investment/${event.id}`]); break;
-        case 'recipe_run': this.router.navigate([`/run/recipe/${event.id}`]); break;
-        case 'deposits': this.router.navigate([`/run/deposit/${event.id}`]); break;
-        case 'orders': this.router.navigate([`/run/order/${event.id}`]); break;
+        case 'investment_run':   this.router.navigate([`/run/investment/${event.id}`]); break;
+        case 'recipe_run':       this.router.navigate([`/run/recipe/${event.id}`]); break;
+        case 'recipe_deposits':  this.router.navigate([`/run/deposit/${event.id}`]); break;
+        case 'recipe_orders':    this.router.navigate([`/run/order/${event.id}`]); break;
         case 'execution_orders': this.router.navigate([`/run/execution_order/${event.id}`]); break;
       }
     }
