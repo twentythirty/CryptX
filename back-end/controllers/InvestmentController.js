@@ -22,11 +22,6 @@ const createInvestmentRun = async function (req, res) {
   );
   if (err) return ReE(res, err, 422);
 
-  /* [err, recipe_run] = await to( // generate recipe run right after genrating investment run
-    investmentService.createRecipeRun(req.user.id, investment_run.id, strategy_type)
-  );
-  if (err) return ReE(res, err, 422); */
-
   return ReS(res, {
     investment_run: investment_run.toWeb()
   })
@@ -155,7 +150,6 @@ module.exports.changeRecipeRunStatus = changeRecipeRunStatus;
 const getRecipeRun = async function (req, res) {
 
   let recipe_run_id = req.params.recipe_id;
-  //let [err, recipe_run] = await to(RecipeRun.findById(recipe_run_id));
   let [ err, recipe_run ] = await to(adminViewsService.fetchRecipeRunView(recipe_run_id));
   if (err) return ReE(res, err.message, 422);
 
@@ -220,20 +214,9 @@ const getRecipeRunDetail = async function (req, res) {
 
   const recipe_detail_id = req.params.recipe_detail_id;
 
-  /*
-  let [err, recipe_run_detail] = await to(RecipeRunDetail.findOne({
-    where: {
-      id: recipe_detail_id
-    }
-  }));
-
-  if (err) return ReE(res, err.message, 422);
-  if (recipe_run_detail)
-    return ReE(res, "Recipe detail not found", 422) */
-
   const [ err, recipe_detail ] = await to(adminViewsService.fetchRecipeRunDetailView(recipe_detail_id));
   if(err) return ReE(res, err.message, 422);
-  if(!recipe_detail) return ReE(res, `Recipe detail wasno found with id ${recipe_detail_id}`, 422);
+  if(!recipe_detail) return ReE(res, `Recipe detail was not found with id ${recipe_detail_id}`, 422);
 
   return ReS(res, {
     recipe_detail
@@ -245,14 +228,6 @@ module.exports.getRecipeRunDetail = getRecipeRunDetail;
 const getRecipeRunDetails = async function (req, res) {
 
   let recipe_run_id = req.params.recipe_id;
-
-  /*let [err, recipe_run_details] = await to(RecipeRunDetail.findAll({
-    where: {
-      recipe_run_id: recipe_run_id
-    }
-  }));
-
-  if (err) return ReE(res, err.message, 422);*/
 
   let { seq_query, sql_where } = req;
 
@@ -309,21 +284,6 @@ const getExecutionOrder = async function (req, res) {
 
   execution_order = execution_order.toWeb();
 
-  // mock data below
-
-  let mock_detail = {
-    id: 1,
-    instrument: "BTC/ETH",
-    side: 999,
-    type: 71,
-    price: 12.01,
-    total_quantity: 6.01,
-    exchange_trading_fee: 1.01,
-    status: 61,
-    submission_time: 1531396477062,
-    completion_time: 1531396477062
-  };
-
   return ReS(res, {
     execution_order
   })
@@ -354,22 +314,6 @@ const getExecutionOrders = async function (req, res) {
   let { data: execution_orders, total: count } = result;
   
   execution_orders = execution_orders.map(eo => eo.toWeb())
-
-  // mock data below
-  let mock_detail = [...Array(20)].map((detail, index) => ({
-    id: index,
-    instrument: "BTC/ETH",
-    side: 999,
-    type: 71,
-    price: 12.01,
-    total_quantity: 6.01,
-    exchange_trading_fee: 1.01,
-    status: 61,
-    submission_time: 1531396477062,
-    completion_time: 1531396477062
-  }));
-
-  let mock_footer = create_mock_footer(mock_detail[0], 'execution_order');
 
   return ReS(res, {
     execution_orders,
@@ -442,21 +386,6 @@ const getExecutionOrderFillsColumnLOV = async function (req, res) {
   })
 }
 module.exports.getExecutionOrderFillsColumnLOV = getExecutionOrderFillsColumnLOV;
-
-const create_mock_footer = function (keys, name) {
-  // delete this function after mock data is replaced
-  let footer = [...Object.keys(keys)].map((key, index) => {
-    return {
-      "name": key,
-      "value": 999,
-      "template": name + ".footer." + key,
-      "args": {
-          [key]: 999
-      }
-    }
-  });
-  return footer;
-};
 
 
 const GetInvestmentPortfolioStats = async function (req, res) {
