@@ -1,3 +1,4 @@
+<div *ngIf="pageTitle">
 <app-page-heading [heading]="pageTitle">
   <ul class="dashboard-item-details">
     <li *ngFor="let item of tagLine">
@@ -5,24 +6,27 @@
     </li>
   </ul>
 </app-page-heading>
+</div>
 
 <div class="left-part-dashboard">
   <div class="top-controls">
-    <span class="headline-title">{{ singleTitle }}</span>
+    <span  class="headline-title">{{ singleTitle }}</span>
     <a *ngIf="showGenerateOrders" (click)="generateOrders()" class="btn start">
       <span>{{ 'orders.generate_orders' | translate }}</span>
     </a>
   </div>
 
-  <app-data-table
+  <div *ngIf="singleDataSource">
+  <app-data-table 
     [dataSource]="singleDataSource"
     [columnsToShow]="singleColumnsToShow"
     [emptyText]="singleTableEmptyText | translate"
     (openRow)="openSingleRow($event)"
   ></app-data-table>
+  </div>
   
-  <div class="top-controls">
-    <span class="headline-title">{{ listTitle }}</span>
+  <div class="top-controls" *ngIf="listTitle">
+    <span  class="headline-title">{{ listTitle }}</span>
     <a *ngIf="addTitle" (click)="addAction()" class="btn start">
       <span>{{ addTitle }}</span>
     </a>
