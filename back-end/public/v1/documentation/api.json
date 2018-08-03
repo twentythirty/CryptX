@@ -56,7 +56,7 @@
           "cold storage"
         ],
         "summary": "Approve cold storage transfer",
-        "description": "Approve cold storage transfer. After approving, system will initiate transfer.",
+        "description": "Approve cold storage transfer. After approving, system will initiate transfer. The response should be merged with the currently opened deposit.",
         "produces": [
           "application/json"
         ],
@@ -1808,10 +1808,10 @@
           {
             "name": "body",
             "in": "body",
-            "description": "Deposit information",
-            "required": false,
+            "description": "Deposit approval values",
+            "required": true,
             "schema": {
-              "type": "object"
+              "$ref": "#/definitions/ApproveDepositInfo"
             }
           }
         ],
@@ -1819,7 +1819,7 @@
           "200": {
             "description": "success",
             "schema": {
-              "$ref": "#/definitions/RecipeDepositResponse"
+              "$ref": "#/definitions/RecipeDepositApproveResponse"
             }
           }
         },
@@ -5558,8 +5558,35 @@
         }
       }
     },
+    "RecipeDepositApproveResponse": {
+      "description": "Recipe deposit response after approval",
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean",
+          "example": true
+        },
+        "recipe_deposit": {
+          "$ref": "#/definitions/RecipeDepositAfterApproval"
+        }
+      }
+    },
     "SubmitDepositInfo": {
       "description": "Parameters for adding deposit information",
+      "type": "object",
+      "properties": {
+        "amount": {
+          "type": "number",
+          "example": 15.12
+        },
+        "deposit_management_fee": {
+          "type": "number",
+          "example": 1.1
+        }
+      }
+    },
+    "ApproveDepositInfo": {
+      "description": "Parameters for approving a pending deposit",
       "type": "object",
       "properties": {
         "amount": {
@@ -5611,6 +5638,52 @@
         "status": {
           "type": "number",
           "example": 150
+        }
+      }
+    },
+    "RecipeDepositAfterApproval": {
+      "description": "Recipe deposit objectafter approval",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "number",
+          "example": 421
+        },
+        "recipe_run_id": {
+          "type": "number",
+          "example": 213
+        },
+        "asset_id": {
+          "type": "number",
+          "example": 86
+        },
+        "amount": {
+          "type": "number",
+          "example": 165165
+        },
+        "deposit_management_fee": {
+          "type": "number",
+          "example": 5665
+        },
+        "creation_timestamp": {
+          "type": "number",
+          "example": 1533286541746
+        },
+        "completed_timestamp": {
+          "type": "number",
+          "example": 1533286541746
+        },
+        "depositor_user_id": {
+          "type": "number",
+          "example": 12
+        },
+        "depositor_user": {
+          "type": "string",
+          "example": "John Xena"
+        },
+        "status": {
+          "type": "string",
+          "example": "deposits.status.151"
         }
       }
     },
