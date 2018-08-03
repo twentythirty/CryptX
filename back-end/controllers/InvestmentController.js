@@ -357,15 +357,17 @@ const getExecutionOrderFills = async function (req, res) {
   const execution_order_id = req.params.execution_order_id;
 
   let seq_query = Object.assign({}, req.seq_query);
-  seq_query.where[execution_order_id] = execution_order_id;
+  seq_query.where.execution_order_id = execution_order_id;
 
   const sql_where = adminViewUtils.addToWhere(req.sql_where, `execution_order_id = ${execution_order_id}`);
 
   const { data: execution_order_fills, total: count} = await adminViewsService.fetchExecutionOrderFillsViewDataWithCount(seq_query);
   const footer = await adminViewsService.fetchExecutionOrderFillsViewsFooter(sql_where);
 
+  const execution_order_fills_web = _.map(execution_order_fills, eof => eof.toWeb());
+
   return ReS(res, {
-    execution_order_fills,
+    execution_order_fills: execution_order_fills_web,
     footer,
     count
   })
