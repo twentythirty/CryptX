@@ -314,9 +314,9 @@ const fetchInstrumentLiquidityRequirementView = async (liquidity_requirement_id)
 }
 module.exports.fetchInstrumentLiquidityRequirementView = fetchInstrumentLiquidityRequirementView;
 
-const fetchRecipeOrdersGroupView = async (recipe_orders_group_id) => {
+const fetchRecipeOrdersGroupView = async (recipe_orders_group_id, alias = 'id') => {
 
-    return fetchSingleEntity(AVRecipeOrdersGroup, recipe_orders_group_id);
+    return fetchSingleEntity(AVRecipeOrdersGroup, recipe_orders_group_id, alias);
 }
 module.exports.fetchRecipeOrdersGroupView = fetchRecipeOrdersGroupView;
 

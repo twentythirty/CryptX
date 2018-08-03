@@ -46,6 +46,7 @@ ROUTE_MATCHERS = {
     GetRecipeOrdersColLOV: /\/orders\/header_lov\/\w+/,
     GetRecipeOrder: /\/orders\/d+$/,
     GetRecipeOrdersGroup: /\/orders\/groups\/d+$/,
+    getRecipeOrdersGroupOfRecipe: /\/orders\/groups\/of_recipe\/d+/,
     GenerateRecipeOrders: /\/recipes\/\d+\/generete_orders$/,
     AlterOrdersGroup: /\/orders\/d+\/alter$/,
     CreateNewRecipeRun: /\/investments\/\d+\/start_recipe_run$/,

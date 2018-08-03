@@ -414,6 +414,12 @@ router.get(
   check_permissions,
   OrdersController.getRecipeOrdersGroup
 );
+router.get(
+  ROUTES.GetRecipeOrdersGroupOfRecipe.router_string,
+  stateless_auth,
+  check_permissions,
+  OrdersController.getRecipeOrdersGroup
+);
 router.post(
   ROUTES.GetRecipeOrders.router_string,
   stateless_auth,
