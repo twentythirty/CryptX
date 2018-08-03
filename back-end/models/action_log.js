@@ -31,6 +31,7 @@ module.exports = (sequelize, DataTypes) => {
     ActionLog.belongsTo(models.ExchangeAccount);
     ActionLog.belongsTo(models.InvestmentRun);
     ActionLog.belongsTo(models.RecipeRun);
+    ActionLog.belongsTo(models.RecipeRunDeposit);
     ActionLog.belongsTo(models.RecipeOrder);
     ActionLog.belongsTo(models.ExecutionOrder);
   };
