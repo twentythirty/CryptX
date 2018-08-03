@@ -1,7 +1,7 @@
 'use strict';
 
 const InvestmentRun = require('../models').InvestmentRun;
-const InvestmentRunDeposit = require('../models').InvestmentRunDeposit;
+const RecipeRunDeposit = require('../models').RecipeRunDeposit;
 const Asset = require('../models').Asset;
 
 const saveDeposit = async function (investment_run_id, asset_id, amount) {
@@ -40,3 +40,29 @@ const generateRecipeRunDeposits = async function (approved_recipe_run) {
 
 }
 module.exports.generateRecipeRunDeposits = generateRecipeRunDeposits;
+
+const approveDeposit = async (deposit_id, user_id, updated_values = {}) => {
+  const { deposit_management_fee, amount } = updated_values;
+
+  if(!deposit_management_fee || 
+    !_.isNumber(deposit_management_fee) ||
+    deposit_management_fee < 0 || 
+    !amount || 
+    !_.isNumber(amount) ||
+    amount < 0) TE('To confirm a deposit, a posotive fee and amount must be specified');
+
+  let [ err, deposit ] = await to(RecipeRunDeposit.findById(deposit_id));
+
+  if(err) TE(err.message);
+  if(!deposit) return null;
+  if(deposit.status !== MODEL_CONST.RECIPE_RUN_DEPOSIT_STATUSES.Pending) TE(`Deposit confirmation is only allowed for Pending deposits.`);
+
+  deposit.fee = deposit_management_fee;
+  deposit.amount = amount;
+  deposit.status = MODEL_CONST.RECIPE_RUN_DEPOSIT_STATUSES.Completed;
+  deposit.depositor_user_id = user_id;
+  deposit.completion_timestamp = new Date();
+
+  return deposit.save();
+};
+module.exports.approveDeposit = approveDeposit;
