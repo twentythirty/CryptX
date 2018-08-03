@@ -71,6 +71,9 @@ const TABLE_LOV_FIELDS = {
         'type',
         'status'
     ],
+    'av_execution_order_fills': [
+        'id'
+    ],
     'av_recipe_deposits': [
         'investment_run_id',
         'quote_asset',
