@@ -287,6 +287,7 @@ const findInvestmentRunFromAssociations = async function (entities) {
   let allowed_entities = {
     "investment_run_id": 'investment_run',
     "recipe_run_id": 'recipe_run',
+    "recipe_deposit_id": 'recipe_run_deposit',
     "recipe_order_id": 'recipe_order',
     "execution_order_id": 'execution_order'
   };
@@ -302,6 +303,7 @@ const findInvestmentRunFromAssociations = async function (entities) {
     SELECT investment_run.*
     FROM investment_run
     LEFT JOIN recipe_run ON recipe_run.investment_run_id=investment_run.id
+    LEFT JOIN recipe_run_deposit ON recipe_run_deposit.recipe_run_id=recipe_run.id
     LEFT JOIN recipe_order_group ON recipe_order_group.recipe_run_id=recipe_run.id
     LEFT JOIN recipe_order ON recipe_order.recipe_order_group_id=recipe_order_group.id
     LEFT JOIN execution_order ON execution_order.recipe_order_id=recipe_order.id
