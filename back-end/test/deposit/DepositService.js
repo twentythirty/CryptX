@@ -37,7 +37,8 @@ describe('DepositService testing', () => {
             status: 150,
             asset_id: 24,
             fee: null,
-            save() { return Promise.resolve(this) }
+            save() { return Promise.resolve(this) },
+            toJSON() { return this; }
         };
 
         before(done => {
@@ -100,7 +101,9 @@ describe('DepositService testing', () => {
             const valid_update = { deposit_management_fee: 45.123123, amount: 21.31231 };
             const user_id = 1
 
-            return DepositService.approveDeposit(2, user_id, valid_update).then(deposit => {
+            return DepositService.approveDeposit(2, user_id, valid_update).then(deposit_data => {
+
+                const deposit = deposit_data.updated_deposit;
 
                 chai.expect(deposit).to.be.an('object');
                 chai.expect(deposit.status).to.equal(MODEL_CONST.RECIPE_RUN_DEPOSIT_STATUSES.Completed);

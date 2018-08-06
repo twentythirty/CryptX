@@ -70,14 +70,31 @@ const approveDeposit = async function (req, res) {
   const deposit_id = req.params.deposit_id;
   const user = req.user;
 
-  let [ err, deposit ] = await to(DepositService.approveDeposit(deposit_id, user.id, req.body));  
+  let [ err, deposit_result ] = await to(DepositService.approveDeposit(deposit_id, user.id, req.body));  
   if(err) return ReE(res, err.message, 422);
-  if(!deposit) return ReE(res, `Deposit with id ${deposit_id} was not found`, 404);
+  if(!deposit_result) return ReE(res, `Deposit with id ${deposit_id} was not found`, 404);
+
+  let { original_deposit, updated_deposit: deposit } = deposit_result;
 
   deposit = deposit.toWeb();
   deposit.depositor_user = user.fullName();
   deposit.deposit_management_fee = deposit.fee; 
   delete deposit.fee;
+  
+  /*user.logAction(`${user.fullName()} completed deposit with ID: ${deposit.id}, management fee was to ${deposit.deposit_management_fee} and the amount set to ${deposit.amount}.`, {
+    relations: { recipe_run_deposit_id: deposit.id }
+  });*/
+  
+  user.logAction(`${user.fullName()} changed Amount from ${original_deposit.amount || '-'} to ${deposit.amount}`, {
+    relations: { recipe_run_deposit_id: deposit.id }
+  });
+  user.logAction(`${user.fullName()} changed Deposit management fee from ${original_deposit.fee || '-'} to ${deposit.deposit_management_fee}`, {
+    relations: { recipe_run_deposit_id: deposit.id }
+  });
+  user.logAction(`${user.fullName()} changed Status from ${original_deposit.status} to ${deposit.status}`, {
+    relations: { recipe_run_deposit_id: deposit.id }
+  });
+  
 
   return ReS(res, {
     deposit
