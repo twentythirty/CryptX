@@ -738,7 +738,7 @@ describe('InvestmentService testing:', () => {
 
       return investmentService.getInvestmentRunTimeline(INVESTMENT_ID.EXEC_ORDERS_FILLED).then(result => {
         chai.assert.isNumber(result.execution_orders.count);
-        chai.expect(result.execution_orders.status).to.be.equal('execution_orders_timeline.status.308');
+        chai.expect(result.execution_orders.status).to.be.equal('execution_orders_timeline.status.63');
       });
     });
 
@@ -746,7 +746,7 @@ describe('InvestmentService testing:', () => {
 
       return investmentService.getInvestmentRunTimeline(INVESTMENT_ID.EXEC_ORDERS_EXECUTING).then(result => {
         chai.assert.isNumber(result.execution_orders.count);
-        chai.expect(result.execution_orders.status).to.be.equal('execution_orders_timeline.status.307');
+        chai.expect(result.execution_orders.status).to.be.equal('execution_orders_timeline.status.62');
       });
     });
   });
