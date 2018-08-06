@@ -9,6 +9,7 @@ import { Deposit, DepositStatus } from "../../../shared/models/deposit";
 import { DepositListComponent } from "../deposit-list/deposit-list.component";
 import { InvestmentService } from "../../../services/investment/investment.service";
 import { TimelineEvent } from "../../../shared/components/timeline/timeline.component";
+import { ActionCellDataColumn, DataCellAction } from "../../../shared/components/data-table-cells/index";
 
 
 @Component({
@@ -65,8 +66,8 @@ export class DepositInfoComponent extends DepositListComponent implements OnInit
   }
 
   appendActionColumn() {
-    if (!_.find(this.depositDataSource.header, col => col.column == 'action')){
-      if (this.depositDataSource.body[0].status === 150) {
+    /*if (!_.find(this.depositDataSource.header, col => col.column == 'action')){
+      if (this.depositDataSource.body[0].status === 'deposits.status.150') {
         this.depositDataSource.header.push({ column: 'action', nameKey: 'table.header.action' })
         this.depositColumnsToShow.push(
           new ActionCellDataColumn({
@@ -84,7 +85,7 @@ export class DepositInfoComponent extends DepositListComponent implements OnInit
             }
           }));
       }
-    }
+    }*/
   }
 
   hideConfirm() {
@@ -132,7 +133,7 @@ export class DepositInfoComponent extends DepositListComponent implements OnInit
   }
 
   protected getTimelineData(): void {
-    this.timeline$ = this.investmentService.getAllTimelineData({ "deposits_id": this.depositId })
+    //this.timeline$ = this.investmentService.getAllTimelineData({ "deposits_id": this.depositId })
   }
 
   Send() {
