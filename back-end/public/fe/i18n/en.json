@@ -211,6 +211,13 @@
       "investment_id": "{{ investment_id }} ids"
     }
   },
+  "orders_group": {
+    "status": {
+      "81": "Pending",
+      "82": "Rejected",
+      "83": "Approved"
+    }
+  },
 
   "execution_orders": {
     "exe_orders_not_created": "Execution orders are not created yet",

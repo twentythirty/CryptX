@@ -3,9 +3,11 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { Validators } from '@angular/forms';
 
-import { Observable } from 'rxjs';
+import { Observable } from 'rxjs/Observable';
 import { of } from 'rxjs/observable/of';
-import { catchError, map, tap } from 'rxjs/operators';
+import { forkJoin } from 'rxjs/observable/forkJoin';
+import { catchError } from 'rxjs/operators/catchError';
+import { tap } from 'rxjs/operators/tap';
 
 import { User } from '../../shared/models/user';
 import PERMISSIONS from '../../config/permissions';
@@ -55,7 +57,7 @@ export class AuthService {
     if (perm_keys.length && !this.permissions.length) {
       return false;
     }
-
+    
     if (perm_keys.some(perm_key => !PERMISSIONS.hasOwnProperty(perm_key))) {
       console.error("Inexistant permission code supplied");
       return false;
@@ -116,9 +118,9 @@ export class AuthService {
    * to receive users permissions. */
   checkAuth(): Observable<any> {
     let token = this.getToken();
-    if (!token) return Observable.of(false);
+    if (!token) return of(false);
 
-    return Observable.forkJoin(
+    return forkJoin(
       this.http.get<any>(this.baseUrl + 'users/login/check').pipe(
         tap((response) => {
           if (response.success) {

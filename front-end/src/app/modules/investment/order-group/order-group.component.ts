@@ -60,9 +60,9 @@ export class OrderGroupComponent extends TimelineDetailComponent implements OnIn
     new TableDataColumn({ column: 'id' }),
     new DateCellDataColumn({ column: 'created_timestamp' }),
     new StatusCellDataColumn({ column: 'status', inputs: { classMap: {
-      'recipes.status.41' : StatusClass.PENDING,
-      'recipes.status.42': StatusClass.REJECTED,
-      'recipes.status.43': StatusClass.APPROVED,
+      'orders_group.status.81' : StatusClass.PENDING,
+      'orders_group.status.82': StatusClass.REJECTED,
+      'orders_group.status.83': StatusClass.APPROVED,
     }}}),
     new TableDataColumn({ column: 'approval_user' }),
     new ActionCellDataColumn({ column: 'approval_comment', inputs: {
@@ -80,7 +80,7 @@ export class OrderGroupComponent extends TimelineDetailComponent implements OnIn
       }
     }),
     new ConfirmCellDataColumn({ column: 'actions', inputs: {
-      show: (row) => !row.approval_user, // change to check by status
+      show: (row) => row.status == 'orders_group.status.81',
       execConfirm: (row) => this.showRationaleModal(row, data => data && this.alterGroup(data, 83)),
       execDecline: (row) => this.showRationaleModal(row, data => data && this.alterGroup(data, 82)),
     }}),
@@ -162,15 +162,6 @@ export class OrderGroupComponent extends TimelineDetailComponent implements OnIn
   }
 
   protected getSingleData(): void {
-    // mock
-    // this.singleDataSource.body = [{
-    //   "id": 1,
-    //   "created_timestamp": 15683498502378,
-    //   "status": 51,
-    //   "approval_user": "test user",
-    //   "approval_comment": "test approval comment"
-    // }];
-
     this.route.params.pipe(
       mergeMap(
         params => this.ordersService.getOrderGroupOfRecipe(params['id'])
@@ -179,7 +170,6 @@ export class OrderGroupComponent extends TimelineDetailComponent implements OnIn
       res => {
         if(res.recipe_order_group) {
           this.singleDataSource.body = [res.recipe_order_group];
-          this.showGenerateOrders = false; // hide Generate orders button
         }
 
         if(res.recipe_stats) {
@@ -195,7 +185,7 @@ export class OrderGroupComponent extends TimelineDetailComponent implements OnIn
   protected getTimelineData(): void {
     this.timeline$ = this.route.params.pipe(
       mergeMap(
-        params => this.investmentService.getAllTimelineData({ recipe_order_id: params['id'] })
+        params => this.investmentService.getAllTimelineData({ recipe_run_id: params['id'] })
       )
     );
   }
@@ -239,6 +229,10 @@ export class OrderGroupComponent extends TimelineDetailComponent implements OnIn
         this.getSingleData();
         this.getAllData();
         this.getTimelineData();
+
+        if(status === 83) {
+          this.showGenerateOrders = false;
+        }
       }
     );
   }
