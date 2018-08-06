@@ -377,9 +377,7 @@
     "successfully_changed": "Successfully changed your password.",
     "you_can_login_now": "You can login now",
     "invitation": {
-      "hello": "Hello",
-      "to_able_account_msg": "To be able to use CryptX you have to set up you account.",
-      "enter_password_msg": "All you have to do in enter your password.",
+      "to_able_account_msg": "To be able to use CryptX you have to set up your password",
       "new_password_placeholder": "New password",
       "repeat_password_placeholder": "Repeat new password",
       "set_up_account_msg": "You've set up your account!",

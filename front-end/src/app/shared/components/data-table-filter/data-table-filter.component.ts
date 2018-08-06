@@ -37,12 +37,12 @@ export class DataTableFilterComponent implements OnInit, OnChanges {
   @Input() type: string = 'text';
   @Input() sortable: boolean = true;
   @Input() rowData: Array<{
-    value: string | boolean,
+    value: string | boolean | number,
     label?: string
   }> = [];
 
   @Input() rowData$: Observable<Array<{
-    value: string | boolean,
+    value: string | boolean | number,
     label?: string
   }>>;
   @Input() dirty: boolean;
@@ -203,10 +203,11 @@ export class DataTableFilterComponent implements OnInit, OnChanges {
           }
           if(!Array.isArray(this.rowData)) {
             this.rowData = [];
-          }
+          }   
           
           this.rowData.splice(0, this.rowData.length);
           this.rowData.push(...res);
+          this.rowData.map(String); 
 
           this.rowDataLoading = false;
         }

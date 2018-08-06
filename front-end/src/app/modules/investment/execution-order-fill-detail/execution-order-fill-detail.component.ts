@@ -125,7 +125,7 @@ export class ExecutionOrderFillDetailComponent extends TimelineDetailComponent i
 
   private getFilterLOV(): void {
     this.listDataSource.header.filter(
-      col => ['id', 'fill_time', 'fill_price', 'quantity'].includes(col.column)
+      col => ['id'].includes(col.column)
     ).map(
       col => {
         col.filter.rowData$ = this.investmentService.getAllExecutionOrdersFillsHeaderLOV(col.column);
@@ -170,7 +170,7 @@ export class ExecutionOrderFillDetailComponent extends TimelineDetailComponent i
   }
 
   public openListRow(row: any): void {
-    this.router.navigate([`/run/execution-order-fill/${row.id}`])
+    //this.router.navigate([`/run/execution-order-fill/${row.id}`])
   }
 
   /**

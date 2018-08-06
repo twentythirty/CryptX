@@ -19,7 +19,7 @@ export class ExecutionOrdersComponent extends TimelineDetailComponent implements
    * 1. Implement abstract attributes to display titles
    */
   public pageTitle: string = 'Execution orders';
-  public singleTitle: string = 'Execution orders';
+  public singleTitle: string = '';
   public listTitle: string = '';
 
   /**
@@ -106,7 +106,7 @@ export class ExecutionOrdersComponent extends TimelineDetailComponent implements
 
   private getFilterLOV(): void {
     this.listDataSource.header.filter(
-      col => ['id', 'instrument', 'side', 'exchange', 'type', 'price', 'total_quantity', 'exchange_trading_fee', 'status'].includes(col.column)
+      col => ['id', 'instrument', 'side', 'exchange', 'type', 'total_quantity', 'exchange_trading_fee', 'status'].includes(col.column)
     ).map(
       col => {
         col.filter.rowData$ = this.investmentService.getAllExecutionOrdersHeaderLOV(col.column);

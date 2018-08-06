@@ -10,9 +10,7 @@
         <div *ngIf="!done">
           <form [formGroup]="userInfoForm" (ngSubmit)="fulfillInvitation()">
             <div class="part-header">
-              <br> {{'auth.invitation.hello' | translate}}
               <br> {{'auth.invitation.to_able_account_msg' | translate}}
-              <br> {{'auth.invitation.enter_password_msg' | translate}}
             </div>
             <app-input-item class="form-item with-icons icon-password" [placeholder]="'auth.invitation.new_password_placeholder' | translate" type="password" [formGroup]="userInfoForm"
               formControlName="password">

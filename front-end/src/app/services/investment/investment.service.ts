@@ -36,7 +36,7 @@ export class InvestmentService {
         res => {
           if(res && res.lov && Array.isArray(res.lov)) {
             return res.lov.map(lov => {
-              return { value: lov }
+              return { value: lov.toString() }
             });
           }
           return null;
@@ -66,13 +66,12 @@ export class InvestmentService {
   }
 
   getAllExecutionOrdersHeaderLOV(column_name: string): Observable<any> {
-    console.log("i am here")
     return this.http.get<any>(this.baseUrl + `execution_orders/header_lov/${column_name}`).pipe(
       map(
         res => {
           if(res && res.lov && Array.isArray(res.lov)) {
             return res.lov.map(lov => {
-              return { value: lov }
+              return { value: lov.toString() }
             });
           }
           return null;
@@ -95,8 +94,8 @@ export class InvestmentService {
       map(
         res => {
           if(res && res.lov && Array.isArray(res.lov)) {
-            return res.lov.map(lov => {
-              return { value: lov }
+            return res.lov.map((lov: String) => {
+              return { value: lov.toString() }
             });
           }
           return null;
