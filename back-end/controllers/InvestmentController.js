@@ -437,7 +437,7 @@ const getExecutionOrderFillsColumnLOV = async function (req, res) {
   const field_name = req.params.field_name
   const { query } = _.isPlainObject(req.body)? req.body : { query: '' };
 
-  const field_vals = adminViewsService.fetchExecutionOrderFillsViewHeaderLOV(field_name, query);
+  const field_vals = await adminViewsService.fetchExecutionOrderFillsViewHeaderLOV(field_name, query);
 
   return ReS(res, {
     query: query,
