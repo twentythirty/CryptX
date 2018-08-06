@@ -63,19 +63,20 @@ export class TimelineComponent implements OnInit {
       case 'recipe_run':       routePart = 'run/recipe'; break;
       case 'recipe_deposits':  routePart = 'run/deposit'; break;
       case 'recipe_orders':    routePart = 'run/order'; break;
-      case 'execution_orders': routePart = 'run/execution-order'; break;
+      case 'execution_orders': routePart = 'run/execution-orders'; break;
     }
     return this.router.isActive(routePart, false);
   }
 
   public openEvent(key: string, event: TimelineEvent): void {
     if(event) {
+      console.log('this.timelineEvents', this.timelineEvents);
       switch(key) {
         case 'investment_run':   this.router.navigate([`/run/investment/${event.id}`]); break;
         case 'recipe_run':       this.router.navigate([`/run/recipe/${event.id}`]); break;
-        case 'recipe_deposits':  this.router.navigate([`/run/deposit/${event.id}`]); break;
-        case 'recipe_orders':    this.router.navigate([`/run/order/${event.id}`]); break;
-        case 'execution_orders': this.router.navigate([`/run/execution_order/${event.id}`]); break;
+        case 'recipe_deposits':  this.router.navigate([`/run/deposit/${this.timelineEvents.recipe_run.id}`]); break;
+        case 'recipe_orders':    this.router.navigate([`/run/order/${this.timelineEvents.recipe_run.id}`]); break;
+        case 'execution_orders': this.router.navigate([`/run/execution-orders/${this.timelineEvents.investment_run.id}`]); break;
       }
     }
   }

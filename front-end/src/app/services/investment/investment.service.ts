@@ -85,8 +85,8 @@ export class InvestmentService {
     return this.http.post<any>(this.baseUrl + `exec_orders_fills/of_execution_order/${execution_order_id}`, requestData);
   }
 
-  getAllExecOrders(execution_order_id: any, requestData?: EntitiesFilter): Observable<any>{
-    return this.http.post<any>(this.baseUrl + `/execution_orders/of_investment_run/${execution_order_id}`, requestData);
+  getAllExecOrders(investment_run_id: any, requestData?: EntitiesFilter): Observable<any>{
+    return this.http.post<any>(this.baseUrl + `execution_orders/of_investment_run/${investment_run_id}`, requestData);
   }
 
   getAllExecutionOrdersFillsHeaderLOV(column_name: string): Observable<any> {

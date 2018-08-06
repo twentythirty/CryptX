@@ -163,33 +163,33 @@ export class OrderGroupComponent extends TimelineDetailComponent implements OnIn
 
   protected getSingleData(): void {
     // mock
-    this.singleDataSource.body = [{
-      "id": 1,
-      "created_timestamp": 15683498502378,
-      "status": 51,
-      "approval_user": "test user",
-      "approval_comment": "test approval comment"
-    }];
+    // this.singleDataSource.body = [{
+    //   "id": 1,
+    //   "created_timestamp": 15683498502378,
+    //   "status": 51,
+    //   "approval_user": "test user",
+    //   "approval_comment": "test approval comment"
+    // }];
 
-    // this.route.params.pipe(
-    //   mergeMap(
-    //     params => this.ordersService.getOrderGroupOfRecipe(params['id'])
-    //   )
-    // ).subscribe(
-    //   res => {
-    //     if(res.recipe_order_group) {
-    //       this.singleDataSource.body = [res.recipe_order_group];
-    //       this.showGenerateOrders = false; // hide Generate orders button
-    //     }
+    this.route.params.pipe(
+      mergeMap(
+        params => this.ordersService.getOrderGroupOfRecipe(params['id'])
+      )
+    ).subscribe(
+      res => {
+        if(res.recipe_order_group) {
+          this.singleDataSource.body = [res.recipe_order_group];
+          this.showGenerateOrders = false; // hide Generate orders button
+        }
 
-    //     if(res.recipe_stats) {
-    //       this.setTagLine(res.recipe_stats.map(stat => {
-    //         return new TagLineItem(`${stat.count} ${stat.name}`)
-    //       }))
-    //     }
-    //   },
-    //   err => this.singleDataSource.body = []
-    // );
+        if(res.recipe_stats) {
+          this.setTagLine(res.recipe_stats.map(stat => {
+            return new TagLineItem(`${stat.count} ${stat.name}`)
+          }))
+        }
+      },
+      err => this.singleDataSource.body = []
+    );
   }
 
   protected getTimelineData(): void {
@@ -213,7 +213,6 @@ export class OrderGroupComponent extends TimelineDetailComponent implements OnIn
   }
 
   public generateOrders() {
-    console.log('generateOrders');
     this.route.params.pipe(
       mergeMap(
         params => this.ordersService.generateOrders(params['id'])
@@ -221,6 +220,7 @@ export class OrderGroupComponent extends TimelineDetailComponent implements OnIn
     ).subscribe(
       res => {
         // todo
+        console.log('res',res);
       },
       err => this.singleDataSource.body = []
     );

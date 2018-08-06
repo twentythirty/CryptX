@@ -1,12 +1,12 @@
 import { Component, OnInit } from '@angular/core';
+import { ActivatedRoute, Router } from '@angular/router';
+import { mergeMap } from "rxjs/operators/mergeMap";
 import { TimelineDetailComponent, SingleTableDataSource, TagLineItem } from "../timeline-detail/timeline-detail.component";
-import { ActivatedRoute, Router } from "@angular/router/";
 import { InvestmentService } from "../../../services/investment/investment.service";
 import { TimelineEvent } from "../../../shared/components/timeline/timeline.component";
 import { TableDataSource, TableDataColumn } from "../../../shared/components/data-table/data-table.component";
 import { StatusCellDataColumn, NumberCellDataColumn, DateCellDataColumn } from "../../../shared/components/data-table-cells/index";
 import { StatusClass } from "../../../shared/models/common";
-import { mergeMap } from "rxjs/operators";
 
 @Component({
   selector: 'app-execution-orders',
@@ -78,9 +78,11 @@ export class ExecutionOrdersComponent extends TimelineDetailComponent implements
    * @param route - ActivatedRoute, used in DataTableCommonManagerComponent
    */
 
-  constructor(public route: ActivatedRoute,
-              private router: Router,
-              private investmentService: InvestmentService) { 
+  constructor(
+    public route: ActivatedRoute,
+    private router: Router,
+    private investmentService: InvestmentService,
+  ) { 
     super(route);
 
     this.getFilterLOV();
@@ -120,7 +122,7 @@ export class ExecutionOrdersComponent extends TimelineDetailComponent implements
   protected getTimelineData(): void {
     this.timeline$ = this.route.params.pipe(
       mergeMap(
-         params => this.investmentService.getAllTimelineData({ "execution_order_id": params['id'] })
+         params => this.investmentService.getAllTimelineData({ investment_run_id: params['id'] })
       )
     )
   }

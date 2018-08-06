@@ -176,7 +176,7 @@ export class OrderDetailComponent extends TimelineDetailComponent implements OnI
   protected getTimelineData(): void {
     this.timeline$ = this.route.params.pipe(
       mergeMap(
-        params => this.investmentService.getAllTimelineData({ recipe_order_id: params['id'] })
+        params => this.investmentService.getAllTimelineData({ recipe_run_id: params['id'] })
       )
     );
   }

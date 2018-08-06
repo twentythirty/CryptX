@@ -192,6 +192,16 @@
       "status":"{{ status }} Pending"
     }
   },
+  "order": {
+    "status": {
+      "51": "Pending",
+      "52": "Executing",
+      "53": "Completed",
+      "54": "Rejected",
+      "55": "Cancelled",
+      "56": "Failed"
+    }
+  },
   "recipe_orders": {
     "footer": {
       "id": "{{ id }} items",
@@ -226,6 +236,16 @@
       "instrument": "{{ instrument }} Instruments",
       "exchange": "{{ exchange }} Exchanges",
       "status":"{{ status }} Pending"
+    }
+  },
+  "execution_orders_timeline": {
+    "status": {
+      "61": "Pending",
+      "62": "Placed",
+      "63": "FullyFilled",
+      "64": "PartiallyFilled",
+      "65": "Cancelled",
+      "66": "Failed"
     }
   },
 

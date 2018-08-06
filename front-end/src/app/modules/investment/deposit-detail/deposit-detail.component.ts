@@ -154,7 +154,7 @@ export class DepositDetailComponent extends TimelineDetailComponent implements O
   protected getTimelineData(): void {
     this.timeline$ = this.route.params.pipe(
       mergeMap(
-        params => this.investmentService.getAllTimelineData({ deposits_id: params['id'] })
+        params => this.investmentService.getAllTimelineData({ recipe_run_id: params['id'] })
       )
     )
   }
@@ -168,7 +168,7 @@ export class DepositDetailComponent extends TimelineDetailComponent implements O
   }
 
   public openListRow(row: any): void {
-    alert('Navigate to a row item page');
+    //alert('Navigate to a row item page');
   }
 
 
