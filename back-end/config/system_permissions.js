@@ -375,7 +375,7 @@ ROUTES = {
     required_permissions: [PERMISSIONS.VIEW_ORDERS, PERMISSIONS.ALTER_ORDERS]
   },
   GenerateRecipeOrders: {
-    router_string: "/recipes/:recipe_run_id/generete_orders",
+    router_string: "/recipes/:recipe_run_id/generate_orders",
     permissions_matcher: ROUTE_MATCHERS.GenerateRecipeOrders,
     required_permissions: [PERMISSIONS.GENERATE_ORDERS]
   },
