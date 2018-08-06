@@ -114,11 +114,11 @@ module.exports = (sequelize, DataTypes) => {
 
   /**
    * Logs a user action with session.
-   * @param {String|Number|Object} details Details of the log.
+   * @param {String|Number|Object} action Action to log.
    * @param {Object} [options={}] Additional options. 
    * @param {Object} options.relations Object of specified relations. Example: `{ asset_id: 21, exchange_id: 1 }`.
    */
-  User.prototype.logAction = function(details, options = {}) {
+  User.prototype.logAction = function(action, options = {}) {
 
     const session = this.session;
 
@@ -128,7 +128,9 @@ module.exports = (sequelize, DataTypes) => {
     
     if(_.isPlainObject(session)) options.relations.user_session_id = this.session.id;
 
-    ActionLogUtil.log(details, options);
+    options.user = this;
+
+    ActionLogUtil.logAction(action, options);
   }
 
   return User;

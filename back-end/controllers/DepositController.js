@@ -79,21 +79,12 @@ const approveDeposit = async function (req, res) {
 
   let { original_deposit, updated_deposit: deposit } = deposit_result;
 
-  if(parseFloat(original_deposit.amount) !== deposit.amount) {
-    user.logAction(`${user.fullName()} changed Amount from ${original_deposit.amount || '-'} to ${deposit.amount}`, {
-      relations: { recipe_run_deposit_id: deposit.id }
-    });
-  }
-  if(parseFloat(original_deposit.fee) !== deposit.fee) {
-    user.logAction(`${user.fullName()} changed Deposit management fee from ${original_deposit.fee || '-'} to ${deposit.fee}`, {
-      relations: { recipe_run_deposit_id: deposit.id }
-    });
-  }
-  if(parseInt(original_deposit.status) !== deposit.status) {
-    user.logAction(`${user.fullName()} changed Status from ${_.get(translation, `deposits.status.${original_deposit.status}`)} to ${_.get(translation, `deposits.status.${deposit.status}`)}`, {
-      relations: { recipe_run_deposit_id: deposit.id }
-    });
-  }
+  user.logAction('modified', { 
+    previous_instance: original_deposit, 
+    updated_instance: deposit,
+    ignore: ['completion_timestamp'],
+    replace: { status: { '150': 'Pending', '151': 'Completed' } }
+  });
 
   deposit = deposit.toWeb();
   deposit.depositor_user = user.fullName();

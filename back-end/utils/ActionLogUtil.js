@@ -34,6 +34,104 @@ const allowed_keys = [
     'user_session_id'
 ];
 
+const universal_actions = {
+    create: {
+        get template() { return `A new ${this.name} was created` },
+        get template_user() { return `${this.user.first_name} ${this.user.last_name} added a new ${this.name}`},
+        handler: function(params = {}) {
+            let table_name = params.instance.constructor.getTableName();
+            this.name = _.startCase(table_name);
+            
+            const relation_key = `${table_name}_id`;
+            this.relations = { [relation_key]: params.instance.id }
+            if(!allowed_keys.includes(relation_key)) this.relations = {};
+            
+            if(params.user) {
+                this.user = params.user;
+                return this.template_user;
+            }
+            else return this.template;
+        }
+    },
+    modified: {
+        get template() { return `${this.column} was changed from ${prev_value || '-'} to ${new_value || '-'}` },
+        get template_user() { return `${this.user.first_name} ${this.user.last_name} changed ${this.column} from ${this.prev_value || '-'} to ${this.new_value || '-'}`},
+        handler: function(params = {}) {
+            let { previous_instance, updated_instance } = params;
+            let action_logs = [];
+            const ignore = params.ignore || []; //Ignore keys.
+            const replace = params.replace || {};
+
+            let table_name = params.updated_instance.constructor.getTableName();
+            this.name = _.startCase(table_name);
+
+            const relation_key = `${table_name}_id`;
+            this.relations = { [relation_key]: params.updated_instance.id }
+            if(!allowed_keys.includes(relation_key)) this.relations = {};
+            
+            if(params.user) this.user = params.user;
+
+            if(previous_instance.toJSON) previous_instance = previous_instance.toJSON();
+            if(updated_instance.toJSON) updated_instance = updated_instance.toJSON();
+            
+            for(let key in previous_instance) {
+                if(ignore.includes(key)) continue;
+
+                //Sequelize like to convert float to string, so better convert if that happens;
+                let previous = previous_instance[key];
+                let updated = updated_instance[key];
+                if(!isNaN(previous) && _.isString(previous)) previous = parseFloat(previous);
+                if(!isNaN(updated) && _.isString(updated)) updated = parseFloat(updated); 
+
+                if(!_.isEqual(previous, updated)) {
+                    
+                    this.column = _.startCase(key);
+
+                    //Replace unique names like statuses
+                    if(replace[key]) {
+                        this.prev_value = replace[key][previous];
+                        this.new_value = replace[key][updated];
+                    }
+                    else {
+                        this.prev_value = previous;
+                        this.new_value = updated;
+                    }
+
+                    if(params.user) action_logs.push(this.template_user);
+                    else action_logs.push(this.template);
+                }
+            }
+
+            return action_logs;
+        }
+    }
+};
+
+const logAction = async (action_path, options = {}) => {
+    try {
+        const action = _.get(universal_actions, action_path);
+        if(!action) return log(`Action with path "${action_path}" does not exist`);
+    
+        let action_logs = null;
+        if(_.isFunction(action.handler)) action_logs = action.handler(options);
+    
+        if(!action_logs) log(`Handler failed to return log string for action path "${action_path}" and params: ${JSON.stringify(params)}`);
+    
+        if(_.isString(action_logs)) action_logs = [action_logs];
+    
+        //This will attempt to assign relations created by the handler, but also allow the developer to overwrite them.
+        if(_.isPlainObject(options.relations)) options.relations = Object.assign({}, action.relations || {}, options.relations);
+    
+        for(let action_log of action_logs) {
+            log(action_log, options || {});
+        }
+    }
+    catch(e) {
+        console.error(e);
+        log(e.message);
+    }
+};
+
 /**
  * Logs an action. Can be used as a base function.
  * @param {String} details Text describing the action.
@@ -131,6 +229,11 @@ const _delayLog = async (action_log) => {
     }, base_delay * action_log.failed_attempts);
 }
 
+const _getFormatedName = (instance) => {
+    const table_name = instance.constructor.getTableName();
+    return _.startCase(table_name);
+}
+
 module.exports = {
-    log
+    log, logAction
 };
