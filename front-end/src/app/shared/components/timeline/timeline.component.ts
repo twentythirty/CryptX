@@ -43,9 +43,7 @@ export class TimelineComponent implements OnInit {
 
   constructor(
     private router: Router
-  ) {
-    console.log('status enum', Object.keys(StatusClass));
-  }
+  ) { }
 
   ngOnInit() {}
 
