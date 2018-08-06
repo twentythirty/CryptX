@@ -10,6 +10,7 @@ import { RolesAllRequestData } from '../../models/api/rolesAllRequestData';
 })
 export class DataTableCommonManagerComponent implements OnInit {
   prevQueryParams: { page?: number } = {};
+  orderingCleared: boolean = false;
   
   count: number = 0;
   pageSize: number = 10;
@@ -17,6 +18,12 @@ export class DataTableCommonManagerComponent implements OnInit {
 
   requestData: RolesAllRequestData = {
     filter: {},
+    order: [
+      {
+        by: 'id',
+        order: 'desc'
+      }
+    ],
     limit: this.pageSize,
     offset: 0
   };
@@ -62,6 +69,10 @@ export class DataTableCommonManagerComponent implements OnInit {
       item => filterData.column !== item.by
     );
     if (filterData.order) {
+      if(!this.orderingCleared) {
+        this.requestData.order = []; // clear default ID ordering if user pick any other ordering
+        this.orderingCleared = true;
+      }
       this.requestData.order.push(filterData.order);
     }
 
