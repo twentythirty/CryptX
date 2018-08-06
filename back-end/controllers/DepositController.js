@@ -193,7 +193,7 @@ const getRecipeDepositsColumnLOV = async (req, res) => {
   const field_name = req.params.field_name;
   const { query } = _.isPlainObject(req.body) ? req.body : { query: '' };
 
-  const [err, field_vals] = await to(AdminViewService.fetchRecipeDepositsViewHeaderLOV(field_name, query));
+  const [err, field_vals] = await to(AdminViewService.fetchRecipeDepositsViewHeaderLOV(field_name, query, req.sql_where));
   if (err) return ReE(res, err.message, 422);
 
   return ReS(res, {
