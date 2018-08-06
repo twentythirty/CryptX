@@ -72,7 +72,6 @@ export class TimelineComponent implements OnInit {
 
   public openEvent(key: string, event: TimelineEvent): void {
     if(event) {
-      console.log('this.timelineEvents', this.timelineEvents);
       switch(key) {
         case 'investment_run':   this.router.navigate([`/run/investment/${event.id}`]); break;
         case 'recipe_run':       this.router.navigate([`/run/recipe/${event.id}`]); break;
