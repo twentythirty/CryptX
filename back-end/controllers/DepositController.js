@@ -4,6 +4,7 @@ const MockController = require('./MockController');
 const DepositService = require('../services/DepositService');
 const adminViewUtils = require('../utils/AdminViewUtils');
 const AdminViewService = require('../services/AdminViewsService');
+const ActionLog = require('../models').ActionLog;
 
 const translation = require('../public/fe/i18n/en.json'); //temp posibbly
 
@@ -109,12 +110,22 @@ const getRecipeDeposit = async function (req, res) {
 
   const { deposit_id } = req.params;
 
-  const [err, recipe_deposit] = await to(AdminViewService.fetchRecipeDepositView(deposit_id));
+  const [err, result] = await to(Promise.all([
+    AdminViewService.fetchRecipeDepositView(deposit_id),
+    ActionLog.findAll({
+      where: { recipe_run_deposit_id: deposit_id },
+      attributes: ['id', 'timestamp', 'details']
+    })
+  ]));
   if (err) return ReE(res, err.message, 422);
+
+  const [ recipe_deposit, action_logs ] = result;
+
   if (!recipe_deposit) return ReE(res, `Recipe deposit with id ${deposit_id} not found`, 422);
 
   return ReS(res, {
-    recipe_deposit
+    recipe_deposit,
+    action_logs
   })
 };
 module.exports.getRecipeDeposit = getRecipeDeposit;
