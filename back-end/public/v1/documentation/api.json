@@ -4453,6 +4453,24 @@
     }
   },
   "definitions": {
+    "ActionLog": {
+      "description": "Action log object",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "number",
+          "example": 15
+        },
+        "timestamp": {
+          "type": "string",
+          "example": "2018-08-06T12:18:48.478Z"
+        },
+        "details": {
+          "type": "string",
+          "example": "Jane Morren changed status to Completed"
+        }
+      }
+    },
     "AddColdStorageAccountParams": {
       "description": "Cold storage transfer information",
       "type": "object",
@@ -5555,6 +5573,12 @@
         },
         "recipe_deposit": {
           "$ref": "#/definitions/RecipeDeposit"
+        },
+        "action_logs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/ActionLog"
+          }
         }
       }
     },
