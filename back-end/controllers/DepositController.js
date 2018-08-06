@@ -5,6 +5,8 @@ const DepositService = require('../services/DepositService');
 const adminViewUtils = require('../utils/AdminViewUtils');
 const AdminViewService = require('../services/AdminViewsService');
 
+const translation = require('../public/fe/i18n/en.json'); //temp posibbly
+
 const submitDeposit = async function (req, res) {
 
   /*  let investment_run_id = req.params.investment_id,
@@ -76,25 +78,26 @@ const approveDeposit = async function (req, res) {
 
   let { original_deposit, updated_deposit: deposit } = deposit_result;
 
+  if(parseFloat(original_deposit.amount) !== deposit.amount) {
+    user.logAction(`${user.fullName()} changed Amount from ${original_deposit.amount || '-'} to ${deposit.amount}`, {
+      relations: { recipe_run_deposit_id: deposit.id }
+    });
+  }
+  if(parseFloat(original_deposit.fee) !== deposit.fee) {
+    user.logAction(`${user.fullName()} changed Deposit management fee from ${original_deposit.fee || '-'} to ${deposit.fee}`, {
+      relations: { recipe_run_deposit_id: deposit.id }
+    });
+  }
+  if(parseInt(original_deposit.status) !== deposit.status) {
+    user.logAction(`${user.fullName()} changed Status from ${_.get(translation, `deposits.status.${original_deposit.status}`)} to ${_.get(translation, `deposits.status.${deposit.status}`)}`, {
+      relations: { recipe_run_deposit_id: deposit.id }
+    });
+  }
+
   deposit = deposit.toWeb();
   deposit.depositor_user = user.fullName();
   deposit.deposit_management_fee = deposit.fee; 
   delete deposit.fee;
-  
-  /*user.logAction(`${user.fullName()} completed deposit with ID: ${deposit.id}, management fee was to ${deposit.deposit_management_fee} and the amount set to ${deposit.amount}.`, {
-    relations: { recipe_run_deposit_id: deposit.id }
-  });*/
-  
-  user.logAction(`${user.fullName()} changed Amount from ${original_deposit.amount || '-'} to ${deposit.amount}`, {
-    relations: { recipe_run_deposit_id: deposit.id }
-  });
-  user.logAction(`${user.fullName()} changed Deposit management fee from ${original_deposit.fee || '-'} to ${deposit.deposit_management_fee}`, {
-    relations: { recipe_run_deposit_id: deposit.id }
-  });
-  user.logAction(`${user.fullName()} changed Status from ${original_deposit.status} to ${deposit.status}`, {
-    relations: { recipe_run_deposit_id: deposit.id }
-  });
-  
 
   return ReS(res, {
     deposit
