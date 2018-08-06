@@ -78,51 +78,14 @@ describe('ActionLogUtil testing', () => {
             chai.expect(log).to.not.undefined;
         });
 
-        it('reject if parsed areguments are not valid', () => {
-            return Promise.all(_.map([
-                [],
-                [{}],
-                ['12321', null],
-                ['21323', { relations: 13123 }],
-                ['23123', { user: '12313' }],
-                ['123131', { relations: { invalid_user_id: 123 } }]
-            ], params => {
-                chai.assert.isRejected(log(...params));
-            }));
-        });
-
-        it('log an ction if the parameters match', () => {
-            const   user_id = 1,
-                    asset_id = 4,
+        it('log an action', () => {
+            const   asset_id = 4,
                     exchange_id = 5;
 
             return log('31h2j132hkj3h', {
-                user: {
-                    id: user_id,
-                    session: true
-                },
                 relations: [ { asset_id }, { exchange_id } ]
             }).then(action => {
-
-                chai.expect(action).to.an('object');
-
-                chai.expect(action.id).to.be.a('number');
-                chai.expect(action.timestamp).to.be.a('date');
-                chai.expect(action.user_session_id).to.equal(user_id);
-                chai.expect(action.performing_user_id).to.equal(user_id);
-                chai.expect(action.asset_id).to.equal(asset_id);
-                chai.expect(action.exchange_id).to.equal(exchange_id);
-
-                chai.expect(action.exchange_account_id).to.be.null;
-                chai.expect(action.execution_order_id).to.be.null;
-                chai.expect(action.instrument_id).to.be.null;
-                chai.expect(action.investment_run_id).to.be.null;
-                chai.expect(action.recipe_order_id).to.be.null;
-                chai.expect(action.recipe_run_deposit_id).to.be.null;
-                chai.expect(action.recipe_run_id).to.be.null;
-                chai.expect(action.role_id).to.be.null;
-                chai.expect(action.user_id).to.be.null;
-
+                chai.expect(ActionLog.create.calledOnce).to.be.true;
             });
         });
 

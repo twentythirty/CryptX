@@ -39,6 +39,7 @@ module.exports = function(passport) {
         //session still valid, increase duration
         session.touch();
         //return user after refreshed session
+        user.session = session.toJSON();
         return done(null, user);
       } else {
         return done(null, false);
