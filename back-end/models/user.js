@@ -3,6 +3,8 @@ const bcrypt = require("bcrypt");
 const bcrypt_p = require("bcrypt-promise");
 const jwt = require("jsonwebtoken");
 
+const ActionLogUtil = require('../utils/ActionLogUtil');
+
 module.exports = (sequelize, DataTypes) => {
   var User = sequelize.define(
     "User",
@@ -109,6 +111,25 @@ module.exports = (sequelize, DataTypes) => {
     
     return json;
   };
+
+  /**
+   * Logs a user action with session.
+   * @param {String|Number|Object} details Details of the log.
+   * @param {Object} [options={}] Additional options. 
+   * @param {Object} options.relations Object of specified relations. Example: `{ asset_id: 21, exchange_id: 1 }`.
+   */
+  User.prototype.logAction = function(details, options = {}) {
+
+    const session = this.session;
+
+    if(!_.isPlainObject(options.relations)) options.relations = {};
+
+    options.relations.performing_user_id = this.id;
+    
+    if(_.isPlainObject(session)) options.relations.user_session_id = this.session.id;
+
+    ActionLogUtil.log(details, options);
+  }
 
   return User;
 };

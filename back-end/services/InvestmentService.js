@@ -390,7 +390,9 @@ const getInvestmentRunTimeline = async function (investment_run_id) {
 
   delete recipe_run_data.RecipeOrderGroups;
   delete recipe_run_data.RecipeRunDeposits;
-  recipe_run_data.approval_timestamp = recipe_run_data.approval_timestamp.getTime();
+  if(recipe_run_data.approval_timestamp) {
+    recipe_run_data.approval_timestamp = recipe_run_data.approval_timestamp.getTime();
+  }
   recipe_run_data.approval_status = `recipes.status.${recipe_run_data.approval_status}`;
 
   // prepare recipe deposit data

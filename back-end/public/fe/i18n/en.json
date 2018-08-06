@@ -81,7 +81,7 @@
       "exchange_not_pass": "Exchanges that do not Meet Requirements",
       "liquidity_status": "Liquidity status",
       "investment_run_id": "Investment run ID",
-      "transaction_asset": "quote asset",
+      "transaction_asset": "Transaction asset",
       "portfolio": "Portfolio"
     },
     "filter": {
