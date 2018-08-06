@@ -2,6 +2,7 @@ import { Component, OnInit, Input } from '@angular/core';
 import { Router } from '@angular/router';
 
 import { StatusClass } from '../../../shared/models/common';
+import { AuthService } from '../../../services/auth/auth.service';
 
 export class TimelineEvent {
   /**
@@ -42,7 +43,8 @@ export class TimelineComponent implements OnInit {
   }
 
   constructor(
-    private router: Router
+    private router: Router,
+    private authService: AuthService,
   ) { }
 
   ngOnInit() {}
@@ -75,7 +77,13 @@ export class TimelineComponent implements OnInit {
         case 'investment_run':   this.router.navigate([`/run/investment/${event.id}`]); break;
         case 'recipe_run':       this.router.navigate([`/run/recipe/${event.id}`]); break;
         case 'recipe_deposits':  this.router.navigate([`/run/deposit/${this.timelineEvents.recipe_run.id}`]); break;
-        case 'recipe_orders':    this.router.navigate([`/run/order/${this.timelineEvents.recipe_run.id}`]); break;
+        case 'recipe_orders':    
+          if(this.authService.hasPermissions(['VIEW_ORDERS'])) {
+            this.router.navigate([`/run/order-group/${this.timelineEvents.recipe_run.id}`]);
+          } else {
+            this.router.navigate([`/run/order/${this.timelineEvents.recipe_run.id}`]);
+          }
+          break;
         case 'execution_orders': this.router.navigate([`/run/execution-orders/${this.timelineEvents.investment_run.id}`]); break;
       }
     }

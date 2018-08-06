@@ -106,7 +106,7 @@ const getInvestmentRunsColumnLOV = async (req, res) => {
   const field_name = req.params.field_name;
   const { query } = _.isPlainObject(req.body) ? req.body : { query: '' };
 
-  const [ err, field_vals ] = await to(adminViewsService.fetchInvestmentRunsViewHeaderLOV(field_name, query));
+  const [ err, field_vals ] = await to(adminViewsService.fetchInvestmentRunsViewHeaderLOV(field_name, query, req.sql_where));
   if(err) return ReE(res, err.message, 422);
 
   return ReS(res, {
@@ -199,7 +199,7 @@ const getRecipeRunsColumnLOV = async (req, res) => {
   const field_name = req.params.field_name;
   const { query } = _.isPlainObject(req.body) ? req.body : { query: '' };
 
-  const [ err, field_vals ] = await to(adminViewsService.fetchRecipeRunsViewHeaderLOV(field_name, query));
+  const [ err, field_vals ] = await to(adminViewsService.fetchRecipeRunsViewHeaderLOV(field_name, query, sql_where));
   if(err) return ReE(res, err.message, 422);
 
   return ReS(res, {
@@ -261,7 +261,7 @@ const getRecipeRunDetailsColumnLOV = async (req, res) => {
   const field_name = req.params.field_name;
   const { query } = _.isPlainObject(req.body) ? req.body : { query: '' };
 
-  const [ err, field_vals ] = await to(adminViewsService.fetchRecipeRunDetailsViewHeaderLOV(field_name, query));
+  const [ err, field_vals ] = await to(adminViewsService.fetchRecipeRunDetailsViewHeaderLOV(field_name, query, req.sql_where));
   if(err) return ReE(res, err.message, 422);
 
   return ReS(res, {
@@ -385,7 +385,7 @@ const getExecutionOrdersColumnLOV = async function (req, res) {
   const field_name = req.params.field_name;
   const { query } = _.isPlainObject(req.body) ? req.body : { query: '' };
 
-  const [ err, field_vals ] = await to(adminViewsService.fetchExecutionOrdersViewHeaderLOV(field_name, query));
+  const [ err, field_vals ] = await to(adminViewsService.fetchExecutionOrdersViewHeaderLOV(field_name, query, req.sql_where));
   if(err) return ReE(res, err.message, 422);
 
   return ReS(res, {
@@ -437,7 +437,7 @@ const getExecutionOrderFillsColumnLOV = async function (req, res) {
   const field_name = req.params.field_name
   const { query } = _.isPlainObject(req.body)? req.body : { query: '' };
 
-  const field_vals = await adminViewsService.fetchExecutionOrderFillsViewHeaderLOV(field_name, query);
+  const field_vals = await adminViewsService.fetchExecutionOrderFillsViewHeaderLOV(field_name, query, req.sql_where);
 
   return ReS(res, {
     query: query,

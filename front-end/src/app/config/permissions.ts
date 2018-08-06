@@ -13,5 +13,8 @@ export default {
   CREATE_INVESTMENT_RUN: "perm_create_investment_run",
   APPROVE_RECIPE_RUN: "perm_approve_recipe_run",
   CHANGE_SETTING_VALUES: "perm_change_settings",
-  VIEW_SETTING_VALUES: "perm_view_settings"
+  VIEW_SETTING_VALUES: "perm_view_settings",
+  ALTER_ORDERS: "perm_alter_orders",
+  VIEW_ORDERS: "perm_view_orders",
+  GENERATE_ORDERS: "perm_generate_orders",
 };

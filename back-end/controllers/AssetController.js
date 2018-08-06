@@ -98,7 +98,7 @@ const getAssetsColumnLOV = async (req, res) => {
   const field_name = req.params.field_name
   const { query } = _.isPlainObject(req.body)? req.body : { query: '' };
 
-  const field_vals = await adminViewsService.fetchAssetsViewHeaderLOV(field_name, query);
+  const field_vals = await adminViewsService.fetchAssetsViewHeaderLOV(field_name, query, req.sql_where);
 
   return ReS(res, {
     query: query,
