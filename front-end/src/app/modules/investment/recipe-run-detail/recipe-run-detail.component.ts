@@ -161,9 +161,7 @@ export class RecipeRunDetailComponent extends TimelineDetailComponent implements
       mergeMap(
         params => this.investmentService.getAllTimelineData({ recipe_run_id: params['id'] })
       )
-    ).do(res => {
-      console.log('timeline res', res);
-    });
+    );
   }
 
   /**
