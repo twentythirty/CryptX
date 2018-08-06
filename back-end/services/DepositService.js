@@ -29,14 +29,14 @@ module.exports.saveDeposit = saveDeposit;
 
 const generateRecipeRunDeposits = async function (approved_recipe_run) {
 
-  if (!approved_recipe_run 
-    || approved_recipe_run.status == null 
+  if (!approved_recipe_run
+    || approved_recipe_run.status == null
     || approved_recipe_run.status !== RECIPE_RUN_STATUSES.Approved) {
 
-      TE(`Bad input! submitted input must be a recipe run object with status ${RECIPE_RUN_STATUSES.Approved} (Approved)! GOt: ${approved_recipe_run}`)
+    TE(`Bad input! submitted input must be a recipe run object with status ${RECIPE_RUN_STATUSES.Approved} (Approved)! GOt: ${approved_recipe_run}`)
   }
 
-  
+
 
 }
 module.exports.generateRecipeRunDeposits = generateRecipeRunDeposits;
@@ -44,18 +44,20 @@ module.exports.generateRecipeRunDeposits = generateRecipeRunDeposits;
 const approveDeposit = async (deposit_id, user_id, updated_values = {}) => {
   const { deposit_management_fee, amount } = updated_values;
 
-  if(!deposit_management_fee || 
+  if (!deposit_management_fee ||
     !_.isNumber(deposit_management_fee) ||
-    deposit_management_fee < 0 || 
-    !amount || 
+    deposit_management_fee < 0 ||
+    !amount ||
     !_.isNumber(amount) ||
     amount < 0) TE('To confirm a deposit, a posotive fee and amount must be specified');
 
-  let [ err, deposit ] = await to(RecipeRunDeposit.findById(deposit_id));
+  let [err, deposit] = await to(RecipeRunDeposit.findById(deposit_id));
 
-  if(err) TE(err.message);
-  if(!deposit) return null;
-  if(deposit.status !== MODEL_CONST.RECIPE_RUN_DEPOSIT_STATUSES.Pending) TE(`Deposit confirmation is only allowed for Pending deposits.`);
+  if (err) TE(err.message);
+  if (!deposit) return null;
+  if (deposit.status !== MODEL_CONST.RECIPE_RUN_DEPOSIT_STATUSES.Pending) TE(`Deposit confirmation is only allowed for Pending deposits.`);
+  
+  const original_values = deposit.toJSON();
 
   deposit.fee = deposit_management_fee;
   deposit.amount = amount;
@@ -63,6 +65,10 @@ const approveDeposit = async (deposit_id, user_id, updated_values = {}) => {
   deposit.depositor_user_id = user_id;
   deposit.completion_timestamp = new Date();
 
-  return deposit.save();
+  [ err, deposit ] = await to(deposit.save());
+  if(err) TE(err.message);
+
+  return { original_deposit: original_values, updated_deposit: deposit };
+
 };
 module.exports.approveDeposit = approveDeposit;
