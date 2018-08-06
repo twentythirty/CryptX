@@ -661,7 +661,7 @@ describe('InvestmentService testing:', () => {
     it('it should return null in recipe property if there are no recipe runs', () => {
 
       return investmentService.getInvestmentRunTimeline(INVESTMENT_ID.NO_RECIPES).then(result => {
-        chai.assert.isUndefined(result.recipe_run);
+        chai.assert.isNull(result.recipe_run);
       });
     })
 

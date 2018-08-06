@@ -171,21 +171,6 @@ module.exports.JOB_BODY = async (config, log) => {
                             next_total = amount_limit.max;
                         }
 
-                        let next_total_price = Decimal(pending_order.price).mul(Decimal(next_total)).toNumber();
-                        
-                        //Check if the next total is within the amount limit.
-                        if(next_total_price < price_limit.min) {
-                            log(`[ERROR.4C]: Next total price of ${next_total_price} is less than the markets min limit of ${price_limit.min}, skipping order execution`);
-                            return pending_order;
-                        }
-                        
-                        //because the price is predetermined we cant clamp here - doing so would sell asset below market value and minimize profits, so better to log the error
-                        //and exit, let the user manually fix this situation
-                        if(next_total_price > price_limit.max) {
-                            log(`[ERROR.4C]: Next total price of ${next_total_price} is greater than the markets max limit of ${price_limit.max}, skipping order execution`);
-                            return pending_order;
-                        }
-
                         log(`4d. Current fulfilled recipe order total is ${realized_total}, adding another ${next_total}...`);
 
                         //create next pending execution order and save it
@@ -199,7 +184,7 @@ module.exports.JOB_BODY = async (config, log) => {
                                 recipe_order_id: pending_order.id,
                                 instrument_id: pending_order.instrument_id,
                                 exchange_id: pending_order.target_exchange_id,
-                                price: next_total_price,
+                                price: null,
                                 failed_attempts: 0
                             })
                         ]);
