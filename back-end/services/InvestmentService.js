@@ -66,7 +66,7 @@ const changeInvestmentRunStatus = async function (investment_run_id, status_numb
 
   let err, investment_run;
   investment_run = await InvestmentRun.findById(investment_run_id);
-  
+
   if (!investment_run) TE("Investment run not found");
 
   Object.assign(investment_run, {
@@ -83,7 +83,7 @@ module.exports.changeInvestmentRunStatus = changeInvestmentRunStatus;
 
 const createRecipeRun = async function (user_id, investment_run_id) {
   let err, investment_run, recipe_run, recipe_run_detail;
-  
+
   recipe_run = await RecipeRun.findOne({
     where: {
       investment_run_id: investment_run_id,
@@ -120,7 +120,7 @@ const createRecipeRun = async function (user_id, investment_run_id) {
       if (!asset.suggested_action)
         return `No way found to invest into ${asset.symbol}`;
       let action = asset.suggested_action;
-      
+
       return RecipeRunDetail.create({
         recipe_run_id: recipe_run.id,
         transaction_asset_id: action.transaction_asset_id,
@@ -148,7 +148,7 @@ const generateRecipeDetails = async function (strategy_type) {
       is_base: true
     }
   })
-  if (typeof base_assets==="undefined" || !base_assets || !base_assets.length)
+  if (typeof base_assets === "undefined" || !base_assets || !base_assets.length)
     TE("Couln't find base assets");
   base_assets.map(asset => asset.toJSON());
 
@@ -177,9 +177,8 @@ const generateRecipeDetails = async function (strategy_type) {
     if (asset.is_base) {
       asset.suggested_action = asset.possible_actions[0];
       if (asset.id != asset.suggested_action.quote_asset_id)
-        [asset.suggested_action.quote_asset_id, asset.suggested_action.transaction_asset_id] =
-        [asset.suggested_action.transaction_asset_id, asset.suggested_action.quote_asset_id];
-      return ;
+        [asset.suggested_action.quote_asset_id, asset.suggested_action.transaction_asset_id] = [asset.suggested_action.transaction_asset_id, asset.suggested_action.quote_asset_id];
+      return;
     }
     /* Return empty object is there is no ways found to get asset.
       Asset may be greylisted if it is not tradeable on any exchanges. */
@@ -189,23 +188,23 @@ const generateRecipeDetails = async function (strategy_type) {
     /* Cancel recipe generation if asset doesn't meet minimum volume requirements */
     asset.possible_actions = asset.possible_actions.filter(a =>
       !a.min_volume_requirement // if doesn't have liquidity requirement set
-      || a.average_volume >= a.min_volume_requirement // or passes liquidity history
+      ||
+      a.average_volume >= a.min_volume_requirement // or passes liquidity history
     );
     if (!asset.possible_actions.length) TE('None of instruments for asset %s fulfill liquidity requirements', asset.symbol);
-    
+
     // calculate asset price in usd when buying through certain insturment/exchange
     asset.possible_actions = asset.possible_actions.map((instrument) => {
-      let is_sell = instrument.transaction_asset_id==asset.id;
+      let is_sell = instrument.transaction_asset_id == asset.id;
       // flip assets if it's a sell
       if (is_sell) {
-        [instrument.transaction_asset_id, instrument.quote_asset_id] =
-          [instrument.quote_asset_id, instrument.transaction_asset_id];
+        [instrument.transaction_asset_id, instrument.quote_asset_id] = [instrument.quote_asset_id, instrument.transaction_asset_id];
       }
       let base_asset_id = instrument.transaction_asset_id;
-      
+
       // get base asset price in usd
       let base_asset, base_asset_usd_price;
-      if (base_asset = base_assets.find(ba => ba.id==base_asset_id)) 
+      if (base_asset = base_assets.find(ba => ba.id == base_asset_id))
         base_asset_usd_price = base_asset.USD;
       else
         TE("Didn't find base asset with id",
@@ -215,7 +214,7 @@ const generateRecipeDetails = async function (strategy_type) {
       /* To find cheapest way to purchase asset first find out the price of asset in USD
        if it would be acquired this way. If it's a sell position, then invert price of
        bid order. */
-      let cost_usd = base_asset_usd_price * ( is_sell ? 
+      let cost_usd = base_asset_usd_price * (is_sell ?
         Decimal(1).div(Decimal(instrument.bid_price)).toNumber() :
         instrument.ask_price);
 
@@ -233,7 +232,7 @@ const generateRecipeDetails = async function (strategy_type) {
 
   // calculate investment percentage based on market share
   let total_marketshare = 0;
-  assets = assets.filter(a => typeof a.suggested_action!=="undefined" || a.is_base)
+  assets = assets.filter(a => typeof a.suggested_action !== "undefined" || a.is_base)
     .map((asset) => {
       total_marketshare += asset.avg_share;
       return asset;
@@ -255,7 +254,7 @@ const changeRecipeRunStatus = async function (user_id, recipe_run_id, status_con
 
   let err, recipe_run;
   recipe_run = await RecipeRun.findById(recipe_run_id);
-  
+
   if (!recipe_run) TE("Recipe run not found");
 
   const old_status = recipe_run.approval_status;
@@ -271,8 +270,8 @@ const changeRecipeRunStatus = async function (user_id, recipe_run_id, status_con
   if (err) TE(err.message);
 
   //approving recipe run that was not approved before, try generate empty deposits
-  if (status_constant == RECIPE_RUN_STATUSES.Approved && old_status !== status_constant) { 
-    
+  if (status_constant == RECIPE_RUN_STATUSES.Approved && old_status !== status_constant) {
+
     depositService.generateRecipeRunDeposits(recipe_run);
 
   }
@@ -282,7 +281,7 @@ const changeRecipeRunStatus = async function (user_id, recipe_run_id, status_con
 module.exports.changeRecipeRunStatus = changeRecipeRunStatus;
 
 const findInvestmentRunFromAssociations = async function (entities) {
-  
+
   // property names show how value can be served, value show what db table is used.
   let allowed_entities = {
     "investment_run_id": 'investment_run',
@@ -293,7 +292,7 @@ const findInvestmentRunFromAssociations = async function (entities) {
   };
 
   if (!Object.keys(entities).length) TE('No id was supplied. Please supply atleast one ID.')
-  
+
   let foundClosestEntity = Object.keys(entities).find(entity => {
     return Object.keys(allowed_entities).includes(entity);
   });
@@ -308,8 +307,10 @@ const findInvestmentRunFromAssociations = async function (entities) {
     LEFT JOIN recipe_order ON recipe_order.recipe_order_group_id=recipe_order_group.id
     LEFT JOIN execution_order ON execution_order.recipe_order_id=recipe_order.id
     WHERE ${allowed_entities[foundClosestEntity]}.id=:entity_id
-  `,{
-    replacements: { entity_id: id_to_find },
+  `, {
+    replacements: {
+      entity_id: id_to_find
+    },
     plain: true, // assign as single value, not array
     model: InvestmentRun
   }));
@@ -327,8 +328,7 @@ const getWholeInvestmentRun = async function (investment_run_id) {
     },
     include: [{
       model: RecipeRun,
-      include: [
-        {
+      include: [{
           model: RecipeOrderGroup,
           include: [{
             model: RecipeOrder,
@@ -392,7 +392,7 @@ const getInvestmentRunTimeline = async function (investment_run_id) {
 
   delete recipe_run_data.RecipeOrderGroups;
   delete recipe_run_data.RecipeRunDeposits;
-  if(recipe_run_data.approval_timestamp) {
+  if (recipe_run_data.approval_timestamp) {
     recipe_run_data.approval_timestamp = recipe_run_data.approval_timestamp.getTime();
   }
   recipe_run_data.approval_status = `recipes.status.${recipe_run_data.approval_status}`;
@@ -401,7 +401,7 @@ const getInvestmentRunTimeline = async function (investment_run_id) {
   let recipe_deposits = Object.assign({}, whole_investment).RecipeRuns.map(recipe_run => {
     return recipe_run.RecipeRunDeposits;
   })
-  recipe_deposits = _.flatten(_.flatten(recipe_deposits)); 
+  recipe_deposits = _.flatten(_.flatten(recipe_deposits));
 
   if (!recipe_deposits.length) {
     return { // no deposits found. Return current status
@@ -414,7 +414,7 @@ const getInvestmentRunTimeline = async function (investment_run_id) {
   }
 
 
-  let deposit_status = 
+  let deposit_status =
     recipe_deposits.some(deposit => deposit.status == RECIPE_RUN_DEPOSIT_STATUSES.Pending) ?
     RECIPE_RUN_DEPOSIT_STATUSES.Pending :
     RECIPE_RUN_DEPOSIT_STATUSES.Completed;
@@ -425,11 +425,13 @@ const getInvestmentRunTimeline = async function (investment_run_id) {
 
   // prepare recipe order data
   // collects all recipe orders into single flat array
-  let recipes = Object.assign({}, whole_investment).RecipeRuns; 
-  let recipe_orders = _.maxBy(_.flatten(recipes.map(recipe_run => { // beauty
-    return recipe_run.RecipeOrderGroups;
-  })), rog => rog.created_timestamp.getTime()).RecipeOrders;
-  
+  let recipes = Object.assign({}, whole_investment).RecipeRuns;
+  let recipe_order_groups = _.filter(
+    _.flatten(recipes.map(recipe_run => {
+      return recipe_run.RecipeOrderGroups;
+    })), group => group.approval_status != RECIPE_ORDER_GROUP_STATUSES.Rejected);
+  let recipe_orders = _.maxBy(recipe_order_groups, rog => rog.created_timestamp.getTime()).RecipeOrders;
+
   if (!recipe_orders.length) {
     return { // no recipe orders found. Return current status
       investment_run: investment_run_data,
@@ -448,6 +450,9 @@ const getInvestmentRunTimeline = async function (investment_run_id) {
     order_status = RECIPE_ORDER_STATUSES.Completed;
   } else if (recipe_orders.some(order => order.status === RECIPE_ORDER_STATUSES.Executing)) {
     order_status = RECIPE_ORDER_STATUSES.Executing;
+    //just take status of last created order if all else fails
+  } else {
+    order_status = _.maxBy(recipe_orders, 'id').status
   }
 
   let prepared_recipe_orders = {
@@ -457,8 +462,8 @@ const getInvestmentRunTimeline = async function (investment_run_id) {
 
   // prepare execution order data 
   // collects all execution orders into single flat array
-  let execution_orders = _.flatten(recipes.map(recipe_run => { 
-    
+  let execution_orders = _.flatten(recipes.map(recipe_run => {
+
     return _.flatten(
       recipe_run.RecipeOrderGroups.map(recipe_order_group => {
 
@@ -471,7 +476,7 @@ const getInvestmentRunTimeline = async function (investment_run_id) {
       })
     )
   }));
- 
+
   if (!execution_orders.length) {
     return { // no execution orders found. Return current status
       investment_run: investment_run_data,
@@ -486,15 +491,15 @@ const getInvestmentRunTimeline = async function (investment_run_id) {
   if (execution_orders.some(exec_order => exec_order.status === EXECUTION_ORDER_STATUSES.Failed)) {
     exec_order_status = EXECUTION_ORDER_STATUSES.Failed;
   } else if (whole_investment.status === INVESTMENT_RUN_STATUSES.OrdersFilled) {
-    exec_order_status = INVESTMENT_RUN_STATUSES.OrdersFilled;
+    exec_order_status = EXECUTION_ORDER_STATUSES.FullyFilled;
   } else if (whole_investment.status === INVESTMENT_RUN_STATUSES.OrdersExecuting) {
-    exec_order_status = INVESTMENT_RUN_STATUSES.OrdersExecuting;
+    exec_order_status = EXECUTION_ORDER_STATUSES.Placed;
   }
   let exec_order_data = {
     count: execution_orders.length,
     status: `execution_orders_timeline.status.${exec_order_status}`
   };
-  
+
   return {
     investment_run: investment_run_data,
     recipe_run: recipe_run_data,
