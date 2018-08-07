@@ -317,9 +317,32 @@ const fetchInstrumentLiquidityRequirementView = async (liquidity_requirement_id)
 }
 module.exports.fetchInstrumentLiquidityRequirementView = fetchInstrumentLiquidityRequirementView;
 
-const fetchRecipeOrdersGroupView = async (recipe_orders_group_id, alias = 'id') => {
-
-    return fetchSingleEntity(AVRecipeOrdersGroup, recipe_orders_group_id, alias);
+/**
+ * Fetch recipe orders group using either an orders group id as first arg or recipe run id as second arg. 
+ * 
+ * if first arg is supplied, recipe run id is ignored.
+ * 
+ * Fetching by recipe run id will take latest created recipe orders group
+ */
+const fetchRecipeOrdersGroupView = async (recipe_orders_group_id, recipe_run_id) => {
+    //simpler case, fetch entity by id
+    if (_.isNumber(recipe_orders_group_id)) {
+        return fetchSingleEntity(AVRecipeOrdersGroup, recipe_orders_group_id, alias);
+    }
+    //try fetch newest by recipe run id
+    if (_.isNumber(recipe_run_id)) {
+        const data = await fetchModelData(AVRecipeOrdersGroup, {
+            where: {
+                recipe_run_id: recipe_run_id
+            },
+            order: [
+                ['created_timestamp', 'DESC']
+            ]
+        });
+        return _.first(data)
+    }
+    //no numbers supplied - throw error
+    TE(`Need to supply numeric recipe orders group id or recipe run id to fetch!`)
 }
 module.exports.fetchRecipeOrdersGroupView = fetchRecipeOrdersGroupView;
 
