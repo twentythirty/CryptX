@@ -79,21 +79,12 @@ const approveDeposit = async function (req, res) {
 
   let { original_deposit, updated_deposit: deposit } = deposit_result;
 
-  if(parseFloat(original_deposit.amount) !== deposit.amount) {
-    user.logAction(`${user.fullName()} changed Amount from ${original_deposit.amount || '-'} to ${deposit.amount}`, {
-      relations: { recipe_run_deposit_id: deposit.id }
-    });
-  }
-  if(parseFloat(original_deposit.fee) !== deposit.fee) {
-    user.logAction(`${user.fullName()} changed Deposit management fee from ${original_deposit.fee || '-'} to ${deposit.fee}`, {
-      relations: { recipe_run_deposit_id: deposit.id }
-    });
-  }
-  if(parseInt(original_deposit.status) !== deposit.status) {
-    user.logAction(`${user.fullName()} changed Status from ${_.get(translation, `deposits.status.${original_deposit.status}`)} to ${_.get(translation, `deposits.status.${deposit.status}`)}`, {
-      relations: { recipe_run_deposit_id: deposit.id }
-    });
-  }
+  user.logAction('modified', { 
+    previous_instance: original_deposit, 
+    updated_instance: deposit,
+    ignore: ['completion_timestamp'],
+    replace: { status: { [MODEL_CONST.RECIPE_RUN_DEPOSIT_STATUSES.Pending]: 'Pending', [MODEL_CONST.RECIPE_RUN_DEPOSIT_STATUSES.Completed]: 'Completed' } }
+  });
 
   deposit = deposit.toWeb();
   deposit.depositor_user = user.fullName();
@@ -193,7 +184,7 @@ const getRecipeDepositsColumnLOV = async (req, res) => {
   const field_name = req.params.field_name;
   const { query } = _.isPlainObject(req.body) ? req.body : { query: '' };
 
-  const [err, field_vals] = await to(AdminViewService.fetchRecipeDepositsViewHeaderLOV(field_name, query));
+  const [err, field_vals] = await to(AdminViewService.fetchRecipeDepositsViewHeaderLOV(field_name, query, req.sql_where));
   if (err) return ReE(res, err.message, 422);
 
   return ReS(res, {

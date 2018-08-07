@@ -16,12 +16,12 @@
         <app-data-table-filter
           *ngIf="item.filter"
           [dirty]="item._dirty"
-          [rowData$]="item.filter.rowData$"
           [hidden]="!item.filter || !filterMap[item.column]"
-          [column]="item.column"
           [type]="item.filter.type"
+          [column]="item.column"
           [sortable]="item.filter.sortable"
           [rowData]="item.filter.rowData"
+          [rowData$]="item.filter.rowData$"
           (onFilter)="onSetFilter($event); filterMap[item.column] = !filterMap[item.column]"
         ></app-data-table-filter>
       </th>

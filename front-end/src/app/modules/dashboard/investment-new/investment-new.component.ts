@@ -1,7 +1,6 @@
 import { Component, OnInit, Output, EventEmitter } from '@angular/core';
 import { FormGroup, FormControl, FormBuilder, Validators } from "@angular/forms";
 import { ModelConstantsService } from "../../../services/model-constants/model-constants.service";
-import { Observable } from 'rxjs/Observable'; 
 import { InvestmentService } from "../../../services/investment/investment.service";
 import { Router } from "@angular/router";
 

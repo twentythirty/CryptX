@@ -44,7 +44,7 @@ const getInstrumentsColumnLOV = async (req, res) => {
   const field_name = req.params.field_name
   const { query } = _.isPlainObject(req.body)? req.body : { query: '' };
 
-  const field_vals = await adminViewService.fetchInstrumentsViewHeaderLOV(field_name, query);
+  const field_vals = await adminViewService.fetchInstrumentsViewHeaderLOV(field_name, query, req.sql_where);
 
   return ReS(res, {
     query: query,
@@ -257,7 +257,7 @@ const getLiquidityRequirementsColumnLOV = async function (req, res) {
   const field_name = req.params.field_name
   const { query } = _.isPlainObject(req.body)? req.body : { query: '' };
 
-  const field_vals = await adminViewService.fetchInstrumentLiquidityRequirementsViewHeaderLOV(field_name, query);
+  const field_vals = await adminViewService.fetchInstrumentLiquidityRequirementsViewHeaderLOV(field_name, query, req.sql_where);
 
   return ReS(res, {
     query: query,

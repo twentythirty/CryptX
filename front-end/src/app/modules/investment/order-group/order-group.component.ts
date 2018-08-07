@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { mergeMap, map } from 'rxjs/operators';
+import { mergeMap } from 'rxjs/operators/mergeMap';
 
 import { StatusClass } from '../../../shared/models/common';
 

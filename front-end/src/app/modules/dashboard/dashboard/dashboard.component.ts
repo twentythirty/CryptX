@@ -1,7 +1,5 @@
 import { Component, OnInit } from '@angular/core';
 import { RouterModule, Router, ActivatedRoute } from '@angular/router';
-import { Observable } from 'rxjs';
-import { map } from 'rxjs/operators';
 
 import { ModelConstantsService } from '../../../services/model-constants/model-constants.service';
 import { TableDataSource, TableDataColumn } from '../../../shared/components/data-table/data-table.component';
@@ -84,19 +82,6 @@ export class DashboardComponent extends DataTableCommonManagerComponent implemen
       }
     )
   }
-
-  // addInvestmentRun(): void {
-  //   this.investmentService.createInvestmentRun({
-  //     // user_id,
-  //     strategy_type: 101,
-  //     is_simulated: false,
-  //     deposit_usd: 150000
-  //   }).subscribe(
-  //     res => {
-  //       this.router.navigate(['/run/investment/' + res.id]);
-  //     }
-  //   )
-  // }
 
   openRow(investment: any): void {
     this.router.navigate(['/run/investment', investment.id]);

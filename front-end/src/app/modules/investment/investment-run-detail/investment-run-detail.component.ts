@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { mergeMap, map } from 'rxjs/operators';
+import { mergeMap } from 'rxjs/operators/mergeMap';
 
 import { StatusClass } from '../../../shared/models/common';
 import { TimelineDetailComponent, SingleTableDataSource, TagLineItem } from '../timeline-detail/timeline-detail.component'
@@ -161,9 +161,7 @@ export class InvestmentRunDetailComponent extends TimelineDetailComponent implem
       mergeMap(
         params => this.investmentService.getAllTimelineData({ investment_run_id: params['id'] })
       )
-    ).do(res => {
-      console.log('timeline$ res', res);
-    });
+    );
   }
 
   /**

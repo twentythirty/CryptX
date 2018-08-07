@@ -84,7 +84,7 @@ const TABLE_LOV_FIELDS = {
 }
 
 // ************************ HELPERS ***************************//
-const fetchViewHeaderLOV = async (table, field, query) => {
+const fetchViewHeaderLOV = async (table, field, query, where_clause = '') => {
 
     const allowed_fields = TABLE_LOV_FIELDS[table];
 
@@ -92,7 +92,7 @@ const fetchViewHeaderLOV = async (table, field, query) => {
         return [];
     }
 
-    const sql = builder.selectDistinct(field, table, query ? `${field} LIKE ${sequelize.escape(`%${query}%`)}` : '')
+    const sql = builder.selectDistinct(field, table, builder.addToWhere(where_clause, query ? `${field} LIKE ${sequelize.escape(`%${query}%`)}` : ''))
 
     //returns list of objects with 1 key-value pair, key being field name
     const values = await sequelize.query(sql, {
@@ -133,69 +133,69 @@ module.exports.fetchMockHeaderLOV = fetchMockHeaderLOV;
 
 // ************************ HEADERS ***************************//
 
-const fetchUsersViewHeaderLOV = async (header_field, query = '') => {
+const fetchUsersViewHeaderLOV = async (header_field, query = '', where = '') => {
 
-    return fetchViewHeaderLOV('av_users', header_field, query)
+    return fetchViewHeaderLOV('av_users', header_field, query, where)
 }
 module.exports.fetchUsersViewHeaderLOV = fetchUsersViewHeaderLOV;
 
-const fetchAssetsViewHeaderLOV = async (header_field, query = '') => {
+const fetchAssetsViewHeaderLOV = async (header_field, query = '', where = '') => {
 
-    return fetchViewHeaderLOV('av_assets', header_field, query)
+    return fetchViewHeaderLOV('av_assets', header_field, query, where)
 }
 module.exports.fetchAssetsViewHeaderLOV = fetchAssetsViewHeaderLOV;
 
-const fetchInstrumentsViewHeaderLOV = async (header_field, query = '') => {
+const fetchInstrumentsViewHeaderLOV = async (header_field, query = '', where = '') => {
 
-    return fetchViewHeaderLOV('av_instruments', header_field, query);
+    return fetchViewHeaderLOV('av_instruments', header_field, query, where);
 }
 module.exports.fetchInstrumentsViewHeaderLOV = fetchInstrumentsViewHeaderLOV;
 
-const fetchInvestmentRunsViewHeaderLOV = async (header_field, query = '') => {
+const fetchInvestmentRunsViewHeaderLOV = async (header_field, query = '', where = '') => {
 
-    return fetchViewHeaderLOV('av_investment_runs', header_field, query);
+    return fetchViewHeaderLOV('av_investment_runs', header_field, query, where);
 }
 module.exports.fetchInvestmentRunsViewHeaderLOV = fetchInvestmentRunsViewHeaderLOV;
 
-const fetchRecipeRunsViewHeaderLOV = async (header_field, query = '') => {
+const fetchRecipeRunsViewHeaderLOV = async (header_field, query = '', where = '') => {
 
-    return fetchViewHeaderLOV('av_recipe_runs', header_field, query);
+    return fetchViewHeaderLOV('av_recipe_runs', header_field, query, where);
 }
 module.exports.fetchRecipeRunsViewHeaderLOV = fetchRecipeRunsViewHeaderLOV;
 
-const fetchRecipeRunDetailsViewHeaderLOV = async (header_field, query = '') => {
+const fetchRecipeRunDetailsViewHeaderLOV = async (header_field, query = '', where = '') => {
 
-    return fetchViewHeaderLOV('av_recipe_run_details', header_field, query);
+    return fetchViewHeaderLOV('av_recipe_run_details', header_field, query, where);
 }
 module.exports.fetchRecipeRunDetailsViewHeaderLOV = fetchRecipeRunDetailsViewHeaderLOV;
 
-const fetchInstrumentLiquidityRequirementsViewHeaderLOV = async (header_field, query = '') => {
+const fetchInstrumentLiquidityRequirementsViewHeaderLOV = async (header_field, query = '', where = '') => {
 
-    return fetchViewHeaderLOV('av_instrument_liquidity_requirements', header_field, query);
+    return fetchViewHeaderLOV('av_instrument_liquidity_requirements', header_field, query, where);
 }
 module.exports.fetchInstrumentLiquidityRequirementsViewHeaderLOV = fetchInstrumentLiquidityRequirementsViewHeaderLOV;
 
-const fetchRecipeOrdersViewHeaderLOV = async (header_field, query = '') => {
+const fetchRecipeOrdersViewHeaderLOV = async (header_field, query = '', where = '') => {
 
-    return fetchViewHeaderLOV('av_recipe_orders', header_field, query);
+    return fetchViewHeaderLOV('av_recipe_orders', header_field, query, where);
 }
 module.exports.fetchRecipeOrdersViewHeaderLOV = fetchRecipeOrdersViewHeaderLOV;
 
-const fetchExecutionOrdersViewHeaderLOV = async (header_field, query = '') => {
+const fetchExecutionOrdersViewHeaderLOV = async (header_field, query = '', where = '') => {
 
-    return fetchViewHeaderLOV('av_execution_orders', header_field, query);
+    return fetchViewHeaderLOV('av_execution_orders', header_field, query, where);
 }
 module.exports.fetchExecutionOrdersViewHeaderLOV = fetchExecutionOrdersViewHeaderLOV;
 
-const fetchExecutionOrderFillsViewHeaderLOV = async (header_field, query ='') => {
+const fetchExecutionOrderFillsViewHeaderLOV = async (header_field, query ='', where = '') => {
 
-    return fetchViewHeaderLOV('av_execution_order_fills', header_field, query);
+    return fetchViewHeaderLOV('av_execution_order_fills', header_field, query, where);
 }
 module.exports.fetchExecutionOrderFillsViewHeaderLOV = fetchExecutionOrderFillsViewHeaderLOV;
 
-const fetchRecipeDepositsViewHeaderLOV = async (header_field, query ='') => {
+const fetchRecipeDepositsViewHeaderLOV = async (header_field, query ='', where = '') => {
 
-    return fetchViewHeaderLOV('av_recipe_deposits', header_field, query='');
+    return fetchViewHeaderLOV('av_recipe_deposits', header_field, query, where);
 }
 module.exports.fetchRecipeDepositsViewHeaderLOV = fetchRecipeDepositsViewHeaderLOV;
 
@@ -317,9 +317,32 @@ const fetchInstrumentLiquidityRequirementView = async (liquidity_requirement_id)
 }
 module.exports.fetchInstrumentLiquidityRequirementView = fetchInstrumentLiquidityRequirementView;
 
-const fetchRecipeOrdersGroupView = async (recipe_orders_group_id, alias = 'id') => {
-
-    return fetchSingleEntity(AVRecipeOrdersGroup, recipe_orders_group_id, alias);
+/**
+ * Fetch recipe orders group using either an orders group id as first arg or recipe run id as second arg. 
+ * 
+ * if first arg is supplied, recipe run id is ignored.
+ * 
+ * Fetching by recipe run id will take latest created recipe orders group
+ */
+const fetchRecipeOrdersGroupView = async (recipe_orders_group_id, recipe_run_id) => {
+    //simpler case, fetch entity by id
+    if (_.isNumber(recipe_orders_group_id)) {
+        return fetchSingleEntity(AVRecipeOrdersGroup, recipe_orders_group_id, alias);
+    }
+    //try fetch newest by recipe run id
+    if (_.isNumber(recipe_run_id)) {
+        const data = await fetchModelData(AVRecipeOrdersGroup, {
+            where: {
+                recipe_run_id: recipe_run_id
+            },
+            order: [
+                ['created_timestamp', 'DESC']
+            ]
+        });
+        return _.first(data)
+    }
+    //no numbers supplied - throw error
+    TE(`Need to supply numeric recipe orders group id or recipe run id to fetch!`)
 }
 module.exports.fetchRecipeOrdersGroupView = fetchRecipeOrdersGroupView;
 

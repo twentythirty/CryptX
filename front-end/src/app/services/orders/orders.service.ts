@@ -60,7 +60,7 @@ export class OrdersService {
   }
 
   generateOrders(recipeId: number): Observable<any> { // todo
-    return this.http.post<any>(this.baseUrl + `orders/${recipeId}/generate_orders`, {});
+    return this.http.post<any>(this.baseUrl + `recipes/${recipeId}/generate_orders`, {});
   }
 
   alterOrderGroup(groupId: number, request: AlterOrderGroupRequestData): Observable<any> {
