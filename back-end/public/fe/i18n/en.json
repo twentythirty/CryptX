@@ -82,7 +82,9 @@
       "liquidity_status": "Liquidity status",
       "investment_run_id": "Investment run ID",
       "transaction_asset": "Transaction asset",
-      "portfolio": "Portfolio"
+      "portfolio": "Portfolio",
+      "deposit_management_fee": "Deposit management fee",
+      "depositor_user": "Depositary"
     },
     "filter": {
       "all": "All",

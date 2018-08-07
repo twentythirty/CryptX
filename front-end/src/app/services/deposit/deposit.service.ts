@@ -16,7 +16,7 @@ export class DepositsAllResponse {
 export class DepositResultData {
   success: boolean;
   recipe_deposit: Deposit;
-  status_changes: Array<DepositStatus>;
+  action_logs: Array<DepositStatus>;
 }
 
 export class DepositResponseData {
@@ -46,8 +46,8 @@ export class DepositService {
     return this.http.post<DepositResponseData>(this.baseUrl + `deposits/${depositId}/submit`,info );
   }
 
-  Approve(depositId: number){
-    return this.http.post<DepositResponseData>(this.baseUrl + `deposits/${depositId}/approve`,{} );
+  Approve(depositId: number, info: object){
+    return this.http.post<DepositResponseData>(this.baseUrl + `deposits/${depositId}/approve`,info );
   }
   
   getHeaderLOV(column_name: string): Observable<any> {

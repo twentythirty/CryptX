@@ -7,9 +7,21 @@
     (setFilter)="onSetFilter($event)">
   </app-data-table>
 
-  <div>
+  <div *ngIf="activityLog as log">
     <br>
-    <h3>{{'deposits.deposit_management_activity_log' | translate}}</h3>
+    <h2>{{'deposits.deposit_management_activity_log' | translate}}</h2>
+    <br>
+    <p [ngPlural]="log.length">
+      <ng-template ngPluralCase="=0">No changes have been done</ng-template>
+      <ng-template ngPluralCase="=1">{{ log.length }} change has been done</ng-template>
+      <ng-template ngPluralCase="other">{{ log.length }} changes have been done</ng-template>
+    </p>
+    <p *ngFor="let change of log">
+      <br>
+      <span>{{ change.timestamp | date:'dd MMM yyyy hh:mm' }}</span>
+      <span> - </span>
+      <span>{{ change.details }}</span>
+    </p>
   </div>
 </div>
 <div class="step-labels-container">

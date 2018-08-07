@@ -1,15 +1,17 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router, Params } from "@angular/router";
 import { Observable } from "rxjs/Rx";
-import { mergeMap } from "rxjs/operators";
+import _ from 'lodash';
 
 import { FormsModule, FormGroup, FormControl, Validators } from '@angular/forms';
 import { DepositService, DepositResultData, DepositResponseData } from "../../../services/deposit/deposit.service";
 import { Deposit, DepositStatus } from "../../../shared/models/deposit";
-import { DepositListComponent } from "../deposit-list/deposit-list.component";
 import { InvestmentService } from "../../../services/investment/investment.service";
 import { TimelineEvent } from "../../../shared/components/timeline/timeline.component";
-import { ActionCellDataColumn, DataCellAction } from "../../../shared/components/data-table-cells/index";
+import { ActionCellDataColumn, DataCellAction, DateCellDataColumn, StatusCellDataColumn, PercentCellDataColumn, NumberCellDataColumn } from "../../../shared/components/data-table-cells/index";
+import { DataTableCommonManagerComponent } from "../../../shared/components/data-table-common-manager/data-table-common-manager.component";
+import { TableDataSource, TableDataColumn } from "../../../shared/components/data-table/data-table.component";
+import { StatusClass } from "../../../shared/models/common";
 
 
 @Component({
@@ -17,14 +19,47 @@ import { ActionCellDataColumn, DataCellAction } from "../../../shared/components
   templateUrl: './deposit-info.component.html',
   styleUrls: ['./deposit-info.component.scss']
 })
-export class DepositInfoComponent extends DepositListComponent implements OnInit {
+export class DepositInfoComponent extends DataTableCommonManagerComponent implements OnInit {
+
+  public depositDataSource: TableDataSource = {
+    header: [
+      { column: 'id', nameKey: 'table.header.id' },
+      { column: 'quote_asset', nameKey: 'table.header.quote_asset' },
+      { column: 'exchange', nameKey: 'table.header.exchange' },
+      { column: 'account', nameKey: 'table.header.account' },
+      { column: 'amount', nameKey: 'table.header.amount' },
+      { column: 'investment_percentage', nameKey: 'table.header.investment_percentage' },
+      { column: 'deposit_management_fee', nameKey: 'table.header.deposit_management_fee' },
+      { column: 'depositor_user', nameKey: 'table.header.depositor_user' },
+      { column: 'status', nameKey: 'table.header.status' },
+    ],
+    body: null
+  };
+
+  public depositColumnsToShow: Array<TableDataColumn> = [
+    new TableDataColumn({ column: 'id' }),
+    new TableDataColumn({ column: 'quote_asset' }),
+    new TableDataColumn({ column: 'exchange' }),
+    new TableDataColumn({ column: 'accout' }),
+    new NumberCellDataColumn({ column: 'amount' }),
+    new PercentCellDataColumn({ column: 'investment_percentage' }),
+    new NumberCellDataColumn({ column: 'deposit_management_fee' }),
+    new TableDataColumn({ column: 'depositor_user' }),
+    new StatusCellDataColumn({ column: 'status', inputs: { classMap: {
+      'deposits.status.150' : StatusClass.PENDING,
+      'deposits.status.151': StatusClass.APPROVED,
+    }}}),
+  ];
+
 
   public depositId: number;
+  public depositStatus;
   public activityLog: Array<DepositStatus>;
   public showConfirm = false;
   public showModal = false;
   public amount = '';
   public management_fee = '';
+
   public timeline$: Observable<object>;
 
   depositForm = new FormGroup({
@@ -38,13 +73,13 @@ export class DepositInfoComponent extends DepositListComponent implements OnInit
     protected router: Router,
     protected investmentService: InvestmentService,
   ) {
-    super(route, depositService, router);
+    super(route);
   }
 
 
   ngOnInit() {
+    super.ngOnInit();
     this.getDeposit();
-    this.getTimelineData();
   }
 
   private getDeposit(): void {
@@ -53,11 +88,14 @@ export class DepositInfoComponent extends DepositListComponent implements OnInit
     ).subscribe(
       (params: Params) => {
         this.depositId = params.depositId;
+        if (this.depositId){
+          this.getTimelineData(this.depositId);
+        }
         this.depositService.getDeposit(this.depositId).subscribe(
           (res: DepositResultData) => {
             this.depositDataSource.body = [res.recipe_deposit];
-            this.activityLog = res.status_changes
-            this.count = 1;
+            this.depositStatus = [res.recipe_deposit];
+            this.activityLog = res.action_logs;
             this.appendActionColumn();
           }
         )
@@ -66,8 +104,8 @@ export class DepositInfoComponent extends DepositListComponent implements OnInit
   }
 
   appendActionColumn() {
-    /*if (!_.find(this.depositDataSource.header, col => col.column == 'action')){
-      if (this.depositDataSource.body[0].status === 'deposits.status.150') {
+    if (!_.find(this.depositDataSource.header, col => col.column == 'action')){
+      if (this.depositStatus[0].status === 'deposits.status.150') {
         this.depositDataSource.header.push({ column: 'action', nameKey: 'table.header.action' })
         this.depositColumnsToShow.push(
           new ActionCellDataColumn({
@@ -85,7 +123,7 @@ export class DepositInfoComponent extends DepositListComponent implements OnInit
             }
           }));
       }
-    }*/
+    }
   }
 
   hideConfirm() {
@@ -97,11 +135,11 @@ export class DepositInfoComponent extends DepositListComponent implements OnInit
   }
 
   Confirm() {
+    let obj = {
+      amount: parseFloat(this.amount),
+      deposit_management_fee: parseFloat(this.management_fee)
+    }
     if (this.depositForm.valid) {
-      let obj = {
-        amount: this.amount,
-        deposit_management_fee: this.management_fee
-      }
       this.depositService.Submit(this.depositId, obj).subscribe(
         (res: DepositResponseData) => {
           if (res.success) {
@@ -132,15 +170,20 @@ export class DepositInfoComponent extends DepositListComponent implements OnInit
     });
   }
 
-  protected getTimelineData(): void {
-    //this.timeline$ = this.investmentService.getAllTimelineData({ "deposits_id": this.depositId })
+  protected getTimelineData(id: number): void {
+    this.timeline$ = this.investmentService.getAllTimelineData({ "recipe_deposit_id": id})
   }
 
   Send() {
-    this.depositService.Approve(this.depositId).subscribe(
+    let obj = {
+      amount: parseFloat(this.amount),
+      deposit_management_fee: parseFloat(this.management_fee)
+    }
+    this.depositService.Approve(this.depositId, obj).subscribe(
       (data: DepositResponseData) => {
         if (data.success) {
           this.showConfirm = false;
+          this.getDeposit();
         } else {
           console.log(data.deposit)
         }
