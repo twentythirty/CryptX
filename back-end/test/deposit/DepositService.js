@@ -15,12 +15,24 @@ describe('DepositService testing', () => {
 
         app.dbPromise.then(migrations => {
             console.log("Migrations: %o", migrations);
+
+            sinon.stub(ActionLogUtil, 'logAction').callsFake(() => {return;});
+
             done();
         })
     });
 
+    after(done => {
+        ActionLogUtil.logAction.restore();
+        done();
+    });
+
     const DepositService = require('./../../services/DepositService');
     const RecipeRunDeposit = require('./../../models').RecipeRunDeposit;
+    const RecipeRunDetail = require('./../../models').RecipeRunDetail;
+    const ExchangeAccount = require('./../../models').ExchangeAccount;
+
+    const ActionLogUtil = require('./../../utils/ActionLogUtil');
 
     describe('and method approveDeosit shall', () => {
 
@@ -117,4 +129,77 @@ describe('DepositService testing', () => {
 
     });
 
+    describe('an method generateRecipeRunDeposits shall', () => {
+
+        const MOCK_DETAILS = [{
+            quote_asset_id: 1,
+            target_exchange_id: 2
+        }, {
+            quote_asset_id: 1,
+            target_exchange_id: 1
+        }, {
+            quote_asset_id: 2,
+            target_exchange_id: 3
+        }];
+
+        const MOCK_EXCHANGE_ACCOUNTS = [{
+            id: 1,
+            exchange_id: 1,
+            asset_id: 1
+        }, {
+            id: 2,
+            exchange_id: 3,
+            asset_id: 2
+        }, {
+            id: 1,
+            exchange_id: 2,
+            asset_id: 1
+        }];
+
+        const MOCK_RECIPE_RUN = {
+            id: 1,
+            approval_status: RECIPE_RUN_STATUSES.Approved
+        };
+
+        before(done => {
+            sinon.stub(RecipeRunDetail, 'findAll').callsFake(options => {
+                return Promise.resolve(MOCK_DETAILS);
+            });
+            sinon.stub(ExchangeAccount, 'findAll').callsFake(options => {
+                return Promise.resolve(MOCK_EXCHANGE_ACCOUNTS);
+            });
+            sinon.stub(RecipeRunDeposit, 'bulkCreate').callsFake(deposits => {
+                return Promise.resolve(deposits);
+            });
+            done();
+        });
+
+        after(done => {
+            RecipeRunDetail.findAll.restore();
+            ExchangeAccount.findAll.restore();
+            RecipeRunDeposit.bulkCreate.restore();
+            done();
+        });
+
+        it('exist', () => {
+            return chai.expect(DepositService.generateRecipeRunDeposits).to.be.not.undefined;
+        });
+
+        it('generate new deposits by matching the details and exchange accounts', () => {
+            return DepositService.generateRecipeRunDeposits(MOCK_RECIPE_RUN).then(deposits => {
+
+                chai.expect(deposits.length).to.equal(MOCK_EXCHANGE_ACCOUNTS.length);
+
+                for(let deposit of deposits) {
+                    const exchange_account = MOCK_EXCHANGE_ACCOUNTS.find(ex => ex.id === deposit.target_exchange_account_id);
+
+                    chai.expect(deposit.creation_timestamp).to.be.a('date');
+                    chai.expect(deposit.recipe_run_id).to.equal(MOCK_RECIPE_RUN.id);
+                    chai.expect(deposit.asset_id).to.equal(exchange_account.asset_id);
+                    chai.expect(deposit.status).to.equal(RECIPE_RUN_DEPOSIT_STATUSES.Pending);
+                }
+
+            });
+        });
+    });
 });

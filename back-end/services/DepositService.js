@@ -2,7 +2,12 @@
 
 const InvestmentRun = require('../models').InvestmentRun;
 const RecipeRunDeposit = require('../models').RecipeRunDeposit;
+const RecipeRunDetail = require('../models').RecipeRunDetail;
 const Asset = require('../models').Asset;
+const ExchangeAccount = require('../models').ExchangeAccount;
+const Sequelize = require('../models').Sequelize;
+
+const { in: opIn } = Sequelize.Op;
 
 const { logAction } = require('../utils/ActionLogUtil'); 
 
@@ -32,13 +37,53 @@ module.exports.saveDeposit = saveDeposit;
 const generateRecipeRunDeposits = async function (approved_recipe_run) {
 
   if (!approved_recipe_run
-    || approved_recipe_run.status == null
-    || approved_recipe_run.status !== RECIPE_RUN_STATUSES.Approved) {
+    || approved_recipe_run.approval_status == null
+    || approved_recipe_run.approval_status !== RECIPE_RUN_STATUSES.Approved) {
 
     TE(`Bad input! submitted input must be a recipe run object with status ${RECIPE_RUN_STATUSES.Approved} (Approved)! GOt: ${approved_recipe_run}`)
   }
 
+  //Get unique combinations of quote assets and exchanges.
+  let [ err, details ] = await to(RecipeRunDetail.findAll({
+    where: { recipe_run_id: approved_recipe_run.id },
+    attributes: ['quote_asset_id', 'target_exchange_id', Sequelize.fn('sum', Sequelize.col('investment_percentage'))],
+    group: ['quote_asset_id', 'target_exchange_id']
+  }));
+  
+  if(err) TE(err.message);
 
+  const exchange_ids = details.map(d => d.target_exchange_id);
+  let exchange_accounts = [];
+  [ err, exchange_accounts ] = await to(ExchangeAccount.findAll({
+    where: { 
+      exchange_id: { [opIn]: exchange_ids }
+    }
+  }));
+
+  if(err) TE(err.message);
+
+  //Find exchange account for each detail and create return a deposit for each one.
+  let deposits = details.map(detail => {
+    const account = exchange_accounts.find(ex_account => detail.target_exchange_id === ex_account.exchange_id && detail.quote_asset_id === ex_account.asset_id);
+    if(account) return {
+      asset_id: account.asset_id,
+      creation_timestamp: new Date(),
+      recipe_run_id: approved_recipe_run.id,
+      target_exchange_account_id: account.id,
+      status: MODEL_CONST.RECIPE_RUN_DEPOSIT_STATUSES.Pending
+    };
+  }).filter(deposit => deposit);
+  //console.log(deposits)
+  [ err, deposits ] = await to(RecipeRunDeposit.bulkCreate(deposits));
+  
+  if(err) TE(err.message);
+
+  logAction('deposits.generate', { 
+    amount: deposits.length,
+    relations: { recipe_run_id: approved_recipe_run.id }
+  });
+
+  return deposits;
 
 }
 module.exports.generateRecipeRunDeposits = generateRecipeRunDeposits;
