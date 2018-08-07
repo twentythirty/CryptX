@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router, Params } from "@angular/router";
 import { FormGroup, FormControl, Validators } from '@angular/forms';
 import _ from 'lodash';
-import { Observable } from "rxjs/observable";
+import { Observable } from "rxjs/Observable";
 
 import { DepositService, DepositResultData, DepositResponseData } from "../../../services/deposit/deposit.service";
 import { InvestmentService } from "../../../services/investment/investment.service";
