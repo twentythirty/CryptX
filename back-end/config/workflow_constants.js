@@ -66,5 +66,9 @@ EXCHANGE_KEYS = {
     kraken: {
         apiKey: process.env.KRAKEN_APIKEY,
         secret: process.env.KRAKEN_SECRETKEY
+    },
+    okex: {
+        apiKey: process.env.OKEX_APIKEY,
+        secret: process.env.OKEX_SECRETKEY
     }
 }
