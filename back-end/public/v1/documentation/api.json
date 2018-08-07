@@ -32,6 +32,22 @@
   "schemes": [
     "https"
   ],
+  "parameters": {
+    "investment_id": {
+      "name": "investment_id",
+      "in": "path",
+      "description": "identifier of investment run to fetch",
+      "required": true,
+      "type": "integer"
+    },
+    "recipe_id": {
+      "name": "recipe_id",
+      "in": "path",
+      "description": "ID of recipe run",
+      "required": true,
+      "type": "integer"
+    }
+  },
   "paths": {
     "/": {
       "get": {
@@ -894,18 +910,14 @@
         ],
         "parameters": [
           {
-            "name": "investment_id",
-            "in": "path",
-            "description": "identifier of investment run to fecth",
-            "required": true,
-            "type": "integer"
+            "$ref": "#/parameters/investment_id"
           }
         ],
         "responses": {
           "200": {
             "description": "success",
             "schema": {
-              "$ref": "#/definitions/InvestmentRunResponse"
+              "$ref": "#/definitions/InvestmentRunViewResponse"
             }
           }
         },
@@ -988,7 +1000,7 @@
           "200": {
             "description": "success",
             "schema": {
-              "$ref": "#/definitions/InvestmentRunListResponse"
+              "$ref": "#/definitions/InvestmentRunViewListResponse"
             }
           }
         },
@@ -1021,7 +1033,7 @@
           "200": {
             "description": "success",
             "schema": {
-              "$ref": "#/definitions/InvestmentRunListResponse"
+              "$ref": "#/definitions/InvestmentRunViewListResponse"
             }
           }
         },
@@ -1043,11 +1055,7 @@
         ],
         "parameters": [
           {
-            "name": "investment_id",
-            "in": "path",
-            "description": "ID of investment run that recipe will be created for",
-            "required": true,
-            "type": "number"
+            "$ref": "#/parameters/investment_id"
           },
           {
             "name": "body",
@@ -1086,11 +1094,7 @@
         ],
         "parameters": [
           {
-            "name": "recipe_id",
-            "in": "path",
-            "description": "ID of recipe run to fetch",
-            "required": true,
-            "type": "integer"
+            "$ref": "#/parameters/recipe_id"
           }
         ],
         "responses": {
@@ -1120,18 +1124,14 @@
         ],
         "parameters": [
           {
-            "name": "investment_id",
-            "in": "path",
-            "description": "identifier of investment run to fetch",
-            "required": true,
-            "type": "integer"
+            "$ref": "#/parameters/investment_id"
           }
         ],
         "responses": {
           "200": {
             "description": "success",
             "schema": {
-              "$ref": "#/definitions/RecipeRunListResponse"
+              "$ref": "#/definitions/RecipeRunViewListResponse"
             }
           }
         },
@@ -1151,11 +1151,7 @@
         ],
         "parameters": [
           {
-            "name": "investment_id",
-            "in": "path",
-            "description": "identifier of investment run to fecth",
-            "required": true,
-            "type": "integer"
+            "$ref": "#/parameters/investment_id"
           },
           {
             "name": "body",
@@ -1171,7 +1167,7 @@
           "200": {
             "description": "success",
             "schema": {
-              "$ref": "#/definitions/RecipeRunListResponse"
+              "$ref": "#/definitions/RecipeRunViewListResponse"
             }
           }
         },
@@ -1206,7 +1202,7 @@
           "200": {
             "description": "success",
             "schema": {
-              "$ref": "#/definitions/RecipeRunListResponse"
+              "$ref": "#/definitions/RecipeRunViewListResponse"
             }
           }
         },
@@ -1217,7 +1213,7 @@
         ]
       }
     },
-    "/recipes/{recipe_run_id}/approve": {
+    "/recipes/{recipe_id}/approve": {
       "post": {
         "tags": [
           "recipes"
@@ -1229,11 +1225,7 @@
         ],
         "parameters": [
           {
-            "name": "recipe_run_id",
-            "in": "path",
-            "description": "ID of recipe run to be approved",
-            "required": true,
-            "type": "integer"
+            "$ref": "#/parameters/recipe_id"
           },
           {
             "name": "body",
@@ -1260,7 +1252,7 @@
         ]
       }
     },
-    "/recipes/{recipe_run_id}/generate_orders": {
+    "/recipes/{recipe_id}/generate_orders": {
       "post": {
         "tags": [
           "recipes",
@@ -1273,11 +1265,7 @@
         ],
         "parameters": [
           {
-            "name": "recipe_run_id",
-            "in": "path",
-            "description": "Recipe run ID",
-            "required": true,
-            "type": "integer"
+            "$ref": "#/parameters/recipe_id"
           },
           {
             "name": "body",
@@ -1350,11 +1338,7 @@
         ],
         "parameters": [
           {
-            "name": "recipe_id",
-            "in": "path",
-            "description": "ID of recipe run to get details of",
-            "required": true,
-            "type": "integer"
+            "$ref": "#/parameters/recipe_id"
           }
         ],
         "responses": {
@@ -1382,11 +1366,7 @@
         ],
         "parameters": [
           {
-            "name": "recipe_id",
-            "in": "path",
-            "description": "ID of recipe run to get details of",
-            "required": true,
-            "type": "integer"
+            "$ref": "#/parameters/recipe_id"
           },
           {
             "name": "body",
@@ -1493,11 +1473,7 @@
         ],
         "parameters": [
           {
-            "name": "recipe_id",
-            "in": "path",
-            "description": "ID of recipe run",
-            "required": true,
-            "type": "integer"
+            "$ref": "#/parameters/recipe_id"
           }
         ],
         "responses": {
@@ -1527,18 +1503,14 @@
         ],
         "parameters": [
           {
-            "name": "recipe_id",
-            "in": "path",
-            "description": "ID of recipe run to get details of",
-            "required": true,
-            "type": "integer"
+            "$ref": "#/parameters/recipe_id"
           }
         ],
         "responses": {
           "200": {
             "description": "success",
             "schema": {
-              "$ref": "#/definitions/RecipeOrderListResponse"
+              "$ref": "#/definitions/RecipeOrderViewListResponse"
             }
           }
         },
@@ -1559,11 +1531,7 @@
         ],
         "parameters": [
           {
-            "name": "recipe_id",
-            "in": "path",
-            "description": "ID of recipe run to get details of",
-            "required": true,
-            "type": "integer"
+            "$ref": "#/parameters/recipe_id"
           },
           {
             "name": "body",
@@ -1579,7 +1547,7 @@
           "200": {
             "description": "success",
             "schema": {
-              "$ref": "#/definitions/RecipeOrderListResponse"
+              "$ref": "#/definitions/RecipeOrderViewListResponse"
             }
           }
         },
@@ -1613,7 +1581,7 @@
           "200": {
             "description": "success",
             "schema": {
-              "$ref": "#/definitions/RecipeOrderListResponse"
+              "$ref": "#/definitions/RecipeOrderViewListResponse"
             }
           }
         },
@@ -1654,7 +1622,7 @@
           "200": {
             "description": "success",
             "schema": {
-              "$ref": "#/definitions/RecipeOrderListResponse"
+              "$ref": "#/definitions/RecipeOrderViewListResponse"
             }
           }
         },
@@ -1690,7 +1658,7 @@
           "200": {
             "description": "success",
             "schema": {
-              "$ref": "#/definitions/RecipeOrderListResponse"
+              "$ref": "#/definitions/RecipeOrderViewListResponse"
             }
           }
         },
@@ -1876,11 +1844,7 @@
         ],
         "parameters": [
           {
-            "name": "recipe_id",
-            "in": "path",
-            "description": "ID of recipe run to get recipe deposits of",
-            "required": true,
-            "type": "integer"
+            "$ref": "#/parameters/recipe_id"
           }
         ],
         "responses": {
@@ -1908,11 +1872,7 @@
         ],
         "parameters": [
           {
-            "name": "recipe_id",
-            "in": "path",
-            "description": "ID of recipe run to get recipe deposits of",
-            "required": true,
-            "type": "integer"
+            "$ref": "#/parameters/recipe_id"
           },
           {
             "name": "body",
@@ -2052,7 +2012,7 @@
         ]
       }
     },
-    "/execution_orders/of_investment_run/{investment_run_id}": {
+    "/execution_orders/of_investment_run/{investment_id}": {
       "post": {
         "tags": [
           "execution orders"
@@ -2064,11 +2024,7 @@
         ],
         "parameters": [
           {
-            "name": "investment_run_id",
-            "in": "path",
-            "description": "ID of investment run to get execution orders of",
-            "required": true,
-            "type": "integer"
+            "$ref": "#/parameters/investment_id"
           },
           {
             "name": "body",
@@ -5739,7 +5695,7 @@
         }
       }
     },
-    "RecipeOrderListResponse": {
+    "RecipeOrderViewListResponse": {
       "description": "Recipe order list response",
       "type": "object",
       "allOf": [
@@ -5751,7 +5707,7 @@
             "recipe_orders": {
               "type": "array",
               "items": {
-                "$ref": "#/definitions/RecipeOrder"
+                "$ref": "#/definitions/RecipeOrderView"
               }
             }
           }
@@ -5824,6 +5780,54 @@
           }
         }
       }
+    },
+    "RecipeOrderView": {
+      "type": "object",
+      "allOf": [
+        {
+          "$ref": "#/definitions/RecipeOrder"
+        },
+        {
+          "properties": {
+            "recipe_run_id": {
+              "type": "number",
+              "example": 5
+            },
+            "investment_id": {
+              "type": "number",
+              "example": 15
+            },
+            "instrument": {
+              "type": "string",
+              "example": "BTC/USD"
+            },
+            "side": {
+              "type": "string",
+              "example": "orders.side.999"
+            },
+            "target_exchange_id": {
+              "type": "number",
+              "example": 1
+            },
+            "exchange": {
+              "type": "string",
+              "example": "Binance"
+            },
+            "status": {
+              "type": "string",
+              "example": "orders.status.51"
+            },
+            "created_timestamp": {
+              "type": "number",
+              "example": 1533052040000
+            },
+            "completed_timestamp": {
+              "type": "number",
+              "example": 1533052040000
+            }
+          }
+        }
+      ]
     },
     "RecipeOrder": {
       "description": "Recipe order details",
@@ -6019,7 +6023,7 @@
         }
       }
     },
-    "RecipeRunListResponse": {
+    "RecipeRunViewListResponse": {
       "description": "Recipe run response",
       "type": "object",
       "allOf": [
@@ -6031,7 +6035,7 @@
             "recipes_runs": {
               "type": "array",
               "items": {
-                "$ref": "#/definitions/RecipeRun"
+                "$ref": "#/definitions/RecipeRunView"
               }
             }
           }
@@ -6068,6 +6072,19 @@
         }
       }
     },
+    "RecipeRunViewResponse": {
+      "description": "Recipe run response",
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean",
+          "example": true
+        },
+        "recipe_run": {
+          "$ref": "#/definitions/RecipeRunView"
+        }
+      }
+    },
     "RecipeRunResponse": {
       "description": "Recipe run response",
       "type": "object",
@@ -6084,6 +6101,30 @@
     "RecipeRunCreateRequest": {
       "description": "Request body for recipe run creation",
       "type": "object"
+    },
+    "RecipeRunView": {
+      "type": "object",
+      "allOf": [
+        {
+          "$ref": "#/definitions/RecipeRun"
+        },
+        {
+          "properties": {
+            "user_created": {
+              "type": "string",
+              "example": "John Doe"
+            },
+            "approval_user": {
+              "type": "string",
+              "example": "John Doe"
+            },
+            "approval_status": {
+              "type": "string",
+              "example": "recipes.status.42"
+            }
+          }
+        }
+      ]
     },
     "RecipeRun": {
       "description": "Recipe run",
@@ -6105,10 +6146,6 @@
           "type": "number",
           "example": 4
         },
-        "user_created": {
-          "type": "string",
-          "example": "John Doe"
-        },
         "approval_status": {
           "type": "number",
           "example": 41
@@ -6124,10 +6161,6 @@
         "approval_user_id": {
           "type": "number",
           "example": 6
-        },
-        "approval_user": {
-          "type": "string",
-          "example": "John Doe"
         }
       }
     },
@@ -6196,6 +6229,18 @@
         },
         {
           "properties": {
+            "is_cryptocurrency": {
+              "type": "string",
+              "example": "assets.is_cryptocurrency.yes"
+            },
+            "is_base": {
+              "type": "string",
+              "example": "asset.is_base.yes"
+            },
+            "is_deposit": {
+              "type": "string",
+              "example": "asset.id_deposit.no"
+            },
             "capitalization": {
               "type": "number",
               "example": 130000000
@@ -6213,8 +6258,8 @@
               "example": 1525424340810
             },
             "status": {
-              "type": "number",
-              "example": 400
+              "type": "string",
+              "example": "assets.status.400"
             }
           }
         }
@@ -6283,7 +6328,7 @@
       "description": "Single entry of asset status history.",
       "type": "object",
       "properties": {
-        "id": {
+        "asset_id": {
           "type": "number",
           "example": 3
         },
@@ -6296,16 +6341,25 @@
           "example": "WHITELISTED"
         },
         "type": {
-          "type": "number",
-          "example": 402
+          "type": "string",
+          "example": "asset.status.402"
         },
-        "asset_id": {
-          "type": "number",
-          "example": 2
-        },
-        "user_id": {
-          "type": "number",
-          "example": 10
+        "user": {
+          "type": "object",
+          "properties": {
+            "email": {
+              "type": "string",
+              "example": "asdf@asdf.as"
+            },
+            "id": {
+              "type": "number",
+              "example": 5
+            },
+            "name": {
+              "type": "string",
+              "example": "John Doe"
+            }
+          }
         }
       }
     },
@@ -6327,7 +6381,7 @@
         }
       }
     },
-    "InvestmentRunListResponse": {
+    "InvestmentRunViewListResponse": {
       "description": "Single investment run information",
       "type": "object",
       "allOf": [
@@ -6339,12 +6393,25 @@
             "investment_runs": {
               "type": "array",
               "items": {
-                "$ref": "#/definitions/InvestmentRun"
+                "$ref": "#/definitions/InvestmentRunView"
               }
             }
           }
         }
       ]
+    },
+    "InvestmentRunViewResponse": {
+      "description": "Single investment run information",
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean",
+          "example": true
+        },
+        "investment_run": {
+          "$ref": "#/definitions/InvestmentRunView"
+        }
+      }
     },
     "InvestmentRunResponse": {
       "description": "Single investment run information",
@@ -6358,6 +6425,34 @@
           "$ref": "#/definitions/InvestmentRun"
         }
       }
+    },
+    "InvestmentRunView": {
+      "type": "object",
+      "allOf": [
+        {
+          "$ref": "#/definitions/InvestmentRun"
+        },
+        {
+          "properties": {
+            "user_created": {
+              "type": "string",
+              "example": "John Doe"
+            },
+            "strategy_type": {
+              "type": "string",
+              "example": "investment.strategy.102"
+            },
+            "is_simulated": {
+              "type": "string",
+              "example": "investment.is_simulated.yes"
+            },
+            "status": {
+              "type": "string",
+              "example": "investment.status.307"
+            }
+          }
+        }
+      ]
     },
     "InvestmentRun": {
       "type": "object",
@@ -6381,10 +6476,6 @@
         "user_created_id": {
           "type": "number",
           "example": 6
-        },
-        "user_created": {
-          "type": "string",
-          "example": "John Doe"
         },
         "strategy_type": {
           "type": "number",

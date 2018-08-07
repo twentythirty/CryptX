@@ -36,11 +36,9 @@ const createRecipeRun = async function (req, res) {
       investmentService.createRecipeRun(req.user.id, investment_run_id)
     );
   if (err) return ReE(res, err, 422);
-  
-  recipe_run = recipe_run.toJSON();
 
   return ReS(res, {
-    recipe_run: recipe_run
+    recipe_run: recipe_run.toWeb()
   })
 };
 module.exports.createRecipeRun = createRecipeRun;
