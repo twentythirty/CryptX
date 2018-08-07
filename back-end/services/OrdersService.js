@@ -276,6 +276,10 @@ const changeRecipeOrderGroupStatus = async (user_id, order_group_id, status, com
         TE(`Recipe order group for id ${recipe_order_group_id} was not found!`);
     }
 
+    if (status === RECIPE_ORDER_GROUP_STATUSES.Approved && recipe_order_group.approval_status !== RECIPE_ORDER_GROUP_STATUSES.Pending) {
+        TE('You are not allowed to approve orders that were already approved or rejected');
+    }
+
     //status already same, low warning and exist as NOOP
     if (recipe_order_group.approval_status == status) {
         console.warn(`Recipe Order Group ${order_group_id} already has status ${status}! exiting...`);
@@ -314,6 +318,17 @@ const changeRecipeOrderGroupStatus = async (user_id, order_group_id, status, com
                 }))
             ]);
         });
+    }
+
+    //if the orders are being approved, each order in the group should be marked as "Executing"
+    if (status == RECIPE_ORDER_GROUP_STATUSES.Approved) {
+        let [ err ] = await to(RecipeOrder.update({
+            status: RECIPE_ORDER_STATUSES.Executing
+        }, {
+            where: { recipe_order_group_id: recipe_order_group.id }
+        }));
+
+        if(err) TE(err);
     }
 
     let [err, results] = await to(update_group_promise);

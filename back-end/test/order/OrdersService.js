@@ -336,6 +336,20 @@ describe('OrdersService testing', () => {
             approval_comment: ''
         }
 
+        beforeEach(done => {
+            sinon.stub(RecipeOrder, 'update').callsFake(options => {
+
+                return Promise.resolve([1]);
+            });
+            done();
+        });
+
+        afterEach(done => {
+            if(RecipeOrderGroup.findById.restore) RecipeOrderGroup.findById.restore();
+            RecipeOrder.update.restore();
+            done();
+        });
+
         it("exist", function () {
             chai.expect(ordersService.changeRecipeOrderGroupStatus).to.exist;
         });
@@ -363,7 +377,17 @@ describe('OrdersService testing', () => {
             });
         });
 
-        it("shall approve recipe order group when approval is required", () => {
+        it("shall reject if the user tries to approve the group, whose status is not Pending", () => {
+
+            sinon.stub(RecipeOrderGroup, 'findById').callsFake(options => {
+
+                return Promise.resolve(Object.assign({}, TEST_RECIPE_ORDER_GROUP, { approval_status: RECIPE_ORDER_GROUP_STATUSES.Approved }));
+            });
+
+            return chai.assert.isRejected(ordersService.changeRecipeOrderGroupStatus(TEST_USER_ID, TEST_ORDER_GROUP_ID, RECIPE_ORDER_GROUP_STATUSES.Approved, APPROVE_COMMENT));
+        });
+
+        it("shall approve recipe order group when approval is required and update the related order status to Executing", () => {
 
             sinon.stub(RecipeOrderGroup, 'findById').callsFake(options => {
                 let new_group = Object.assign({}, TEST_RECIPE_ORDER_GROUP);
@@ -380,6 +404,14 @@ describe('OrdersService testing', () => {
                 chai.assert.equal(recipe_order.approval_status, RECIPE_ORDER_GROUP_STATUSES.Approved, 'Status was not Approved!');
                 chai.assert.equal(recipe_order.approval_user_id, TEST_USER_ID, 'Approval not provided by specified user!');
                 chai.assert.equal(recipe_order.approval_comment, APPROVE_COMMENT, 'approval comment not as specified!');
+
+                chai.expect(RecipeOrder.update.calledOnce).to.be.true;
+
+                const [ update, options ] = RecipeOrder.update.args[0];
+                
+                chai.expect(update.status).to.equal(RECIPE_ORDER_STATUSES.Executing);
+                chai.expect(options.where.recipe_order_group_id).to.equal(TEST_RECIPE_ORDER_GROUP.id);
+
             });
         });
 
