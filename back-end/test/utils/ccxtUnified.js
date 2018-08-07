@@ -30,8 +30,8 @@ describe('CCXTUnified', () => {
   let SUPPORTED_EXCHANGES = [
     "binance",
     "bitfinex",
-    "bithumb",
     "hitbtc2",
+    /* "bithumb", */ // doesn't work with BTC & ETH
 /*     "huobipro", // Huobi and okex take cost(how much we want to spend) instead of amount. We need to store cost in order to make them work.
     "okex" */
   ];
@@ -124,6 +124,7 @@ describe('CCXTUnified', () => {
       return connector;
     });
 
+    
   });
 
   afterEach(() => {
@@ -139,25 +140,29 @@ describe('CCXTUnified', () => {
 
   it("shall return exchange with createMarketOrder method", () => {
     SUPPORTED_EXCHANGES.forEach(exchange => {
-      let exchange_methods = ccxtUnified.getExchange(exchange);
-      chai.expect(exchange_methods).to.haveOwnProperty("createMarketOrder");
+      let ex = new (ccxtUnified.getExchange(exchange))();
+      chai.expect(ex).to.have.property('createMarketOrder');
     });
   });
 
-/*   it("shall place market order", () => {
+  it("shall place market order", () => {
+    let objects = [];
     return Promise.all(
       SUPPORTED_EXCHANGES.map(exchange => {
-        let exchange_methods = ccxtUnified.getExchange(exchange);
+        let ex = new (ccxtUnified.getExchange(exchange))();
         let exec_order = new ExecutionOrder(EXEC_ORDER);
+        objects.push(ex);
+
+        sinon.stub(exec_order, "save").returns(() => Promise.resolve(exec_order));
         
-        return exchange_methods.createMarketOrder("XRP/BTC", "sell", EXEC_ORDER);
+        return ex.createMarketOrder("XRP/BTC", "sell", EXEC_ORDER);
       })
     ).then(result => {
-      chai.expect(result).to.satisfy(orders => {
-        return orders.every(order => {
-          return chai.expect(order).to.be.eq("order placed");
-        });
-      })
+      chai.expect(objects).to.satisfy((objects) => {
+        return objects.every(object => {
+          return chai.expect(object._connector.createOrder.called).to.be.true;
+        })
+      });
     })
-  }); */
+  });
 });

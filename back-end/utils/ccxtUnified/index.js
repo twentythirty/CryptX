@@ -8,10 +8,10 @@ const hitbtc2 = require('./hitbtc2');
 const okex = require('./okex');
 
 const exchanges_supported = {
-  binance,
+  binance: binance,
   bitfinex,
-  bithumb,
-  hitbtc2,
+  hitbtc2/* ,
+  bithumb, */
 /*   huobipro, // Huobi and okex take cost(how much we want to spend) instead of amount. We need to store cost in order to make them work.
   okex */
 };
