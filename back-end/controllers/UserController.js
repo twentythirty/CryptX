@@ -342,8 +342,19 @@ const resetPassword = async function (req, res) {
   let [err, user] = await to(authService.verifyResetTokenValidity(token));
   if (err) return ReE(res, "Token not valid or expired", 404);
 
+  //perform password reset
   [err, user] = await to(authService.resetPassword(user.id, password));
   if (err) return ReE(res, err, 422);
+
+  //perform proper user login
+  [err, userWithSession] = await to(authService.authUser({
+    username: user.email,
+    password
+  }, req.ip));
+  if (err) return ReE(res, err, 422);
+  let perms, session;
+
+  [user, perms, session] = userWithSession;
 
   mailUtil.sendMail(
     user.email,
@@ -355,7 +366,13 @@ const resetPassword = async function (req, res) {
     })
   )
 
-  return ReS(res, {message: 'Password successfully changed'});
+  return ReS(res, {
+    token: session.token,
+    permissions: perms,
+    model_constants: model_constants,
+    validators: VALIDATORS,
+    user: user.toWeb(false)
+  });
 };
 module.exports.resetPassword = resetPassword;
 
