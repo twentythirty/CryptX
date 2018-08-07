@@ -15,8 +15,14 @@ const _connector = ccxtUtils.getConnector(api_id);
  * }
  */
 const createMarketOrder = async function (external_instrument_id, side, execution_order) {
-  console.log(`Creating market order for ${api_id}`);
-
+  console.log(`Creating market order to ${api_id}
+  Instrument - ${external_instrument_id}
+  Order type - ${order_type}
+  Order side - ${side}
+  Total quantity - ${execution_order.total_quantity}
+  Price - ${execution_order.price}`);
+  const order_type = "market";
+  
   return _connector.createOrder(external_instrument_id, order_type, side, execution_order.total_quantity, execution_order.price);
 }
 module.exports.createMarketOrder = createMarketOrder;
