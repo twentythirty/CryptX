@@ -269,8 +269,17 @@ const changeRecipeRunStatus = async function (user_id, recipe_run_id, status_con
   [err, recipe_run] = await to(recipe_run.save());
   if (err) TE(err.message);
 
-  //approving recipe run that was not approved before, try generate empty deposits
+  //approving recipe run that was not approved before, try generate empty deposits and set the investment run status to RecipedApproved
   if (status_constant == RECIPE_RUN_STATUSES.Approved && old_status !== status_constant) {
+
+    [ err ] = await to(InvestmentRun.update({
+      status: INVESTMENT_RUN_STATUSES.RecipeApproved
+    }, {
+      where: { id: recipe_run.investment_run_id },
+      limit: 1
+    }));
+
+    if(err) TE(err.message);
 
     depositService.generateRecipeRunDeposits(recipe_run);
 
