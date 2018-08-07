@@ -115,25 +115,33 @@ const getRecipeOrder = async function (req, res) {
   }
   module.exports.getRecipeOrders = getRecipeOrders;
 
+  const getRecipeOrdersGroupOfRecipe = async function(req, res) {
+
+    const recipe_run_id = req.params.recipe_id;
+
+    const [ err, recipe_order_group ] = await to(adminViewsService.fetchRecipeOrdersGroupView(null, parseInt(recipe_run_id)));
+    if(err) return ReE(res, err.message, 422);
+    if (!recipe_order_group) {
+        const response_message = `Order group of recipe run with id ${recipe_run_id} was not found`;
+        return ReE(res, response_message, 404);
+    }
+
+    return ReS(res, {
+        recipe_order_group: recipe_order_group.toWeb()
+    })
+  }
+  module.exports.getRecipeOrdersGroupOfRecipe = getRecipeOrdersGroupOfRecipe;
+
+
   const getRecipeOrdersGroup = async function(req, res) {
 
     const recipe_order_group_id = req.params.order_group_id;
-    const recipe_run_id = req.params.recipe_id;
 
-    let id = recipe_order_group_id;
-    let alias = 'id';
-
-    if(recipe_run_id) {
-        id = recipe_run_id;
-        alias = 'recipe_run_id';
-    }
-
-    let [ err, recipe_order_group ] = await to(adminViewsService.fetchRecipeOrdersGroupView(id, alias));
+    let [ err, recipe_order_group ] = await to(adminViewsService.fetchRecipeOrdersGroupView(parseInt(recipe_order_group_id), null));
     if(err) return ReE(res, err.message, 422);
     if(!recipe_order_group) {
         let response_message = '';
         if(recipe_order_group_id) response_message = `Order group with id ${recipe_order_group_id} was not found.`;
-        if(recipe_run_id) response_message = `Order group of recipe run with id ${recipe_run_id} was not found`;
         return ReE(res, response_message, 404);
     }
   

@@ -419,7 +419,7 @@ router.get(
   ROUTES.GetRecipeOrdersGroupOfRecipe.router_string,
   stateless_auth,
   check_permissions,
-  OrdersController.getRecipeOrdersGroup
+  OrdersController.getRecipeOrdersGroupOfRecipe
 );
 router.post(
   ROUTES.GetRecipeOrders.router_string,
