@@ -11,6 +11,7 @@ const InstrumentController = require('./../controllers/InstrumentController');
 const DepositController = require('./../controllers/DepositController');
 const ColdstorageController = require('./../controllers/ColdstorageController');
 const ExchangeController = require('./../controllers/ExchangeController');
+const ActionLogControler = require('./../controllers/ActionLogController');
 const MockController = require('./../controllers/MockController');
 
 // const custom 	        = require('./../middleware/custom');
