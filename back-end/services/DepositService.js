@@ -4,6 +4,8 @@ const InvestmentRun = require('../models').InvestmentRun;
 const RecipeRunDeposit = require('../models').RecipeRunDeposit;
 const Asset = require('../models').Asset;
 
+const { logAction } = require('../utils/ActionLogUtil'); 
+
 const saveDeposit = async function (investment_run_id, asset_id, amount) {
 
   let investment_run = await InvestmentRun.findById(investment_run_id);
@@ -67,6 +69,8 @@ const approveDeposit = async (deposit_id, user_id, updated_values = {}) => {
 
   [ err, deposit ] = await to(deposit.save());
   if(err) TE(err.message);
+
+  logAction('basic', { name: 'Deposit', action: 'Completed', relations: { recipe_run_deposit_id: deposit.id } });
 
   return { original_deposit: original_values, updated_deposit: deposit };
 

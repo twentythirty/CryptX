@@ -11,6 +11,9 @@ const {
     HostNotReachableError
 } = require('sequelize');
 
+
+const custom_loggers = require('../config/loggers');
+
 /*const { 
     ActionLog, UserSession, User, Role,
     Asset, ExchangeAccount, Exchange, Instrument,
@@ -35,6 +38,20 @@ const allowed_keys = [
 ];
 
 const universal_actions = {
+    basic: {
+        get template() { return `${this.name} ${this.action}` },
+        get template_user() { return `${this.name} ${this.action} by ${this.user.first_name} ${this.user.last_name}` },
+        handler: function(params = {}) {
+            this.name = params.name;
+            this.action = params.action;
+            
+            if(params.user) {
+                this.user = params.user;
+                return this.template_user;
+            }
+            else return this.template;
+        }
+    },
     create: {
         get template() { return `A new ${this.name} was created` },
         get template_user() { return `${this.user.first_name} ${this.user.last_name} added a new ${this.name}`},
@@ -107,13 +124,29 @@ const universal_actions = {
     }
 };
 
+const loggers = Object.assign({}, universal_actions, custom_loggers);
+
+const _defaultHandler = function(params = {}) {
+    this.params = params;
+
+    if(params.user) {
+        this.user = params.user;
+        return this.template_user;
+    }
+    else return this.template;
+}
+
 const logAction = async (action_path, options = {}) => {
     try {
-        const action = _.get(universal_actions, action_path);
+        const action = _.get(loggers, action_path);
         if(!action) return log(`Action with path "${action_path}" does not exist`);
     
         let action_logs = null;
         if(_.isFunction(action.handler)) action_logs = action.handler(options);
+        else {
+            action.hander = _defaultHandler;
+            action_logs = action.hander(options);
+        }
     
         if(!action_logs) log(`Handler failed to return log string for action path "${action_path}" and params: ${JSON.stringify(params)}`);
     
