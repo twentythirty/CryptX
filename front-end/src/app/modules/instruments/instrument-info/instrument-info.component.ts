@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { Observable } from 'rxjs';
-import { mergeMap } from 'rxjs/operators';
+import { Observable } from 'rxjs/Observable';
+import { mergeMap } from 'rxjs/operators/mergeMap';
 import _ from 'lodash';
 
 import { InstrumentsService } from '../../../services/instruments/instruments.service';

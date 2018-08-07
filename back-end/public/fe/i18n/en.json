@@ -84,7 +84,7 @@
       "transaction_asset": "Transaction asset",
       "portfolio": "Portfolio",
       "deposit_management_fee": "Deposit management fee",
-      "depositor_user": "Depositary"
+      "depositary": "Depositary"
     },
     "filter": {
       "all": "All",

@@ -8,8 +8,8 @@ import { RolesPermissionsResultData } from '../../../shared/models/api/rolesPerm
 import { RolesService } from "../../../services/roles/roles.service";
 import { RolesAllRequestData } from "../../../shared/models/api/rolesAllRequestData";
 import { AuthService } from "../../../services/auth/auth.service";
-import { Observable } from 'rxjs';
-import { zip } from 'rxjs/operators';
+import { Observable } from 'rxjs/Observable';
+import 'rxjs/add/observable/zip';
 
 
 @Component({

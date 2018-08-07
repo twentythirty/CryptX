@@ -1,10 +1,11 @@
 import { Injectable } from '@angular/core';
-import { environment } from "../../../environments/environment";
 import { HttpClient } from "@angular/common/http";
-import { EntitiesFilter } from "../../shared/models/api/entitiesFilter";
 import { Observable } from "rxjs/Observable";
+import { map } from "rxjs/operators/map";
+
+import { environment } from "../../../environments/environment";
+import { EntitiesFilter } from "../../shared/models/api/entitiesFilter";
 import { Deposit, DepositStatus } from "../../shared/models/deposit";
-import { map } from "rxjs/operators";
 
 export class DepositsAllResponse {
   success: boolean;
@@ -38,7 +39,7 @@ export class DepositService {
     }
   }
 
-  getDeposit(depositId: number){
+  getDeposit(depositId: number): Observable<DepositResultData>{
     return this.http.get<DepositResultData>(this.baseUrl + `deposits/${depositId}`);
   }
 

@@ -2,10 +2,8 @@ import { Component, OnInit } from '@angular/core';
 import { RolesService } from "../../../services/roles/roles.service";
 import { RolesAllRequestData } from "../../../shared/models/api/rolesAllRequestData";
 import { Router, ActivatedRoute } from '@angular/router';
-import { User } from "../../../shared/models/user";
 import { UsersService } from "../../../services/users/users.service";
 import { FormArray, FormGroup, FormControl, ReactiveFormsModule } from "@angular/forms";
-import { NgForm, Validators, AbstractControl } from '@angular/forms'
 import { AuthService } from "../../../services/auth/auth.service";
 
 @Component({
