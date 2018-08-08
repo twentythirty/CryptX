@@ -1171,13 +1171,19 @@ body.sticky-bottom {
     width: 100%;
     position: relative;
     margin-bottom: 15px;
-    display: inline-block; }
+    display: inline-block;
+    cursor: pointer; }
     .step-labels-container .step-label:last-child {
       margin-bottom: 0; }
     .step-labels-container .step-label.active::before {
       background-image: url("../img/icons/step-label-oval.svg");
       background-position: center center;
       background-repeat: no-repeat; }
+    .step-labels-container .step-label.disabled {
+      cursor: default; }
+      .step-labels-container .step-label.disabled span, .step-labels-container .step-label.disabled label, .step-labels-container .step-label.disabled div {
+        opacity: .4;
+        pointer-events: none; }
     .step-labels-container .step-label::after {
       content: "";
       width: 10px;

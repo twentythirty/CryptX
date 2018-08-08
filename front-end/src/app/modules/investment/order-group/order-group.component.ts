@@ -193,7 +193,7 @@ export class OrderGroupComponent extends TimelineDetailComponent implements OnIn
   protected getTimelineData(): void {
     this.timeline$ = this.route.params.pipe(
       mergeMap(
-        params => this.investmentService.getAllTimelineData({ recipe_order_group_id: params['id'] })
+        params => this.investmentService.getAllTimelineData({ recipe_run_id: params['id'] })
       )
     );
   }
@@ -220,7 +220,7 @@ export class OrderGroupComponent extends TimelineDetailComponent implements OnIn
         // todo
         console.log('res',res);
       },
-      err => this.singleDataSource.body = []
+      err => {}
     );
   }
 

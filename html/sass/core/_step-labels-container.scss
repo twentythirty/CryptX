@@ -26,6 +26,7 @@
         position: relative;
         margin-bottom: 15px;
         display: inline-block;
+        cursor: pointer;
 
         &:last-child{
             margin-bottom: 0;
@@ -33,6 +34,15 @@
         
         &.active::before {
             @include backgroundC("icons/step-label-oval.svg");
+        }
+
+        &.disabled {
+            cursor: default;
+
+            span, label, div {
+                opacity: .4;
+                pointer-events: none;
+            }
         }
 
         &::after {

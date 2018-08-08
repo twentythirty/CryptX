@@ -1,5 +1,6 @@
 import { Component, OnInit, Input } from '@angular/core';
 import { Router } from '@angular/router';
+import _ from 'lodash';
 
 import { StatusClass } from '../../../shared/models/common';
 import { AuthService } from '../../../services/auth/auth.service';
@@ -28,6 +29,8 @@ export class TimelineEvent {
   ) {}
 }
 
+type TimelineStepKey = 'investment_run' | 'recipe_run' | 'recipe_deposits' | 'recipe_orders' | 'execution_orders';
+
 @Component({
   selector: 'app-timeline',
   templateUrl: './timeline.component.html',
@@ -50,42 +53,71 @@ export class TimelineComponent implements OnInit {
 
   ngOnInit() {}
 
-  public keys(obj: any): Array<string> {
-    if(obj) {
-      return Object.keys(obj);
-    } else {
-      return [];
-    }
-  }
-
-  public isActive(key: string): boolean {
-    let routePart;
+  public isActive(key: TimelineStepKey): boolean {
+    let routeParts: Array<string>;
 
     switch(key) {
-      case 'investment_run':   routePart = 'run/investment'; break;
-      case 'recipe_run':       routePart = 'run/recipe'; break;
-      case 'recipe_deposits':  routePart = 'run/deposit'; break;
-      case 'recipe_orders':    routePart = 'run/order'; break;
-      case 'execution_orders': routePart = 'run/execution-orders'; break;
+      case 'investment_run':   routeParts = ['run/investment']; break;
+      case 'recipe_run':       routeParts = ['run/recipe']; break;
+      case 'recipe_deposits':  routeParts = ['run/deposit']; break;
+      case 'recipe_orders':    routeParts = ['run/order', 'run/order-group']; break;
+      case 'execution_orders': routeParts = ['run/execution-orders']; break;
     }
-    return this.router.isActive(routePart, false);
+
+    return routeParts.some(part => this.router.isActive(part, false));
   }
 
-  public openEvent(key: string, event: TimelineEvent): void {
-    if(event) {
-      switch(key) {
-        case 'investment_run':   this.router.navigate([`/run/investment/${event.id}`]); break;
-        case 'recipe_run':       this.router.navigate([`/run/recipe/${event.id}`]); break;
-        case 'recipe_deposits':  this.router.navigate([`/run/deposit/${this.timelineEvents.recipe_run.id}`]); break;
-        case 'recipe_orders':    
-          if(this.authService.hasPermissions(['VIEW_ORDERS'])) {
-            this.router.navigate([`/run/order-group/${event.order_group_id}`]);
-          } else {
-            this.router.navigate([`/run/order/${this.timelineEvents.recipe_run.id}`]);
-          }
-          break;
-        case 'execution_orders': this.router.navigate([`/run/execution-orders/${this.timelineEvents.investment_run.id}`]); break;
-      }
+  public isDisabled(key: TimelineStepKey) {
+    let events = this.timelineEvents;
+    
+    switch(key) {
+      case 'investment_run':
+        return !events.investment_run;
+
+      case 'recipe_run':
+        return !events.recipe_run;
+
+      case 'recipe_deposits':
+        return !events.recipe_deposits;
+
+      case 'recipe_orders':
+        if(this.authService.hasPermissions(['VIEW_ORDERS'])) {
+          return false; // can view even empty page
+        }
+        return !events.recipe_orders; 
+
+      case 'execution_orders':
+        return !events.execution_orders;
+    }
+  }
+
+  public openStep(key: TimelineStepKey, event: TimelineEvent): void {
+    let events = this.timelineEvents;
+
+    switch(key) {
+      case 'investment_run':
+        this.router.navigate([`/run/investment/${events.investment_run.id}`]);
+        break;
+
+      case 'recipe_run':
+        this.router.navigate([`/run/recipe/${events.recipe_run.id}`]);
+        break;
+      
+      case 'recipe_deposits':
+        this.router.navigate([`/run/deposit/${events.recipe_run.id}`]);
+        break;
+      
+      case 'recipe_orders':
+        if(this.authService.hasPermissions(['VIEW_ORDERS'])) {
+          this.router.navigate([`/run/order-group/${events.recipe_run.id}`]);
+        } else {
+          this.router.navigate([`/run/order/${events.recipe_run.id}`]);
+        }
+        break;
+      
+      case 'execution_orders':
+        this.router.navigate([`/run/execution-orders/${events.investment_run.id}`]);
+        break;
     }
   }
 
