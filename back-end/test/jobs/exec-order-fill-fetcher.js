@@ -186,7 +186,16 @@ const BASE_ORDER = {
     price: 1,
     type: 'market',
     side: 1,
-    fee: 0
+    fee: 0,
+    _previousDataValues: {
+        failed_attempts: 0,
+        status: Placed,
+        total_quantity: 1,
+        price: 1,
+        type: 'market',
+        side: 1,
+        fee: 0,
+    }
 };
 
 describe('Execution Order Fills fetcher job', () => {
@@ -545,7 +554,7 @@ describe('Execution Order Fills fetcher job', () => {
 
         sinon.stub(ExecutionOrder, 'findAll').callsFake(options => {
             stubSave(order);
-            stubChanged(order, false);
+            stubChanged(order, true);
             return Promise.resolve([order]);
         })
 
@@ -624,7 +633,7 @@ describe('Execution Order Fills fetcher job', () => {
 
         sinon.stub(ExecutionOrder, 'findAll').callsFake(options => {
             stubSave(order);
-            stubChanged(order, false);
+            stubChanged(order, true);
             return Promise.resolve([order]);
         })
 
@@ -669,7 +678,7 @@ describe('Execution Order Fills fetcher job', () => {
 
         sinon.stub(ExecutionOrder, 'findAll').callsFake(options => {
             stubSave(order);
-            stubChanged(order, false);
+            stubChanged(order, true);
             return Promise.resolve([order]);
         })
 
@@ -707,7 +716,7 @@ describe('Execution Order Fills fetcher job', () => {
 
         sinon.stub(ExecutionOrder, 'findAll').callsFake(options => {
             stubSave(order);
-            stubChanged(order, false);
+            stubChanged(order, ['status']);
             return Promise.resolve([order]);
         })
 

@@ -53,7 +53,7 @@ const universal_actions = {
         }
     },
     create: {
-        get template() { return `A new ${this.name} was created` },
+        get template() { return `System added a new ${this.name}` },
         get template_user() { return `${this.user.first_name} ${this.user.last_name} added a new ${this.name}`},
         handler: function(params = {}) {
             let table_name = params.instance.constructor.getTableName();
@@ -71,21 +71,25 @@ const universal_actions = {
         }
     },
     modified: {
-        get template() { return `${this.column} was changed from ${prev_value || '-'} to ${new_value || '-'}` },
+        get template() { return `System changed ${this.column} from ${this.prev_value || '-'} to ${this.new_value || '-'}` },
         get template_user() { return `${this.user.first_name} ${this.user.last_name} changed ${this.column} from ${this.prev_value || '-'} to ${this.new_value || '-'}`},
         handler: function(params = {}) {
             let { previous_instance, updated_instance } = params;
+            if(!previous_instance) previous_instance = {};
+
             let action_logs = [];
             const ignore = params.ignore || []; //Ignore keys.
             const replace = params.replace || {};
 
-            let table_name = params.updated_instance.constructor.getTableName();
+            let table_name = 'instance'; //Mainly to avoid TypeError on test that mock Sequelize instances.
+            if(_.isFunction(params.updated_instance.constructor.getTableName)) table_name = params.updated_instance.constructor.getTableName();
             this.name = _.startCase(table_name);
 
             const relation_key = `${table_name}_id`;
+
             this.relations = { [relation_key]: params.updated_instance.id }
             if(!allowed_keys.includes(relation_key)) this.relations = {};
-            
+
             if(params.user) this.user = params.user;
 
             if(previous_instance.toJSON) previous_instance = previous_instance.toJSON();
@@ -153,7 +157,7 @@ module.exports.logAction = async (action_path, options = {}) => {
         if(_.isString(action_logs)) action_logs = [action_logs];
     
         //This will attempt to assign relations created by the handler, but also allow the developer to overwrite them.
-        if(_.isPlainObject(options.relations)) options.relations = Object.assign({}, action.relations || {}, options.relations);
+        if(_.isPlainObject(options.relations) || _.isPlainObject(action.relations)) options.relations = Object.assign({}, action.relations || {}, options.relations || {});
     
         for(let action_log of action_logs) {
             module.exports.log(action_log, options || {});

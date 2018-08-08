@@ -1,7 +1,19 @@
 'use strict'
 
 const ccxtUtils = require('../utils/CCXTUtils');
+const { logAction } = require('../utils/ActionLogUtil');
 const { eq, ne, in: opIn } = require('sequelize').Op;
+
+const action_path = 'jobs.fetch_exec_or_fills';
+
+const actions = {
+    error: `${action_path}.error`,
+    failed_attempts: `${action_path}.failed_attempts`,
+    failed: `${action_path}.failed`,
+    generate_fill: `${action_path}.generate_fill`,
+    fully_filled: `${action_path}.fully_filled`,
+    modified: 'modified'
+};
 
 module.exports.SCHEDULE = '0 */5 * * * *';
 module.exports.NAME = 'FETCH_EXEC_OR_FILLS';
@@ -33,12 +45,20 @@ module.exports.JOB_BODY = async (config, log) => {
                 let [ err, exchange ] = await to(ccxtUtils.getConnector(placed_order.exchange_id));
                 if(err) {
                     log(`[ERROR.1A] Error occured during exchange connection fetching: ${err.message}`);
+                    logAction(actions.error, {
+                        error: err.message,
+                        relations: { execution_order_id: placed_order.id }
+                    });
                     placed_order.failed_attempts++;
                     return updateOrderStatus(placed_order, log, config);
                 }
 
                 if(!exchange) {
                     log(`[ERROR.1B] Error: could not find an exchange connector for order ${placed_order.id}`);
+                    logAction(actions.error, {
+                        error: 'could not find exchange API',
+                        relations: { execution_order_id: placed_order.id }
+                    });
                     placed_order.failed_attempts++;
                     return updateOrderStatus(placed_order, log, config);
                 }
@@ -51,12 +71,20 @@ module.exports.JOB_BODY = async (config, log) => {
                 
                 if(err){
                     log(`[ERROR.2A] Error occured during order fetching from the exchange: ${err.message}`);
+                    logAction(actions.error, {
+                        error: err.message,
+                        relations: { execution_order_id: placed_order.id }
+                    });
                     placed_order.failed_attempts++; 
                     return updateOrderStatus(placed_order, log, config);
                 }
 
                 if(!external_order) {
                     log(`[ERROR.2B] Error: could not fetch order from exchange with id ${placed_order.id} and external identifier ${placed_order.external_identifier}`);
+                    logAction(actions.error, {
+                        error: `Order with id ${placed_order.external_identifier} was not found on ${exchange.name} exchange`,
+                        relations: { execution_order_id: placed_order.id }
+                    });
                     placed_order.failed_attempts++; //Not marked as Failed, in case it's only a connection issue.
                     return updateOrderStatus(placed_order, log, config);
                 }
@@ -69,6 +97,10 @@ module.exports.JOB_BODY = async (config, log) => {
                  */
                 if(external_order.status === 'closed' && external_order.remaining > 0) {
                     log(`[WARN.2A] Execution order ${placed_order.id} was closed on the exchange before getting filled, marking as Failed`);
+                    logAction(actions.failed, {
+                        reason: `Execution order was closed on ${exchange.name} before getting filled.`,
+                        relations: { execution_order_id: placed_order.id }
+                    });
                     placed_order.status = Failed;
                     return updateOrderStatus(placed_order, log, config);
                 }
@@ -81,6 +113,9 @@ module.exports.JOB_BODY = async (config, log) => {
                  */
                 if(external_order.status === 'closed' && external_order.remaining === 0){
                     log(`[WARN.2B] Execution order ${placed_order.id} was closed and the remaining amount is equal to 0, marking as FullyFilled`);
+                    logAction(actions.fully_filled, {
+                        relations: { execution_order_id: placed_order.id }
+                    });
                     placed_order.status = FullyFilled;
                     //The execution will continue, as the job might be missing the last fill/fills.
                 }
@@ -140,6 +175,10 @@ module.exports.handleFillsWithTrades = async (placed_order, exchange, external_o
 
     if(err) {
         log(`[ERROR.4A] Error occured while attepting to fetch recent trades: ${err.message}`);
+        logAction(actions.error, {
+            error: err.message,
+            relations: { execution_order_id: placed_order.id }
+        });
         placed_order.failed_attempts++;
         return updateOrderStatus(placed_order, log, config);
     }
@@ -194,8 +233,19 @@ module.exports.handleFillsWithTrades = async (placed_order, exchange, external_o
     [ err, saved_fills ] = await to(ExecutionOrderFill.bulkCreate(new_fills));
     if(err) {
         log(`[ERROR.5C] Error occured during new fill saving: ${err.message}`);
+        logAction(actions.error, {
+            error: err.message,
+            relations: { execution_order_id: placed_order.id }
+        });
         placed_order.failed_attempts++;
     }
+    //Make sure to log only after they were save.
+    saved_fills.map(sf => {
+        logAction(actions.generate_fill, {
+            amount: sf.quantity,
+            relations: { execution_order_id: placed_order.id }
+        });
+    });
     
     return updateOrderStatus(placed_order, log, config);
 }
@@ -227,6 +277,10 @@ module.exports.handleFillsWithoutTrades = async (placed_order, external_order, l
 
     if(err) {
         log(`[ERROR.3A] Error occured during fill amount summing: ${err.message}`);
+        logAction(actions.error, {
+            error: err.message,
+            relations: { execution_order_id: placed_order.id }
+        });
         placed_order.failed_attempts++;
         return updateOrderStatus(placed_order, log, config);
     }
@@ -244,9 +298,18 @@ module.exports.handleFillsWithoutTrades = async (placed_order, external_order, l
 
         if(err) {
             log(`[ERROR.4A] Error occured during the insertion of a new fill entry: ${err.message}`);
+            logAction(actions.error, {
+                error: err.message,
+                relations: { execution_order_id: placed_order.id }
+            });
             placed_order.failed_attempts++;
             return updateOrderStatus(placed_order, log, config);
         }
+
+        logAction(actions.generate_fill, {
+            amount: new_fill.quantity,
+            relations: { execution_order_id: placed_order.id }
+        });
 
         return updateOrderStatus(placed_order, log, config);
     }
@@ -275,7 +338,28 @@ const updateOrderStatus = async (placed_order, log, config) => {
     //Check if the placed order should be considered failed.
     if(placed_order.failed_attempts > SYSTEM_SETTINGS.EXEC_ORD_FAIL_TOLERANCE) {
         log(`[WARN.6A] Order ${placed_order.id} has exceeded the maximum number of failed attempts. Marking as "Failed"`);
+        logAction(actions.failed_attempts, {
+            attempts: placed_order.failed_attempts,
+            relations: { execution_order_id: placed_order.id }
+        });
+
         placed_order.status = Failed;
+
+        logAction(actions.modified, {
+            previous_instance: placed_order._previousDataValues,
+            updated_instance: placed_order,
+            ignore: ['Instrument', 'completed_timestamp'],
+            replace: {
+                status: {
+                    [Failed]: 'Failed',
+                    [Placed]: 'Placed',
+                    [PartiallyFilled]: 'Partially Filled',
+                    [FullyFilled]: 'Fully Filled',
+
+                }
+            }
+        });
+
         return placed_order.save();
     }
 
@@ -289,6 +373,10 @@ const updateOrderStatus = async (placed_order, log, config) => {
 
     if(err) {
         log(`[ERROR.7A] Error occured during the calculation of the sum of current fills for order ${placed_order.id}`);
+        logAction(actions.error, {
+            error: err.message,
+            relations: { execution_order_id: placed_order.id }
+        });
         placed_order.failed_attempts++;
     }
 
@@ -305,7 +393,13 @@ const updateOrderStatus = async (placed_order, log, config) => {
             WHERE eof.execution_order_id = ${placed_order.id}
         `));
 
-        if(err) log(`[ERROR.7B] Error occured during fill price/fee calculation and update: ${err.message}`);
+        if(err) {
+            log(`[ERROR.7B] Error occured during fill price/fee calculation and update: ${err.message}`);
+            logAction(actions.error, {
+                error: err.message,
+                relations: { execution_order_id: placed_order.id }
+            });
+        }
     }
 
 
@@ -325,6 +419,20 @@ const updateOrderStatus = async (placed_order, log, config) => {
 
     //In case changes were made to the order, but non of the previous conditions were triggered, calls save();
     if(placed_order.changed()){
+        logAction(actions.modified, {
+            previous_instance: placed_order._previousDataValues,
+            updated_instance: placed_order,
+            ignore: ['Instrument', 'completed_timestamp'],
+            replace: {
+                status: {
+                    [Failed]: 'Failed',
+                    [Placed]: 'Placed',
+                    [PartiallyFilled]: 'Partially Filled',
+                    [FullyFilled]: 'Fully Filled',
+
+                }
+            }
+        });
         return placed_order.save();
     }
 
@@ -352,6 +460,10 @@ const fetchOrderFromExchange = (placed_order, exchange, log) => {
         //In case somehow the exchange does not support order retrieval at all.
         if(!can_fetch_by_id && !can_fetch_open_orders && !can_fetch_all_orders) {
             log(`[ERROR] Exchange ${exchange.name} has no method of retrieving the orders`);
+            logAction(actions.error, {
+                error: `Exchange ${exchange.name} has no way of fetching order information.`,
+                relations: { execution_order_id: placed_order.id }
+            });
             placed_order.failed_attempts++;
             return updateOrderStatus(placed_order, log, ExecutionOrderFill);
         }

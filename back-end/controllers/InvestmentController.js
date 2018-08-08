@@ -4,6 +4,7 @@ const InvestmentRun = require('../models').InvestmentRun;
 const RecipeRun = require('../models').RecipeRun;
 const RecipeRunDetail = require('../models').RecipeRunDetail;
 const User = require('../models').User;
+const ActionLog = require('../models').ActionLog;
 const adminViewsService = require('../services/AdminViewsService');
 const adminViewUtils = require('../utils/AdminViewUtils');
 const investmentService = require('../services/InvestmentService');
@@ -273,17 +274,27 @@ module.exports.getRecipeRunDetailsColumnLOV = getRecipeRunDetailsColumnLOV;
 
 const getExecutionOrder = async function (req, res) {
 
-  //This will replace the mock data once the fees are resolved.
   const execution_order_id = req.params.order_detail_id;
 
-  let [ err, execution_order ] = await to(adminViewsService.fetchExecutionOrderView(execution_order_id));
+  let [ err, result ] = await to(Promise.all([
+    adminViewsService.fetchExecutionOrderView(execution_order_id),
+    ActionLog.findAll({
+      where: { execution_order_id },
+      attributes: ['id', 'timestamp', 'details']
+    })
+  ]));
+  
   if(err) return ReE(res, err.message, 422);
+
+  let [ execution_order, action_logs ] = result;
+
   if(!execution_order) return ReE(res, `Can't find execution order for id ${execution_order_id}`, 404);
 
   execution_order = execution_order.toWeb();
 
   return ReS(res, {
-    execution_order
+    execution_order,
+    action_logs
   })
 };
 module.exports.getExecutionOrder = getExecutionOrder;
