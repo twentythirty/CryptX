@@ -40,13 +40,17 @@ export class AuthService {
       password: password
     }).do(data => {
       if (data.success) {
-        this.setToken(data.token);
-        this.setUser(data.user);
-        this.setValidators(data.validators)
-        this.setPermissions(data.permissions);
-        this.modelConstants.setConstants(data.model_constants);
+        this.setAuthData(data);
       }
     });
+  }
+
+  setAuthData(data): void {
+    this.setToken(data.token);
+    this.setUser(data.user);
+    this.setValidators(data.validators)
+    this.setPermissions(data.permissions);
+    this.modelConstants.setConstants(data.model_constants);
   }
 
   isLoggedIn(): boolean {
