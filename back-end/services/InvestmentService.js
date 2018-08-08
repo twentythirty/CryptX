@@ -442,7 +442,7 @@ const getInvestmentRunTimeline = async function (investment_run_id) {
     _.flatten(recipes.map(recipe_run => {
       return recipe_run.RecipeOrderGroups;
     })), group => group.approval_status != RECIPE_ORDER_GROUP_STATUSES.Rejected);
-  let recipe_orders = _.maxBy(recipe_order_groups, rog => rog.created_timestamp.getTime()).RecipeOrders;
+  let recipe_orders = recipe_order_groups.length? _.maxBy(recipe_order_groups, rog => rog.created_timestamp.getTime()).RecipeOrders : [];
 
   if (!recipe_orders.length) {
     return { // no recipe orders found. Return current status
