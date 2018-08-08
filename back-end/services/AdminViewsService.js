@@ -327,7 +327,7 @@ module.exports.fetchInstrumentLiquidityRequirementView = fetchInstrumentLiquidit
 const fetchRecipeOrdersGroupView = async (recipe_orders_group_id, recipe_run_id) => {
     //simpler case, fetch entity by id
     if (_.isNumber(recipe_orders_group_id)) {
-        return fetchSingleEntity(AVRecipeOrdersGroup, recipe_orders_group_id, alias);
+        return fetchSingleEntity(AVRecipeOrdersGroup, recipe_orders_group_id/* , alias */);
     }
     //try fetch newest by recipe run id
     if (_.isNumber(recipe_run_id)) {

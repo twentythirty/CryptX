@@ -138,7 +138,8 @@ const getRecipeOrder = async function (req, res) {
     const recipe_order_group_id = req.params.order_group_id;
 
     let [ err, recipe_order_group ] = await to(adminViewsService.fetchRecipeOrdersGroupView(parseInt(recipe_order_group_id), null));
-    if(err) return ReE(res, err.message, 422);
+    if(err) 
+        return ReE(res, err.message, 422);
     if(!recipe_order_group) {
         let response_message = '';
         if(recipe_order_group_id) response_message = `Order group with id ${recipe_order_group_id} was not found.`;
