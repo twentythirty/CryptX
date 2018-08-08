@@ -1,11 +1,12 @@
 declare function require(path: string);
 
 import { Component, OnInit } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
-import { InviteService } from './invite.service';
-import { tap } from 'rxjs/operators';
+import { ActivatedRoute, Router } from '@angular/router';
 import { FormGroup, FormControl, Validators, AbstractControl } from '@angular/forms';
+import { tap } from 'rxjs/operators/tap';
 import { TokenCheck } from '../models/tokenCheck';
+import { InviteService } from './invite.service';
+import { AuthService } from '../../../services/auth/auth.service';
 
 class UserFulfillInvitationInfo {
   new_password: string
@@ -37,8 +38,10 @@ class InvitationCheckSuccessResponse {
   styleUrls: ['./accept-invite.component.scss']
 })
 export class AcceptInviteComponent implements OnInit {
+  private userLoginData;
+
   token: TokenCheck = new TokenCheck();
-  done: boolean = false;
+  showForm: boolean = true;
   message: string;
   invitationInfo: InvitationInfo;
   userInfo: UserFulfillInvitationInfo = {
@@ -49,7 +52,12 @@ export class AcceptInviteComponent implements OnInit {
 
   imageLogo = require('Images/Logo.png');
 
-  constructor(private route: ActivatedRoute, private inviteService: InviteService) { }
+  constructor(
+    private route: ActivatedRoute,
+    private router: Router,
+    private inviteService: InviteService,
+    private authService: AuthService,
+  ) { }
 
   ngOnInit() {
     this.userInfoForm = new FormGroup({
@@ -92,12 +100,13 @@ export class AcceptInviteComponent implements OnInit {
     }
     if (this.userInfoForm.valid) {
       let data = {
-        "invitation_id": this.invitationInfo.id,
-        "password": this.userInfoForm.value.password
+        invitation_id: this.invitationInfo.id,
+        password: this.userInfoForm.value.password
       }
 
       this.inviteService.fulfillInvitation(data).subscribe(data => {
-        this.done = true;
+        this.showForm = false;
+        this.userLoginData = data;
       }, error => {
         if (error.error) {
           this.message = error.error.error;
@@ -118,5 +127,10 @@ export class AcceptInviteComponent implements OnInit {
       }
     });
   }
+
+  public autoLogin() {
+    this.authService.setAuthData(this.userLoginData);
+    this.router.navigate(['dashboard']);
+  };
 
 }
