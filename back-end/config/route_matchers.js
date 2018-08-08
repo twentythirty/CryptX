@@ -63,6 +63,7 @@ ROUTE_MATCHERS = {
     GetExecutionOrders: /\/execution_orders\/all$/,
     ExecutionOrdersColLOV: /\/execution_orders\/header_lov\/\w+/,
     GetExecutionOrder: /\/execution_orders\/\d+$/,
+    ChangeExecutionOrderStatus: /\/execution_orders\/\d+$\/change_status/,
     GetExecutionOrdersFillsOf: /\/exec_orders_fills\/of_order\/\d+$/,
     ExecutionOrdersFillColLOV: /\/exec_orders_fills\/header_lov\/\w+/,
     GetExecutionOrdersFills: /\/exec_orders_fills\/all$/,

@@ -6,6 +6,7 @@ const RecipeRunDetail = require('../models').RecipeRunDetail;
 const RecipeRunDeposit = require('../models').RecipeRunDeposit;
 const RecipeOrderGroup = require('../models').RecipeOrderGroup;
 const RecipeOrder = require('../models').RecipeOrder;
+const ExecutionOrder = require('../models').ExecutionOrder;
 const ExchangeAccount = require('../models').ExchangeAccount;
 const Instrument = require('../models').Instrument;
 const Asset = require('../models').Asset;
@@ -340,3 +341,41 @@ const changeRecipeOrderGroupStatus = async (user_id, order_group_id, status, com
     return results;
 };
 module.exports.changeRecipeOrderGroupStatus = changeRecipeOrderGroupStatus;
+
+const changeExecutionOrderStatus = async (execution_order_id, status) => {
+
+    if(isNaN(execution_order_id)) TE(`Provided execution order id: "${execution_order_id}" is not valid`);
+    if(!Object.values(EXECUTION_ORDER_STATUSES).includes(status)) TE(`Status "${status}" is not valid`);
+
+    let [ err, execution_order ] = await to(ExecutionOrder.findById(execution_order_id));
+
+    if(err) TE(err);
+    if(!execution_order) return null;
+
+    //Switch case for different situations
+    switch(status) {
+        case EXECUTION_ORDER_STATUSES.Pending:  //User tries to reset the execution order.
+            if(execution_order.status !== EXECUTION_ORDER_STATUSES.Failed) TE('Only Execution orders with the status Failed can be reinitiated');
+            break;
+
+        default:
+            TE(`You are not allowed to set the status of Execution order to "${status}"`);
+            break;
+    }
+    
+
+    const previous_values = execution_order.toJSON();
+
+    execution_order.status = EXECUTION_ORDER_STATUSES.Pending;
+
+    [ err, execution_order ] = await to(execution_order.save());
+
+    if(err) TE(err);
+
+    return {
+        original_execution_order: previous_values, 
+        updated_execution_order: execution_order 
+    };
+
+};
+module.exports.changeExecutionOrderStatus = changeExecutionOrderStatus;

@@ -443,6 +443,11 @@ ROUTES = {
     permissions_matcher: ROUTE_MATCHERS.GetExecutionOrder,
     required_permissions: [PERMISSIONS.VIEW_INVESTMENT_RUN]
   },
+  ChangeExecutionOrderStatus: {
+    router_string: "/execution_orders/:execution_order_id/change_status",
+    permissions_matcher: ROUTE_MATCHERS.ChangeExecutionOrderStatus,
+    required_permissions: []
+  },
 
   // Execution order fill
   GetExecutionOrdersFillsOf: {

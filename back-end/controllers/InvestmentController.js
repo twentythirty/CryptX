@@ -394,6 +394,35 @@ const getExecutionOrdersColumnLOV = async function (req, res) {
 };
 module.exports.getExecutionOrdersColumnLOV = getExecutionOrdersColumnLOV;
 
+const changeExecutionOrderStatus = async (req, res) => {
+
+  const { status } = req.body;
+  const { execution_order_id } = req.params;
+
+  const user = req.user;
+
+  const [ err, execution_order_data ] = await to(OrdersService.changeExecutionOrderStatus(execution_order_id, status));
+
+  if(err) return ReE(res, err.message, 422);
+  if(!execution_order_data) return ReE(res, `Execution order with id ${execution_order_id} was not found.`, 404);
+
+  const { original_execution_order, updated_execution_order } = execution_order_data;
+
+  user.logAction('modified', {
+    previous_instance: original_execution_order,
+    updated_instance: updated_execution_order,
+    replace: {
+      status: { 
+        [EXECUTION_ORDER_STATUSES.Pending]: 'Pending',
+        [EXECUTION_ORDER_STATUSES.Failed]: 'Failed'
+       }
+    }
+  });
+
+  return ReS(res, { message: 'OK!' });
+
+};
+module.exports.changeExecutionOrderStatus = changeExecutionOrderStatus;
 
 const getExecutionOrderFill = async function (req, res) {
 

@@ -16,14 +16,14 @@ describe('DepositService testing', () => {
         app.dbPromise.then(migrations => {
             console.log("Migrations: %o", migrations);
 
-            sinon.stub(ActionLogUtil, 'logAction').callsFake(() => {return;});
+            //sinon.stub(ActionLogUtil, 'logAction').callsFake(() => {return;});
 
             done();
         })
     });
 
     after(done => {
-        ActionLogUtil.logAction.restore();
+        //ActionLogUtil.logAction.restore();
         done();
     });
 
