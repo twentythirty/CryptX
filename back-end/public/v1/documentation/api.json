@@ -5485,6 +5485,12 @@
         },
         "execution_order": {
           "$ref": "#/definitions/ExecutionOrder"
+        },
+        "action_logs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/ActionLog"
+          }
         }
       }
     },
