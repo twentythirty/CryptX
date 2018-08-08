@@ -299,6 +299,7 @@ const findInvestmentRunFromAssociations = async function (entities) {
     "investment_run_id": 'investment_run',
     "recipe_run_id": 'recipe_run',
     "recipe_deposit_id": 'recipe_run_deposit',
+    "recipe_order_group_id": 'recipe_order_group',
     "recipe_order_id": 'recipe_order',
     "execution_order_id": 'execution_order'
   };
@@ -469,7 +470,7 @@ const getInvestmentRunTimeline = async function (investment_run_id) {
 
   let prepared_recipe_orders = {
     count: recipe_orders.length,
-    order_group_id: recipe_orders[0].recipe_order_group_id,
+    order_group_id: recipe_orders[0].recipe_order_group_id, 
     status: `order.status.${order_status}`
   };
 
