@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, Router, Params } from '@angular/router';
 import { mergeMap, map } from 'rxjs/operators';
 
 import { StatusClass } from '../../../shared/models/common';
@@ -83,7 +83,7 @@ export class DepositDetailComponent extends TimelineDetailComponent implements O
       { column: 'account', nameKey: 'table.header.account', filter: {type: 'text', sortable: true }},
       { column: 'amount', nameKey: 'table.header.amount', filter: {type: 'number', sortable: true }},
       { column: 'investment_percentage', nameKey: 'table.header.investment_percentage', filter: {type: 'number', sortable: true }},
-      { column: 'status', nameKey: 'table.header.status' },
+      { column: 'status', nameKey: 'table.header.status', filter: {type: 'text', sortable: true } },
     ],
     body: null
   };
@@ -101,6 +101,8 @@ export class DepositDetailComponent extends TimelineDetailComponent implements O
     }}}),
   ];
 
+  public paramID: number;
+
   /**
    * 3. Call super() with ActivatedRoute
    * @param route - ActivatedRoute, used in DataTableCommonManagerComponent
@@ -111,6 +113,16 @@ export class DepositDetailComponent extends TimelineDetailComponent implements O
     private investmentService: InvestmentService,
   ) {
     super(route);
+
+    this.route.params.filter(
+      (params: Params) => params.id
+    ).subscribe(
+      (params: Params) => {
+        this.paramID = params.id;
+      }
+    ) 
+
+    this.getFilterLOV();
   }
 
   /**
@@ -146,6 +158,7 @@ export class DepositDetailComponent extends TimelineDetailComponent implements O
         this.count = res.count;
         this.listDataSource.body = res.recipe_deposits;
         this.listDataSource.footer = res.footer;
+        this.getFilterLOV();
       },
       err => this.listDataSource.body = []
     )
@@ -157,6 +170,18 @@ export class DepositDetailComponent extends TimelineDetailComponent implements O
         params => this.investmentService.getAllTimelineData({ recipe_run_id: params['id'] })
       )
     )
+  }
+
+  private getFilterLOV(): void {
+    this.listDataSource.header.filter(
+      col => ['id',  'quote_asset', 'exchange', 'account', 'status'].includes(col.column)
+    ).map(
+      col => {
+        let requestDataClone = Object.assign({}, this.requestData);
+        requestDataClone.filter = {"investment_run_id": this.paramID}
+        col.filter.rowData$ = this.investmentService.getAllDepositDetailsHeaderLOV(col.column, requestDataClone);
+      }
+    );
   }
 
   /**

@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, Router, Params } from '@angular/router';
 import { mergeMap } from 'rxjs/operators/mergeMap';
 
 import { StatusClass } from '../../../shared/models/common';
@@ -104,6 +104,8 @@ export class RecipeRunDetailComponent extends TimelineDetailComponent implements
     new PercentCellDataColumn({ column: 'investment_percentage' })
   ];
 
+    public paramID: number;
+
   /**
    * 3. Call super() with ActivatedRoute
    * @param route - ActivatedRoute, used in DataTableCommonManagerComponent
@@ -114,6 +116,16 @@ export class RecipeRunDetailComponent extends TimelineDetailComponent implements
     private investmentService: InvestmentService,
   ) {
     super(route);
+
+    this.route.params.filter(
+      (params: Params) => params.id
+    ).subscribe(
+      (params: Params) => {
+        this.paramID = params.id;
+      }
+    ) 
+
+    this.getFilterLOV();
   }
 
   /**
@@ -131,9 +143,22 @@ export class RecipeRunDetailComponent extends TimelineDetailComponent implements
           footer: res.footer
         });
         this.count = res.count;
+        this.getFilterLOV();
       },
       err => this.listDataSource.body = []
     )
+  }
+
+  private getFilterLOV(): void {
+    this.listDataSource.header.filter(
+      col => ['id', 'transaction_asset', 'quote_asset','target_exchange'].includes(col.column)
+    ).map(
+      col => {
+        let requestDataClone = Object.assign({}, this.requestData);
+        requestDataClone.filter = {"recipe_run_id": this.paramID}
+        col.filter.rowData$ = this.investmentService.getAllRecipeDetailsHeaderLOV(col.column, requestDataClone);
+      }
+    );
   }
 
   protected getSingleData(): void {

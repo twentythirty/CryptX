@@ -2,6 +2,7 @@ import { Component, OnInit, Input, EventEmitter, Output } from '@angular/core';
 import { Observable } from 'rxjs';
 import _ from 'lodash';
 import { TranslateService } from '@ngx-translate/core';
+import { ActivatedRoute, Router, NavigationStart } from "@angular/router";
 
 export interface TableDataSource {
   header: Array<{
@@ -67,7 +68,9 @@ export class DataTableComponent implements OnInit {
   @Output() openRow = new EventEmitter<any>();
 
   constructor(
-    private translate: TranslateService
+    private translate: TranslateService,
+    private route: ActivatedRoute,
+    private router: Router
   ) {}
 
   ngOnInit() {
@@ -77,11 +80,21 @@ export class DataTableComponent implements OnInit {
         this.emptyText = data;
       });
     }
-
     this.filterMap = _.zipObject(
       this.columnsToShow.map(el => (typeof el == 'string') ? el : el.column ),
       _.fill( Array(this.columnsToShow.length), false )
     );
+
+    // remove all _dirty properties on url change
+     this.router.events.subscribe((val) => {
+        if(val instanceof NavigationStart){
+          this.dataSource.header.map(item => {
+            delete item._dirty;
+            return item;
+          });
+        }
+        
+    });
   }
 
   toggleFilter(item: any): void {

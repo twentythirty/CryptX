@@ -56,7 +56,8 @@ export class DataTableFilterComponent implements OnInit, OnChanges {
 
   ngOnChanges(changes) {
     // Runs when filter becomes dirty
-    if(!changes.dirty.previousValue && (changes.dirty.currentValue === true)) {
+    if(changes.dirty && !changes.dirty.previousValue && (changes.dirty.currentValue === true)) {
+      this.rowData = [];
       this.getRowData$();
     }
   }

@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, Router, Params } from '@angular/router';
 import { mergeMap } from "rxjs/operators/mergeMap";
 import { TimelineDetailComponent, SingleTableDataSource, TagLineItem } from "../timeline-detail/timeline-detail.component";
 import { InvestmentService } from "../../../services/investment/investment.service";
@@ -73,6 +73,8 @@ export class ExecutionOrdersComponent extends TimelineDetailComponent implements
     new DateCellDataColumn({ column: 'completion_time' })
   ];
 
+  public paramID: number;
+
   /**
    * 3. Call super() with ActivatedRoute
    * @param route - ActivatedRoute, used in DataTableCommonManagerComponent
@@ -84,6 +86,14 @@ export class ExecutionOrdersComponent extends TimelineDetailComponent implements
     private investmentService: InvestmentService,
   ) { 
     super(route);
+
+    this.route.params.filter(
+      (params: Params) => params.id
+    ).subscribe(
+      (params: Params) => {
+        this.paramID = params.id;
+      }
+    ) 
 
     this.getFilterLOV();
   }
@@ -101,6 +111,7 @@ export class ExecutionOrdersComponent extends TimelineDetailComponent implements
         this.count = res.count;
         this.listDataSource.body = res.execution_orders;
         this.listDataSource.footer = res.footer;
+        this.getFilterLOV()
       },
       err => this.listDataSource.body = []
     )
@@ -108,10 +119,12 @@ export class ExecutionOrdersComponent extends TimelineDetailComponent implements
 
   private getFilterLOV(): void {
     this.listDataSource.header.filter(
-      col => ['id', 'instrument', 'side', 'exchange', 'type', 'total_quantity', 'exchange_trading_fee', 'status'].includes(col.column)
+      col => ['id', 'instrument', 'side', 'exchange', 'type', 'status'].includes(col.column)
     ).map(
       col => {
-        col.filter.rowData$ = this.investmentService.getAllExecutionOrdersHeaderLOV(col.column);
+        let requestDataClone = Object.assign({}, this.requestData);
+        requestDataClone.filter = {"investment_run_id": this.paramID}
+        col.filter.rowData$ = this.investmentService.getAllExecutionOrdersHeaderLOV(col.column, requestDataClone);
       }
     );
   }

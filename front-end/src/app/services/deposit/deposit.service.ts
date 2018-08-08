@@ -56,7 +56,7 @@ export class DepositService {
         res => {
           if(res && Array.isArray(res.lov)) {
             return res.lov.map(lov => {
-              return { value: lov }
+              return { value: lov.toString() }
             });
           } else return null;
         }

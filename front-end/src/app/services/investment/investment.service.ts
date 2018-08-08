@@ -30,8 +30,8 @@ export class InvestmentService {
     return this.http.post<any>(this.baseUrl + `investments/all`, requestData);
   }
 
-  getAllInvestmentsHeaderLOV(column_name: string): Observable<any> {
-    return this.http.get<any>(this.baseUrl + `investments/header_lov/${column_name}`).pipe(
+  getAllInvestmentsHeaderLOV(column_name: string, requestData?: EntitiesFilter): Observable<any> {
+    return this.http.post<any>(this.baseUrl + `investments/header_lov/${column_name}`, requestData).pipe(
       map(
         res => {
           if(res && res.lov && Array.isArray(res.lov)) {
@@ -65,8 +65,8 @@ export class InvestmentService {
     return this.http.post<any>(this.baseUrl + `execution_orders/of_order/${order_detail_id}`, requestData);
   }
 
-  getAllExecutionOrdersHeaderLOV(column_name: string): Observable<any> {
-    return this.http.get<any>(this.baseUrl + `execution_orders/header_lov/${column_name}`).pipe(
+  getAllExecutionOrdersHeaderLOV(column_name: string, requestData?: EntitiesFilter): Observable<any> {
+    return this.http.post<any>(this.baseUrl + `execution_orders/header_lov/${column_name}`, requestData).pipe(
       map(
         res => {
           if(res && res.lov && Array.isArray(res.lov)) {
@@ -89,12 +89,57 @@ export class InvestmentService {
     return this.http.post<any>(this.baseUrl + `execution_orders/of_investment_run/${investment_run_id}`, requestData);
   }
 
-  getAllExecutionOrdersFillsHeaderLOV(column_name: string): Observable<any> {
-    return this.http.get<any>(this.baseUrl + `exec_orders_fills/header_lov/${column_name}`).pipe(
+  getAllExecutionOrdersFillsHeaderLOV(column_name: string, requestData?: EntitiesFilter): Observable<any> {
+    return this.http.post<any>(this.baseUrl + `exec_orders_fills/header_lov/${column_name}`, requestData).pipe(
       map(
         res => {
           if(res && res.lov && Array.isArray(res.lov)) {
-            return res.lov.map((lov: String) => {
+            return res.lov.map(lov => {
+              return { value: lov.toString() }
+            });
+          }
+          return null;
+        }
+      )
+    );
+  }
+
+  getAllRecipeDetailsHeaderLOV(column_name: string, requestData?: EntitiesFilter): Observable<any> {
+    return this.http.post<any>(this.baseUrl + `recipe_details/header_lov/${column_name}`, requestData).pipe(
+      map(
+        res => {
+          if(res && res.lov && Array.isArray(res.lov)) {
+            return res.lov.map(lov => {
+              return { value: lov.toString() }
+            });
+          }
+          return null;
+        }
+      )
+    );
+  }
+
+  getAllDepositDetailsHeaderLOV(column_name: string, requestData?: EntitiesFilter): Observable<any> {
+    return this.http.post<any>(this.baseUrl + `/deposits/header_lov/${column_name}`, requestData).pipe(
+      map(
+        res => {
+          if(res && res.lov && Array.isArray(res.lov)) {
+            return res.lov.map(lov => {
+              return { value: lov.toString() }
+            });
+          }
+          return null;
+        }
+      )
+    );
+  }
+
+  getAllOrdersHeaderLOV(column_name: string, requestData?: EntitiesFilter): Observable<any> {
+    return this.http.post<any>(this.baseUrl + `/orders/header_lov/${column_name}`, requestData).pipe(
+      map(
+        res => {
+          if(res && res.lov && Array.isArray(res.lov)) {
+            return res.lov.map(lov => {
               return { value: lov.toString() }
             });
           }

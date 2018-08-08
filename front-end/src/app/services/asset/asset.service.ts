@@ -70,7 +70,7 @@ export class AssetService {
           if(res && Array.isArray(res.lov)) {
             console.log(res.lov);
             return res.lov.map(lov => {
-              return { value: lov }
+              return { value: lov.toString() }
             });
           } else return null;
         }

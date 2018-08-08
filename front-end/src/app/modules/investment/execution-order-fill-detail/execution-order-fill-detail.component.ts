@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, Router, Params, NavigationStart } from '@angular/router';
 
 import { StatusClass } from '../../../shared/models/common';
 
@@ -84,6 +84,8 @@ export class ExecutionOrderFillDetailComponent extends TimelineDetailComponent i
     new DateCellDataColumn({ column: 'completion_time' })
   ];
 
+  public paramID: number;
+
   public listColumnsToShow: Array<TableDataColumn> = [
     new TableDataColumn({ column: 'id' }),
     new DateCellDataColumn({ column: 'fill_time' }),
@@ -102,6 +104,14 @@ export class ExecutionOrderFillDetailComponent extends TimelineDetailComponent i
   ) {
     super(route);
 
+    this.route.params.filter(
+      (params: Params) => params.id
+    ).subscribe(
+      (params: Params) => {
+        this.paramID = params.id;
+      }
+    ) 
+
     this.getFilterLOV();
   }
 
@@ -118,6 +128,7 @@ export class ExecutionOrderFillDetailComponent extends TimelineDetailComponent i
         this.count = res.count;
         this.listDataSource.body = res.execution_order_fills;
         this.listDataSource.footer = res.footer;
+        this.getFilterLOV();
       },
       err => this.listDataSource.body = []
     )
@@ -128,7 +139,9 @@ export class ExecutionOrderFillDetailComponent extends TimelineDetailComponent i
       col => ['id'].includes(col.column)
     ).map(
       col => {
-        col.filter.rowData$ = this.investmentService.getAllExecutionOrdersFillsHeaderLOV(col.column);
+        let requestDataClone = Object.assign({}, this.requestData);
+        requestDataClone.filter = {"execution_order_id": this.paramID}
+        col.filter.rowData$ = this.investmentService.getAllExecutionOrdersFillsHeaderLOV(col.column, requestDataClone);
       }
     );
   }

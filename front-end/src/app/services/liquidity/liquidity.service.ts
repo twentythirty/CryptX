@@ -68,7 +68,7 @@ export class LiquidityService {
         res => {
           if(res && res.lov && Array.isArray(res.lov)) {
             return res.lov.map(lov => {
-              return { value: lov }
+              return { value: lov.toString() }
             });
           }
           return null;

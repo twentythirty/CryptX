@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, Router, Params } from '@angular/router';
 import { mergeMap } from 'rxjs/operators/mergeMap';
 
 import { StatusClass } from '../../../shared/models/common';
@@ -120,6 +120,8 @@ export class OrderGroupComponent extends TimelineDetailComponent implements OnIn
     }}}),
   ];
 
+  public paramID: number;
+
   /**
    * 3. Call super() with ActivatedRoute
    * @param route - ActivatedRoute, used in DataTableCommonManagerComponent
@@ -131,6 +133,16 @@ export class OrderGroupComponent extends TimelineDetailComponent implements OnIn
     private ordersService: OrdersService,
   ) {
     super(route);
+
+    this.route.params.filter(
+      (params: Params) => params.id
+    ).subscribe(
+      (params: Params) => {
+        this.paramID = params.id;
+      }
+    ) 
+
+    this.getFilterLOV();
   }
 
   /**
@@ -156,9 +168,22 @@ export class OrderGroupComponent extends TimelineDetailComponent implements OnIn
           footer: res.footer
         });
         this.count = res.count;
+        this.getFilterLOV();
       },
       err => this.listDataSource.body = []
     )
+  }
+
+  private getFilterLOV(): void {
+    this.listDataSource.header.filter(
+      col => ['id', 'instrument', 'side', 'exchange', 'status'].includes(col.column)
+    ).map(
+      col => {
+        let requestDataClone = Object.assign({}, this.requestData);
+        requestDataClone.filter = {"recipe_order_group_id": this.paramID}
+        col.filter.rowData$ = this.investmentService.getAllOrdersHeaderLOV(col.column, requestDataClone);
+      }
+    );
   }
 
   protected getSingleData(): void {

@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, Router, Params } from '@angular/router';
 import { mergeMap, map } from 'rxjs/operators';
 
 import { StatusClass } from '../../../shared/models/common';
@@ -104,6 +104,8 @@ export class ExecutionOrderDetailComponent extends TimelineDetailComponent imple
     new DateCellDataColumn({ column: 'completion_time' })
   ];
 
+  public paramID: number;
+
   /**
    * 3. Call super() with ActivatedRoute
    * @param route - ActivatedRoute, used in DataTableCommonManagerComponent
@@ -114,6 +116,14 @@ export class ExecutionOrderDetailComponent extends TimelineDetailComponent imple
     private investmentService: InvestmentService
   ) {
     super(route);
+
+      this.route.params.filter(
+      (params: Params) => params.id
+    ).subscribe(
+      (params: Params) => {
+        this.paramID = params.id;
+      }
+    ) 
 
     this.getFilterLOV();
   }
@@ -132,10 +142,12 @@ export class ExecutionOrderDetailComponent extends TimelineDetailComponent imple
     */
   private getFilterLOV(): void {
     this.listDataSource.header.filter(
-      col => ['instrument', 'side', 'exchange', 'type', 'status'].includes(col.column)
+      col => ['id', 'instrument', 'side', 'exchange', 'type', 'status'].includes(col.column)
     ).map(
       col => {
-        col.filter.rowData$ = this.investmentService.getAllExecutionOrdersHeaderLOV(col.column);
+        let requestDataClone = Object.assign({}, this.requestData);
+        requestDataClone.filter = {"recipe_order_id": this.paramID}
+        col.filter.rowData$ = this.investmentService.getAllExecutionOrdersHeaderLOV(col.column, requestDataClone);
       }
     );
   }
@@ -155,6 +167,7 @@ export class ExecutionOrderDetailComponent extends TimelineDetailComponent imple
           footer: res.footer
         });
         this.count = res.count;
+        this.getFilterLOV();
       },
       err => this.listDataSource.body = []
     )
