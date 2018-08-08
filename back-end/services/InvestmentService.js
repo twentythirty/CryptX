@@ -94,7 +94,7 @@ const createRecipeRun = async function (user_id, investment_run_id) {
   });
 
   if (recipe_run) {
-    if(recipe_run.approval_status === RECIPE_ORDER_STATUSES.Pending) TE("There is already recipe run pending approval");
+    if(recipe_run.approval_status === RECIPE_RUN_STATUSES.Pending) TE("There is already recipe run pending approval");
     else TE("No more recipe runs can be generated after one was already approved.");
   } 
 
