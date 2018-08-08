@@ -19,5 +19,10 @@ module.exports = {
 
             return this.custom_template;
         }
+    },
+    deposits: {
+        generate: {
+            get template() { return `${this.params.amount} ${this.params.amount === 1 ? 'Deposit' : 'Deposits'} were generate for Recipe Run RR-${this.params.relations.recipe_run_id}` }
+        }
     }
 };

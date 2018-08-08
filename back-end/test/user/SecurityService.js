@@ -117,6 +117,18 @@ describe("SecurityService mocking", () => {
       );
     });
 
+    it("reject if the updated info is empty", function() {
+       return Promise.all(_.map([
+         [1],
+         [1, null],
+         [1, {}],
+         [1, { name: null, permissions: null }],
+         [1, { name: 'Super admin', permissions: [] }]
+       ], params => {
+         return chai.assert.isRejected(SecurityService.editRole(...params));
+       })); 
+    });
+
     it("update only supplied properties", function() {
       let new_info = [
         {
@@ -129,8 +141,7 @@ describe("SecurityService mocking", () => {
         },
         {
           name: "updated_test_role"
-        },
-        {}
+        }
       ];
 
       return Promise.all(

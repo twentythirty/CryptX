@@ -598,6 +598,12 @@ router.get(
   check_permissions,
   InvestmentController.getExecutionOrder
 );
+router.post(
+  ROUTES.ChangeExecutionOrderStatus.router_string,
+  stateless_auth,
+  check_permissions,
+  InvestmentController.changeExecutionOrderStatus
+);
 
  // Execution order fills
 router.post(

@@ -21,6 +21,21 @@ const createRole = async function (role_name) {
 module.exports.createRole = createRole;
 
 const editRole = async function (role_id, updated_role) {
+
+	/**
+	 * There are 3 situations that need to be check:
+	 * 1. updated_role is not provided at all or is null.
+	 * 2. updated_role has name and permissions but they are null/empty.
+	 * 3. updated_role provided permissions, but it is a anempty array
+	 */
+	if(
+		!updated_role || 
+		(_.isEmpty(updated_role.name) && _.isEmpty(updated_role.permissions)) || 
+		(_.isArray(updated_role.permissions) && _.isEmpty(updated_role.permissions))
+	) {
+		TE('At least the name or an array with at least one permission must be provided.');
+	}
+
 	let err, role = await Role.findById(role_id, {
 		include: [Permission]
 	});

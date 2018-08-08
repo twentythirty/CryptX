@@ -15,6 +15,7 @@ const RecipeRunDetail = require('../../models').RecipeRunDetail;
 const ExchangeAccount = require('../../models').ExchangeAccount;
 const RecipeOrderGroup = require('../../models').RecipeOrderGroup;
 const RecipeOrder = require('../../models').RecipeOrder;
+const ExecutionOrder = require('../../models').ExecutionOrder;
 const Instrument = require('../../models').Instrument;
 const Asset = require('../../models').Asset;
 const InstrumentExchangeMapping = require('../../models').InstrumentExchangeMapping;
@@ -107,6 +108,20 @@ describe('OrdersService testing', () => {
             }
         })
     }));
+
+    const TEST_EXECUTION_ORDER = {
+        id: 1,
+        status: EXECUTION_ORDER_STATUSES.Pending,
+        save: function() {
+            return Promise.resolve(this);
+        },
+        toJSON: function() {
+            let json = _.clone(this);
+            delete json.save;
+            delete json.toJSON;
+            return json;
+        }
+    }
 
     it("the service shall exist", function () {
         chai.expect(ordersService).to.exist;
@@ -336,6 +351,20 @@ describe('OrdersService testing', () => {
             approval_comment: ''
         }
 
+        beforeEach(done => {
+            sinon.stub(RecipeOrder, 'update').callsFake(options => {
+
+                return Promise.resolve([1]);
+            });
+            done();
+        });
+
+        afterEach(done => {
+            if(RecipeOrderGroup.findById.restore) RecipeOrderGroup.findById.restore();
+            RecipeOrder.update.restore();
+            done();
+        });
+
         it("exist", function () {
             chai.expect(ordersService.changeRecipeOrderGroupStatus).to.exist;
         });
@@ -363,7 +392,17 @@ describe('OrdersService testing', () => {
             });
         });
 
-        it("shall approve recipe order group when approval is required", () => {
+        it("shall reject if the user tries to approve the group, whose status is not Pending", () => {
+
+            sinon.stub(RecipeOrderGroup, 'findById').callsFake(options => {
+
+                return Promise.resolve(Object.assign({}, TEST_RECIPE_ORDER_GROUP, { approval_status: RECIPE_ORDER_GROUP_STATUSES.Approved }));
+            });
+
+            return chai.assert.isRejected(ordersService.changeRecipeOrderGroupStatus(TEST_USER_ID, TEST_ORDER_GROUP_ID, RECIPE_ORDER_GROUP_STATUSES.Approved, APPROVE_COMMENT));
+        });
+
+        it("shall approve recipe order group when approval is required and update the related order status to Executing", () => {
 
             sinon.stub(RecipeOrderGroup, 'findById').callsFake(options => {
                 let new_group = Object.assign({}, TEST_RECIPE_ORDER_GROUP);
@@ -380,6 +419,14 @@ describe('OrdersService testing', () => {
                 chai.assert.equal(recipe_order.approval_status, RECIPE_ORDER_GROUP_STATUSES.Approved, 'Status was not Approved!');
                 chai.assert.equal(recipe_order.approval_user_id, TEST_USER_ID, 'Approval not provided by specified user!');
                 chai.assert.equal(recipe_order.approval_comment, APPROVE_COMMENT, 'approval comment not as specified!');
+
+                chai.expect(RecipeOrder.update.calledOnce).to.be.true;
+
+                const [ update, options ] = RecipeOrder.update.args[0];
+                
+                chai.expect(update.status).to.equal(RECIPE_ORDER_STATUSES.Executing);
+                chai.expect(options.where.recipe_order_group_id).to.equal(TEST_RECIPE_ORDER_GROUP.id);
+
             });
         });
 
@@ -422,5 +469,67 @@ describe('OrdersService testing', () => {
                 });
             });
         });
+    });
+
+    describe('and the method changeExecutionOrderStatus shall:', () => {
+
+        before(done => {
+            sinon.stub(ExecutionOrder, 'findById').callsFake(execution_id => {
+                switch(execution_id) {
+                    case 1:
+                        return Promise.resolve(TEST_EXECUTION_ORDER);
+                    case 2:
+                        return Promise.resolve(Object.assign({}, TEST_EXECUTION_ORDER, {
+                            status: EXECUTION_ORDER_STATUSES.Failed
+                        }));
+                    default:
+                        return Promise.resolve(null);
+                }
+            });
+            done();
+        });
+
+        after(done => {
+            ExecutionOrder.findById.restore();
+            done();
+        });
+
+        const changeExecutionOrderStatus = ordersService.changeExecutionOrderStatus;
+
+        it('exist', () => {
+            return chai.expect(changeExecutionOrderStatus).to.be.not.undefined;
+        });
+
+        it('reject if the passed arguments are not valid', () => {
+            return Promise.all(_.map([
+                [],
+                [1, '123'],
+                ['ff', 21],
+                [{}, 2],
+                [1, {}]
+            ], params => {
+                return chai.assert.isRejected(changeExecutionOrderStatus(...params));
+            }));
+        });
+
+        it('reject if the user tries to reinitiate an execution order when it is not Failed', () => {
+            return chai.assert.isRejected(changeExecutionOrderStatus(1, EXECUTION_ORDER_STATUSES.Pending));
+        });
+
+        it('update the status to Pending when the execution order is Failed', () => {
+            return changeExecutionOrderStatus(2, EXECUTION_ORDER_STATUSES.Pending).then(execution_order_data => {
+
+                chai.expect(execution_order_data).to.be.an('object');
+                chai.expect(execution_order_data.original_execution_order).to.be.an('object');
+                chai.expect(execution_order_data.updated_execution_order).to.be.an('object');
+
+                const { original_execution_order, updated_execution_order } = execution_order_data;
+
+                chai.expect(original_execution_order.status).to.equal(EXECUTION_ORDER_STATUSES.Failed);
+                chai.expect(updated_execution_order.status).to.equal(EXECUTION_ORDER_STATUSES.Pending);
+
+            });
+        });
+
     });
 });

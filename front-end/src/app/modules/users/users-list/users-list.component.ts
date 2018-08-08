@@ -1,22 +1,14 @@
 import { Component, OnInit } from '@angular/core';
-import { TableDataSource, TableDataColumn } from '../../../shared/components/data-table/data-table.component';
 import { ActivatedRoute, Router } from '@angular/router';
-import { map } from 'rxjs/operator/map';
-import { EntitiesFilter } from '../../../shared/models/api/entitiesFilter';
-import { Observable } from 'rxjs';
+import { TableDataSource, TableDataColumn } from '../../../shared/components/data-table/data-table.component';
 
 import { UsersService } from '../../../services/users/users.service';
 import { DataTableCommonManagerComponent } from '../../../shared/components/data-table-common-manager/data-table-common-manager.component';
 import {
-  DateCellComponent,
   DateCellDataColumn,
-  StatusCellComponent,
   StatusCellDataColumn,
-  PercentCellComponent,
-  PercentCellDataColumn
 } from '../../../shared/components/data-table-cells';
 import { User } from "../../../shared/models/user";
-import { StatusClass } from "../../../shared/models/common";
 
 
 @Component({

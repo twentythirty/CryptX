@@ -136,10 +136,10 @@ const _defaultHandler = function(params = {}) {
     else return this.template;
 }
 
-const logAction = async (action_path, options = {}) => {
+module.exports.logAction = async (action_path, options = {}) => {
     try {
         const action = _.get(loggers, action_path);
-        if(!action) return log(`Action with path "${action_path}" does not exist`);
+        if(!action) return module.exports.log(`Action with path "${action_path}" does not exist`);
     
         let action_logs = null;
         if(_.isFunction(action.handler)) action_logs = action.handler(options);
@@ -148,7 +148,7 @@ const logAction = async (action_path, options = {}) => {
             action_logs = action.hander(options);
         }
     
-        if(!action_logs) log(`Handler failed to return log string for action path "${action_path}" and params: ${JSON.stringify(params)}`);
+        if(!action_logs) module.exports.log(`Handler failed to return module.exports.log string for action path "${action_path}" and params: ${JSON.stringify(params)}`);
     
         if(_.isString(action_logs)) action_logs = [action_logs];
     
@@ -156,23 +156,23 @@ const logAction = async (action_path, options = {}) => {
         if(_.isPlainObject(options.relations)) options.relations = Object.assign({}, action.relations || {}, options.relations);
     
         for(let action_log of action_logs) {
-            log(action_log, options || {});
+            module.exports.log(action_log, options || {});
         }
     }
     catch(e) {
         console.error(e);
-        log(e.message);
+        module.exports.log(e.message);
     }
 };
 
 /**
  * Logs an action. Can be used as a base function.
  * @param {String} details Text describing the action.
- * @param {Object} [options={}] Additional options for the log.
+ * @param {Object} [options={}] Additional options for the module.exports.log.
  * @param {Object} options.relations Object of specified relations. Example: `{ asset_id: 21, exchange_id: 1 }`.
- * @returns {Promise} Resolves in a new action log object.
+ * @returns {Promise} Resolves in a new action module.exports.log object.
  */
-const log = async (details, options = {}) => {
+module.exports.log = async (details, options = {}) => {
 
     if(!_.isString(details)) details = JSON.stringify(details);
 
@@ -188,7 +188,7 @@ const log = async (details, options = {}) => {
 
         for(let key in relations) {
             if(!allowed_keys.includes(key)) {
-                log(`Log validation error: relations key "${key}" is not allowed`);
+                module.exports.log(`Log validation error: relations key "${key}" is not allowed`);
                 delete relations[key];
             }
             else base_log[key] = relations[key];
@@ -198,11 +198,12 @@ const log = async (details, options = {}) => {
 
     _saveToDatabase(base_log);
 };
+//const module.exports.log = module.exports.module.exports.log;
 
 const _saveToDatabase = async (action_log) => {
 
     if(action_log.failed_attempts > failed_attempts_limit) {
-        return console.log(`Failed to log "${action_log.details}" after ${action_log.failed_attempts} failed attempts`);
+        return console.module.exports.log(`Failed to module.exports.log "${action_log.details}" after ${action_log.failed_attempts} failed attempts`);
     }
 
     //This is required here due the fact that the model is not created when it is used in the User model.
@@ -211,40 +212,40 @@ const _saveToDatabase = async (action_log) => {
 
     /**
      * Attempts to catch certain errors:
-     * 1. During Foreign Constraint error, the logger will strip the foreign keys and log the error and stripped message.
-     * 2. On different connection errors, it will delay the log in hopes that the connection will be restored by that time.
-     * 3. During unknown error simply log the error. More error handling may be added later,
+     * 1. During Foreign Constraint error, the logger will strip the foreign keys and module.exports.log the error and stripped message.
+     * 2. On different connection errors, it will delay the module.exports.log in hopes that the connection will be restored by that time.
+     * 3. During unknown error simply module.exports.log the error. More error handling may be added later,
      */
     ActionLog.create(action_log)
         .catch(ForeignKeyConstraintError, message => {
             action_log.failed_attempts++;
-            //Later on, specific keys may be stripped using string match, this iwll depend how often this error occurs durring log.
+            //Later on, specific keys may be stripped using string match, this iwll depend how often this error occurs durring module.exports.log.
             _saveToDatabase(_cleanOfRelations(action_log));
-            log(`Constraint error occured during log: "${message}", while logging: "${action_log.details}"`);
+            module.exports.log(`Constraint error occured during module.exports.log: "${message}", while logging: "${action_log.details}"`);
         })
         .catch(ConnectionError, message => {
-            console.log(`Connection error: ${message} while logging: "${action_log.details}"`);
+            console.module.exports.log(`Connection error: ${message} while logging: "${action_log.details}"`);
             action_log.failed_attempts++;
             _delayLog(action_log);
         })
         .catch(ConnectionRefusedError, message => {
-            console.log(`Connection refused error: ${message} while logging: "${action_log.details}"`);
+            console.module.exports.log(`Connection refused error: ${message} while logging: "${action_log.details}"`);
             action_log.failed_attempts++;
             _delayLog(action_log);
         })
         .catch(ConnectionTimedOutError, message => {
-            console.log(`Connection time out error: ${message} while logging: "${action_log.details}"`);
+            console.module.exports.log(`Connection time out error: ${message} while logging: "${action_log.details}"`);
             action_log.failed_attempts++;
             _delayLog(action_log);
         })
         .catch(HostNotReachableError, message => {
-            console.log(`Host not reachable error: ${message} while logging: "${action_log.details}"`);
+            console.module.exports.log(`Host not reachable error: ${message} while logging: "${action_log.details}"`);
             action_log.failed_attempts++;
             _delayLog(action_log);
         })
         .catch(error => {
             console.error(error);
-            log(`Error occured durring logging of: "${action_log.details}", error received: ${error.message}`);
+            module.exports.log(`Error occured durring logging of: "${action_log.details}", error received: ${error.message}`);
         });
 }
 
@@ -256,7 +257,7 @@ const _cleanOfRelations = (action_log) => {
 }
 
 const _delayLog = async (action_log) => {
-    //console.log('Connection error to the database occured while logging');
+    //console.module.exports.log('Connection error to the database occured while logging');
     setTimeout(() => {
         _saveToDatabase(action_log);
     }, base_delay * action_log.failed_attempts);
@@ -266,7 +267,3 @@ const _getFormatedName = (instance) => {
     const table_name = instance.constructor.getTableName();
     return _.startCase(table_name);
 }
-
-module.exports = {
-    log, logAction
-};

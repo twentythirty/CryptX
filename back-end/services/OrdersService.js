@@ -6,6 +6,7 @@ const RecipeRunDetail = require('../models').RecipeRunDetail;
 const RecipeRunDeposit = require('../models').RecipeRunDeposit;
 const RecipeOrderGroup = require('../models').RecipeOrderGroup;
 const RecipeOrder = require('../models').RecipeOrder;
+const ExecutionOrder = require('../models').ExecutionOrder;
 const ExchangeAccount = require('../models').ExchangeAccount;
 const Instrument = require('../models').Instrument;
 const Asset = require('../models').Asset;
@@ -276,6 +277,10 @@ const changeRecipeOrderGroupStatus = async (user_id, order_group_id, status, com
         TE(`Recipe order group for id ${recipe_order_group_id} was not found!`);
     }
 
+    if (status === RECIPE_ORDER_GROUP_STATUSES.Approved && recipe_order_group.approval_status !== RECIPE_ORDER_GROUP_STATUSES.Pending) {
+        TE('You are not allowed to approve orders that were already approved or rejected');
+    }
+
     //status already same, low warning and exist as NOOP
     if (recipe_order_group.approval_status == status) {
         console.warn(`Recipe Order Group ${order_group_id} already has status ${status}! exiting...`);
@@ -316,6 +321,17 @@ const changeRecipeOrderGroupStatus = async (user_id, order_group_id, status, com
         });
     }
 
+    //if the orders are being approved, each order in the group should be marked as "Executing"
+    if (status == RECIPE_ORDER_GROUP_STATUSES.Approved) {
+        let [ err ] = await to(RecipeOrder.update({
+            status: RECIPE_ORDER_STATUSES.Executing
+        }, {
+            where: { recipe_order_group_id: recipe_order_group.id }
+        }));
+
+        if(err) TE(err);
+    }
+
     let [err, results] = await to(update_group_promise);
 
     if (err) {
@@ -325,3 +341,41 @@ const changeRecipeOrderGroupStatus = async (user_id, order_group_id, status, com
     return results;
 };
 module.exports.changeRecipeOrderGroupStatus = changeRecipeOrderGroupStatus;
+
+const changeExecutionOrderStatus = async (execution_order_id, status) => {
+
+    if(isNaN(execution_order_id)) TE(`Provided execution order id: "${execution_order_id}" is not valid`);
+    if(!Object.values(EXECUTION_ORDER_STATUSES).includes(status)) TE(`Status "${status}" is not valid`);
+
+    let [ err, execution_order ] = await to(ExecutionOrder.findById(execution_order_id));
+
+    if(err) TE(err);
+    if(!execution_order) return null;
+
+    //Switch case for different situations
+    switch(status) {
+        case EXECUTION_ORDER_STATUSES.Pending:  //User tries to reset the execution order.
+            if(execution_order.status !== EXECUTION_ORDER_STATUSES.Failed) TE('Only Execution orders with the status Failed can be reinitiated');
+            break;
+
+        default:
+            TE(`You are not allowed to set the status of Execution order to "${status}"`);
+            break;
+    }
+    
+
+    const previous_values = execution_order.toJSON();
+
+    execution_order.status = EXECUTION_ORDER_STATUSES.Pending;
+
+    [ err, execution_order ] = await to(execution_order.save());
+
+    if(err) TE(err);
+
+    return {
+        original_execution_order: previous_values, 
+        updated_execution_order: execution_order 
+    };
+
+};
+module.exports.changeExecutionOrderStatus = changeExecutionOrderStatus;

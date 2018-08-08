@@ -1969,6 +1969,40 @@
         ]
       }
     },
+    "/execution_orders/{execution_order_id}/change_status": {
+      "post": {
+        "tags": [
+          "execution orders"
+        ],
+        "summary": "Change the status of execution order.",
+        "description": "Ability to change the status of an execution order. Which status can be changed to depends on the current status of the execution order. Example: to retry an execution order, you need to send status \"Pending\" to a \"Failed\" execution order ",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "execution_order_id",
+            "in": "path",
+            "description": "ID of execution order",
+            "required": true,
+            "type": "integer"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "$ref": "#/definitions/ExecutionOrderStatusChangeResponse"
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
     "/execution_orders/of_order/{order_id}": {
       "post": {
         "tags": [
@@ -2842,7 +2876,7 @@
           "200": {
             "description": "successful operation",
             "schema": {
-              "$ref": "#/definitions/ApiSuccessResponse"
+              "$ref": "#/definitions/LoginUserResponse"
             }
           }
         }
@@ -3306,7 +3340,7 @@
           "200": {
             "description": "success",
             "schema": {
-              "$ref": "#/definitions/ReturnUserResponse"
+              "$ref": "#/definitions/LoginUserResponse"
             }
           }
         }
@@ -5451,6 +5485,20 @@
         },
         "execution_order": {
           "$ref": "#/definitions/ExecutionOrder"
+        }
+      }
+    },
+    "ExecutionOrderStatusChangeResponse": {
+      "description": "Response of successful execution order status change",
+      "type": "object",
+      "properties": {
+        "message": {
+          "type": "string",
+          "example": "OK!"
+        },
+        "success": {
+          "type": "boolean",
+          "example": true
         }
       }
     },

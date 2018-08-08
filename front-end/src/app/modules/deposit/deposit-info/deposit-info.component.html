@@ -1,63 +1,76 @@
-<app-page-heading [heading]="'deposits.deposit' | translate">
-</app-page-heading>
+<app-page-heading
+  [heading]="'deposits.deposit' | translate"
+></app-page-heading>
+
 <div class="left-part-dashboard">
   <app-data-table
     [dataSource]="depositDataSource"
     [columnsToShow]="depositColumnsToShow"
-    (setFilter)="onSetFilter($event)">
-  </app-data-table>
+    (setFilter)="onSetFilter($event)"
+  ></app-data-table>
 
-  <div *ngIf="activityLog as log">
-    <br>
-    <h2>{{'deposits.deposit_management_activity_log' | translate}}</h2>
-    <br>
-    <p [ngPlural]="log.length">
+  <div *ngIf="activityLog as logs">
+    <h2>{{ 'deposits.deposit_management_activity_log' | translate }}</h2>
+
+    <p [ngPlural]="logs.length">
       <ng-template ngPluralCase="=0">No changes have been done</ng-template>
-      <ng-template ngPluralCase="=1">{{ log.length }} change has been done</ng-template>
-      <ng-template ngPluralCase="other">{{ log.length }} changes have been done</ng-template>
+      <ng-template ngPluralCase="=1">{{ logs.length }} change has been done</ng-template>
+      <ng-template ngPluralCase="other">{{ logs.length }} changes have been done</ng-template>
     </p>
-    <p *ngFor="let change of log">
-      <br>
-      <span>{{ change.timestamp | date:'dd MMM yyyy hh:mm' }}</span>
-      <span> - </span>
-      <span>{{ change.details }}</span>
+    
+    <p *ngFor="let log of logs">
+      <small>
+        <span>{{ log.timestamp | date:'dd MMM yyyy hh:mm' }}</span>
+        <span> - </span>
+        <span>{{ log.details }}</span>
+      </small>
     </p>
   </div>
 </div>
+
 <div class="step-labels-container">
-    <app-timeline [timelineEvents]="timeline$ | async"></app-timeline>
+  <app-timeline [timelineEvents]="timeline$ | async"></app-timeline>
 </div>
 
-<app-modal *ngIf="showModal" (close)="hideModal()" [heading]="'deposits.deposit' | translate">
-    <form [formGroup]="depositForm" (ngSubmit)="Confirm()">
-        <br>
-      <app-input-item class="form-item"
-            [label]="'deposits.please_specify_amount' | translate"
-            [placeholder]="'deposits.placeholder_amount' | translate"
-            [formGroup]="depositForm"
-            formControlName='Amount'
-            type = "number"
-            name='amount'
-            [(ngModel)]="amount">
-      </app-input-item>
-      <app-input-item class="form-item"
-            [label]="'deposits.please_specify_management_fee' | translate"
-            [placeholder]="'deposits.placeholder_management_fee' | translate"
-            [formGroup]="depositForm"
-            formControlName='Management_fee'
-            type = "number"
-            name='management_fee'
-            [(ngModel)]="management_fee">
-      </app-input-item>
+<app-modal
+  *ngIf="showModal"
+  [heading]="'deposits.deposit' | translate"
+  (close)="hideModal()"
+>
+  <form [formGroup]="depositForm" (ngSubmit)="confirm()">
+    <br>
+    <app-input-item
+      type="number"
+      class="form-item"
+      [label]="'deposits.please_specify_amount' | translate"
+      [placeholder]="'deposits.placeholder_amount' | translate"
+      [formGroup]="depositForm"
+      formControlName='Amount'
+      name="amount"
+      [(ngModel)]="amount"
+    ></app-input-item>
+
+    <app-input-item
+      type="number"
+      class="form-item"
+      [label]="'deposits.please_specify_management_fee' | translate"
+      [placeholder]="'deposits.placeholder_management_fee' | translate"
+      [formGroup]="depositForm"
+      formControlName="Management_fee"
+      name="management_fee"
+      [(ngModel)]="management_fee"
+    ></app-input-item>
+
     <div class="btn-wrap btn-right">
       <br>
-      <button class="btn submit" [disabled] = loading2 type="submit">{{'common.confirm' | translate}}</button>
+      <button class="btn submit" [disabled]=loading2 type="submit">{{'common.confirm' | translate}}</button>
     </div>
-    </form>
+  </form>
 </app-modal>
+
 <app-confirm
   *ngIf="showConfirm"
-  [heading]="'deposits.are_you_sure_want_to_approve' | translate " 
+  [heading]="'deposits.are_you_sure_want_to_approve' | translate" 
   (onReject)="hideConfirm()"
-  (onConfirm)="Send()"
+  (onConfirm)="send()"
 ></app-confirm>

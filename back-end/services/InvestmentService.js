@@ -36,13 +36,13 @@ const createInvestmentRun = async function (user_id, strategy_type, is_simulated
   });
 
   // only let to run one investment of the same strategy and mode
-  /* if (investment_run) {
+  if (investment_run) {
     let message = `Investment with ${strategy_type} strategy and ${
       is_simulated ? 'simulated' : 'real investment'
     } mode already is executing.`;
 
     TE(message);
-  } */
+  }
 
   [err, investment_run] = await to(InvestmentRun.create({
     strategy_type: strategy_type,
@@ -88,12 +88,15 @@ const createRecipeRun = async function (user_id, investment_run_id) {
     where: {
       investment_run_id: investment_run_id,
       approval_status: {
-        [Op.eq]: RECIPE_RUN_STATUSES.Pending
+        [Op.in]: [RECIPE_RUN_STATUSES.Pending, RECIPE_RUN_STATUSES.Approved]
       }
     }
   });
 
-  if (recipe_run) TE("There is already recipe run pending approval");
+  if (recipe_run) {
+    if(recipe_run.approval_status === RECIPE_ORDER_STATUSES.Pending) TE("There is already recipe run pending approval");
+    else TE("No more recipe runs can be generated after one was already approved.");
+  } 
 
   [err, investment_run] = await to(this.changeInvestmentRunStatus(
     investment_run_id,
@@ -269,8 +272,17 @@ const changeRecipeRunStatus = async function (user_id, recipe_run_id, status_con
   [err, recipe_run] = await to(recipe_run.save());
   if (err) TE(err.message);
 
-  //approving recipe run that was not approved before, try generate empty deposits
+  //approving recipe run that was not approved before, try generate empty deposits and set the investment run status to RecipedApproved
   if (status_constant == RECIPE_RUN_STATUSES.Approved && old_status !== status_constant) {
+
+    [ err ] = await to(InvestmentRun.update({
+      status: INVESTMENT_RUN_STATUSES.RecipeApproved
+    }, {
+      where: { id: recipe_run.investment_run_id },
+      limit: 1
+    }));
+
+    if(err) TE(err.message);
 
     depositService.generateRecipeRunDeposits(recipe_run);
 
@@ -430,7 +442,7 @@ const getInvestmentRunTimeline = async function (investment_run_id) {
     _.flatten(recipes.map(recipe_run => {
       return recipe_run.RecipeOrderGroups;
     })), group => group.approval_status != RECIPE_ORDER_GROUP_STATUSES.Rejected);
-  let recipe_orders = _.maxBy(recipe_order_groups, rog => rog.created_timestamp.getTime()).RecipeOrders;
+  let recipe_orders = recipe_order_groups.length? _.maxBy(recipe_order_groups, rog => rog.created_timestamp.getTime()).RecipeOrders : [];
 
   if (!recipe_orders.length) {
     return { // no recipe orders found. Return current status

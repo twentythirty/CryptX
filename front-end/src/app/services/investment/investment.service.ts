@@ -280,8 +280,4 @@ export class InvestmentService {
     return this.http.post<any>(this.baseUrl + `orders/${order_group_id}/alter`, data)
   }
 
-  /**
-   * Timeline data
-   */
-
 }

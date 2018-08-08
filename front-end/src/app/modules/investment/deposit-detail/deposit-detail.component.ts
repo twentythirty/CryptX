@@ -193,7 +193,7 @@ export class DepositDetailComponent extends TimelineDetailComponent implements O
   }
 
   public openListRow(row: any): void {
-    //alert('Navigate to a row item page');
+    this.router.navigate([`/deposits/view/${row.id}`]);
   }
 
 

@@ -14,11 +14,11 @@
 
 <ng-container *ngIf="!select">
   <input
+    type = "{{type}}"
     placeholder="{{placeholder}}"
     [(ngModel)]="value"
     [class.error]="isInvalid()"
     (blur)="onBlur()"
-    type = "{{type}}"
   >
 </ng-container>
 

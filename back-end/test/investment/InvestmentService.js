@@ -23,6 +23,7 @@ describe('InvestmentService testing:', () => {
   const investmentService = require('./../../services/InvestmentService');
   const assetService = require('./../../services/AssetService');
   const ordersService = require('./../../services/OrdersService');
+  const depositSerive = require('./../../services/DepositService');
   const InvestmentRun = require('./../../models').InvestmentRun;
   const RecipeRun = require('./../../models').RecipeRun;
   const RecipeRunDetail = require('./../../models').RecipeRunDetail;
@@ -62,6 +63,10 @@ describe('InvestmentService testing:', () => {
       return Promise.resolve(investment_run);
     });
 
+    sinon.stub(InvestmentRun, 'update').callsFake((update, options) => {
+      return Promise.resolve([1]);
+    })
+
     sinon.stub(RecipeRun, 'findOne').callsFake((query) => {
       return Promise.resolve();
     });
@@ -95,17 +100,23 @@ describe('InvestmentService testing:', () => {
     sinon.stub(ordersService, 'generateApproveRecipeOrders').callsFake((id) => {
       return Promise.resolve();
     });
+
+    sinon.stub(depositSerive, 'generateRecipeRunDeposits').callsFake(recipe => {
+      return Promise.resolve([]);
+    });
   });
 
   afterEach(() => {
     InvestmentRun.create.restore();
     InvestmentRun.findOne.restore();
     InvestmentRun.findById.restore();
+    InvestmentRun.update.restore();
     RecipeRun.findOne.restore();
     RecipeRun.create.restore();
     RecipeRun.findById.restore();
     RecipeRunDetail.create.restore();
     ordersService.generateApproveRecipeOrders.restore();
+    depositSerive.generateRecipeRunDeposits.restore();
   });
 
 
@@ -279,6 +290,25 @@ describe('InvestmentService testing:', () => {
           investment_run_id: query.where.investment_run_id,
           user_created_id: USER_ID,
           approval_status: RECIPE_RUN_STATUSES.Pending,
+          approval_comment: ''
+        });
+      });
+
+      return chai.assert.isRejected(investmentService.createRecipeRun(
+        USER_ID, INVESTMENT_RUN_ID
+      ));
+    });
+
+    it('shall throw if investment run already has an approved recipe run', () => {
+      if (RecipeRun.findOne.restore) 
+        RecipeRun.findOne.restore();
+      
+      sinon.stub(RecipeRun, 'findOne').callsFake((query) => {
+        return Promise.resolve({
+          created_timestamp: new Date(),
+          investment_run_id: query.where.investment_run_id,
+          user_created_id: USER_ID,
+          approval_status: RECIPE_RUN_STATUSES.Approved,
           approval_comment: ''
         });
       });
