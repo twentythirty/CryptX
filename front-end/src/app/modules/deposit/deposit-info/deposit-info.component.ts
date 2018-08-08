@@ -12,6 +12,7 @@ import { StatusClass } from "../../../shared/models/common";
 import { DepositStatus } from "../../../shared/models/deposit";
 
 
+
 @Component({
   selector: 'app-deposit-info',
   templateUrl: './deposit-info.component.html',
