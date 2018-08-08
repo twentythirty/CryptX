@@ -299,6 +299,25 @@ describe('InvestmentService testing:', () => {
       ));
     });
 
+    it('shall throw if investment run already has an approved recipe run', () => {
+      if (RecipeRun.findOne.restore) 
+        RecipeRun.findOne.restore();
+      
+      sinon.stub(RecipeRun, 'findOne').callsFake((query) => {
+        return Promise.resolve({
+          created_timestamp: new Date(),
+          investment_run_id: query.where.investment_run_id,
+          user_created_id: USER_ID,
+          approval_status: RECIPE_RUN_STATUSES.Approved,
+          approval_comment: ''
+        });
+      });
+
+      return chai.assert.isRejected(investmentService.createRecipeRun(
+        USER_ID, INVESTMENT_RUN_ID
+      ));
+    });
+
     it('shall call required methods', () => {
       return investmentService.createRecipeRun(USER_ID, INVESTMENT_RUN_ID)
         .then(recipe_run => {

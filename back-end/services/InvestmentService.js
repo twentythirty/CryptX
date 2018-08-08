@@ -88,12 +88,15 @@ const createRecipeRun = async function (user_id, investment_run_id) {
     where: {
       investment_run_id: investment_run_id,
       approval_status: {
-        [Op.eq]: RECIPE_RUN_STATUSES.Pending
+        [Op.in]: [RECIPE_RUN_STATUSES.Pending, RECIPE_RUN_STATUSES.Approved]
       }
     }
   });
 
-  if (recipe_run) TE("There is already recipe run pending approval");
+  if (recipe_run) {
+    if(recipe_run.approval_status === RECIPE_ORDER_STATUSES.Pending) TE("There is already recipe run pending approval");
+    else TE("No more recipe runs can be generated after one was already approved.");
+  } 
 
   [err, investment_run] = await to(this.changeInvestmentRunStatus(
     investment_run_id,
