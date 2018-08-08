@@ -151,6 +151,9 @@ export class InvestmentRunDetailComponent extends TimelineDetailComponent implem
             return new TagLineItem(`${stat.count} ${stat.name}`)
           }))
         }
+        if (res.investment_run.status === 'investment.status.303'){
+            this.addTitle='';
+        }
       },
       err => this.singleDataSource.body = []
     )
