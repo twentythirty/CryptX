@@ -93,11 +93,18 @@ module.exports.JOB_BODY = async (config, log) => {
   ).then(orders_with_data => {
 
     return Promise.all(
-      _.map(orders_with_data, (order_with_data) => {
+      _.map(orders_with_data, async (order_with_data) => {
 
         let [order, investment_run, instrument_exchange_map, exchange_info] = order_with_data;
-        log(investment_run);
-        let exchange = new ccxt[exchange_info.api_id]();
+
+        if (!order || !investment_run || !instrument_exchange_map || !exchange_info) {
+          log(`Execution order data not found`);
+          return orders_with_data;
+        }
+        log(`Processing execution order ID: ${order.id} from investment run ID: ${investment_run.id}`);
+        
+        let exchange = new (ccxtUnified.getExchange(exchange_info.api_id))();
+        let init_done = await exchange.isReady(); // wait for initialization to complete
 
         /* As we have two different ways to acquire an asset (buying and selling),
         and some exchages do not support creating market orders(and user limit orders instead)
@@ -109,11 +116,11 @@ module.exports.JOB_BODY = async (config, log) => {
         switch (order.type) {
           case EXECUTION_ORDER_TYPES.Market:
             order_type = 'market';
-            exchange_supports_order_type = exchange.has.createMarketOrder;
+            exchange_supports_order_type = exchange._connector.has.createMarketOrder;
             break;
           case EXECUTION_ORDER_TYPES.Limit:
             order_type = 'limit';
-            exchange_supports_order_type = exchange.has.createLimitOrder;
+            exchange_supports_order_type = exchange._connector.has.createLimitOrder;
             break;
           case EXECUTION_ORDER_TYPES.Stop:
             order_type = 'stop';
@@ -126,7 +133,7 @@ module.exports.JOB_BODY = async (config, log) => {
 
         if (order_type != "market") {
           log("Only market orders can be created at the moment");
-          return Promise.resolve(order);
+          return order_with_data;
         }
 
         let order_execution_side;
@@ -152,13 +159,12 @@ module.exports.JOB_BODY = async (config, log) => {
         }
 
         if (investment_run.is_simulated || !send_orders)
-          return Promise.resolve(log(`Prevented from sending order: createOrder(${instrument_exchange_map.external_instrument_id}, ${order_type}, ${order_execution_side}, ${order.total_quantity}[, ${order.price}[, params]])`));
+          return log(`Prevented from sending order: createOrder(${instrument_exchange_map.external_instrument_id}, ${order_type}, ${order_execution_side}, ${order.total_quantity}[, ${order.price}[, params]])`);
         else {
-          log(`Executing: createOrder(${instrument_exchange_map.external_instrument_id}, ${order_type}, ${order_execution_side}, ${order.total_quantity}[, ${order.price}[, params]])`);
+          log(`Executing: createMarketOrder(${instrument_exchange_map.external_instrument_id}, ${order_type}, ${order_execution_side}, ${order.total_quantity}[, ${order.price}[, params]])`);
 
-          return exchange.createOrder(instrument_exchange_map.external_instrument_id, order_type, order_execution_side, order.total_quantity, order.price, {
-            test: true
-          }).then(order_response => {
+          return exchange.createMarketOrder(instrument_exchange_map.external_instrument_id, order_execution_side, order)
+          .then(order_response => {
             order.external_identifier = order_response.id;
             order.placed_timestamp = order_response.timestamp;
             /* order statuses (need to assure what kind of data is returned during real order placement)
@@ -177,11 +183,11 @@ module.exports.JOB_BODY = async (config, log) => {
               });
             });
 
-            return Promise.resolve(order_with_data);
+            return order_with_data;
           }).catch((err) => { // order placing failed. Perform actions below.
 
             logAction(actions.error, {
-              error: err.message,
+              error: err,
               relations: { execution_order_id: order.id }
             });
 
@@ -196,7 +202,7 @@ module.exports.JOB_BODY = async (config, log) => {
             }
             order.save();
 
-            return Promise.resolve(order_with_data);
+            return order_with_data;
           });
         }
       }));
