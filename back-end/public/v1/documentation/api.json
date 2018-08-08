@@ -3306,7 +3306,7 @@
           "200": {
             "description": "success",
             "schema": {
-              "$ref": "#/definitions/ReturnUserResponse"
+              "$ref": "#/definitions/LoginUserResponse"
             }
           }
         }

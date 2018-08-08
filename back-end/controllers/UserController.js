@@ -95,9 +95,22 @@ const createByInvite = async function (req, res) {
   if (err) {
     return ReE(res, err, 422);
   }
+  
+  //user established, lets log them in
+  [err, userWithSession] = await to(authService.authUser({
+    username: user.email, 
+    password
+  }, req.ip));
+  if (err) return ReE(res, err, 422);
+  let perms, session;
+  [user, perms, session] = userWithSession;
 
   return ReS(res, {
-    user: user.toWeb()
+    token: session.token,
+    permissions: perms,
+    model_constants: model_constants,
+    validators: VALIDATORS,
+    user: user.toWeb(false)
   });
 };
 module.exports.createByInvite = createByInvite;
