@@ -1,6 +1,7 @@
 "use strict";
 
 const ccxt = require('ccxt');
+const ccxtUnified = require('../utils/ccxtUnified');
 
 //every 5 seconds
 module.exports.SCHEDULE = "*/5 * * * * *";
@@ -11,9 +12,7 @@ module.exports.JOB_BODY = async (config, log) => {
     
     //reference shortcuts
     const models = config.models;
-    const sequelize = config.sequelize;
-    const RecipeOrder = models.RecipeOrder;
-    const RecipeOrderGroup = models.RecipeOrderGroup;
+    const sequelize = config.models.sequelize;
     const ExecutionOrder = models.ExecutionOrder;
     const InvestmentRun = models.InvestmentRun;
     const Instrument = models.Instrument;
@@ -23,8 +22,9 @@ module.exports.JOB_BODY = async (config, log) => {
     /* all_pending_orders - list of all pending execution orders in database.
       Trying to push all orders to exchanges might result in API call rate limitting,
       so instead execution orders from exchanges will be grouped and execution in
-      iterations and we'll use one exchange once every iteration.
+      iterations and we'll use one exchange only once every iteration.
     */
+    log(`Fetch orders with PENDING status`);
     let all_pending_orders = await ExecutionOrder.findAll({
       where: {
         status: MODEL_CONST.EXECUTION_ORDER_STATUSES.Pending
@@ -36,16 +36,18 @@ module.exports.JOB_BODY = async (config, log) => {
 
     /* pending_orders - orders from different exchanges that are going to be sent to exchanges.
     Number of orders shouldn't exceed number of exchanges. */
+    log(`Group orders by exchange and return only first order of exchange`);
     let pending_orders = _.map(
       _.groupBy(all_pending_orders, 'exchange_id'),
       (exchange_orders) => { return exchange_orders[0]; } // return only first order for exchange
     );
     
-    /* Get instrument exchange mapping and exchange info. Going to use external_instrument_id from it. */  
+    /* Get instrument exchange mapping and exchange info. Going to use external_instrument_id from it. */ 
+    log(`Fetching data for placing order`);
     return Promise.all(
       _.map(pending_orders, (pending_order) => {
 
-        return Promise.all([
+        let prm = [
           Promise.resolve(pending_order),
           sequelize.query(`
               SELECT ir.* 
@@ -74,16 +76,24 @@ module.exports.JOB_BODY = async (config, log) => {
               id: pending_order.exchange_id
             }
           })
-        ]);
+        ];
+
+        return Promise.all(prm);
       })
     ).then(orders_with_data => {
 
       return Promise.all(
-        _.map(orders_with_data, (order_with_data) => {
+        _.map(orders_with_data, async (order_with_data) => {
           
           let [order, investment_run, instrument_exchange_map, exchange_info] = order_with_data;
-          log(investment_run);
-          let exchange = new ccxt[exchange_info.api_id]();
+          if (!order || !investment_run || !instrument_exchange_map || !exchange_info) {
+            log(`Execution order data not found`);
+            return orders_with_data;
+          }
+          log(`Processing execution order ID: ${order.id} from investment run ID: ${investment_run.id}`);
+          
+          let exchange = new (ccxtUnified.getExchange(exchange_info.api_id))();
+          let init_done = await exchange.isReady(); // wait for initialization to complete
           
           /* As we have two different ways to acquire an asset (buying and selling),
           and some exchages do not support creating market orders(and user limit orders instead)
@@ -95,11 +105,11 @@ module.exports.JOB_BODY = async (config, log) => {
           switch (order.type) {
             case EXECUTION_ORDER_TYPES.Market:
               order_type = 'market';
-              exchange_supports_order_type = exchange.has.createMarketOrder;
+              exchange_supports_order_type = exchange._connector.has.createMarketOrder;
               break;
             case EXECUTION_ORDER_TYPES.Limit:
               order_type = 'limit';
-              exchange_supports_order_type = exchange.has.createLimitOrder;
+              exchange_supports_order_type = exchange._connector.has.createLimitOrder;
               break;
             case EXECUTION_ORDER_TYPES.Stop:
               order_type = 'stop';
@@ -138,27 +148,18 @@ module.exports.JOB_BODY = async (config, log) => {
           }
 
           if (investment_run.is_simulated || !send_orders)
-            return Promise.resolve(log(`Prevented from sending order: createOrder(${instrument_exchange_map.external_instrument_id}, ${order_type}, ${order_execution_side}, ${order.total_quantity}[, ${order.price}[, params]])`));
+            return log(`Prevented from sending order: createOrder(${instrument_exchange_map.external_instrument_id}, ${order_type}, ${order_execution_side}, ${order.total_quantity}[, ${order.price}[, params]])`);
           else {
             log(`Executing: createOrder(${instrument_exchange_map.external_instrument_id}, ${order_type}, ${order_execution_side}, ${order.total_quantity}[, ${order.price}[, params]])`);
             
-            return exchange.createOrder(instrument_exchange_map.external_instrument_id, order_type, order_execution_side, order.total_quantity, order.price, {
-              test: true
-            }).then(order_response => {
+            return exchange.createMarketOrder(instrument_exchange_map.external_instrument_id, order_execution_side, order).then(order_response => {
               order.external_identifier = order_response.id;
               order.placed_timestamp = order_response.timestamp;
-              /* order statuses (need to assure what kind of data is returned during real order placement)
-                open - order should be executing in exchange
-                closed - could mean order is already executed, might do nothing here as other job should check if its done
-                canceled - order probably wasn't placed for some reason.
-                */
-              if (order_response == "open") {
-                order.status = EXECUTION_ORDER_STATUSES.Placed
-              }
+              order.status = EXECUTION_ORDER_STATUSES.Placed
               
               order.save();
 
-              return Promise.resolve(order_with_data);
+              return order_with_data;
             }).catch((err) => { // order placing failed. Perform actions below.
               order.failed_attempts++; // increment failed attempts counter
               if (order.failed_attempts >= SYSTEM_SETTINGS.EXEC_ORD_FAIL_TOLERANCE) {
@@ -167,9 +168,11 @@ module.exports.JOB_BODY = async (config, log) => {
               }
               order.save();
 
-              return Promise.resolve(order_with_data);
+              return order_with_data;
             });
           }
         }));
-  });
+    }).catch(err => {
+      log(err);
+    });
 };

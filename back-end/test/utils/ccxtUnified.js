@@ -121,7 +121,7 @@ describe('CCXTUnified', () => {
         return Promise.resolve(exchange_response);
       });
 
-      return connector;
+      return Promise.resolve(connector);
     });
 
     
