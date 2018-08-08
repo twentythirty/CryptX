@@ -39,7 +39,6 @@ export class DataTableCommonManagerComponent implements OnInit, OnDestroy {
     this.queryParamsSubscription = this.route.queryParams
     .filter(params => !params.page || params.page != this.prevQueryParams.page )
     .subscribe(params => {
-
       this.routeParamId = params.id
       this.page = params.page || 1;
       this.requestData.offset = (this.page - 1) * this.pageSize;
