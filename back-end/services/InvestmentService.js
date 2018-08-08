@@ -269,26 +269,30 @@ const changeRecipeRunStatus = async function (user_id, recipe_run_id, status_con
     approval_comment: comment
   });
 
-  [err, recipe_run] = await to(recipe_run.save());
-  if (err) TE(err.message);
-
   //approving recipe run that was not approved before, try generate empty deposits and set the investment run status to RecipedApproved
   if (status_constant == RECIPE_RUN_STATUSES.Approved && old_status !== status_constant) {
 
-    [ err ] = await to(InvestmentRun.update({
-      status: INVESTMENT_RUN_STATUSES.RecipeApproved
-    }, {
-      where: { id: recipe_run.investment_run_id },
-      limit: 1
-    }));
+    [ err ] = await to(depositService.generateRecipeRunDeposits(recipe_run));
 
     if(err) TE(err.message);
 
-    depositService.generateRecipeRunDeposits(recipe_run);
+    let result = [];
+    [ err, result ] = await to(Promise.all([
+      recipe_run.save(),
+      InvestmentRun.update({
+        status: INVESTMENT_RUN_STATUSES.RecipeApproved
+      }, {
+        where: { id: recipe_run.investment_run_id },
+        limit: 1
+      })
+    ]));
 
+    if(err) TE(err.message);
+
+    return result[0];
   }
 
-  return recipe_run;
+  else return recipe_run.save();
 };
 module.exports.changeRecipeRunStatus = changeRecipeRunStatus;
 

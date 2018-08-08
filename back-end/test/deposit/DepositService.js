@@ -31,6 +31,8 @@ describe('DepositService testing', () => {
     const RecipeRunDeposit = require('./../../models').RecipeRunDeposit;
     const RecipeRunDetail = require('./../../models').RecipeRunDetail;
     const ExchangeAccount = require('./../../models').ExchangeAccount;
+    const Exchange = require('./../../models').Exchange;
+    const Asset = require('./../../models').Asset;
 
     const ActionLogUtil = require('./../../utils/ActionLogUtil');
 
@@ -162,9 +164,6 @@ describe('DepositService testing', () => {
         };
 
         before(done => {
-            sinon.stub(RecipeRunDetail, 'findAll').callsFake(options => {
-                return Promise.resolve(MOCK_DETAILS);
-            });
             sinon.stub(ExchangeAccount, 'findAll').callsFake(options => {
                 return Promise.resolve(MOCK_EXCHANGE_ACCOUNTS);
             });
@@ -175,9 +174,15 @@ describe('DepositService testing', () => {
         });
 
         after(done => {
-            RecipeRunDetail.findAll.restore();
             ExchangeAccount.findAll.restore();
             RecipeRunDeposit.bulkCreate.restore();
+            done();
+        });
+
+        afterEach(done => {
+            if(RecipeRunDetail.findAll.restore) RecipeRunDetail.findAll.restore();
+            if(Exchange.findAll.restore) Exchange.findAll.restore();
+            if(Asset.findAll.restore) Asset.findAll.restore();
             done();
         });
 
@@ -185,7 +190,39 @@ describe('DepositService testing', () => {
             return chai.expect(DepositService.generateRecipeRunDeposits).to.be.not.undefined;
         });
 
+        it('reject if the are missing exchange accounts', () => {
+            const extra_detail = {
+                quote_asset_id: 2112,
+                target_exchange_id: 12313213
+            };
+
+            sinon.stub(RecipeRunDetail, 'findAll').callsFake(options => {
+                return Promise.resolve([].concat(MOCK_DETAILS, [extra_detail]));
+            });
+
+
+            sinon.stub(Exchange, 'findAll').callsFake(options => {
+                return Promise.resolve([{
+                    id: extra_detail.target_exchange_id,
+                    name: 'Test'
+                }]);
+            });
+
+            sinon.stub(Asset, 'findAll').callsFake(options => {
+                return Promise.resolve([{
+                    id: extra_detail.quote_asset_id,
+                    symbol: 'DOGE'
+                }]);
+            });
+
+            return chai.assert.isRejected(DepositService.generateRecipeRunDeposits(MOCK_RECIPE_RUN));
+        });
+
         it('generate new deposits by matching the details and exchange accounts', () => {
+            sinon.stub(RecipeRunDetail, 'findAll').callsFake(options => {
+                return Promise.resolve(MOCK_DETAILS);
+            });
+
             return DepositService.generateRecipeRunDeposits(MOCK_RECIPE_RUN).then(deposits => {
 
                 chai.expect(deposits.length).to.equal(MOCK_EXCHANGE_ACCOUNTS.length);

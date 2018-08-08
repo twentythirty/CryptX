@@ -4,6 +4,7 @@ const InvestmentRun = require('../models').InvestmentRun;
 const RecipeRunDeposit = require('../models').RecipeRunDeposit;
 const RecipeRunDetail = require('../models').RecipeRunDetail;
 const Asset = require('../models').Asset;
+const Exchange = require('../models').Exchange;
 const ExchangeAccount = require('../models').ExchangeAccount;
 const Sequelize = require('../models').Sequelize;
 
@@ -63,6 +64,7 @@ const generateRecipeRunDeposits = async function (approved_recipe_run) {
   if(err) TE(err.message);
 
   //Find exchange account for each detail and create return a deposit for each one.
+  let missing_acounts = [];
   let deposits = details.map(detail => {
     const account = exchange_accounts.find(ex_account => detail.target_exchange_id === ex_account.exchange_id && detail.quote_asset_id === ex_account.asset_id);
     if(account) return {
@@ -72,7 +74,33 @@ const generateRecipeRunDeposits = async function (approved_recipe_run) {
       target_exchange_account_id: account.id,
       status: MODEL_CONST.RECIPE_RUN_DEPOSIT_STATUSES.Pending
     };
+    else missing_acounts.push({
+      exchange_id: detail.target_exchange_id,
+      quote_asset_id: detail.quote_asset_id
+    });
+    
   }).filter(deposit => deposit);
+
+  //If there are missing accounts, reject. Also attempt to fetch exchanges and assets to be more informative.
+  if(missing_acounts.length) {
+    let [ err, result ] = await to(Promise.all([
+      Exchange.findAll({ where: { id: { [opIn]: missing_acounts.map(m => m.exchange_id) } } }),
+      Asset.findAll({ where: { id: { [opIn]: missing_acounts.map(m => m.quote_asset_id) } } })
+    ]));
+
+    if(err) TE(err.message);
+
+    const [ missing_exchanges, missing_assets ] = result;
+
+    const missing_pairs = missing_acounts.map(ma => {
+      const exchange = missing_exchanges.find(me => me.id == ma.exchange_id);
+      const asset = missing_assets.find(am => am.id === ma.quote_asset_id);
+      return `${exchange.name}/${asset.symbol}`; 
+    });
+
+    TE(`Could not generate deposits, because deposit accounts are missing for Exchange/Asset pairs: ${missing_pairs.join(', ')}`);
+  }
+
   //console.log(deposits)
   [ err, deposits ] = await to(RecipeRunDeposit.bulkCreate(deposits));
   
