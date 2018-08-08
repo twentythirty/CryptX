@@ -59,3 +59,18 @@ const getConnector = async (exchange_data) => {
     return null;
 };
 module.exports.getConnector = getConnector;
+
+/**
+ * Fetch all CCXT connectors currently in the cache, mapped to exchange id in DB
+ * 
+ * async to ensure loaded markets
+ */
+const allConnectors = async () => {
+
+    //await cache init
+    await cache_init_promise;
+
+    //return all connectors
+    return con_by_id
+};
+module.exports.allConnectors = allConnectors;

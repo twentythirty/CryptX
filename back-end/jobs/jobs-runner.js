@@ -97,15 +97,20 @@ if (one_off_list.length > 0) {
     
         console.log(`scheduling ${Object.keys(runnable_jobs).length} jobs...`);
         _.forEach(runnable_jobs, (loaded_job, job_name) => {
-            console.log(`Scheduling ${job_name} for ${loaded_job.SCHEDULE}`);
-            scheduler.scheduleJob(job_name, loaded_job.SCHEDULE, async (date) => {
-                const start = date;
-                const log = logger_maker(job_name);
-                log(`Job start at ${date}`);
-                //run job body with passed config object and job-specific logger
-                const result = await loaded_job.JOB_BODY(config, log, date);
-                log(`Job finish at ${date} (result: ${result}). Job took ${new Date().getTime() - start.getTime()}ms`);
-            });
+            
+            if (loaded_job.SCHEDULE == -1) {
+                console.log(`Job ${job_name} is a designed one-off without schedule, skipping!...`)
+            } else {
+                console.log(`Scheduling ${job_name} for ${loaded_job.SCHEDULE}`);
+                scheduler.scheduleJob(job_name, loaded_job.SCHEDULE, async (date) => {
+                    const start = date;
+                    const log = logger_maker(job_name);
+                    log(`Job start at ${date}`);
+                    //run job body with passed config object and job-specific logger
+                    const result = await loaded_job.JOB_BODY(config, log, date);
+                    log(`Job finish at ${date} (result: ${result}). Job took ${new Date().getTime() - start.getTime()}ms`);
+                });
+            }
         });
     });
 }
