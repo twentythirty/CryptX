@@ -4,7 +4,7 @@ const ccxtUtils = require('../utils/CCXTUtils');
 const { logAction } = require('../utils/ActionLogUtil');
 const { eq, ne, in: opIn } = require('sequelize').Op;
 
-const action_path = 'jobs.fetch_exec_or_fills';
+const action_path = 'execution_orders';
 
 const actions = {
     error: `${action_path}.error`,

@@ -25,23 +25,24 @@ module.exports = {
             get template() { return `${this.params.amount} ${this.params.amount === 1 ? 'Deposit' : 'Deposits'} were generate for Recipe Run RR-${this.params.relations.recipe_run_id}` }
         }
     },
-    jobs: {
-        fetch_exec_or_fills: {
-            error: {
-                get template() { return `Error: ${this.params.error}` }
-            },
-            failed_attempts: {
-                get template() { return `Execution order Failed after ${this.params.attempts === 1 ? `${this.params.attempts} attempt` : `${this.params.attempts} attempts`}` }
-            },
-            failed: {
-                get template() { return `Execution order Failed due to: ${this.params.reason}` }
-            },
-            generate_fill: {
-                get template() { return `Generated a new fill with amount of ${this.params.amount}` }
-            },
-            fully_filled: {
-                get template() { return `Execution order was Fully Filled.` }
-            }
+    execution_orders: {
+        placed: {
+            get template() { return `Order was placed to ${this.params.exchange}` }
+        },
+        error: {
+            get template() { return `Error: ${this.params.error}` }
+        },
+        failed_attempts: {
+            get template() { return `Execution order Failed after ${this.params.attempts === 1 ? `${this.params.attempts} attempt` : `${this.params.attempts} attempts`}` }
+        },
+        failed: {
+            get template() { return `Execution order Failed due to: ${this.params.reason}` }
+        },
+        generate_fill: {
+            get template() { return `Generated a new fill with amount of ${this.params.amount}` }
+        },
+        fully_filled: {
+            get template() { return `Execution order was Fully Filled.` }
         }
     }
 };

@@ -254,7 +254,7 @@ describe("Execution Order Placer job", () => {
       let exchange = Object.assign({}, CCXT_EXCHANGE);
 
       sinon.stub(exchange, 'createOrder').callsFake(() => {
-        return Promise.reject();
+        return Promise.reject({ message: 'error' });
       })
       
       return exchange;
@@ -278,7 +278,7 @@ describe("Execution Order Placer job", () => {
       let exchange = Object.assign({}, CCXT_EXCHANGE);
 
       sinon.stub(exchange, 'createOrder').callsFake(() => {
-        return Promise.reject();
+        return Promise.reject({ message: 'error' });
       })
       
       return exchange;
