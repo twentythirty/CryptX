@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router, Params } from '@angular/router';
 import { mergeMap } from 'rxjs/operators/mergeMap';
+import _ from 'lodash';
 
 import { StatusClass } from '../../../shared/models/common';
 
@@ -157,16 +158,25 @@ export class OrderGroupComponent extends TimelineDetailComponent implements OnIn
           this.singleDataSource.body = [res.recipe_order_group];
         }
       },
-      err => this.singleDataSource.body = []
+      err => {
+        this.singleDataSource.body = [];
+
+        this.getAllData_call = this.getAllDataReal;
+        this.getAllData();
+      },
     );
   }
 
+  // empty on start, after we load first table, we can load this one
+  private getAllData_call = (): void => {};
   public getAllData(): void {
-    this.route.params.pipe(
-      mergeMap(
-        params => this.ordersService.getAllOrdersByGroupId(params['id'], this.requestData)
-      )
-    ).subscribe(
+    this.getAllData_call();
+  }
+
+  public getAllDataReal(): void {
+    let orderGroupId = _.isEmpty(this.singleDataSource.body) ? 0 : this.singleDataSource.body[0]['id'];
+
+    this.ordersService.getAllOrdersByGroupId(orderGroupId, this.requestData).subscribe(
       res => {
         Object.assign(this.listDataSource, {
           body: res.recipe_orders,
@@ -184,7 +194,7 @@ export class OrderGroupComponent extends TimelineDetailComponent implements OnIn
       col => ['id', 'instrument', 'side', 'exchange', 'status'].includes(col.column)
     ).map(
       col => {
-        let filter = {"filter" : {"recipe_order_group_id": this.routeParamId}}
+        let filter = { filter : { recipe_order_group_id: this.routeParamId }};
         col.filter.rowData$ = this.investmentService.getAllOrdersHeaderLOV(col.column, filter);
       }
     );
