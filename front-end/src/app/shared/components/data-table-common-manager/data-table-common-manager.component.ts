@@ -1,5 +1,5 @@
-import { Component, OnInit } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
+import { Component, OnInit, OnDestroy } from '@angular/core';
+import { ActivatedRoute, Router } from '@angular/router';
 import _ from 'lodash';
 
 import { RolesAllRequestData } from '../../models/api/rolesAllRequestData';
@@ -8,15 +8,16 @@ import { RolesAllRequestData } from '../../models/api/rolesAllRequestData';
   selector: 'app-data-table-common-manager',
   template: ''
 })
-export class DataTableCommonManagerComponent implements OnInit {
-  prevQueryParams: { page?: number } = {};
-  orderingCleared: boolean = false;
+export class DataTableCommonManagerComponent implements OnInit, OnDestroy {
+  private prevQueryParams: { page?: number } = {};
+  private orderingCleared: boolean = false;
+  private queryParamsSubscription;
   
-  count: number = 0;
-  pageSize: number = 10;
-  page: number = 1;
+  public count: number = 0;
+  public pageSize: number = 10;
+  public page: number = 1;
 
-  requestData: RolesAllRequestData = {
+  public requestData: RolesAllRequestData = {
     filter: {},
     order: [
       {
@@ -29,26 +30,27 @@ export class DataTableCommonManagerComponent implements OnInit {
   };
 
   constructor(
-    public route: ActivatedRoute
+    public route: ActivatedRoute,
+    //private router: Router,
   ) {}
 
   ngOnInit() {
-    this.route.queryParams
+    this.queryParamsSubscription = this.route.queryParams
     .filter(params => !params.page || params.page != this.prevQueryParams.page )
     .subscribe(params => {
+      this.prevQueryParams = params;
+
       this.page = params.page || 1;
       this.requestData.offset = (this.page - 1) * this.pageSize;
       this.getAllData();
-
-      this.prevQueryParams = params;
     });
   }
 
-  onSetFilter(filterData): void {
-    // just to first page
-    this.page = 1;
-    this.requestData.offset = 0;
+  ngOnDestroy() {
+    this.queryParamsSubscription.unsubscribe();
+  }
 
+  onSetFilter(filterData): void {
     // filter
     if (!this.requestData.filter.and) {
       this.requestData.filter.and = [];
@@ -76,10 +78,24 @@ export class DataTableCommonManagerComponent implements OnInit {
       this.requestData.order.push(filterData.order);
     }
 
+    // just to first page
+    this.page = 1;
+    this.requestData.offset = 0;
+
     // update table data
-    this.getAllData();
+    if(_.isEmpty(this.prevQueryParams) || this.prevQueryParams.page == 1) {
+      this.getAllData();
+    }
+
+    // this.router.navigate([], {
+    //   queryParamsHandling: 'merge',
+    //   queryParams: {
+    //     page: this.page
+    //   },
+    //   skipLocationChange: false
+    // });
   }
 
-  getAllData() {}
+  public getAllData() {}
 
 }

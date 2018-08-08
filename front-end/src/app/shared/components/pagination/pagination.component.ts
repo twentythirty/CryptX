@@ -1,4 +1,4 @@
-import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
+import { Component, Input } from '@angular/core';
 import { Router } from '@angular/router';
 import _ from 'lodash';
 
@@ -7,7 +7,7 @@ import _ from 'lodash';
   templateUrl: './pagination.component.html',
   styleUrls: ['./pagination.component.scss']
 })
-export class PaginationComponent implements OnChanges {
+export class PaginationComponent {
   @Input() count: number; // total records count
   @Input() page: number = 1; // initial page number
   @Input() perPage: number = 20; // how much records show per single page
@@ -16,10 +16,6 @@ export class PaginationComponent implements OnChanges {
   constructor(
     private router: Router
   ) { }
-
-  ngOnChanges(changes: SimpleChanges) {
-    changes.page && this.onPageChange();
-  }
 
   onFirst(): void {
     this.page = 1;
@@ -52,7 +48,7 @@ export class PaginationComponent implements OnChanges {
       queryParams: {
         page: this.page
       },
-      replaceUrl: true
+      skipLocationChange: false
     });
   }
 

@@ -156,6 +156,21 @@ export class OrderGroupComponent extends TimelineDetailComponent implements OnIn
   /**
    * 4. Implement abstract methods to fetch data OnInit
    */
+  protected getSingleData(): void {
+    this.route.params.pipe(
+      mergeMap(
+        params => this.ordersService.getOrderGroup(params['id'])
+      )
+    ).subscribe(
+      res => {
+        if(res.recipe_order_group) {
+          this.singleDataSource.body = [res.recipe_order_group];
+        }
+      },
+      err => this.singleDataSource.body = []
+    );
+  }
+
   public getAllData(): void {
     this.route.params.pipe(
       mergeMap(
@@ -180,37 +195,16 @@ export class OrderGroupComponent extends TimelineDetailComponent implements OnIn
     ).map(
       col => {
         let requestDataClone = Object.assign({}, this.requestData);
-        requestDataClone.filter = {"recipe_order_group_id": this.paramID}
+        requestDataClone.filter = { recipe_order_group_id: this.paramID }
         col.filter.rowData$ = this.investmentService.getAllOrdersHeaderLOV(col.column, requestDataClone);
       }
-    );
-  }
-
-  protected getSingleData(): void {
-    this.route.params.pipe(
-      mergeMap(
-        params => this.ordersService.getOrderGroupOfRecipe(params['id'])
-      )
-    ).subscribe(
-      res => {
-        if(res.recipe_order_group) {
-          this.singleDataSource.body = [res.recipe_order_group];
-        }
-
-        if(res.recipe_stats) {
-          this.setTagLine(res.recipe_stats.map(stat => {
-            return new TagLineItem(`${stat.count} ${stat.name}`)
-          }))
-        }
-      },
-      err => this.singleDataSource.body = []
     );
   }
 
   protected getTimelineData(): void {
     this.timeline$ = this.route.params.pipe(
       mergeMap(
-        params => this.investmentService.getAllTimelineData({ recipe_run_id: params['id'] })
+        params => this.investmentService.getAllTimelineData({ recipe_order_group_id: params['id'] })
       )
     );
   }

@@ -5,25 +5,26 @@ import { StatusClass } from '../../../shared/models/common';
 import { AuthService } from '../../../services/auth/auth.service';
 
 export class TimelineEvent {
-  /**
-   * Timeline Event display structure
-   *
-   * @param id
-   * @param status - Event card subtitle
-   * @param strategy_type - Event card description line #1
-   * @param timestamp - Event card description line #2
-   * @param count
-   */
   public note?: string;
 
   constructor(
-    public id?: string,
-    public title?: string,
-    public status?: string,
-    public strategy_type?: string,
-    public timestamp?: string,
+    public id?: number,
     public count?: number,
-    public isCurrent?: boolean
+    public status?: string,
+    public started_timestamp?: string,
+    public completed_timestamp?: string,
+    public updated_timestamp?: string,
+    public created_timestamp?: string,
+    public deposit_usd?: string,
+    public is_simulated?: boolean,
+    public strategy_type?: string,
+    public user_created_id?: number,
+    public order_group_id?: number,
+    public approval_comment?: string,
+    public approval_status?: string,
+    public approval_timestamp?: string,
+    public approval_user_id?: number,
+    public investment_run_id?: number,
   ) {}
 }
 
@@ -78,7 +79,7 @@ export class TimelineComponent implements OnInit {
         case 'recipe_deposits':  this.router.navigate([`/run/deposit/${this.timelineEvents.recipe_run.id}`]); break;
         case 'recipe_orders':    
           if(this.authService.hasPermissions(['VIEW_ORDERS'])) {
-            this.router.navigate([`/run/order-group/${this.timelineEvents.recipe_run.id}`]);
+            this.router.navigate([`/run/order-group/${event.order_group_id}`]);
           } else {
             this.router.navigate([`/run/order/${this.timelineEvents.recipe_run.id}`]);
           }
