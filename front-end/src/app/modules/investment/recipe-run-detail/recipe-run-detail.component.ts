@@ -17,6 +17,7 @@ import {
 } from '../../../shared/components/data-table-cells';
 
 import { InvestmentService } from '../../../services/investment/investment.service';
+import _ from 'lodash';
 
 /**
  * 0. Set HTML and SCSS files in component decorator
@@ -34,6 +35,7 @@ export class RecipeRunDetailComponent extends TimelineDetailComponent implements
   public pageTitle: string = 'Recipe run';
   public singleTitle: string = 'Recipe runs';
   public listTitle: string = 'Recipe run details';
+  public recipeStatus;
 
   /**
    * 2. Implement abstract attributes to preset data structure
@@ -49,7 +51,7 @@ export class RecipeRunDetailComponent extends TimelineDetailComponent implements
       { column: 'approval_user', nameKey: 'table.header.decision_by' },
       { column: 'approval_timestamp', nameKey: 'table.header.decision_time' },
       { column: 'approval_comment', nameKey: 'table.header.rationale' },
-      { column: 'actions', nameKey: 'table.header.actions' }
+      //{ column: 'actions', nameKey: 'table.header.actions' }
     ],
     body: null
   };
@@ -78,11 +80,11 @@ export class RecipeRunDetailComponent extends TimelineDetailComponent implements
         })
       ]
     }}),
-    new ConfirmCellDataColumn({ column: 'actions', inputs: {
+   /* new ConfirmCellDataColumn({ column: 'actions', inputs: {
       show: (row) => true,
       execConfirm: (row) => this.showRationaleModal(row, data => data && this.confirmRun(data)),
       execDecline: (row) => this.showRationaleModal(row, data => data && this.declineRun(data)),
-    } }),  // TODO: Actions component
+    } }),  // TODO: Actions component */
   ];
 
   public listDataSource: TableDataSource = {
@@ -159,6 +161,8 @@ export class RecipeRunDetailComponent extends TimelineDetailComponent implements
       res => {
         if(res.recipe_run) {
           this.singleDataSource.body = [ res.recipe_run ];
+          this.recipeStatus = [res.recipe_run];
+          this.appendActionColumn();
         }
         if(res.recipe_stats) {
           this.setTagLine(res.recipe_stats.map(stat => {
@@ -168,6 +172,26 @@ export class RecipeRunDetailComponent extends TimelineDetailComponent implements
       },
       // err => this.singleDataSource.body = []
     )
+  }
+
+  appendActionColumn() {
+    if (!_.find(this.singleDataSource.header, col => col.column == 'actions')){
+      if (this.recipeStatus[0].approval_status === 'recipes.status.41') {
+        this.singleDataSource.header.push({ column: 'actions', nameKey: 'table.header.action' })
+        this.singleColumnsToShow.push(
+          new ConfirmCellDataColumn({ column: 'actions', inputs: {
+            show: (row) => true,
+            execConfirm: (row) => this.showRationaleModal(row, data => data && this.confirmRun(data)),
+            execDecline: (row) => this.showRationaleModal(row, data => data && this.declineRun(data)),
+          } })
+        );
+      }
+    }
+  }
+
+  removeActionColumn(){
+     this.singleDataSource.header.splice(-1,1);
+     this.singleColumnsToShow.splice(-1,1);
   }
 
   protected getTimelineData(): void {
@@ -207,6 +231,11 @@ export class RecipeRunDetailComponent extends TimelineDetailComponent implements
     let run = data;
     this.investmentService.approveRecipe(run.id, { status: 43, comment: rationale }).subscribe(
       res => {
+        if (res.success){
+          this.getSingleData();
+          this.getTimelineData();
+          this.removeActionColumn();
+        }
         // TODO
       }
     )
@@ -216,7 +245,11 @@ export class RecipeRunDetailComponent extends TimelineDetailComponent implements
     let run = data;
     this.investmentService.approveRecipe(run.id, { status: 42, comment: rationale }).subscribe(
       res => {
-        // TODO
+        if (res.success){
+          this.getSingleData();
+          this.getTimelineData();
+          this.removeActionColumn();
+        }
       }
     )
   }
