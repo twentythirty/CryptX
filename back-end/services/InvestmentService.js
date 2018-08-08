@@ -469,6 +469,7 @@ const getInvestmentRunTimeline = async function (investment_run_id) {
 
   let prepared_recipe_orders = {
     count: recipe_orders.length,
+    order_group_id: recipe_orders[0].recipe_order_group_id,
     status: `order.status.${order_status}`
   };
 
