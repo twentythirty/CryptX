@@ -1,6 +1,7 @@
 "use strict";
 
 const ccxt = require('ccxt');
+const ccxtUnified = require('../utils/ccxtUnified');
 const { logAction } = require('../utils/ActionLogUtil');
 
 const action_path = 'execution_orders';
@@ -24,7 +25,7 @@ module.exports.JOB_BODY = async (config, log) => {
 
   //reference shortcuts
   const models = config.models;
-  const sequelize = config.sequelize;
+  const sequelize = models.sequelize;
   const RecipeOrder = models.RecipeOrder;
   const RecipeOrderGroup = models.RecipeOrderGroup;
   const ExecutionOrder = models.ExecutionOrder;

@@ -4,7 +4,9 @@ class Bithumb {
 
   constructor () {
     this.api_id = "bithumb"; 
-    this.ready = this._connector = ccxtUtils.getConnector(this.api_id);
+    this.ready = ccxtUtils.getConnector(this.api_id).then(con => {
+      this._connector = con;
+    });
   }
 
   isReady () {
