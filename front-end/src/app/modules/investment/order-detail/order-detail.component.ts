@@ -112,8 +112,6 @@ export class OrderDetailComponent extends TimelineDetailComponent implements OnI
     }}}),
   ];
 
-  public paramID: number;
-
   /**
    * 3. Call super() with ActivatedRoute
    * @param route - ActivatedRoute, used in DataTableCommonManagerComponent
@@ -124,14 +122,6 @@ export class OrderDetailComponent extends TimelineDetailComponent implements OnI
     private investmentService: InvestmentService,
   ) {
     super(route);
-
-    this.route.params.filter(
-      (params: Params) => params.id
-    ).subscribe(
-      (params: Params) => {
-        this.paramID = params.id;
-      }
-    ) 
 
     this.getFilterLOV();
   }
@@ -170,9 +160,8 @@ export class OrderDetailComponent extends TimelineDetailComponent implements OnI
       col => ['id', 'instrument', 'side', 'exchange', 'status'].includes(col.column)
     ).map(
       col => {
-        let requestDataClone = Object.assign({}, this.requestData);
-        requestDataClone.filter = {"recipe_run_id": this.paramID}
-        col.filter.rowData$ = this.investmentService.getAllOrdersHeaderLOV(col.column, requestDataClone);
+        let filter = {"filter" : {"recipe_run_id": this.routeParamId}}
+        col.filter.rowData$ = this.investmentService.getAllOrdersHeaderLOV(col.column, filter);
       }
     );
   }
@@ -187,6 +176,7 @@ export class OrderDetailComponent extends TimelineDetailComponent implements OnI
         if(res.recipe_run) {
           this.singleDataSource.body = [res.recipe_run];
         }
+
 
         if(res.recipe_stats) {
           this.setTagLine(res.recipe_stats.map(stat => {

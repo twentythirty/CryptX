@@ -73,8 +73,6 @@ export class ExecutionOrdersComponent extends TimelineDetailComponent implements
     new DateCellDataColumn({ column: 'completion_time' })
   ];
 
-  public paramID: number;
-
   /**
    * 3. Call super() with ActivatedRoute
    * @param route - ActivatedRoute, used in DataTableCommonManagerComponent
@@ -86,14 +84,6 @@ export class ExecutionOrdersComponent extends TimelineDetailComponent implements
     private investmentService: InvestmentService,
   ) { 
     super(route);
-
-    this.route.params.filter(
-      (params: Params) => params.id
-    ).subscribe(
-      (params: Params) => {
-        this.paramID = params.id;
-      }
-    ) 
 
     this.getFilterLOV();
   }
@@ -122,9 +112,8 @@ export class ExecutionOrdersComponent extends TimelineDetailComponent implements
       col => ['id', 'instrument', 'side', 'exchange', 'type', 'status'].includes(col.column)
     ).map(
       col => {
-        let requestDataClone = Object.assign({}, this.requestData);
-        requestDataClone.filter = {"investment_run_id": this.paramID}
-        col.filter.rowData$ = this.investmentService.getAllExecutionOrdersHeaderLOV(col.column, requestDataClone);
+        let filter = {"filter" : {"investment_run_id": this.routeParamId}}
+        col.filter.rowData$ = this.investmentService.getAllExecutionOrdersHeaderLOV(col.column, filter);
       }
     );
   }

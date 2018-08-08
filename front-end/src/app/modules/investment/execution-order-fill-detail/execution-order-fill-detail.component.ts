@@ -84,8 +84,6 @@ export class ExecutionOrderFillDetailComponent extends TimelineDetailComponent i
     new DateCellDataColumn({ column: 'completion_time' })
   ];
 
-  public paramID: number;
-
   public listColumnsToShow: Array<TableDataColumn> = [
     new TableDataColumn({ column: 'id' }),
     new DateCellDataColumn({ column: 'fill_time' }),
@@ -103,14 +101,6 @@ export class ExecutionOrderFillDetailComponent extends TimelineDetailComponent i
     private investmentService: InvestmentService
   ) {
     super(route);
-
-    this.route.params.filter(
-      (params: Params) => params.id
-    ).subscribe(
-      (params: Params) => {
-        this.paramID = params.id;
-      }
-    ) 
 
     this.getFilterLOV();
   }
@@ -139,9 +129,8 @@ export class ExecutionOrderFillDetailComponent extends TimelineDetailComponent i
       col => ['id'].includes(col.column)
     ).map(
       col => {
-        let requestDataClone = Object.assign({}, this.requestData);
-        requestDataClone.filter = {"execution_order_id": this.paramID}
-        col.filter.rowData$ = this.investmentService.getAllExecutionOrdersFillsHeaderLOV(col.column, requestDataClone);
+        let filter = {"filter" : {"execution_order_id": this.routeParamId}}
+        col.filter.rowData$ = this.investmentService.getAllExecutionOrdersFillsHeaderLOV(col.column, filter);
       }
     );
   }

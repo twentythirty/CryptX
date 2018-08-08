@@ -104,8 +104,6 @@ export class ExecutionOrderDetailComponent extends TimelineDetailComponent imple
     new DateCellDataColumn({ column: 'completion_time' })
   ];
 
-  public paramID: number;
-
   /**
    * 3. Call super() with ActivatedRoute
    * @param route - ActivatedRoute, used in DataTableCommonManagerComponent
@@ -116,14 +114,6 @@ export class ExecutionOrderDetailComponent extends TimelineDetailComponent imple
     private investmentService: InvestmentService
   ) {
     super(route);
-
-      this.route.params.filter(
-      (params: Params) => params.id
-    ).subscribe(
-      (params: Params) => {
-        this.paramID = params.id;
-      }
-    ) 
 
     this.getFilterLOV();
   }
@@ -145,9 +135,8 @@ export class ExecutionOrderDetailComponent extends TimelineDetailComponent imple
       col => ['id', 'instrument', 'side', 'exchange', 'type', 'status'].includes(col.column)
     ).map(
       col => {
-        let requestDataClone = Object.assign({}, this.requestData);
-        requestDataClone.filter = {"recipe_order_id": this.paramID}
-        col.filter.rowData$ = this.investmentService.getAllExecutionOrdersHeaderLOV(col.column, requestDataClone);
+        let filter = {"filter" : {"recipe_order_id": this.routeParamId}}
+        col.filter.rowData$ = this.investmentService.getAllExecutionOrdersHeaderLOV(col.column, filter);
       }
     );
   }

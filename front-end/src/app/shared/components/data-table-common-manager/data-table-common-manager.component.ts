@@ -1,5 +1,5 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, Router, Params } from '@angular/router';
 import _ from 'lodash';
 
 import { RolesAllRequestData } from '../../models/api/rolesAllRequestData';
@@ -13,6 +13,7 @@ export class DataTableCommonManagerComponent implements OnInit, OnDestroy {
   private orderingCleared: boolean = false;
   private queryParamsSubscription;
   
+  public routeParamId: number;
   public count: number = 0;
   public pageSize: number = 10;
   public page: number = 1;
@@ -38,11 +39,21 @@ export class DataTableCommonManagerComponent implements OnInit, OnDestroy {
     this.queryParamsSubscription = this.route.queryParams
     .filter(params => !params.page || params.page != this.prevQueryParams.page )
     .subscribe(params => {
-      this.prevQueryParams = params;
 
+      this.routeParamId = params.id
       this.page = params.page || 1;
       this.requestData.offset = (this.page - 1) * this.pageSize;
       this.getAllData();
+
+      this.prevQueryParams = params;
+
+    this.route.params.filter(
+      (params: Params) => params.id
+    ).subscribe(
+      (params: Params) => {
+        this.routeParamId= params.id;
+      }
+    ) 
     });
   }
 

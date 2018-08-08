@@ -120,8 +120,6 @@ export class OrderGroupComponent extends TimelineDetailComponent implements OnIn
     }}}),
   ];
 
-  public paramID: number;
-
   /**
    * 3. Call super() with ActivatedRoute
    * @param route - ActivatedRoute, used in DataTableCommonManagerComponent
@@ -133,14 +131,6 @@ export class OrderGroupComponent extends TimelineDetailComponent implements OnIn
     private ordersService: OrdersService,
   ) {
     super(route);
-
-    this.route.params.filter(
-      (params: Params) => params.id
-    ).subscribe(
-      (params: Params) => {
-        this.paramID = params.id;
-      }
-    ) 
 
     this.getFilterLOV();
   }
@@ -194,9 +184,8 @@ export class OrderGroupComponent extends TimelineDetailComponent implements OnIn
       col => ['id', 'instrument', 'side', 'exchange', 'status'].includes(col.column)
     ).map(
       col => {
-        let requestDataClone = Object.assign({}, this.requestData);
-        requestDataClone.filter = { recipe_order_group_id: this.paramID }
-        col.filter.rowData$ = this.investmentService.getAllOrdersHeaderLOV(col.column, requestDataClone);
+        let filter = {"filter" : {"recipe_order_group_id": this.routeParamId}}
+        col.filter.rowData$ = this.investmentService.getAllOrdersHeaderLOV(col.column, filter);
       }
     );
   }

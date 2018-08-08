@@ -101,8 +101,6 @@ export class DepositDetailComponent extends TimelineDetailComponent implements O
     }}}),
   ];
 
-  public paramID: number;
-
   /**
    * 3. Call super() with ActivatedRoute
    * @param route - ActivatedRoute, used in DataTableCommonManagerComponent
@@ -113,14 +111,6 @@ export class DepositDetailComponent extends TimelineDetailComponent implements O
     private investmentService: InvestmentService,
   ) {
     super(route);
-
-    this.route.params.filter(
-      (params: Params) => params.id
-    ).subscribe(
-      (params: Params) => {
-        this.paramID = params.id;
-      }
-    ) 
 
     this.getFilterLOV();
   }
@@ -177,9 +167,8 @@ export class DepositDetailComponent extends TimelineDetailComponent implements O
       col => ['id',  'quote_asset', 'exchange', 'account', 'status'].includes(col.column)
     ).map(
       col => {
-        let requestDataClone = Object.assign({}, this.requestData);
-        requestDataClone.filter = {"investment_run_id": this.paramID}
-        col.filter.rowData$ = this.investmentService.getAllDepositDetailsHeaderLOV(col.column, requestDataClone);
+        let filter = {"filter" : {"investment_run_id": this.routeParamId}}
+        col.filter.rowData$ = this.investmentService.getAllDepositDetailsHeaderLOV(col.column, filter);
       }
     );
   }

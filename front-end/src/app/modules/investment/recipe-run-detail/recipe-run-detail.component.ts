@@ -104,8 +104,6 @@ export class RecipeRunDetailComponent extends TimelineDetailComponent implements
     new PercentCellDataColumn({ column: 'investment_percentage' })
   ];
 
-    public paramID: number;
-
   /**
    * 3. Call super() with ActivatedRoute
    * @param route - ActivatedRoute, used in DataTableCommonManagerComponent
@@ -116,14 +114,6 @@ export class RecipeRunDetailComponent extends TimelineDetailComponent implements
     private investmentService: InvestmentService,
   ) {
     super(route);
-
-    this.route.params.filter(
-      (params: Params) => params.id
-    ).subscribe(
-      (params: Params) => {
-        this.paramID = params.id;
-      }
-    ) 
 
     this.getFilterLOV();
   }
@@ -154,9 +144,8 @@ export class RecipeRunDetailComponent extends TimelineDetailComponent implements
       col => ['id', 'transaction_asset', 'quote_asset','target_exchange'].includes(col.column)
     ).map(
       col => {
-        let requestDataClone = Object.assign({}, this.requestData);
-        requestDataClone.filter = {"recipe_run_id": this.paramID}
-        col.filter.rowData$ = this.investmentService.getAllRecipeDetailsHeaderLOV(col.column, requestDataClone);
+        let filter = {"filter" : {"recipe_run_id": this.routeParamId}}
+        col.filter.rowData$ = this.investmentService.getAllRecipeDetailsHeaderLOV(col.column, filter);
       }
     );
   }

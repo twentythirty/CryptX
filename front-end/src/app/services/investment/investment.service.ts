@@ -30,7 +30,7 @@ export class InvestmentService {
     return this.http.post<any>(this.baseUrl + `investments/all`, requestData);
   }
 
-  getAllInvestmentsHeaderLOV(column_name: string, requestData?: EntitiesFilter): Observable<any> {
+  getAllInvestmentsHeaderLOV(column_name: string, requestData?: object): Observable<any> {
     return this.http.post<any>(this.baseUrl + `investments/header_lov/${column_name}`, requestData).pipe(
       map(
         res => {
@@ -65,7 +65,7 @@ export class InvestmentService {
     return this.http.post<any>(this.baseUrl + `execution_orders/of_order/${order_detail_id}`, requestData);
   }
 
-  getAllExecutionOrdersHeaderLOV(column_name: string, requestData?: EntitiesFilter): Observable<any> {
+  getAllExecutionOrdersHeaderLOV(column_name: string, requestData?: object): Observable<any> {
     return this.http.post<any>(this.baseUrl + `execution_orders/header_lov/${column_name}`, requestData).pipe(
       map(
         res => {
@@ -89,7 +89,7 @@ export class InvestmentService {
     return this.http.post<any>(this.baseUrl + `execution_orders/of_investment_run/${investment_run_id}`, requestData);
   }
 
-  getAllExecutionOrdersFillsHeaderLOV(column_name: string, requestData?: EntitiesFilter): Observable<any> {
+  getAllExecutionOrdersFillsHeaderLOV(column_name: string, requestData?: object): Observable<any> {
     return this.http.post<any>(this.baseUrl + `exec_orders_fills/header_lov/${column_name}`, requestData).pipe(
       map(
         res => {
@@ -104,7 +104,7 @@ export class InvestmentService {
     );
   }
 
-  getAllRecipeDetailsHeaderLOV(column_name: string, requestData?: EntitiesFilter): Observable<any> {
+  getAllRecipeDetailsHeaderLOV(column_name: string, requestData?: object): Observable<any> {
     return this.http.post<any>(this.baseUrl + `recipe_details/header_lov/${column_name}`, requestData).pipe(
       map(
         res => {
@@ -119,7 +119,7 @@ export class InvestmentService {
     );
   }
 
-  getAllDepositDetailsHeaderLOV(column_name: string, requestData?: EntitiesFilter): Observable<any> {
+  getAllDepositDetailsHeaderLOV(column_name: string, requestData?: object): Observable<any> {
     return this.http.post<any>(this.baseUrl + `/deposits/header_lov/${column_name}`, requestData).pipe(
       map(
         res => {
@@ -134,7 +134,7 @@ export class InvestmentService {
     );
   }
 
-  getAllOrdersHeaderLOV(column_name: string, requestData?: EntitiesFilter): Observable<any> {
+  getAllOrdersHeaderLOV(column_name: string, requestData?: object): Observable<any> {
     return this.http.post<any>(this.baseUrl + `/orders/header_lov/${column_name}`, requestData).pipe(
       map(
         res => {
