@@ -131,6 +131,15 @@ export class InvestmentRunDetailComponent extends TimelineDetailComponent implem
       res => {
         this.listDataSource.body = res.recipe_runs;
         this.count = res.count;
+        let statusPending = res.recipe_runs.filter(run =>{
+          return run.approval_status === 'recipes.status.41';
+        });
+        let statusApproved = res.recipe_runs.filter(run =>{
+          return run.approval_status === 'recipes.status.43';
+        });
+        if (statusPending.length || statusApproved.length){
+          this.addTitle = '';
+        }
       },
       err => this.listDataSource.body = []
     )
