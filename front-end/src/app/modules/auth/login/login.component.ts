@@ -2,9 +2,8 @@ declare function require(path: string);
 
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
-import { FormsModule, FormGroup, FormControl, Validators } from '@angular/forms';
-import { CommonModule } from '@angular/common';
-import { BrowserModule } from '@angular/platform-browser';
+import { FormGroup, FormControl, Validators } from '@angular/forms';
+import 'rxjs/add/operator/finally';
 
 import { AuthService } from '../../../services/auth/auth.service';
 
@@ -38,41 +37,44 @@ export class LoginComponent implements OnInit {
     Lastname: new FormControl('', [Validators.required]),
   });
 
-  loginForm2: FormGroup = new FormGroup({
+  resetForm: FormGroup = new FormGroup({
     Email: new FormControl('', [Validators.email]),
   });
 
-  constructor(private authService: AuthService, private router: Router) { }
+  constructor(
+    private authService: AuthService,
+    private router: Router,
+  ) { }
 
   ngOnInit() { }
 
   authenticate() {
-    if(this.loginForm.valid){
-    this.authService.authenticate(this.username, this.password).subscribe(
-      (data) => {
-        this.redirectToPage();
-        this.touched = true;
-      }, error => {
-        this.touched = true;
-        if (error.error) {
-          this.status = error.error.error;
-        }
-        console.log("Error happened", error);
-      });
-    if (this.loginForm.status === "INVALID") {
+    if(this.loginForm.valid) {
       this.loading = true;
+
+      this.authService.authenticate(this.username, this.password)
+      .finally(() => this.loading = false)
+      .subscribe(
+        data => {
+          this.redirectToDashboard();
+          this.touched = true;
+        },
+        error => {
+          this.touched = true;
+          if (error.error) {
+            this.status = error.error.error;
+          }
+          console.log("Error happened", error);
+      });
     } else {
-      this.redirectToPage();
-      this.loading = false;
-    }
-    }else {
       this.markAsTouched(this.loginForm);
     }
   }
 
   markAsTouched(group) {
-    Object.keys(group.controls).map((field) => {
+    Object.keys(group.controls).map(field => {
       const control = group.get(field);
+
       if (control instanceof FormControl) {
         control.markAsTouched({ onlySelf: true });
       } else if (control instanceof FormGroup) {
@@ -81,41 +83,38 @@ export class LoginComponent implements OnInit {
     });
   }
 
-  redirectToPage() {
+  redirectToDashboard() {
     this.router.navigate(['dashboard']);
   }
 
   showPassReset() {
-    console.log("SshowPasswordReset = true")
     this.showPasswordReset = true;
   }
 
   hidePassReset() {
-    console.log("SshowPasswordReset = false")
-
     this.showPasswordReset = false;
     this.password_reset_sent = false;
     this.reset_email = '';
-    this.loginForm2.reset();
-    console.log(this.showPasswordReset);
+    this.resetForm.reset();
   }
 
   requestPasswordReset() {
-    if(this.loginForm2.valid){
-    this.password_reset_sent = true;
-    this.authService.requestPasswordReset(this.reset_email).subscribe(response => {
-    }, error => {
-      if (error.error) {
-        this.password_reset_status = error.error.error;
-      }
-    });
-    if (this.loginForm2.status === "INVALID") {
+    if(this.resetForm.valid) {
+      this.password_reset_sent = true;
       this.loading2 = true;
+
+      this.authService.requestPasswordReset(this.reset_email)
+      .finally(() => this.loading2 = false )
+      .subscribe(
+        res => {},
+        error => {
+          if (error.error) {
+            this.password_reset_status = error.error.error;
+          }
+        }
+      );
     } else {
-      this.loading2 = false;
-    }
-    }else {
-      this.markAsTouched(this.loginForm2);
+      this.markAsTouched(this.resetForm);
     }
   }
 }
