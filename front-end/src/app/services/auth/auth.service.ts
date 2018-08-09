@@ -140,7 +140,7 @@ export class AuthService {
 
   /** Gets permissions and saves them
    */
-  refreshPermissions () {
+  refreshPermissions() {
     return this.http.get<any>(this.baseUrl + 'users/me/permissions').pipe(
       tap((response) => {
         this.setPermissions(response.permissions);
@@ -152,23 +152,23 @@ export class AuthService {
     );
   }
 
-  requestPasswordReset(email: string) {
+  requestPasswordReset(email: string): Observable<any> {
     return this.http.post<any>(this.baseUrl + 'send_reset_token', {
       email
     });
   }
 
-  checkResetTokenValidity (reset_token: string) {
+  checkResetTokenValidity(reset_token: string) {
     return this.http.get<any>(this.baseUrl + 'password_reset/' + reset_token);
   }
 
-  resetPassword (reset_token: string, new_password: string) {
+  resetPassword(reset_token: string, new_password: string) {
     return this.http.post<any>(this.baseUrl + 'password_reset/' + reset_token, {
       new_password
     });
   }
 
-  changeInfo (new_info: Object) {
+  changeInfo(new_info: Object) {
     return this.http.post<any>(this.baseUrl + 'users/me/change_password', new_info).pipe(
       tap(response => {
         this.user = response.user;
