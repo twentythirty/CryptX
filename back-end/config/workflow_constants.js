@@ -48,7 +48,10 @@ EXCHANGE_KEYS = {
     },
     bitfinex: {
         apiKey: process.env.BITFINEX_APIKEY,
-        secret: process.env.BITFINEX_SECRETKEY
+        secret: process.env.BITFINEX_SECRETKEY,
+        nonce: function () { // for some reason it doesn't work witout this
+            return this.microseconds();
+        }
     },
     bitstamp: {
         apiKey: process.env.BITSTAMP_APIKEY,
