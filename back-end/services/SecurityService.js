@@ -22,18 +22,14 @@ module.exports.createRole = createRole;
 
 const editRole = async function (role_id, updated_role) {
 
-	/**
-	 * There are 3 situations that need to be check:
-	 * 1. updated_role is not provided at all or is null.
-	 * 2. updated_role has name and permissions but they are null/empty.
-	 * 3. updated_role provided permissions, but it is a anempty array
-	 */
 	if(
 		!updated_role || 
-		(_.isEmpty(updated_role.name) && _.isEmpty(updated_role.permissions)) || 
-		(_.isArray(updated_role.permissions) && _.isEmpty(updated_role.permissions))
+		!_.isString(updated_role.name) || 
+		/^\s*$/.test(updated_role.name) ||
+		!_.isArray(updated_role.permissions) || 
+		_.isEmpty(updated_role.permissions) 
 	) {
-		TE('At least the name or an array with at least one permission must be provided.');
+		TE('The name and permissions must not be empty values');
 	}
 
 	let err, role = await Role.findById(role_id, {
@@ -42,7 +38,7 @@ const editRole = async function (role_id, updated_role) {
 	if (!role) TE('Role with id %s not found!', role_id);
 
 	// update name if set
-	role.name = updated_role.name != null ? updated_role.name : role.name;
+	role.name = updated_role.name != null ? updated_role.name.trim() : role.name;
 
 	[err, role] = await to(role.save());
 	if (err) TE(err.message);

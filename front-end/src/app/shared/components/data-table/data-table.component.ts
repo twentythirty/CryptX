@@ -8,6 +8,7 @@ export interface TableDataSource {
   header: Array<{
     column: string
     nameKey: string
+    column_class?: string
     filter?: {
       type: 'text' | 'boolean' | 'date' | 'number'
       sortable?: boolean
@@ -153,6 +154,12 @@ export class DataTableComponent implements OnInit {
 
   public getRowTexColor(row: any): string {
     return this.rowTexColor(row) || null;
+  }
+
+  public getColumnClass(column: any): string {
+    const header = this.dataSource.header.find(h => h.column === column );
+    if(header) return header.column_class || '';
+    else return '';
   }
 
 }

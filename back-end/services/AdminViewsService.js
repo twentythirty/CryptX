@@ -44,7 +44,10 @@ const TABLE_LOV_FIELDS = {
         'status'
     ],
     'av_recipe_runs': [
-        'approval_status'
+        'id', 
+        'user_created', 
+        'approval_status', 
+        'approval_user'
     ],
     'av_recipe_run_details': [
         'transaction_asset',

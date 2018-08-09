@@ -37,7 +37,7 @@
       [style.background-color]="getRowBackgroundColor(item) || 'white'"
       [style.color]="getRowTexColor(item)"
       (click)="onOpenRow(item)">
-        <td *ngFor="let index of columnsToShow">
+        <td *ngFor="let index of columnsToShow" class="{{ getColumnClass(index.column) }}">
           <ng-container *ngIf="columnIsBasic(index); else dynamicColumn">
             <span>{{ item[index?.column || index] || '-' }}</span>
           </ng-container>
