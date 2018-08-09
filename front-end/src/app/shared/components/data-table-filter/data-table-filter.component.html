@@ -1,12 +1,12 @@
 <div class="filter-sort-box display-block">
   <div class="top-part">
     <div *ngIf="!_showSearch">
-      <div *ngIf="type === 'text'" class="search-in-filters new1">
+      <div *ngIf="showInputSearch()" class="search-in-filters new1">
         <span class="title new">{{ 'table.filter.all' | translate }}</span>
         <span class="ico new2" (click)="_showSearch = !_showSearch"></span>
       </div>
     </div>
-    <div *ngIf="type === 'text' && _showSearch" class="search-in-filters">
+    <div *ngIf="showInputSearch() && _showSearch" class="search-in-filters">
       <div class="search-input  display-block">
         <input type="text" [(ngModel)]="_filterSearchText">
         <a class="close-search" (click)="cancelSearch()"></a>
@@ -14,16 +14,20 @@
     </div>
   </div>
 
+  <!-- preloader -->
   <ul class="list-of-filters" *ngIf="rowData$ && rowDataLoading">
-    <li>
-      <mat-progress-spinner
-        mode="indeterminate"
-        color="accent"
-        strokeWidth="1"
-        diameter="25">
-      </mat-progress-spinner>
+    <li class="with-preloader">
+      <div class="preloader">
+        <mat-progress-spinner
+          mode="indeterminate"
+          color="accent"
+          strokeWidth="1"
+          diameter="25">
+        </mat-progress-spinner>
+      </div>
     </li>
   </ul>
+
   <ul class="list-of-filters" *ngIf="(type === 'text' || type === 'boolean') && rowData && rowData?.length">
     <li *ngFor="let item of (rowData | filter: _filterSearchText : 'value')">
       <app-checkbox
@@ -59,7 +63,7 @@
     </ng-container>
   </div>
 
-  <div class="calendar-filter" *ngIf="type === 'number'">
+  <div class="calendar-filter" *ngIf="type === 'number' && hasRange">
     <ng-container>
       <div class="form-item-caledar">
         <label>{{ 'table.filter.from' | translate }}</label>

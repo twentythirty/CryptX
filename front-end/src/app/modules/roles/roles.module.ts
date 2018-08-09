@@ -15,7 +15,6 @@ import { RolesAddComponent } from './roles-add/roles-add.component';
   declarations: [
     RolesListComponent,
     RolesAddComponent,
-    RolesAddComponent,
   ],
   imports: [
     FormsModule,

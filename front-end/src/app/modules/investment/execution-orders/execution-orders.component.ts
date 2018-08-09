@@ -33,17 +33,17 @@ export class ExecutionOrdersComponent extends TimelineDetailComponent implements
 
   public listDataSource: TableDataSource = {
     header: [
-      { column: 'id', nameKey: 'table.header.id', filter: {type: 'text', sortable: true } },
-      { column: 'instrument', nameKey: 'table.header.instrument', filter: {type: 'text', sortable: true } },
-      { column: 'side', nameKey: 'table.header.side', filter: {type: 'text', sortable: true } },
-      { column: 'exchange', nameKey: 'table.header.exchange', filter: {type: 'text', sortable: true }},
-      { column: 'type', nameKey: 'table.header.type', filter: {type: 'text', sortable: true } },
-      { column: 'price', nameKey: 'table.header.price', filter: {type: 'number', sortable: true } },
-      { column: 'quantity', nameKey: 'table.header.total_quantity', filter: {type: 'number', sortable: true } },
-      { column: 'fee', nameKey: 'table.header.exchange_trading_fee', filter: {type: 'number', sortable: true } },
-      { column: 'status', nameKey: 'table.header.status', filter: {type: 'text', sortable: true } },
-      { column: 'submission_time', nameKey: 'table.header.submission_time', filter: {type: 'date', sortable: true } },
-      { column: 'completion_time', nameKey: 'table.header.completion_time', filter: {type: 'date', sortable: true } }
+      { column: 'id', nameKey: 'table.header.id', filter: { type: 'number', hasRange: false, inputSearch: true, sortable: true } },
+      { column: 'instrument', nameKey: 'table.header.instrument', filter: { type: 'text', sortable: true } },
+      { column: 'side', nameKey: 'table.header.side', filter: { type: 'text', sortable: true } },
+      { column: 'exchange', nameKey: 'table.header.exchange', filter: { type: 'text', sortable: true }},
+      { column: 'type', nameKey: 'table.header.type', filter: { type: 'text', sortable: true } },
+      { column: 'price', nameKey: 'table.header.price', filter: { type: 'number', sortable: true } },
+      { column: 'quantity', nameKey: 'table.header.total_quantity', filter: { type: 'number', sortable: true } },
+      { column: 'fee', nameKey: 'table.header.exchange_trading_fee', filter: { type: 'number', sortable: true } },
+      { column: 'status', nameKey: 'table.header.status', filter: { type: 'text', sortable: true } },
+      { column: 'submission_time', nameKey: 'table.header.submission_time', filter: { type: 'date', sortable: true } },
+      { column: 'completion_time', nameKey: 'table.header.completion_time', filter: { type: 'date', sortable: true } }
     ],
     body: null
   };

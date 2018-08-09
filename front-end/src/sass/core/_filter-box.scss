@@ -3,6 +3,7 @@
     width: 190px;
     top: 40px;
     left: 50%;
+    text-align: left;
     @include translate(-50%, 0);
     background: #F7F7F7;
     box-shadow: 0 12px 35px 0 rgba(121,137,154,0.70);
@@ -109,6 +110,23 @@
 
             &:last-child {
                 border-bottom: 0;
+            }
+
+            &.with-preloader {
+                position: relative;
+                height: 100%;
+            }
+            
+            .preloader {
+                position: absolute;
+                display: inline-block;
+                width: 26px;
+                height: 26px;
+                top: 0;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                margin: auto;
             }
 
             .checkbox {

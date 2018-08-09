@@ -17,7 +17,7 @@ import { Order } from '../../../shared/models/order';
 export class OrdersListComponent extends DataTableCommonManagerComponent implements OnInit {
   public ordersDataSource: TableDataSource = {
     header: [
-      { column: 'id', nameKey: 'table.header.id', filter: { type: 'text', sortable: true } },
+      { column: 'id', nameKey: 'table.header.id', filter: { type: 'number', hasRange: false, inputSearch: true, sortable: true } },
       { column: 'investment_id', nameKey: 'table.header.investment_run_id', filter: { type: 'text', sortable: true } },
       { column: 'instrument', nameKey: 'table.header.instrument', filter: { type: 'text', sortable: true } },
       { column: 'side', nameKey: 'table.header.side', filter: { type: 'text', sortable: true } },

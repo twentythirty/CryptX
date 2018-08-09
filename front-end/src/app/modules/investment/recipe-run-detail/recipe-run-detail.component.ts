@@ -89,7 +89,7 @@ export class RecipeRunDetailComponent extends TimelineDetailComponent implements
 
   public listDataSource: TableDataSource = {
     header: [
-      { column: 'id', nameKey: 'table.header.id', filter: { type: 'text', sortable: true }},
+      { column: 'id', nameKey: 'table.header.id', filter: { type: 'number', hasRange: false, inputSearch: true, sortable: true }},
       { column: 'transaction_asset', nameKey: 'table.header.transaction_asset', filter: { type: 'text', sortable: true }},
       { column: 'quote_asset', nameKey: 'table.header.quote_asset', filter: { type: 'text', sortable: true }},
       { column: 'target_exchange', nameKey: 'table.header.exchange', filter: { type: 'text', sortable: true }},

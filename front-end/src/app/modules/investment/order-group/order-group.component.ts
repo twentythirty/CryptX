@@ -89,7 +89,7 @@ export class OrderGroupComponent extends TimelineDetailComponent implements OnIn
 
   public listDataSource: TableDataSource = {
     header: [
-      { column: 'id', nameKey: 'table.header.id', filter: { type: 'text', sortable: true }},
+      { column: 'id', nameKey: 'table.header.id', filter: { type: 'number', hasRange: false, inputSearch: true, sortable: true }},
       { column: 'instrument', nameKey: 'table.header.instrument', filter: { type: 'text', sortable: true }},
       { column: 'side', nameKey: 'table.header.side', filter: { type: 'text', sortable: true }},
       { column: 'exchange', nameKey: 'table.header.exchange', filter: { type: 'text', sortable: true }},

@@ -1,18 +1,18 @@
 <table class="data-table">
   <thead *ngIf="dataSource.header?.length > 0">
     <tr>
-      <th *ngFor="let item of dataSource.header">
+      <th
+        *ngFor="let item of dataSource.header"
+        [class.sort-open]="filterMap[item.column]"
+        [class.sortable]="item.filter"
+      >
         <a
+          class="filter-button"
           (click)="toggleFilter(item)"
         >
           {{ item.nameKey | translate }}
-          <div class="sort-arrow" *ngIf="item.filter"></div>
-          <span
-            *ngIf="item.filter"
-            [class.ucaret]="filterMap[item.column]"
-            [class.dcaret]="!filterMap[item.column]"
-          ></span>
-        </a>
+          <div *ngIf="item.filter" class="sort-arrow"></div>
+      </a>
         <app-data-table-filter
           *ngIf="item.filter"
           [dirty]="item._dirty"
@@ -20,6 +20,8 @@
           [type]="item.filter.type"
           [column]="item.column"
           [sortable]="item.filter.sortable"
+          [hasRange]="item.filter.hasRange"
+          [inputSearch]="item.filter.inputSearch"
           [rowData]="item.filter.rowData"
           [rowData$]="item.filter.rowData$"
           (onFilter)="onSetFilter($event); filterMap[item.column] = !filterMap[item.column]"
