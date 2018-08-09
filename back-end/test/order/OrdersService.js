@@ -209,6 +209,7 @@ describe('OrdersService testing', () => {
             [
                 RecipeRun.findById,
                 RecipeRunDetail.findAll,
+                RecipeRunDeposit.findAll,
                 Instrument.findAll,
                 Asset.findAll,
                 InstrumentExchangeMapping.findAll,
@@ -289,10 +290,6 @@ describe('OrdersService testing', () => {
                 RecipeRunDeposit.findAll.restore();
                 sinon.stub(RecipeRunDeposit, 'findAll').callsFake(options => {
 
-                    if (_.isPlainObject(options.where.status)) {
-                        return Promise.resolve([])
-                    }
-
                     return Promise.resolve(
                         _.flatMap(_.map(TEST_ASSET_IDS, asset_id => {
                             return _.map(TEST_EXCHANGE_ACCOUNT_IDS, exchange_account_id => {
@@ -311,11 +308,39 @@ describe('OrdersService testing', () => {
             });
         });
 
+        it ('shall reject generating a list of recipes if there are incomplete despoits', () => {
+
+            chai.expect(ordersService.generateApproveRecipeOrders(TEST_RECIPE_RUN.id)).isRejected;
+        });
+
         it('shall generate a list of recipe orders if all is good', (done) => {
             //ensure method call not rejected due to existing RecipeOrderGroup
             sinon.stub(RecipeOrderGroup, 'findOne').callsFake(options => {
 
                 return Promise.resolve(null);
+            });
+
+            //replace recipe deposit stub to ensure no failed deposits when generating orders
+            RecipeRunDeposit.findAll.restore();
+            sinon.stub(RecipeRunDeposit, 'findAll').callsFake(options => {
+
+                if (_.isPlainObject(options.where.status)) {
+                    return Promise.resolve([])
+                }
+
+                return Promise.resolve(
+                    _.flatMap(_.map(TEST_ASSET_IDS, asset_id => {
+                        return _.map(TEST_EXCHANGE_ACCOUNT_IDS, exchange_account_id => {
+                            return new RecipeRunDeposit({
+                                target_exchange_account_id: exchange_account_id,
+                                asset_id: asset_id,
+                                recipe_run_id: TEST_RECIPE_RUN.id,
+                                amount: _.random(0, 500, true),
+                                status: RECIPE_RUN_DEPOSIT_STATUSES.Completed
+                            })
+                        })
+                    }))
+                )
             });
 
             ordersService.generateApproveRecipeOrders(TEST_RECIPE_RUN.id).then(response => {
