@@ -619,8 +619,8 @@ const fetchInvestmentRunsViewFooter = async (where_clause = '') => {
         builder.selectCount(view, 'id', where_clause),
         builder.selectCountDistinct('user_created', 'user_created', view, where_clause),
         builder.selectCountDistinct('strategy_type', 'strategy_type', view, where_clause),
-        builder.selectCount(view, 'is_simulated', builder.addToWhere("is_simulated='investment.is_simulated.no'")),
-        builder.selectCount(view, 'status', builder.addToWhere(`status='investment.status.${MODEL_CONST.INVESTMENT_RUN_STATUSES.OrdersExecuting}'`))
+        builder.selectCount(view, 'is_simulated', builder.addToWhere(where_clause, "is_simulated='investment.is_simulated.yes'")),
+        builder.selectCount(view, 'status', builder.addToWhere(where_clause, `status='investment.status.${MODEL_CONST.INVESTMENT_RUN_STATUSES.OrdersExecuting}'`))
     ], [
         'id',
         'user_created',
