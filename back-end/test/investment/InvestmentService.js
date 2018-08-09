@@ -45,6 +45,9 @@ describe('InvestmentService testing:', () => {
       return Promise.resolve(data);
     })
     sinon.stub(InvestmentRun, 'findOne').returns(Promise.resolve());
+    sinon.stub(InvestmentRun, 'count').callsFake(options => {
+      return Promise.resolve(0);
+    });
     sinon.stub(InvestmentRun, 'findById').callsFake(id => {
       let investment_run = new InvestmentRun({
         id: id,
@@ -109,6 +112,7 @@ describe('InvestmentService testing:', () => {
   afterEach(() => {
     InvestmentRun.create.restore();
     InvestmentRun.findOne.restore();
+    InvestmentRun.count.restore();
     InvestmentRun.findById.restore();
     InvestmentRun.update.restore();
     RecipeRun.findOne.restore();
@@ -136,21 +140,21 @@ describe('InvestmentService testing:', () => {
       return investmentService.createInvestmentRun(
         USER_ID, STRATEGY_TYPE, IS_SIMULATED
       ).then(investment_run => {
-        chai.assert.isTrue(InvestmentRun.findOne.called);
+        chai.assert.isTrue(InvestmentRun.count.called);
         chai.assert.isTrue(InvestmentRun.create.called);
       });
     });
 
-    it('shall reject already existing investment run of same type and mode', ()=> {
-      if(InvestmentRun.findOne.restore)
-        InvestmentRun.findOne.restore();
+    it('shall reject already existing investment run of same type and not simulated', ()=> {
+      if(InvestmentRun.count.restore)
+        InvestmentRun.count.restore();
 
-      sinon.stub(InvestmentRun, 'findOne').callsFake(query => {
-        return Promise.resolve(query.where);
+      sinon.stub(InvestmentRun, 'count').callsFake(query => {
+        return Promise.resolve(1);
       });
 
       return chai.assert.isRejected(investmentService.createInvestmentRun(
-        USER_ID, STRATEGY_TYPE, IS_SIMULATED
+        USER_ID, STRATEGY_TYPE, false
       ));
     })
 
