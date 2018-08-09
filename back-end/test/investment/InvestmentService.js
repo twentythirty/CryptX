@@ -459,8 +459,8 @@ describe('InvestmentService testing:', () => {
         .then(recipe => {
           chai.assert.isTrue(assetService.getAssetInstruments.called);
           chai.expect(recipe).to.satisfy(data => {
-            return data.every(a => a.suggested_action.quote_asset_id == a.id);
-          }, 'Asset to be acquired should be in quote_asset_id');
+            return data.every(a => a.suggested_action.transaction_asset_id == a.id);
+          }, 'Asset to be acquired should be in transaction_asset_id');
         });
     });
 

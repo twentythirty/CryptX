@@ -21,7 +21,7 @@ const Asset = require('../../models').Asset;
 const InstrumentExchangeMapping = require('../../models').InstrumentExchangeMapping;
 const InstrumentMarketData = require('../../models').InstrumentMarketData;
 const CCXTUtils = require('../../utils/CCXTUtils');
-
+const Op = require('../../models').Sequelize.Op;
 
 
 
@@ -190,7 +190,8 @@ describe('OrdersService testing', () => {
                                     target_exchange_account_id: exchange_account_id,
                                     asset_id: asset_id,
                                     recipe_run_id: TEST_RECIPE_RUN.id,
-                                    amount: _.random(0, 500, true)
+                                    amount: _.random(0, 500, true),
+                                    status: RECIPE_RUN_DEPOSIT_STATUSES.Completed
                                 })
                             })
                         }))
@@ -287,6 +288,10 @@ describe('OrdersService testing', () => {
 
                 RecipeRunDeposit.findAll.restore();
                 sinon.stub(RecipeRunDeposit, 'findAll').callsFake(options => {
+
+                    if (_.isPlainObject(options.where.status)) {
+                        return Promise.resolve([])
+                    }
 
                     return Promise.resolve(
                         _.flatMap(_.map(TEST_ASSET_IDS, asset_id => {
