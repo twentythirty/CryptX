@@ -1,0 +1,29 @@
+<div class="top-controls">
+  <span class="headline-title">{{count}} {{'recipe_runs.header' | translate}}</span>
+</div>
+
+<app-data-table
+  [dataSource]="recipeDataSource"
+  [columnsToShow]="recipeColumnsToShow"
+  (setFilter)="onSetFilter($event)"
+  (openRow)="openRow($event)"
+></app-data-table>
+
+<app-pagination 
+  [count]="count"  
+  [perPage]="pageSize" 
+  [page]="page"
+></app-pagination>
+
+<app-modal
+  *ngIf="readModalIsShown"
+  [heading]="readData?.title"
+  (close)="hideReadModal()"
+>
+  <div>
+    <textarea class="textarea" readonly>{{ readData?.content }}</textarea>
+  </div>
+  <div class="padding-modal">
+    <app-btn class="right" (onClick)="hideReadModal()">{{ 'common.done' | translate }}</app-btn>
+  </div>
+</app-modal>

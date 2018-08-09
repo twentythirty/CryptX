@@ -26,7 +26,7 @@
     <div class="navigation-header">
       <nav>
         <a routerLinkActive="active" routerLink="/dashboard" *ngIf="checkPerm(['VIEW_INVESTMENT_RUN'])">Dashboard</a>
-        <a routerLinkActive="active" href="#" *ngIf="checkPerm(['ALTER_PERMS'])">Recipe Runs</a>
+        <a routerLinkActive="active" routerLink="/recipe_runs" *ngIf="checkPerm(['ALTER_PERMS'])">Recipe Runs</a>
         <a routerLinkActive="active" routerLink="/orders" *ngIf="checkPerm(['ALTER_PERMS'])">{{ 'orders.orders' | translate }}</a>
         <a routerLinkActive="active" routerLink="/assets" *ngIf="checkPerm(['VIEW_ASSETS'])">{{ 'assets.assets' | translate }}</a>
         <a routerLinkActive="active" routerLink="/users" *ngIf="checkPerm(['EDIT_USERS'])">User Management</a>

@@ -33,6 +33,7 @@ import { DepositListComponent } from "../../modules/deposit/deposit-list/deposit
 import { DepositInfoComponent } from "../../modules/deposit/deposit-info/deposit-info.component";
 import { OrdersListComponent } from '../../modules/orders/orders-list/orders-list.component';
 import { ExecutionOrdersComponent } from "../../modules/investment/execution-orders/execution-orders.component";
+import { RecipeRunListComponent } from "../../modules/recipe-run/recipe-run-list/recipe-run-list.component";
 
 const routes: Routes = [
   { path: 'login', component: LoginComponent },
@@ -93,6 +94,12 @@ const routes: Routes = [
     component: AssetViewComponent,
     canActivate: [AuthGuard, PermissionGuard],
     data: { requiredPermission: ['VIEW_ASSETS']}
+  },
+
+  {
+    path: 'recipe_runs',
+    component: RecipeRunListComponent,
+    canActivate: [AuthGuard]
   },
 
   {

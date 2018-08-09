@@ -169,6 +169,15 @@
     }
   },
 
+  "recipe_runs": {
+    "header": "Recipe runs",
+    "footer": {
+      "id": "{{id}} items",
+      "user_created": "{{ user_created }} Creator",
+      "approval_status": "{{approval_status }} Pending"
+    }
+  },
+
   "orders": {
     "orders": "Orders",
     "generate_orders": "Generate orders",
