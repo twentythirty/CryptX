@@ -21,7 +21,7 @@ const getExchange = function (exchange_key) {
   if( exchanges_supported.hasOwnProperty(exchange_key) )
     return exchanges_supported[exchange_key];
   else {
-    TE("Trying to get in unsupported exchange!");
+    TE(`Exchange ${exchange_key} not found in unified exchanges!`);
   }
 }
 module.exports.getExchange = getExchange;

@@ -23,6 +23,7 @@ module.exports = (sequelize, DataTypes) => {
     InstrumentExchangeMapping.associate = function(models) {
 
         InstrumentExchangeMapping.belongsTo(models.Instrument);
+        InstrumentExchangeMapping.belongsTo(models.Exchange);
     };
 
     return InstrumentExchangeMapping;

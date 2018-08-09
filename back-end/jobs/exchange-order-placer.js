@@ -34,77 +34,79 @@ module.exports.JOB_BODY = async (config, log) => {
   const InstrumentExchangeMapping = models.InstrumentExchangeMapping;
   const Exchange = models.Exchange;
 
-  /* all_pending_orders - list of all pending execution orders in database.
-    Trying to push all orders to exchanges might result in API call rate limitting,
-    so instead execution orders from exchanges will be grouped and execution in
-    iterations and we'll use one exchange once every iteration.
+  /* all_pending_orders - list of pending exeution orders that are belong to
+    real(not simulated) investment run. Trying to push all orders to exchanges
+    might result in API call rate limitting, so instead execution orders from
+    exchanges will be grouped and execution in iterations and we'll use one
+    exchange once every iteration.
   */
-  let all_pending_orders = await ExecutionOrder.findAll({
+ let [err, pending_real_orders] = await to(sequelize.query(`
+    SELECT eo.* 
+    FROM execution_order eo 
+    JOIN recipe_order ro ON ro.id=eo.recipe_order_id
+    JOIN recipe_order_group rog ON rog.id=ro.recipe_order_group_id
+    JOIN recipe_run rr ON rr.id=rog.recipe_run_id
+    JOIN investment_run ir ON ir.id=rr.investment_run_id
+    WHERE ir.is_simulated=:is_simulated AND eo.status=:exec_order_status
+    `, {
+    replacements: { // replace keys with values in query
+      is_simulated: false,
+      exec_order_status: MODEL_CONST.EXECUTION_ORDER_STATUSES.Pending
+    },
+    model: ExecutionOrder, // parse results as InvestmenRun model
+    type: sequelize.QueryTypes.SELECT
+  }));
+  if (err) TE(err.message);
+
+  /* let all_pending_orders = await ExecutionOrder.findAll({
     where: {
       status: MODEL_CONST.EXECUTION_ORDER_STATUSES.Pending
     },
     include: Instrument
-  });
-
-
+  }); */
 
   /* pending_orders - orders from different exchanges that are going to be sent to exchanges.
   Number of orders shouldn't exceed number of exchanges. */
   let pending_orders = _.map(
-    _.groupBy(all_pending_orders, 'exchange_id'),
+    _.groupBy(pending_real_orders, 'exchange_id'),
     (exchange_orders) => { return exchange_orders[0]; } // return only first order for exchange
   );
 
   /* Get instrument exchange mapping and exchange info. Going to use external_instrument_id from it. */
   return Promise.all(
-    _.map(pending_orders, (pending_order) => {
+    _.map(pending_orders, async (pending_order) => {
+      let err, mapp, result;
 
-      return Promise.all([
-        Promise.resolve(pending_order),
-        sequelize.query(`
-              SELECT ir.* 
-              FROM execution_order ed 
-              JOIN recipe_order ro ON ro.id=ed.recipe_order_id
-              JOIN recipe_order_group rog ON rog.id=ro.recipe_order_group_id
-              JOIN recipe_run rr ON rr.id=rog.recipe_run_id
-              JOIN investment_run ir ON ir.id=rr.investment_run_id
-              WHERE ed.id=:execution_order_id
-            `, {
-            plain: true, // makes raw query be parsed as single result, not array
-            replacements: { // replace keys with values in query
-              execution_order_id: pending_order.id
-            },
-            model: InvestmentRun, // parse results as InvestmenRun model
-            type: sequelize.QueryTypes.SELECT
-          }),
-        InstrumentExchangeMapping.findOne({
-          where: {
-            exchange_id: pending_order.exchange_id,
-            instrument_id: pending_order.instrument_id
-          },
-        }),
-        Exchange.findOne({
-          where: {
-            id: pending_order.exchange_id
-          }
-        })
-      ]);
+      mapp = InstrumentExchangeMapping.findOne({
+        where: {
+          exchange_id: pending_order.exchange_id,
+          instrument_id: pending_order.instrument_id
+        },
+        include: [Exchange]
+      });
+      
+      [err, result] = await to(Promise.all(
+        [pending_order, mapp]
+      ));
+
+      if (err) TE(err.message);
+    return result;
     })
   ).then(orders_with_data => {
 
     return Promise.all(
       _.map(orders_with_data, async (order_with_data) => {
 
-        let [order, investment_run, instrument_exchange_map, exchange_info] = order_with_data;
+        let [order, instrument_exchange_map] = order_with_data;
 
-        if (!order || !investment_run || !instrument_exchange_map || !exchange_info) {
-          log(`Execution order data not found`);
+        if (!instrument_exchange_map) {
+          log(`Exchange mapping data for execution order ${order.id} not found. Instrument ID: ${order.instrument_id}, exchange id: ${order.exchange_id}`);
           return orders_with_data;
         }
-        log(`Processing execution order ID: ${order.id} from investment run ID: ${investment_run.id}`);
+        log(`Processing execution order ID: ${order.id}`);
         
-        let exchange = new (ccxtUnified.getExchange(exchange_info.api_id))();
-        let init_done = await exchange.isReady(); // wait for initialization to complete
+        let exchange = new (ccxtUnified.getExchange(instrument_exchange_map.Exchange.api_id))();
+        await exchange.isReady(); // wait for initialization to complete
 
         /* As we have two different ways to acquire an asset (buying and selling),
         and some exchages do not support creating market orders(and user limit orders instead)
@@ -158,53 +160,41 @@ module.exports.JOB_BODY = async (config, log) => {
           return order_with_data;
         }
 
-        if (investment_run.is_simulated || !send_orders)
-          return log(`Prevented from sending order: createOrder(${instrument_exchange_map.external_instrument_id}, ${order_type}, ${order_execution_side}, ${order.total_quantity}[, ${order.price}[, params]])`);
-        else {
-          log(`Executing: createMarketOrder(${instrument_exchange_map.external_instrument_id}, ${order_type}, ${order_execution_side}, ${order.total_quantity}[, ${order.price}[, params]])`);
+        /*  later on when we'll introduce other order types this can be changed to just function for placing orders */
+        return exchange.createMarketOrder(instrument_exchange_map.external_instrument_id, order_execution_side, order)
+        .then(order_response => {
+          order.external_identifier = order_response.id;
+          order.placed_timestamp = order_response.timestamp;
+          order.status = EXECUTION_ORDER_STATUSES.Placed;
 
-          return exchange.createMarketOrder(instrument_exchange_map.external_instrument_id, order_execution_side, order)
-          .then(order_response => {
-            order.external_identifier = order_response.id;
-            order.placed_timestamp = order_response.timestamp;
-            /* order statuses (need to assure what kind of data is returned during real order placement)
-              open - order should be executing in exchange
-              closed - could mean order is already executed, might do nothing here as other job should check if its done
-              canceled - order probably wasn't placed for some reason.
-              */
-            if (order_response == "open") {
-              order.status = EXECUTION_ORDER_STATUSES.Placed
-            }
-
-            order.save().then(o => {
-              logAction(actions.placed, {
-                exchange: exchange.name,
-                relations: { execution_order_id: order.id }
-              });
-            });
-
-            return order_with_data;
-          }).catch((err) => { // order placing failed. Perform actions below.
-
-            logAction(actions.error, {
-              error: err,
+          order.save().then(o => {
+            logAction(actions.placed, {
+              exchange: exchange.name,
               relations: { execution_order_id: order.id }
             });
-
-            order.failed_attempts++; // increment failed attempts counter
-            if (order.failed_attempts >= SYSTEM_SETTINGS.EXEC_ORD_FAIL_TOLERANCE) {
-              log(`Setting status of execution order ${order.id} to Failed because it has reached failed send threshold (actual: ${order.failed_attempts}, allowed: ${SYSTEM_SETTINGS.EXEC_ORD_FAIL_TOLERANCE})!`);
-              logAction(actions.failed_attempts, {
-                attempts: order.failed_attempts,
-                relations: { execution_order_id: order.id }
-              });
-              order.status = EXECUTION_ORDER_STATUSES.Failed;
-            }
-            order.save();
-
-            return order_with_data;
           });
-        }
+
+          return order_with_data;
+        }).catch((err) => { // order placing failed. Perform actions below.
+
+          logAction(actions.error, {
+            error: err,
+            relations: { execution_order_id: order.id }
+          });
+
+          order.failed_attempts++; // increment failed attempts counter
+          if (order.failed_attempts >= SYSTEM_SETTINGS.EXEC_ORD_FAIL_TOLERANCE) {
+            log(`Setting status of execution order ${order.id} to Failed because it has reached failed send threshold (actual: ${order.failed_attempts}, allowed: ${SYSTEM_SETTINGS.EXEC_ORD_FAIL_TOLERANCE})!`);
+            logAction(actions.failed_attempts, {
+              attempts: order.failed_attempts,
+              relations: { execution_order_id: order.id }
+            });
+            order.status = EXECUTION_ORDER_STATUSES.Failed;
+          }
+          order.save();
+
+          return order_with_data;
+        });
       }));
   });
 };
