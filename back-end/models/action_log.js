@@ -8,6 +8,10 @@ module.exports = (sequelize, DataTypes) => {
       details: {
         type: DataTypes.TEXT("medium"),
         allowNull: true
+      },
+      level: {
+        type: DataTypes.SMALLINT,
+        defaultValue: LOG_LEVELS.Info
       }
     },
     modelProps(

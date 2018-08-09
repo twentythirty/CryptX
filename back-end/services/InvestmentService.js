@@ -24,26 +24,22 @@ const createInvestmentRun = async function (user_id, strategy_type, is_simulated
     TE(`Unknown strategy type ${strategy_type}!`);
   }
 
-  let err, investment_run = await InvestmentRun.findOne({
+  let [ err, executing_investment_run ] = await to(InvestmentRun.count({
     where: {
-      user_created_id: user_id,
-      strategy_type: strategy_type,
-      is_simulated: is_simulated,
-      completed_timestamp: {
-        [Op.eq]: null
-      }
+      is_simulated: false,
+      status: { [Op.ne]: INVESTMENT_RUN_STATUSES.OrdersFilled }
     }
-  });
+  }));
 
-  // only let to run one investment of the same strategy and mode
-  if (investment_run) {
-    let message = `Investment with ${strategy_type} strategy and ${
-      is_simulated ? 'simulated' : 'real investment'
-    } mode already is executing.`;
+  if(err) TE(err.message);
+
+  // only allow one REAL investment run at the same time.
+  if (executing_investment_run && !is_simulated) {
+    let message = `Investment run cannot be initiated as other investment runs are still in progress`;
 
     TE(message);
   }
-
+  let investment_run;
   [err, investment_run] = await to(InvestmentRun.create({
     strategy_type: strategy_type,
     is_simulated: is_simulated,

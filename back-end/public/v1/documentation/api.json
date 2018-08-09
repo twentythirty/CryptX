@@ -4458,6 +4458,10 @@
         "details": {
           "type": "string",
           "example": "Jane Morren changed status to Completed"
+        },
+        "level": {
+          "type": "number",
+          "example": 1
         }
       }
     },
