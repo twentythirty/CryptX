@@ -22,7 +22,7 @@ export class DepositListComponent extends DataTableCommonManagerComponent implem
       { column: 'investment_run_id', nameKey: 'table.header.investment_run_id', filter: { type: 'text', sortable: true } },
       { column: 'quote_asset', nameKey: 'table.header.quote_asset', filter: { type: 'text', sortable: true } },
       { column: 'exchange', nameKey: 'table.header.exchange', filter: { type: 'text', sortable: true } },
-      { column: 'account', nameKey: 'table.header.account', filter: { type: 'text', sortable: true } },
+      { column: 'account', nameKey: 'table.header.account', filter: { type: 'text', sortable: true }, column_class: 'word-wrap' },
       { column: 'amount', nameKey: 'table.header.amount', filter: { type: 'number', sortable: true } },
       { column: 'investment_percentage', nameKey: 'table.header.investment_percentage', filter: { type: 'number', sortable: true } },
       { column: 'status', nameKey: 'table.header.status', filter: { type: 'text', sortable: true } },
