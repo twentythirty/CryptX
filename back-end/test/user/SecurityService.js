@@ -123,13 +123,15 @@ describe("SecurityService mocking", () => {
          [1, null],
          [1, {}],
          [1, { name: null, permissions: null }],
-         [1, { name: 'Super admin', permissions: [] }]
+         [1, { name: '  ', permissions: [PERMISSIONS.ALTER_ROLES] }],
+         [1, { name: 'Super admin', permissions: [] }],
+         [1, { permissions: [PERMISSIONS.ALTER_ROLES, PERMISSIONS.ALTER_PERMS] }]
        ], params => {
          return chai.assert.isRejected(SecurityService.editRole(...params));
        })); 
     });
 
-    it("update only supplied properties", function() {
+    it("update if the arguments are valid", function() {
       let new_info = [
         {
           permissions: [
@@ -137,9 +139,7 @@ describe("SecurityService mocking", () => {
             PERMISSIONS.ALTER_PERMS,
             PERMISSIONS.VIEW_ROLES,
             PERMISSIONS.VIEW_USERS
-          ]
-        },
-        {
+          ],
           name: "updated_test_role"
         }
       ];
