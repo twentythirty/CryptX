@@ -181,6 +181,7 @@ export class InvestmentRunDetailComponent extends TimelineDetailComponent implem
       res => {
         if (res.success){
           this.getAllData();
+          this.getSingleData();
         }
       }
     )
