@@ -1,6 +1,13 @@
 //constants for data not directly associated with permissions
 
 MODEL_CONST = {
+  LOG_LEVELS: {
+    Debug: 0,
+    Info: 1,
+    Warning: 2,
+    Error: 3
+  },
+
   STRATEGY_TYPES: {
     MCI: 101, //mid cap index
     LCI: 102 //large cap index

@@ -39,6 +39,7 @@ const allowed_keys = [
 
 const universal_actions = {
     basic: {
+        level: LOG_LEVELS.Info,
         get template() { return `${this.name} ${this.action}` },
         get template_user() { return `${this.name} ${this.action} by ${this.user.first_name} ${this.user.last_name}` },
         handler: function(params = {}) {
@@ -53,6 +54,7 @@ const universal_actions = {
         }
     },
     create: {
+        level: LOG_LEVELS.Info,
         get template() { return `System added a new ${this.name}` },
         get template_user() { return `${this.user.first_name} ${this.user.last_name} added a new ${this.name}`},
         handler: function(params = {}) {
@@ -71,6 +73,7 @@ const universal_actions = {
         }
     },
     modified: {
+        level: LOG_LEVELS.Info,
         get template() { return `System changed ${this.column} from ${this.prev_value || '-'} to ${this.new_value || '-'}` },
         get template_user() { return `${this.user.first_name} ${this.user.last_name} changed ${this.column} from ${this.prev_value || '-'} to ${this.new_value || '-'}`},
         handler: function(params = {}) {
@@ -158,7 +161,10 @@ module.exports.logAction = async (action_path, options = {}) => {
     
         //This will attempt to assign relations created by the handler, but also allow the developer to overwrite them.
         if(_.isPlainObject(options.relations) || _.isPlainObject(action.relations)) options.relations = Object.assign({}, action.relations || {}, options.relations || {});
-    
+        
+        //Set log level, can be overriden.
+        if(!options.log_level) options.log_level = action.level || LOG_LEVELS.Info;
+
         for(let action_log of action_logs) {
             module.exports.log(action_log, options || {});
         }
@@ -183,7 +189,8 @@ module.exports.log = async (details, options = {}) => {
     let base_log = {
         details,
         timestamp: new Date(),
-        failed_attempts: 0
+        failed_attempts: 0,
+        level: options.log_level || LOG_LEVELS.Info
     };
 
     if(_.isPlainObject(options.relations)) {
