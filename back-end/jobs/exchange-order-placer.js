@@ -1,5 +1,6 @@
 "use strict";
 
+const _ = require('lodash');
 const ccxt = require('ccxt');
 const ccxtUnified = require('../utils/ccxtUnified');
 const { logAction } = require('../utils/ActionLogUtil');
@@ -34,12 +35,14 @@ module.exports.JOB_BODY = async (config, log) => {
   const InstrumentExchangeMapping = models.InstrumentExchangeMapping;
   const Exchange = models.Exchange;
 
+  let err_message;
   /* all_pending_orders - list of pending exeution orders that are belong to
     real(not simulated) investment run. Trying to push all orders to exchanges
     might result in API call rate limitting, so instead execution orders from
     exchanges will be grouped and execution in iterations and we'll use one
     exchange once every iteration.
   */
+ log(`1. Fetching all execution orders of real investment runs`);
  let [err, pending_real_orders] = await to(sequelize.query(`
     SELECT eo.* 
     FROM execution_order eo 
@@ -56,14 +59,10 @@ module.exports.JOB_BODY = async (config, log) => {
     model: ExecutionOrder, // parse results as InvestmenRun model
     type: sequelize.QueryTypes.SELECT
   }));
-  if (err) TE(err.message);
-
-  /* let all_pending_orders = await ExecutionOrder.findAll({
-    where: {
-      status: MODEL_CONST.EXECUTION_ORDER_STATUSES.Pending
-    },
-    include: Instrument
-  }); */
+  if (err) {
+    log(`[Error.1a]. Failed to fetch execution orders of real investment runs`);
+    TE(err.message);
+  }
 
   /* pending_orders - orders from different exchanges that are going to be sent to exchanges.
   Number of orders shouldn't exceed number of exchanges. */
@@ -77,6 +76,7 @@ module.exports.JOB_BODY = async (config, log) => {
     _.map(pending_orders, async (pending_order) => {
       let err, mapp, result;
 
+      log(`2. Fetching instrument mapping by exchange_id=${pending_order.exchange_id} and instrument_id=${pending_order.instrument_id}`)
       mapp = InstrumentExchangeMapping.findOne({
         where: {
           exchange_id: pending_order.exchange_id,
@@ -89,7 +89,12 @@ module.exports.JOB_BODY = async (config, log) => {
         [pending_order, mapp]
       ));
 
-      if (err) TE(err.message);
+      if (err) {
+        log(err_message = `[ERROR.2a] Failed to fetch instrument mapping.`)
+        change_status_to_failed(order, err_message);
+        TE(err.message);
+      }
+
     return result;
     })
   ).then(orders_with_data => {
@@ -98,71 +103,49 @@ module.exports.JOB_BODY = async (config, log) => {
       _.map(orders_with_data, async (order_with_data) => {
 
         let [order, instrument_exchange_map] = order_with_data;
-
-        if (!instrument_exchange_map) {
-          log(`Exchange mapping data for execution order ${order.id} not found. Instrument ID: ${order.instrument_id}, exchange id: ${order.exchange_id}`);
-          return orders_with_data;
-        }
-        log(`Processing execution order ID: ${order.id}`);
         
+        if (!instrument_exchange_map) {
+          log(err_message = `[ERROR.2b] No instrument exchange mapping data for execution order ID=${order.id} found.
+          Expected to be found in instrument_exchange_mapping table by instrument_ID=${order.instrument_id} and exchange_id=${order.exchange_id}`);
+          change_status_to_failed(order, err_message);
+          return order_with_data;
+        }
+
+
+        log(`3. Getting unified exchange object of ${instrument_exchange_map.Exchange.api_id}`);
         let exchange = new (ccxtUnified.getExchange(instrument_exchange_map.Exchange.api_id))();
+        if (!exchange) {
+          log(err_message = `[Error.3a] No unified exchange object found. Order can't be placed without.`);
+          change_status_to_failed(order, err_message);
+          return order_with_data;
+        }
+        log(`3.1. Waiting for exchange connector of ${instrument_exchange_map.Exchange.api_id} to initialize`);
         await exchange.isReady(); // wait for initialization to complete
 
+        log(`4. Processing execution order ID: ${order.id}`);
         /* As we have two different ways to acquire an asset (buying and selling),
-        and some exchages do not support creating market orders(and user limit orders instead)
-        this bit of code decides how order is going to be executed. */
-        let order_type;
-        let exchange_supports_order_type = false; // assume exchange doesn't support action, confirm or deny in switch statement
-
-
-        switch (order.type) {
-          case EXECUTION_ORDER_TYPES.Market:
-            order_type = 'market';
-            exchange_supports_order_type = exchange._connector.has.createMarketOrder;
-            break;
-          case EXECUTION_ORDER_TYPES.Limit:
-            order_type = 'limit';
-            exchange_supports_order_type = exchange._connector.has.createLimitOrder;
-            break;
-          case EXECUTION_ORDER_TYPES.Stop:
-            order_type = 'stop';
-            log("--- CCXT doesn't have stop orders. They are ignored for now...");
-            exchange_supports_order_type = false;
-            break;
-          default:
-            return TE("Unknown order type. Should be market, limit or stop order.");
-        }
+        and some exchanges do not support creating market orders(and user limit orders instead)
+        this bit of code decides how order is going to be executed. */        
+        let order_type = _.invert(EXECUTION_ORDER_TYPES)[order.type].toLocaleLowerCase();
+        let order_execution_side = _.invert(ORDER_SIDES)[order.side].toLocaleLowerCase();
 
         if (order_type != "market") {
-          log("Only market orders can be created at the moment");
+          log(err_message = "[ERROR.4a] Only market orders are supported at the moment!");
+          change_status_to_failed(order, err_message);
           return order_with_data;
         }
 
-        let order_execution_side;
-        switch (order.side) {
-          case ORDER_SIDES.Buy:
-            order_execution_side = "buy";
-            break;
-          case ORDER_SIDES.Sell:
-            order_execution_side = "sell";
-            break;
-          default:
-            return TE("Uknown order action. Should be either buy or sell.");
-        }
-
-        if (!exchange_supports_order_type) {
-          log(`Order type ${order.type} is not supported by ${order.exchange_id} exchange`);
+        if (!exchange._connector.has.createMarketOrder) { // while market orders are used this check will only make sure that exchange supports market order
+          log(err_message =`[ERROR.4b] '${order_type}' order type is not supported by '${exchange.api_id}' exchange`);
+          change_status_to_failed(order, err_message);
           return order_with_data;
         }
 
-        if (order.type == EXECUTION_ORDER_TYPES.Limit && !order.price) {
-          log("Limit orders require price and this execution order doesn't have it.");
-          return order_with_data;
-        }
-
+        log(`5. Placing order to ${exchange.api_id}. Instrument symbol: ${instrument_exchange_map.external_instrument_id}, type: ${order_type}, side: ${order_execution_side}, amount: ${order.total_quantity}`);
         /*  later on when we'll introduce other order types this can be changed to just function for placing orders */
         return exchange.createMarketOrder(instrument_exchange_map.external_instrument_id, order_execution_side, order)
         .then(order_response => {
+          log(`5a. Successfully received order placement response from exchange`);
           order.external_identifier = order_response.id;
           order.placed_timestamp = order_response.timestamp;
           order.status = EXECUTION_ORDER_STATUSES.Placed;
@@ -176,6 +159,7 @@ module.exports.JOB_BODY = async (config, log) => {
 
           return order_with_data;
         }).catch((err) => { // order placing failed. Perform actions below.
+          log(`[WARN.5b]. Order placement to exchange failed. Error message: ${err}`);
 
           logAction(actions.error, {
             error: err,
@@ -197,4 +181,10 @@ module.exports.JOB_BODY = async (config, log) => {
         });
       }));
   });
+};
+
+let change_status_to_failed = function (execution_order, fail_message) {
+  
+  execution_order.status = EXECUTION_ORDER_STATUSES.Failed;
+  return execution_order.save();
 };
