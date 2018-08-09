@@ -62,7 +62,7 @@ const generateRecipeRunOrders = async (req, res) => {
     }
     if (recipe_run.approval_status != RECIPE_RUN_STATUSES.Approved) {
 
-        return ReE(res, `Recipe run ${recipe_run_id} in invalid state! Should be approved but was ${recipe_run.approval_status}.`, 422);
+        return ReE(res, `Recipe run ${recipe_run_id} in invalid state! Should be ${RECIPE_RUN_STATUSES.Approved} but was ${recipe_run.approval_status}.`, 422);
     }
 
     let [err, result] = await to(ordersService.generateApproveRecipeOrders(recipe_run_id))

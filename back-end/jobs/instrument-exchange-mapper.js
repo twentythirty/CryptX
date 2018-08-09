@@ -30,18 +30,28 @@ module.exports.JOB_BODY = async (config, log) => {
         });
         const all_connectors_promise = ccxtUtils.allConnectors();
 
-        return Promise.all([bare_instruments_promise, all_connectors_promise])
+        const connectors_filter_promise = sequelize.query(`SELECT DISTINCT exchange_id FROM exchange_account`).then(exchange_ids => {
+            return _.map(exchange_ids, 'exchange_id')
+        });
+
+        return Promise.all([
+            bare_instruments_promise, 
+            connectors_filter_promise,
+            all_connectors_promise
+        ])
     }).then(instruments_connectors => {
 
-        const [instruments, connectors] = instruments_connectors;
+        const [instruments, filter, all_connectors] = instruments_connectors;
 
-        console.log(`Trying to map ${instruments.length} instruments against ${Object.keys(connectors).length} connectors...`)
+        console.log(`Trying to map ${instruments.length} instruments against ${Object.keys(all_connectors).length} connectors...`)
+        const remaining_connectors = _.pickBy(all_connectors, (connector, exchange_id) => filter.includes(exchange_id));
+        console.log(`Reducing connectors to ${Object.keys(remaining_connectors).length} due to lack of exchange accounts...`)
 
         let new_mappings = [];
 
         _.forEach(instruments, instrument => {
 
-            _.forEach(connectors, (connector, exchange_id) => {
+            _.forEach(remaining_connectors, (connector, exchange_id) => {
                 
                 const market = connector.markets[instrument.symbol];
 

@@ -12,9 +12,12 @@ const Instrument = require('../models').Instrument;
 const Asset = require('../models').Asset;
 const InstrumentExchangeMapping = require('../models').InstrumentExchangeMapping;
 const InstrumentMarketData = require('../models').InstrumentMarketData;
+const Op = require('../models').Sequelize.Op;
 const CCXTUtils = require('../utils/CCXTUtils');
 
-
+/**
+ * Check if 2 Instrument objects are using the same assets (by id)
+ */
 const sameAssets = (obj1, obj2) => {
 
     return (
@@ -28,8 +31,10 @@ const sameAssets = (obj1, obj2) => {
 /**
  * Returns current available funds from the completed deposits of the context recipe run
  * for the specified exchanges.
+ * 
  * data is returned in the format of
  * 
+ * ```
  * {
  *  [exchange_id]: {
  *    [asset_id]: [money],
@@ -37,8 +42,11 @@ const sameAssets = (obj1, obj2) => {
  *  ...
  *  }
  * }
- * @param recipe_run_id recipe run context of deposits
- * @param exchange_ids Identifiers of exchanges to get balance for. should be a list
+ * ``` 
+ * 
+ * `recipe_run_id` - recipe run context of deposits
+ * 
+ * `exchange_ids` - Identifiers of exchanges to get balance for. should be a list
  */
 const fetch_exchange_deposits = async (recipe_run_id, exchange_ids) => {
 
@@ -57,15 +65,16 @@ const fetch_exchange_deposits = async (recipe_run_id, exchange_ids) => {
         }
     }).then(deposits => {
 
-        //exchange lookup
+        //exchange account lookup
         const exchanges_mapping = _.keyBy(exchange_accounts, 'id')
 
         //group deposit objects by what exchange they are referring to
+        // creating mappings [exchange_id]: <deposit>
         const grouped_deposits = _.groupBy(deposits, deposit => exchanges_mapping[deposit.target_exchange_account_id].exchange_id);
 
-        //construct described protocol object
-        return _.fromPairs(_.map(_.toPairs(grouped_deposits), pair => {
-            const [exchange_id, deposits] = pair;
+        //construct list of described protocol objects
+        return _.fromPairs(_.map(grouped_deposits, (deposits, exchange_id) => {
+            
             return [
                 exchange_id,
                 _.fromPairs(_.map(deposits, deposit => {
@@ -79,6 +88,15 @@ const fetch_exchange_deposits = async (recipe_run_id, exchange_ids) => {
     });
 }
 
+/**
+ * 
+ * Find which `market_data_key` corresponds to the provided recipe run detail 
+ * by instrument and exchange, though instrument may be reversed.
+ * 
+ * `market_data_keys` - keys to check
+ * `instruments_by_id` - instruments lookup for checking
+ * `recipe_run_detail` - detail to check against
+ */
 const marketDataKeyForRunDetail = (market_data_keys, instruments_by_id, recipe_run_detail) => {
 
     return _.find(market_data_keys, key => {
@@ -92,14 +110,17 @@ const marketDataKeyForRunDetail = (market_data_keys, instruments_by_id, recipe_r
 
 const generateApproveRecipeOrders = async (recipe_run_id) => {
 
-    //cehck if there already is a set of recipe orders for this recipe, by querying group
+    //check if there already is a non-rejected recipe order group for this recipe
     const existing_group = await RecipeOrderGroup.findOne({
         where: {
-            recipe_run_id: recipe_run_id
+            recipe_run_id: recipe_run_id,
+            approval_status: {
+                [Op.ne]: RECIPE_ORDER_GROUP_STATUSES.Rejected
+            }
         }
     });
     if (existing_group) {
-        TE(`Recipe run ${recipe_run_id} already has a generated orders group ${existing_group.id}, cant generate more!`);
+        TE(`Recipe run ${recipe_run_id} already has a non-rejected orders group ${existing_group.id} with status ${existing_group.approval_status}, wont generate more!`);
     }
 
     const recipe_run = await RecipeRun.findById(recipe_run_id);
@@ -108,12 +129,30 @@ const generateApproveRecipeOrders = async (recipe_run_id) => {
         TE(`Recipe run ${recipe_run_id} was not approved! was ${recipe_run.approval_status}.`);
     }
 
+    //check deposits
+    const incomplete_deposits = await RecipeRunDeposit.findAll({
+        where: {
+            recipe_run_id: recipe_run_id,
+            status: {
+                [Op.ne]: RECIPE_RUN_DEPOSIT_STATUSES.Completed
+            }
+        }
+    })
+    if (incomplete_deposits.length > 0) {
+        TE(`${incomplete_deposits.length} incomplete deposits found: ${_.join(_.map(incomplete_deposits, 'id'), ', ')}! Please complete these before generating orders.`)
+    }
+
     //fetch all individual recipe run details
     const recipe_run_details = await RecipeRunDetail.findAll({
         where: {
             recipe_run_id: recipe_run_id
         }
     });
+    //according to spec and system flow this shouldnt be possible, but occurs frequently
+    if (recipe_run_details.length <= 0) {
+        TE(`Can't generate orders for recipe run ${recipe_run_id} due to missing recipe run details!`)
+    }
+
     //fetch all asset ids involved in this venture
     // (to more concisely fetch involved instruments)
     const asset_ids = _.uniq(_.flatMap(recipe_run_details, recipe_run_detail => {
@@ -170,6 +209,7 @@ const generateApproveRecipeOrders = async (recipe_run_id) => {
     //filter out recipe run detailes where we dont have the info
     const market_data_keys = Object.keys(grouped_market_data);
     const valid_recipe_run_details = _.filter(recipe_run_details, recipe_run_detail => {
+
         //is there market data 
         //for assets of recipe on exchange of recipe
         const market_data = marketDataKeyForRunDetail(market_data_keys, instruments_by_id, recipe_run_detail);
@@ -201,7 +241,7 @@ const generateApproveRecipeOrders = async (recipe_run_id) => {
         approval_status: RECIPE_ORDER_GROUP_STATUSES.Pending,
         approval_timestamp: null,
         approval_comment: '',
-        approval_user_id: recipe_run.approval_user_id,
+        approval_user_id: null,
         recipe_run_id: recipe_run_id
     }));
     if (err || !orders_group) TE(`error creating orders group: ${err}`, err);
@@ -214,17 +254,18 @@ const generateApproveRecipeOrders = async (recipe_run_id) => {
         const market_data_key = marketDataKeyForRunDetail(market_data_keys, instruments_by_id, recipe_run_detail);
         //if the market data and recipe run detail use the same base currency
         //then we use the bid price and make a buy order
-        const buy_order = recipe_run_detail.transaction_asset_id == market_data_key[0].transaction_asset_id;
         const market_data = grouped_market_data[market_data_key][0];
-        //get correct price/order side, use precise decision if possible
+        const buy_order = recipe_run_detail.transaction_asset_id == instruments_by_id[market_data.instrument_id].transaction_asset_id;
+
+        //get correct price/order side, use precise division if possible
         const price = (buy_order ? market_data.bid_price : Decimal(1).div(Decimal(market_data.bid_price)).toNumber() );
         const side = buy_order ? ORDER_SIDES.Buy : ORDER_SIDES.Sell;
         //get deposit in base currency
         const qnty_deposit_decimal = Decimal(
-            //fetch deposit on this exchange for qither quote or tx asset (based on order side)
+            //fetch deposit on this exchange for either quote or tx asset (based on order side)
             exchange_deposits[recipe_run_detail.target_exchange_id][buy_order? recipe_run_detail.quote_asset_id : recipe_run_detail.transaction_asset_id]
             //multiply by investment percentage specified in recipe detail
-        ).mul(Decimal(recipe_run_detail.investment_percentage));
+        ).mul(Decimal(recipe_run_detail.investment_percentage).div(Decimal(100)));
         //get mapping tick size as decimal
         const correct_mapping = _.find(
             flat_exchange_mappings_list, 
@@ -239,7 +280,7 @@ const generateApproveRecipeOrders = async (recipe_run_id) => {
         const qnty = (
             tick_size_decimal == null? 
             qnty_deposit_decimal : qnty_deposit_decimal.toDP(tick_size_decimal.dp(), Decimal.ROUND_HALF_DOWN)
-        ).div(buy_order? Decimal(price) : Decimal(1))
+        ).div(buy_order? Decimal(price) : Decimal(1)).toNumber()
 
         return RecipeOrder.create({
             recipe_order_group_id: orders_group.id,

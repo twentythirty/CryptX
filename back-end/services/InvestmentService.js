@@ -194,12 +194,12 @@ const generateRecipeDetails = async function (strategy_type) {
 
     // calculate asset price in usd when buying through certain insturment/exchange
     asset.possible_actions = asset.possible_actions.map((instrument) => {
-      let is_sell = instrument.transaction_asset_id == asset.id;
+      let is_sell = instrument.quote_asset_id == asset.id;
       // flip assets if it's a sell
       if (is_sell) {
         [instrument.transaction_asset_id, instrument.quote_asset_id] = [instrument.quote_asset_id, instrument.transaction_asset_id];
       }
-      let base_asset_id = instrument.transaction_asset_id;
+      let base_asset_id = instrument.quote_asset_id;
 
       // get base asset price in usd
       let base_asset, base_asset_usd_price;
