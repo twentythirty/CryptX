@@ -16,7 +16,8 @@ export class ExecutionOrderListComponent extends DataTableCommonManagerComponent
 
    public orderDataSource: TableDataSource = {
     header: [
-      { column: 'id', nameKey: 'table.header.id', filter: { type: 'text', sortable: true } },
+      { column: 'id', nameKey: 'table.header.id', filter: {  type: 'number', hasRange: false, inputSearch: true, sortable: true } },
+      { column: 'investment_run_id', nameKey: 'table.header.investment_run_id', filter: { type: 'text', sortable: true } },
       { column: 'instrument', nameKey: 'table.header.instrument', filter: { type: 'text', sortable: true } },
       { column: 'side', nameKey: 'table.header.side', filter: { type: 'text', sortable: true } },
       { column: 'exchange', nameKey: 'table.header.exchange', filter: { type: 'text', sortable: true } },
@@ -33,6 +34,7 @@ export class ExecutionOrderListComponent extends DataTableCommonManagerComponent
 
   public orderColumnsToShow: Array<TableDataColumn> = [
     new TableDataColumn({ column: 'id' }),
+    new TableDataColumn({ column: 'investment_run_id' }),
     new TableDataColumn({ column: 'instrument' }),
     new StatusCellDataColumn({ column: 'side' }),
     new TableDataColumn({ column: 'exchange' }),
@@ -65,7 +67,7 @@ export class ExecutionOrderListComponent extends DataTableCommonManagerComponent
 
     getFilterLOV(): void {
     this.orderDataSource.header.filter(
-        col => ['id', 'instrument', 'side', 'exchange', 'type', 'status'].includes(col.column)
+        col => ['id', 'investment_run_id', 'instrument', 'side', 'exchange', 'type', 'status'].includes(col.column)
       ).map(
         col => {
           col.filter.rowData$ = this.orderService.getHeaderLOV(col.column)
