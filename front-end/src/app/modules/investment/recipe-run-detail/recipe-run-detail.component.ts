@@ -146,7 +146,7 @@ export class RecipeRunDetailComponent extends TimelineDetailComponent implements
       col => ['id', 'transaction_asset', 'quote_asset','target_exchange'].includes(col.column)
     ).map(
       col => {
-        let filter = {"filter" : {"recipe_run_id": this.routeParamId}}
+        let filter = {filter : {recipe_run_id: this.routeParamId}}
         col.filter.rowData$ = this.investmentService.getAllRecipeDetailsHeaderLOV(col.column, filter);
       }
     );

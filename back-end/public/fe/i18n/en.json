@@ -164,7 +164,7 @@
     "recipe_runs_not_created": "Recipe runs are not created yet",
     "status": {
       "41": "Pending",
-      "42": "Rejected",
+      "42": "RecipeRejected",
       "43": "Approved"
     }
   },
@@ -231,6 +231,7 @@
   },
 
   "execution_orders": {
+    "header": "Execution orders",
     "exe_orders_not_created": "Execution orders are not created yet",
     "side": {
       "999": "Buy",

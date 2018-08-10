@@ -167,7 +167,7 @@ export class DepositDetailComponent extends TimelineDetailComponent implements O
       col => ['id',  'quote_asset', 'exchange', 'account', 'status'].includes(col.column)
     ).map(
       col => {
-        let filter = {"filter" : {"investment_run_id": this.routeParamId}}
+        let filter = {filter : {investment_run_id: this.routeParamId}}
         col.filter.rowData$ = this.investmentService.getAllDepositDetailsHeaderLOV(col.column, filter);
       }
     );

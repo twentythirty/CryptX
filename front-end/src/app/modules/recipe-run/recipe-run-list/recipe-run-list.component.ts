@@ -17,11 +17,12 @@ export class RecipeRunListComponent extends DataTableCommonManagerComponent impl
   public recipeDataSource: TableDataSource = {
     header: [
       { column: 'id', nameKey: 'table.header.id', filter: { type: 'number', hasRange: false, inputSearch: true, sortable: true } },
+      { column: 'investment_run_id', nameKey: 'table.header.investment_run_id', filter: { type: 'number', hasRange: false, inputSearch: true, sortable: true } },
       { column: 'created_timestamp', nameKey: 'table.header.creation_time', filter: { type: 'date', sortable: true } },
       { column: 'user_created', nameKey: 'table.header.creator', filter: { type: 'text', sortable: true } },
       { column: 'approval_status', nameKey: 'table.header.status', filter: { type: 'text', sortable: true } },
       { column: 'approval_user', nameKey: 'table.header.decision_by', filter: { type: 'text', sortable: true } },
-      { column: 'approval_timestamp', nameKey: 'table.header.creation_time', filter: { type: 'date', sortable: true } },
+      { column: 'approval_timestamp', nameKey: 'table.header.decision_time', filter: { type: 'date', sortable: true } },
       { column: 'approval_comment', nameKey: 'table.header.rationale' },
     ],
     body: null
@@ -29,9 +30,10 @@ export class RecipeRunListComponent extends DataTableCommonManagerComponent impl
 
   public recipeColumnsToShow: Array<TableDataColumn> = [
     new TableDataColumn({ column: 'id' }),
+    new TableDataColumn({ column: 'investment_run_id' }),
     new DateCellDataColumn({ column: 'created_timestamp' }),
     new TableDataColumn({ column: 'user_created' }),
-    new StatusCellDataColumn({ column: 'approval_status', inputs: { classMap: { //???
+    new StatusCellDataColumn({ column: 'approval_status', inputs: { classMap: { 
       'recipes.status.41': StatusClass.PENDING,
       'recipes.status.42': StatusClass.REJECTED,
       'recipes.status.43': StatusClass.APPROVED,
@@ -70,7 +72,7 @@ export class RecipeRunListComponent extends DataTableCommonManagerComponent impl
 
   getFilterLOV(): void {
    this.recipeDataSource.header.filter(
-       col => ['id', 'user_created', 'approval_status', 'approval_user'].includes(col.column)
+       col => ['id', 'investment_run_id', 'user_created', 'approval_status', 'approval_user'].includes(col.column)
     ).map(
       col => {
         col.filter.rowData$ = this.recipeService.getHeaderLOV(col.column)
