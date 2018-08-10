@@ -38,10 +38,7 @@ class InvitationCheckSuccessResponse {
   styleUrls: ['./accept-invite.component.scss']
 })
 export class AcceptInviteComponent implements OnInit {
-  private userLoginData;
-
   token: TokenCheck = new TokenCheck();
-  showForm: boolean = true;
   message: string;
   invitationInfo: InvitationInfo;
   userInfo: UserFulfillInvitationInfo = {
@@ -92,7 +89,6 @@ export class AcceptInviteComponent implements OnInit {
     });
   }
 
-
   fulfillInvitation() {
     if (this.userInfoForm.value.password != this.userInfoForm.value.password_repeat) {
       this.message = "New password was not repeated correctly";
@@ -105,8 +101,7 @@ export class AcceptInviteComponent implements OnInit {
       }
 
       this.inviteService.fulfillInvitation(data).subscribe(data => {
-        this.showForm = false;
-        this.userLoginData = data;
+        this.autoLogin(data);
       }, error => {
         if (error.error) {
           this.message = error.error.error;
@@ -118,7 +113,7 @@ export class AcceptInviteComponent implements OnInit {
   }
 
   markAsTouched(group) {
-    Object.keys(group.controls).map((field) => {
+    Object.keys(group.controls).map(field => {
       const control = group.get(field);
       if (control instanceof FormControl) {
         control.markAsTouched({ onlySelf: true });
@@ -128,8 +123,8 @@ export class AcceptInviteComponent implements OnInit {
     });
   }
 
-  public autoLogin() {
-    this.authService.setAuthData(this.userLoginData);
+  private autoLogin(userLoginData): void {
+    this.authService.setAuthData(userLoginData);
     this.router.navigate(['dashboard']);
   };
 

@@ -2,16 +2,27 @@
     <div *ngIf="!token.isValid">
       {{ message }}
     </div>
+
     <div *ngIf="token.isValid">
       <div class="login-block" *ngIf="token.validityChecked">
         <div class="top">
           <img [src]="imageLogo" class="logo">
         </div>
-        <div *ngIf="showForm">
+
+        <div>
           <form [formGroup]="userInfoForm" (ngSubmit)="fulfillInvitation()">
             <div class="part-header">
               <br> {{'auth.invitation.to_able_account_msg' | translate}}
             </div>
+
+            <!-- hidden email data input for browser credentionals save-->
+            <input
+              type="text"
+              name="email"
+              [value]="invitationInfo.email"
+              hidden
+            >
+
             <app-input-item
               class="form-item with-icons icon-password"
               type="password"
@@ -21,24 +32,18 @@
             ></app-input-item>
             <app-input-item
               class="form-item with-icons icon-password"
-              [placeholder]="'auth.invitation.repeat_password_placeholder' | translate"
               type="password"
+              [placeholder]="'auth.invitation.repeat_password_placeholder' | translate"
               [formGroup]="userInfoForm"
               formControlName="password_repeat"
             ></app-input-item>
+
             <p>{{ message }}</p>
+
             <div class="btn-wrap btn-right">
               <button class="btn" type="submit">{{'common.sign_up' | translate}}</button>
             </div>
           </form>
-        </div>
-
-        <div class="new" *ngIf="!showForm">
-          <div class="part-header">{{'auth.invitation.set_up_account_msg' | translate}}</div>
-          <br>
-          <div class="part-header">{{'auth.invitation.login_msg' | translate}}</div>
-          <br>
-          <button class="btn" (click)="autoLogin()" md-button>{{'common.login' | translate}}</button>
         </div>
       </div>
   </div>
