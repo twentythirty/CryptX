@@ -160,7 +160,7 @@ export class OrderDetailComponent extends TimelineDetailComponent implements OnI
       col => ['id', 'instrument', 'side', 'exchange', 'status'].includes(col.column)
     ).map(
       col => {
-        let filter = {"filter" : {"recipe_run_id": this.routeParamId}}
+        let filter = {filter : {recipe_run_id: this.routeParamId}}
         col.filter.rowData$ = this.investmentService.getAllOrdersHeaderLOV(col.column, filter);
       }
     );

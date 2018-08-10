@@ -129,7 +129,7 @@ export class ExecutionOrderFillDetailComponent extends TimelineDetailComponent i
       col => ['id'].includes(col.column)
     ).map(
       col => {
-        let filter = {"filter" : {"execution_order_id": this.routeParamId}}
+        let filter = {filter : {execution_order_id: this.routeParamId}}
         col.filter.rowData$ = this.investmentService.getAllExecutionOrdersFillsHeaderLOV(col.column, filter);
       }
     );
@@ -158,7 +158,7 @@ export class ExecutionOrderFillDetailComponent extends TimelineDetailComponent i
   protected getTimelineData(): void {
     this.timeline$ = this.route.params.pipe(
       mergeMap(
-         params => this.investmentService.getAllTimelineData({ "execution_order_id": params['id'] })
+         params => this.investmentService.getAllTimelineData({ execution_order_id: params['id'] })
       )
     )
   }

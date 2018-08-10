@@ -112,7 +112,7 @@ export class ExecutionOrdersComponent extends TimelineDetailComponent implements
       col => ['id', 'instrument', 'side', 'exchange', 'type', 'status'].includes(col.column)
     ).map(
       col => {
-        let filter = {"filter" : {"investment_run_id": this.routeParamId}}
+        let filter = {filter : {investment_run_id: this.routeParamId}}
         col.filter.rowData$ = this.investmentService.getAllExecutionOrdersHeaderLOV(col.column, filter);
       }
     );

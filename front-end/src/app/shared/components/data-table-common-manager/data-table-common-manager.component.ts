@@ -23,7 +23,7 @@ export class DataTableCommonManagerComponent implements OnInit, OnDestroy {
     order: [
       {
         by: 'id',
-        order: 'desc'
+        order: 'asc'
       }
     ],
     limit: this.pageSize,

@@ -135,7 +135,7 @@ export class ExecutionOrderDetailComponent extends TimelineDetailComponent imple
       col => ['id', 'instrument', 'side', 'exchange', 'type', 'status'].includes(col.column)
     ).map(
       col => {
-        let filter = {"filter" : {"recipe_order_id": this.routeParamId}}
+        let filter = {filter : {recipe_order_id: this.routeParamId}}
         col.filter.rowData$ = this.investmentService.getAllExecutionOrdersHeaderLOV(col.column, filter);
       }
     );
