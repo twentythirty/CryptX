@@ -89,6 +89,10 @@ module.exports.JOB_BODY = async (config, log) => {
                     return updateOrderStatus(placed_order, log, config);
                 }
 
+                console.log('\x1b[36m', '<<<<<<<<<<<<<<ORDER>>>>>>>>>>>>>>', '\x1b[0m')
+                console.log(JSON.stringify(external_order, null, 3));
+                console.log('\x1b[36m', '<<<<<<<<<<<<<<ORDER>>>>>>>>>>>>>>', '\x1b[0m')
+
                 /** 
                  * When succesfully placed orders somehow fail during trading on the exchanges, CCXT library always marks them as 'closed'.
                  * Instead of using a specific status name (ex: 'expired'). One way to identify this situations, is to check if the order was 'closed'
@@ -117,6 +121,7 @@ module.exports.JOB_BODY = async (config, log) => {
                         relations: { execution_order_id: placed_order.id }
                     });
                     placed_order.status = FullyFilled;
+                    placed_order.completed_timestamp = new Date();
                     //The execution will continue, as the job might be missing the last fill/fills.
                 }
 
@@ -218,14 +223,20 @@ module.exports.handleFillsWithTrades = async (placed_order, exchange, external_o
     log(`[WARN.5B] Found ${new_trades.length} trades, saving to database`);
     const new_fills = new_trades.map(trade => {
         const fee = trade.fee ? trade.fee.cost : 0;
-        placed_order.fee += fee;
+        
+        if(placed_order.fee == null) placed_order.fee = 0;
+
+        placed_order.fee = parseFloat(placed_order.fee) + fee;
+        console.log('\x1b[36m', '<<<<<<<<<<<<<<TRADE>>>>>>>>>>>>>>', '\x1b[0m')
+        console.log(JSON.stringify(trade, null, 3));
+        console.log('\x1b[36m', '<<<<<<<<<<<<<<TRADE>>>>>>>>>>>>>>', '\x1b[0m')
         return {
             execution_order_id: placed_order.id,
-            timestamp: trade.timestamp,
+            timestamp: trade.timestamp || Date.now(),
             quantity: trade.amount,
             external_identifier: String(trade.id),
             fee: fee,
-            price: trade.price
+            price: trade.price ? trade.price : placed_order.price
         }
     });
 
@@ -263,9 +274,12 @@ module.exports.handleFillsWithoutTrades = async (placed_order, external_order, l
     //Add a flag to the Execution order, marking that its fills were emulated. Will be used for fees.
     placed_order.emulated_fills = true;
 
-    //Check if the external_order has the order fee
+    //Check if the external_order has the order fee and price
     if(external_order.fee) {
         placed_order.fee = external_order.fee.cost;
+    }
+    if(external_order.price) {
+        placed_order.price = external_order.price;
     }
 
     log(`3. Calculating the current sum of fills for order ${placed_order.id}`);
@@ -274,7 +288,7 @@ module.exports.handleFillsWithoutTrades = async (placed_order, external_order, l
             execution_order_id: placed_order.id
         }
     }));
-
+    
     if(err) {
         log(`[ERROR.3A] Error occured during fill amount summing: ${err.message}`);
         logAction(actions.error, {
@@ -284,6 +298,9 @@ module.exports.handleFillsWithoutTrades = async (placed_order, external_order, l
         placed_order.failed_attempts++;
         return updateOrderStatus(placed_order, log, config);
     }
+
+    //If there are no fills, it return NaN for some reason instead of 0
+    if(isNaN(fill_amount_sum)) fill_amount_sum = 0;
 
     log(`4. Checking for differences in the received order details and the current fill sum.`);
     if(external_order.filled > fill_amount_sum) {
@@ -328,7 +345,7 @@ module.exports.handleFillsWithoutTrades = async (placed_order, external_order, l
  */
 const updateOrderStatus = async (placed_order, log, config) => {
 
-    const sequelize = config.sequelize;
+    const sequelize = config.models.sequelize;
     const ExecutionOrderFill = config.models.ExecutionOrderFill;
 
     const { Failed, Placed, PartiallyFilled, FullyFilled } = MODEL_CONST.EXECUTION_ORDER_STATUSES; 
