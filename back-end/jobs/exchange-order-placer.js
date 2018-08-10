@@ -60,7 +60,7 @@ module.exports.JOB_BODY = async (config, log) => {
     type: sequelize.QueryTypes.SELECT
   }));
   if (err) {
-    log(`[Error.1a]. Failed to fetch execution orders of real investment runs`);
+    log(`[ERROR.1a]. Failed to fetch execution orders of real investment runs`);
     TE(err.message);
   }
 
@@ -92,7 +92,7 @@ module.exports.JOB_BODY = async (config, log) => {
       if (err) {
         log(err_message = `[ERROR.2a] Failed to fetch instrument mapping.`)
         change_status_to_failed(order, err_message);
-        TE(err.message);
+        return [pending_order, mapp];
       }
 
     return result;
@@ -147,7 +147,10 @@ module.exports.JOB_BODY = async (config, log) => {
         .then(order_response => {
           log(`5a. Successfully received order placement response from exchange`);
           order.external_identifier = order_response.id;
-          order.placed_timestamp = order_response.timestamp;
+          /* as actual timestamps in exchanges might be lower than ones we get with response, we make our timestamp smaller. 
+           max difference between times is of is -1 second. */
+          let timestamp = order_response.timestamp - 1000; // subtract 1000 miliseconds from timestamp
+          order.placed_timestamp = timestamp;
           order.status = EXECUTION_ORDER_STATUSES.Placed;
 
           order.save().then(o => {
@@ -156,7 +159,7 @@ module.exports.JOB_BODY = async (config, log) => {
               relations: { execution_order_id: order.id }
             });
           });
-
+          
           return order_with_data;
         }).catch((err) => { // order placing failed. Perform actions below.
           log(`[WARN.5b]. Order placement to exchange failed. Error message: ${err}`);
