@@ -5,6 +5,8 @@ import { User } from '../../../shared/models/user';
 import { FormGroup, FormControl, Validator } from "@angular/forms";
 import { Router } from "@angular/router";
 
+import { MatSnackBar } from '@angular/material';
+
 class EditInfo extends User {
   old_password: string;
   new_password: string;
@@ -29,7 +31,8 @@ export class EditInfoComponent implements OnInit {
   });
 
   constructor(private authService: AuthService,
-              private router: Router) { }
+              private router: Router,
+              public snackBar: MatSnackBar) { }
 
   ngOnInit() {
     this.getMyInfo();
@@ -51,6 +54,13 @@ export class EditInfoComponent implements OnInit {
     }
     this.authService.changeInfo(this.user_info).subscribe(response => {
       this.status = true;
+      
+      let snackBar = this.snackBar.open('✓ CHANGES SUCCESSFULLY CHANGED', '', {
+        panelClass: 'mat-snack-bar-success',
+        verticalPosition: 'bottom',
+        duration: 3000
+      });
+
       this.router.navigate(['dashboard']);
     }, error => {
       if(error.error) {
