@@ -18,7 +18,7 @@ export class DepositListComponent extends DataTableCommonManagerComponent implem
 
   public depositDataSource: TableDataSource = {
     header: [
-      { column: 'id', nameKey: 'table.header.id', filter: { type: 'text', sortable: true } },
+      { column: 'id', nameKey: 'table.header.id', filter: { type: 'number', hasRange: false, inputSearch: true, sortable: true } },
       { column: 'investment_run_id', nameKey: 'table.header.investment_run_id', filter: { type: 'text', sortable: true } },
       { column: 'quote_asset', nameKey: 'table.header.quote_asset', filter: { type: 'text', sortable: true } },
       { column: 'exchange', nameKey: 'table.header.exchange', filter: { type: 'text', sortable: true } },

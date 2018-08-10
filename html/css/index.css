@@ -1235,6 +1235,7 @@ body.sticky-bottom {
   width: 190px;
   top: 40px;
   left: 50%;
+  text-align: left;
   -moz-transform: translate(-50%, 0);
   -o-transform: translate(-50%, 0);
   -ms-transform: translate(-50%, 0);
@@ -1352,6 +1353,19 @@ body.sticky-bottom {
       border-bottom: 1px solid #DFE4E6; }
       .filter-sort-box .list-of-filters li:last-child {
         border-bottom: 0; }
+      .filter-sort-box .list-of-filters li.with-preloader {
+        position: relative;
+        height: 100%; }
+      .filter-sort-box .list-of-filters li .preloader {
+        position: absolute;
+        display: inline-block;
+        width: 26px;
+        height: 26px;
+        top: 0;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        margin: auto; }
       .filter-sort-box .list-of-filters li .checkbox label {
         width: 100%; }
         .filter-sort-box .list-of-filters li .checkbox label::before {

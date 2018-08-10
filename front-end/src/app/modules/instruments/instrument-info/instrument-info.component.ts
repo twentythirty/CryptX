@@ -72,7 +72,7 @@ export class InstrumentInfoComponent extends DataTableCommonManagerComponent imp
 
   private declareMappingTable() {
     this.mappingDataSource.header = [
-      { column: 'exchange_id', nameKey: 'table.header.exchange', filter: { type: 'text', sortable: true } },
+      { column: 'exchange_id', nameKey: 'table.header.exchange', filter: { type: 'number', hasRange: false, inputSearch: true, sortable: true } },
       { column: 'external_instrument', nameKey: 'table.header.identifier', filter: { type: 'text', sortable: true } },
       { column: 'current_price', nameKey: 'table.header.current_price' },
       { column: 'last_day_vol', nameKey: 'table.header.last_day_vol' },

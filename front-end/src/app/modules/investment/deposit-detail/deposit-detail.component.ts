@@ -77,13 +77,13 @@ export class DepositDetailComponent extends TimelineDetailComponent implements O
 
   public listDataSource: TableDataSource = {
     header: [
-      { column: 'id', nameKey: 'table.header.id', filter: {type: 'text', sortable: true }},
-      { column: 'quote_asset', nameKey: 'table.header.quote_asset', filter: {type: 'text', sortable: true }},
-      { column: 'exchange', nameKey: 'table.header.exchange', filter: {type: 'text', sortable: true }},
-      { column: 'account', nameKey: 'table.header.account', filter: {type: 'text', sortable: true }},
-      { column: 'amount', nameKey: 'table.header.amount', filter: {type: 'number', sortable: true }},
-      { column: 'investment_percentage', nameKey: 'table.header.investment_percentage', filter: {type: 'number', sortable: true }},
-      { column: 'status', nameKey: 'table.header.status', filter: {type: 'text', sortable: true } },
+      { column: 'id', nameKey: 'table.header.id', filter: { type: 'number', hasRange: false, inputSearch: true, sortable: true }},
+      { column: 'quote_asset', nameKey: 'table.header.quote_asset', filter: { type: 'text', sortable: true }},
+      { column: 'exchange', nameKey: 'table.header.exchange', filter: { type: 'text', sortable: true }},
+      { column: 'account', nameKey: 'table.header.account', filter: { type: 'text', sortable: true }},
+      { column: 'amount', nameKey: 'table.header.amount', filter: { type: 'number', sortable: true }},
+      { column: 'investment_percentage', nameKey: 'table.header.investment_percentage', filter: { type: 'number', sortable: true }},
+      { column: 'status', nameKey: 'table.header.status', filter: { type: 'text', sortable: true } },
     ],
     body: null
   };

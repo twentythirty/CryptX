@@ -45,6 +45,7 @@ const TABLE_LOV_FIELDS = {
     ],
     'av_recipe_runs': [
         'id', 
+        'investment_run_id',
         'user_created', 
         'approval_status', 
         'approval_user'
@@ -68,6 +69,7 @@ const TABLE_LOV_FIELDS = {
         'status'
     ],
     'av_execution_orders': [
+        'investment_run_id',
         'instrument',
         'side',
         'exchange',

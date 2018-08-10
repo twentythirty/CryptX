@@ -204,9 +204,9 @@ describe('Execution Order Fills fetcher job', () => {
         models: {
             ExecutionOrder: ExecutionOrder,
             Instrument: Instrument,
-            ExecutionOrderFill: ExecutionOrderFill
-        },
-        sequelize: sequelize
+            ExecutionOrderFill: ExecutionOrderFill,
+            sequelize: sequelize
+        }
     };
 
     beforeEach(done => {

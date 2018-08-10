@@ -36,7 +36,7 @@ describe('DepositService testing', () => {
 
     const ActionLogUtil = require('./../../utils/ActionLogUtil');
 
-    describe('and method approveDeosit shall', () => {
+    describe('and method submitDeosit shall', () => {
 
         const { Pending, Completed } = MODEL_CONST.RECIPE_RUN_DEPOSIT_STATUSES;
 
@@ -48,7 +48,7 @@ describe('DepositService testing', () => {
             depositor_user_id: null,
             completion_timestamp: null,
             target_exchange_account_id: 45,
-            status: 150,
+            status: Pending,
             asset_id: 24,
             fee: null,
             save() { return Promise.resolve(this) },
@@ -61,7 +61,101 @@ describe('DepositService testing', () => {
                 switch(deposit_id) {
                     case 1:
                         return Promise.resolve(Object.assign({}, MOCK_BASE_DEPOSIT, {
-                            status: 151,
+                            status: Completed,
+                        }));
+                    case 2:
+                        return Promise.resolve(Object.assign({}, MOCK_BASE_DEPOSIT));
+                    default: 
+                        return Promise.resolve(null);
+                }
+            });
+
+            done();
+
+        });
+
+        after(done => {
+
+            RecipeRunDeposit.findById.restore();
+            done();
+
+        });
+
+        it('exist', () => {
+            chai.expect(DepositService.approveDeposit).to.not.be.undefined;
+        });
+
+        it('reject if the required arguments are missing or invalid', () => {
+            return Promise.all(_.map([
+                {},
+                { deposit_management_fee: -1, amount: -1 },
+                { deposit_management_fee: '22f', amount: 'fg' },
+                { deposit_management_fee: [], amount: [1] }
+            ], params => {
+                chai.assert.isRejected(DepositService.submitDeposit(2, 1, params));
+            }))
+        });
+
+        it('reject if the deposit status is not Pending', () => {
+            const valid_update = { deposit_management_fee: 45.123123, amount: 21.31231 };
+
+            return chai.assert.isRejected(DepositService.submitDeposit(1, 1, valid_update));
+        });
+
+        it('resolve in a null when a deposit is not found at all', () => {
+            const valid_update = { deposit_management_fee: 45.123123, amount: 21.31231 };
+
+            return DepositService.submitDeposit(999, 1, valid_update).then(deposit => {
+                chai.expect(deposit).to.be.null;
+            });
+        });
+
+        it('submit a Pending deposit and update it appropriately', () => {
+            const valid_update = { deposit_management_fee: 45.123123, amount: 21.31231 };
+            const user_id = 1
+
+            return DepositService.submitDeposit(2, user_id, valid_update).then(deposit_data => {
+
+                const deposit = deposit_data.updated_deposit;
+
+                chai.expect(deposit).to.be.an('object');
+                chai.expect(deposit.status).to.equal(MODEL_CONST.RECIPE_RUN_DEPOSIT_STATUSES.Pending);
+                chai.expect(deposit.fee).to.equal(valid_update.deposit_management_fee);
+                chai.expect(deposit.amount).to.equal(valid_update.amount);
+                chai.expect(deposit.depositor_user_id).to.be.null;
+                chai.expect(deposit.completion_timestamp).to.be.null;
+
+            });
+        });
+
+    });
+
+    describe('and method approveDeosit shall', () => {
+
+        const { Pending, Completed } = MODEL_CONST.RECIPE_RUN_DEPOSIT_STATUSES;
+
+        const MOCK_BASE_DEPOSIT = {
+            id: 1,
+            creation_timestamp: new Date(),
+            recipe_run_id: 1,
+            amount: null,
+            depositor_user_id: null,
+            completion_timestamp: null,
+            target_exchange_account_id: 45,
+            status: Pending,
+            asset_id: 24,
+            fee: null,
+            save() { return Promise.resolve(this) },
+            toJSON() { return this; }
+        };
+
+        before(done => {
+
+            sinon.stub(RecipeRunDeposit, 'findById').callsFake(deposit_id => {
+                switch(deposit_id) {
+                    case 1:
+                        return Promise.resolve(Object.assign({}, MOCK_BASE_DEPOSIT, {
+                            status: Completed,
                         }));
                     case 2:
                         return Promise.resolve(Object.assign({}, MOCK_BASE_DEPOSIT));

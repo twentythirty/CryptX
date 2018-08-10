@@ -1,8 +1,8 @@
 import { Component, OnInit, Input, EventEmitter, Output } from '@angular/core';
-import { Observable } from 'rxjs';
+import { ActivatedRoute, Router, NavigationStart } from "@angular/router";
+import { Observable } from 'rxjs/Observable';
 import _ from 'lodash';
 import { TranslateService } from '@ngx-translate/core';
-import { ActivatedRoute, Router, NavigationStart } from "@angular/router";
 
 export interface TableDataSource {
   header: Array<{
@@ -12,6 +12,14 @@ export interface TableDataSource {
     filter?: {
       type: 'text' | 'boolean' | 'date' | 'number'
       sortable?: boolean
+      /**
+       * @param hasRange - False if you no need number range filter for number type filter
+       */
+      hasRange?: boolean
+      /**
+       * @param inputSearch - If True search will be show independent on filter type
+       */
+      inputSearch?: boolean
       rowData?: Array<{
         value: string | boolean,
         label?: string

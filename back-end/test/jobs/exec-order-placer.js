@@ -178,7 +178,7 @@ describe("Execution Order Placer job", () => {
       return exchange;
     }); */
 
-    sinon.stub(ExecutionOrder, 'findAll').callsFake(() => {
+    sinon.stub(sequelize, 'query').callsFake(() => {
       let execution_orders = [...Array(EXCHANGE_IDS.length * EXEC_ORDERS_PER_EXCHANGE)]
         .map((value, index) => {
           let result = /* Object.assign({}, EXEC_ORDER); */new ExecutionOrder(EXEC_ORDER);
@@ -201,6 +201,7 @@ describe("Execution Order Placer job", () => {
           instrument_id: args.instrument_id
         })
       );
+      mapping.Exchange = EXCHANGE_INFO;
 
       return Promise.resolve(mapping);
     });
@@ -211,9 +212,9 @@ describe("Execution Order Placer job", () => {
       return Promise.resolve(exchange);
     });
 
-    sinon.stub(sequelize, 'query').returns(Promise.resolve(
+    /* sinon.stub(sequelize, 'query').returns(Promise.resolve(
       new InvestmentRun( INVESTMENT_RUN )
-    ));
+    )); */
 
     sinon.stub(ccxtUnified, "getExchange").callsFake((exch) => {
       return class StubExchangeClass {
@@ -262,7 +263,7 @@ describe("Execution Order Placer job", () => {
   afterEach(() => {
     /* ccxt[EXCHANGE_INFO.api_id].restore(); */
     ccxtUnified.getExchange.restore();
-    ExecutionOrder.findAll.restore();
+    /* ExecutionOrder.findAll.restore(); */
     InstrumentExchangeMapping.findOne.restore();
     Exchange.findOne.restore();
     sequelize.query.restore();
@@ -278,9 +279,9 @@ describe("Execution Order Placer job", () => {
     return execOrderPlacer.JOB_BODY(stubbed_config, console.log).then(result => {
       let orders_with_data = result;
 
-      chai.assert.isTrue(ExecutionOrder.findAll.called);
+      chai.assert.isTrue(sequelize.query.called);
       chai.assert.isTrue(InstrumentExchangeMapping.findOne.called);
-      chai.assert.isTrue(Exchange.findOne.called);
+      /* chai.assert.isTrue(Exchange.findOne.called); */
       chai.expect(orders_with_data).to.satisfy((orders) => {
         return orders.every(order => {
           return order[0].save.called;

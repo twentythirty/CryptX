@@ -51,10 +51,10 @@ export class ExecutionOrderFillDetailComponent extends TimelineDetailComponent i
 
   public listDataSource: TableDataSource = {
     header: [
-      { column: 'id', nameKey: 'table.header.id', filter: {type: 'text', sortable: true }},
-      { column: 'fill_time', nameKey: 'table.header.fill_time', filter: {type: 'date', sortable: true }},
-      { column: 'fill_price', nameKey: 'table.header.fill_price', filter: {type: 'number', sortable: true }},
-      { column: 'quantity', nameKey: 'table.header.quantity', filter: {type: 'number', sortable: true }}
+      { column: 'id', nameKey: 'table.header.id', filter: { type: 'number', hasRange: false, inputSearch: true, sortable: true }},
+      { column: 'fill_time', nameKey: 'table.header.fill_time', filter: { type: 'date', sortable: true }},
+      { column: 'fill_price', nameKey: 'table.header.fill_price', filter: { type: 'number', sortable: true }},
+      { column: 'quantity', nameKey: 'table.header.quantity', filter: { type: 'number', sortable: true }}
     ],
     body: null,
   };

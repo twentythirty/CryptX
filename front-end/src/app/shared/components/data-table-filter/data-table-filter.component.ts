@@ -1,14 +1,14 @@
 import { Component, OnInit, Input, EventEmitter, Output, OnChanges } from '@angular/core';
 import _ from 'lodash';
-import { Observable } from 'rxjs';
+import { Observable } from 'rxjs/Observable';
 
 export interface DataTableFilterData {
   column: string
   values: Array<{
     field: string
     value: any,
-    expression: string,
-    type: string
+    expression?: string,
+    type?: string
   }>
   order?: {
     by: string
@@ -36,6 +36,8 @@ export class DataTableFilterComponent implements OnInit, OnChanges {
   @Input() column: string;
   @Input() type: string = 'text';
   @Input() sortable: boolean = true;
+  @Input() hasRange: boolean = true;
+  @Input() inputSearch: boolean = false;
   @Input() rowData: Array<{
     value: string | boolean | number,
     label?: string
@@ -52,6 +54,9 @@ export class DataTableFilterComponent implements OnInit, OnChanges {
   constructor() {}
 
   ngOnInit() {
+    // setting default value
+    this.hasRange = _.isUndefined(this.hasRange) ? true : this.hasRange;
+    this.inputSearch = _.isUndefined(this.inputSearch) ? false : this.inputSearch;
   }
 
   ngOnChanges(changes) {
@@ -121,6 +126,15 @@ export class DataTableFilterComponent implements OnInit, OnChanges {
         break;
 
       case 'number':
+        if ( this._filterSearchText.length ) {
+          // search field data
+          data.values.push({
+            field: this.column,
+            value: this._filterSearchText,
+            // expression: 'eq',
+            // type: 'number'
+          });
+        }
         if ( this._filterData.values[0] ) {
           data.values[0] = {
             field: this.column,
@@ -188,6 +202,10 @@ export class DataTableFilterComponent implements OnInit, OnChanges {
     else if ( value === 'max' && this._filterData.values[0] > this._filterData.values[1] ) {
       this._filterData.values[1] = this._filterData.values[0];
     }
+  }
+
+  showInputSearch(): boolean {
+    return this.type === 'text' || this.inputSearch;
   }
 
   /**

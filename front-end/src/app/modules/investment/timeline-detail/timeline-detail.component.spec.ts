@@ -1,6 +1,31 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { TimelineDetailComponent } from './timeline-detail.component';
+import { TimelineDetailComponent, SingleTableDataSource } from './timeline-detail.component';
+import { TableDataSource } from '../../../shared/components/data-table/data-table.component';
+
+class TimelineDetailComponentClass extends TimelineDetailComponent {
+  pageTitle = '';
+  singleTitle = '';
+  listTitle = '';
+
+  singleDataSource: SingleTableDataSource = {
+    header: [{column: 'id', nameKey: 'namekey'}],
+    body: null
+  };
+  listDataSource: TableDataSource = {
+    header: [{column: 'id', nameKey: 'namekey'}],
+    body: null
+  };
+
+  singleColumnsToShow = [];
+  listColumnsToShow = [];
+
+  getAllData(){}
+  getSingleData(){}
+  getTimelineData(){}
+  openSingleRow(){}
+  openListRow(){}
+}
 
 describe('TimelineDetailComponent', () => {
   let component: TimelineDetailComponent;
@@ -14,7 +39,7 @@ describe('TimelineDetailComponent', () => {
   }));
 
   beforeEach(() => {
-    fixture = TestBed.createComponent(TimelineDetailComponent);
+    fixture = TestBed.createComponent(TimelineDetailComponentClass);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

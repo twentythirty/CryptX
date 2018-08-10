@@ -20,12 +20,7 @@ export class DataTableCommonManagerComponent implements OnInit, OnDestroy {
 
   public requestData: RolesAllRequestData = {
     filter: {},
-    order: [
-      {
-        by: 'id',
-        order: 'asc'
-      }
-    ],
+    order: [],
     limit: this.pageSize,
     offset: 0
   };
@@ -33,7 +28,9 @@ export class DataTableCommonManagerComponent implements OnInit, OnDestroy {
   constructor(
     public route: ActivatedRoute,
     //private router: Router,
-  ) {}
+  ) {
+    this.setOrderById();
+  }
 
   ngOnInit() {
     this.queryParamsSubscription = this.route.queryParams
@@ -72,10 +69,6 @@ export class DataTableCommonManagerComponent implements OnInit, OnDestroy {
     ).concat(filterData.values);
 
     // order
-    if (!this.requestData.order) {
-      this.requestData.order = [];
-    }
-
     this.requestData.order = _.filter(
       this.requestData.order,
       item => filterData.column !== item.by
@@ -86,6 +79,11 @@ export class DataTableCommonManagerComponent implements OnInit, OnDestroy {
         this.orderingCleared = true;
       }
       this.requestData.order.push(filterData.order);
+    }
+
+    // order by id if no ordering exists
+    if(_.isEmpty(this.requestData.order)) {
+      this.setOrderById();
     }
 
     // just to first page
@@ -104,6 +102,17 @@ export class DataTableCommonManagerComponent implements OnInit, OnDestroy {
     //   },
     //   skipLocationChange: false
     // });
+  }
+
+  private setOrderById(): void {
+    this.requestData.order = [
+      {
+        by: 'id',
+        order: 'desc'
+      }
+    ];
+
+    this.orderingCleared = false;
   }
 
   public getAllData() {}
