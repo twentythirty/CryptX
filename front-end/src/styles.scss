@@ -19,6 +19,16 @@
   }
 }
 
+.mat-snack-bar-success {
+  background: #00c858;
+  color: white;
+  border-radius: 0px 0px 3px 3px !important;
+  box-shadow: 0 4px 20px 0 rgba(255, 67, 96, 0.55);
+  .mat-simple-snackbar {
+    color: white;
+  }
+}
+
 .mat-progress-spinner.mat-accent circle, .mat-spinner.mat-accent circle {
   stroke: #00c858 !important;
 }

@@ -4,6 +4,8 @@ import { Observable } from 'rxjs/Observable';
 import _ from 'lodash';
 import { TranslateService } from '@ngx-translate/core';
 
+import { DataTableFilterData } from '../data-table-filter/data-table-filter.component';
+
 export interface TableDataSource {
   header: Array<{
     column: string
@@ -63,7 +65,8 @@ export class TableDataColumn {
   styleUrls: ['./data-table.component.scss']
 })
 export class DataTableComponent implements OnInit {
-  private filterMap: Object;
+  private filterMap: Object = {}; // Flag map is filter opened or not
+  private filterAppliedMap: Object = {}; // Flag map is filter applied to column or not
 
   @Input() dataSource: TableDataSource;
   @Input() columnsToShow: Array<string | TableDataColumn>;
@@ -71,7 +74,7 @@ export class DataTableComponent implements OnInit {
   @Input() emptyText: string;
 
   @Input() rowBackgroundColor: (row: any) => string = (row) => null;
-  @Input() rowTexColor: (row: any) => string = (row) => null;
+  @Input() rowTexColor:        (row: any) => string = (row) => null;
 
   @Output() setFilter = new EventEmitter<object>();
   @Output() openRow = new EventEmitter<any>();
@@ -89,20 +92,23 @@ export class DataTableComponent implements OnInit {
         this.emptyText = data;
       });
     }
+
+    // generate filter flag objects
     this.filterMap = _.zipObject(
       this.columnsToShow.map(el => (typeof el == 'string') ? el : el.column ),
       _.fill( Array(this.columnsToShow.length), false )
     );
+    // clone object
+    Object.apply(this.filterAppliedMap, this.filterMap);
 
     // remove all _dirty properties on url change
-     this.router.events.subscribe((val) => {
-        if(val instanceof NavigationStart){
-          this.dataSource.header.map(item => {
-            delete item._dirty;
-            return item;
-          });
-        }
-        
+    this.router.events.subscribe(val => {
+      if(val instanceof NavigationStart){
+        this.dataSource.header.map(item => {
+          delete item._dirty;
+          return item;
+        });
+      }
     });
   }
 
@@ -110,23 +116,28 @@ export class DataTableComponent implements OnInit {
     // Make it dirty on open
     item._dirty = true;
     this.filterMap[item.column] = !this.filterMap[item.column];
+    console.log('wtf is going on', item);
   }
 
-  onSetFilter(value): void {
-    this.setFilter.emit(value);
+  onSetFilter(filterData: DataTableFilterData): void {
+    // mark filter as applied
+    this.markFilterAppliedMap(filterData);
+    
+    this.setFilter.emit(filterData);
+  }
+
+  markFilterAppliedMap(filterData: DataTableFilterData): boolean {
+    this.filterAppliedMap[filterData.column] = filterData.values.length || filterData.order;
+    return this.filterAppliedMap[filterData.column];
   }
 
   onOpenRow(item: any): void {
     this.openRow.emit(item);
   }
 
-  onToggleFilter(column): void {
-    this.filterMap[column] = !this.filterMap[column];
-  }
-
   getFooterData(): Array<object> {
-    return this.columnsToShow.map(col => {
-      return _.filter(this.dataSource.footer, ['name', (typeof col == 'string') ? col : col.column])[0];
+    return this.columnsToShow.map((col: TableDataColumn) => {
+      return _.filter(this.dataSource.footer, ['name', (typeof col == 'string') ? col : col.column])[0] || { name: col.column };
     });
   }
 

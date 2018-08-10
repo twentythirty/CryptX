@@ -13,6 +13,7 @@
 
     thead {
         background: $gray;
+
         th {
             height: 40px;
             text-align: left;
@@ -28,13 +29,18 @@
             &:last-child {
                 border-top-right-radius: 3px;
             }
+
+            &.highlight {
+                background-color: #8ea5b1;
+            }    
         }
     }
 
     td, th {
+        position: relative;
         padding-left: 20px;
         height: 50px;
-        position: relative;
+        transition: background-color .2s;
 
         &:first-child {
             width: 80px;
@@ -98,6 +104,12 @@
             &.hidden {
                 display: none;
             }
+
+            td {
+                &.highlight {
+                    background-color: #f2f2f4;
+                }    
+            }
         }
     }
 
@@ -115,6 +127,10 @@
                 &:last-child {
                     border-bottom-right-radius: 3px;
                 }
+
+                &.highlight {
+                    background-color: #e4e8eb;
+                }    
             }
         }
     }

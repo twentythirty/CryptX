@@ -208,6 +208,10 @@ export class DataTableFilterComponent implements OnInit, OnChanges {
     return this.type === 'text' || this.inputSearch;
   }
 
+  public stopPropagation(e) {
+    e.stopPropagation();
+  }
+
   /**
    * If we have a rowData$ Observable, replace rowData items
    */
