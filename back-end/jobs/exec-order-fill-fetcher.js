@@ -223,6 +223,7 @@ module.exports.handleFillsWithTrades = async (placed_order, exchange, external_o
     log(`[WARN.5B] Found ${new_trades.length} trades, saving to database`);
     const new_fills = new_trades.map(trade => {
         const fee = trade.fee ? trade.fee.cost : 0;
+        const fee_symbol = trade.fee ? trade.fee.currency : null;
         
         if(placed_order.fee == null) placed_order.fee = 0;
 
@@ -236,7 +237,8 @@ module.exports.handleFillsWithTrades = async (placed_order, exchange, external_o
             quantity: trade.amount,
             external_identifier: String(trade.id),
             fee: fee,
-            price: trade.price ? trade.price : placed_order.price
+            price: trade.price ? trade.price : placed_order.price,
+            fee_asset_symbol: fee_symbol
         }
     });
 
@@ -310,7 +312,9 @@ module.exports.handleFillsWithoutTrades = async (placed_order, external_order, l
             execution_order_id: placed_order.id,
             timestamp: new Date(),
             quantity: external_order.filled - fill_amount_sum,
-            price: placed_order.price
+            price: placed_order.price,
+            fee_asset_symbol: external_order.fee ? external_order.fee.currency : null,
+            fee_asset_id: external_order.fee ? null : placed_order.Instrument.quote_asset_id
         }));
 
         if(err) {
