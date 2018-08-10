@@ -4,15 +4,14 @@
       <th
         *ngFor="let item of dataSource.header"
         [class.sort-open]="filterMap[item.column]"
+        [class.highlight]="filterAppliedMap[item.column]"
         [class.sortable]="item.filter"
+        (click)="toggleFilter(item)"
       >
-        <a
-          class="filter-button"
-          (click)="toggleFilter(item)"
-        >
+        <a class="filter-button">
           {{ item.nameKey | translate }}
           <div *ngIf="item.filter" class="sort-arrow"></div>
-      </a>
+        </a>
         <app-data-table-filter
           *ngIf="item.filter"
           [dirty]="item._dirty"
@@ -24,22 +23,29 @@
           [inputSearch]="item.filter.inputSearch"
           [rowData]="item.filter.rowData"
           [rowData$]="item.filter.rowData$"
-          (onFilter)="onSetFilter($event); filterMap[item.column] = !filterMap[item.column]"
+          (onFilter)="onSetFilter($event); toggleFilter(item)"
         ></app-data-table-filter>
       </th>
     </tr>
   </thead>
 
-  <ng-content *ngIf="customRows; else defaultRows">
-  </ng-content>
+  <tbody>
+    <ng-content *ngIf="customRows; else defaultRows"></ng-content>
+  </tbody>
 
   <ng-template #defaultRows>
     <ng-container *ngIf="dataSource.body?.length > 0; else listEmpty">
-      <tr *ngFor="let item of dataSource.body"
-      [style.background-color]="getRowBackgroundColor(item) || 'white'"
-      [style.color]="getRowTexColor(item)"
-      (click)="onOpenRow(item)">
-        <td *ngFor="let index of columnsToShow" class="{{ getColumnClass(index.column) }}">
+      <tr
+        *ngFor="let item of dataSource.body"
+        [style.background-color]="getRowBackgroundColor(item) || 'white'"
+        [style.color]="getRowTexColor(item)"
+        (click)="onOpenRow(item)"
+      >
+        <td
+          *ngFor="let index of columnsToShow"
+          class="{{ getColumnClass(index.column) }}"
+          [class.highlight]="filterAppliedMap[index.column]"
+        >
           <ng-container *ngIf="columnIsBasic(index); else dynamicColumn">
             <span>{{ item[index?.column || index] || '-' }}</span>
           </ng-container>
@@ -70,11 +76,14 @@
 
   <tfoot *ngIf="dataSource.footer?.length > 0">
     <tr>
-      <td *ngFor="let item of getFooterData()">
-        <ng-container *ngIf="item">
+      <td
+        *ngFor="let item of getFooterData()"
+        [class.highlight]="filterAppliedMap[item.name]"
+      >
+        <ng-container *ngIf="item.value">
           <span class="upper-case">{{ item.template | translate: item.args }} </span>
         </ng-container>
-        <ng-container *ngIf="!item">
+        <ng-container *ngIf="!item.value">
           -
         </ng-container>
       </td>

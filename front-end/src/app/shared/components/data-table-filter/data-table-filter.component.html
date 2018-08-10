@@ -1,4 +1,7 @@
-<div class="filter-sort-box display-block">
+<div
+  class="filter-sort-box display-block"
+  (click)="stopPropagation($event)"
+>
   <div class="top-part">
     <div *ngIf="!_showSearch">
       <div *ngIf="showInputSearch()" class="search-in-filters new1">
@@ -101,3 +104,4 @@
       <app-btn [thinner]="true" (onClick)="onFilterChange()">{{ 'table.filter.filter' | translate }}</app-btn>
     </div>
   </div>
+</div>

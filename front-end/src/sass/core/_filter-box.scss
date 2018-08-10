@@ -10,6 +10,7 @@
     border-radius: 3px;
     z-index: 2;
     display: none;
+    cursor: default;
 
     &::before {
         content: "";
@@ -86,6 +87,7 @@
                 }
 
                 .close-search {
+                    cursor: pointer;
                     width: 15px;
                     height: 15px;
                     position: absolute;
