@@ -64,6 +64,7 @@ module.exports.JOB_BODY = async (config, log) => {
     TE(err.message);
   }
 
+  log(`1. Processing ${pending_real_orders.length} pending real investment run orders.`);
   /* pending_orders - orders from different exchanges that are going to be sent to exchanges.
   Number of orders shouldn't exceed number of exchanges. */
   let pending_orders = _.map(
@@ -91,7 +92,6 @@ module.exports.JOB_BODY = async (config, log) => {
 
       if (err) {
         log(err_message = `[ERROR.2a] Failed to fetch instrument mapping.`)
-        change_status_to_failed(order, err_message);
         return [pending_order, mapp];
       }
 
@@ -107,7 +107,7 @@ module.exports.JOB_BODY = async (config, log) => {
         if (!instrument_exchange_map) {
           log(err_message = `[ERROR.2b] No instrument exchange mapping data for execution order ID=${order.id} found.
           Expected to be found in instrument_exchange_mapping table by instrument_ID=${order.instrument_id} and exchange_id=${order.exchange_id}`);
-          change_status_to_failed(order, err_message);
+          increment_failed_count(order, err_message, log);
           return order_with_data;
         }
 
@@ -116,7 +116,7 @@ module.exports.JOB_BODY = async (config, log) => {
         let exchange = new (ccxtUnified.getExchange(instrument_exchange_map.Exchange.api_id))();
         if (!exchange) {
           log(err_message = `[Error.3a] No unified exchange object found. Order can't be placed without.`);
-          change_status_to_failed(order, err_message);
+          increment_failed_count(order, err_message, log);
           return order_with_data;
         }
         log(`3.1. Waiting for exchange connector of ${instrument_exchange_map.Exchange.api_id} to initialize`);
@@ -131,13 +131,13 @@ module.exports.JOB_BODY = async (config, log) => {
 
         if (order_type != "market") {
           log(err_message = "[ERROR.4a] Only market orders are supported at the moment!");
-          change_status_to_failed(order, err_message);
+          increment_failed_count(order, err_message, log);
           return order_with_data;
         }
 
         if (!exchange._connector.has.createMarketOrder) { // while market orders are used this check will only make sure that exchange supports market order
           log(err_message =`[ERROR.4b] '${order_type}' order type is not supported by '${exchange.api_id}' exchange`);
-          change_status_to_failed(order, err_message);
+          increment_failed_count(order, err_message, log);
           return order_with_data;
         }
 
@@ -162,23 +162,13 @@ module.exports.JOB_BODY = async (config, log) => {
           
           return order_with_data;
         }).catch((err) => { // order placing failed. Perform actions below.
-          log(`[WARN.5b]. Order placement to exchange failed. Error message: ${err}`);
-
+          log(err_message = `[WARN.5b]. Order placement to exchange failed. Error message: ${err}`);
           logAction(actions.error, {
             error: err,
             relations: { execution_order_id: order.id }
           });
 
-          order.failed_attempts++; // increment failed attempts counter
-          if (order.failed_attempts >= SYSTEM_SETTINGS.EXEC_ORD_FAIL_TOLERANCE) {
-            log(`Setting status of execution order ${order.id} to Failed because it has reached failed send threshold (actual: ${order.failed_attempts}, allowed: ${SYSTEM_SETTINGS.EXEC_ORD_FAIL_TOLERANCE})!`);
-            logAction(actions.failed_attempts, {
-              attempts: order.failed_attempts,
-              relations: { execution_order_id: order.id }
-            });
-            order.status = EXECUTION_ORDER_STATUSES.Failed;
-          }
-          order.save();
+          increment_failed_count(order, err_message, log);
 
           return order_with_data;
         });
@@ -186,8 +176,19 @@ module.exports.JOB_BODY = async (config, log) => {
   });
 };
 
-let change_status_to_failed = function (execution_order, fail_message) {
+let increment_failed_count = function (execution_order, fail_message, log) {
+
+  execution_order.failed_attempts++; // increment failed attempts counter
+
+  if (execution_order.failed_attempts >= SYSTEM_SETTINGS.EXEC_ORD_FAIL_TOLERANCE) {
+    log(`Setting status of execution order ${execution_order.id} to Failed because it has reached failed send threshold (actual: ${execution_order.failed_attempts}, allowed: ${SYSTEM_SETTINGS.EXEC_ORD_FAIL_TOLERANCE})!`);
+    logAction(actions.failed_attempts, {
+      attempts: execution_order.failed_attempts,
+      relations: { execution_order_id: execution_order.id }
+    });
+    execution_order.status = EXECUTION_ORDER_STATUSES.Failed;
+  }
+  execution_order.save();
   
-  execution_order.status = EXECUTION_ORDER_STATUSES.Failed;
   return execution_order.save();
 };
