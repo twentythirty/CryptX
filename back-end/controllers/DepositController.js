@@ -18,7 +18,7 @@ const submitDeposit = async function (req, res) {
    let [err, deposit] = await to(DepositService.saveDeposit(investment_run_id, asset_id, amount));
    if (err) return ReE(res, err.message); */
 
-  let {
+  /*let {
     amount,
     deposit_management_fee
   } = req.body;
@@ -60,11 +60,33 @@ const submitDeposit = async function (req, res) {
       user: "Some user",
       details: "changed status from pending to approved"
     }
-  ]
+  ]*/
+
+  const { deposit_id } = req.params;
+
+  const user = req.user;
+
+  let [ err, deposit_result ] = await to(DepositService.submitDeposit(deposit_id, user.id, req.body));  
+  if(err) return ReE(res, err.message, 422);
+  if(!deposit_result) return ReE(res, `Deposit with id ${deposit_id} was not found`, 404);
+
+  let { original_deposit, updated_deposit: deposit } = deposit_result;
+
+  user.logAction('modified', { 
+    previous_instance: original_deposit, 
+    updated_instance: deposit,
+    ignore: ['completion_timestamp'],
+    replace: { status: { [MODEL_CONST.RECIPE_RUN_DEPOSIT_STATUSES.Pending]: 'Pending', [MODEL_CONST.RECIPE_RUN_DEPOSIT_STATUSES.Completed]: 'Completed' } }
+  });
+
+  deposit = deposit.toWeb();
+  deposit.deposit_management_fee = deposit.fee; 
+  delete deposit.fee;
 
   return ReS(res, {
-    deposit: mock_data
+    deposit
   });
+
 }
 module.exports.submitDeposit = submitDeposit;
 
