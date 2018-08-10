@@ -281,7 +281,7 @@ module.exports.handleFillsWithoutTrades = async (placed_order, external_order, l
         placed_order.fee = external_order.fee.cost;
     }
     if(external_order.price) {
-        placed_order.price = external_order.price;
+        placed_order.price = external_order.average || external_order.price; //Take the average price if possible
     }
 
     log(`3. Calculating the current sum of fills for order ${placed_order.id}`);
