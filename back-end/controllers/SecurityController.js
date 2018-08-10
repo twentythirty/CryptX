@@ -16,6 +16,7 @@ const createRole = async function (req, res) {
     if (err) return ReE(res, err, 422);
 
     [err, role] = await to(securityService.editRole(role.id, {
+        name: role_name,
         permissions: role_permissions
     }));
     if (err) return ReE(res, err, 422);

@@ -27,9 +27,9 @@ const editRole = async function (role_id, updated_role) {
 		!_.isString(updated_role.name) || 
 		/^\s*$/.test(updated_role.name) ||
 		!_.isArray(updated_role.permissions) || 
-		_.isEmpty(updated_role.permissions) 
+		_.isEmpty(updated_role.permissions)  
 	) {
-		TE('The name and permissions must not be empty values');
+		TE('The name must not be empty and atleast one role must chosen');
 	}
 
 	let err, role = await Role.findById(role_id, {
