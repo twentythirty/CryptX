@@ -11,7 +11,7 @@ module.exports = (sequelize, DataTypes) => {
                 allowNull: false,
                 defaultValue: 0.0
             },
-            //price: DataTypes.DECIMAL,
+            price: DataTypes.DECIMAL,
             external_identifier: DataTypes.STRING,
         },
         modelProps(
