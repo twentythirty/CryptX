@@ -147,7 +147,7 @@
       "completed_timestamp": "{{ completed_timestamp }} Completed",
       "user_created": "{{ user_created }} Creator",
       "strategy_type": "{{ strategy_type }} Portfolios",
-      "is_simulated": "{{ is_simulated }} Real",
+      "is_simulated": "{{ is_simulated }} Simulated",
       "status": "{{ status }} Executing"
     }
   },
