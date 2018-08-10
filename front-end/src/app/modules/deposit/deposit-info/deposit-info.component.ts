@@ -35,7 +35,7 @@ export class DepositInfoComponent implements OnInit {
       { column: 'id', nameKey: 'table.header.id' },
       { column: 'quote_asset', nameKey: 'table.header.quote_asset' },
       { column: 'exchange', nameKey: 'table.header.exchange' },
-      { column: 'account', nameKey: 'table.header.account' },
+      { column: 'account', nameKey: 'table.header.account', column_class: 'word-wrap' },
       { column: 'amount', nameKey: 'table.header.amount' },
       { column: 'investment_percentage', nameKey: 'table.header.investment_percentage' },
       { column: 'deposit_management_fee', nameKey: 'table.header.deposit_management_fee' },
