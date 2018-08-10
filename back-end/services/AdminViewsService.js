@@ -69,6 +69,7 @@ const TABLE_LOV_FIELDS = {
         'status'
     ],
     'av_execution_orders': [
+        'investment_run_id',
         'instrument',
         'side',
         'exchange',
