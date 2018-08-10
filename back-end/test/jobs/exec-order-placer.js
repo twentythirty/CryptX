@@ -231,7 +231,7 @@ describe("Execution Order Placer job", () => {
           return this.ready;
         };
 
-        async createMarketOrder (external_instrument_id, side, execution_order) {
+        createMarketOrder (external_instrument_id, side, execution_order) {
            this.isReady();
           const order_type = "market";
           let filled = 2.5, price = execution_order.price, amount = execution_order.total_quantity;
@@ -254,7 +254,7 @@ describe("Execution Order Placer job", () => {
             fee: undefined
           };
 
-          return Object.assign({}, exchange_response);
+          return Promise.resolve(Object.assign({}, exchange_response));
         };
       }
     });
