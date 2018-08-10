@@ -17,7 +17,7 @@ export class RecipeRunListComponent extends DataTableCommonManagerComponent impl
   public recipeDataSource: TableDataSource = {
     header: [
       { column: 'id', nameKey: 'table.header.id', filter: { type: 'number', hasRange: false, inputSearch: true, sortable: true } },
-      { column: 'investment_run_id', nameKey: 'table.header.investment_run_id', filter: { type: 'number', hasRange: false, inputSearch: true, sortable: true } },
+      { column: 'investment_run_id', nameKey: 'table.header.investment_run_id', filter: { type: 'text', sortable: true } },
       { column: 'created_timestamp', nameKey: 'table.header.creation_time', filter: { type: 'date', sortable: true } },
       { column: 'user_created', nameKey: 'table.header.creator', filter: { type: 'text', sortable: true } },
       { column: 'approval_status', nameKey: 'table.header.status', filter: { type: 'text', sortable: true } },
