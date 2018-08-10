@@ -4,16 +4,17 @@ module.exports = (sequelize, DataTypes) => {
     let AVExecutionOrder = sequelize.define(
         "AVExecutionOrder",
         {   
-            recipe_order_id: DataTypes.SMALLINT,
-            instrument_id: DataTypes.SMALLINT,
+            investment_run_id: DataTypes.INTEGER,
+            recipe_order_id: DataTypes.INTEGER,
+            instrument_id: DataTypes.INTEGER,
             instrument: DataTypes.STRING,
             side: DataTypes.SMALLINT,
-            exchange_id: DataTypes.SMALLINT,
+            exchange_id: DataTypes.INTEGER,
             exchange: DataTypes.STRING,
             type: DataTypes.SMALLINT,
-            price: DataTypes.FLOAT,
-            total_quantity: DataTypes.FLOAT,
-            exchange_trading_fee: DataTypes.FLOAT,
+            price: DataTypes.DECIMAL,
+            total_quantity: DataTypes.DECIMAL,
+            exchange_trading_fee: DataTypes.DECIMAL,
             status: DataTypes.SMALLINT,
             submission_time: DataTypes.DATE,
             completion_time: DataTypes.DATE
