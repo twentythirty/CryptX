@@ -177,8 +177,8 @@ id PK int
 deposit_id int FK >- recipe_run_deposit.id 
 user_id int FK >- user.id # User which performed the action
 action enum # Possible actions ChangedAmount, ChangedFee, ChangedStatus
-value_before varchar # value after action
-value_after varchar # value before action
+value_before nvarchar # value after action
+value_after nvarchar # value before action
 timestamp timestamp # Time action was performed
 
 recipe_run
@@ -237,6 +237,7 @@ status enum # Pending, Placed, FullyFilled, PartiallyFilled, Cancelled, Failed
 placed_timestamp timestamp # Time the execution order has been placed
 completed_timestamp timestamp # Time the execution order was fully filled or cancelled
 time_in_force timestamp NULLABLE # time till when order should be active on exchange. NULL if order is Good Till Cancelled
+failed_attempts int # Number of times execution order failed to be placed into exchange
 
 execution_order_fill
 -
@@ -246,6 +247,9 @@ execution_order_id int FK >- execution_order.id
 quantity decimal
 price decimal # fill price
 fee decimal # Fee deducted form fill
+external_identifier varchar # ID of order fill / trade
+fee_asset_symbol varchar # Symbol of asset fees were deducted with
+fee_asset_id int FK >- asset.id # ID of asset fees were deducted with
 
 cold_storage_transfer
 -
@@ -279,6 +283,7 @@ recipe_run_deposit_id int # Recipe deposit related action
 recipe_order_id int # Recipe order related to the action
 execution_order_id int # Execution order related to the action
 details nvarchar # More detailed information about the action
+level int # Debug = 0, Info = 1, Warning = 2, Error = 3.
 
 setting
 # This table will contain system settings (controlled by admins via web interface)
