@@ -116,6 +116,38 @@ const generateRecipeRunDeposits = async function (approved_recipe_run) {
 }
 module.exports.generateRecipeRunDeposits = generateRecipeRunDeposits;
 
+const submitDeposit = async (deposit_id, user_id, updated_values = {}) => {
+  const { deposit_management_fee, amount } = updated_values;
+
+  if(_.isEmpty(updated_values)){
+    TE('Must provied at least the amount or deposit management fee.');
+  }
+
+  if(deposit_management_fee && (!_.isNumber(deposit_management_fee) || deposit_management_fee < 0)) {
+    TE('Deposit managmenent fee must be a positive number');
+  }
+
+  if(amount && (!_.isNumber(amount) || amount < 0)) {
+    TE('Deposit amount must be a positive number');
+  }
+
+  let [ err, deposit ] = await to(RecipeRunDeposit.findById(deposit_id));
+  if(err) TE(err.message);
+  if(!deposit) return null;
+  if (deposit.status !== MODEL_CONST.RECIPE_RUN_DEPOSIT_STATUSES.Pending) TE(`Deposit submitting is only allowed for Pending deposits.`);
+
+  const original_values = deposit.toJSON();
+
+  deposit.fee = deposit_management_fee || deposit.fee;
+  deposit.amount = amount || deposit.amount;
+
+  [ err, deposit ] = await to(deposit.save());
+  if(err) TE(err.message);
+
+  return { original_deposit: original_values, updated_deposit: deposit };
+};
+module.exports.submitDeposit = submitDeposit;
+
 const approveDeposit = async (deposit_id, user_id, updated_values = {}) => {
   const { deposit_management_fee, amount } = updated_values;
 
