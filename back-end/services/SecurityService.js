@@ -4,7 +4,16 @@ const User = require('../models').User;
 const Role = require("../models").Role;
 const Permission = require('../models').Permission;
 
-const createRole = async function (role_name) {
+const createRole = async function (role_name, permissions) {
+
+	if(
+		!_.isString(role_name) || 
+		/^\s*$/.test(role_name) ||
+		!_.isArray(permissions) || 
+		_.isEmpty(permissions)  
+	) {
+		TE('The name must not be empty and atleast one role must chosen');
+	}
 
 	if(role_name == null) TE("Role name can't be empty");
 
@@ -12,9 +21,16 @@ const createRole = async function (role_name) {
 		name: role_name
 	};
 
-	[err, role] = await to(Role.create(new_role));
+	[ err, role ] = await to(Role.create(new_role));
 
 	if (err) TE(err.message);
+
+	[ err ] = await to(editRole(role.id, { name: role.name, permissions }));
+
+	if(err) {
+		role.destroy();
+		TE(err.messge);
+	}
 
 	return role;
 };

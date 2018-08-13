@@ -12,13 +12,7 @@ const createRole = async function (req, res) {
     const role_name = req.body.name,
         role_permissions = req.body.permissions;
 
-    let [err, role] = await to(securityService.createRole(role_name));
-    if (err) return ReE(res, err, 422);
-
-    [err, role] = await to(securityService.editRole(role.id, {
-        name: role_name,
-        permissions: role_permissions
-    }));
+    let [err, role] = await to(securityService.createRole(role_name, role_permissions));
     if (err) return ReE(res, err, 422);
 
     return ReS(res, { role: await role.toWeb() });
