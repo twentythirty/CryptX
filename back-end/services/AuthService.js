@@ -123,8 +123,7 @@ const changeUserInfo = async function (user_id, new_info) {
   user = Object.assign(user, _.fromPairs(_.zipWith([
     'first_name',
     'last_name',
-    'is_active',
-    'email'
+    'is_active'
   ], (prop_name) => {
     return [
       prop_name,
