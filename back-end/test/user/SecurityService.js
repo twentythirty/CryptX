@@ -71,6 +71,10 @@ describe("SecurityService mocking", () => {
       return Promise.resolve(new Role(options));
     })
 
+    sinon.stub(Role, 'count').callsFake(options => {
+      return Promise.resolve(0);
+    });
+
     sinon.spy(SecurityService, 'deleteRole');
     sinon.spy(SecurityService, 'createRole');
   });
@@ -78,6 +82,7 @@ describe("SecurityService mocking", () => {
   afterEach(function () {
     Role.findById.restore();
     Role.create.restore();
+    Role.count.restore();
     Permission.findAll.restore();
     SecurityService.deleteRole.restore();
     SecurityService.createRole.restore();

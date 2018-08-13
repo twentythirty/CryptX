@@ -3,6 +3,7 @@
 const User = require('../models').User;
 const Role = require("../models").Role;
 const Permission = require('../models').Permission;
+const { fn: seq_fn, where: seq_where, col: seq_col } = require('../models').sequelize;
 
 const createRole = async function (role_name, permissions) {
 
@@ -17,9 +18,16 @@ const createRole = async function (role_name, permissions) {
 
 	if(role_name == null) TE("Role name can't be empty");
 
-	let err, role, new_role = {
+	let err, role_exists, role, new_role = {
 		name: role_name
 	};
+
+	[ err, role_exists ] = await to(Role.count({
+		where: seq_where(seq_fn('lower', seq_col('name')), seq_fn('lower', role_name))
+	}));
+
+	if (err) TE(err.message);
+	if (role_exists) TE(`Role with the name "${role_name.toUpperCase()}" already exists in system.`);
 
 	[ err, role ] = await to(Role.create(new_role));
 
@@ -28,7 +36,7 @@ const createRole = async function (role_name, permissions) {
 	[ err ] = await to(editRole(role.id, { name: role.name, permissions }));
 
 	if(err) {
-		role.destroy();
+		role.destroy();	//Destroy the created role if the permissions were not able tobe set.
 		TE(err.messge);
 	}
 
