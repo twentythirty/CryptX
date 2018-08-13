@@ -139,6 +139,7 @@ export class RolesAddComponent implements OnInit {
           this.router.navigate(['/roles']);
         }, error => {
           console.log('Error', error);
+          this.loading = false;
         }, () => {
           this.loading = false;
         });
@@ -161,6 +162,7 @@ export class RolesAddComponent implements OnInit {
           this.router.navigate(['/roles']);
         }, error => {
           console.log('Error', error);
+          this.loading = false;
         }, () => {
           this.loading = false;
         });
