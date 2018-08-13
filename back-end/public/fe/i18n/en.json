@@ -145,7 +145,7 @@
     "footer": {
       "id": "{{ id }} Items",
       "completed_timestamp": "{{ completed_timestamp }} Completed",
-      "user_created": "{{ user_created }} Creator",
+      "user_created": "{{ user_created }} Creators",
       "strategy_type": "{{ strategy_type }} Portfolios",
       "is_simulated": "{{ is_simulated }} Simulated",
       "status": "{{ status }} Executing"
@@ -173,7 +173,7 @@
     "header": "Recipe runs",
     "footer": {
       "id": "{{id}} items",
-      "user_created": "{{ user_created }} Creator",
+      "user_created": "{{ user_created }} Creators",
       "approval_status": "{{approval_status }} Pending"
     }
   },
