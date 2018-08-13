@@ -150,7 +150,7 @@ export class OrderGroupComponent extends TimelineDetailComponent implements OnIn
   protected getSingleData(): void {
     this.route.params.pipe(
       mergeMap(
-        params => this.ordersService.getOrderGroup(params['id'])
+        params => this.ordersService.getOrderGroupOfRecipe(params['id'])
       )
     ).subscribe(
       res => {
@@ -174,6 +174,7 @@ export class OrderGroupComponent extends TimelineDetailComponent implements OnIn
   }
 
   public getAllDataReal(): void {
+    console.log("here")
     let orderGroupId = _.isEmpty(this.singleDataSource.body) ? 0 : this.singleDataSource.body[0]['id'];
 
     this.ordersService.getAllOrdersByGroupId(orderGroupId, this.requestData).subscribe(
