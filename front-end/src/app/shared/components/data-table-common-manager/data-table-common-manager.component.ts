@@ -49,7 +49,7 @@ export class DataTableCommonManagerComponent implements OnInit, OnDestroy {
       (params: Params) => {
         this.routeParamId= params.id;
       }
-    ) 
+    )
     });
   }
 

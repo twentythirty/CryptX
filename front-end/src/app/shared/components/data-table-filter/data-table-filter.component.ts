@@ -108,20 +108,20 @@ export class DataTableFilterComponent implements OnInit, OnChanges {
 
       case 'date':
         if ( this._filterData.values[0] ) {
-          data.values[0] = {
+          data.values.push({
             field: this.column,
             value: Date.parse(this._filterData.values[0]),
             expression: 'gt',
             type: 'timestamp'
-          };
+          });
         }
         if ( this._filterData.values[1] ) {
-          data.values[1] = {
+          data.values.push({
             field: this.column,
             value: Date.parse(this._filterData.values[1]),
             expression: 'lt',
             type: 'timestamp'
-          };
+          });
         }
         break;
 
@@ -135,21 +135,22 @@ export class DataTableFilterComponent implements OnInit, OnChanges {
             // type: 'number'
           });
         }
+        console.log('number values', this._filterData.values);
         if ( this._filterData.values[0] ) {
-          data.values[0] = {
+          data.values.push({
             field: this.column,
             value: this._filterData.values[0],
             expression: 'gte',
             type: 'number'
-          };
+          });
         }
         if ( this._filterData.values[1] ) {
-          data.values[1] = {
+          data.values.push({
             field: this.column,
             value: this._filterData.values[1],
             expression: 'lte',
             type: 'number'
-          };
+          });
         }
         break;
     }
@@ -196,10 +197,18 @@ export class DataTableFilterComponent implements OnInit, OnChanges {
   }
 
   onNumberRangeChange(value) {
-    if ( value === 'min' && this._filterData.values[0] > this._filterData.values[1] ) {
+    if (
+      value === 'min'
+      && this._filterData.values[0]
+      && this._filterData.values[0] > this._filterData.values[1]
+    ) {
       this._filterData.values[0] = this._filterData.values[1];
     }
-    else if ( value === 'max' && this._filterData.values[0] > this._filterData.values[1] ) {
+    else if (
+      value === 'max'
+      && this._filterData.values[1]
+      && this._filterData.values[0] > this._filterData.values[1]
+    ) {
       this._filterData.values[1] = this._filterData.values[0];
     }
   }
