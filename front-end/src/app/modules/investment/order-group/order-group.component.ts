@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
-import { ActivatedRoute, Router, Params } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { mergeMap } from 'rxjs/operators/mergeMap';
+import 'rxjs/add/operator/finally';
 import _ from 'lodash';
 
 import { StatusClass } from '../../../shared/models/common';
@@ -150,25 +151,28 @@ export class OrderGroupComponent extends TimelineDetailComponent implements OnIn
   protected getSingleData(): void {
     this.route.params.pipe(
       mergeMap(
-        params => this.ordersService.getOrderGroupOfRecipe(params['id'])
-      )
+        params => this.ordersService.getOrderGroupOfRecipe(params['id'], true)
+          .finally(() => {
+            this.getAllData_call = this.getAllDataReal;
+            this.getAllData();
+            
+            // stop loading and show empty
+            if(!this.singleDataSource.body)
+              this.singleDataSource.body = [];
+          })
+      ),
     ).subscribe(
       res => {
         if(res.recipe_order_group) {
           this.singleDataSource.body = [res.recipe_order_group];
         }
       },
-      err => {
-        this.singleDataSource.body = [];
-
-        this.getAllData_call = this.getAllDataReal;
-        this.getAllData();
-      },
+      err => this.singleDataSource.body = []
     );
   }
 
   // empty on start, after we load first table, we can load this one
-  private getAllData_call = (): void => {};
+  private getAllData_call = () => {};
   public getAllData(): void {
     this.getAllData_call();
   }

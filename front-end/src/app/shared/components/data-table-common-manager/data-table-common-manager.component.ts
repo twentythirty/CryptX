@@ -43,13 +43,14 @@ export class DataTableCommonManagerComponent implements OnInit, OnDestroy {
 
       this.prevQueryParams = params;
     });
+
     this.route.params.filter(
       (params: Params) => params.id
     ).subscribe(
       (params: Params) => {
         this.routeParamId= params.id;
       }
-    )
+    );
   }
 
   ngOnDestroy() {

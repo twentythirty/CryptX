@@ -19,6 +19,7 @@
         [(ngModel)]="user.last_name">
       </app-input-item>
       <app-input-item class="form-item"
+        [readonly]="true"
         [label]="'users.email' | translate"
         [placeholder]="'users.enter_email' | translate"
         [formGroup]="userForm"

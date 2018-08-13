@@ -1474,6 +1474,12 @@
         "parameters": [
           {
             "$ref": "#/parameters/recipe_id"
+          },
+          {
+            "in": "query",
+            "name": "check",
+            "type": "boolean",
+            "description": "Performs a soft check for existence of entity. Prevents a thrown 404 if entity not found, instead opting to return `null`"
           }
         ],
         "responses": {
