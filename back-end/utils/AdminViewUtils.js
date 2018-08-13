@@ -56,6 +56,18 @@ const selectSum = (field_expr, table_expr, where_clause = '') => {
 module.exports.selectSum = selectSum;
 
 /**
+ * generate an SQL snippet that selects the sum of a field and trim the trailing zeroes
+ */
+const selectSumTrim = (field_expr, table_expr, where_clause = '') => {
+
+    return `SELECT CAST(to_char(SUM(${field_expr}), 'FM99999999990.9999999999999999999999999999') AS NUMERIC)
+            FROM ${table_expr}
+            ${whereOrEmpty(where_clause)}
+    `
+}
+module.exports.selectSumTrim = selectSumTrim;
+
+/**
  * generate an SQL snippet that selects data values of columns in the fields array from table table_expr
  */
 const selectDataRows = (fields = [], table_expr, where_clause = '') => {

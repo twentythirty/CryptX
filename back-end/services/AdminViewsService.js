@@ -768,7 +768,7 @@ const fetchExecutionOrderFillsViewsFooter = async (where_clause = '') => {
 
     const query = builder.joinQueryParts([
         builder.selectCountDistinct('id', 'id', view, where_clause),
-        builder.selectSum('fill_price', view, where_clause),
+        builder.selectSumTrim('fill_price', view, where_clause),
         builder.selectSum('quantity', view, where_clause)
     ], [
         'id',
