@@ -288,6 +288,7 @@ const terminateUserSessions = async function (user_id) {
 
   let [err, user_sessions] = await to(UserSession.findAll({
     where: {
+      user_id: user_id,
       expiry_timestamp: {
         [Op.gt]: new Date()
       }
