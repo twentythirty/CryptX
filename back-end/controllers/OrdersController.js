@@ -118,16 +118,17 @@ const getRecipeOrder = async function (req, res) {
   const getRecipeOrdersGroupOfRecipe = async function(req, res) {
 
     const recipe_run_id = req.params.recipe_id;
+    const is_check = !_.isUndefined(req.query.check) && (req.query.check == 'true');
 
     const [ err, recipe_order_group ] = await to(adminViewsService.fetchRecipeOrdersGroupView(null, parseInt(recipe_run_id)));
     if(err) return ReE(res, err.message, 422);
-    if (!recipe_order_group) {
+    if (!recipe_order_group && !is_check) {
         const response_message = `Order group of recipe run with id ${recipe_run_id} was not found`;
         return ReE(res, response_message, 404);
     }
 
     return ReS(res, {
-        recipe_order_group: recipe_order_group.toWeb()
+        recipe_order_group: recipe_order_group != null ? recipe_order_group.toWeb() : null
     })
   }
   module.exports.getRecipeOrdersGroupOfRecipe = getRecipeOrdersGroupOfRecipe;
