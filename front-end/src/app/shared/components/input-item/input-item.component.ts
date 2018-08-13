@@ -29,6 +29,7 @@ export class InputItemComponent implements ControlValueAccessor, OnInit {
   @Input() label: string; //input heading
   @Input() placeholder: string;
   @Input() type: string;
+  @Input() readonly: boolean; //makes input readonly
 
   //The internal data model
   private innerValue: any = '';
