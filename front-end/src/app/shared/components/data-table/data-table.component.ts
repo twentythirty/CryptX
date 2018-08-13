@@ -116,7 +116,6 @@ export class DataTableComponent implements OnInit {
     // Make it dirty on open
     item._dirty = true;
     this.filterMap[item.column] = !this.filterMap[item.column];
-    console.log('wtf is going on', item);
   }
 
   onSetFilter(filterData: DataTableFilterData): void {
