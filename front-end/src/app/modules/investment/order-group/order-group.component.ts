@@ -165,6 +165,13 @@ export class OrderGroupComponent extends TimelineDetailComponent implements OnIn
       res => {
         if(res.recipe_order_group) {
           this.singleDataSource.body = [res.recipe_order_group];
+
+          if(res.recipe_order_group.status == 'orders_group.status.82') { // if rejected
+            this.showGenerateOrders = true;
+          } else {
+            this.showGenerateOrders = false;
+          }
+          this.disableGenerateOrders = false;
         }
       },
       err => this.singleDataSource.body = []
@@ -225,16 +232,18 @@ export class OrderGroupComponent extends TimelineDetailComponent implements OnIn
   }
 
   public generateOrders() {
+    this.disableGenerateOrders = true;
+
     this.route.params.pipe(
       mergeMap(
         params => this.ordersService.generateOrders(params['id'])
       )
     ).subscribe(
       res => {
-        // todo
-        console.log('res',res);
-      },
-      err => {}
+        // update tables information
+        this.getSingleData();
+        this.getTimelineData();
+      }
     );
   }
 
@@ -249,12 +258,7 @@ export class OrderGroupComponent extends TimelineDetailComponent implements OnIn
       res => {
         // update tables information
         this.getSingleData();
-        this.getAllData();
         this.getTimelineData();
-
-        if(status === 83) {
-          this.showGenerateOrders = false;
-        }
       }
     );
   }

@@ -356,6 +356,10 @@ body.sticky-bottom {
     .btn.deactive:hover {
       background-image: linear-gradient(90deg, #6a8794 0%, #8098a2 100%);
       box-shadow: 0 4px 20px 0 rgba(105, 133, 146, 0.75); }
+  .btn.disabled {
+    cursor: default;
+    background-image: linear-gradient(90deg, #a0b3bc 0%, #b3c0c7 100%);
+    box-shadow: none; }
 
 .btn-wrap {
   display: inline-block;
