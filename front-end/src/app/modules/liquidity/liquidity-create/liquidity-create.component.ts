@@ -8,6 +8,8 @@ import { LiquidityService } from '../../../services/liquidity/liquidity.service'
 import { InstrumentsService } from '../../../services/instruments/instruments.service';
 import { ExchangesService } from '../../../services/exchanges/exchanges.service';
 
+import { MatSnackBar } from '@angular/material';
+
 @Component({
   selector: 'app-liquidity-create',
   templateUrl: './liquidity-create.component.html',
@@ -79,13 +81,14 @@ export class LiquidityCreateComponent implements OnInit {
     this.liquidityService.createLiquidityRequirement(request).subscribe(
       data => {
         if (data.success) {
-          this.router.navigate(['/liquidity_requirements/all']);
+          this.router.navigate(['/liquidity_requirements']);
         } else {
           console.log(data.error);
         }
       },
       error => {
         console.log(error);
+        this.loading = false;
       },
       () => {
         this.loading = false;
