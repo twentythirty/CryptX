@@ -149,6 +149,21 @@ describe('DepositService testing', () => {
             toJSON() { return this; }
         };
 
+        const MOCK_APPROVE_READY_DEPOSIT = {
+            id: 3, 
+            creation_timestamp: new Date(),
+            recipe_run_id: 1,
+            amount: '4.11',
+            depositor_user_id: null,
+            completion_timestamp: null,
+            target_exchange_account_id: 45,
+            status: Pending,
+            asset_id: 24,
+            fee: '0.25',
+            save() { return Promise.resolve(this) },
+            toJSON() { return this; }
+        }
+
         before(done => {
 
             sinon.stub(RecipeRunDeposit, 'findById').callsFake(deposit_id => {
@@ -159,6 +174,8 @@ describe('DepositService testing', () => {
                         }));
                     case 2:
                         return Promise.resolve(Object.assign({}, MOCK_BASE_DEPOSIT));
+                    case 3:
+                        return Promise.resolve(Object.assign({}, MOCK_APPROVE_READY_DEPOSIT));
                     default: 
                         return Promise.resolve(null);
                 }
@@ -206,17 +223,16 @@ describe('DepositService testing', () => {
         });
 
         it('approve a Pending deposit and update it appropriately', () => {
-            const valid_update = { deposit_management_fee: 45.123123, amount: 21.31231 };
             const user_id = 1
 
-            return DepositService.approveDeposit(2, user_id, valid_update).then(deposit_data => {
+            return DepositService.approveDeposit(3, user_id).then(deposit_data => {
 
                 const deposit = deposit_data.updated_deposit;
 
                 chai.expect(deposit).to.be.an('object');
                 chai.expect(deposit.status).to.equal(MODEL_CONST.RECIPE_RUN_DEPOSIT_STATUSES.Completed);
-                chai.expect(deposit.fee).to.equal(valid_update.deposit_management_fee);
-                chai.expect(deposit.amount).to.equal(valid_update.amount);
+                chai.expect(deposit.fee).to.equal(MOCK_APPROVE_READY_DEPOSIT.fee);
+                chai.expect(deposit.amount).to.equal(MOCK_APPROVE_READY_DEPOSIT.amount);
                 chai.expect(deposit.depositor_user_id).to.equal(user_id);
                 chai.expect(deposit.completion_timestamp).to.a('date');
 

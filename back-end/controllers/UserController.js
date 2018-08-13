@@ -283,7 +283,7 @@ const changePassword = async function (req, res) {
     mailUtil.passwordChangeNotification({
       full_name: user.full_name(),
       change_time: new Date(),
-      ip_address: req.ip
+      ip_address: req.headers['x-forwarded-for'] || req.connection.remoteAddress || req.ip
     })
   );
 
@@ -375,7 +375,7 @@ const resetPassword = async function (req, res) {
     mailUtil.passwordChangeNotification({
       full_name: user.full_name(),
       change_time: new Date(),
-      ip_address: req.ip
+      ip_address: req.headers['x-forwarded-for'] || req.connection.remoteAddress || req.ip
     })
   )
 
