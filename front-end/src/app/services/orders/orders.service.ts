@@ -52,7 +52,7 @@ export class OrdersService {
   }
 
   getOrderGroup(groupId: number): Observable<OrderGroupResponse> {
-    return this.http.get<OrderGroupResponse>(this.baseUrl + `orders/groups/${groupId}`);
+    return this.http.get<OrderGroupResponse>(this.baseUrl + `orders/${groupId}`);
   }
 
   getOrderGroupOfRecipe(recipeId: number): Observable<OrderGroupOfRecipeResponse> {
