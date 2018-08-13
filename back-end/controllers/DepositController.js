@@ -95,7 +95,7 @@ const approveDeposit = async function (req, res) {
   const deposit_id = req.params.deposit_id;
   const user = req.user;
 
-  let [ err, deposit_result ] = await to(DepositService.approveDeposit(deposit_id, user.id, req.body));  
+  let [ err, deposit_result ] = await to(DepositService.approveDeposit(deposit_id, user.id));  
   if(err) return ReE(res, err.message, 422);
   if(!deposit_result) return ReE(res, `Deposit with id ${deposit_id} was not found`, 404);
 

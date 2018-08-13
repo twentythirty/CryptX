@@ -123,11 +123,11 @@ const submitDeposit = async (deposit_id, user_id, updated_values = {}) => {
     TE('Must provied at least the amount or deposit management fee.');
   }
 
-  if(deposit_management_fee && (!_.isNumber(deposit_management_fee) || deposit_management_fee < 0)) {
+  if((deposit_management_fee != null) && (!_.isNumber(deposit_management_fee) || deposit_management_fee < 0)) {
     TE('Deposit managmenent fee must be a positive number');
   }
 
-  if(amount && (!_.isNumber(amount) || amount < 0)) {
+  if((amount != null) && (!_.isNumber(amount) || amount < 0)) {
     TE('Deposit amount must be a positive number');
   }
 
@@ -138,8 +138,8 @@ const submitDeposit = async (deposit_id, user_id, updated_values = {}) => {
 
   const original_values = deposit.toJSON();
 
-  deposit.fee = deposit_management_fee || deposit.fee;
-  deposit.amount = amount || deposit.amount;
+  deposit.fee = deposit_management_fee == null? deposit.fee : deposit_management_fee;
+  deposit.amount = amount == null? deposit.amount : amount;
 
   [ err, deposit ] = await to(deposit.save());
   if(err) TE(err.message);
@@ -148,26 +148,22 @@ const submitDeposit = async (deposit_id, user_id, updated_values = {}) => {
 };
 module.exports.submitDeposit = submitDeposit;
 
-const approveDeposit = async (deposit_id, user_id, updated_values = {}) => {
-  const { deposit_management_fee, amount } = updated_values;
-
-  if (!deposit_management_fee ||
-    !_.isNumber(deposit_management_fee) ||
-    deposit_management_fee < 0 ||
-    !amount ||
-    !_.isNumber(amount) ||
-    amount < 0) TE('To confirm a deposit, a posotive fee and amount must be specified');
+const approveDeposit = async (deposit_id, user_id) => {
 
   let [err, deposit] = await to(RecipeRunDeposit.findById(deposit_id));
 
   if (err) TE(err.message);
   if (!deposit) return null;
   if (deposit.status !== MODEL_CONST.RECIPE_RUN_DEPOSIT_STATUSES.Pending) TE(`Deposit confirmation is only allowed for Pending deposits.`);
-  
+  const decimal0 = Decimal(0);
+  //check amount
+  const amount_decimal = Decimal(deposit.amount || '0')
+  if (amount_decimal.lte(decimal0)) TE(`Can't confirm deposit ${deposit_id} with bad amount ${deposit.amount}`);
+  const fee_decimal = Decimal(deposit.fee || '-1')
+  if (fee_decimal.lt(decimal0)) TE(`Can't confirm deposit ${deposit_id} with bad fee ${deposit.fee}`);
+
   const original_values = deposit.toJSON();
 
-  deposit.fee = deposit_management_fee;
-  deposit.amount = amount;
   deposit.status = MODEL_CONST.RECIPE_RUN_DEPOSIT_STATUSES.Completed;
   deposit.depositor_user_id = user_id;
   deposit.completion_timestamp = new Date();
