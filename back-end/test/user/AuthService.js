@@ -435,9 +435,12 @@ describe("AuthService testing", () => {
 
       return AuthService.changeUserInfo(USER_ID, new_data)
         .then(returnedUser => {
-          _.toPairs(new_data).map(pair => { // checks if all new data was applied
-            chai.expect(returnedUser[pair[0]]).to.be.equal(pair[1]);
-          });
+
+          chai.expect(returnedUser.first_name).to.equal(new_data.first_name);
+          chai.expect(returnedUser.last_name).to.equal(new_data.last_name);
+          chai.expect(returnedUser.email).to.not.equal(new_data.email);
+          chai.expect(returnedUser.is_active).to.equal(new_data.is_active);
+          
         })
     });
 
