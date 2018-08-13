@@ -37,8 +37,14 @@ const sameAssets = (obj1, obj2) => {
  * ```
  * {
  *  [exchange_id]: {
- *    [asset_id]: [money],
- *    [asset_id]: [money],
+ *    [asset_id]: {
+ *       amount: [money],
+ *       investment_prc: [cumulative percentage decimal]
+ *      },
+ *    [asset_id]: {
+ *       amount: [money],
+ *       investment_prc: [cumulative percentage decimal]
+ *    }
  *  ...
  *  }
  * }
@@ -57,13 +63,24 @@ const fetch_exchange_deposits = async (recipe_run_id, exchange_ids) => {
     });
 
     //fetch all completed deposits of this run for specified exchanges
-    return RecipeRunDeposit.findAll({
-        where: {
-            recipe_run_id: recipe_run_id,
-            target_exchange_account_id: _.map(exchange_accounts, 'id'),
-            status: RECIPE_RUN_DEPOSIT_STATUSES.Completed
-        }
-    }).then(deposits => {
+    //fetch along with recipe rundetails to calculate percentages
+    return Promise.all([
+        RecipeRunDeposit.findAll({
+            where: {
+                recipe_run_id: recipe_run_id,
+                target_exchange_account_id: _.map(exchange_accounts, 'id'),
+                status: RECIPE_RUN_DEPOSIT_STATUSES.Completed
+            }
+        }),
+        RecipeRunDetail.findAll({
+            where: {
+                recipe_run_id: recipe_run_id,
+                target_exchange_id: exchange_ids
+            }
+        })
+    ]).then(deposits_rdetails => {
+
+        const [deposits, recipe_run_details] = deposits_rdetails;
 
         //exchange account lookup
         const exchanges_mapping = _.keyBy(exchange_accounts, 'id')
@@ -72,15 +89,28 @@ const fetch_exchange_deposits = async (recipe_run_id, exchange_ids) => {
         // creating mappings [exchange_id]: <deposit>
         const grouped_deposits = _.groupBy(deposits, deposit => exchanges_mapping[deposit.target_exchange_account_id].exchange_id);
 
+        //group recipe run details by what exchange they belong to for convenient filtering
+        const grouped_details = _.groupBy(recipe_run_details, 'target_exchange_id')
+
         //construct list of described protocol objects
         return _.fromPairs(_.map(grouped_deposits, (deposits, exchange_id) => {
-            
+
             return [
                 exchange_id,
                 _.fromPairs(_.map(deposits, deposit => {
+
+                    const relevant_details = _.filter(grouped_details[exchange_id], detail => detail.quote_asset_id == deposit.asset_id)
+                    const investment_prc_decimal =
+                        _.map(relevant_details, 'investment_percentage')
+                        .map(prc => Decimal(prc))
+                        .reduce((acc, current) => acc.plus(current), Decimal(0));
+
                     return [
                         deposit.asset_id,
-                        deposit.amount
+                        {
+                            amount: deposit.amount,
+                            investment_prc: investment_prc_decimal
+                        }
                     ]
                 }))
             ]
@@ -190,7 +220,8 @@ const generateApproveRecipeOrders = async (recipe_run_id) => {
         where: {
             instrument_id: Object.keys(grouped_exchanges),
             //extract value lists from grouped association, flatten those lists and extract property from entries
-            exchange_id:  _.map(flat_exchange_mappings_list, 'exchange_id') /* 
+            exchange_id: _.map(flat_exchange_mappings_list, 'exchange_id')
+            /* 
 -----------------------------------------------------------------------------------------------------------------
             applied fix. Need to assure if this is fix works as intended.
             before exchange_id was: _.flatMap(_.map(grouped_exchanges, 'exchange_id'));
@@ -215,21 +246,27 @@ const generateApproveRecipeOrders = async (recipe_run_id) => {
         const market_data = marketDataKeyForRunDetail(market_data_keys, instruments_by_id, recipe_run_detail);
         //is there a deposit in the currency we wish to sell
         const deposit = exchange_deposits[recipe_run_detail.target_exchange_id];
-        //deposit is valid if there is money of the quote asset
-        const deposit_valid = (deposit != null &&
+        //deposit is valid if there is money of the quote asset and its described as some percentage of total
+        const deposit_valid = (
+            deposit != null &&
             deposit[recipe_run_detail.quote_asset_id] != null &&
-            deposit[recipe_run_detail.quote_asset_id] > 0.0);
+            deposit[recipe_run_detail.quote_asset_id].amount > 0.0 &&
+            deposit[recipe_run_detail.quote_asset_id].investment_prc != null &&
+            deposit[recipe_run_detail.quote_asset_id].investment_prc.toNumber() > 0.0 &&
+            deposit[recipe_run_detail.quote_asset_id].investment_prc.toNumber() >= recipe_run_detail.investment_percentage
+        );
 
         //if either is missing, this is a bad recipe detail and will be ignored
         if (market_data && deposit_valid) {
             return true;
         } else {
             console.log(`
-            WARN: Skipping recipe run detail due to missing info/no deposit! 
+            WARN: Skipping recipe run detail due to missing info/no deposit/bad deposit sum! 
             Recipe run detail id: ${recipe_run_detail.id}
             Detail exchange id: ${recipe_run_detail.target_exchange_id}
             Detail proposed trade: ${recipe_run_detail.transaction_asset_id}/${recipe_run_detail.quote_asset_id}
-            Detail percentage: ${recipe_run_detail.investment_percentage}\n`);
+            Detail percentage: ${recipe_run_detail.investment_percentage}\n
+            Deposit info: ${deposit == null? 'NONE' : JSON.stringify(deposit)}`);
             return false;
         }
     });
@@ -247,7 +284,7 @@ const generateApproveRecipeOrders = async (recipe_run_id) => {
     if (err || !orders_group) TE(`error creating orders group: ${err}`, err);
 
     let results = [];
-    
+
     //create saving futures for orders from recipe run details
     [err, results] = await to(Promise.all(_.map(valid_recipe_run_details, recipe_run_detail => {
 
@@ -258,29 +295,36 @@ const generateApproveRecipeOrders = async (recipe_run_id) => {
         const buy_order = recipe_run_detail.transaction_asset_id == instruments_by_id[market_data.instrument_id].transaction_asset_id;
 
         //get correct price/order side, use precise division if possible
-        const price = (buy_order ? market_data.bid_price : Decimal(1).div(Decimal(market_data.bid_price)).toNumber() );
+        const price = (buy_order ? market_data.bid_price : Decimal(1).div(Decimal(market_data.bid_price)).toString());
         const side = buy_order ? ORDER_SIDES.Buy : ORDER_SIDES.Sell;
-        //get deposit in base currency
-        const qnty_deposit_decimal = Decimal(
-            //fetch deposit on this exchange for either quote or tx asset (based on order side)
-            exchange_deposits[recipe_run_detail.target_exchange_id][buy_order? recipe_run_detail.quote_asset_id : recipe_run_detail.transaction_asset_id]
-            //multiply by investment percentage specified in recipe detail
-        ).mul(Decimal(recipe_run_detail.investment_percentage).div(Decimal(100)));
+        //get deposit object in base currency (includes amount and investemnt percentage)
+        const relevant_deposit = exchange_deposits[recipe_run_detail.target_exchange_id][buy_order ? recipe_run_detail.quote_asset_id : recipe_run_detail.transaction_asset_id];
+
+        const decimal_100 = Decimal('100');
+        //create adjustment coeficient to know how to scale detail percentages
+        const investment_prc_adjustment = decimal_100.div(relevant_deposit.investment_prc)
+        //reciep order quantity, scaled but not adjusted by order type and tick size (happens later)
+        const order_qnty_unadjusted =
+            //multiply known deposited amount
+            Decimal(relevant_deposit.amount).mul(
+                //by how many percent go into this detail, scaled by how much of total deposit this asset takes up
+                investment_prc_adjustment.mul(Decimal(recipe_run_detail.investment_percentage)).div(decimal_100)
+            )
+
         //get mapping tick size as decimal
         const correct_mapping = _.find(
-            flat_exchange_mappings_list, 
-            { 
-                instrument_id: market_data.instrument_id, 
-                exchange_id: recipe_run_detail.target_exchange_id 
+            flat_exchange_mappings_list, {
+                instrument_id: market_data.instrument_id,
+                exchange_id: recipe_run_detail.target_exchange_id
             }
         );
-        const tick_size_decimal = correct_mapping == null? null : Decimal(correct_mapping.tick_size);
+        const tick_size_decimal = correct_mapping == null ? null : Decimal(correct_mapping.tick_size);
         //round qnty to same dp as tick size, rounding down (only perform rounding if tick size was defined)
         //divide by price if this is a buy order
         const qnty = (
-            tick_size_decimal == null? 
-            qnty_deposit_decimal : qnty_deposit_decimal.toDP(tick_size_decimal.dp(), Decimal.ROUND_HALF_DOWN)
-        ).div(buy_order? Decimal(price) : Decimal(1)).toNumber()
+            tick_size_decimal == null ?
+            order_qnty_unadjusted : order_qnty_unadjusted.toDP(tick_size_decimal.dp(), Decimal.ROUND_HALF_DOWN)
+        ).div(buy_order ? Decimal(price) : Decimal(1)).toString()
 
         return RecipeOrder.create({
             recipe_order_group_id: orders_group.id,
@@ -364,13 +408,15 @@ const changeRecipeOrderGroupStatus = async (user_id, order_group_id, status, com
 
     //if the orders are being approved, each order in the group should be marked as "Executing"
     if (status == RECIPE_ORDER_GROUP_STATUSES.Approved) {
-        let [ err ] = await to(RecipeOrder.update({
+        let [err] = await to(RecipeOrder.update({
             status: RECIPE_ORDER_STATUSES.Executing
         }, {
-            where: { recipe_order_group_id: recipe_order_group.id }
+            where: {
+                recipe_order_group_id: recipe_order_group.id
+            }
         }));
 
-        if(err) TE(err);
+        if (err) TE(err);
     }
 
     let [err, results] = await to(update_group_promise);
@@ -385,37 +431,37 @@ module.exports.changeRecipeOrderGroupStatus = changeRecipeOrderGroupStatus;
 
 const changeExecutionOrderStatus = async (execution_order_id, status) => {
 
-    if(isNaN(execution_order_id)) TE(`Provided execution order id: "${execution_order_id}" is not valid`);
-    if(!Object.values(EXECUTION_ORDER_STATUSES).includes(status)) TE(`Status "${status}" is not valid`);
+    if (isNaN(execution_order_id)) TE(`Provided execution order id: "${execution_order_id}" is not valid`);
+    if (!Object.values(EXECUTION_ORDER_STATUSES).includes(status)) TE(`Status "${status}" is not valid`);
 
-    let [ err, execution_order ] = await to(ExecutionOrder.findById(execution_order_id));
+    let [err, execution_order] = await to(ExecutionOrder.findById(execution_order_id));
 
-    if(err) TE(err);
-    if(!execution_order) return null;
+    if (err) TE(err);
+    if (!execution_order) return null;
 
     //Switch case for different situations
-    switch(status) {
-        case EXECUTION_ORDER_STATUSES.Pending:  //User tries to reset the execution order.
-            if(execution_order.status !== EXECUTION_ORDER_STATUSES.Failed) TE('Only Execution orders with the status Failed can be reinitiated');
+    switch (status) {
+        case EXECUTION_ORDER_STATUSES.Pending: //User tries to reset the execution order.
+            if (execution_order.status !== EXECUTION_ORDER_STATUSES.Failed) TE('Only Execution orders with the status Failed can be reinitiated');
             break;
 
         default:
             TE(`You are not allowed to set the status of Execution order to "${status}"`);
             break;
     }
-    
+
 
     const previous_values = execution_order.toJSON();
 
     execution_order.status = EXECUTION_ORDER_STATUSES.Pending;
 
-    [ err, execution_order ] = await to(execution_order.save());
+    [err, execution_order] = await to(execution_order.save());
 
-    if(err) TE(err);
+    if (err) TE(err);
 
     return {
-        original_execution_order: previous_values, 
-        updated_execution_order: execution_order 
+        original_execution_order: previous_values,
+        updated_execution_order: execution_order
     };
 
 };

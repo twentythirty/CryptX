@@ -309,11 +309,18 @@ describe('OrdersService testing', () => {
         });
 
         it ('shall reject generating a list of recipes if there are incomplete despoits', () => {
+            //ensure method call not rejected due to existing RecipeOrderGroup
+            sinon.stub(RecipeOrderGroup, 'findOne').callsFake(options => {
 
+                return Promise.resolve(null);
+            });
             chai.expect(ordersService.generateApproveRecipeOrders(TEST_RECIPE_RUN.id)).isRejected;
         });
 
         it('shall generate a list of recipe orders if all is good', (done) => {
+            if(RecipeOrderGroup.findOne.restore) {
+                RecipeOrderGroup.findOne.restore();
+            }
             //ensure method call not rejected due to existing RecipeOrderGroup
             sinon.stub(RecipeOrderGroup, 'findOne').callsFake(options => {
 
