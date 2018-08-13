@@ -7,6 +7,7 @@ import { Component, OnInit, Input } from '@angular/core';
 })
 export class InputItemErrorMessageComponent implements OnInit {
   @Input() errors: object;
+  @Input() errorMessage: string;
 
   errorMessages = {
     required: () => `Field is required`,
@@ -20,8 +21,12 @@ export class InputItemErrorMessageComponent implements OnInit {
   ngOnInit() {}
 
   getErrorMessage(): string {
-    for(const error in this.errors) {
-      return this.errorMessages[error]( this.errors[error] );
+    if (this.errorMessage){
+      return this.errorMessage;
+    }else {
+      for(const error in this.errors) {
+        return this.errorMessages[error]( this.errors[error] );
+      }
     }
   }
 

@@ -3,20 +3,27 @@
 ></app-page-heading>
 
 <div class="split-content horizontal">
+  <form [formGroup]="roleForm">
   <app-content-block
     [heading]="'roles.role_information' | translate"
   >
-    <app-input-item
+    <app-input-item class="form-item"
       type="text"
-      class="form-item"
       [label]="'roles.name' | translate"
       [placeholder]="'roles.enter_role_name' | translate"
       [(ngModel)]="role.name"
+      [formGroup]="roleForm"
+      formControlName="Name"
     ></app-input-item>
   </app-content-block>
+  </form>
 
   <app-content-block [heading]="'roles.permissions' | translate">
     <div class="no-padding-top-bottom">
+      <app-input-item-error-message
+       *ngIf="showError"
+        [errorMessage]="'Permission must be selected'"
+      ></app-input-item-error-message>
       <div class="permision-list">
         <div class="checkboxes-item" *ngFor="let permBlock of permissionsMap.data; let i = index">
           <label class="label-name">{{ permBlock.name }}</label>
