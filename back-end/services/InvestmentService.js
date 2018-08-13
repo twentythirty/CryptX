@@ -236,7 +236,9 @@ const generateRecipeDetails = async function (strategy_type) {
       total_marketshare += asset.avg_share;
       return asset;
     }).map(asset => {
-      asset.investment_percentage = Decimal(100).div(Decimal(total_marketshare)).mul(Decimal(asset.avg_share)).toNumber();
+      asset.investment_percentage = 100 / assets.length;
+      /* // investment percentage proportional to asset marketshare
+      Decimal(100).div(Decimal(total_marketshare)).mul(Decimal(asset.avg_share)).toNumber(); */
       return asset;
     });
 
