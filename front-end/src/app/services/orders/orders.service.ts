@@ -55,8 +55,23 @@ export class OrdersService {
     return this.http.get<OrderGroupResponse>(this.baseUrl + `orders/${groupId}`);
   }
 
-  getOrderGroupOfRecipe(recipeId: number): Observable<OrderGroupOfRecipeResponse> {
-    return this.http.get<OrderGroupOfRecipeResponse>(this.baseUrl + `orders/groups/of_recipe/${recipeId}`);
+  /**
+   * 
+   * @param recipeId 
+   * @param no404Error True if no need that server gives 404 if group not found
+   */
+  getOrderGroupOfRecipe(recipeId: number, no404Error?: boolean): Observable<OrderGroupOfRecipeResponse> {
+    const options = {
+      params: {}
+    };
+
+    if(no404Error) {
+      options.params = {
+        check: 'true'
+      };
+    }
+
+    return this.http.get<OrderGroupOfRecipeResponse>(this.baseUrl + `orders/groups/of_recipe/${recipeId}`, options);
   }
 
   generateOrders(recipeId: number): Observable<any> { // todo

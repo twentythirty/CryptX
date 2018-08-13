@@ -151,10 +151,14 @@ export class OrderGroupComponent extends TimelineDetailComponent implements OnIn
   protected getSingleData(): void {
     this.route.params.pipe(
       mergeMap(
-        params => this.ordersService.getOrderGroupOfRecipe(params['id'])
+        params => this.ordersService.getOrderGroupOfRecipe(params['id'], true)
           .finally(() => {
             this.getAllData_call = this.getAllDataReal;
             this.getAllData();
+            
+            // stop loading and show empty
+            if(!this.singleDataSource.body)
+              this.singleDataSource.body = [];
           })
       ),
     ).subscribe(

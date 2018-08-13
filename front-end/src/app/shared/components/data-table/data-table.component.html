@@ -5,15 +5,15 @@
         *ngFor="let item of dataSource.header"
         [class.sort-open]="filterMap[item.column]"
         [class.highlight]="filterAppliedMap[item.column]"
-        [class.sortable]="item.filter"
+        [class.sortable]="showFilter(item.filter)"
         (click)="toggleFilter(item)"
       >
         <a class="filter-button">
           {{ item.nameKey | translate }}
-          <div *ngIf="item.filter" class="sort-arrow"></div>
+          <div *ngIf="showFilter(item.filter)" class="sort-arrow"></div>
         </a>
         <app-data-table-filter
-          *ngIf="item.filter"
+          *ngIf="showFilter(item.filter)"
           [dirty]="item._dirty"
           [hidden]="!item.filter || !filterMap[item.column]"
           [type]="item.filter.type"
@@ -50,9 +50,11 @@
             <span>{{ item[index?.column || index] || '-' }}</span>
           </ng-container>
           <ng-template #dynamicColumn>
-            <ndc-dynamic [ndcDynamicComponent]="index.component"
+            <ndc-dynamic
+              [ndcDynamicComponent]="index.component"
               [ndcDynamicInputs]="dynamicInputs(index, item[index.column], item)"
-              [ndcDynamicOutputs]="dynamicOutputs(index)"></ndc-dynamic>
+              [ndcDynamicOutputs]="dynamicOutputs(index)"
+            ></ndc-dynamic>
           </ng-template>
         </td>
       </tr>
