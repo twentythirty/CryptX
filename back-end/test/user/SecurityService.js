@@ -196,7 +196,7 @@ describe("SecurityService mocking", () => {
     });
 
     it("call required DB methods", function () {
-      return SecurityService.createRole(ROLE_NAME).then(new_role => {
+      return SecurityService.createRole(ROLE_NAME, ROLE_PERMISSIONS).then(new_role => {
         chai.expect(Role.create.called);
 
         chai.expect(new_role.name).to.be.equal(ROLE_NAME);
