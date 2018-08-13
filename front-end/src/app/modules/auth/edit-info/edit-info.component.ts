@@ -55,7 +55,7 @@ export class EditInfoComponent implements OnInit {
     this.authService.changeInfo(this.user_info).subscribe(response => {
       this.status = true;
       
-      let snackBar = this.snackBar.open('✓ CHANGES SUCCESSFULLY CHANGED', '', {
+      let snackBar = this.snackBar.open('✓ SUCCESS!', '', {
         panelClass: 'mat-snack-bar-success',
         verticalPosition: 'bottom',
         duration: 3000
