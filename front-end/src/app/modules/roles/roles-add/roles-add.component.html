@@ -1,6 +1,11 @@
-<app-page-heading
+<app-page-heading *ngIf="!roleId"
   [heading]="'roles.add_new_role' | translate"
 ></app-page-heading>
+
+<app-page-heading *ngIf="roleId"
+  [heading]="'roles.edit_role' | translate"
+></app-page-heading>
+
 
 <div class="split-content horizontal">
   <form [formGroup]="roleForm">

@@ -279,6 +279,7 @@
   "roles": {
     "roles": "Roles",
     "add_new_role": "Add new role",
+    "edit_role": "Edit role",
     "name": "Name",
     "role_information": "Role information",
     "enter_role_name": "Enter role name",
