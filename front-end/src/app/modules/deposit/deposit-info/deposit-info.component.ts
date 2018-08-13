@@ -123,10 +123,12 @@ export class DepositInfoComponent implements OnInit {
 
   hideConfirm() {
     this.showConfirm = false;
+    this.getDeposit();
   }
 
   hideModal() {
     this.showModal = false;
+    this.depositForm.reset();
   }
 
   confirm() {
@@ -139,7 +141,7 @@ export class DepositInfoComponent implements OnInit {
       this.depositService.Submit(this.depositId, obj).subscribe(
         (res: DepositResponseData) => {
           if (res.success) {
-            this.showModal = false;
+            this.hideModal();
             this.showConfirm = true;
           } else {
             console.log(res.deposit)
