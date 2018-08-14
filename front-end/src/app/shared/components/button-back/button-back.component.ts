@@ -8,7 +8,7 @@ import { Location } from '@angular/common';
   styleUrls: ['./button-back.component.scss']
 })
 export class ButtonBackComponent {
-@Input() heading: string;
+  @Input() heading: string;
 
   constructor(
     private location: Location

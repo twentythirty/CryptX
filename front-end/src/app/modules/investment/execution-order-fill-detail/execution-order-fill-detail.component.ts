@@ -1,15 +1,17 @@
 import { Component, OnInit } from '@angular/core';
-import { ActivatedRoute, Router, Params, NavigationStart } from '@angular/router';
-
-import { StatusClass } from '../../../shared/models/common';
+import { ActivatedRoute, Router } from '@angular/router';
+import { TranslateService } from '@ngx-translate/core';
+import { mergeMap } from 'rxjs/operators/mergeMap';
 
 import { TimelineDetailComponent, SingleTableDataSource, TagLineItem } from '../timeline-detail/timeline-detail.component'
 import { TableDataSource, TableDataColumn } from '../../../shared/components/data-table/data-table.component';
 import { TimelineEvent } from '../../../shared/components/timeline/timeline.component';
-import { ActionCellDataColumn, DataCellAction, DateCellDataColumn, PercentCellDataColumn, StatusCellDataColumn, ConfirmCellDataColumn, NumberCellDataColumn } from '../../../shared/components/data-table-cells';
-import { mergeMap, map } from 'rxjs/operators';
+import { ActionCellDataColumn, DataCellAction, DateCellDataColumn, StatusCellDataColumn, NumberCellDataColumn } from '../../../shared/components/data-table-cells';
 import { InvestmentService } from '../../../services/investment/investment.service';
 import { ExecutionOrdersService } from '../../../services/execution-orders/execution-orders.service';
+
+import { ActionLog } from '../../../shared/models/actionLog';
+import { StatusClass } from '../../../shared/models/common';
 
 /**
  * 0. Set HTML and SCSS files in component decorator
@@ -27,6 +29,9 @@ export class ExecutionOrderFillDetailComponent extends TimelineDetailComponent i
   public pageTitle: string = 'Execution order fill';
   public singleTitle: string = 'Execution order';
   public listTitle: string = 'Execution order fill';
+
+  public logsTitle: string;
+  public logsSource: Array<ActionLog>;
 
   /**
    * 2. Implement abstract attributes to preset data structure
@@ -112,7 +117,8 @@ export class ExecutionOrderFillDetailComponent extends TimelineDetailComponent i
     public route: ActivatedRoute,
     private router: Router,
     private investmentService: InvestmentService,
-    private executionOrdersService: ExecutionOrdersService
+    private executionOrdersService: ExecutionOrdersService,
+    private translate: TranslateService,
   ) {
     super(route);
 
@@ -120,8 +126,45 @@ export class ExecutionOrderFillDetailComponent extends TimelineDetailComponent i
   }
 
   /**
+   * + If custom ngOnInit() is needed, call super.ngOnInit() to
+   * perform parent component class initialization
+   */
+  ngOnInit() {
+    super.ngOnInit();
+
+    this.translate.get('common.activity_log').subscribe(data => {
+      this.logsTitle = data;
+    });
+  }
+
+  /**
    * 4. Implement abstract methods to fetch data OnInit
    */
+  protected getSingleData(): void {
+    this.route.params.pipe(
+      mergeMap(
+        params => this.investmentService.getSingleExecutionOrder(params['id'])
+      )
+    ).subscribe(
+      res => {
+        if(res.execution_order) {
+          this.singleDataSource.body = [ res.execution_order ];
+        }
+
+        if(res.action_logs) {
+          this.logsSource = res.action_logs;
+        }
+
+        if(res.execution_order_stats) {
+          this.setTagLine(res.execution_order_stats.map(stat => {
+            return new TagLineItem(`${stat.count} ${stat.name}`)
+          }))
+        }
+      },
+      err => this.singleDataSource.body = []
+    );
+  }
+
   public getAllData(): void {
     this.route.params.pipe(
       mergeMap(
@@ -129,13 +172,15 @@ export class ExecutionOrderFillDetailComponent extends TimelineDetailComponent i
       )
     ).subscribe(
       res => {
+        Object.assign(this.listDataSource, {
+          body: res.execution_order_fills,
+          footer: res.footer
+        });
         this.count = res.count;
-        this.listDataSource.body = res.execution_order_fills;
-        this.listDataSource.footer = res.footer;
         this.getFilterLOV();
       },
       err => this.listDataSource.body = []
-    )
+    );
   }
 
   private getFilterLOV(): void {
@@ -149,32 +194,12 @@ export class ExecutionOrderFillDetailComponent extends TimelineDetailComponent i
     );
   }
 
-  protected getSingleData(): void {
-    this.route.params.pipe(
-      mergeMap(
-        params => this.investmentService.getSingleExecutionOrder(params['id'])
-      )
-    ).subscribe(
-      res => {
-        if(res.execution_order) {
-          this.singleDataSource.body = [ res.execution_order ];
-        }
-        if(res.execution_order_stats) {
-          this.setTagLine(res.execution_order_stats.map(stat => {
-            return new TagLineItem(`${stat.count} ${stat.name}`)
-          }))
-        }
-      },
-      err => this.singleDataSource.body = []
-    )
-  }
-
   protected getTimelineData(): void {
     this.timeline$ = this.route.params.pipe(
       mergeMap(
          params => this.investmentService.getAllTimelineData({ execution_order_id: params['id'] })
       )
-    )
+    );
   }
 
   /**
@@ -196,17 +221,7 @@ export class ExecutionOrderFillDetailComponent extends TimelineDetailComponent i
         Object.assign(this.singleDataSource.body[0], { status: res.status });
       },
       err => {}
-    )
-  }
-
-  /**
-   * + If custom ngOnInit() is needed, call super.ngOnInit() to
-   * perform parent component class initialization
-   */
-  
-
-  ngOnInit() {
-    super.ngOnInit();
+    );
   }
 
 }

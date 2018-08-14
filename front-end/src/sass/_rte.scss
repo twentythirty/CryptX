@@ -46,13 +46,12 @@
         }
     }
 
-
     &.disabled {
         cursor: default;
         background-image: linear-gradient(90deg, lighten(#668390, 20%) 0%, lighten(#78909C, 20%) 100%);
         box-shadow: none;
     }
-    
+
     &.grey {
         background-image: linear-gradient(90deg, rgba(114,125,136,0.01) 0%, rgba(114,125,136,0.01) 100%);
         color: #78909C;

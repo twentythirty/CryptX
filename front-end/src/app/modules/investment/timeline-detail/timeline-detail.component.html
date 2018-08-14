@@ -50,6 +50,12 @@
     [perPage]="pageSize"
     [page]="page"
   ></app-pagination>
+
+  <app-action-log
+    *ngIf="logsSource"
+    [title]="logsTitle"
+    [source]="logsSource"
+  ></app-action-log>
 </div>
 
 <!-- If there is no step-labels, hide whole container -->
