@@ -9,7 +9,12 @@ const autoprefixer = require('autoprefixer');
 const postcssUrl = require('postcss-url');
 const postcssImports = require('postcss-import');
 
-const { NoEmitOnErrorsPlugin, SourceMapDevToolPlugin, NamedModulesPlugin } = require('webpack');
+const {
+  NoEmitOnErrorsPlugin,
+  SourceMapDevToolPlugin,
+  NamedModulesPlugin,
+  HotModuleReplacementPlugin
+} = require('webpack');
 const { NamedLazyChunksWebpackPlugin, BaseHrefWebpackPlugin, PostcssCliResources } = require('@angular/cli/plugins/webpack');
 const { optimize } = require('webpack');
 const { CommonsChunkPlugin } = require('webpack').optimize;
