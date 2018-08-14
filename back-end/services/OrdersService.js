@@ -330,7 +330,7 @@ const generateApproveRecipeOrders = async (recipe_run_id) => {
             order_qnty_unadjusted : order_qnty_unadjusted.toDP(tick_size_decimal.dp(), Decimal.ROUND_HALF_DOWN)
         ).div(buy_order ? Decimal(price) : Decimal(1))
 
-        const connector = connectors[recipe_run_detail.target_exchange_id];
+        const connector = connectors[recipe_run_detail.target_exchange_id.toString()];
         const check_symbol = buy_order? instrument.symbol : instrument.reverse_symbol();
         const check_market = connector.markets[check_symbol];
 

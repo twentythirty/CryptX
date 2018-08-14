@@ -76,7 +76,7 @@ const allConnectors = async (exchange_ids = []) => {
     if (_.isNull(exchange_ids) || _.isEmpty(exchange_ids)) {
         return con_by_id
     } else {
-        return _.pickBy(con_by_id, (con, id) => exchange_ids.includes(id))
+        return _.pickBy(con_by_id, (con, id) => exchange_ids.includes(Number(id)))
     }
 };
 module.exports.allConnectors = allConnectors;
