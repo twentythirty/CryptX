@@ -413,7 +413,7 @@ describe('Execution Order generator job', () => {
         });
         sinon.stub(InstrumentExchangeMapping, 'find').callsFake(options => {
             return Promise.resolve(new InstrumentExchangeMapping(Object.assign(options.where, {
-                tick_size: 0.5
+                tick_size: 0.000000005
             })))
         });
 
@@ -446,7 +446,7 @@ describe('Execution Order generator job', () => {
             ] = processed_recipes;
 
             chai.expect(execution_order).to.be.not.undefined;
-            chai.expect(execution_order.total_quantity).to.equal(0.1);
+            chai.expect(execution_order.total_quantity).to.greaterThan(0.0);
         });
     });
 
