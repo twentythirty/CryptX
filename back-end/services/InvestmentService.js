@@ -228,19 +228,21 @@ const generateRecipeDetails = async function (strategy_type) {
     asset.suggested_action = _.minBy(asset.possible_actions, 'cost_usd');
   });
 
-
-  // calculate investment percentage based on market share
   let total_marketshare = 0;
+  // filter out assets that can't be acquired based on if they have suggested action or not
   assets = assets.filter(a => typeof a.suggested_action !== "undefined" || a.is_base)
     .map((asset) => {
       total_marketshare += asset.avg_share;
       return asset;
-    }).map(asset => {
-      asset.investment_percentage = 100 / assets.length;
-      /* // investment percentage proportional to asset marketshare
-      Decimal(100).div(Decimal(total_marketshare)).mul(Decimal(asset.avg_share)).toNumber(); */
-      return asset;
     });
+  // calculate investment percentage
+
+  assets.map(asset => {
+    asset.investment_percentage = 100 / assets.length;
+    /* // investment percentage proportional to asset marketshare
+    Decimal(100).div(Decimal(total_marketshare)).mul(Decimal(asset.avg_share)).toNumber(); */
+    return asset;
+  });
 
   return assets;
 };
