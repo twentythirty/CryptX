@@ -4,6 +4,8 @@
 const adminViewService = require('../services/AdminViewsService');
 const ColdStorageService = require('../services/ColdStorageService');
 
+const ColdStorageCustodian = require('../models').ColdStorageCustodian;
+
 const { logAction } = require('../utils/ActionLogUtil');
 
 const approveColdStorageTransfer = async function (req, res) {
@@ -81,17 +83,24 @@ const create_mock_footer = function (keys, name) {
 
 const getCustodians = async function (req, res) {
 
-  let mock_custodians = [...Array(5)].map((cust, index) => ({
+  /*let mock_custodians = [...Array(5)].map((cust, index) => ({
     id: index + 1,
     name: "Custodian " + (index + 1)
-  }))
+  }))*/
 
-  let footer = create_mock_footer(mock_custodians[0], 'cold_storage');
+  const { seq_query } = req;
+
+  const [ err, result ] = await to(ColdStorageCustodian.findAndCount(seq_query));
+  if(err) return ReE(res, err.message, 422);
+
+  const { count, rows: custodians } = result;
+
+  //let footer = create_mock_footer(mock_custodians[0], 'cold_storage');
 
   return ReS(res, {
-    custodians: mock_custodians,
-    footer,
-    count: mock_custodians.length
+    custodians,
+    footer: [], //Currently wireframe doesn't show any sign of footer values.
+    count
   });
 };
 module.exports.getCustodians = getCustodians;
