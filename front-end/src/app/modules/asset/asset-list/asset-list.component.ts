@@ -211,16 +211,10 @@ export class AssetListComponent extends DataTableCommonManagerComponent implemen
    * Styles
    */
 
-  public rowBackgroundColor = (row: Asset): string => {
-    if(row.statusCode == 401) return '#6b6b6b';
-    if(row.statusCode == 402) return '#aeaeae';
-    return null;
-  }
-
-  public rowTexColor = (row: Asset): string => {
-    if(row.statusCode == 401) return '#ffffff';
-    if(row.statusCode == 402) return '#f2f2f2';
-    return null;
+  public rowClass(row: Asset): string {
+    if(row.statusCode == 401) return 'color-black';
+    if(row.statusCode == 402) return 'color-gray';
+    return '';
   }
 
   /**

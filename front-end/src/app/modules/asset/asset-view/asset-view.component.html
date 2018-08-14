@@ -5,8 +5,7 @@
 <app-data-table
   [dataSource]="assetsDataSource"
   [columnsToShow]="assetsColumnsToShow"
-  [rowBackgroundColor]="rowBackgroundColor"
-  [rowTexColor]="rowTexColor"
+  [rowClass]="rowClass"
   (setFilter)="onSetFilter($event)"
 ></app-data-table>
 
