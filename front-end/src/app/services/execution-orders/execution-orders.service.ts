@@ -42,4 +42,9 @@ export class ExecutionOrdersService {
     )
   }
 
+  changeExecutionOrderStatus(id: number, status: number): Observable<any> {
+    const request_data = { status };
+    return this.http.post<any>(this.baseUrl + `execution_orders/${id}/change_status`, request_data);
+  }
+
 }

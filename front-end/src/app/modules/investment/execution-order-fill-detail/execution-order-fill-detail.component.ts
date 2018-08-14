@@ -9,6 +9,7 @@ import { TimelineEvent } from '../../../shared/components/timeline/timeline.comp
 import { ActionCellDataColumn, DataCellAction, DateCellDataColumn, PercentCellDataColumn, StatusCellDataColumn, ConfirmCellDataColumn, NumberCellDataColumn } from '../../../shared/components/data-table-cells';
 import { mergeMap, map } from 'rxjs/operators';
 import { InvestmentService } from '../../../services/investment/investment.service';
+import { ExecutionOrdersService } from '../../../services/execution-orders/execution-orders.service';
 
 /**
  * 0. Set HTML and SCSS files in component decorator
@@ -44,7 +45,8 @@ export class ExecutionOrderFillDetailComponent extends TimelineDetailComponent i
       { column: 'fee', nameKey: 'table.header.exchange_trading_fee' },
       { column: 'status', nameKey: 'table.header.status' },
       { column: 'submission_time', nameKey: 'table.header.submission_time' },
-      { column: 'completion_time', nameKey: 'table.header.completion_time' }
+      { column: 'completion_time', nameKey: 'table.header.completion_time' },
+      { column: 'action', nameKey: 'table.header.action' }
     ],
     body: null
   }
@@ -81,7 +83,18 @@ export class ExecutionOrderFillDetailComponent extends TimelineDetailComponent i
       'execution_orders.status.66': StatusClass.FAILED,
     }}}),
     new DateCellDataColumn({ column: 'submission_time' }),
-    new DateCellDataColumn({ column: 'completion_time' })
+    new DateCellDataColumn({ column: 'completion_time' }),
+    new ActionCellDataColumn({ column: 'action', inputs: {
+      actions: [
+        new DataCellAction({
+          label: 'RETRY',
+          isShown: row => row.status === 'execution_orders.status.66',
+          exec: (row: any) => {
+            this.changeExecutionOrderStatus(row.id, 61);
+          }
+        })
+      ]
+    }})
   ];
 
   public listColumnsToShow: Array<TableDataColumn> = [
@@ -98,7 +111,8 @@ export class ExecutionOrderFillDetailComponent extends TimelineDetailComponent i
   constructor(
     public route: ActivatedRoute,
     private router: Router,
-    private investmentService: InvestmentService
+    private investmentService: InvestmentService,
+    private executionOrdersService: ExecutionOrdersService
   ) {
     super(route);
 
@@ -175,10 +189,21 @@ export class ExecutionOrderFillDetailComponent extends TimelineDetailComponent i
     //this.router.navigate([`/run/execution-order-fill/${row.id}`])
   }
 
+  private changeExecutionOrderStatus(id: number, status: number): void {
+    this.executionOrdersService.changeExecutionOrderStatus(id, status)
+    .subscribe(
+      res => {
+        Object.assign(this.singleDataSource.body[0], { status: res.status });
+      },
+      err => {}
+    )
+  }
+
   /**
    * + If custom ngOnInit() is needed, call super.ngOnInit() to
    * perform parent component class initialization
    */
+  
 
   ngOnInit() {
     super.ngOnInit();
