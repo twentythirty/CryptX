@@ -1,4 +1,5 @@
 'use strict';
+const ccxtUtils = require('../utils/CCXTUtils');
 
 //everyday, every 5 seconds
 module.exports.SCHEDULE = '*/5 * * * * *';
@@ -6,6 +7,7 @@ module.exports.NAME = 'ORD_ST_CHANGE';
 module.exports.JOB_BODY = async (config, log) => {
 
     const models = config.models;
+    const Instrument = models.Instrument;
     const RecipeOrder = models.RecipeOrder;
     const ExecutionOrder = models.ExecutionOrder;
     const ExecutionOrderFill = models.ExecutionOrderFill;
@@ -30,7 +32,8 @@ module.exports.JOB_BODY = async (config, log) => {
             status: {
                 [Op.notIn]: RECIPE_ORDER_TERMINAL_STATUSES
             }
-        }
+        },
+        include: [Instrument]
     }).then(recipe_orders => {
 
         log(`1. Processing ${recipe_orders.length} non-terminal orders...`);
@@ -61,7 +64,7 @@ module.exports.JOB_BODY = async (config, log) => {
 
                 //if there are executing execution orders then the recipe order status needs to be set to executing
                 //note that this is NOT a terminal operation for this job because next we analyze execution order fills
-                //if it turns out that the fills fully cover the recipe order already, its
+                //if it turns out that the fills (almost) fully cover the recipe order already, its
                 //status will need to be set to complete
                 let recipe_order_promise = recipe_order;
                 if (recipe_order.status === RECIPE_ORDER_STATUSES.Pending && _.some(execution_orders, eo => EXECUTION_ORDER_ACTIVE_STATUSES.includes(eo.status))) {
@@ -72,14 +75,15 @@ module.exports.JOB_BODY = async (config, log) => {
 
                 return Promise.all([
                     Promise.resolve(recipe_order_promise),
+                    ccxtUtils.getConnector(recipe_order.target_exchange_id),
                     ExecutionOrderFill.findAll({
                         where: {
                             execution_order_id: _.map(execution_orders, 'id')
                         }
                     })
-                ]).then(order_and_fills => {
+                ]).then(order_and_connector_and_fills => {
 
-                    const [recipe_order, execution_order_fills] = order_and_fills;
+                    const [recipe_order, connector, execution_order_fills] = order_and_connector_and_fills;
 
                     log(`3.[${recipe_order.id}]. Checking ${execution_order_fills.length} execution order fills of order ${recipe_order.id}...`);
 
@@ -88,9 +92,29 @@ module.exports.JOB_BODY = async (config, log) => {
                             .map(qty => Decimal(qty))
                             .reduce((acc, current) => acc.plus(current), Decimal(0));
 
-                    if (fills_sum_decimal.gte(Decimal(recipe_order.quantity))) {
+                    //fetch correct ccxt market or stub if there is no market for this pair
+                    //technically an order should not exist in that case, so lets mark it failed 
+                    const market = connector.markets[
+                        recipe_order.side == ORDER_SIDES.Buy ? 
+                        recipe_order.Instrument.symbol 
+                        : recipe_order.Instrument.reverse_symbol()
+                    ]
+                    
+                    if (market == null) {
 
-                        log(`3.[TERM.${recipe_order.id}] Sum of execution order fills for recipe order ${recipe_order.id} is ${fills_sum_decimal}, which covers total recipe order quantity ${recipe_order.quantity}, setting recipe order status to Completed...`);
+                        log(`3.[TERM.${recipe_order.id}] Recipe order ${recipe_order.id} with instrument ${recipe_order.Instrument.symbol} and side ${recipe_order.side} had no viable markets for trading. Failing...`);
+                        recipe_order.status = RECIPE_ORDER_STATUSES.Failed;
+
+                        return recipe_order.save();
+                    }
+
+                    const balast_sum = Decimal(market.limits.amount.min || '0')
+                    const adjusted_qnty = Decimal(recipe_order.quantity).minus(balast_sum);
+                    //to consider the order fully filled we only need to cover a viable amount of quantity with fills
+                    //if the remainder is smaller than allowed trading quantity then we leave it be
+                    if (fills_sum_decimal.gte(adjusted_qnty)) {
+
+                        log(`3.[TERM.${recipe_order.id}] Sum of execution order fills for recipe order ${recipe_order.id} is ${fills_sum_decimal.toString()}, which covers total recipe order quantity(-${balast_sum.toString()})${adjusted_qnty.toString()}, setting recipe order status to Completed...`);
                         recipe_order.status = RECIPE_ORDER_STATUSES.Completed;
 
                         return recipe_order.save();
