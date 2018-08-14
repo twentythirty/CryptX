@@ -33,5 +33,19 @@ module.exports = (sequelize, DataTypes) => {
         });
     };
 
+    Instrument.prototype.reverse_symbol = () => {
+
+        const symbol = this.symbol;
+        //if symbol is null/undefined/not string we return it as is
+        if (symbol == null || !_.isString(symbol)) {
+            return symbol;
+        }
+        const SYMBOL_SEPARATOR = '/';
+
+        const [tx_asset, quote_asset] = symbol.split(SYMBOL_SEPARATOR); 
+
+        return _.join([quote_asset, tx_asset], SYMBOL_SEPARATOR);
+    }
+
     return Instrument;
 };
