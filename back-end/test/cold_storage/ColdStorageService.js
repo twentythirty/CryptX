@@ -24,6 +24,8 @@ describe('ColdStorage testing', () => {
 
     const ColdStorageService = require('./../../services/ColdStorageService');
     const ColdStorageCustodian = require('./../../models').ColdStorageCustodian;
+    const ColdStorageAccount = require('./../../models').ColdStorageAccount;
+    const Asset = require('./../../models').Asset;
 
     describe('and method createCustodian shall', () => {
 
@@ -84,6 +86,102 @@ describe('ColdStorage testing', () => {
 
             });
 
+        });
+
+    });
+
+    describe('and method createColdStorageAccount shall', () => {
+
+        const createColdStorageAccount = ColdStorageService.createColdStorageAccount;
+
+        const MOCK_IDS = {
+            NON_CRYPTO_ASSET: 1,
+            CRYPTO_ASSET: 2,
+
+            VALID_CUSTODIAN: 1,
+
+            NOT_FOUND: 999
+        };
+
+        const MOCK_ADDRESS = '3h21kj4h1jk5h1';
+
+        beforeEach(done => {
+
+            sinon.stub(Asset, 'findById').callsFake(id => {
+                switch(id) {
+                    case MOCK_IDS.NON_CRYPTO_ASSET:
+                        return Promise.resolve({ symbol: 'USD' });
+                    case MOCK_IDS.CRYPTO_ASSET:
+                        return Promise.resolve({ symbol: 'BTC' });
+                    default:
+                        return Promise.resolve(null);
+                }
+            });
+
+            sinon.stub(ColdStorageCustodian, 'findById').callsFake(id => {
+                switch(id) {
+                    case MOCK_IDS.VALID_CUSTODIAN:
+                        return Promise.resolve({ name: 'Duck Fury' });
+                    default:
+                        return Promise.resolve(null);
+                }
+            });
+
+            sinon.stub(ColdStorageAccount, 'create').callsFake(data => {
+                return Promise.resolve(Object.assign({ id: _.random(false) }, data));
+            });
+
+            done();
+        });
+
+        afterEach(done => {
+            Asset.findById.restore();
+            ColdStorageCustodian.findById.restore();
+            ColdStorageAccount.create.restore();
+
+            done();
+        });
+
+        it('exist', () => {
+            return chai.expect(createColdStorageAccount).to.be.not.undefined;
+        });
+
+        it('reject invalid params', () => {
+            return Promise.all(_.map([
+                [],
+                [1],
+                [1, 1],
+                [1, 2, 3],
+                [1, 2, 3, '1'],
+                [{}, 3, 3, '23'],
+                [101, null, 2, '23123']
+            ], params => {
+                chai.assert.isRejected(createColdStorageAccount(...params));
+            }));
+        });
+
+        it('reject if it did not find the asset', () => {
+            chai.assert.isRejected(createColdStorageAccount(STRATEGY_TYPES.MCI, MOCK_IDS.NOT_FOUND, MOCK_IDS.CRYPTO_ASSET, MOCK_ADDRESS));
+        });
+
+        it('reject if found asset is not a crypto currency', () => {
+            chai.assert.isRejected(createColdStorageAccount(STRATEGY_TYPES.MCI, MOCK_IDS.NON_CRYPTO_ASSET, MOCK_IDS.VALID_CUSTODIAN, MOCK_ADDRESS));
+        });
+
+        it('reject if it did not find the custodian', () => {
+            chai.assert.isRejected(createColdStorageAccount(STRATEGY_TYPES.MCI, MOCK_IDS.CRYPTO_ASSET, MOCK_IDS.NOT_FOUND, MOCK_ADDRESS));
+        });
+
+        it('create a new cold storage account', () => {
+            return createColdStorageAccount(STRATEGY_TYPES.MCI, MOCK_IDS.CRYPTO_ASSET, MOCK_IDS.VALID_CUSTODIAN, MOCK_ADDRESS).then(account => {
+
+                chai.expect(account.id).to.be.a('number');
+                chai.expect(account.strategy_type).to.equal(STRATEGY_TYPES.MCI);
+                chai.expect(account.asset_id).to.equal(MOCK_IDS.CRYPTO_ASSET);
+                chai.expect(account.cold_storage_custodian_id).to.equal(MOCK_IDS.VALID_CUSTODIAN);
+                chai.expect(account.tag).to.be.null;
+
+            });
         });
 
     });

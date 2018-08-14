@@ -32,16 +32,16 @@ export class AssetListComponent extends DataTableCommonManagerComponent implemen
   public assetsDataSource: TableDataSource = {
     header: [
       { column: 'symbol', nameKey: 'table.header.symbol', filter: { type: 'text', sortable: true } },
-      { column: 'is_cryptocurrency', nameKey: 'table.header.cryptocurrency', filter: { type: 'text', sortable: true } },
+      { column: 'is_cryptocurrency', nameKey: 'table.header.crypto', filter: { type: 'text', sortable: true } },
       { column: 'long_name', nameKey: 'table.header.long_name', filter: { type: 'text', sortable: true } },
-      { column: 'is_base', nameKey: 'table.header.is_base', filter: { type: 'text', sortable: true } },
-      { column: 'is_deposit', nameKey: 'table.header.is_deposit', filter: { type: 'text', sortable: true } },
+      { column: 'is_base', nameKey: 'table.header.base', filter: { type: 'text', sortable: true } },
+      { column: 'is_deposit', nameKey: 'table.header.deposit', filter: { type: 'text', sortable: true } },
       { column: 'capitalization', nameKey: 'table.header.capitalisation', filter: { type: 'number', sortable: true } },
       { column: 'nvt_ratio', nameKey: 'table.header.nvt_ratio', filter: { type: 'number', sortable: true } },
       { column: 'market_share', nameKey: 'table.header.market_share', filter: { type: 'number', sortable: true } },
       { column: 'capitalization_updated', nameKey: 'table.header.capitalisation_updated', filter: { type: 'date', sortable: true } },
       { column: 'status', nameKey: 'table.header.status', filter: { type: 'text', sortable: true } },
-      { column: '', nameKey: 'table.header.action' }
+      { column: '', nameKey: 'table.header.actions' }
     ],
     body: null
   };
