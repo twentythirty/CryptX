@@ -54,7 +54,7 @@ export class DataTableCommonManagerComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy() {
-    this.queryParamsSubscription.unsubscribe();
+    this.queryParamsSubscription && this.queryParamsSubscription.unsubscribe();
   }
 
   onSetFilter(filterData): void {
