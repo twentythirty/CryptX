@@ -443,6 +443,7 @@ const changeExecutionOrderStatus = async (execution_order_id, status) => {
     switch (status) {
         case EXECUTION_ORDER_STATUSES.Pending: //User tries to reset the execution order.
             if (execution_order.status !== EXECUTION_ORDER_STATUSES.Failed) TE('Only Execution orders with the status Failed can be reinitiated');
+            execution_order.failed_attemts = 0;
             break;
 
         default:
@@ -453,7 +454,7 @@ const changeExecutionOrderStatus = async (execution_order_id, status) => {
 
     const previous_values = execution_order.toJSON();
 
-    execution_order.status = EXECUTION_ORDER_STATUSES.Pending;
+    execution_order.status = status;
 
     [err, execution_order] = await to(execution_order.save());
 
