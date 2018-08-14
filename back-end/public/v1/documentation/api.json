@@ -4526,6 +4526,10 @@
         "address": {
           "type": "string",
           "example": "1F1tAaz5x1HUXrCNLbtMDqcw6o5GNn4xqX"
+        },
+        "tag": {
+          "type": "string",
+          "example": "XPR_23131"
         }
       }
     },
