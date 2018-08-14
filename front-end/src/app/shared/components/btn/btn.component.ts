@@ -7,6 +7,7 @@ import { Component, Input, Output, EventEmitter } from '@angular/core';
 })
 export class BtnComponent {
   @Input('thinner') thinner: boolean;
+  @Input('grey') grey: boolean;
 
   @Output() onClick = new EventEmitter<void>();
 

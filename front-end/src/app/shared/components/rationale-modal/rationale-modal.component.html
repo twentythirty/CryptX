@@ -1,28 +1,23 @@
 <ng-container [ngSwitch]="screen">
   <ng-container *ngSwitchCase="'INPUT'">
     <span class="modal-title">Rationale needs to be given</span>
-    <span>Please enter your rationale and submit your action</span>
-    <div [formGroup]="form" *ngIf="form">
-      <textarea placeholder="Your rationale" formControlName="rationale"></textarea>
-    </div>
-    <div>
-      <app-btn (onClick)="submit()">Submit</app-btn>
+    <div class="select-box">
+      <span class="label">Please enter your rationale and submit your action</span>
+      <div [formGroup]="form" *ngIf="form">
+        <textarea placeholder="Your rationale" formControlName="rationale"></textarea>
+      </div>
+      <div>
+        <app-btn class="right" (onClick)="submit()">Submit</app-btn>
+      </div>
     </div>
   </ng-container>
   
   <ng-container *ngSwitchCase="'ERROR'">
+    <div class="error-icon"></div>
     <span class="modal-title">Rationale wasn't given</span>
-    <span>Please give your rationale an try again</span>
-    <div>
-      <app-btn (onClick)="back()">Give a rationale</app-btn>
-    </div>
-  </ng-container>
-  
-  <ng-container *ngSwitchCase="'SUCCESS'">
-    <span class="modal-title">Retionale was given</span>
-    <span>Your rationale was successfully given</span>
-    <div>
-      <app-btn (onClick)="finish()">Okay</app-btn>
+    <span class= "label label-after-title">Please give your rationale an try again</span>
+    <div class="center">
+      <app-btn [grey]="true" (onClick)="back()">Give a rationale</app-btn>
     </div>
   </ng-container>
 </ng-container>

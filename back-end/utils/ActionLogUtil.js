@@ -14,6 +14,12 @@ const {
 
 const custom_loggers = require('../config/loggers');
 
+let log_levels = Object.values(LOG_LEVELS);
+
+if(process.env.LOG_LEVELS) {
+    log_levels = process.env.LOG_LEVELS.split(',').map(ll => LOG_LEVELS[ll.trim()]).filter(ll => ll);
+}
+
 /*const { 
     ActionLog, UserSession, User, Role,
     Asset, ExchangeAccount, Exchange, Instrument,
@@ -180,6 +186,7 @@ module.exports.logAction = async (action_path, options = {}) => {
  * @param {String} details Text describing the action.
  * @param {Object} [options={}] Additional options for the module.exports.log.
  * @param {Object} options.relations Object of specified relations. Example: `{ asset_id: 21, exchange_id: 1 }`.
+ * @param {Number} [options.log_level=1] Level of the log, defaults to Info(1)
  * @returns {Promise} Resolves in a new action module.exports.log object.
  */
 module.exports.log = async (details, options = {}) => {
@@ -190,8 +197,10 @@ module.exports.log = async (details, options = {}) => {
         details,
         timestamp: new Date(),
         failed_attempts: 0,
-        level: options.log_level || LOG_LEVELS.Info
+        level: _.isUndefined(options.log_level) ? LOG_LEVELS.Info : options.log_level 
     };
+
+    if(!log_levels.includes(base_log.level)) return;
 
     if(_.isPlainObject(options.relations)) {
 

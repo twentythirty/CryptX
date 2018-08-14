@@ -27,6 +27,7 @@ export class RationaleModalComponent implements OnInit {
   public submit(): void {
     if(this.form.valid) {
       this.screen = 'SUCCESS';
+      this.finish();
     } else {
       this.screen = 'ERROR';
     }
