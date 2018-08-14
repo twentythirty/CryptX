@@ -181,6 +181,42 @@
         ]
       }
     },
+    "/cold_storage/custodians/add": {
+      "post": {
+        "tags": [
+          "cold storage"
+        ],
+        "summary": "Adds a new cold storage custodian",
+        "description": "Get list of custodians",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "description": "Fields required to add a new custodian",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/AddColdStorageCustodianParams"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "$ref": "#/definitions/ColdStorageCustodianResponse"
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
     "/cold_storage/accounts/all": {
       "post": {
         "tags": [
@@ -4585,6 +4621,29 @@
           }
         }
       ]
+    },
+    "AddColdStorageCustodianParams": {
+      "description": "Cold storage",
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "example": "Crptic Pineapples LTD."
+        }
+      }
+    },
+    "ColdStorageCustodianResponse": {
+      "description": "Cold storage custodian",
+      "type": "object",
+      "properties": {
+        "status": {
+          "type": "boolean",
+          "example": true
+        },
+        "custodian": {
+          "$ref": "#/definitions/ColdStorageCustodian"
+        }
+      }
     },
     "ColdStorageCustodian": {
       "description": "Cold storage transfer information",

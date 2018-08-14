@@ -564,6 +564,11 @@ ROUTES = {
     permissions_matcher: ROUTE_MATCHERS.GetColdStorageTransfers,
     required_permissions: [PERMISSIONS.CREATE_INVESTMENT_RUN]
   },
+  AddColdStorageCustodians: {
+    router_string: "/cold_storage/custodians/add",
+    permissions_matcher: ROUTE_MATCHERS.AddColdStorageCustodians,
+    required_permissions: [PERMISSIONS.CREATE_INVESTMENT_RUN]
+  },
   GetColdStorageCustodiansColLOV: {
     router_string: "/cold_storage/custodians/header_lov/:fields_name",
     permissions_matcher: ROUTE_MATCHERS.GetColdStorageTransfers,

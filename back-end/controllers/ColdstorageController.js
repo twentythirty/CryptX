@@ -2,6 +2,9 @@
 'use strict';
 
 const adminViewService = require('../services/AdminViewsService');
+const ColdStorageService = require('../services/ColdStorageService');
+
+const { logAction } = require('../utils/ActionLogUtil');
 
 const approveColdStorageTransfer = async function (req, res) {
 
@@ -92,6 +95,20 @@ const getCustodians = async function (req, res) {
   });
 };
 module.exports.getCustodians = getCustodians;
+
+const addCustodian = async (req, res) => {
+
+  const { name } = req.body;
+  const { user } = req;
+
+  const [ err, custodian ] = await to(ColdStorageService.createCustodian(name));
+  
+  if(err) return ReE(res, err.message, 422);
+
+  return ReS(res, { custodian });
+
+};
+module.exports.addCustodian = addCustodian;
 
 const addColdstorageAccount = async function (req, res) {
 
