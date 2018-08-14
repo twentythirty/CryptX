@@ -14,7 +14,8 @@
     "change_password": "Change password",
     "logout": "Logout",
     "save_changes": "Save changes",
-    "sign_up": "Sign up"
+    "sign_up": "Sign up",
+    "activity_log": "Activity log"
   },
   "table": {
     "header": {
