@@ -303,7 +303,7 @@ const generateApproveRecipeOrders = async (recipe_run_id) => {
         const side = buy_order ? ORDER_SIDES.Buy : ORDER_SIDES.Sell;
         //get deposit object in base currency (includes amount and investemnt percentage)
         const relevant_deposit = exchange_deposits[recipe_run_detail.target_exchange_id][buy_order ? recipe_run_detail.quote_asset_id : recipe_run_detail.transaction_asset_id];
-
+        
         const decimal_100 = Decimal('100');
         //create adjustment coeficient to know how to scale detail percentages
         const investment_prc_adjustment = decimal_100.div(relevant_deposit.investment_prc)
@@ -329,6 +329,19 @@ const generateApproveRecipeOrders = async (recipe_run_id) => {
             tick_size_decimal == null ?
             order_qnty_unadjusted : order_qnty_unadjusted.toDP(tick_size_decimal.dp(), Decimal.ROUND_HALF_DOWN)
         ).div(buy_order ? Decimal(price) : Decimal(1))
+
+        console.log(`
+        Recipe ordering recipe run detail: ${recipe_run_detail.id}
+        use market price: ${price}
+        instrument: ${instrument.symbol}
+        exchange: ${recipe_run_detail.target_exchange_id}
+        buy order?: ${buy_order}
+        relevant deposit: ${JSON.stringify(relevant_deposit)}
+        investment prc adjust: ${investment_prc_adjustment.toString()}
+        initial order qnty: ${order_qnty_unadjusted.toString()}
+        tick size: ${tick_size_decimal.toString()}
+        qnty: ${qnty_decimal.toString()}
+        `)
 
         const connector = connectors[recipe_run_detail.target_exchange_id.toString()];
         const check_symbol = buy_order? instrument.symbol : instrument.reverse_symbol();
