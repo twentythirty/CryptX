@@ -822,7 +822,7 @@ router.post(
   stateless_auth,
   check_permissions,
   filter_reducer,
-  MockController.fetchColLOV
+  ColdstorageController.getColdStorageTransferColumnLOV
 );
 router.post(
   ROUTES.ApproveColdStorageTransfer.router_string,

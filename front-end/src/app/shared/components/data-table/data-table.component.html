@@ -37,8 +37,7 @@
     <ng-container *ngIf="dataSource.body?.length > 0; else listEmpty">
       <tr
         *ngFor="let item of dataSource.body"
-        [style.background-color]="getRowBackgroundColor(item) || 'white'"
-        [style.color]="getRowTexColor(item)"
+        [class]="getRowClass(item)"
         (click)="onOpenRow(item)"
       >
         <td

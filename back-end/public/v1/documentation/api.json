@@ -4526,6 +4526,10 @@
         "address": {
           "type": "string",
           "example": "1F1tAaz5x1HUXrCNLbtMDqcw6o5GNn4xqX"
+        },
+        "tag": {
+          "type": "string",
+          "example": "XPR_23131"
         }
       }
     },
@@ -4686,8 +4690,12 @@
           "type": "number",
           "example": 13
         },
-        "asset": {
+        "asset_id": {
           "type": "number",
+          "example": 1
+        },
+        "asset": {
+          "type": "string",
           "example": "BTC"
         },
         "gross_amount": {
@@ -4696,34 +4704,34 @@
         },
         "net_amount": {
           "type": "number",
-          "example": 14
+          "example": 12.04
         },
         "exchange_withrawal_fee": {
           "type": "number",
           "example": 0.01
         },
         "status": {
-          "type": "number",
-          "example": 91
+          "type": "string",
+          "example": "cold_storage_transfers.status.91"
         },
-        "cold_storage_account_id": {
-          "type": "number",
-          "example": "98512543"
+        "destination_account": {
+          "type": "string",
+          "example": "H4kj3h4kj24h"
         },
         "custodian": {
-          "type": "number",
+          "type": "string",
           "example": "ItBit"
         },
         "strategy": {
-          "type": "number",
-          "example": "MCI"
+          "type": "string",
+          "example": "investment.stategy.101"
         },
         "source_exchange": {
-          "type": "number",
+          "type": "string",
           "example": "Bitstamp"
         },
         "source_account": {
-          "type": "number",
+          "type": "string",
           "example": "25439851"
         },
         "placed_timestamp": {

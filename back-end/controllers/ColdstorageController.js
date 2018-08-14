@@ -1,7 +1,7 @@
 
 'use strict';
 
-const adminViewService = require('../services/AdminViewsService');
+const AdminViewsService = require('../services/AdminViewsService');
 const ColdStorageService = require('../services/ColdStorageService');
 
 const ColdStorageCustodian = require('../models').ColdStorageCustodian;
@@ -34,37 +34,65 @@ const approveColdStorageTransfer = async function (req, res) {
   return ReS(res, {
     coldstorage_transfer: mock_coldstorage_transfer
   })
-} 
+}
 module.exports.approveColdStorageTransfer = approveColdStorageTransfer;
 
 const getColdStorageTransfers = async function (req, res) {
 
   // mock data below
- let mock_coldstorage_transfers = [...Array(20)].map((a, index) => ({
-   id: index + 1,
-   asset: "BTC",
-   gross_amount: 12.05,
-   net_amount: 14,
-   exchange_withrawal_fee: 0.01,
-   status: 91,
-   cold_storage_account_id: "98512543",
-   custodian: "ItBit",
-   strategy: "MCI",
-   source_exchange: "Bitstamp",
-   source_account: "25439851",
-   placed_timestamp: 1532097313472,
-   completed_timestamp: 1532097313472
- }));
+  // will leave it for now in case it will be need by FE
+  /*let mock_coldstorage_transfers = [...Array(20)].map((a, index) => ({
+    id: index + 1,
+    asset: "BTC",
+    gross_amount: 12.05,
+    net_amount: 14,
+    exchange_withrawal_fee: 0.01,
+    status: 91,
+    cold_storage_account_id: "98512543",
+    custodian: "ItBit",
+    strategy: "MCI",
+    source_exchange: "Bitstamp",
+    source_account: "25439851",
+    placed_timestamp: 1532097313472,
+    completed_timestamp: 1532097313472
+  }));
 
- let footer = create_mock_footer(mock_coldstorage_transfers[0], 'cold_storage');
+  let footer = create_mock_footer(mock_coldstorage_transfers[0], 'cold_storage');
+  */
+  const { seq_query, sql_where } = req;
 
- return ReS(res, {
-   mock_coldstorage_transfers,
-   count: mock_coldstorage_transfers.length,
-   footer
- })
+  let [ err, result ] = await to(AdminViewsService.fetchColdStorageTransferViewDataWithCount(seq_query));
+
+  let { total: count, data: transfers } = result;
+
+  transfers = transfers.map(cst => cst.toWeb());
+
+  let footer = [];
+  [ err, footer ] = await to(AdminViewsService.fetchColdStorageTransfersViewsFooter(sql_where));
+ 
+  return ReS(res, {
+    transfers,
+    count,
+    footer
+  })
 }
 module.exports.getColdStorageTransfers = getColdStorageTransfers;
+
+const getColdStorageTransferColumnLOV = async (req, res) => {
+
+  const field_name = req.params.field_name;
+  const { query } = _.isPlainObject(req.body) ? req.body : { query: '' };
+
+  const [ err, field_vals ] = await to(AdminViewsService.fetchColdStorageTransfersViewHeaderLOV(field_name, query, req.sql_where));
+  if(err) return ReE(res, err.message, 422);
+
+  return ReS(res, {
+    query: query,
+    lov: field_vals
+  })
+
+};
+module.exports.getColdStorageTransferColumnLOV = getColdStorageTransferColumnLOV;
 
 const create_mock_footer = function (keys, name) {
   // delete this function after mock data is replaced
@@ -74,7 +102,7 @@ const create_mock_footer = function (keys, name) {
       "value": 999,
       "template": name + ".footer." + key,
       "args": {
-          [key]: 999
+        [key]: 999
       }
     }
   });
@@ -90,8 +118,8 @@ const getCustodians = async function (req, res) {
 
   const { seq_query } = req;
 
-  const [ err, result ] = await to(ColdStorageCustodian.findAndCount(seq_query));
-  if(err) return ReE(res, err.message, 422);
+  const [err, result] = await to(ColdStorageCustodian.findAndCount(seq_query));
+  if (err) return ReE(res, err.message, 422);
 
   const { count, rows: custodians } = result;
 
@@ -110,9 +138,9 @@ const addCustodian = async (req, res) => {
   const { name } = req.body;
   const { user } = req;
 
-  const [ err, custodian ] = await to(ColdStorageService.createCustodian(name));
-  
-  if(err) return ReE(res, err.message, 422);
+  const [err, custodian] = await to(ColdStorageService.createCustodian(name));
+
+  if (err) return ReE(res, err.message, 422);
 
   return ReS(res, { custodian });
 
@@ -129,12 +157,12 @@ const addColdstorageAccount = async function (req, res) {
     tag
   } = req.body;
 
-  if (strategy_type == null || asset_id == null || custodian_id  == null || address == null)
+  if (strategy_type == null || asset_id == null || custodian_id == null || address == null)
     return ReE(res, "strategy_type, asset_id, custodian_id and address must be supplied")
-  
-  let [ err, account ] = await to(ColdStorageService.createColdStorageAccount(strategy_type, asset_id, custodian_id, address, tag));
 
-  if(err) return ReE(res, err.message, 422);
+  let [err, account] = await to(ColdStorageService.createColdStorageAccount(strategy_type, asset_id, custodian_id, address, tag));
+
+  if (err) return ReE(res, err.message, 422);
 
   return ReS(res, {
     account
@@ -145,7 +173,7 @@ module.exports.addColdstorageAccount = addColdstorageAccount;
 const getColdstorageAccounts = async function (req, res) {
 
   let mock_accounts = [...Array(20)].map((cust, index) => ({
-    id: index +1, 
+    id: index + 1,
     asset_id: 2,
     asset: "Bitcoin",
     strategy_type: "101",
