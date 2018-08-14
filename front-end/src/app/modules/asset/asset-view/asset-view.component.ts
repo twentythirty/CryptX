@@ -32,6 +32,8 @@ export class AssetViewComponent extends AssetListComponent implements OnInit {
   }
 
   ngOnInit() {
+    super.ngOnInit();
+    
     this.getAsset();
   }
 

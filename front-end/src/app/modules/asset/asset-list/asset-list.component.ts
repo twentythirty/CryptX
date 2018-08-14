@@ -72,17 +72,17 @@ export class AssetListComponent extends DataTableCommonManagerComponent implemen
         actions: [
           new DataCellAction({
             label: 'De-greylist',
-            isShown: (row: any) => false && (row.is_greylisted === true),
+            isShown: (row: any) => this.checkPerm(['CHANGE_ASSET_STATUS']) && row.statusCode === 402,
             exec: (row: any) => { this.deGreylist(<Asset>row) }
           }),
           new DataCellAction({
             label: 'Blacklist',
-            isShown: (row: any) => this.checkPerm(['CHANGE_ASSET_STATUS']) && (!(row.statusCode === 401)),
+            isShown: (row: any) => this.checkPerm(['CHANGE_ASSET_STATUS']) && row.statusCode === 400,
             exec: (row: any) => { this.blacklist(<Asset>row) }
           }),
           new DataCellAction({
             label: 'Whitelist',
-            isShown: (row: any) => this.checkPerm(['CHANGE_ASSET_STATUS']) && ((row.statusCode === 401)),
+            isShown: (row: any) => this.checkPerm(['CHANGE_ASSET_STATUS']) && row.statusCode === 401,
             exec: (row: any) => { this.whitelist(<Asset>row) }
           })
         ]
@@ -124,7 +124,7 @@ export class AssetListComponent extends DataTableCommonManagerComponent implemen
         });
         this.count = res.count || res.assets.length;
       }
-    )
+    );
   }
 
   /**
@@ -137,11 +137,11 @@ export class AssetListComponent extends DataTableCommonManagerComponent implemen
       col => {
         col.filter.rowData$ = this.assetService.getHeaderLOV(col.column)
       }
-    )
+    );
   }
 
   public openRow(asset: Asset): void {
-    this.router.navigate(['/assets/view', asset.id])
+    this.router.navigate(['/assets/view', asset.id]);
   }
 
   /**
@@ -176,7 +176,7 @@ export class AssetListComponent extends DataTableCommonManagerComponent implemen
         asset.status = 'assets.status.402';
         asset.statusCode = 402;
       }
-    )
+    );
   }
 
   public doBlacklist({ rationale, data }): void {
@@ -190,7 +190,7 @@ export class AssetListComponent extends DataTableCommonManagerComponent implemen
         asset.status = 'assets.status.401';
         asset.statusCode = 401;
       }
-    )
+    );
   }
 
   public doWhitelist({ rationale, data }): void {
@@ -204,7 +204,7 @@ export class AssetListComponent extends DataTableCommonManagerComponent implemen
         asset.status = 'assets.status.400';
         asset.statusCode = 400;
       }
-    )
+    );
   }
 
   /**
