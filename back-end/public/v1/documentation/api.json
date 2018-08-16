@@ -98,7 +98,7 @@
           "200": {
             "description": "success",
             "schema": {
-              "$ref": "#/definitions/ColdStorageTranferStatusResponse"
+              "$ref": "#/definitions/ColdStorageTranferListResponse"
             }
           }
         },
@@ -171,42 +171,6 @@
             "description": "success",
             "schema": {
               "$ref": "#/definitions/ColdStorageCustodianListResponse"
-            }
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ]
-      }
-    },
-    "/cold_storage/custodians/add": {
-      "post": {
-        "tags": [
-          "cold storage"
-        ],
-        "summary": "Adds a new cold storage custodian",
-        "description": "Get list of custodians",
-        "produces": [
-          "application/json"
-        ],
-        "parameters": [
-          {
-            "name": "body",
-            "in": "body",
-            "description": "Fields required to add a new custodian",
-            "required": true,
-            "schema": {
-              "$ref": "#/definitions/AddColdStorageCustodianParams"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "success",
-            "schema": {
-              "$ref": "#/definitions/ColdStorageCustodianResponse"
             }
           }
         },
@@ -824,37 +788,21 @@
         ]
       }
     },
-    "/instruments/{instrument_id}/exchanges/{exchange_id}/delete": {
-      "delete": {
+    "/instruments/identifiers": {
+      "get": {
         "tags": [
           "instrument"
         ],
-        "summary": "Delete a mappign based on instrument id and exchange id",
-        "description": "Delete a mappign based on instrument id and exchange id",
+        "summary": "Fetches insturment external identifiers",
+        "description": "Fetches insturment external identifiers",
         "produces": [
           "application/json"
-        ],
-        "parameters": [
-          {
-            "name": "instrument_id",
-            "in": "path",
-            "description": "ID of instrument",
-            "required": true,
-            "type": "integer"
-          },
-          {
-            "name": "exchange_id",
-            "in": "path",
-            "description": "ID of exchange",
-            "required": true,
-            "type": "integer"
-          }
         ],
         "responses": {
           "200": {
             "description": "success",
             "schema": {
-              "$ref": "#/definitions/InstrumentMappingRemovalResponse"
+              "$ref": "#/definitions/InstrumentExternalIdentifiers"
             }
           }
         },
@@ -1551,12 +1499,6 @@
         "parameters": [
           {
             "$ref": "#/parameters/recipe_id"
-          },
-          {
-            "in": "query",
-            "name": "check",
-            "type": "boolean",
-            "description": "Performs a soft check for existence of entity. Prevents a thrown 404 if entity not found, instead opting to return `null`"
           }
         ],
         "responses": {
@@ -2042,40 +1984,6 @@
             "description": "success",
             "schema": {
               "$ref": "#/definitions/ExecutionOrderResponse"
-            }
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ]
-      }
-    },
-    "/execution_orders/{execution_order_id}/change_status": {
-      "post": {
-        "tags": [
-          "execution orders"
-        ],
-        "summary": "Change the status of execution order.",
-        "description": "Ability to change the status of an execution order. Which status can be changed to depends on the current status of the execution order. Example: to retry an execution order, you need to send status \"Pending\" to a \"Failed\" execution order ",
-        "produces": [
-          "application/json"
-        ],
-        "parameters": [
-          {
-            "name": "execution_order_id",
-            "in": "path",
-            "description": "ID of execution order",
-            "required": true,
-            "type": "integer"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "success",
-            "schema": {
-              "$ref": "#/definitions/ExecutionOrderStatusChangeResponse"
             }
           }
         },
@@ -2959,7 +2867,7 @@
           "200": {
             "description": "successful operation",
             "schema": {
-              "$ref": "#/definitions/LoginUserResponse"
+              "$ref": "#/definitions/ApiSuccessResponse"
             }
           }
         }
@@ -3423,7 +3331,7 @@
           "200": {
             "description": "success",
             "schema": {
-              "$ref": "#/definitions/LoginUserResponse"
+              "$ref": "#/definitions/ReturnUserResponse"
             }
           }
         }
@@ -4541,10 +4449,6 @@
         "details": {
           "type": "string",
           "example": "Jane Morren changed status to Completed"
-        },
-        "level": {
-          "type": "number",
-          "example": 1
         }
       }
     },
@@ -4567,10 +4471,6 @@
         "address": {
           "type": "string",
           "example": "1F1tAaz5x1HUXrCNLbtMDqcw6o5GNn4xqX"
-        },
-        "tag": {
-          "type": "string",
-          "example": "XPR_23131"
         }
       }
     },
@@ -4667,29 +4567,6 @@
         }
       ]
     },
-    "AddColdStorageCustodianParams": {
-      "description": "Cold storage",
-      "type": "object",
-      "properties": {
-        "name": {
-          "type": "string",
-          "example": "Crptic Pineapples LTD."
-        }
-      }
-    },
-    "ColdStorageCustodianResponse": {
-      "description": "Cold storage custodian",
-      "type": "object",
-      "properties": {
-        "status": {
-          "type": "boolean",
-          "example": true
-        },
-        "custodian": {
-          "$ref": "#/definitions/ColdStorageCustodian"
-        }
-      }
-    },
     "ColdStorageCustodian": {
       "description": "Cold storage transfer information",
       "type": "object",
@@ -4723,20 +4600,6 @@
         }
       ]
     },
-    "ColdStorageTranferStatusResponse": {
-      "description": "Cold storage transfer status update",
-      "type": "object",
-      "properties": {
-        "success": {
-          "type": "boolean",
-          "example": true
-        },
-        "status": {
-          "type": "string",
-          "example": "cold_storage.transfers.status.91"
-        }
-      }
-    },
     "ColdStorageTransfer": {
       "description": "Cold storage transfer information",
       "type": "object",
@@ -4745,12 +4608,8 @@
           "type": "number",
           "example": 13
         },
-        "asset_id": {
-          "type": "number",
-          "example": 1
-        },
         "asset": {
-          "type": "string",
+          "type": "number",
           "example": "BTC"
         },
         "gross_amount": {
@@ -4759,34 +4618,34 @@
         },
         "net_amount": {
           "type": "number",
-          "example": 12.04
+          "example": 14
         },
         "exchange_withrawal_fee": {
           "type": "number",
           "example": 0.01
         },
         "status": {
-          "type": "string",
-          "example": "cold_storage_transfers.status.91"
+          "type": "number",
+          "example": 91
         },
-        "destination_account": {
-          "type": "string",
-          "example": "H4kj3h4kj24h"
+        "cold_storage_account_id": {
+          "type": "number",
+          "example": "98512543"
         },
         "custodian": {
-          "type": "string",
+          "type": "number",
           "example": "ItBit"
         },
         "strategy": {
-          "type": "string",
-          "example": "investment.stategy.101"
+          "type": "number",
+          "example": "MCI"
         },
         "source_exchange": {
-          "type": "string",
+          "type": "number",
           "example": "Bitstamp"
         },
         "source_account": {
-          "type": "string",
+          "type": "number",
           "example": "25439851"
         },
         "placed_timestamp": {
@@ -5335,17 +5194,20 @@
         }
       ]
     },
-    "InstrumentMappingRemovalResponse": {
-      "description": "Servers response with a success message",
+    "InstrumentExternalIdentifiers": {
+      "description": "External instrument identifiers",
       "type": "object",
       "properties": {
         "success": {
           "type": "boolean",
           "example": true
         },
-        "message": {
-          "type": "string",
-          "example": "Instrument exchange mapping was removed successfully"
+        "identifiers": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "example": "LTC/BTC"
+          }
         }
       }
     },
@@ -5631,26 +5493,6 @@
         },
         "execution_order": {
           "$ref": "#/definitions/ExecutionOrder"
-        },
-        "action_logs": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/ActionLog"
-          }
-        }
-      }
-    },
-    "ExecutionOrderStatusChangeResponse": {
-      "description": "Response of successful execution order status change",
-      "type": "object",
-      "properties": {
-        "message": {
-          "type": "string",
-          "example": "OK!"
-        },
-        "success": {
-          "type": "boolean",
-          "example": true
         }
       }
     },

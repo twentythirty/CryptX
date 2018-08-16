@@ -733,6 +733,13 @@ router.post(
   InstrumentController.getInstrumentsColumnLOV
 );
 router.get(
+  ROUTES.GetIdentifiersForInstrument.router_string,
+  stateless_auth,
+  res_new_token,
+  check_permissions,
+  InstrumentController.getIdentifiersForInstrument
+);
+router.get(
   ROUTES.GetInstrument.router_string,
   stateless_auth,
   res_new_token,

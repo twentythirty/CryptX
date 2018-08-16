@@ -148,6 +148,19 @@ const getInstrumentExchanges = async function (req, res) {
 };
 module.exports.getInstrumentExchanges = getInstrumentExchanges;
 
+const getIdentifiersForInstrument = async function (req, res) {
+
+  /* let instrument_id = req.params.instrument_id; */
+
+  let [err, identifiers] = await to(instrumentService.getInstrumentIdentifiersFromCCXT());
+  if (err) return ReE(res, err.message);
+
+  return ReS(res, {
+    identifiers
+  });
+};
+module.exports.getIdentifiersForInstrument = getIdentifiersForInstrument;
+
 const removeInstrumentExchangeMapping = async (req, res) => {
 
   const { instrument_id, exchange_id } = req.params;

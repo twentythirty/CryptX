@@ -113,6 +113,27 @@ const addInstrumentExchangeMappings = async (instrument_id, exchange_mappings) =
 };
 module.exports.addInstrumentExchangeMappings = addInstrumentExchangeMappings;
 
+
+const getInstrumentIdentifiersFromCCXT = async function () {
+  
+    let err, exchanges;
+    [err, exchanges] = await to(Exchange.findAll());
+    if (err) TE(err);
+
+    let connectors = await Promise.all(_.map(exchanges, (exchange) => {
+        return ccxtUtil.getConnector(exchange.api_id)
+    }));
+
+    let external_ids = _.uniq(
+        _.flatten( 
+            _.map(connectors, connector => Object.keys(connector.markets))
+        )
+    );
+    
+    return external_ids;
+};
+module.exports.getInstrumentIdentifiersFromCCXT = getInstrumentIdentifiersFromCCXT;
+
 const deleteExchangeMapping = async (instrument_id, exchange_id) => {
 
     if(!_.isNumber(instrument_id) || !_.isNumber(exchange_id)) TE(`Valid instrument and exchange ids must be provided`);
