@@ -24,24 +24,22 @@
       </div>
     </div>
 
-  <div class="navigation-header">
-    <nav>
-      <div *ngFor="let item of nav; let i = index" class="display">
-        <div class="user-details">
-          <div class="user-name-role">
-            <span class="name">
-              <div *ngIf="!item.items">
-                  <a routerLinkActive="active" routerLink="{{item.link}}" *ngIf="checkPerm(item.permission)">{{item.name}}</a>
-              </div>
-              <div *ngIf="item.items" routerLinkActive="active">
-                <a (click)="hideme[i] = !hideme[i]" routerLinkActive="active">{{item.name}}</a>
-                <ul class="filter-sort-box display-block navigation-dropdown">
-                  <li [hidden]="!hideme[i]" *ngFor="let submenu of item.items">
-                    <a routerLinkActive="active" routerLink="{{submenu.link}}" *ngIf="checkPerm(submenu.permission)">{{submenu.name}}</a>
-                  </li>
-                </ul>
-              </div>
-            </span>
+  <div>
+    <nav >
+      <div *ngFor="let item of nav" class="navigation">
+        <div class="menu-item" routerLinkActive="active">
+          <div *ngIf="!item.items">
+            <a routerLink="{{item.link}}" *ngIf="checkPerm(item.permission)">{{item.name}}</a>
+          </div>
+          <div *ngIf="item.items">
+            <div >  
+              <a routerLinkActive="active" (click)="toggleDropDownMenu(item)">{{item.name}}
+                <div [ngClass]="{'dropdown-open': item.show }" class="open-arrow"></div>
+              </a>
+            </div>
+            <ul [hidden]="!item.show" class="dropdown-box">
+              <li *ngFor="let submenu of item.items"><a class="menu-item" (click)="hideAll()" routerLinkActive="active" routerLink="{{submenu.link}}">{{submenu.name}}</a></li>
+            </ul>
           </div>
         </div>
       </div>
