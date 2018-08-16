@@ -45,7 +45,7 @@ ReS = function(res, data, code) {
   // Success Web Response
   let send_data = { 
     success: true,
-    new_token: res.new_token
+    next_token: res.new_token
    };
 
   if (typeof data == "object") {
