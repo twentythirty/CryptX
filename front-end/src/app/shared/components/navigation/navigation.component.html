@@ -9,11 +9,11 @@
             <div>
               <button (click)="toggleUserMenu()">{{ authService.user.first_name }} {{ authService.user.last_name }} </button>
               <div *ngIf="showUserMenu"  class="filter-sort-box display-block">
-                  <ul class="bottom-part new">
-                    <li class="new2">
+                  <ul class="bottom-part user-dropdown">
+                    <li class="row">
                       <button routerLink="/change_my_info">{{'common.change_password' |translate}}</button>
                     </li>
-                    <li class="new2">
+                    <li class="row">
                       <button (click)="logout()">{{'common.logout' | translate}}</button>
                     </li>
                   </ul>
@@ -23,21 +23,30 @@
         </div>
       </div>
     </div>
-    <div class="navigation-header">
-      <nav>
-        <a routerLinkActive="active" routerLink="/dashboard" *ngIf="checkPerm(['VIEW_INVESTMENT_RUN'])">Dashboard</a>
-        <a routerLinkActive="active" routerLink="/recipe_runs" *ngIf="checkPerm(['ALTER_PERMS'])">Recipe Runs</a>
-        <a routerLinkActive="active" routerLink="/orders" *ngIf="checkPerm(['ALTER_PERMS'])">{{ 'orders.orders' | translate }}</a>
-        <a routerLinkActive="active" routerLink="/assets" *ngIf="checkPerm(['VIEW_ASSETS'])">{{ 'assets.assets' | translate }}</a>
-        <a routerLinkActive="active" routerLink="/users" *ngIf="checkPerm(['EDIT_USERS'])">User Management</a>
-        <a routerLinkActive="active" routerLink="/roles" *ngIf="checkPerm(['VIEW_ROLES'])">Role Management</a>
-        <a routerLinkActive="active" routerLink="/instruments" *ngIf="checkPerm(['VIEW_ROLES'])">{{ 'instruments.instruments' | translate }}</a>
-        <a routerLinkActive="active" routerLink="/liquidity_requirements" *ngIf="checkPerm(['VIEW_ROLES'])">{{ 'liquidity.liquidity_requirements' | translate }}</a>
-        <a routerLinkActive="active" href="#" *ngIf="checkPerm(['VIEW_SETTING_VALUES'])">Setting Management</a>
-        <a routerLinkActive="active" routerLink="/deposits" *ngIf="checkPerm(['ALTER_PERMS'])">Deposits</a>
-        <a routerLinkActive="active" routerLink="/execution_orders" *ngIf="checkPerm(['ALTER_PERMS'])">Execution Orders</a>
 
-      </nav>
-    </div>
+  <div class="navigation-header">
+    <nav>
+      <div *ngFor="let item of nav; let i = index" class="display">
+        <div class="user-details">
+          <div class="user-name-role">
+            <span class="name">
+              <div *ngIf="!item.items">
+                  <a routerLinkActive="active" routerLink="{{item.link}}" *ngIf="checkPerm(item.permission)">{{item.name}}</a>
+              </div>
+              <div *ngIf="item.items" routerLinkActive="active">
+                <a (click)="hideme[i] = !hideme[i]" routerLinkActive="active">{{item.name}}</a>
+                <ul class="filter-sort-box display-block navigation-dropdown">
+                  <li [hidden]="!hideme[i]" *ngFor="let submenu of item.items">
+                    <a routerLinkActive="active" routerLink="{{submenu.link}}" *ngIf="checkPerm(submenu.permission)">{{submenu.name}}</a>
+                  </li>
+                </ul>
+              </div>
+            </span>
+          </div>
+        </div>
+      </div>
+    </nav>
+  </div>
+
   </div>
 </header>
