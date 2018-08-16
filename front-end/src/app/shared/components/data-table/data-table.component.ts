@@ -123,7 +123,7 @@ export class DataTableComponent implements OnInit {
    * @returns True if column filter are set and table body isint null or empty
    */
   showFilter(filter: any) {
-    return filter && this.dataSource.body && this.dataSource.body.length;
+    return filter; // && this.dataSource.body && this.dataSource.body.length;
   }
 
   onSetFilter(filterData: DataTableFilterData): void {
