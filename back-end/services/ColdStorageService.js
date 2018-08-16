@@ -46,7 +46,15 @@ const createColdStorageAccount = async (strategy_type, asset_id, cold_storage_cu
 
     if(!Object.values(STRATEGY_TYPES).includes(strategy_type)) TE(`Strategy type "${strategy_type}" is not valid`);
 
-    let [ err, result ] = await to(Promise.all([
+    let [ err, found_account ] = await to(ColdStorageAccount.count({
+        where: { address }
+    }));
+
+    if(err) TE(err.message);
+    if(found_account) TE(`Account with public address "${address}" already exists`);
+
+    let result;
+    [ err, result ] = await to(Promise.all([
         Asset.findById(asset_id),
         ColdStorageCustodian.findById(cold_storage_custodian_id)
     ]));
