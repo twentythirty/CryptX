@@ -17,13 +17,14 @@
 
 <app-modal
   *ngIf="readModalIsShown"
+  class="modal-rationale"
   [heading]="readData?.title"
   (close)="hideReadModal()"
 >
   <div>
-    <textarea class="textarea" readonly>{{ readData?.content }}</textarea>
+    <textarea readonly>{{ readData?.content }}</textarea>
   </div>
-  <div class="padding-modal">
+  <div>
     <app-btn class="right" (onClick)="hideReadModal()">{{ 'common.done' | translate }}</app-btn>
   </div>
 </app-modal>
