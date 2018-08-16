@@ -1,7 +1,8 @@
 'use strict';
 var request_promise = require('request-promise');
 
-module.exports.SCHEDULE = '0 */10 * * * * *';
+//run once a day, 1 hour past midnight every night
+module.exports.SCHEDULE = '0 0 1 * * *';
 module.exports.NAME = 'CALC_MH';
 
 const NVT_MA_DAYS = 7;
