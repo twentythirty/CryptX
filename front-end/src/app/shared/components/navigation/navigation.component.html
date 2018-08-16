@@ -24,27 +24,24 @@
       </div>
     </div>
 
-  <div>
-    <nav >
+    <nav>
       <div *ngFor="let item of nav" class="navigation">
         <div class="menu-item" routerLinkActive="active">
-          <div *ngIf="!item.items">
+          <ng-container *ngIf="!item.items">
             <a routerLink="{{item.link}}" *ngIf="checkPerm(item.permission)">{{item.name}}</a>
-          </div>
-          <div *ngIf="item.items">
-            <div >  
-              <a routerLinkActive="active" (click)="toggleDropDownMenu(item)">{{item.name}}
-                <div [ngClass]="{'dropdown-open': item.show }" class="open-arrow"></div>
-              </a>
-            </div>
+          </ng-container>
+          <ng-container *ngIf="item.items">
+            <a routerLinkActive="active" (click)="toggleDropDownMenu(item)">
+              {{item.name}}
+              <div [class.dropdown-open]="item.show" class="open-arrow"></div>
+            </a>
             <ul [hidden]="!item.show" class="dropdown-box">
               <li *ngFor="let submenu of item.items"><a class="menu-item" (click)="hideAll()" routerLinkActive="active" routerLink="{{submenu.link}}">{{submenu.name}}</a></li>
             </ul>
-          </div>
+          </ng-container>
         </div>
       </div>
     </nav>
-  </div>
 
   </div>
 </header>
