@@ -2,6 +2,7 @@
 
 const ColdStorageCustodian = require('../models').ColdStorageCustodian;
 const ColdStorageAccount = require('../models').ColdStorageAccount;
+const ColdStorageTransfer = require('../models').ColdStorageTransfer;
 
 const Asset = require('../models').Asset;
 
@@ -74,3 +75,51 @@ const createColdStorageAccount = async (strategy_type, asset_id, cold_storage_cu
 
 };
 module.exports.createColdStorageAccount = createColdStorageAccount;
+
+const changeTransferStatus = async (transfer_id, status, user = null) => {
+
+    if(!_.isNumber(transfer_id) || !_.isNumber(status)) TE('Must provide a valid transfer id and status');
+    if(!Object.values(COLD_STORAGE_ORDER_STATUSES).includes(status)) TE(`Status "${status}" is not valid`);
+
+    let [ err, transfer ] = await to(ColdStorageTransfer.findById(transfer_id));
+    if(err) TE(err.message);
+    if(!transfer) return null;
+
+    //Check if the same status
+    if(status === transfer.status) TE('Cannot set the same status twice.');
+
+    //Check if the requested status can be set for the current state of transfer
+    switch(status) {
+
+        case COLD_STORAGE_ORDER_STATUSES.Approved:
+            if(transfer.status !== COLD_STORAGE_ORDER_STATUSES.Pending) TE(`Only Pending transfer are allowed to be approved.`);
+            break;
+
+        default:
+            TE(`Cannot set Status "${COLD_STORAGE_ORDER_STATUSES[status]}"`);
+    }
+
+    const original_transfer = transfer.toJSON();
+
+    transfer.status = status;
+
+    [ err, transfer ] = await to(transfer.save());
+
+    const log_options = {
+        previous_instance: original_transfer,
+        updated_instance: transfer,
+        replace: {
+            [COLD_STORAGE_ORDER_STATUSES.Pending]: 'Pending',
+            [COLD_STORAGE_ORDER_STATUSES.Approved]: 'Approved',
+            [COLD_STORAGE_ORDER_STATUSES.Sent]: 'Sent',
+            [COLD_STORAGE_ORDER_STATUSES.Completed]: 'Completed',
+            [COLD_STORAGE_ORDER_STATUSES.Failed]: 'Failed',
+        }
+    };
+    if(user) user.logAction('modified', log_options);
+    else logAction('modified', log_options);
+    
+    return transfer;
+
+};
+module.exports.changeTransferStatus = changeTransferStatus;

@@ -450,6 +450,18 @@
     }
   },
 
+  "cold_storage": {
+    "transfers": {
+      "status": {
+        "91": "Oending",
+        "92": "Approved",
+        "93": "Sent",
+        "94": "Completed",
+        "95": "Failed"
+      }
+    }
+  },
+
   "error": {
 
   }
