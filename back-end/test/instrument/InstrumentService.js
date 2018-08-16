@@ -70,7 +70,14 @@ describe('InstrumentService testing:', () => {
             return Promise.resolve(null);
         }
     };
-    const MOCK_MAPPINGS = [MOCK_MAPPING_1];
+    const MOCK_MAPPING_2 = {
+        exchange_id: 2,
+        instrument_id: 2,
+        destroy: async () => {
+            return Promise.resolve(null);
+        }
+    };
+    const MOCK_MAPPINGS = [MOCK_MAPPING_1, MOCK_MAPPING_2];
 
     //ensure working DB before test
     before(done => {

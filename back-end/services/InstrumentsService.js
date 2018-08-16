@@ -148,6 +148,17 @@ const createLiquidityRequirement = async (instrument_id, periodicity, minimum_ci
         }
     });
 
+    //if exchange id is provided, it should check if the instrument is mapped for that exchange.
+    if(exchange_id) {
+
+        const [ err, found_mapping ] = await to(InstrumentExchangeMapping.findOne({
+            where: { instrument_id, exchange_id }
+        }));
+
+        if(err) TE(err.message);
+        if(!found_mapping) TE(`Exchange with id "${exchange_id}" is not mapped to instrument with id "${instrument_id}"`);
+    }
+
     for(let requirement of existingRequirements) {
         const exchange = requirement.exchange;
 
