@@ -325,10 +325,8 @@ const generateApproveRecipeOrders = async (recipe_run_id) => {
         const tick_size_decimal = correct_mapping == null ? null : Decimal(correct_mapping.tick_size);
         //round qnty to same dp as tick size, rounding down (only perform rounding if tick size was defined)
         //divide by price if this is a buy order
-        const qnty_decimal = (
-            tick_size_decimal == null ?
-            order_qnty_unadjusted : order_qnty_unadjusted.toDP(tick_size_decimal.dp(), Decimal.ROUND_HALF_DOWN)
-        ).div(buy_order ? Decimal(price) : Decimal(1))
+        const qnty_decimal = order_qnty_unadjusted.div(buy_order ? Decimal(price) : Decimal(1))
+        const qnty_decimal_adjusted = tick_size_decimal != null? qnty_decimal.toDP(tick_size_decimal.dp(), Decimal.ROUND_HALF_DOWN) : qnty_decimal
 
         console.log(`
         Recipe ordering recipe run detail: ${recipe_run_detail.id}
@@ -337,10 +335,11 @@ const generateApproveRecipeOrders = async (recipe_run_id) => {
         exchange: ${recipe_run_detail.target_exchange_id}
         buy order?: ${buy_order}
         relevant deposit: ${JSON.stringify(relevant_deposit)}
+        initial investment prc: ${recipe_run_detail.investment_percentage}
         investment prc adjust: ${investment_prc_adjustment.toString()}
         initial order qnty: ${order_qnty_unadjusted.toString()}
-        tick size: ${tick_size_decimal.toString()}
-        qnty: ${qnty_decimal.toString()}
+        tick size: ${tick_size_decimal != null? tick_size_decimal.toString() : 'N\\A'}
+        qnty: ${qnty_decimal_adjusted.toString()}
         `)
 
         const connector = connectors[recipe_run_detail.target_exchange_id.toString()];
@@ -350,12 +349,12 @@ const generateApproveRecipeOrders = async (recipe_run_id) => {
         //found no market or market required quantity is larger than order quantity
         if (
             check_market == null ||
-            Decimal(check_market.limits.amount.min || '0').gte(qnty_decimal)
+            Decimal(check_market.limits.amount.min || '0').gte(qnty_decimal_adjusted)
         ) {
             console.log(`
             WARN: Skipping generating recipe order 
             for exchange ${connector.name} and market ${check_symbol}
-            with quantity ${qnty_decimal.toString()}
+            with quantity ${qnty_decimal_adjusted.toString()}
             due to ${check_market == null? `no market for symbol ${check_symbol}!` : `unsatisfied market lower quantity bound: ${check_market.limits.amount.min}`}`)
 
             return Promise.resolve(null);
@@ -366,7 +365,7 @@ const generateApproveRecipeOrders = async (recipe_run_id) => {
             instrument_id: market_data.instrument_id,
             target_exchange_id: recipe_run_detail.target_exchange_id,
             price: price,
-            quantity: qnty_decimal.toString(),
+            quantity: qnty_decimal_adjusted.toString(),
             side: side,
             status: RECIPE_ORDER_STATUSES.Pending
         });
