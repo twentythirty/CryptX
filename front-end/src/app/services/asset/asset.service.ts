@@ -1,10 +1,12 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
+import { TranslateService } from '@ngx-translate/core';
 import { Observable } from 'rxjs/Observable';
-import { map } from 'rxjs/operators';
+import { map } from 'rxjs/operators/map';
 import _ from 'lodash';
 
 import { Asset, AssetStatus } from '../../shared/models/asset';
+import { ActionLog } from '../../shared/models/actionLog';
 import { EntitiesFilter } from '../../shared/models/api/entitiesFilter';
 import { ActionResultData } from '../../shared/models/api/actionResultData';
 import { environment } from '../../../environments/environment';
@@ -34,7 +36,8 @@ export class AssetService {
   private baseUrl: string = environment.baseUrl;
 
   constructor(
-    private http: HttpClient
+    private http: HttpClient,
+    private translate: TranslateService,
   ) {}
 
   getAllAssets(requestData?: EntitiesFilter): Observable<AssetsAllResponse> {
@@ -56,7 +59,8 @@ export class AssetService {
   }
 
   getAsset(assetId: number) {
-    return this.http.get<AssetResultData>(this.baseUrl + `assets/detailed/${assetId}`);
+    return this.http.get<AssetResultData>(this.baseUrl + `assets/detailed/${assetId}`)
+      .do((data) => this.mapActivityLog(data));
   }
 
   changeAssetStatus(assetId: number, status: AssetStatus): Observable<any> {
@@ -68,14 +72,13 @@ export class AssetService {
       map(
         res => {
           if(res && Array.isArray(res.lov)) {
-            console.log(res.lov);
             return res.lov.map(lov => {
               return { value: lov.toString() }
             });
           } else return null;
         }
       )
-    )
+    );
   }
 
   private addStatusCode(data) {
@@ -83,6 +86,36 @@ export class AssetService {
       asset.statusCode = _.toNumber( asset.status.replace('assets.status.', '') );
       return asset;
     });
+    return data;
+  }
+
+  // Map activity log data for activity log common structure
+  private mapActivityLog(data): ActionLog {
+    let status,
+        prevStatus;
+    
+    // default status 400, so first preStatus should be default
+    this.translate.get('assets.status.400').subscribe(value => prevStatus = value);
+    
+    data.history = data.history.reverse().map(item => {
+      this.translate.get(item.type).subscribe(value => status = value);
+
+      const actionLogItem = {
+        timestamp: item.timestamp,
+        translationKey: 'assets.blacklisting_activity_log_item',
+        translationArgs: {
+          username: item.user.name,
+          prevStatus: prevStatus,
+          status: status
+        },
+        rationale: item.comment
+      };
+
+      prevStatus = status;
+
+      return actionLogItem;
+    }).reverse();
+
     return data;
   }
 

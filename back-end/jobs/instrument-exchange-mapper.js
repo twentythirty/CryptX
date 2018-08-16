@@ -10,7 +10,8 @@ module.exports.JOB_BODY = async (config, log) => {
     const Instrument = models.Instrument;
     const InstrumentExchangeMapping = models.InstrumentExchangeMapping;
     const sequelize = models.sequelize;
-    const Op = models.Sequelize.Op;
+    const Sequelize = models.Sequelize;
+    const Op = Sequelize.Op;
 
     return sequelize.query(`SELECT DISTINCT instrument_id from instrument_exchange_mapping`, {
         type: sequelize.QueryTypes.SELECT
@@ -30,7 +31,9 @@ module.exports.JOB_BODY = async (config, log) => {
         });
         const all_connectors_promise = ccxtUtils.allConnectors();
 
-        const connectors_filter_promise = sequelize.query(`SELECT DISTINCT exchange_id FROM exchange_account`).then(exchange_ids => {
+        const connectors_filter_promise = sequelize.query(`SELECT DISTINCT exchange_id FROM exchange_account`, {
+            type: sequelize.QueryTypes.SELECT
+        }).then(exchange_ids => {
             return _.map(exchange_ids, 'exchange_id')
         });
 
@@ -44,7 +47,8 @@ module.exports.JOB_BODY = async (config, log) => {
         const [instruments, filter, all_connectors] = instruments_connectors;
 
         console.log(`Trying to map ${instruments.length} instruments against ${Object.keys(all_connectors).length} connectors...`)
-        const remaining_connectors = _.pickBy(all_connectors, (connector, exchange_id) => filter.includes(exchange_id));
+        console.log(`filter: ${JSON.stringify(filter)}`)
+        const remaining_connectors = _.pickBy(all_connectors, (connector, exchange_id) => filter.includes(parseInt(exchange_id)));
         console.log(`Reducing connectors to ${Object.keys(remaining_connectors).length} due to lack of exchange accounts...`)
 
         let new_mappings = [];
@@ -59,7 +63,7 @@ module.exports.JOB_BODY = async (config, log) => {
 
                     new_mappings.push({
                         external_instrument_id: market.symbol,
-                        tick_size: market.limits.amount.min || 0,
+                        tick_size: Decimal(1).div(Decimal(10).pow(market.precision.amount || 0)).toString(),
                         instrument_id: instrument.id,
                         exchange_id: exchange_id
                     })

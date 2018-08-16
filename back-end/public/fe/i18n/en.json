@@ -11,11 +11,13 @@
     "cancel": "Cancel",
     "done": "Done",
     "login": "Login",
+    "read": "Read",
     "change_password": "Change password",
     "logout": "Logout",
     "save_changes": "Save changes",
     "sign_up": "Sign up",
-    "activity_log": "Activity log"
+    "activity_log": "Activity log",
+    "rationale": "Rationale"
   },
   "table": {
     "header": {
@@ -344,6 +346,7 @@
     "assets": "Assets",
     "headline": "{{ count }} Cryptocurrencies",
     "blacklisting_activity_log": "Blacklisting activity log",
+    "blacklisting_activity_log_item": "<b>{{ username }}</b> changed Status from <b>{{ prevStatus }}</b> to <b>{{ status }}</b> with rationale:",
     "is_cryptocurrency": {
       "no": "No",
       "yes": "Yes"

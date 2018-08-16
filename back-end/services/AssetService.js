@@ -6,26 +6,59 @@ const AssetMarketCapitalization = require('../models').AssetMarketCapitalization
 const User = require('../models').User;
 const sequelize = require('../models').sequelize;
 
-const changeStatus = async function (asset_id, new_status, user_id) {
+const { logAction } = require('../utils/ActionLogUtil');
+
+const changeStatus = async function (asset_id, new_status, user) {
 
   if (!_.valuesIn(INSTRUMENT_STATUS_CHANGES).includes(new_status.type))
     TE("Provided bad asset status");
+
+  if(!_.isString(new_status.comment)) TE(`Must provide a vlid comment/reason`);
   
   let [err, asset] = await to(Asset.findById(asset_id));
+  if(err) TE(err.message);
   if (!asset) TE("Asset not found");
-  let user = await User.findById(user_id);
 
-  let status = new AssetStatusChange({
+  let current_status = null;
+  [ err, current_status ] = await to(AssetStatusChange.findOne({
+    where: { asset_id },
+    order: [[ 'timestamp', 'DESC' ]]
+  }));
+
+  //Don't allow same status as the current one.
+  if(!current_status) current_status = { type: INSTRUMENT_STATUS_CHANGES.Whitelisting }
+  if(current_status.type === new_status.type) TE(`Cannot set the same status as the current status of the asset ${asset.symbol}`);
+  
+
+  let status = null;
+
+  [err, status] = await to(AssetStatusChange.create({
     timestamp: new Date(),
     comment: new_status.comment,
-    type: new_status.type
-  });
+    type: new_status.type,
+    asset_id: asset.id,
+    user_id: user ? user.id : null
+  }));
 
-  status.setAsset(asset);
-  if (user) status.setUser(user);
-
-  [err, status] = await to(status.save());
   if (err) TE(err.message);
+
+  //Log only after the changes were made. If user was not provided, log as System.
+  if(user) {
+    user.logAction('assets.status', {
+      old_status: current_status.type,
+      new_status: status.type,
+      reason: status.comment,
+      relations: { asset_id }
+    });
+  }
+  else {
+    logAction('assets.status', {
+      old_status: current_status.type,
+      new_status: status.type,
+      reason: status.comment,
+      relations: { asset_id }
+    });
+  }
 
   return status;
 };
