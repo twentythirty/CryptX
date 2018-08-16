@@ -361,8 +361,8 @@
     },
     "status": {
       "400": "Whitelisted",
-      "401": "Graylisted",
-      "402": "Blacklisted"
+      "401": "Blacklisted",
+      "402": "Graylisted"
     },
     "footer": {
       "capitalization": "{{ capitalization }} total",
