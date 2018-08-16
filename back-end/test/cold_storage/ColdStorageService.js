@@ -25,6 +25,7 @@ describe('ColdStorage testing', () => {
     const ColdStorageService = require('./../../services/ColdStorageService');
     const ColdStorageCustodian = require('./../../models').ColdStorageCustodian;
     const ColdStorageAccount = require('./../../models').ColdStorageAccount;
+    const ColdStorageTransfer = require('./../../models').ColdStorageTransfer;
     const Asset = require('./../../models').Asset;
 
     describe('and method createCustodian shall', () => {
@@ -180,6 +181,90 @@ describe('ColdStorage testing', () => {
                 chai.expect(account.asset_id).to.equal(MOCK_IDS.CRYPTO_ASSET);
                 chai.expect(account.cold_storage_custodian_id).to.equal(MOCK_IDS.VALID_CUSTODIAN);
                 chai.expect(account.tag).to.be.null;
+
+            });
+        });
+
+    });
+
+    describe('and methode changeTransferStatus shall', () => {
+
+        const changeTransferStatus = ColdStorageService.changeTransferStatus;
+
+        const MOCK_TANSFER_1 = {
+            id: 1,
+            status: COLD_STORAGE_ORDER_STATUSES.Pending,
+            save() {
+                return Promise.resolve(this);
+            },
+            toJSON() {
+                return this;
+            }
+        };
+        const MOCK_TANSFER_2 = {
+            id: 2,
+            status: COLD_STORAGE_ORDER_STATUSES.Approved,
+            save() {
+                return Promise.resolve(this);
+            },
+            toJSON() {
+                return this;
+            }
+        };
+        const MOCK_TRANSFERS = [MOCK_TANSFER_1, MOCK_TANSFER_2];
+
+        before(done => {
+
+            sinon.stub(ColdStorageTransfer, 'findById').callsFake(id => {
+                const transfer = MOCK_TRANSFERS.find(m => m.id === id);
+                return Promise.resolve(transfer || null);
+            });
+
+            done();
+        });
+
+        after(done => {
+
+            ColdStorageTransfer.findById.restore();
+
+            done();
+        });
+
+        it('exist', () => {
+            return chai.expect(changeTransferStatus).to.be.not.undefined;
+        });
+
+        it('reject if passed arguments are invalid', () => {
+            return Promise.all(_.map([
+                [],
+                [1],
+                [null, 1],
+                [{}, 'a']
+            ], params => {
+                return chai.assert.isRejected(changeTransferStatus(...params));
+            }));
+        });
+
+        it('reject if status is not in the constant list', () => {
+            return chai.assert.isRejected(changeTransferStatus(MOCK_TANSFER_1.id, -1));
+        });
+
+        it('return null if it did not find the trasnfer', () => {
+            return changeTransferStatus(-1, COLD_STORAGE_ORDER_STATUSES.Approved).then(transfer => {
+
+                chai.expect(transfer).to.be.null;
+
+            });
+        });
+
+        it('reject if you try to Approve a non Pending transfer', () => {
+            return chai.assert.isRejected(changeTransferStatus(MOCK_TANSFER_2.id, COLD_STORAGE_ORDER_STATUSES.Approved));
+        });
+
+        it('change the status to Approved if the transfer is currently Pending', () => {
+            return changeTransferStatus(MOCK_TANSFER_1.id, COLD_STORAGE_ORDER_STATUSES.Approved).then(transfer => {
+
+                chai.expect(transfer.status).to.equal(COLD_STORAGE_ORDER_STATUSES.Approved);
 
             });
         });

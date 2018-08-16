@@ -361,8 +361,8 @@
     },
     "status": {
       "400": "Whitelisted",
-      "401": "Graylisted",
-      "402": "Blacklisted"
+      "401": "Blacklisted",
+      "402": "Graylisted"
     },
     "footer": {
       "capitalization": "{{ capitalization }} total",
@@ -447,6 +447,18 @@
       "quote_asset": "{{ quote_asset }} assets",
       "account": "{{ account }} accounts",
       "status": "{{ status }} pending"
+    }
+  },
+
+  "cold_storage": {
+    "transfers": {
+      "status": {
+        "91": "Oending",
+        "92": "Approved",
+        "93": "Sent",
+        "94": "Completed",
+        "95": "Failed"
+      }
     }
   },
 

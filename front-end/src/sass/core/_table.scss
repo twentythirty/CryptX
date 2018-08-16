@@ -1,7 +1,7 @@
 .data-table {
     width: 100%;
     margin-top: 20px;
-    table-layout: fixed;
+    //table-layout: fixed;
 
     &.shrinked {
         td, th {
@@ -41,10 +41,6 @@
         padding-left: 20px;
         height: 50px;
         transition: background-color .2s;
-
-        &:first-child {
-            width: 80px;
-        }
 
         &:last-child {
             padding-right: 20px;

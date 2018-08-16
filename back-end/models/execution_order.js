@@ -57,9 +57,9 @@ module.exports = (sequelize, DataTypes) => {
         ExecutionOrder.belongsTo(models.RecipeOrder);
         ExecutionOrder.belongsTo(models.Instrument);
         ExecutionOrder.belongsTo(models.Exchange);
-        ExecutionOrder.belongsToMany(models.ColdStorageAccount, {
+        /*ExecutionOrder.belongsToMany(models.ColdStorageAccount, {
             through: models.ColdStorageTransfer
-        })
+        })*/
         ExecutionOrder.hasMany(models.ExecutionOrderFill);
     };
 

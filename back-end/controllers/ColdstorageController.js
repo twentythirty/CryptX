@@ -10,30 +10,17 @@ const { logAction } = require('../utils/ActionLogUtil');
 
 const approveColdStorageTransfer = async function (req, res) {
 
-  let cold_storage_transfer = req.params.transfer_id;
+  const { transfer_id } = req.params;
+  const { user } = req.user;
 
-  if (!cold_storage_transfer)
-    return ReE(res, "No coldstorage transfer ID given!");
+  const [ err, transfer ] = await to(ColdStorageService.changeTransferStatus(parseInt(transfer_id), COLD_STORAGE_ORDER_STATUSES.Approved, user));
 
-  let mock_coldstorage_transfer = {
-    id: 1,
-    asset: "BTC",
-    gross_amount: 12.05,
-    net_amount: 14,
-    exchange_withrawal_fee: 0.01,
-    status: 91,
-    cold_storage_account_id: "98512543",
-    custodian: "ItBit",
-    strategy: "MCI",
-    source_exchange: "Bitstamp",
-    source_account: "25439851",
-    placed_timestamp: 1532097313472,
-    completed_timestamp: 1532097313472
-  };
+  if(err) return ReE(res, err.message, 422);
+  if(!transfer) return ReE(res, `Cold Storage Transfer with id ${transfer_id} was not found`);
 
   return ReS(res, {
-    coldstorage_transfer: mock_coldstorage_transfer
-  })
+    status: `cold_storage.transfers.status.${transfer.status}`
+  });
 }
 module.exports.approveColdStorageTransfer = approveColdStorageTransfer;
 

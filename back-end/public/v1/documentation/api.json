@@ -98,7 +98,7 @@
           "200": {
             "description": "success",
             "schema": {
-              "$ref": "#/definitions/ColdStorageTranferListResponse"
+              "$ref": "#/definitions/ColdStorageTranferStatusResponse"
             }
           }
         },
@@ -4722,6 +4722,20 @@
           }
         }
       ]
+    },
+    "ColdStorageTranferStatusResponse": {
+      "description": "Cold storage transfer status update",
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean",
+          "example": true
+        },
+        "status": {
+          "type": "string",
+          "example": "cold_storage.transfers.status.91"
+        }
+      }
     },
     "ColdStorageTransfer": {
       "description": "Cold storage transfer information",
