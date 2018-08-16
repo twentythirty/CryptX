@@ -63,5 +63,30 @@ module.exports = {
                 return `${user.first_name} ${user.last_name} removed Insturment Exchange Mapping with identifier: ${mapping.external_instrument_id}, instrument: ${instument.symbol} and exchange: ${exchange.name}` 
             }
         }
+    },
+    assets: {
+        status: {
+            level: LOG_LEVELS.Info.LOG_LEVELS,
+            get template() {
+                const { old_status, new_status, reason } = this.params;
+                const { Whitelisting, Blacklisting, Graylisting } = INSTRUMENT_STATUS_CHANGES;
+                const statuses = {
+                    [Whitelisting]: 'Whitelisted',
+                    [Blacklisting]: 'Blacklisted',
+                    [Graylisting]: 'Graylisted'
+                };
+                return `System changed Status from ${statuses[old_status]} to ${statuses[new_status]} due to ${reason}`
+            },
+            get template_user() {
+                const { user, old_status, new_status, reason } = this.params;
+                const { Whitelisting, Blacklisting, Graylisting } = INSTRUMENT_STATUS_CHANGES;
+                const statuses = {
+                    [Whitelisting]: 'Whitelisted',
+                    [Blacklisting]: 'Blacklisted',
+                    [Graylisting]: 'Graylisted'
+                };
+                return `${user.first_name} ${user.last_name} changed Status from ${statuses[old_status]} to ${statuses[new_status]}, reason: ${reason}`
+            }
+        }
     }
 };

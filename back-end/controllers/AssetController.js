@@ -119,8 +119,10 @@ module.exports.getWhitelisted = getWhitelisted;
 
 const changeAssetStatus = async function (req, res) {
 
-  let asset_id = req.params.asset_id;
-  let [err, status] = await to(assetService.changeStatus(asset_id, req.body, req.user.id));
+  const { asset_id } = req.params;
+  const { user } = req; //User will be passed for easier determination if thisshould be logged as user or system.
+
+  let [err, status] = await to(assetService.changeStatus(asset_id, req.body, user));
 
   if (err) return ReE(res, err.message, 422);
 
