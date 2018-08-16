@@ -11,13 +11,11 @@ import { AuthService } from '../../../services/auth/auth.service';
 })
 export class NavigationComponent implements OnInit {
   showUserMenu: boolean = false;
-  showDropDownMenu: boolean = false;
   initials: String;
 
   @Input() label: string;
   @Input() value: string;
 
-  hideme = [];
   items = [{
     id: 10,
     text: 'text'
@@ -28,23 +26,23 @@ export class NavigationComponent implements OnInit {
   }];
   selectedItem;
   public nav = [
-    {link: '/dashboard', permission: ['VIEW_INVESTMENT_RUN'], name: 'Dashboard'},
-    {name: 'Investment', items: [
+    {link: '/dashboard', permission: ['VIEW_INVESTMENT_RUN'], name: 'Dashboard', show: false },
+    {name: 'Crypto Asset Management', show: false, items: [
+      {link: '/instruments', permission: ['VIEW_ROLES'], name: 'Instruments'},
+      {link: '/assets', permission: ['VIEW_ASSETS'], name: 'Assets'},
+      {link: '/liquidity_requirements', permission: ['VIEW_ROLES'], name: 'Liquidity requirements'},
+    ]},
+    {name: 'Investment', show: false, items: [
       {link: '/recipe_runs', permission: ['ALTER_PERMS'], name: 'Recipe Runs'},
       {link: '/orders', permission: ['ALTER_PERMS'], name: 'Orders'},
       {link: '/deposits', permission: ['ALTER_PERMS'], name: 'Deposits'},
       {link: '/execution_orders', permission: ['ALTER_PERMS'], name: 'Execution Orders'},
     ]},
-    {name: 'Crypto Asset Management', items: [
-      {link: '/instruments', permission: ['VIEW_ROLES'], name: 'Instruments'},
-      {link: '/assets', permission: ['VIEW_ASSETS'], name: 'Assets'},
-      {link: '/liquidity_requirements', permission: ['VIEW_ROLES'], name: 'Liquidity requirements'},
-    ]},
-    {name: 'User management', items: [
+    {name: 'User management', show: false, items: [
       {link: '/users', permission: ['EDIT_USERS'], name: 'Users'},
       {link: '/roles', permission: ['VIEW_ROLES'], name: 'Roles'},
     ]},
-    {name: 'Cold Storage', items: [
+    {name: 'Cold Storage', show: false, items: [
       {link: '/login', permission: ['VIEW_INVESTMENT_RUN'], name: 'Custodians'},
       {link: '/login', permission: ['VIEW_INVESTMENT_RUN'], name: 'Accounts'},
       {link: '/login', permission: ['VIEW_INVESTMENT_RUN'], name: 'Transfer'},
@@ -75,10 +73,13 @@ export class NavigationComponent implements OnInit {
     this.showUserMenu = !this.showUserMenu;
   }
 
-  toggleDropDownMenu (item, i) {
-    this.showDropDownMenu = !this.showDropDownMenu;
-    this.selectedItem = item;
-    this.hideme[i]=!this.hideme[i]
+  toggleDropDownMenu (item) {
+    item.show = !item.show;
   }
 
+  hideAll (){
+    this.nav.forEach(item => {
+      item.show = false;
+    });
+  }
 }
