@@ -8,7 +8,6 @@ module.exports = {
             ( 
                 SELECT i.id,
                     i.symbol,
-                    md.timestamp,
                     count(case when md.timestamp >= NOW() - interval '15 minutes' then 1 else null end) as exchanges_connected,
                     count(case when md.timestamp < NOW() - interval '15 minutes' OR md.timestamp IS NULL then 1 else null end) as exchanges_failed
                 FROM instrument as i
@@ -18,7 +17,7 @@ module.exports = {
                     FROM instrument_market_data as imd
                     GROUP BY imd.exchange_id, imd.instrument_id
                 ) as md ON md.instrument_id=i.id AND md.exchange_id=iem.exchange_id
-                GROUP BY i.id, i.symbol, md.timestamp
+                GROUP BY i.id, i.symbol
             )
             `);
         })
