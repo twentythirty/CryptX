@@ -266,7 +266,7 @@ export class InstrumentInfoComponent extends DataTableCommonManagerComponent imp
     ).subscribe(
       data => {
         if (data.success) {
-          this.router.navigate(['/instruments/all']);
+          this.router.navigate(['/instruments']);
         } else {
           console.log(data.error);
         }
