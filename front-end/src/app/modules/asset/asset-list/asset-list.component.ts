@@ -32,16 +32,16 @@ export class AssetListComponent extends DataTableCommonManagerComponent implemen
   public assetsDataSource: TableDataSource = {
     header: [
       { column: 'symbol', nameKey: 'table.header.symbol', filter: { type: 'text', sortable: true } },
-      { column: 'is_cryptocurrency', nameKey: 'table.header.cryptocurrency', filter: { type: 'text', sortable: true } },
+      { column: 'is_cryptocurrency', nameKey: 'table.header.crypto', filter: { type: 'text', sortable: true } },
       { column: 'long_name', nameKey: 'table.header.long_name', filter: { type: 'text', sortable: true } },
-      { column: 'is_base', nameKey: 'table.header.is_base', filter: { type: 'text', sortable: true } },
-      { column: 'is_deposit', nameKey: 'table.header.is_deposit', filter: { type: 'text', sortable: true } },
+      { column: 'is_base', nameKey: 'table.header.base', filter: { type: 'text', sortable: true } },
+      { column: 'is_deposit', nameKey: 'table.header.deposit', filter: { type: 'text', sortable: true } },
       { column: 'capitalization', nameKey: 'table.header.capitalisation', filter: { type: 'number', sortable: true } },
       { column: 'nvt_ratio', nameKey: 'table.header.nvt_ratio', filter: { type: 'number', sortable: true } },
       { column: 'market_share', nameKey: 'table.header.market_share', filter: { type: 'number', sortable: true } },
       { column: 'capitalization_updated', nameKey: 'table.header.capitalisation_updated', filter: { type: 'date', sortable: true } },
       { column: 'status', nameKey: 'table.header.status', filter: { type: 'text', sortable: true } },
-      { column: '', nameKey: 'table.header.action' }
+      { column: '', nameKey: 'table.header.actions' }
     ],
     body: null
   };
@@ -72,17 +72,17 @@ export class AssetListComponent extends DataTableCommonManagerComponent implemen
         actions: [
           new DataCellAction({
             label: 'De-greylist',
-            isShown: (row: any) => false && (row.is_greylisted === true),
+            isShown: (row: any) => this.checkPerm(['CHANGE_ASSET_STATUS']) && row.statusCode === 402,
             exec: (row: any) => { this.deGreylist(<Asset>row) }
           }),
           new DataCellAction({
             label: 'Blacklist',
-            isShown: (row: any) => this.checkPerm(['CHANGE_ASSET_STATUS']) && (!(row.statusCode === 401)),
+            isShown: (row: any) => this.checkPerm(['CHANGE_ASSET_STATUS']) && row.statusCode === 400,
             exec: (row: any) => { this.blacklist(<Asset>row) }
           }),
           new DataCellAction({
             label: 'Whitelist',
-            isShown: (row: any) => this.checkPerm(['CHANGE_ASSET_STATUS']) && ((row.statusCode === 401)),
+            isShown: (row: any) => this.checkPerm(['CHANGE_ASSET_STATUS']) && row.statusCode === 401,
             exec: (row: any) => { this.whitelist(<Asset>row) }
           })
         ]
@@ -124,7 +124,7 @@ export class AssetListComponent extends DataTableCommonManagerComponent implemen
         });
         this.count = res.count || res.assets.length;
       }
-    )
+    );
   }
 
   /**
@@ -137,11 +137,11 @@ export class AssetListComponent extends DataTableCommonManagerComponent implemen
       col => {
         col.filter.rowData$ = this.assetService.getHeaderLOV(col.column)
       }
-    )
+    );
   }
 
   public openRow(asset: Asset): void {
-    this.router.navigate(['/assets/view', asset.id])
+    this.router.navigate(['/assets/view', asset.id]);
   }
 
   /**
@@ -176,7 +176,7 @@ export class AssetListComponent extends DataTableCommonManagerComponent implemen
         asset.status = 'assets.status.402';
         asset.statusCode = 402;
       }
-    )
+    );
   }
 
   public doBlacklist({ rationale, data }): void {
@@ -190,7 +190,7 @@ export class AssetListComponent extends DataTableCommonManagerComponent implemen
         asset.status = 'assets.status.401';
         asset.statusCode = 401;
       }
-    )
+    );
   }
 
   public doWhitelist({ rationale, data }): void {
@@ -204,23 +204,17 @@ export class AssetListComponent extends DataTableCommonManagerComponent implemen
         asset.status = 'assets.status.400';
         asset.statusCode = 400;
       }
-    )
+    );
   }
 
   /**
    * Styles
    */
 
-  public rowBackgroundColor = (row: Asset): string => {
-    if(row.statusCode == 401) return '#6b6b6b';
-    if(row.statusCode == 402) return '#aeaeae';
-    return null;
-  }
-
-  public rowTexColor = (row: Asset): string => {
-    if(row.statusCode == 401) return '#ffffff';
-    if(row.statusCode == 402) return '#f2f2f2';
-    return null;
+  public rowClass(row: Asset): string {
+    if(row.statusCode == 401) return 'color-black';
+    if(row.statusCode == 402) return 'color-gray';
+    return '';
   }
 
   /**

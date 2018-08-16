@@ -61,16 +61,22 @@ const getConnector = async (exchange_data) => {
 module.exports.getConnector = getConnector;
 
 /**
- * Fetch all CCXT connectors currently in the cache, mapped to exchange id in DB
+ * Fetch all CCXT connectors currently in the cache, mapped to exchange id in DB. 
+ * 
+ * Optionally filtered to list of exchange ids provided
  * 
  * async to ensure loaded markets
  */
-const allConnectors = async () => {
+const allConnectors = async (exchange_ids = []) => {
 
     //await cache init
     await cache_init_promise;
 
-    //return all connectors
-    return con_by_id
+    //return all connectors if no filter
+    if (_.isNull(exchange_ids) || _.isEmpty(exchange_ids)) {
+        return con_by_id
+    } else {
+        return _.pickBy(con_by_id, (con, id) => exchange_ids.includes(Number(id)))
+    }
 };
 module.exports.allConnectors = allConnectors;

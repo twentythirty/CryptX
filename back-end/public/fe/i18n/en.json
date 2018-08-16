@@ -14,15 +14,16 @@
     "change_password": "Change password",
     "logout": "Logout",
     "save_changes": "Save changes",
-    "sign_up": "Sign up"
+    "sign_up": "Sign up",
+    "activity_log": "Activity log"
   },
   "table": {
     "header": {
       "symbol": "Symbol",
-      "cryptocurrency": "Cryptocurrency",
+      "crypto": "Crypto",
       "long_name": "Long name",
-      "is_base": "Is base?",
-      "is_deposit": "Is deposit?",
+      "base": "Base",
+      "deposit": "Deposit",
       "capitalisation": "Capitalisation",
       "nvt_ratio": "NVT ratio",
       "market_share": "Market share",
@@ -57,7 +58,6 @@
       "completed_time": "Completed time",
       "strategy": "Strategy",
       "simulated": "Simulated",
-      "deposit": "Deposit",
       "created": "Created",
       "created_time": "Created time",
       "actions": "Actions",

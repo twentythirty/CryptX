@@ -148,6 +148,27 @@ const getInstrumentExchanges = async function (req, res) {
 };
 module.exports.getInstrumentExchanges = getInstrumentExchanges;
 
+const removeInstrumentExchangeMapping = async (req, res) => {
+
+  const { instrument_id, exchange_id } = req.params;
+  const { user } = req;
+
+  const [ err, mapping ] = await to(instrumentService.deleteExchangeMapping(parseInt(instrument_id), parseInt(exchange_id)));
+
+  if(err) return ReE(res, err.message, 422);
+  if(!mapping) return ReE(res, `Instrument exchange mappign with instrument id "${instrument_id}" and exchange id "${exchange_id}" was not found.`, 404);
+
+  user.logAction('instruments.mapping_removed', { 
+    mapping,
+    relations: { instrument_id }
+  });
+  
+  const message = `Instrument exchange mapping was removed successfully`;
+  return ReE(res, { message });
+
+}
+module.exports.removeInstrumentExchangeMapping = removeInstrumentExchangeMapping;
+
 
 // liquidity requirements
 

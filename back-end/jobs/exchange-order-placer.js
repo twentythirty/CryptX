@@ -22,8 +22,6 @@ module.exports.SCHEDULE = "*/5 * * * * *";
 module.exports.NAME = "PLACE_EXCH_OR";
 module.exports.JOB_BODY = async (config, log) => {
 
-  const send_orders = true; // changing this will enable or disable sending orders to exchanges. This is a safety measure to prevent accidental ordering.
-
   //reference shortcuts
   const models = config.models;
   const sequelize = models.sequelize;
@@ -36,7 +34,7 @@ module.exports.JOB_BODY = async (config, log) => {
   const Exchange = models.Exchange;
 
   let err_message;
-  /* all_pending_orders - list of pending exeution orders that are belong to
+  /* pending_real_orders - list of pending exeution orders that are belong to
     real(not simulated) investment run. Trying to push all orders to exchanges
     might result in API call rate limitting, so instead execution orders from
     exchanges will be grouped and execution in iterations and we'll use one

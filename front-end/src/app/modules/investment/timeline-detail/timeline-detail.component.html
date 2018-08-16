@@ -50,6 +50,12 @@
     [perPage]="pageSize"
     [page]="page"
   ></app-pagination>
+
+  <app-action-log
+    *ngIf="logsSource"
+    [title]="logsTitle"
+    [source]="logsSource"
+  ></app-action-log>
 </div>
 
 <!-- If there is no step-labels, hide whole container -->
@@ -57,11 +63,12 @@
   <app-timeline [timelineEvents]="timeline$ | async"></app-timeline>
 </div>
 
-<app-modal class="modal-rationale" *ngIf="rationaleModalIsShown" (close)="hideRationaleModal()">
+<app-modal *ngIf="rationaleModalIsShown" (close)="hideRationaleModal()">
   <app-rationale-modal [data]="rationaleData" (close)="submitRationale($event)"></app-rationale-modal>
 </app-modal>
 
-<app-modal class="modal-rationale"
+<app-modal
+  class="modal-rationale"
   *ngIf="readModalIsShown"
   [heading]="readData?.title"
   (close)="hideReadModal()"

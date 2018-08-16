@@ -5,6 +5,7 @@ import { Observable } from 'rxjs/Observable';
 import { DataTableCommonManagerComponent } from '../../../shared/components/data-table-common-manager/data-table-common-manager.component';
 import { TableDataColumn, TableDataSource } from '../../../shared/components/data-table/data-table.component';
 import { TimelineEvent } from '../../../shared/components/timeline/timeline.component';
+import { ActionLog } from '../../../shared/models/actionLog';
 
 /**
  * Usage:
@@ -58,8 +59,12 @@ export abstract class TimelineDetailComponent extends DataTableCommonManagerComp
   public addTitle: string;  // Optional
   public singleTableEmptyText: string; // Optional
   public listTableEmptyText: string; // Optional
+  
   public showGenerateOrders: boolean = false; // Optional
   public disableGenerateOrders: boolean = false; // Optional
+
+  public logsTitle: string; // Optional
+  public logsSource: Array<ActionLog>; // Optional
 
   /**
    * 2. Abstract attributes to preset data structure

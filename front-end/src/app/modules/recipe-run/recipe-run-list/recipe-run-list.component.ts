@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { DataTableCommonManagerComponent } from "../../../shared/components/data-table-common-manager/data-table-common-manager.component";
 import { TableDataSource, TableDataColumn } from "../../../shared/components/data-table/data-table.component";
-import { DateCellDataColumn, StatusCellDataColumn, ActionCellDataColumn, DataCellAction } from "../../../shared/components/data-table-cells/index";
+import { DateCellDataColumn, StatusCellDataColumn, ActionCellDataColumn, DataCellAction } from "../../../shared/components/data-table-cells";
 import { StatusClass } from "../../../shared/models/common";
 import { ActivatedRoute, Router } from "@angular/router";
 import { RecipeRunsService } from "../../../services/recipe-runs/recipe-runs.service";

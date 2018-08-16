@@ -73,8 +73,7 @@ export class DataTableComponent implements OnInit {
   @Input() customRows: boolean = false;
   @Input() emptyText: string;
 
-  @Input() rowBackgroundColor: (row: any) => string = (row) => null;
-  @Input() rowTexColor:        (row: any) => string = (row) => null;
+  @Input() rowClass: (row: any) => string = (row) => null;
 
   @Output() setFilter = new EventEmitter<object>();
   @Output() openRow = new EventEmitter<any>();
@@ -124,7 +123,7 @@ export class DataTableComponent implements OnInit {
    * @returns True if column filter are set and table body isint null or empty
    */
   showFilter(filter: any) {
-    return filter && this.dataSource.body && this.dataSource.body.length;
+    return filter; // && this.dataSource.body && this.dataSource.body.length;
   }
 
   onSetFilter(filterData: DataTableFilterData): void {
@@ -175,12 +174,8 @@ export class DataTableComponent implements OnInit {
    * Style methods
    */
 
-  public getRowBackgroundColor(row: any): string {
-    return this.rowBackgroundColor(row) || null;
-  }
-
-  public getRowTexColor(row: any): string {
-    return this.rowTexColor(row) || null;
+  public getRowClass(row: any): string {
+    return this.rowClass(row);
   }
 
   public getColumnClass(column: any): string {

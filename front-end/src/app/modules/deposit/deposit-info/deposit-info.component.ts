@@ -6,7 +6,7 @@ import { Observable } from "rxjs/Observable";
 
 import { DepositService, DepositResultData, DepositResponseData } from "../../../services/deposit/deposit.service";
 import { InvestmentService } from "../../../services/investment/investment.service";
-import { ActionCellDataColumn, DataCellAction, StatusCellDataColumn, PercentCellDataColumn, NumberCellDataColumn } from "../../../shared/components/data-table-cells/index";
+import { ActionCellDataColumn, DataCellAction, StatusCellDataColumn, PercentCellDataColumn, NumberCellDataColumn } from "../../../shared/components/data-table-cells";
 import { TableDataSource, TableDataColumn } from "../../../shared/components/data-table/data-table.component";
 import { StatusClass } from "../../../shared/models/common";
 import { DepositStatus } from "../../../shared/models/deposit";

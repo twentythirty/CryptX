@@ -10,6 +10,7 @@ chai.use(chaiAsPromised);
 
 const recipeOrderStatusChanger = require('../../jobs/recipe-order-status-changer');
 
+const ccxtUtils = require('../../utils/CCXTUtils');
 const RecipeOrder = require('../../models').RecipeOrder;
 const ExecutionOrder = require('../../models').ExecutionOrder;
 const ExecutionOrderFill = require('../../models').ExecutionOrderFill;
@@ -66,10 +67,26 @@ describe('Recipe Order status changer job', () => {
     const FAIL_EXEC_ORD_ID = 455;
     const ACTIVE_EXEC_ORD_ID = 900;
     const COMPLETE_FILLS_ORD_ID = 78441;
+    const COMPLETE_FILLS_BALLAST_ORD_ID = 78448;
+    const FAIL_NO_CCXT_ORD_ID = 999852;
     const COMPLETE_ORD_QNTY = 40;
     const FAILED_ORDER_IDS = [
         10, 20, 30, 40
     ];
+    const EXCHANGE_ID = 77;
+    const INSTRUMENT_STUB = {
+        symbol: 'STUB/MOCK',
+        reverse_symbol: () => {
+            return 'MOCK/STUB'
+        }
+    }
+    const INSTRUMENT_BALLAST_STUB = {
+        symbol: 'STUB2/MOCK2',
+        reverse_symbol: () => {
+            return 'MOCK2/STUB2'
+        }
+    }
+    const FILLS_BALLAST = 5;
 
     const ORDERS_DB = [{
             id: FAILED_ORDER_IDS[0],
@@ -89,22 +106,49 @@ describe('Recipe Order status changer job', () => {
         },
         {
             id: FAIL_EXEC_ORD_ID,
-            status: RECIPE_ORDER_STATUSES.Executing
+            status: RECIPE_ORDER_STATUSES.Executing,
+            target_exchange_id: EXCHANGE_ID,
+            Instrument: INSTRUMENT_STUB,
+            side: ORDER_SIDES.Buy
         },
         {
             id: ACTIVE_EXEC_ORD_ID,
             status: RECIPE_ORDER_STATUSES.Pending,
-            quantity: 78.0
+            quantity: 78.0,
+            target_exchange_id: EXCHANGE_ID,
+            Instrument: INSTRUMENT_STUB,
+            side: ORDER_SIDES.Buy
         },
         {
             id: COMPLETE_FILLS_ORD_ID,
             status: RECIPE_ORDER_STATUSES.Executing,
-            quantity: COMPLETE_ORD_QNTY
-        }
+            quantity: COMPLETE_ORD_QNTY,
+            target_exchange_id: EXCHANGE_ID,
+            Instrument: INSTRUMENT_STUB,
+            side: ORDER_SIDES.Buy
+        },
+        {
+            id: FAIL_NO_CCXT_ORD_ID,
+            status: RECIPE_ORDER_STATUSES.Executing,
+            quantity: COMPLETE_ORD_QNTY,
+            target_exchange_id: EXCHANGE_ID,
+            Instrument: INSTRUMENT_STUB,
+            side: ORDER_SIDES.Sell
+        },
+        {
+            id: COMPLETE_FILLS_BALLAST_ORD_ID,
+            status: RECIPE_ORDER_STATUSES.Executing,
+            quantity: COMPLETE_ORD_QNTY + FILLS_BALLAST,
+            target_exchange_id: EXCHANGE_ID,
+            Instrument: INSTRUMENT_BALLAST_STUB,
+            side: ORDER_SIDES.Buy
+        },
+
     ];
 
 
     const FILLED_EXEC_ORD_ID = 8888;
+    const FILLED_BALLAST_EXEC_ORD_ID = 9999;
     const EXECUTION_ORDERS_DB = [{
             id: 4009,
             recipe_order_id: FAIL_EXEC_ORD_ID,
@@ -129,6 +173,11 @@ describe('Recipe Order status changer job', () => {
             id: FILLED_EXEC_ORD_ID,
             recipe_order_id: COMPLETE_FILLS_ORD_ID,
             status: EXECUTION_ORDER_STATUSES.FullyFilled
+        },
+        {
+            id: FILLED_BALLAST_EXEC_ORD_ID,
+            recipe_order_id: COMPLETE_FILLS_BALLAST_ORD_ID,
+            status: EXECUTION_ORDER_STATUSES.FullyFilled
         }
     ];
 
@@ -142,6 +191,11 @@ describe('Recipe Order status changer job', () => {
             id: 101,
             execution_order_id: FILLED_EXEC_ORD_ID,
             quantity: COMPLETE_ORD_QNTY / 2
+        },
+        {
+            id: 102,
+            execution_order_id: FILLED_BALLAST_EXEC_ORD_ID,
+            quantity: COMPLETE_ORD_QNTY 
         },
     ];
 
@@ -182,6 +236,28 @@ describe('Recipe Order status changer job', () => {
                 exec_order_fill => options.where.execution_order_id.includes(exec_order_fill.execution_order_id)))
         });
 
+        sinon.stub(ccxtUtils, 'getConnector').callsFake(id => {
+
+            return {
+                markets: {
+                    [INSTRUMENT_STUB.symbol]: {
+                        limits: {
+                            amount: {
+                                min: 0
+                            }
+                        }
+                    },
+                    [INSTRUMENT_BALLAST_STUB.symbol]: {
+                        limits: {
+                            amount: {
+                                min: FILLS_BALLAST
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
         done();
     });
 
@@ -190,7 +266,8 @@ describe('Recipe Order status changer job', () => {
         restoreSymbols(
             RecipeOrder.findAll,
             ExecutionOrder.findAll,
-            ExecutionOrderFill.findAll
+            ExecutionOrderFill.findAll,
+            ccxtUtils.getConnector
         );
 
         done();
@@ -240,6 +317,36 @@ describe('Recipe Order status changer job', () => {
             chai.expect(executing_order).to.not.be.null;
             chai.expect(executing_order.status).to.not.be.undefined;
             chai.expect(executing_order.status).to.eq(RECIPE_ORDER_STATUSES.Executing);
+        })
+    });
+
+    it("shall set recipe order to failed if it is using an instrument configuration not supported by CCXT", () => {
+
+        return recipeOrderStatusChanger.JOB_BODY(config, console.log).then(results => {
+
+            chai.expect(results).is.a('array');
+            chai.expect(results).to.not.be.empty;
+
+            const failed_order = _.find(results, res => res.id === FAIL_NO_CCXT_ORD_ID);
+
+            chai.expect(failed_order).to.not.be.null;
+            chai.expect(failed_order.status).to.not.be.undefined;
+            chai.expect(failed_order.status).to.eq(RECIPE_ORDER_STATUSES.Failed);
+        })
+    });
+
+    it("shall set recipe order to complete when fills are enough to complete it, substracting ballast", () => {
+
+        return recipeOrderStatusChanger.JOB_BODY(config, console.log).then(results => {
+
+            chai.expect(results).is.a('array');
+            chai.expect(results).to.not.be.empty;
+
+            const complete_order = _.find(results, res => res.id === COMPLETE_FILLS_BALLAST_ORD_ID);
+
+            chai.expect(complete_order).to.not.be.null;
+            chai.expect(complete_order.status).to.not.be.undefined;
+            chai.expect(complete_order.status).to.eq(RECIPE_ORDER_STATUSES.Completed);
         })
     });
 

@@ -1,7 +1,7 @@
 import { Component, OnInit, Input } from '@angular/core';
 import { Router } from '@angular/router';
 
-import { StatusClass } from '../../../shared/models/common';
+import { StatusClass } from '../../models/common';
 import { AuthService } from '../../../services/auth/auth.service';
 
 export class TimelineEvent {

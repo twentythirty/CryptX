@@ -430,7 +430,7 @@ const changeExecutionOrderStatus = async (req, res) => {
     }
   });
 
-  return ReS(res, { message: 'OK!' });
+  return ReS(res, { status: `execution_orders.status.${updated_execution_order.status}` });
 
 };
 module.exports.changeExecutionOrderStatus = changeExecutionOrderStatus;

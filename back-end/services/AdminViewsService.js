@@ -18,6 +18,7 @@ const AVRecipeOrdersGroup = require('../models').AVRecipeOrdersGroup;
 const AVRecipeOrder = require('../models').AVRecipeOrder;
 const AVExecutionOrder = require('../models').AVExecutionOrder;
 const AVExecutionOrderFill = require('../models').AVExecutionOrderFill;
+const AVColdStorageTransfer = require('../models').AVColdStorageTransfer;
 
 const TABLE_LOV_FIELDS = {
     'av_users': [
@@ -85,6 +86,13 @@ const TABLE_LOV_FIELDS = {
         'exchange',
         'account',
         'status'
+    ],
+    'av_cold_storage_transfers': [
+        'asset',
+        'status',
+        'custodian',
+        'strategy',
+        'source_exchange'
     ]
 }
 
@@ -204,6 +212,12 @@ const fetchRecipeDepositsViewHeaderLOV = async (header_field, query ='', where =
 }
 module.exports.fetchRecipeDepositsViewHeaderLOV = fetchRecipeDepositsViewHeaderLOV;
 
+const fetchColdStorageTransfersViewHeaderLOV = async (header_field, query ='', where = '') => {
+
+    return fetchViewHeaderLOV('av_cold_storage_transfers', header_field, query, where);
+}
+module.exports.fetchColdStorageTransfersViewHeaderLOV = fetchColdStorageTransfersViewHeaderLOV;
+
 
 
 // ************************ DATA ***************************//
@@ -285,6 +299,12 @@ const fetchRecipeDepositsViewDataWithCount = async (seq_query = {}) => {
     return fetchViewDataWithCount(AVRecipeDeposit, seq_query);
 }
 module.exports.fetchRecipeDepositsViewDataWithCount = fetchRecipeDepositsViewDataWithCount;
+
+const fetchColdStorageTransferViewDataWithCount = async (seq_query = {}) => {
+
+    return fetchViewDataWithCount(AVColdStorageTransfer, seq_query);
+}
+module.exports.fetchColdStorageTransferViewDataWithCount = fetchColdStorageTransferViewDataWithCount;
 
 const fetchAssetView = async (asset_id) => {
 
@@ -809,3 +829,27 @@ const fetchRecipeDepositsViewsFooter = async (where_clause = '') => {
     )
 }
 module.exports.fetchRecipeDepositsViewsFooter = fetchRecipeDepositsViewsFooter;
+
+const fetchColdStorageTransfersViewsFooter = async (where_clause = '') => {
+
+    const view = 'av_cold_storage_transfers';
+
+    const query = builder.joinQueryParts([
+        builder.selectCount(view, 'id', where_clause),
+        builder.selectCountDistinct('asset_id', 'asset', view, where_clause),
+        builder.selectCount(view, 'status', builder.addToWhere(where_clause, `status='cold_storage_transfers.status.${MODEL_CONST.COLD_STORAGE_ORDER_STATUSES.Pending}'`)),
+        builder.selectCountDistinct('source_exchange', 'source_exchange', view, where_clause),
+    ], [
+        'id',
+        'asset',
+        'status',
+        'source_exchange'
+    ]);
+
+    const footer = (await sequelize.query(query))[0];
+
+    return builder.addFooterLabels(
+        builder.queryReturnRowToFooterObj(footer), 'cold_storage_transfers'
+    )
+}
+module.exports.fetchColdStorageTransfersViewsFooter = fetchColdStorageTransfersViewsFooter;

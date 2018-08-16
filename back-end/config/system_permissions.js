@@ -507,6 +507,11 @@ ROUTES = {
     permissions_matcher: ROUTE_MATCHERS.GetInstrumentExchanges,
     required_permissions: []
   },
+  RemoveInstrumentExchangeMapping: {
+    router_string: "/instruments/:instrument_id/exchanges/:exchange_id/delete",
+    permissions_matcher: ROUTE_MATCHERS.RemoveInstrumentExchangeMapping,
+    required_permissions: []
+  },
 
   // Liquidity requirements
   LiquidityReqCreate: {
@@ -562,6 +567,11 @@ ROUTES = {
   GetColdStorageCustodians: {
     router_string: "/cold_storage/custodians/all",
     permissions_matcher: ROUTE_MATCHERS.GetColdStorageTransfers,
+    required_permissions: [PERMISSIONS.CREATE_INVESTMENT_RUN]
+  },
+  AddColdStorageCustodians: {
+    router_string: "/cold_storage/custodians/add",
+    permissions_matcher: ROUTE_MATCHERS.AddColdStorageCustodians,
     required_permissions: [PERMISSIONS.CREATE_INVESTMENT_RUN]
   },
   GetColdStorageCustodiansColLOV: {

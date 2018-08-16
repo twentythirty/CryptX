@@ -696,6 +696,12 @@ router.get(
   check_permissions,
   InstrumentController.getInstrumentExchanges
 );
+router.delete(
+  ROUTES.RemoveInstrumentExchangeMapping.router_string,
+  stateless_auth,
+  check_permissions,
+  InstrumentController.removeInstrumentExchangeMapping
+);
 
 // Liquidity requirements
 router.post(
@@ -809,7 +815,7 @@ router.post(
   ExchangeController.createExchangeAccount
 );
 
-
+//COLD STORAGE
 router.post(
   ROUTES.GetColdStorageTransfers.router_string,
   stateless_auth,
@@ -822,7 +828,7 @@ router.post(
   stateless_auth,
   check_permissions,
   filter_reducer,
-  MockController.fetchColLOV
+  ColdstorageController.getColdStorageTransferColumnLOV
 );
 router.post(
   ROUTES.ApproveColdStorageTransfer.router_string,
@@ -836,6 +842,12 @@ router.post(
   check_permissions,
   filter_reducer,
   ColdstorageController.getCustodians
+);
+router.post(
+  ROUTES.AddColdStorageCustodians.router_string,
+  stateless_auth,
+  check_permissions,
+  ColdstorageController.addCustodian
 );
 router.post(
   ROUTES.GetColdStorageCustodiansColLOV.router_string,

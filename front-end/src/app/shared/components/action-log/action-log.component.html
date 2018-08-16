@@ -1,0 +1,15 @@
+<div *ngIf="source" class="action-logs">
+  <h2 class="title">{{ title }}</h2>
+
+  <p class="title-changes" [ngPlural]="source.length">
+    <ng-template ngPluralCase="=0">No changes have been done</ng-template>
+    <ng-template ngPluralCase="=1">{{ source.length }} change has been done</ng-template>
+    <ng-template ngPluralCase="other">{{ source.length }} changes have been done</ng-template>
+  </p>
+  
+  <p class="log-item" *ngFor="let log of source">
+    <span>{{ log.timestamp | date:'dd MMM yyyy hh:mm' }}</span>
+    <span> - </span>
+    <span>{{ log.details }}</span>
+  </p>
+</div>

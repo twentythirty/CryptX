@@ -8,7 +8,11 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.SMALLINT,
         allowNull: false
       },
-      address: DataTypes.TEXT("medium")
+      address: DataTypes.TEXT("medium"),
+      tag: {
+        type: DataTypes.STRING,
+        allowNull: true
+      }
     },
     modelProps(
       "cold_storage_account",

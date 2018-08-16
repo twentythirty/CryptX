@@ -5,7 +5,7 @@ import { TimelineDetailComponent, SingleTableDataSource, TagLineItem } from "../
 import { InvestmentService } from "../../../services/investment/investment.service";
 import { TimelineEvent } from "../../../shared/components/timeline/timeline.component";
 import { TableDataSource, TableDataColumn } from "../../../shared/components/data-table/data-table.component";
-import { StatusCellDataColumn, NumberCellDataColumn, DateCellDataColumn } from "../../../shared/components/data-table-cells/index";
+import { StatusCellDataColumn, NumberCellDataColumn, DateCellDataColumn } from "../../../shared/components/data-table-cells";
 import { StatusClass } from "../../../shared/models/common";
 
 @Component({

@@ -135,7 +135,6 @@ export class DataTableFilterComponent implements OnInit, OnChanges {
             // type: 'number'
           });
         }
-        console.log('number values', this._filterData.values);
         if ( this._filterData.values[0] ) {
           data.values.push({
             field: this.column,

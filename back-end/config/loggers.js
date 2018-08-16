@@ -53,5 +53,15 @@ module.exports = {
             level: LOG_LEVELS.Info,
             get template() { return `Execution order was Fully Filled.` }
         }
+    },
+    instruments: {
+        mapping_removed: {
+            level: LOG_LEVELS.Info,
+            get template_user() { 
+                const { user, mapping } = this.params;
+                const { Instrument: instument, Exchange: exchange } = mapping;
+                return `${user.first_name} ${user.last_name} removed Insturment Exchange Mapping with identifier: ${mapping.external_instrument_id}, instrument: ${instument.symbol} and exchange: ${exchange.name}` 
+            }
+        }
     }
 };

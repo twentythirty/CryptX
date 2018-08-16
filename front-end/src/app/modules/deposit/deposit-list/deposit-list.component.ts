@@ -3,7 +3,7 @@ import { ActivatedRoute, Router } from "@angular/router";
 
 import { DataTableCommonManagerComponent } from "../../../shared/components/data-table-common-manager/data-table-common-manager.component";
 import { TableDataSource, TableDataColumn } from "../../../shared/components/data-table/data-table.component";
-import { StatusCellDataColumn, PercentCellDataColumn, NumberCellDataColumn } from "../../../shared/components/data-table-cells/index";
+import { StatusCellDataColumn, PercentCellDataColumn, NumberCellDataColumn } from "../../../shared/components/data-table-cells";
 import { StatusClass } from "../../../shared/models/common";
 import { Deposit } from "../../../shared/models/deposit";
 

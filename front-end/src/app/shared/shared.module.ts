@@ -36,6 +36,7 @@ import { InputCellComponent } from './components/data-table-cells/input-cell/inp
 import { SelectCellComponent } from './components/data-table-cells/select-cell/select-cell.component';
 import { TimelineComponent } from './components/timeline/timeline.component';
 import { ButtonRadioComponent } from './components/button-radio/button-radio.component';
+import { ActionLogComponent } from './components/action-log/action-log.component';
 
 @NgModule({
     imports: [
@@ -92,6 +93,7 @@ import { ButtonRadioComponent } from './components/button-radio/button-radio.com
         SelectCellComponent,
         TimelineComponent,
         ButtonRadioComponent,
+        ActionLogComponent,
 
     ],
     exports: [
@@ -121,6 +123,7 @@ import { ButtonRadioComponent } from './components/button-radio/button-radio.com
         SelectCellComponent,
         TimelineComponent,
         ButtonRadioComponent,
+        ActionLogComponent,
     ]
 })
 export class SharedModule {}

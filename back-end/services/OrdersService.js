@@ -13,7 +13,7 @@ const Asset = require('../models').Asset;
 const InstrumentExchangeMapping = require('../models').InstrumentExchangeMapping;
 const InstrumentMarketData = require('../models').InstrumentMarketData;
 const Op = require('../models').Sequelize.Op;
-const CCXTUtils = require('../utils/CCXTUtils');
+const ccxtUtils = require('../utils/CCXTUtils');
 
 /**
  * Check if 2 Instrument objects are using the same assets (by id)
@@ -233,9 +233,9 @@ const generateApproveRecipeOrders = async (recipe_run_id) => {
     }), market_data => {
         return [market_data.instrument_id, market_data.exchange_id]
     });
-
+    const recipe_detail_exchange_ids = _.map(recipe_run_details, 'target_exchange_id');
     //fetch balance info from exchanges
-    const exchange_deposits = await fetch_exchange_deposits(recipe_run_id, _.map(recipe_run_details, 'target_exchange_id'));
+    const exchange_deposits = await fetch_exchange_deposits(recipe_run_id, recipe_detail_exchange_ids);
 
     //filter out recipe run detailes where we dont have the info
     const market_data_keys = Object.keys(grouped_market_data);
@@ -285,6 +285,9 @@ const generateApproveRecipeOrders = async (recipe_run_id) => {
 
     let results = [];
 
+    //fetch connectors since many exchanges 
+    const connectors = await ccxtUtils.allConnectors(recipe_detail_exchange_ids);
+
     //create saving futures for orders from recipe run details
     [err, results] = await to(Promise.all(_.map(valid_recipe_run_details, recipe_run_detail => {
 
@@ -292,14 +295,15 @@ const generateApproveRecipeOrders = async (recipe_run_id) => {
         //if the market data and recipe run detail use the same base currency
         //then we use the bid price and make a buy order
         const market_data = grouped_market_data[market_data_key][0];
-        const buy_order = recipe_run_detail.transaction_asset_id == instruments_by_id[market_data.instrument_id].transaction_asset_id;
+        const instrument = instruments_by_id[market_data.instrument_id];
+        const buy_order = recipe_run_detail.transaction_asset_id == instrument.transaction_asset_id;
 
         //get correct price/order side, use precise division if possible
         const price = (buy_order ? market_data.bid_price : Decimal(1).div(Decimal(market_data.bid_price)).toString());
         const side = buy_order ? ORDER_SIDES.Buy : ORDER_SIDES.Sell;
         //get deposit object in base currency (includes amount and investemnt percentage)
         const relevant_deposit = exchange_deposits[recipe_run_detail.target_exchange_id][buy_order ? recipe_run_detail.quote_asset_id : recipe_run_detail.transaction_asset_id];
-
+        
         const decimal_100 = Decimal('100');
         //create adjustment coeficient to know how to scale detail percentages
         const investment_prc_adjustment = decimal_100.div(relevant_deposit.investment_prc)
@@ -321,17 +325,48 @@ const generateApproveRecipeOrders = async (recipe_run_id) => {
         const tick_size_decimal = correct_mapping == null ? null : Decimal(correct_mapping.tick_size);
         //round qnty to same dp as tick size, rounding down (only perform rounding if tick size was defined)
         //divide by price if this is a buy order
-        const qnty = (
+        const qnty_decimal = (
             tick_size_decimal == null ?
             order_qnty_unadjusted : order_qnty_unadjusted.toDP(tick_size_decimal.dp(), Decimal.ROUND_HALF_DOWN)
-        ).div(buy_order ? Decimal(price) : Decimal(1)).toString()
+        ).div(buy_order ? Decimal(price) : Decimal(1))
+
+        console.log(`
+        Recipe ordering recipe run detail: ${recipe_run_detail.id}
+        use market price: ${price}
+        instrument: ${instrument.symbol}
+        exchange: ${recipe_run_detail.target_exchange_id}
+        buy order?: ${buy_order}
+        relevant deposit: ${JSON.stringify(relevant_deposit)}
+        investment prc adjust: ${investment_prc_adjustment.toString()}
+        initial order qnty: ${order_qnty_unadjusted.toString()}
+        tick size: ${tick_size_decimal.toString()}
+        qnty: ${qnty_decimal.toString()}
+        `)
+
+        const connector = connectors[recipe_run_detail.target_exchange_id.toString()];
+        const check_symbol = buy_order? instrument.symbol : instrument.reverse_symbol();
+        const check_market = connector.markets[check_symbol];
+
+        //found no market or market required quantity is larger than order quantity
+        if (
+            check_market == null ||
+            Decimal(check_market.limits.amount.min || '0').gte(qnty_decimal)
+        ) {
+            console.log(`
+            WARN: Skipping generating recipe order 
+            for exchange ${connector.name} and market ${check_symbol}
+            with quantity ${qnty_decimal.toString()}
+            due to ${check_market == null? `no market for symbol ${check_symbol}!` : `unsatisfied market lower quantity bound: ${check_market.limits.amount.min}`}`)
+
+            return Promise.resolve(null);
+        }
 
         return RecipeOrder.create({
             recipe_order_group_id: orders_group.id,
             instrument_id: market_data.instrument_id,
             target_exchange_id: recipe_run_detail.target_exchange_id,
             price: price,
-            quantity: qnty,
+            quantity: qnty_decimal.toString(),
             side: side,
             status: RECIPE_ORDER_STATUSES.Pending
         });
@@ -339,7 +374,8 @@ const generateApproveRecipeOrders = async (recipe_run_id) => {
 
     if (err) TE(`Error saving new recipe orders based on recipe run details: ${err}`, err);
 
-    return results;
+    //filter out non-generated null reicpe orders (skipped due to low quantity)
+    return _.filter(results, order => order != null);
 }
 module.exports.generateApproveRecipeOrders = generateApproveRecipeOrders;
 
@@ -443,6 +479,7 @@ const changeExecutionOrderStatus = async (execution_order_id, status) => {
     switch (status) {
         case EXECUTION_ORDER_STATUSES.Pending: //User tries to reset the execution order.
             if (execution_order.status !== EXECUTION_ORDER_STATUSES.Failed) TE('Only Execution orders with the status Failed can be reinitiated');
+            execution_order.failed_attemts = 0;
             break;
 
         default:
@@ -453,7 +490,7 @@ const changeExecutionOrderStatus = async (execution_order_id, status) => {
 
     const previous_values = execution_order.toJSON();
 
-    execution_order.status = EXECUTION_ORDER_STATUSES.Pending;
+    execution_order.status = status;
 
     [err, execution_order] = await to(execution_order.save());
 

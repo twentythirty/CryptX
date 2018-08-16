@@ -24,14 +24,16 @@ const createInvestmentRun = async function (user_id, strategy_type, is_simulated
     TE(`Unknown strategy type ${strategy_type}!`);
   }
 
-  let [ err, executing_investment_run ] = await to(InvestmentRun.count({
+  let [err, executing_investment_run] = await to(InvestmentRun.count({
     where: {
       is_simulated: false,
-      status: { [Op.ne]: INVESTMENT_RUN_STATUSES.OrdersFilled }
+      status: {
+        [Op.ne]: INVESTMENT_RUN_STATUSES.OrdersFilled
+      }
     }
   }));
 
-  if(err) TE(err.message);
+  if (err) TE(err.message);
 
   // only allow one REAL investment run at the same time.
   if (executing_investment_run && !is_simulated) {
@@ -90,9 +92,9 @@ const createRecipeRun = async function (user_id, investment_run_id) {
   });
 
   if (recipe_run) {
-    if(recipe_run.approval_status === RECIPE_RUN_STATUSES.Pending) TE("There is already recipe run pending approval");
+    if (recipe_run.approval_status === RECIPE_RUN_STATUSES.Pending) TE("There is already recipe run pending approval");
     else TE("No more recipe runs can be generated after one was already approved.");
-  } 
+  }
 
   [err, investment_run] = await to(this.changeInvestmentRunStatus(
     investment_run_id,
@@ -162,21 +164,46 @@ const generateRecipeDetails = async function (strategy_type) {
 
   // get all the ways to acquire assets
   let possible_actions;
+  /**
+   * possible_actions action structure:
+   * 
+   * 
+   * instrument_id
+   * transaction_asset_id
+   * quote_asset_id
+   * exchange_id
+   * average_volume
+   * min_volume_requirement
+   * ask_price
+   * bid_price
+   */
   [err, possible_actions] = await to(Promise.all(
     assets.map((asset) => {
       return AssetService.getAssetInstruments(asset.id);
     })
   ));
-
   if (err) TE(err.message);
 
   _.zipWith(assets, possible_actions, (a, b) => a.possible_actions = b);
 
   assets.map(asset => {
+    //if this is a base asset we find a buy action involving another base asset
     if (asset.is_base) {
-      asset.suggested_action = asset.possible_actions[0];
-      if (asset.id != asset.suggested_action.quote_asset_id)
-        [asset.suggested_action.quote_asset_id, asset.suggested_action.transaction_asset_id] = [asset.suggested_action.transaction_asset_id, asset.suggested_action.quote_asset_id];
+      const base_asset_ids = _.map(base_assets, 'id');
+      asset.suggested_action = _.find(asset.possible_actions, action => {
+
+        return (
+          //this action includes buying this asset
+          action.transaction_asset_id == asset.id
+          //this asset is not the one being sold
+          &&
+          action.quote_asset_id != asset.id
+          //the asset being sold is a base asset
+          &&
+          base_asset_ids.includes(action.quote_asset_id)
+        )
+
+      })
       return;
     }
     /* Return empty object is there is no ways found to get asset.
@@ -228,19 +255,18 @@ const generateRecipeDetails = async function (strategy_type) {
     asset.suggested_action = _.minBy(asset.possible_actions, 'cost_usd');
   });
 
+  // filter out assets that can't be acquired based on if they have suggested action or not
+  assets = _.filter(assets, a => a.suggested_action != null);
 
-  // calculate investment percentage based on market share
-  let total_marketshare = 0;
-  assets = assets.filter(a => typeof a.suggested_action !== "undefined" || a.is_base)
-    .map((asset) => {
-      total_marketshare += asset.avg_share;
-      return asset;
-    }).map(asset => {
-      asset.investment_percentage = 100 / assets.length;
-      /* // investment percentage proportional to asset marketshare
-      Decimal(100).div(Decimal(total_marketshare)).mul(Decimal(asset.avg_share)).toNumber(); */
-      return asset;
-    });
+  // calculate investment percentage
+  const total_marketshare = _.sumBy(assets, 'avg_share');
+
+  assets.map(asset => {
+    asset.investment_percentage = 100 / assets.length;
+    /* // investment percentage proportional to asset marketshare
+    Decimal(100).div(Decimal(total_marketshare)).mul(Decimal(asset.avg_share)).toNumber(); */
+    return asset;
+  });
 
   return assets;
 };
@@ -270,27 +296,27 @@ const changeRecipeRunStatus = async function (user_id, recipe_run_id, status_con
   //approving recipe run that was not approved before, try generate empty deposits and set the investment run status to RecipedApproved
   if (status_constant == RECIPE_RUN_STATUSES.Approved && old_status !== status_constant) {
 
-    [ err ] = await to(depositService.generateRecipeRunDeposits(recipe_run));
+    [err] = await to(depositService.generateRecipeRunDeposits(recipe_run));
 
-    if(err) TE(err.message);
+    if (err) TE(err.message);
 
     let result = [];
-    [ err, result ] = await to(Promise.all([
+    [err, result] = await to(Promise.all([
       recipe_run.save(),
       InvestmentRun.update({
         status: INVESTMENT_RUN_STATUSES.RecipeApproved
       }, {
-        where: { id: recipe_run.investment_run_id },
+        where: {
+          id: recipe_run.investment_run_id
+        },
         limit: 1
       })
     ]));
 
-    if(err) TE(err.message);
+    if (err) TE(err.message);
 
     return result[0];
-  }
-
-  else return recipe_run.save();
+  } else return recipe_run.save();
 };
 module.exports.changeRecipeRunStatus = changeRecipeRunStatus;
 
@@ -445,7 +471,7 @@ const getInvestmentRunTimeline = async function (investment_run_id) {
     _.flatten(recipes.map(recipe_run => {
       return recipe_run.RecipeOrderGroups;
     })), group => group.approval_status != RECIPE_ORDER_GROUP_STATUSES.Rejected);
-  let recipe_orders = recipe_order_groups.length? _.maxBy(recipe_order_groups, rog => rog.created_timestamp.getTime()).RecipeOrders : [];
+  let recipe_orders = recipe_order_groups.length ? _.maxBy(recipe_order_groups, rog => rog.created_timestamp.getTime()).RecipeOrders : [];
 
   if (!recipe_orders.length) {
     return { // no recipe orders found. Return current status
@@ -472,7 +498,7 @@ const getInvestmentRunTimeline = async function (investment_run_id) {
 
   let prepared_recipe_orders = {
     count: recipe_orders.length,
-    order_group_id: recipe_orders[0].recipe_order_group_id, 
+    order_group_id: recipe_orders[0].recipe_order_group_id,
     status: `order.status.${order_status}`
   };
 

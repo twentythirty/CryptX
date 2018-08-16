@@ -20,7 +20,7 @@ const Instrument = require('../../models').Instrument;
 const Asset = require('../../models').Asset;
 const InstrumentExchangeMapping = require('../../models').InstrumentExchangeMapping;
 const InstrumentMarketData = require('../../models').InstrumentMarketData;
-const CCXTUtils = require('../../utils/CCXTUtils');
+const ccxtUtils = require('../../utils/CCXTUtils');
 const Op = require('../../models').Sequelize.Op;
 
 
@@ -38,12 +38,18 @@ describe('OrdersService testing', () => {
     const TEST_INSTRUMENTS = [{
             id: 900,
             symbol: 'TST1/TST2',
+            reverse_symbol: () => {
+                return 'TST2/TST1'
+            },
             transaction_asset_id: 800,
             quote_asset_id: QUOTE_ASSET_ID
         },
         {
             id: 901,
             symbol: 'TST3/TST2',
+            reverse_symbol: () => {
+                return 'TST2/TST3'
+            },
             transaction_asset_id: 802,
             quote_asset_id: QUOTE_ASSET_ID
         }
@@ -167,7 +173,7 @@ describe('OrdersService testing', () => {
 
                     return Promise.resolve(new RecipeOrder(options));
                 });
-                sinon.stub(CCXTUtils, 'getConnector').callsFake(data => {
+                sinon.stub(ccxtUtils, 'getConnector').callsFake(data => {
 
                     return Promise.resolve({
                         fetchBalance: async () => {
@@ -180,6 +186,29 @@ describe('OrdersService testing', () => {
                             }
                         }
                     });
+                });
+                sinon.stub(ccxtUtils, 'allConnectors').callsFake(data => {
+
+                    const markets = _.fromPairs(_.map(TEST_ASSETS, asset => {
+
+                        return [
+                            asset.symbol,
+                            {
+                                limits: {
+                                    amount: {
+                                        min: 0
+                                    }
+                                }
+                            }
+                        ]
+                    }));
+
+                    return Promise.resolve(_.zipObject(
+                        TEST_EXCHANGE_IDS, 
+                        _.times(TEST_EXCHANGE_IDS.length, _.constant({ 
+                            markets
+                         }))
+                    ))
                 });
                 sinon.stub(RecipeRunDeposit, 'findAll').callsFake(options => {
 
@@ -216,7 +245,7 @@ describe('OrdersService testing', () => {
                 InstrumentMarketData.findAll,
                 RecipeOrderGroup.create,
                 RecipeOrder.create,
-                CCXTUtils.getConnector
+                ccxtUtils.getConnector
             ].forEach(model => {
 
                 if (model.restore) {

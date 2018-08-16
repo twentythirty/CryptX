@@ -7,8 +7,9 @@ import { StatusClass } from '../../../shared/models/common';
 import { TimelineDetailComponent, SingleTableDataSource, TagLineItem } from '../timeline-detail/timeline-detail.component'
 import { TableDataSource, TableDataColumn } from '../../../shared/components/data-table/data-table.component';
 import { TimelineEvent } from '../../../shared/components/timeline/timeline.component';
-import { DateCellDataColumn, StatusCellDataColumn, NumberCellDataColumn } from '../../../shared/components/data-table-cells';
+import { DateCellDataColumn, StatusCellDataColumn, ActionCellDataColumn, DataCellAction, NumberCellDataColumn } from '../../../shared/components/data-table-cells';
 import { InvestmentService } from '../../../services/investment/investment.service';
+
 
 /**
  * 0. Set HTML and SCSS files in component decorator
@@ -200,6 +201,5 @@ export class ExecutionOrderDetailComponent extends TimelineDetailComponent imple
   public openListRow(row: any): void {
     this.router.navigate([`/run/execution-order-fill/${row.id}`]);
   }
-
 
 }
