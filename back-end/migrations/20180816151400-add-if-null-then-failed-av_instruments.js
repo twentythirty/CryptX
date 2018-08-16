@@ -9,7 +9,7 @@ module.exports = {
                 SELECT i.id,
                     i.symbol,
                     count(case when md.timestamp >= NOW() - interval '15 minutes' then 1 else null end) as exchanges_connected,
-                    count(case when md.timestamp < NOW() - interval '10 minutes' OR (md.timestamp IS NULL AND iem.instrument_id IS NOT NULL) then 1 else null end) as exchanges_failed
+                    count(case when md.timestamp < NOW() - interval '15 minutes' OR (md.timestamp IS NULL AND iem.instrument_id IS NOT NULL) then 1 else null end) as exchanges_failed
                 FROM instrument as i
                 LEFT JOIN instrument_exchange_mapping as iem ON iem.instrument_id=i.id
                 LEFT JOIN (
