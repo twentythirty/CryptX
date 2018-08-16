@@ -696,6 +696,12 @@ router.get(
   check_permissions,
   InstrumentController.getInstrumentExchanges
 );
+router.delete(
+  ROUTES.RemoveInstrumentExchangeMapping.router_string,
+  stateless_auth,
+  check_permissions,
+  InstrumentController.removeInstrumentExchangeMapping
+);
 
 // Liquidity requirements
 router.post(

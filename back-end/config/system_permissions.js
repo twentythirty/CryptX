@@ -507,6 +507,11 @@ ROUTES = {
     permissions_matcher: ROUTE_MATCHERS.GetInstrumentExchanges,
     required_permissions: []
   },
+  RemoveInstrumentExchangeMapping: {
+    router_string: "/instruments/:instrument_id/exchanges/:exchange_id/delete",
+    permissions_matcher: ROUTE_MATCHERS.RemoveInstrumentExchangeMapping,
+    required_permissions: []
+  },
 
   // Liquidity requirements
   LiquidityReqCreate: {

@@ -824,6 +824,47 @@
         ]
       }
     },
+    "/instruments/{instrument_id}/exchanges/{exchange_id}/delete": {
+      "delete": {
+        "tags": [
+          "instrument"
+        ],
+        "summary": "Delete a mappign based on instrument id and exchange id",
+        "description": "Delete a mappign based on instrument id and exchange id",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "instrument_id",
+            "in": "path",
+            "description": "ID of instrument",
+            "required": true,
+            "type": "integer"
+          },
+          {
+            "name": "exchange_id",
+            "in": "path",
+            "description": "ID of exchange",
+            "required": true,
+            "type": "integer"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "$ref": "#/definitions/InstrumentMappingRemovalResponse"
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
     "/instruments/{instrument_id}/mapping_exchanges": {
       "get": {
         "tags": [
@@ -5279,6 +5320,20 @@
           }
         }
       ]
+    },
+    "InstrumentMappingRemovalResponse": {
+      "description": "Servers response with a success message",
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean",
+          "example": true
+        },
+        "message": {
+          "type": "string",
+          "example": "Instrument exchange mapping was removed successfully"
+        }
+      }
     },
     "InstrumentExchangeMapResponse": {
       "description": "Servers response with basic instrument information.",

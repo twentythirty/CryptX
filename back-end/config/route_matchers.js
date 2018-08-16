@@ -76,6 +76,7 @@ ROUTE_MATCHERS = {
     InstrumentMapExchanges: /\/instruments\/\d+\/add_mapping$/,
     InstrumentMappingExchanges: /\/instruments\/\d+\/mapping_exchanges/,
     GetInstrumentExchanges: /\/instruments\/\d+\/exchanges$/,
+    RemoveInstrumentExchangeMapping: /\/instruments\/\d+\/exchanges\/\d+\/delete$/,
     LiquidityReqCreate: /\/liquidity_requirements\/create$/,
     GetLiquidityRequirement: /\/liquidity_requirements\/\d+$/,
     GetLiquidityRequirements: /\/liquidity_requirements\/all$/,
