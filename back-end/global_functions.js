@@ -43,7 +43,10 @@ ReE = function(res, err, code) {
 
 ReS = function(res, data, code) {
   // Success Web Response
-  let send_data = { success: true };
+  let send_data = { 
+    success: true,
+    new_token: res.new_token
+   };
 
   if (typeof data == "object") {
     send_data = Object.assign(data, send_data); //merge the objects
