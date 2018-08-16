@@ -4,8 +4,9 @@ const Instrument = require('../models').Instrument;
 const InstrumentExchangeMapping = require('../models').InstrumentExchangeMapping;
 const Asset = require('../models').Asset;
 const InstrumentLiquidityRequirement = require('../models').InstrumentLiquidityRequirement;
-const ccxtUtil = require('../utils/CCXTUtils');
+const Exchange = require('../models').Exchange;
 
+const ccxtUtil = require('../utils/CCXTUtils');
 
 const createInstrument = async (transaction_asset_id, quote_asset_id) => {
 
@@ -111,6 +112,27 @@ const addInstrumentExchangeMappings = async (instrument_id, exchange_mappings) =
     return saved_models;
 };
 module.exports.addInstrumentExchangeMappings = addInstrumentExchangeMappings;
+
+const deleteExchangeMapping = async (instrument_id, exchange_id) => {
+
+    if(!_.isNumber(instrument_id) || !_.isNumber(exchange_id)) TE(`Valid instrument and exchange ids must be provided`);
+    
+    let [ err, mapping ] = await to(InstrumentExchangeMapping.findOne({
+        where: { instrument_id, exchange_id },
+        include: [ Exchange, Instrument ]
+    }));
+
+    if(err) TE(err.message);
+    if(!mapping) return null;
+
+    [ err ] = await to(mapping.destroy());
+
+    if(err) TE(err.message);
+
+    return mapping;
+
+};
+module.exports.deleteExchangeMapping = deleteExchangeMapping;
 
 const createLiquidityRequirement = async (instrument_id, periodicity, minimum_circulation, exchange_id = null) => {
 

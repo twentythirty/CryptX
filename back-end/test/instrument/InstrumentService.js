@@ -63,6 +63,15 @@ describe('InstrumentService testing:', () => {
         exchange_id: 2
     };
 
+    const MOCK_MAPPING_1 = {
+        exchange_id: 1,
+        instrument_id: 1,
+        destroy: async () => {
+            return Promise.resolve(null);
+        }
+    };
+    const MOCK_MAPPINGS = [MOCK_MAPPING_1];
+
     //ensure working DB before test
     before(done => {
 
@@ -103,6 +112,20 @@ describe('InstrumentService testing:', () => {
                 return Promise.resolve(Object.assign({ id: 4 }, requirement));
             })
 
+            sinon.stub(InstrumentExchangeMapping, 'findOne').callsFake(options => {
+                const { exchange_id, instrument_id } = options.where;
+                const mapping = MOCK_MAPPINGS.find(m => (m.instrument_id === instrument_id && m.exchange_id === exchange_id));
+
+                if(mapping) {
+                    if(mapping.destroy.restore) MOCK_MAPPING_1.destroy.restore();
+                    sinon.stub(mapping, 'destroy').callsFake(() => {
+                        return Promise.resolve(null);
+                    });
+                }
+
+                return Promise.resolve(mapping);
+            });
+
             done();
         });
     });
@@ -111,6 +134,7 @@ describe('InstrumentService testing:', () => {
         _.forEach([
             Asset.findAll,
             InstrumentExchangeMapping.build,
+            InstrumentExchangeMapping.findOne,
             InstrumentLiquidityRequirement.findAll,
             InstrumentLiquidityRequirement.create
         ], model => {
@@ -323,6 +347,48 @@ describe('InstrumentService testing:', () => {
                 return requirement;
 
             }));
+        });
+
+    });
+
+    describe(' method deleteExchangeMapping shall', () => {
+
+        const deleteExchangeMapping = instrumentService.deleteExchangeMapping;
+
+        it('exist', () => {
+            return chai.expect(deleteExchangeMapping).to.be.not.undefined;
+        });
+
+        it('reject if at least one argument is missing or invalid', () => {
+            return Promise.all(_.map([
+                [null],
+                [1, []],
+                [{}],
+                ['aaa', 1]
+            ], params => {
+                chai.assert.isRejected(deleteExchangeMapping(...params));
+            }));
+        });
+
+        it('return null if it does not find the mapping', () => {
+            return deleteExchangeMapping(0, 0).then(mapping => {
+
+                chai.expect(mapping).to.be.null;
+
+            });
+        });
+
+        it('call destroy() if it finds the mapping', () => {
+
+            const { instrument_id, exchange_id } = MOCK_MAPPINGS[0];
+
+            return deleteExchangeMapping(instrument_id, exchange_id).then(mapping => {
+
+                chai.expect(mapping).to.be.an('object');
+                chai.expect(mapping.destroy.calledOnce).to.be.true;
+
+            });
+
         });
 
     });
