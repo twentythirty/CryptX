@@ -22,6 +22,14 @@
           [accept-user-input]="false"
           (valueChanged)="assetValueChanged($event, 'transaction_asset_id')"
         >
+        <mat-progress-spinner
+          *ngIf="assetsLoading"
+          class="progress-spinner"
+          mode="indeterminate"
+          color="accent"
+          strokeWidth="1"
+          diameter="25"
+        ></mat-progress-spinner>
       </div>
 
       <div class="form-item">
@@ -38,6 +46,14 @@
           [accept-user-input]="false"
           (valueChanged)="assetValueChanged($event, 'quote_asset_id')"
         >
+        <mat-progress-spinner
+          *ngIf="assetsLoading"
+          class="progress-spinner"
+          mode="indeterminate"
+          color="accent"
+          strokeWidth="1"
+          diameter="25"
+        ></mat-progress-spinner>
       </div>
     </form>
 

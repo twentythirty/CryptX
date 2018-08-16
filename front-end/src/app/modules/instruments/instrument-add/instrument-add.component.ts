@@ -13,8 +13,9 @@ import { InstrumentsService } from '../../../services/instruments/instruments.se
   styleUrls: ['./instrument-add.component.scss']
 })
 export class InstrumentAddComponent implements OnInit {
-  assets: Array<Object>;
+  assets: Array<Object> = [];
   loading: boolean = false;
+  assetsLoading: boolean = true;
 
   form: FormGroup = new FormGroup({
     transaction_asset_id: new FormControl('', _.compact([
@@ -34,6 +35,7 @@ export class InstrumentAddComponent implements OnInit {
 
   ngOnInit() {
     this.assetService.getAllAssets().subscribe(res => {
+      this.assetsLoading = false;
       this.assets = res.assets.map(asset => {
         return {
           id: asset.id,

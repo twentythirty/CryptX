@@ -1,4 +1,5 @@
 .form-item {
+    position: relative;
     display: inline-block;
     width: 100%;
     margin-bottom: 15px;
@@ -99,6 +100,12 @@
         height: 80px;
         resize: none;
         padding: 10px 15px;
+    }
+
+    .progress-spinner {
+        position: absolute;
+        right: 9px;
+        bottom: 10px;
     }
 }
 
