@@ -35,6 +35,7 @@ import { OrdersListComponent } from '../../modules/orders/orders-list/orders-lis
 import { ExecutionOrdersComponent } from "../../modules/investment/execution-orders/execution-orders.component";
 import { RecipeRunListComponent } from "../../modules/recipe-run/recipe-run-list/recipe-run-list.component";
 import { ExecutionOrderListComponent } from "../../modules/execution-orders/execution-order-list/execution-order-list.component";
+import { TransfersListComponent } from "../../modules/cold-storage-transfers/transfers-list/transfers-list.component";
 
 const routes: Routes = [
   { path: 'login', component: LoginComponent },
@@ -171,6 +172,12 @@ const routes: Routes = [
   {
     path: 'execution_orders',
     component: ExecutionOrderListComponent,
+    canActivate: [AuthGuard],
+  },
+
+  {
+    path: 'cold_storage/transfers',
+    component: TransfersListComponent,
     canActivate: [AuthGuard],
   },
 

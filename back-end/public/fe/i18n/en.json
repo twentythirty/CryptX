@@ -86,7 +86,16 @@
       "transaction_asset": "Transaction asset",
       "portfolio": "Portfolio",
       "deposit_management_fee": "Deposit management fee",
-      "depositary": "Depositary"
+      "depositary": "Depositary",
+      "asset": "Asset",
+      "gross_amount": "Gross amount",
+      "net_amount": "Net amount",
+      "exchange_withdrawal_fee": "Exchange withdrawal fee",
+      "destination_account": "Destination account",
+      "custodian": "Custodian",
+      "source_exchange": "Source exchange",
+      "source_account": "Source account",
+      "placed_time": "Placed time"
     },
     "filter": {
       "all": "All",
@@ -453,7 +462,7 @@
   "cold_storage": {
     "transfers": {
       "status": {
-        "91": "Oending",
+        "91": "Pending",
         "92": "Approved",
         "93": "Sent",
         "94": "Completed",
@@ -502,6 +511,24 @@
     "deposits": {
       "generate": "System generated {{amount}} Deposits for Recipe Run RR-{{recipe_id}}",
       "completed": "Deposit Completed"
+    }
+  },
+
+  "cold_storage_transfers": {
+    "header": "Cold storage transfers",
+    "are_you_sure_want_to_approve": "Are you sure want to approve this Cold storage transfer?",
+    "status": {
+      "91":"Pending",
+      "92":"Approved",
+      "93":"Sent",
+      "94":"Completed",
+      "95":"Failed"
+    },
+    "footer": {
+      "id": "{{id}} Items",
+      "asset": "{{asset}} Assets",
+      "status": "{{ status }} Pending",
+      "source_exchange": "{{source_exchange}} Exchanges"
     }
   }
 }
