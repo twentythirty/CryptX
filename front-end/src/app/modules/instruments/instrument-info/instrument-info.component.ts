@@ -13,7 +13,6 @@ import {
   ActionCellDataColumn,
   DataCellAction,
   DateCellDataColumn,
-  CurrencyCellDataColumn,
   InputCellDataColumn,
   SelectCellDataColumn,
   NumberCellDataColumn,
@@ -262,6 +261,7 @@ export class InstrumentInfoComponent extends DataTableCommonManagerComponent imp
     this.route.params.pipe(
       mergeMap(
         params => this.instrumentsService.addMapping(params['id'], request)
+          .finally(() => this.loading = false)
       )
     ).subscribe(
       data => {
@@ -270,10 +270,6 @@ export class InstrumentInfoComponent extends DataTableCommonManagerComponent imp
         } else {
           console.log(data.error);
         }
-      },
-      err => {},
-      () => {
-        this.loading = false;
       }
     );
   }
