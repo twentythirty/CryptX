@@ -500,7 +500,7 @@
     },
 
     "ask_bid_fetcher": {
-      "failed_to_feych": "System failed to get prices for instrument {{instrument_id}} from exchange {{exchange_name}}"
+      "failed_to_fetch": "System didn't receive prices from {{exchange}} exchange for instruments: {{instruments}}"
     },
 
     "execution_orders": {
