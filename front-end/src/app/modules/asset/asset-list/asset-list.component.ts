@@ -170,11 +170,11 @@ export class AssetListComponent extends DataTableCommonManagerComponent implemen
 
     this.assetService.changeAssetStatus(
       asset.id,
-      new AssetStatus(this.modelConstantsService.getGroup(INSTRUMENT_STATUS_CHANGES)['Graylisting'], rationale)
+      new AssetStatus(this.modelConstantsService.getGroup(INSTRUMENT_STATUS_CHANGES)['Whitelisting'], rationale)
     ).subscribe(
       res => {
-        asset.status = 'assets.status.402';
-        asset.statusCode = 402;
+        asset.status = 'assets.status.400';
+        asset.statusCode = 400;
       }
     );
   }
