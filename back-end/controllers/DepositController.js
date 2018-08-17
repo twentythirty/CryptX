@@ -130,12 +130,15 @@ const getRecipeDeposit = async function (req, res) {
     AdminViewService.fetchRecipeDepositView(deposit_id),
     ActionLog.findAll({
       where: { recipe_run_deposit_id: deposit_id },
-      attributes: ['id', 'timestamp', 'details', 'level']
+      attributes: ['id', 'timestamp', 'level', 'translation_key', 'translation_args'],
+      order: [ [ 'timestamp', 'DESC' ] ]
     })
   ]));
   if (err) return ReE(res, err.message, 422);
 
-  const [ recipe_deposit, action_logs ] = result;
+  let [ recipe_deposit, action_logs ] = result;
+
+  action_logs = action_logs.map(a => a.toWeb());
 
   if (!recipe_deposit) return ReE(res, `Recipe deposit with id ${deposit_id} not found`, 422);
 

@@ -19,6 +19,7 @@ const AVRecipeOrder = require('../models').AVRecipeOrder;
 const AVExecutionOrder = require('../models').AVExecutionOrder;
 const AVExecutionOrderFill = require('../models').AVExecutionOrderFill;
 const AVColdStorageTransfer = require('../models').AVColdStorageTransfer;
+const AVColdStorageAccount = require('../models').AVColdStorageAccount;
 
 const TABLE_LOV_FIELDS = {
     'av_users': [
@@ -93,6 +94,11 @@ const TABLE_LOV_FIELDS = {
         'custodian',
         'strategy',
         'source_exchange'
+    ],
+    'av_cold_storage_accounts': [
+        'asset',
+        'strategy_type',
+        'custodian'
     ]
 }
 
@@ -218,6 +224,12 @@ const fetchColdStorageTransfersViewHeaderLOV = async (header_field, query ='', w
 }
 module.exports.fetchColdStorageTransfersViewHeaderLOV = fetchColdStorageTransfersViewHeaderLOV;
 
+const fetchColdStorageAccountsViewHeaderLOV = async (header_field, query ='', where = '') => {
+
+    return fetchViewHeaderLOV('av_cold_storage_accounts', header_field, query, where);
+}
+module.exports.fetchColdStorageAccountsViewHeaderLOV = fetchColdStorageAccountsViewHeaderLOV;
+
 
 
 // ************************ DATA ***************************//
@@ -305,6 +317,12 @@ const fetchColdStorageTransferViewDataWithCount = async (seq_query = {}) => {
     return fetchViewDataWithCount(AVColdStorageTransfer, seq_query);
 }
 module.exports.fetchColdStorageTransferViewDataWithCount = fetchColdStorageTransferViewDataWithCount;
+
+const fetchColdStorageAccountsViewDataWithCount = async (seq_query = {}) => {
+
+    return fetchViewDataWithCount(AVColdStorageAccount, seq_query);
+}
+module.exports.fetchColdStorageAccountsViewDataWithCount = fetchColdStorageAccountsViewDataWithCount;
 
 const fetchAssetView = async (asset_id) => {
 
@@ -394,6 +412,18 @@ const fetchRecipeDepositView = async (deposit_id) => {
     return fetchSingleEntity(AVRecipeDeposit, deposit_id);
 }
 module.exports.fetchRecipeDepositView = fetchRecipeDepositView;
+
+const fetchColdStorageTransferView = async (transfer_id) => {
+
+    return fetchSingleEntity(AVColdStorageTransfer, transfer_id);
+}
+module.exports.fetchColdStorageTransferView = fetchColdStorageTransferView;
+
+const fetchColdStorageAccountView = async (account_id) => {
+
+    return fetchSingleEntity(AVColdStorageAccount, account_id);
+}
+module.exports.fetchColdStorageAccountView = fetchColdStorageAccountView;
 
 
 // ************************ FOOTERS ***************************//
@@ -853,3 +883,21 @@ const fetchColdStorageTransfersViewsFooter = async (where_clause = '') => {
     )
 }
 module.exports.fetchColdStorageTransfersViewsFooter = fetchColdStorageTransfersViewsFooter;
+
+const fetchColdStorageAccountsViewsFooter = async (where_clause = '') => {
+
+    const view = 'av_cold_storage_accounts';
+
+    const query = builder.joinQueryParts([
+        builder.selectSumTrim('balance_usd', view, where_clause),
+    ], [
+        'balance_usd'
+    ]);
+
+    const footer = (await sequelize.query(query))[0];
+
+    return builder.addFooterLabels(
+        builder.queryReturnRowToFooterObj(footer), 'cold_storage_transfers'
+    )
+}
+module.exports.fetchColdStorageAccountsViewsFooter = fetchColdStorageAccountsViewsFooter;

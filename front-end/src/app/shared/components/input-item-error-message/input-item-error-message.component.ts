@@ -12,18 +12,22 @@ export class InputItemErrorMessageComponent implements OnInit {
   errorMessages = {
     required: () => `Field is required`,
     maxLength: ({ requiredLength }) => `Field require minimum length of ${requiredLength}`,
-    minlength: ({ requiredLength }) => `Field require at least ${requiredLength} characters`,
+    minLength: ({ requiredLength }) => `Field require at least ${requiredLength} characters`,
+    min: ({ min }) => `The value must be equal or bigger than ${min}`,
+    max: ({ max }) => `The value must be equal or smaller than ${max}`,
     email: () => `Invalid email address`,
   };
 
   constructor() {}
 
-  ngOnInit() {}
+  ngOnInit() {
+    console.log('errors', this.errors);
+  }
 
   getErrorMessage(): string {
-    if (this.errorMessage){
+    if (this.errorMessage) {
       return this.errorMessage;
-    }else {
+    } else {
       for(const error in this.errors) {
         return this.errorMessages[error]( this.errors[error] );
       }

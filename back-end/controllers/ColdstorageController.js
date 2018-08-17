@@ -161,21 +161,35 @@ const getColdstorageAccounts = async function (req, res) {
   let mock_accounts = [...Array(20)].map((cust, index) => ({
     id: index + 1,
     asset_id: 2,
-    asset: "Bitcoin",
-    strategy_type: "101",
+    asset: "BTC",
+    strategy_type: "investment.strategy.101",
     address: "x98m1b4B4Kdk4n2kmadmIxSaiu",
     custodian: "Custodian ID",
     balance: 32,
     balance_usd: 186800,
-    update_timestamp: 1532606182713
+    balance_update_timestamp: 1532606182713
   }));
 
-  let footer = create_mock_footer(mock_accounts[0], 'cold_storage');
+  //let footer = create_mock_footer(mock_accounts[0], 'cold_storage');
 
+  const { seq_query, sql_where } = req;
+
+  let [ err, result ] = await to(AdminViewsService.fetchColdStorageAccountsViewDataWithCount(seq_query));
+
+  if(err) return ReE(res, err.message, 422);
+
+  let { total: count, data: accounts } = result;
+
+  let footer = [];
+  [ err, footer ] = await to(AdminViewsService.fetchColdStorageAccountsViewsFooter(sql_where));
+
+  if(err) return ReE(res, err.message, 422);
+  accounts = accounts.map(a => a.toWeb());
+  accounts = accounts.concat(mock_accounts); //MOCKED FOR EASY LIFE
   return ReS(res, {
-    accounts: mock_accounts,
+    accounts,
     footer,
-    count: mock_accounts.length
+    count
   });
 };
 module.exports.getColdstorageAccounts = getColdstorageAccounts;

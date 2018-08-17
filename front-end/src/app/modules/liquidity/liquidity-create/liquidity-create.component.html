@@ -22,6 +22,14 @@
           [accept-user-input]="false"
           (valueChanged)="assetValueChanged($event, 'instrument_id')"
         >
+        <mat-progress-spinner
+          *ngIf="instrumentsLoading"
+          class="progress-spinner"
+          mode="indeterminate"
+          color="accent"
+          strokeWidth="1"
+          diameter="25"
+        ></mat-progress-spinner>
       </div>
 
       <div class="form-item">
@@ -38,6 +46,14 @@
           [accept-user-input]="false"
           (valueChanged)="assetValueChanged($event, 'exchange_id')"
         >
+        <mat-progress-spinner
+          *ngIf="exchangesLoading"
+          class="progress-spinner"
+          mode="indeterminate"
+          color="accent"
+          strokeWidth="1"
+          diameter="25"
+        ></mat-progress-spinner>
       </div>
 
       <app-input-item
@@ -65,7 +81,7 @@
 <app-form-action-bar>
   <button
     class="btn submit"
-    [disabled]="loading"
+    [disabled]="loading || !form.valid"
     (click)="saveLiquidityRequirement()"
   >{{ 'liquidity.add_requirement' | translate }}</button>
 </app-form-action-bar>

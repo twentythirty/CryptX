@@ -1,5 +1,5 @@
 <label class="label-name">
-  {{label}}
+  {{ label }}
 </label>
 
 <ng-container *ngIf="select">
@@ -14,12 +14,12 @@
 
 <ng-container *ngIf="!select">
   <input
-    readonly="{{readonly}}"
-    type = "{{type}}"
-    placeholder="{{placeholder}}"
+    [type]="type"
+    [placeholder]="placeholder"
     [(ngModel)]="value"
     [class.error]="isInvalid()"
     (blur)="onBlur()"
+    [readonly]="readonly"
   >
 </ng-container>
 

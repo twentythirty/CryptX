@@ -478,7 +478,7 @@ const changeExecutionOrderStatus = async (execution_order_id, status) => {
     switch (status) {
         case EXECUTION_ORDER_STATUSES.Pending: //User tries to reset the execution order.
             if (execution_order.status !== EXECUTION_ORDER_STATUSES.Failed) TE('Only Execution orders with the status Failed can be reinitiated');
-            execution_order.failed_attemts = 0;
+            execution_order.failed_attempts = 0;
             break;
 
         default:

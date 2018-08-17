@@ -28,6 +28,7 @@
         &:active, &:hover {
             color: $green;
             position: relative;
+
             &::after {
                 content: "";
                 width: calc(100%);
@@ -42,34 +43,35 @@
     }
 
     .dropdown-box {
-            margin-left: -5px;
-            margin-top: 15px;
-            padding-right: 15px;
-            padding-top: 10px;
-            padding-bottom: 10px;
-            position: absolute;
-            min-width: 190px;
-            text-align: left;
-            background: white;
-            box-shadow: 0 12px 35px 0 rgba(121,137,154,0.70);
-            border-radius: 3px;
-            z-index: 2;
-            cursor: default;
+        margin-left: -5px;
+        margin-top: 15px;
+        padding-right: 15px;
+        padding-top: 10px;
+        padding-bottom: 10px;
+        position: absolute;
+        min-width: 190px;
+        text-align: left;
+        background: white;
+        box-shadow: 0 12px 35px 0 rgba(121,137,154,0.70);
+        border-radius: 3px;
+        z-index: 2;
+        cursor: default;
     }
 
-    .active{
+    .active {
         color: $green;
         position: relative;
+
          &::after {
-                content: "";
-                width: calc(100%);
-                height: 3px;
-                background: $green;
-                position: absolute;
-                bottom: 0;
-                left: 50%;
-                @include translate(-50%, 0);
-            }
+            content: "";
+            width: calc(100%);
+            height: 3px;
+            background: $green;
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            @include translate(-50%, 0);
+        }
     }
 
 }
