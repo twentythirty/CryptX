@@ -3,7 +3,7 @@ const sinon = require('sinon');
 const ActionLogUtil = require('../utils/ActionLogUtil');
 
 before(done => {
-    sinon.stub(ActionLogUtil, 'log').callsFake((details, options) => {
+    sinon.stub(ActionLogUtil, 'log').callsFake((details, key, options) => {
         let level = options.log_level;
         switch(level) {
             case LOG_LEVELS.Debug:
