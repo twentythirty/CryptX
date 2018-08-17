@@ -10,7 +10,7 @@ const actions = {
 
 
 //run once every 5 minutes
-module.exports.SCHEDULE = '*/5 * * * *';
+module.exports.SCHEDULE = '*/10 * * * * *';
 module.exports.NAME = 'EXCH_ASK_BID';
 
 module.exports.JOB_BODY = async (config, log) => {
@@ -68,25 +68,23 @@ module.exports.JOB_BODY = async (config, log) => {
                     /* Sometimes for some reason market_data is empty and set to array.
                     Filtering out results that don't have needed properties
                     to avoid errors when assigning asks and bids values. */
-                    let successfully_fetched = markets_data.filter(
-                        ([symbol_mapping, market_data]) => !_.isArray(market_data) &&
+                    let [successfully_fetched, failed_to_fetch] = _.partition(markets_data, ([symbol_mapping, market_data]) =>
+                        !_.isArray(market_data) &&
                         market_data.hasOwnProperty('asks') &&
                         market_data.hasOwnProperty('bids')
                     );
 
-                    let failed_to_fetch = markets_data.filter(
-                        ([symbol_mapping, market_data]) => _.isArray(market_data) &&
-                        !market_data.hasOwnProperty('asks') &&
-                        !market_data.hasOwnProperty('bids')
-                    );
-
-                    _.map(failed_to_fetch, ([symbol_mapping, failed_data]) => {
-                        logAction(actions.failed_to_fetch, {
-                            mapping: symbol_mapping,
-                            exchange: exchange,
-                            relations: { exchange_id: symbol_mapping.exchange_id, instrument_id: symbol_mapping.instrument_id}
-                        });
+                    failed_to_fetch = failed_to_fetch.map(([symbol_mapping, failed_data]) => {
+                        return symbol_mapping.external_instrument_id
                     });
+
+                    if(failed_to_fetch.length) {
+                        logAction(actions.failed_to_fetch, {
+                            instruments: failed_to_fetch,
+                            exchange: exchange,
+                            relations: { exchange_id: exchange.id}
+                        });
+                    }
 
                     return _.map(successfully_fetched, ([symbol_mapping, market_data]) => {
 
@@ -101,7 +99,7 @@ module.exports.JOB_BODY = async (config, log) => {
                 });
                 if (records.length > 0)
                     return config.models.sequelize.queryInterface.bulkInsert('instrument_market_data', records);
-                else 
+                else
                     return "No records inserted!";
             });
         });
