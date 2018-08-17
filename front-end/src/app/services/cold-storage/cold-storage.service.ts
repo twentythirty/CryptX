@@ -14,13 +14,22 @@ export class TransfersAllResponse {
   count: number;
 }
 
+export class AccountsAllResponse {
+  success: boolean;
+  accounts: Array<any>;
+  footer: Array<any>;
+  count: number;
+}
+
 @Injectable()
 export class ColdStorageService {
+
   baseUrl: string = environment.baseUrl;
 
-  
 
   constructor(private http: HttpClient) { }
+
+  //Cold Storage Transfers
 
   getAllTransfers(requestData: EntitiesFilter): Observable<TransfersAllResponse>{
       return this.http.post<TransfersAllResponse>(this.baseUrl + `cold_storage/all`, requestData);
@@ -32,6 +41,26 @@ export class ColdStorageService {
 
   getAllTransfersHeaderLOV(column_name: string): Observable<any> {
     return this.http.post<any>(this.baseUrl + `cold_storage/header_lov/${column_name}`, {}).pipe(
+      map(
+        res => {
+          if(res && Array.isArray(res.lov)) {
+            return res.lov.map(lov => {
+              return { value: lov.toString() }
+            });
+          } else return null;
+        }
+      )
+    )
+  }
+
+  //Cold Storage Accounts
+
+  getAllAccounts(requestData: EntitiesFilter): Observable<AccountsAllResponse>{
+      return this.http.post<AccountsAllResponse>(this.baseUrl + `cold_storage/accounts/all`, requestData);
+  }
+
+  getAllAccountsHeaderLOV(column_name: string): Observable<any> {
+    return this.http.post<any>(this.baseUrl + `cold_storage/accounts/header_lov/${column_name}`, {}).pipe(
       map(
         res => {
           if(res && Array.isArray(res.lov)) {
