@@ -489,12 +489,13 @@ const getInvestmentRunTimeline = async function (investment_run_id) {
 
   if (recipe_orders.every(order => order.status === RECIPE_ORDER_STATUSES.Pending)) {
     order_status = RECIPE_ORDER_STATUSES.Pending;
-  } else if (recipe_orders.every(order => order.status === RECIPE_ORDER_STATUSES.Completed)) {
-    order_status = RECIPE_ORDER_STATUSES.Completed;
+  } else if (recipe_orders.some(order => order.status === RECIPE_ORDER_STATUSES.Failed)) {
+    order_status = RECIPE_ORDER_STATUSES.Failed;
   } else if (recipe_orders.some(order => order.status === RECIPE_ORDER_STATUSES.Executing)) {
     order_status = RECIPE_ORDER_STATUSES.Executing;
-    //just take status of last created order if all else fails
-  } else {
+  } else if (recipe_orders.every(order => order.status === RECIPE_ORDER_STATUSES.Completed)) {
+    order_status = RECIPE_ORDER_STATUSES.Completed;
+  }else { //just take status of last created order if all else fails
     order_status = _.maxBy(recipe_orders, 'id').status
   }
 
