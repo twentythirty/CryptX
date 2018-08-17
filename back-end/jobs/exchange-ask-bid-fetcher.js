@@ -10,7 +10,7 @@ const actions = {
 
 
 //run once every 5 minutes
-module.exports.SCHEDULE = '*/10 * * * * *';
+module.exports.SCHEDULE = '*/5 * * * *';
 module.exports.NAME = 'EXCH_ASK_BID';
 
 module.exports.JOB_BODY = async (config, log) => {
