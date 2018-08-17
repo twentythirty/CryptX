@@ -48,5 +48,14 @@ module.exports = (sequelize, DataTypes) => {
     ActionLog.belongsTo(models.ExecutionOrder);
   };
 
+  ActionLog.prototype.toWeb = function() {
+    let json = this.toJSON();
+
+    if(_.isString(json.translation_args)) json.translation_args = JSON.parse(json.translation_args);
+    json.timestamp = json.timestamp ? json.timestamp.getTime() : json.timestamp;
+
+    return json;
+  }
+
   return ActionLog;
 };
