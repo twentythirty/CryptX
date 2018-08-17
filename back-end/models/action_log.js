@@ -54,6 +54,12 @@ module.exports = (sequelize, DataTypes) => {
     if(_.isString(json.translation_args)) json.translation_args = JSON.parse(json.translation_args);
     json.timestamp = json.timestamp ? json.timestamp.getTime() : json.timestamp;
 
+    json.translationKey = json.translation_key;
+    delete json.translation_key;
+
+    json.translationArgs = json.translation_args;
+    delete json.translation_args;
+
     return json;
   }
 

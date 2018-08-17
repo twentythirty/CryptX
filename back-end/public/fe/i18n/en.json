@@ -487,7 +487,15 @@
       "create_user": "{{user_name}} add a new {{name}}",
 
       "modified": "System changed <b>{{column}}</b> from <b>{{prev_value}}</b> to <b>{{new_value}}</b>",
-      "modified_user": "{{user_name}} changed <b>{{column}}</b> from <b>{{prev_value}}</b> to <b>{{new_value}}</b>" 
+      "modified_user": "{{user_name}} changed <b>{{column}}</b> from <b>{{prev_value}}</b> to <b>{{new_value}}</b>",
+      "modified_set": "System set <b>{{column}}</b> to <b>{{new_value}}</b>",
+      "modified_set_user": "{{user_name}} set <b>{{column}}</b> to <b>{{new_value}}</b>",
+
+      "error": "Error: {{error}}",
+      "error_user": "{{user_name}} has encountered an Error: {{error}}", 
+      "warning": "Warning: {{warning}}"
+
+
     },
     
     "instruments": {
@@ -496,7 +504,7 @@
     },
 
     "ask_bid_fetcher": {
-      "failed_to_feych": "System failed to get prices for instrument {{instrument_id}} from exchange {{exchange_name}}"
+      "failed_to_fetch": "System didn't receive prices from {{exchange}} exchange for instruments: {{instruments}}"
     },
 
     "execution_orders": {

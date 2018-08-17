@@ -10,7 +10,7 @@ const actions = {
 
 
 //run once every 5 minutes
-module.exports.SCHEDULE = '*/5 * * * *';
+module.exports.SCHEDULE = '*/10 * * * * *';
 module.exports.NAME = 'EXCH_ASK_BID';
 
 module.exports.JOB_BODY = async (config, log) => {
@@ -81,10 +81,10 @@ module.exports.JOB_BODY = async (config, log) => {
                     if(failed_to_fetch.length) {
                         logAction(actions.failed_to_fetch, {
                             args: {
-                                instrument_id: symbol_mapping.external_instrument_id,
+                                instruments: failed_to_fetch,
                                 exchange: exchange.name,
                             },
-                            relations: { exchange_id: symbol_mapping.exchange_id, instrument_id: symbol_mapping.instrument_id}
+                            relations: { exchange_id: exchange.id }
                         });
                     }
 
