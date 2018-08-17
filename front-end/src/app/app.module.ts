@@ -38,6 +38,7 @@ import { DepositModule } from "./modules/deposit/deposit.module";
 import { OrdersModule } from './modules/orders/orders.module';
 import { RecipeRunModule } from "./modules/recipe-run/recipe-run.module";
 import { ExecutionOrdersModule } from "./modules/execution-orders/execution-orders.module";
+import { ColdStorageTransfersModule } from "./modules/cold-storage-transfers/cold-storage-transfers.module";
 
 export function HttpLoaderFactory(http: HttpClient) {
   return new TranslateHttpLoader(
@@ -79,6 +80,7 @@ export function HttpLoaderFactory(http: HttpClient) {
     OrdersModule,
     RecipeRunModule,
     ExecutionOrdersModule,
+    ColdStorageTransfersModule,
   ],
   providers: [
     {
