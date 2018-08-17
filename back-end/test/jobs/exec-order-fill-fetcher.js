@@ -700,9 +700,8 @@ describe('Execution Order Fills fetcher job', () => {
 
         return execOrderFillFetcher.JOB_BODY(stubbed_config, console.log).then(orders => {
 
-            const called_query = sequelize.query.args[0][0];
-
-            chai.expect(called_query).to.equal(expected_query);
+            chai.expect(sequelize.query.calledWith(expected_query)).to.be.true;
+        
         });
         
     });

@@ -41,8 +41,23 @@ module.exports.JOB_BODY = async (config, log) => {
         return Promise.all(
             _.map(placed_orders, async placed_order => {
 
+                //Check if simulated
+                let [ err, is_simulated ] = await to(module.exports.isSimulated(placed_order.id, models.sequelize));
+                if(err) {
+                    log(`[ERROR.1A] Error occured during simulation check: ${err.message}`);
+                    logAction(actions.error, {
+                        error: err.message,
+                        relations: { execution_order_id: placed_order.id }
+                    });
+                    placed_order.failed_attempts++;
+                    return updateOrderStatus(placed_order, log, config);
+                }
+
+                if(is_simulated) return simulateFill(placed_order, log, config);
+                
                 //Fetch exchange connect based on exchange_id of the order
-                let [ err, exchange ] = await to(ccxtUtils.getConnector(placed_order.exchange_id));
+                let exchange = null;
+                [ err, exchange ] = await to(ccxtUtils.getConnector(placed_order.exchange_id));
                 if(err) {
                     log(`[ERROR.1A] Error occured during exchange connection fetching: ${err.message}`);
                     logAction(actions.error, {
@@ -341,6 +356,67 @@ module.exports.handleFillsWithoutTrades = async (placed_order, external_order, l
     }
 }
 
+const simulateFill = async (placed_order, log, config) => {
+
+    const { InstrumentMarketData, ExecutionOrderFill } = config.models;
+
+    let [ err, market_data ] = await to(InstrumentMarketData.findOne({
+        where: {
+            instrument_id: placed_order.Instrument.id,
+            exchange_id: placed_order.exchange_id
+        },
+        order: [ [ 'timestamp', 'DESC' ] ]
+    }));
+
+    if(err) { 
+        log(`[ERROR.1B] Error occured during market data retrieval: ${err.message}`);
+        logAction(actions.error, {
+            error: err.message,
+            relations: { execution_order_id: placed_order.id }
+        });
+        placed_order.failed_attempts++;
+        return updateOrderStatus(placed_order, log, config);
+    }
+
+    if(!market_data) {
+        log(`[ERROR.C] Error: unable to find the newest market data for order ${placed_order.id}`);
+        logAction(actions.error, {
+            error: `unable to find the newest market data for order ${placed_order.id}`,
+            relations: { execution_order_id: placed_order.id }
+        });
+        placed_order.failed_attempts++;
+        return updateOrderStatus(placed_order, log, config);
+    }
+
+    const fee = market_data.ask_price/_.random(98, 100, false); //Make fee around 1-3% of the price.
+
+    [ err ] = await to(ExecutionOrderFill.create({
+        execution_order_id: placed_order.id,
+        price: market_data.ask_price,
+        fee: fee,
+        fee_asset_id: placed_order.Instrument.quote_asset_id,
+        quantity: parseFloat(placed_order.total_quantity),
+        timestamp: new Date()
+    }));
+
+    if(err) { 
+        log(`[ERROR.1C] Error occured during simulated fill creation: ${err.message}`);
+        logAction(actions.error, {
+            error: err.message,
+            relations: { execution_order_id: placed_order.id }
+        });
+        placed_order.failed_attempts++;
+        return updateOrderStatus(placed_order, log, config);
+    }
+
+    placed_order.fee = fee;
+    placed_order.status = MODEL_CONST.EXECUTION_ORDER_STATUSES.FullyFilled;
+    placed_order.completed_timestamp = new Date();
+
+    return updateOrderStatus(placed_order, log, config);
+
+};
+
 /**
  * Updates the status of the order based on the situation.
  * @param {*} placed_order
@@ -517,4 +593,24 @@ const fetchOrderFromExchange = (placed_order, exchange, log) => {
 
         resolve(external_order);
     });
+};
+//Exported for stubing
+module.exports.isSimulated = async (execuiton_id, sequelize) => {
+    const [ err, row ] = await to(sequelize.query(`
+        SELECT
+            ir.is_simulated
+        FROM execution_order AS ex 
+        JOIN recipe_order AS ro ON ex.recipe_order_id = ro.id
+        JOIN recipe_order_group AS rog ON ro.recipe_order_group_id = rog.id
+        JOIN recipe_run AS rr on rog.recipe_run_id = rr.id
+        JOIN investment_run AS ir ON rr.investment_run_id = ir.id
+        WHERE ex.id = ${execuiton_id}
+    `,
+        { type: sequelize.QueryTypes.SELECT }
+    ));
+
+    if(err) TE(err.message);
+    if(!row.length) return false;
+    
+    return row[0].is_simulated;
 };
