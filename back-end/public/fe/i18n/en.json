@@ -339,7 +339,8 @@
     "exchanges": "Exchanges",
     "mapping": "Mapping",
     "new_mapping": "New mapping",
-    "exchange_delete_confirm_msg": "Are you sure you want delete this exchange?"
+    "exchange_delete_confirm_msg": "Are you sure you want delete this exchange?",
+    "all_exchanges": "All exchanges"
   },
 
   "assets": {

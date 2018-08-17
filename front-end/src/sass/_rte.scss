@@ -46,7 +46,7 @@
         }
     }
 
-    &.disabled {
+    &.disabled, &[disabled] {
         cursor: default;
         background-image: linear-gradient(90deg, lighten(#668390, 20%) 0%, lighten(#78909C, 20%) 100%);
         box-shadow: none;

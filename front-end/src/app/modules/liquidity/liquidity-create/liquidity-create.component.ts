@@ -1,14 +1,12 @@
 import { Component, OnInit } from '@angular/core';
-import { FormGroup, FormControl } from '@angular/forms';
+import { FormGroup, FormControl, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
+import { TranslateService } from '@ngx-translate/core';
 import _ from 'lodash';
 
-import { AuthService } from '../../../services/auth/auth.service';
 import { LiquidityService } from '../../../services/liquidity/liquidity.service';
 import { InstrumentsService } from '../../../services/instruments/instruments.service';
 import { ExchangesService } from '../../../services/exchanges/exchanges.service';
-
-import { MatSnackBar } from '@angular/material';
 
 @Component({
   selector: 'app-liquidity-create',
@@ -17,35 +15,30 @@ import { MatSnackBar } from '@angular/material';
 })
 export class LiquidityCreateComponent implements OnInit {
   instruments: Array<{ id: number, value: string }>;
-  exchanges: Array<{ id: number, value: string }>;
+  exchanges: Array<{ id: number | '', value: string }>;
 
   loading: boolean = false;
+  instrumentsLoading: boolean = true;
+  exchangesLoading: boolean = true;
 
   form: FormGroup = new FormGroup({
-    instrument_id: new FormControl('', _.compact([
-      this.authService.getValidators('\\/liquidity_requirements\\/create', 'instrument_id')
-    ])),
-    exchange_id: new FormControl('', _.compact([
-      this.authService.getValidators('\\/liquidity_requirements\\/create', 'exchange_id')
-    ])),
-    periodicity: new FormControl('', _.compact([
-      this.authService.getValidators('\\/liquidity_requirements\\/create', 'periodicity')
-    ])),
-    minimum_circulation: new FormControl('', _.compact([
-      this.authService.getValidators('\\/liquidity_requirements\\/create', 'minimum_circulation')
-    ])),
+    instrument_id: new FormControl('', Validators.required),
+    exchange_id: new FormControl('', Validators.required),
+    periodicity: new FormControl('', Validators.required),
+    minimum_circulation: new FormControl('', Validators.required),
   });
 
   constructor(
-    private authService: AuthService,
     private liquidityService: LiquidityService,
     private instrumentService: InstrumentsService,
     private exchangesService: ExchangesService,
     private router: Router,
+    private translate: TranslateService,
   ) {}
 
   ngOnInit() {
     this.instrumentService.getAllInstruments().subscribe(res => {
+      this.instrumentsLoading = false;
       this.instruments = res.instruments.map(instrument => {
         return {
           id: instrument.id,
@@ -55,12 +48,21 @@ export class LiquidityCreateComponent implements OnInit {
     });
 
     this.exchangesService.getAllExchanges().subscribe(res => {
+      this.exchangesLoading = false;
       this.exchanges = res.exchanges.map(exchange => {
         return {
           id: exchange.id,
           value: exchange.name,
         };
       });
+
+      this.translate.get('exchanges.all_exchanges').subscribe(value => {
+        this.exchanges.push({
+          id: '',
+          value: value
+        });
+      });
+
     });
   }
 
@@ -78,20 +80,15 @@ export class LiquidityCreateComponent implements OnInit {
 
     this.loading = true;
 
-    this.liquidityService.createLiquidityRequirement(request).subscribe(
+    this.liquidityService.createLiquidityRequirement(request)
+    .finally(() => this.loading = false)
+    .subscribe(
       data => {
         if (data.success) {
           this.router.navigate(['/liquidity_requirements']);
         } else {
           console.log(data.error);
         }
-      },
-      error => {
-        console.log(error);
-        this.loading = false;
-      },
-      () => {
-        this.loading = false;
       }
     );
   }
