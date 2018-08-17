@@ -105,7 +105,10 @@ const approveDeposit = async function (req, res) {
     previous_instance: original_deposit, 
     updated_instance: deposit,
     ignore: ['completion_timestamp', 'depositor_user_id'],
-    replace: { status: { [MODEL_CONST.RECIPE_RUN_DEPOSIT_STATUSES.Pending]: 'Pending', [MODEL_CONST.RECIPE_RUN_DEPOSIT_STATUSES.Completed]: 'Completed' } }
+    replace: { status: { 
+      [RECIPE_RUN_DEPOSIT_STATUSES.Pending]: `deposits.status.${RECIPE_RUN_DEPOSIT_STATUSES.Pending}`, 
+      [RECIPE_RUN_DEPOSIT_STATUSES.Completed]: `deposits.status.${RECIPE_RUN_DEPOSIT_STATUSES.Completed}`,
+    } }
   });
 
   deposit = deposit.toWeb();

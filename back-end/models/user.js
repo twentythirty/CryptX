@@ -129,6 +129,9 @@ module.exports = (sequelize, DataTypes) => {
     if(_.isPlainObject(session)) options.relations.user_session_id = this.session.id;
 
     options.user = this;
+    
+    if(!options.args) options.args = {};
+    options.args.user_name = `${this.first_name} ${this.last_name}`; //Not using full_name() in case it bugs the test
 
     ActionLogUtil.logAction(action, options);
   }

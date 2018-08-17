@@ -424,8 +424,8 @@ const changeExecutionOrderStatus = async (req, res) => {
     updated_instance: updated_execution_order,
     replace: {
       status: { 
-        [EXECUTION_ORDER_STATUSES.Pending]: 'Pending',
-        [EXECUTION_ORDER_STATUSES.Failed]: 'Failed'
+        [EXECUTION_ORDER_STATUSES.Pending]: `execution_orders.status.${EXECUTION_ORDER_STATUSES.Pending}`,
+        [EXECUTION_ORDER_STATUSES.Failed]: `execution_orders.status.${EXECUTION_ORDER_STATUSES.Failed}`
        }
     }
   });

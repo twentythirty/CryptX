@@ -153,7 +153,7 @@ module.exports.JOB_BODY = async (config, log) => {
 
           order.save().then(o => {
             logAction(actions.placed, {
-              exchange: exchange.name,
+              args: { exchange: exchange.name },
               relations: { execution_order_id: order.id }
             });
           });
@@ -162,7 +162,7 @@ module.exports.JOB_BODY = async (config, log) => {
         }).catch((err) => { // order placing failed. Perform actions below.
           log(err_message = `[WARN.5b]. Order placement to exchange failed. Error message: ${err}`);
           logAction(actions.error, {
-            error: err,
+            args: { error: err },
             relations: { execution_order_id: order.id }
           });
 
@@ -181,7 +181,7 @@ let increment_failed_count = function (execution_order, fail_message, log) {
   if (execution_order.failed_attempts >= SYSTEM_SETTINGS.EXEC_ORD_FAIL_TOLERANCE) {
     log(`Setting status of execution order ${execution_order.id} to Failed because it has reached failed send threshold (actual: ${execution_order.failed_attempts}, allowed: ${SYSTEM_SETTINGS.EXEC_ORD_FAIL_TOLERANCE})!`);
     logAction(actions.failed_attempts, {
-      attempts: execution_order.failed_attempts,
+      args: { attempts: execution_order.failed_attempts },
       relations: { execution_order_id: execution_order.id }
     });
     execution_order.status = EXECUTION_ORDER_STATUSES.Failed;

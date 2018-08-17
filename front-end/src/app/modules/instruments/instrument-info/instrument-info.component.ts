@@ -108,7 +108,7 @@ export class InstrumentInfoComponent extends DataTableCommonManagerComponent imp
           }
         }
       }),
-      new CurrencyCellDataColumn({ column: 'current_price' }),
+      new TableDataColumn({ column: 'current_price' }),
       new NumberCellDataColumn({
         column: 'last_day_vol',
         inputs: {

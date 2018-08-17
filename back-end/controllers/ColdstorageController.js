@@ -28,24 +28,23 @@ const getColdStorageTransfers = async function (req, res) {
 
   // mock data below
   // will leave it for now in case it will be need by FE
-  /*let mock_coldstorage_transfers = [...Array(20)].map((a, index) => ({
-    id: index + 1,
-    asset: "BTC",
-    gross_amount: 12.05,
-    net_amount: 14,
-    exchange_withrawal_fee: 0.01,
-    status: 91,
-    cold_storage_account_id: "98512543",
-    custodian: "ItBit",
-    strategy: "MCI",
-    source_exchange: "Bitstamp",
-    source_account: "25439851",
-    placed_timestamp: 1532097313472,
-    completed_timestamp: 1532097313472
-  }));
+  let mock_coldstorage_transfers = [...Array(10)].map((a, index) => ({
+    "id": index + 1,
+    "asset_id": 2,
+    "asset": "BTC",
+    "gross_amount": _.random(10, 100, true),
+    "net_amount": _.random(10, 100, true),
+    "exchange_withdrawal_fee": _.random(1, 10, true),
+    "status": `cold_storage_transfers.status.${_.random(92, 95, false)}`,
+    "destination_account": "F%jf5FYUfy543v",
+    "custodian": "DADDY LIMITED",
+    "strategy_type": "investment.stategy.101",
+    "source_exchange": "Binance",
+    "source_account": "BSKJHSJKSBSKBS",
+    "placed_timestamp": 1531819249470,
+    "completed_timestamp": 1531819249470
+}));
 
-  let footer = create_mock_footer(mock_coldstorage_transfers[0], 'cold_storage');
-  */
   const { seq_query, sql_where } = req;
 
   let [ err, result ] = await to(AdminViewsService.fetchColdStorageTransferViewDataWithCount(seq_query));
@@ -56,7 +55,7 @@ const getColdStorageTransfers = async function (req, res) {
 
   let footer = [];
   [ err, footer ] = await to(AdminViewsService.fetchColdStorageTransfersViewsFooter(sql_where));
- 
+  transfers = transfers.concat(mock_coldstorage_transfers);
   return ReS(res, {
     transfers,
     count,

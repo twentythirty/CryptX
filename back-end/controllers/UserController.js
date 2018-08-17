@@ -124,6 +124,8 @@ const login = async function (req, res) {
   [user, perms, session] = userWithSession;
 
   return ReS(res, {
+    //maintain unified format for JWT-SRT mechanism
+    next_token: session.token, 
     token: session.token,
     permissions: perms,
     model_constants: model_constants,

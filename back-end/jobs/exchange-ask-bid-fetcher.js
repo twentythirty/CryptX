@@ -80,9 +80,11 @@ module.exports.JOB_BODY = async (config, log) => {
 
                     if(failed_to_fetch.length) {
                         logAction(actions.failed_to_fetch, {
-                            instruments: failed_to_fetch,
-                            exchange: exchange,
-                            relations: { exchange_id: exchange.id}
+                            args: {
+                                instrument_id: symbol_mapping.external_instrument_id,
+                                exchange: exchange.name,
+                            },
+                            relations: { exchange_id: symbol_mapping.exchange_id, instrument_id: symbol_mapping.instrument_id}
                         });
                     }
 
