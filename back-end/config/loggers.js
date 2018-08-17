@@ -58,8 +58,8 @@ module.exports = {
         failed_to_fetch: {
             level: LOG_LEVELS.Info,
             get template() {
-                const { exchange, mapping } = this.params;
-                return `System failed to get prices for instrument ${mapping.external_instrument_id} from exchange ${exchange.name}`
+                const { exchange, instruments } = this.params;
+                return `System didn't receive prices from "${exchange.name}" exchange for instruments: ${instruments}`
             }
         }
     },
