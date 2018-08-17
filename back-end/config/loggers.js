@@ -64,6 +64,15 @@ module.exports = {
             }
         }
     },
+    ask_bid_fetcher: {
+        failed_to_fetch: {
+            level: LOG_LEVELS.Info,
+            get template() {
+                const { exchange, mapping } = this.params;
+                return `System failed to get prices for instrument ${mapping.external_instrument_id} from exchange ${exchange.name}`
+            }
+        }
+    },
     assets: {
         status: {
             level: LOG_LEVELS.Info.LOG_LEVELS,
