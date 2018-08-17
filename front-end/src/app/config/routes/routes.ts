@@ -36,6 +36,8 @@ import { ExecutionOrdersComponent } from "../../modules/investment/execution-ord
 import { RecipeRunListComponent } from "../../modules/recipe-run/recipe-run-list/recipe-run-list.component";
 import { ExecutionOrderListComponent } from "../../modules/execution-orders/execution-order-list/execution-order-list.component";
 import { TransfersListComponent } from "../../modules/cold-storage-transfers/transfers-list/transfers-list.component";
+import { AddAccountComponent } from "../../modules/cold-storage-accounts/add-account/add-account.component";
+import { AccountsListComponent } from "../../modules/cold-storage-accounts/accounts-list/accounts-list.component";
 
 const routes: Routes = [
   { path: 'login', component: LoginComponent },
@@ -178,6 +180,18 @@ const routes: Routes = [
   {
     path: 'cold_storage/transfers',
     component: TransfersListComponent,
+    canActivate: [AuthGuard],
+  },
+  
+  {
+    path: 'cold_storage/accounts',
+    component: AccountsListComponent,
+    canActivate: [AuthGuard],
+  },
+
+  {
+    path: 'cold_storage/accounts/add',
+    component: AddAccountComponent,
     canActivate: [AuthGuard],
   },
 
