@@ -131,6 +131,8 @@ const universal_actions = {
 
                     this.template = 'logs.universal.modified';
 
+                    if(!previous) this.template = 'logs.universal.modified_set';
+
                     if(this.user) this.template = `${this.template}_user`
 
                     const template = _.get(templates, this.template, '');
