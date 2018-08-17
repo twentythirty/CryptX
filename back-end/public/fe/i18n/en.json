@@ -95,7 +95,11 @@
       "custodian": "Custodian",
       "source_exchange": "Source exchange",
       "source_account": "Source account",
-      "placed_time": "Placed time"
+      "placed_time": "Placed time",
+      "address": "Address",
+      "balance": "Balance",
+      "balance_usd": "Balance USD",
+      "balance_updated": "Balance updated"
     },
     "filter": {
       "all": "All",
@@ -529,7 +533,12 @@
       "id": "{{id}} Items",
       "asset": "{{asset}} Assets",
       "status": "{{ status }} Pending",
-      "source_exchange": "{{source_exchange}} Exchanges"
+      "source_exchange": "{{source_exchange}} Exchanges",
+      "balance_usd": "{{balance_usd}} Total"
     }
+  },
+
+  "cold_storage_accounts": {
+    "header": "Cold storage accounts"
   }
 }
