@@ -15,7 +15,7 @@ import { ExchangesService } from '../../../services/exchanges/exchanges.service'
 })
 export class LiquidityCreateComponent implements OnInit {
   instruments: Array<{ id: number, value: string }>;
-  exchanges: Array<{ id: number | '', value: string }>;
+  exchanges: Array<{ id: number, value: string }>;
 
   loading: boolean = false;
   instrumentsLoading: boolean = true;
@@ -24,8 +24,14 @@ export class LiquidityCreateComponent implements OnInit {
   form: FormGroup = new FormGroup({
     instrument_id: new FormControl('', Validators.required),
     exchange_id: new FormControl('', Validators.required),
-    periodicity: new FormControl('', Validators.required),
-    minimum_circulation: new FormControl('', Validators.required),
+    periodicity: new FormControl('', [
+      Validators.required,
+      Validators.min(1)
+    ]),
+    minimum_circulation: new FormControl('', [
+      Validators.required,
+      Validators.min(0)
+    ]),
   });
 
   constructor(
@@ -58,7 +64,7 @@ export class LiquidityCreateComponent implements OnInit {
 
       this.translate.get('exchanges.all_exchanges').subscribe(value => {
         this.exchanges.push({
-          id: '',
+          id: null,
           value: value
         });
       });
