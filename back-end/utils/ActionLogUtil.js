@@ -20,6 +20,8 @@ if(process.env.LOG_LEVELS) {
     log_levels = process.env.LOG_LEVELS.split(',').map(ll => LOG_LEVELS[ll.trim()]).filter(ll => ll);
 }
 
+const templates = require('../public/fe/i18n/en.json');
+
 /*const { 
     ActionLog, UserSession, User, Role,
     Asset, ExchangeAccount, Exchange, Instrument,
@@ -44,45 +46,42 @@ const allowed_keys = [
 ];
 
 const universal_actions = {
-    basic: {
-        level: LOG_LEVELS.Info,
-        get template() { return `${this.name} ${this.action}` },
-        get template_user() { return `${this.name} ${this.action} by ${this.user.first_name} ${this.user.last_name}` },
-        handler: function(params = {}) {
-            this.name = params.name;
-            this.action = params.action;
-            
-            if(params.user) {
-                this.user = params.user;
-                return this.template_user;
-            }
-            else return this.template;
-        }
-    },
+
     create: {
         level: LOG_LEVELS.Info,
-        get template() { return `System added a new ${this.name}` },
-        get template_user() { return `${this.user.first_name} ${this.user.last_name} added a new ${this.name}`},
         handler: function(params = {}) {
+            this.options = _.clone(params);
+
             let table_name = params.instance.constructor.getTableName();
             this.name = _.startCase(table_name);
             
             const relation_key = `${table_name}_id`;
-            this.relations = { [relation_key]: params.instance.id }
+
+            this.options.relations = Object.assign(this.options.relations || {}, { [relation_key]: params.instance.id });
             if(!allowed_keys.includes(relation_key)) this.relations = {};
             
-            if(params.user) {
-                this.user = params.user;
-                return this.template_user;
-            }
-            else return this.template;
+            const args = params.args || {}
+            args.name = this.name;
+
+            this.options.args = Object.assign(params.args || {}, args);
+
+            this.template = 'logs.universal.create';
+
+            if(options.user) this.template = `${this.template}_user`
+
+            const template = _.get(templates, this.template, '');
+
+            this.details = _replaceArgs(template, args || {});
+
+            return this;
         }
     },
     modified: {
         level: LOG_LEVELS.Info,
-        get template() { return `System changed ${this.column} from ${this.prev_value || '-'} to ${this.new_value || '-'}` },
-        get template_user() { return `${this.user.first_name} ${this.user.last_name} changed ${this.column} from ${this.prev_value || '-'} to ${this.new_value || '-'}`},
         handler: function(params = {}) {
+
+            this.options = params;
+
             let { previous_instance, updated_instance } = params;
             if(!previous_instance) previous_instance = {};
 
@@ -96,7 +95,7 @@ const universal_actions = {
 
             const relation_key = `${table_name}_id`;
 
-            this.relations = { [relation_key]: params.updated_instance.id }
+            this.options.relations = Object.assign(this.options.relations || {}, { [relation_key]: params.updated_instance.id });
             if(!allowed_keys.includes(relation_key)) this.relations = {};
 
             if(params.user) this.user = params.user;
@@ -115,20 +114,34 @@ const universal_actions = {
 
                 if(!_.isEqual(previous, updated)) {
                     
-                    this.column = _.startCase(key);
-
-                    //Replace unique names like statuses
                     if(replace[key]) {
-                        this.prev_value = replace[key][previous];
-                        this.new_value = replace[key][updated];
-                    }
-                    else {
-                        this.prev_value = previous;
-                        this.new_value = updated;
+                        previous = replace[key][previous];
+                        updated = replace[key][updated];
                     }
 
-                    if(params.user) action_logs.push(this.template_user);
-                    else action_logs.push(this.template);
+                    const args = {
+                        column: _.startCase(key),
+                        prev_value: previous,
+                        new_value: updated
+                    }
+
+                    this.options.args = Object.assign(params.args || {}, args);
+
+                    if(this.user) args.user_name = this.user.full_name();
+
+                    this.template = 'logs.universal.modified';
+
+                    if(this.user) this.template = `${this.template}_user`
+
+                    const template = _.get(templates, this.template, '');
+
+                    this.details = _replaceArgs(template, args || {});
+
+                    action_logs.push({
+                        details: this.details,
+                        template: this.template,
+                        options: this.options
+                    });
                 }
             }
 
@@ -139,20 +152,23 @@ const universal_actions = {
 
 const loggers = Object.assign({}, universal_actions, custom_loggers);
 
-const _defaultHandler = function(params = {}) {
-    this.params = params;
+const _defaultHandler = function(options = {}) {
 
-    if(params.user) {
-        this.user = params.user;
-        return this.template_user;
-    }
-    else return this.template;
+    this.options = _.clone(options)
+
+    if(options.user) this.template = `${this.template}_user`
+
+    const template = _.get(templates, this.template, '');
+
+    this.details = _replaceArgs(template, options.args || {});
+
+    return this;
 }
 
-module.exports.logAction = async (action_path, options = {}) => {
+module.exports.logAction = async (action_path_or_template, options = {}) => {
     try {
-        const action = _.get(loggers, action_path);
-        if(!action) return module.exports.log(`Action with path "${action_path}" does not exist`);
+        let action = _.get(loggers, action_path_or_template);
+        if(!action) action = { template: `logs.${action_path_or_template}`, level: options.log_level || LOG_LEVELS.Info };
     
         let action_logs = null;
         if(_.isFunction(action.handler)) action_logs = action.handler(options);
@@ -163,16 +179,13 @@ module.exports.logAction = async (action_path, options = {}) => {
     
         if(!action_logs) module.exports.log(`Handler failed to return module.exports.log string for action path "${action_path}" and params: ${JSON.stringify(params)}`);
     
-        if(_.isString(action_logs)) action_logs = [action_logs];
-    
-        //This will attempt to assign relations created by the handler, but also allow the developer to overwrite them.
-        if(_.isPlainObject(options.relations) || _.isPlainObject(action.relations)) options.relations = Object.assign({}, action.relations || {}, options.relations || {});
+        if(!_.isArray(action_logs)) action_logs = [action_logs];
         
         //Set log level, can be overriden.
         if(!options.log_level) options.log_level = action.level || LOG_LEVELS.Info;
 
         for(let action_log of action_logs) {
-            module.exports.log(action_log, options || {});
+            module.exports.log(action_log.details, action_log.template, action_log.options || {});
         }
     }
     catch(e) {
@@ -189,7 +202,7 @@ module.exports.logAction = async (action_path, options = {}) => {
  * @param {Number} [options.log_level=1] Level of the log, defaults to Info(1)
  * @returns {Promise} Resolves in a new action module.exports.log object.
  */
-module.exports.log = async (details, options = {}) => {
+module.exports.log = async (details, translation_key = null, options = {}) => {
 
     if(!_.isString(details)) details = JSON.stringify(details);
 
@@ -197,7 +210,9 @@ module.exports.log = async (details, options = {}) => {
         details,
         timestamp: new Date(),
         failed_attempts: 0,
-        level: _.isUndefined(options.log_level) ? LOG_LEVELS.Info : options.log_level 
+        level: _.isUndefined(options.log_level) ? LOG_LEVELS.Info : options.log_level,
+        translation_key,
+        translation_args: options.args ? JSON.stringify(options.args) : null
     };
 
     if(!log_levels.includes(base_log.level)) return;
@@ -287,3 +302,16 @@ const _getFormatedName = (instance) => {
     const table_name = instance.constructor.getTableName();
     return _.startCase(table_name);
 }
+
+//This might not be needed in the future, its here to have readable logs in the db.
+const _replaceArgs = (template_string = '', args = {}) => {
+    for(let arg_name in args) {
+
+        const arg = args[arg_name];
+
+        template_string = template_string.replace(new RegExp(`{{\\w*\\s*${arg_name}\\s*\\w*}}`, 'g'), arg);
+
+    }
+
+    return template_string;
+};

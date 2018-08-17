@@ -43,21 +43,19 @@ const changeStatus = async function (asset_id, new_status, user) {
   if (err) TE(err.message);
 
   //Log only after the changes were made. If user was not provided, log as System.
-  if(user) {
-    user.logAction('assets.status', {
-      old_status: current_status.type,
-      new_status: status.type,
+  const log_options = {
+    args: {
+      prev_status: `assets.status.${current_status.type}`,
+      new_status: `assets.status.${status.type}`,
       reason: status.comment,
-      relations: { asset_id }
-    });
+    },
+    relations: { asset_id }
+  }
+  if(user) {
+    user.logAction('assets.status', log_options);
   }
   else {
-    logAction('assets.status', {
-      old_status: current_status.type,
-      new_status: status.type,
-      reason: status.comment,
-      relations: { asset_id }
-    });
+    logAction('assets.status', log_options);
   }
 
   return status;

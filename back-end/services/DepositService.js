@@ -107,7 +107,10 @@ const generateRecipeRunDeposits = async function (approved_recipe_run) {
   if(err) TE(err.message);
 
   logAction('deposits.generate', { 
-    amount: deposits.length,
+    args: {
+      amount: deposits.length,
+      recipe_id: approved_recipe_run.id
+    },
     relations: { recipe_run_id: approved_recipe_run.id }
   });
 
@@ -171,7 +174,7 @@ const approveDeposit = async (deposit_id, user_id) => {
   [ err, deposit ] = await to(deposit.save());
   if(err) TE(err.message);
 
-  logAction('basic', { name: 'Deposit', action: 'Completed', relations: { recipe_run_deposit_id: deposit.id } });
+  logAction('deposits.completed', { relations: { recipe_run_deposit_id: deposit.id } });
 
   return { original_deposit: original_values, updated_deposit: deposit };
 

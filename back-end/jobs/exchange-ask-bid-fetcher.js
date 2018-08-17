@@ -82,8 +82,10 @@ module.exports.JOB_BODY = async (config, log) => {
 
                     _.map(failed_to_fetch, ([symbol_mapping, failed_data]) => {
                         logAction(actions.failed_to_fetch, {
-                            mapping: symbol_mapping,
-                            exchange: exchange,
+                            args: {
+                                instrument_id: symbol_mapping.external_instrument_id,
+                                exchange: exchange.name,
+                            },
                             relations: { exchange_id: symbol_mapping.exchange_id, instrument_id: symbol_mapping.instrument_id}
                         });
                     });
