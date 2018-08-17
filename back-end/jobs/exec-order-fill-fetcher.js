@@ -462,10 +462,10 @@ const updateOrderStatus = async (placed_order, log, config) => {
             ignore: ['Instrument', 'completed_timestamp'],
             replace: {
                 status: {
-                    [Failed]: `execution_orders.status.${Failed}`,
-                    [Placed]: `execution_orders.status.${Placed}`,
-                    [PartiallyFilled]: `execution_orders.status.${PartiallyFilled}`,
-                    [FullyFilled]: `execution_orders.status.${FullyFilled}`,
+                    [Failed]: `{execution_orders.status.${Failed}}`,
+                    [Placed]: `{execution_orders.status.${Placed}}`,
+                    [PartiallyFilled]: `{execution_orders.status.${PartiallyFilled}}`,
+                    [FullyFilled]: `{execution_orders.status.${FullyFilled}}`,
 
                 }
             }
@@ -538,10 +538,10 @@ const updateOrderStatus = async (placed_order, log, config) => {
             ignore: ['Instrument', 'completed_timestamp'],
             replace: {
                 status: {
-                    [Failed]: `execution_orders.status.${Failed}`,
-                    [Placed]: `execution_orders.status.${Placed}`,
-                    [PartiallyFilled]: `execution_orders.status.${PartiallyFilled}`,
-                    [FullyFilled]: `execution_orders.status.${FullyFilled}`,
+                    [Failed]: `{execution_orders.status.${Failed}}`,
+                    [Placed]: `{execution_orders.status.${Placed}}`,
+                    [PartiallyFilled]: `{execution_orders.status.${PartiallyFilled}}`,
+                    [FullyFilled]: `{execution_orders.status.${FullyFilled}}`,
 
                 }
             }

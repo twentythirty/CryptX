@@ -3,7 +3,6 @@ export class ActionLog {
     public level?: number;
     public timestamp: string;
     
-    public details?: string;
     public rationale?: string;
 
     public translationKey?: string;

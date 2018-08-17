@@ -12,9 +12,12 @@
     <span> - </span>
     
     <span *ngIf="log.translationKey" [innerHTML]="log.translationKey | translate: log.translationArgs"></span>
-    <span *ngIf="log.details">{{ log.details }}</span>
 
-    <label class="rationale-status" (click)="openRationaleModal(log.rationale)">{{ 'common.read' | translate }}</label>
+    <label
+      *ngIf="log.rationale"
+      class="rationale-status"
+      (click)="openRationaleModal(log.rationale)"
+    >{{ 'common.read' | translate }}</label>
   </p>
 </div>
 
