@@ -46,7 +46,7 @@ module.exports.JOB_BODY = async (config, log) => {
                 if(err) {
                     log(`[ERROR.1A] Error occured during simulation check: ${err.message}`);
                     logAction(actions.error, {
-                        error: err.message,
+                        args: { error: err.message },
                         relations: { execution_order_id: placed_order.id }
                     });
                     placed_order.failed_attempts++;
@@ -61,7 +61,7 @@ module.exports.JOB_BODY = async (config, log) => {
                 if(err) {
                     log(`[ERROR.1A] Error occured during exchange connection fetching: ${err.message}`);
                     logAction(actions.error, {
-                        error: err.message,
+                        args: { error: err.message },
                         relations: { execution_order_id: placed_order.id }
                     });
                     placed_order.failed_attempts++;
@@ -71,7 +71,7 @@ module.exports.JOB_BODY = async (config, log) => {
                 if(!exchange) {
                     log(`[ERROR.1B] Error: could not find an exchange connector for order ${placed_order.id}`);
                     logAction(actions.error, {
-                        error: 'could not find exchange API',
+                        args: { error: 'could not find exchange API' },
                         relations: { execution_order_id: placed_order.id }
                     });
                     placed_order.failed_attempts++;
@@ -87,7 +87,7 @@ module.exports.JOB_BODY = async (config, log) => {
                 if(err){
                     log(`[ERROR.2A] Error occured during order fetching from the exchange: ${err.message}`);
                     logAction(actions.error, {
-                        error: err.message,
+                        args: { error: err.message },
                         relations: { execution_order_id: placed_order.id }
                     });
                     placed_order.failed_attempts++; 
@@ -97,7 +97,7 @@ module.exports.JOB_BODY = async (config, log) => {
                 if(!external_order) {
                     log(`[ERROR.2B] Error: could not fetch order from exchange with id ${placed_order.id} and external identifier ${placed_order.external_identifier}`);
                     logAction(actions.error, {
-                        error: `Order with id ${placed_order.external_identifier} was not found on ${exchange.name} exchange`,
+                        args: { error: `Order with id ${placed_order.external_identifier} was not found on ${exchange.name} exchange` },
                         relations: { execution_order_id: placed_order.id }
                     });
                     placed_order.failed_attempts++; //Not marked as Failed, in case it's only a connection issue.
@@ -117,7 +117,7 @@ module.exports.JOB_BODY = async (config, log) => {
                 if(external_order.status === 'closed' && external_order.remaining > 0) {
                     log(`[WARN.2A] Execution order ${placed_order.id} was closed on the exchange before getting filled, marking as Failed`);
                     logAction(actions.failed, {
-                        reason: `Execution order was closed on ${exchange.name} before getting filled.`,
+                        args: { reason: `Execution order was closed on ${exchange.name} before getting filled.` },
                         relations: { execution_order_id: placed_order.id }
                     });
                     placed_order.status = Failed;
@@ -196,7 +196,7 @@ module.exports.handleFillsWithTrades = async (placed_order, exchange, external_o
     if(err) {
         log(`[ERROR.4A] Error occured while attepting to fetch recent trades: ${err.message}`);
         logAction(actions.error, {
-            error: err.message,
+            args: { error: err.message },
             relations: { execution_order_id: placed_order.id }
         });
         placed_order.failed_attempts++;
@@ -262,7 +262,7 @@ module.exports.handleFillsWithTrades = async (placed_order, exchange, external_o
     if(err) {
         log(`[ERROR.5C] Error occured during new fill saving: ${err.message}`);
         logAction(actions.error, {
-            error: err.message,
+            args: { error: err.message },
             relations: { execution_order_id: placed_order.id }
         });
         placed_order.failed_attempts++;
@@ -270,7 +270,7 @@ module.exports.handleFillsWithTrades = async (placed_order, exchange, external_o
     //Make sure to log only after they were save.
     saved_fills.map(sf => {
         logAction(actions.generate_fill, {
-            amount: sf.quantity,
+            args: { amount: sf.quantity },
             relations: { execution_order_id: placed_order.id }
         });
     });
@@ -309,7 +309,7 @@ module.exports.handleFillsWithoutTrades = async (placed_order, external_order, l
     if(err) {
         log(`[ERROR.3A] Error occured during fill amount summing: ${err.message}`);
         logAction(actions.error, {
-            error: err.message,
+            args: { error: err.message },
             relations: { execution_order_id: placed_order.id }
         });
         placed_order.failed_attempts++;
@@ -335,7 +335,7 @@ module.exports.handleFillsWithoutTrades = async (placed_order, external_order, l
         if(err) {
             log(`[ERROR.4A] Error occured during the insertion of a new fill entry: ${err.message}`);
             logAction(actions.error, {
-                error: err.message,
+                args: { error: err.message },
                 relations: { execution_order_id: placed_order.id }
             });
             placed_order.failed_attempts++;
@@ -343,7 +343,7 @@ module.exports.handleFillsWithoutTrades = async (placed_order, external_order, l
         }
 
         logAction(actions.generate_fill, {
-            amount: new_fill.quantity,
+            args: { amount: new_fill.quantity },
             relations: { execution_order_id: placed_order.id }
         });
 
@@ -371,7 +371,7 @@ const simulateFill = async (placed_order, log, config) => {
     if(err) { 
         log(`[ERROR.1B] Error occured during market data retrieval: ${err.message}`);
         logAction(actions.error, {
-            error: err.message,
+            args: { error: err.message },
             relations: { execution_order_id: placed_order.id }
         });
         placed_order.failed_attempts++;
@@ -381,7 +381,7 @@ const simulateFill = async (placed_order, log, config) => {
     if(!market_data) {
         log(`[ERROR.C] Error: unable to find the newest market data for order ${placed_order.id}`);
         logAction(actions.error, {
-            error: `unable to find the newest market data for order ${placed_order.id}`,
+            args: { error: `unable to find the newest market data for order ${placed_order.id}` },
             relations: { execution_order_id: placed_order.id }
         });
         placed_order.failed_attempts++;
@@ -402,7 +402,7 @@ const simulateFill = async (placed_order, log, config) => {
     if(err) { 
         log(`[ERROR.1C] Error occured during simulated fill creation: ${err.message}`);
         logAction(actions.error, {
-            error: err.message,
+            args: { error: err.message },
             relations: { execution_order_id: placed_order.id }
         });
         placed_order.failed_attempts++;
@@ -436,7 +436,7 @@ const updateOrderStatus = async (placed_order, log, config) => {
     if(placed_order.failed_attempts > SYSTEM_SETTINGS.EXEC_ORD_FAIL_TOLERANCE) {
         log(`[WARN.6A] Order ${placed_order.id} has exceeded the maximum number of failed attempts. Marking as "Failed"`);
         logAction(actions.failed_attempts, {
-            attempts: placed_order.failed_attempts,
+            args: { attempts: placed_order.failed_attempts },
             relations: { execution_order_id: placed_order.id }
         });
 
@@ -448,10 +448,10 @@ const updateOrderStatus = async (placed_order, log, config) => {
             ignore: ['Instrument', 'completed_timestamp'],
             replace: {
                 status: {
-                    [Failed]: 'Failed',
-                    [Placed]: 'Placed',
-                    [PartiallyFilled]: 'Partially Filled',
-                    [FullyFilled]: 'Fully Filled',
+                    [Failed]: `execution_orders.status.${Failed}`,
+                    [Placed]: `execution_orders.status.${Placed}`,
+                    [PartiallyFilled]: `execution_orders.status.${PartiallyFilled}`,
+                    [FullyFilled]: `execution_orders.status.${FullyFilled}`,
 
                 }
             }
@@ -471,7 +471,7 @@ const updateOrderStatus = async (placed_order, log, config) => {
     if(err) {
         log(`[ERROR.7A] Error occured during the calculation of the sum of current fills for order ${placed_order.id}`);
         logAction(actions.error, {
-            error: err.message,
+            args: { error: err.message },
             relations: { execution_order_id: placed_order.id }
         });
         placed_order.failed_attempts++;
@@ -493,7 +493,7 @@ const updateOrderStatus = async (placed_order, log, config) => {
         if(err) {
             log(`[ERROR.7B] Error occured during fill price/fee calculation and update: ${err.message}`);
             logAction(actions.error, {
-                error: err.message,
+                args: { error: err.message },
                 relations: { execution_order_id: placed_order.id }
             });
         }
@@ -522,10 +522,10 @@ const updateOrderStatus = async (placed_order, log, config) => {
             ignore: ['Instrument', 'completed_timestamp'],
             replace: {
                 status: {
-                    [Failed]: 'Failed',
-                    [Placed]: 'Placed',
-                    [PartiallyFilled]: 'Partially Filled',
-                    [FullyFilled]: 'Fully Filled',
+                    [Failed]: `execution_orders.status.${Failed}`,
+                    [Placed]: `execution_orders.status.${Placed}`,
+                    [PartiallyFilled]: `execution_orders.status.${PartiallyFilled}`,
+                    [FullyFilled]: `execution_orders.status.${FullyFilled}`,
 
                 }
             }
@@ -558,7 +558,7 @@ const fetchOrderFromExchange = (placed_order, exchange, log) => {
         if(!can_fetch_by_id && !can_fetch_open_orders && !can_fetch_all_orders) {
             log(`[ERROR] Exchange ${exchange.name} has no method of retrieving the orders`);
             logAction(actions.error, {
-                error: `Exchange ${exchange.name} has no way of fetching order information.`,
+                args: { error: `Exchange ${exchange.name} has no way of fetching order information.` },
                 relations: { execution_order_id: placed_order.id }
             });
             placed_order.failed_attempts++;

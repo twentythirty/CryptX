@@ -465,5 +465,44 @@
 
   "error": {
 
+  },
+
+  "logs": {
+    "universal": {
+
+      "create": "System added a new {{name}}",
+      "create_user": "{{user_name}} add a new {{name}}",
+
+      "modified": "System changed <b>{{column}}</b> from <b>{{prev_value}}</b> to <b>{{new_value}}</b>",
+      "modified_user": "{{user_name}} changed <b>{{column}}</b> from <b>{{prev_value}}</b> to <b>{{new_value}}</b>" 
+    },
+    
+    "instruments": {
+      "mapping_removed": "System removed Instrument Exchange Mapping with id: {{identifier}}, exchange: {{exchange}} and instrument: {{instrument}}",
+      "mapping_removed_user": "{{user_name}} removed Instrument Exchange Mapping with id: {{identifier}}, exchange: {{exchange}} and instrument: {{instrument}}"
+    },
+
+    "ask_bid_fetcher": {
+      "failed_to_feych": "System failed to get prices for instrument {{instrument_id}} from exchange {{exchange_name}}"
+    },
+
+    "execution_orders": {
+      "placed": "Order was placed to {{exchange}}",
+      "error": "Error: {{error}}",
+      "failed_attempts": "Execution order Failed after {{attempts}} attempts`}",
+      "failed": "Execution order Failed due to: {{reason}}",
+      "generate_fill": "Retrieved a new fill with amount of {{amount}}",
+      "fully_filled": "Execution order Fully Filled"
+    },
+
+    "assets": {
+      "status": "System changed Status from {{prev_status}} to {{new_status}} due to {{reason}}",
+      "status_user": "{{user_name}} changed Status from {{prev_status}} to {{new_status}}, reason: {{reason}}"
+    },
+
+    "deposits": {
+      "generate": "System generated {{amount}} Deposits for Recipe Run RR-{{recipe_id}}",
+      "completed": "Deposit Completed"
+    }
   }
 }
