@@ -45,8 +45,8 @@ const changeStatus = async function (asset_id, new_status, user) {
   //Log only after the changes were made. If user was not provided, log as System.
   const log_options = {
     args: {
-      prev_status: `assets.status.${current_status.type}`,
-      new_status: `assets.status.${status.type}`,
+      prev_status: `{assets.status.${current_status.type}}`,
+      new_status: `{assets.status.${status.type}}`,
       reason: status.comment,
     },
     relations: { asset_id }

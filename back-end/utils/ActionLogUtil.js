@@ -314,6 +314,21 @@ const _replaceArgs = (template_string = '', args = {}) => {
         template_string = template_string.replace(new RegExp(`{{\\w*\\s*${arg_name}\\s*\\w*}}`, 'g'), arg);
 
     }
+    //Remove html
+    template_string = template_string.replace(/<(.*?)>/g, '');
+
+    //replace with translations
+    const translations = template_string.match(/{(.*?)}/g);
+    
+    if(!translations) return template_string;
+
+    for(let translation of translations) {
+        const _translation_key = translation.replace('{', '').replace('}', '');
+
+        const _translation = _.get(templates, _translation_key, null);
+
+        if(_translation) template_string = template_string.replace(translation, _translation);
+    }
 
     return template_string;
 };
