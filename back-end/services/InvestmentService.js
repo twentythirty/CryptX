@@ -372,11 +372,13 @@ const getWholeInvestmentRun = async function (investment_run_id) {
       include: [{
           model: RecipeOrderGroup,
           include: [{
+            /* This makes sequelize get further includes as in separate query. This is a quick workaround for postgres truncating too long paths. */
+            separate: true,
             model: RecipeOrder,
             include: [{
               model: ExecutionOrder,
               include: [{
-                model: ExecutionOrderFill
+                model: ExecutionOrderFill,
               }]
             }]
           }]
