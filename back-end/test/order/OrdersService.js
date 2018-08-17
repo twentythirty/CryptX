@@ -594,6 +594,8 @@ describe('OrdersService testing', () => {
                 chai.expect(original_execution_order.status).to.equal(EXECUTION_ORDER_STATUSES.Failed);
                 chai.expect(updated_execution_order.status).to.equal(EXECUTION_ORDER_STATUSES.Pending);
 
+                chai.expect(updated_execution_order.failed_attempts).to.equal(0);
+
             });
         });
 
