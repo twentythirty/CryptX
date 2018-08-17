@@ -280,7 +280,8 @@ const getExecutionOrder = async function (req, res) {
     adminViewsService.fetchExecutionOrderView(execution_order_id),
     ActionLog.findAll({
       where: { execution_order_id },
-      attributes: ['id', 'timestamp', 'details', 'level']
+      attributes: ['id', 'timestamp', 'level', 'translation_key', 'translation_args'],
+      order: [ [ 'timestamp', 'DESC' ] ]
     })
   ]));
   
@@ -291,6 +292,7 @@ const getExecutionOrder = async function (req, res) {
   if(!execution_order) return ReE(res, `Can't find execution order for id ${execution_order_id}`, 404);
 
   execution_order = execution_order.toWeb();
+  action_logs = action_logs.map(a => a.toWeb());
 
   return ReS(res, {
     execution_order,
