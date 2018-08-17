@@ -45,8 +45,10 @@ ReS = function(res, data, code) {
   // Success Web Response
   let send_data = { 
     success: true,
-    next_token: res.new_token
    };
+   if (res.next_token != null) {
+    send_data.next_token = res.next_token;
+   }
 
   if (typeof data == "object") {
     send_data = Object.assign(data, send_data); //merge the objects
