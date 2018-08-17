@@ -474,7 +474,10 @@
       "create_user": "{{user_name}} add a new {{name}}",
 
       "modified": "System changed <b>{{column}}</b> from <b>{{prev_value}}</b> to <b>{{new_value}}</b>",
-      "modified_user": "{{user_name}} changed <b>{{column}}</b> from <b>{{prev_value}}</b> to <b>{{new_value}}</b>" 
+      "modified_user": "{{user_name}} changed <b>{{column}}</b> from <b>{{prev_value}}</b> to <b>{{new_value}}</b>",
+
+      "error": "Error: {{error}}",
+      "error_user": "{{user_name}} has encountered an Error: {{error}}"
     },
     
     "instruments": {
