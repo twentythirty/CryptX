@@ -9,6 +9,7 @@
 <app-data-table
   [dataSource]="liquidityDataSource"
   [columnsToShow]="liquidityColumnsToShow"
+  [loading]="isTableLoading"
   (setFilter)="onSetFilter($event)"
   (openRow)="openRow($event)"
 ></app-data-table>

@@ -148,7 +148,10 @@ module.exports.JOB_BODY = async (config, log) => {
                         }
 
                         const market_limits = exchange_market.limits;
-                        const amount_limit = market_limits.amount;
+                        const amount_limit = Object.assign({
+                            min: 0.0,
+                            max: Number.MAX_VALUE
+                        }, market_limits.amount);
 
                         //if there is no mapping we quit early
                         if (exchange_mapping == null || exchange_mapping.tick_size == null) {
@@ -200,20 +203,30 @@ module.exports.JOB_BODY = async (config, log) => {
                         log(`4c. actually using clamped fuzzy total ${next_total.toString()} of ${sold_symbol} on recipe order ${pending_order.id}`);
 
                         //Check if the next total is within the amount limit.
-                        if (next_total.lt(amount_limit.min)) {
-                            log(`[WARN.4C]: Next total of ${next_total.toString()} is less than the markets min limit of ${amount_limit.min}`);
-                            if (remain_quantity.gte(amount_limit.min)) {
-                                log(`[REC.4C]: Bumping total of new execution order for ${pending_order.id} to minimum supported ${amount_limit.min} since unrealized quantity ${remain_quantity.toString()} allows it...`)
-                                next_total = Decimal(amount_limit.min)
-                            } else {
-                                log(`[WARN.4C]: Skipping order generation since total remaining quantity ${remain_quantity.toString()} is too low for required exchange minimum ${amount_limit.min}`);
-                                return pending_order;
+
+                        //check if the amounts are defined since the keys might exist but not have values on them
+                        if (amount_limit.min) {
+                            if (next_total.lt(amount_limit.min)) {
+                                log(`[WARN.4C]: Next total of ${next_total.toString()} is less than the markets min limit of ${amount_limit.min}`);
+                                if (remain_quantity.gte(amount_limit.min)) {
+                                    log(`[REC.4C]: Bumping total of new execution order for ${pending_order.id} to minimum supported ${amount_limit.min} since unrealized quantity ${remain_quantity.toString()} allows it...`)
+                                    next_total = Decimal(amount_limit.min)
+                                } else {
+                                    log(`[WARN.4C]: Skipping order generation since total remaining quantity ${remain_quantity.toString()} is too low for required exchange minimum ${amount_limit.min}`);
+                                    return pending_order;
+                                }
                             }
+                        } else {
+                            log(`[INFO.4C]: Skipping lower bound check on quantity ${next_total.toString()} for recipe order ${pending_order.id} due to missing lower bound on market ${exchange_market.symbol} for exchange ${exchange_connector.name}`);
                         }
 
-                        if (next_total.gt(amount_limit.max)) {
-                            log(`[WARN.4C]: Next total of ${next_total.toString()} is greater than the markets max limit of ${amount_limit.max}, setting the next total to limit\`s max ${amount_limit.max}`);
-                            next_total = Decimal(amount_limit.max);
+                        if (amount_limit.max) {
+                            if (next_total.gt(amount_limit.max)) {
+                                log(`[WARN.4C]: Next total of ${next_total.toString()} is greater than the markets max limit of ${amount_limit.max}, setting the next total to limit\`s max ${amount_limit.max}`);
+                                next_total = Decimal(amount_limit.max);
+                            }
+                        } else {
+                            log(`[INFO.4C]: Skipping upper bound check on quantity ${next_total.toString()} for recipe order ${pending_order.id} due to missing upper bound on market ${exchange_market.symbol} for exchange ${exchange_connector.name}`);
                         }
 
                         log(`4d. Current fulfilled recipe order total is ${realized_total.toString()}, adding another ${next_total.toString()}...`);

@@ -12,7 +12,7 @@ import { StatusCellDataColumn, NumberCellDataColumn, DateCellDataColumn, Currenc
 })
 export class AccountsListComponent extends DataTableCommonManagerComponent implements OnInit {
 
-    public accountsDataSource: TableDataSource = {
+  public accountsDataSource: TableDataSource = {
     header: [
       { column: 'id', nameKey: 'table.header.id', filter: { type: 'number', hasRange: false, inputSearch: true, sortable: true } },
       { column: 'asset', nameKey: 'table.header.asset', filter: { type: 'text', sortable: true } },
@@ -40,8 +40,10 @@ export class AccountsListComponent extends DataTableCommonManagerComponent imple
   constructor(
       private coldStorageService: ColdStorageService,
       public route: ActivatedRoute,
-      private router: Router
-  ) { super (route)}
+      private router: Router,
+  ) {
+    super(route);
+  }
 
   ngOnInit() {
     super.ngOnInit();
@@ -49,7 +51,9 @@ export class AccountsListComponent extends DataTableCommonManagerComponent imple
   }
 
   getAllData(): void {
-    this.coldStorageService.getAllAccounts(this.requestData).subscribe(
+    this.coldStorageService.getAllAccounts(this.requestData)
+    .finally(() => this.stopTableLoading())
+    .subscribe(
       res => {
         Object.assign(this.accountsDataSource, {
           body: res.accounts,

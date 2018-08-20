@@ -41,6 +41,7 @@
     [dataSource]="listDataSource"
     [columnsToShow]="listColumnsToShow"
     [emptyText]="listTableEmptyText | translate"
+    [loading]="isTableLoading"
     (setFilter)="onSetFilter($event)"
     (openRow)="openListRow($event)"
   ></app-data-table>

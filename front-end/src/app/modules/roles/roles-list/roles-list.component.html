@@ -8,6 +8,7 @@
 <app-data-table
   [dataSource]="rolesDataSource"
   [columnsToShow]="rolesColumnsToShow"
+  [loading]="isTableLoading"
   (setFilter)="onSetFilter($event)"
   (openRow)="openRow($event)">
 </app-data-table>

@@ -1,10 +1,10 @@
 import { Component, OnInit } from '@angular/core';
+import { Router, ActivatedRoute } from "@angular/router";
 import { DataTableCommonManagerComponent } from "../../../shared/components/data-table-common-manager/data-table-common-manager.component";
 import { TableDataSource, TableDataColumn } from "../../../shared/components/data-table/data-table.component";
 import { DateCellDataColumn, StatusCellDataColumn, NumberCellDataColumn } from "../../../shared/components/data-table-cells";
-import { StatusClass } from "../../../shared/models/common";
-import { Router, ActivatedRoute } from "@angular/router";
 import { ExecutionOrdersService } from "../../../services/execution-orders/execution-orders.service";
+import { StatusClass } from "../../../shared/models/common";
 import { Order } from "../../../shared/models/order";
 
 @Component({
@@ -54,29 +54,33 @@ export class ExecutionOrderListComponent extends DataTableCommonManagerComponent
     new DateCellDataColumn({ column: 'completion_time'}),
   ];
 
-  constructor(public route: ActivatedRoute,
+  constructor(
+    public route: ActivatedRoute,
     protected orderService: ExecutionOrdersService,
-    protected router: Router,) {
-    super (route)
-   }
+    protected router: Router,
+  ) {
+    super(route);
+  }
 
-   ngOnInit() {
+  ngOnInit() {
     super.ngOnInit();
     this.getFilterLOV();
   }
 
-    getFilterLOV(): void {
+  getFilterLOV(): void {
     this.orderDataSource.header.filter(
-        col => ['id', 'investment_run_id', 'instrument', 'side', 'exchange', 'type', 'status'].includes(col.column)
-      ).map(
-        col => {
-          col.filter.rowData$ = this.orderService.getHeaderLOV(col.column)
-        }
-      )
+      col => ['id', 'investment_run_id', 'instrument', 'side', 'exchange', 'type', 'status'].includes(col.column)
+    ).map(
+      col => {
+        col.filter.rowData$ = this.orderService.getHeaderLOV(col.column)
+      }
+    );
   }
 
   getAllData(): void {
-    this.orderService.getAllExecutionOrders(this.requestData).subscribe(
+    this.orderService.getAllExecutionOrders(this.requestData)
+    .finally(() => this.stopTableLoading())
+    .subscribe(
       res => {
         Object.assign(this.orderDataSource, {
           body: res.execution_orders,

@@ -62,7 +62,9 @@ export class LiquidityListComponent extends DataTableCommonManagerComponent impl
 
   
   getAllData(): void {
-    this.liquidityService.getAllLiquidities(this.requestData).subscribe(
+    this.liquidityService.getAllLiquidities(this.requestData)
+    .finally(() => this.stopTableLoading())
+    .subscribe(
       res => {
         Object.assign(this.liquidityDataSource, {
           body: res.liquidity_requirements,

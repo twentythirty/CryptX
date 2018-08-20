@@ -458,7 +458,7 @@ const fetchRoleFooter = async (where_clause = '') => {
     const query = builder.joinQueryParts([
         builder.selectCountDistinct('name', 'names', 'role', where_clause)
     ], [
-        'names'
+        'name'
     ]);
 
     const footer = (await sequelize.query(query))[0];

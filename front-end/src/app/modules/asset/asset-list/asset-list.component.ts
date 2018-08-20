@@ -111,7 +111,9 @@ export class AssetListComponent extends DataTableCommonManagerComponent implemen
   }
 
   getAllData(): void {
-    this.assetService.getAllAssetsDetailed(this.requestData).subscribe(
+    this.assetService.getAllAssetsDetailed(this.requestData)
+    .finally(() => this.stopTableLoading())
+    .subscribe(
       (res: AssetsAllResponseDetailed) => {
         Object.assign(this.assetsDataSource, {
           body: res.assets,

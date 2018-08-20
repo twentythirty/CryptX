@@ -56,7 +56,9 @@ export class InstrumentListComponent extends DataTableCommonManagerComponent {
   }
 
   getAllData(): void {
-    this.instrumentsService.getAllInstruments(this.requestData).subscribe(
+    this.instrumentsService.getAllInstruments(this.requestData)
+    .finally(() => this.stopTableLoading())
+    .subscribe(
       data => {
         Object.assign(this.instrumentsDataSource, {
           body: data.instruments,

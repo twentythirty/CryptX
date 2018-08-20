@@ -301,7 +301,7 @@
     "permissions": "Permissions",
     "role_delete_confirm_msg": "Are you sure you want delete this role?",
     "footer": {
-      "roles": "Names"
+      "name": "{{ name }} Names"
     }
   },
 
@@ -465,6 +465,9 @@
   },
 
   "cold_storage": {
+    "custodians": {
+      "header": "Custodians"
+    },
     "transfers": {
       "status": {
         "91": "Pending",

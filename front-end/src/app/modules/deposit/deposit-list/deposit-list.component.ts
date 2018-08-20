@@ -58,7 +58,9 @@ export class DepositListComponent extends DataTableCommonManagerComponent implem
   }
 
   getAllData(): void {
-    this.depositService.getAllDeposits(this.requestData).subscribe(
+    this.depositService.getAllDeposits(this.requestData)
+    .finally(() => this.stopTableLoading())
+    .subscribe(
       res => {
         Object.assign(this.depositDataSource, {
           body: res.recipe_deposits,

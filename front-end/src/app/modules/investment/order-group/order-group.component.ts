@@ -187,7 +187,9 @@ export class OrderGroupComponent extends TimelineDetailComponent implements OnIn
   public getAllDataReal(): void {
     let orderGroupId = _.isEmpty(this.singleDataSource.body) ? 0 : this.singleDataSource.body[0]['id'];
 
-    this.ordersService.getAllOrdersByGroupId(orderGroupId, this.requestData).subscribe(
+    this.ordersService.getAllOrdersByGroupId(orderGroupId, this.requestData)
+    .finally(() => this.stopTableLoading())
+    .subscribe(
       res => {
         Object.assign(this.listDataSource, {
           body: res.recipe_orders,

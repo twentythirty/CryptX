@@ -1,13 +1,12 @@
 <div class="top-controls">
-  <span class="headline-title">{{ count }} {{ 'orders.orders' | translate }}</span>
+  <span class="headline-title">{{count}} {{'cold_storage.custodians.header' | translate}}</span>
 </div>
 
 <app-data-table
-  [dataSource]="ordersDataSource"
-  [columnsToShow]="ordersColumnsToShow"
+  [dataSource]="custodiansDataSource"
+  [columnsToShow]="custodiansColumnsToShow"
   [loading]="isTableLoading"
   (setFilter)="onSetFilter($event)"
-  (openRow)="openRow($event)"
 ></app-data-table>
 
 <app-pagination

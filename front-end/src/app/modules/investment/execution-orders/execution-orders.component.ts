@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { ActivatedRoute, Router, Params } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { mergeMap } from "rxjs/operators/mergeMap";
 import { TimelineDetailComponent, SingleTableDataSource, TagLineItem } from "../timeline-detail/timeline-detail.component";
 import { InvestmentService } from "../../../services/investment/investment.service";
@@ -88,19 +88,30 @@ export class ExecutionOrdersComponent extends TimelineDetailComponent implements
     this.getFilterLOV();
   }
 
- /**
+  /**
+   * + If custom ngOnInit() is needed, call super.ngOnInit() to
+   * perform parent component class initialization
+   */
+
+  ngOnInit() {
+    super.ngOnInit();
+  }
+
+
+  /**
    * 4. Implement abstract methods to fetch data OnInit
    */
   public getAllData(): void {
     this.route.params.pipe(
       mergeMap(
         params => this.investmentService.getAllExecOrders(params['id'], this.requestData)
+          .finally(() => this.stopTableLoading())
       )
     ).subscribe(
       res => {
-        this.count = res.count;
         this.listDataSource.body = res.execution_orders;
         this.listDataSource.footer = res.footer;
+        this.count = res.count;
         this.getFilterLOV()
       },
       err => this.listDataSource.body = []
@@ -139,15 +150,6 @@ export class ExecutionOrdersComponent extends TimelineDetailComponent implements
 
   public openListRow(row: any): void {
     this.router.navigate([`/run/execution-order-fill/${row.id}`])
-  }
-
-  /**
-   * + If custom ngOnInit() is needed, call super.ngOnInit() to
-   * perform parent component class initialization
-   */
-
-  ngOnInit() {
-    super.ngOnInit();
   }
 
 

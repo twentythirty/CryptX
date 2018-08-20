@@ -3,17 +3,18 @@
     margin-top: 40px;
 
     .item {
+        display: inline-block;
         width: 30px;
         height: 30px;
-        display: inline-block;
         vertical-align: middle;
-        border-radius: 30px;
         text-align: center;
         line-height: 30px;
-        color: $gray;
         font-size: 13px;
         font-weight: 700;
+        color: $gray;
         background-color: #fff;
+        border-radius: 30px;
+        cursor: pointer;
 
         &.active {
             background: $gray;
@@ -24,6 +25,7 @@
     .pages {
         display: inline-block;
         vertical-align: middle;
+
         li {
             float: left;
             margin: 0 5px;

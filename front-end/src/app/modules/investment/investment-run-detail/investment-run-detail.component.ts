@@ -122,29 +122,6 @@ export class InvestmentRunDetailComponent extends TimelineDetailComponent implem
   /**
    * 4. Implement abstract methods to fetch data OnInit
    */
-  public getAllData(): void {
-    this.route.params.pipe(
-      mergeMap(
-        params => this.investmentService.getAllRecipes(params['id'], this.requestData)
-      )
-    ).subscribe(
-      res => {
-        this.listDataSource.body = res.recipe_runs;
-        this.count = res.count;
-        let statusPending = res.recipe_runs.filter(run =>{
-          return run.approval_status === 'recipes.status.41';
-        });
-        let statusApproved = res.recipe_runs.filter(run =>{
-          return run.approval_status === 'recipes.status.43';
-        });
-        if (statusPending.length || statusApproved.length){
-          this.addTitle = '';
-        }
-      },
-      err => this.listDataSource.body = []
-    )
-  }
-
   protected getSingleData(): void {
     this.route.params.pipe(
       mergeMap(
@@ -165,6 +142,30 @@ export class InvestmentRunDetailComponent extends TimelineDetailComponent implem
         }
       },
       err => this.singleDataSource.body = []
+    )
+  }
+  
+  public getAllData(): void {
+    this.route.params.pipe(
+      mergeMap(
+        params => this.investmentService.getAllRecipes(params['id'], this.requestData)
+          .finally(() => this.stopTableLoading())
+      )
+    ).subscribe(
+      res => {
+        this.listDataSource.body = res.recipe_runs;
+        this.count = res.count;
+        let statusPending = res.recipe_runs.filter(run =>{
+          return run.approval_status === 'recipes.status.41';
+        });
+        let statusApproved = res.recipe_runs.filter(run =>{
+          return run.approval_status === 'recipes.status.43';
+        });
+        if (statusPending.length || statusApproved.length){
+          this.addTitle = '';
+        }
+      },
+      err => this.listDataSource.body = []
     )
   }
 
