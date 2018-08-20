@@ -126,9 +126,6 @@ const universal_actions = {
 
                     let _options = _.clone(this.options);
                     _options.args = Object.assign({}, params.args || {}, args);
-                    //console.log(`PREV: ${previous}, UPDATED: ${updated}>>>>>>>>>`);
-                    //console.log(JSON.stringify(this.options, null, 4));
-                    //console.log('<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<');
 
                     this.template = 'logs.universal.modified';
 
@@ -148,7 +145,7 @@ const universal_actions = {
                     
                 }
             }
-            console.log(JSON.stringify(action_logs, null, 4));
+
             return action_logs;
         }
     }
