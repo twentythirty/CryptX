@@ -1,5 +1,6 @@
 import { Component, OnInit, Input, EventEmitter, Output } from '@angular/core';
 import { ActivatedRoute, Router, NavigationStart } from "@angular/router";
+import { trigger, state, style, transition, animate } from '@angular/animations';
 import { Observable } from 'rxjs/Observable';
 import _ from 'lodash';
 import { TranslateService } from '@ngx-translate/core';
@@ -62,7 +63,18 @@ export class TableDataColumn {
 @Component({
   selector: 'app-data-table',
   templateUrl: './data-table.component.html',
-  styleUrls: ['./data-table.component.scss']
+  styleUrls: ['./data-table.component.scss'],
+  animations: [
+    trigger('opacityAnimation', [
+      state('show', style({
+        opacity: '1',
+      })),
+      state('hide', style({
+        opacity: '0',
+      })),
+      transition('* => *', animate('200ms')),
+    ])
+  ]
 })
 export class DataTableComponent implements OnInit {
   private filterMap: Object = {}; // Flag map is filter opened or not
@@ -72,6 +84,7 @@ export class DataTableComponent implements OnInit {
   @Input() columnsToShow: Array<string | TableDataColumn>;
   @Input() customRows: boolean = false;
   @Input() emptyText: string;
+  @Input() loading: boolean = false;
 
   @Input() rowClass: (row: any) => string = (row) => null;
 

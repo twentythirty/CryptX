@@ -169,6 +169,7 @@ export class ExecutionOrderFillDetailComponent extends TimelineDetailComponent i
     this.route.params.pipe(
       mergeMap(
         params => this.investmentService.getAllExecOrdersFills(params['id'], this.requestData)
+          .finally(() => this.stopTableLoading())
       )
     ).subscribe(
       res => {

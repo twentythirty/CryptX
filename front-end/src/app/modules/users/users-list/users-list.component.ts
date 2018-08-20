@@ -51,15 +51,14 @@ export class UsersListComponent extends DataTableCommonManagerComponent implemen
   }
 
   getAllData(): void {
-    this.userService.getAllUsers(this.requestData).subscribe(res => {
-      this.usersDataSource.body = res.users;
+    this.userService.getAllUsers(this.requestData)
+    .finally(() => this.stopTableLoading())
+    .subscribe(res => {
+      Object.assign(this.usersDataSource, {
+        body: res.users,
+        footer: res.footer
+      });
       this.count = res.count;
-        if(res.footer) {
-          this.usersDataSource.footer = this.usersColumnsToShow.map(col => {
-            let key = (typeof col == 'string') ? col : col.column;
-            return res.footer.find(f => f.name == key) || '';
-          })
-        }
     });
   }
 

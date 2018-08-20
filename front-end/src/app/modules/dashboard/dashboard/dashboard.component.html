@@ -21,12 +21,13 @@
   >
     <span>{{ 'investment.start_new_run' | translate }}</span>
   </a>
-</div>  
+</div>
 
 <app-data-table
   [dataSource]="investmentsDataSource"
   [columnsToShow]="investmentsColumnsToShow"
   [emptyText]="'investment_runs.empty_list_text' | translate"
+  [loading]="isTableLoading"
   (setFilter)="onSetFilter($event)"
   (openRow)="openRow($event)"
 ></app-data-table>

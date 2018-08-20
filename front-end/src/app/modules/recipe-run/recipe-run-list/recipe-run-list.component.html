@@ -5,6 +5,7 @@
 <app-data-table
   [dataSource]="recipeDataSource"
   [columnsToShow]="recipeColumnsToShow"
+  [loading]="isTableLoading"
   (setFilter)="onSetFilter($event)"
   (openRow)="openRow($event)"
 ></app-data-table>

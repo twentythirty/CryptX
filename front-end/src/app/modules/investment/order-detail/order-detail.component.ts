@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { ActivatedRoute, Router, Params } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 
 import { StatusClass } from '../../../shared/models/common';
 
@@ -141,6 +141,7 @@ export class OrderDetailComponent extends TimelineDetailComponent implements OnI
     this.route.params.pipe(
       mergeMap(
         params => this.investmentService.getAllOrders(params['id'], this.requestData)
+          .finally(() => this.stopTableLoading())
       )
     ).subscribe(
       res => {
@@ -176,7 +177,6 @@ export class OrderDetailComponent extends TimelineDetailComponent implements OnI
         if(res.recipe_run) {
           this.singleDataSource.body = [res.recipe_run];
         }
-
 
         if(res.recipe_stats) {
           this.setTagLine(res.recipe_stats.map(stat => {
