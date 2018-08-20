@@ -5,6 +5,7 @@ const InstrumentExchangeMapping = require('../models').InstrumentExchangeMapping
 const Asset = require('../models').Asset;
 const InstrumentLiquidityRequirement = require('../models').InstrumentLiquidityRequirement;
 const Exchange = require('../models').Exchange;
+const sequelie = require('../models').sequelize;
 
 const ccxtUtil = require('../utils/CCXTUtils');
 
@@ -104,22 +105,24 @@ const addInstrumentExchangeMappings = async (instrument_id, exchange_mappings) =
 
     
     const models = _.map(exchange_mappings, mapping => {
-        return InstrumentExchangeMapping.build({
+        return {
             instrument_id: instrument_id,
             exchange_id: mapping.exchange_id,
             tick_size: tick_sizes[mapping.exchange_id] == null? 0 : tick_sizes[mapping.exchange_id],
             external_instrument_id: mapping.external_instrument_id 
-        })
+        };
     })
 
-    let [ err ] = await to(InstrumentExchangeMapping.destroy({
-        where: { instrument_id }
-    }));
-
-    if (err) TE(err.message);
-
-    let saved_models = [];
-    [ err, saved_models ] = await to(Promise.all(_.map(models, m => m.save())));
+    const [ err, saved_models ] = await to(
+        sequelie.transaction(transaction => {
+            return InstrumentExchangeMapping.destroy({
+                where: { instrument_id },
+                transaction
+            }).then(() => {
+                return InstrumentExchangeMapping.bulkCreate(models, { transaction });
+            });
+        })
+    );
 
     if (err) TE(err.message);
 

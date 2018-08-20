@@ -133,6 +133,13 @@ describe('InstrumentService testing:', () => {
                 return Promise.resolve(mapping);
             });
 
+            sinon.stub(sequelize, 'transaction').callsFake(() => {
+                return Promise.resolve([{
+                    tick_size: MOCK_ASSET_2.id,
+                    external_instrument_id: MOCK_INSTRUMENT.symbol
+                }]);
+            });
+
             done();
         });
     });
@@ -143,7 +150,8 @@ describe('InstrumentService testing:', () => {
             InstrumentExchangeMapping.build,
             InstrumentExchangeMapping.findOne,
             InstrumentLiquidityRequirement.findAll,
-            InstrumentLiquidityRequirement.create
+            InstrumentLiquidityRequirement.create,
+            sequelize.transaction
         ], model => {
             if (model.restore) {
                 model.restore();
@@ -158,6 +166,7 @@ describe('InstrumentService testing:', () => {
     const InstrumentExchangeMapping = require('../../models').InstrumentExchangeMapping;
     const InstrumentLiquidityRequirement = require('../../models').InstrumentLiquidityRequirement;
     const Asset = require('../../models').Asset;
+    const sequelize = require('../../models').sequelize;
     const ccxtUtils = require('../../utils/CCXTUtils');
 
     describe(' the method createInstrument shall ', done => {
@@ -263,6 +272,10 @@ describe('InstrumentService testing:', () => {
 
                 return rejected;
             });
+        });
+
+        it('reject if the same exchange was passed multiple times', () => {
+            return chai.assert.isRejected(instrumentService.addInstrumentExchangeMappings(1, [MOCK_MAPPING_1, MOCK_MAPPING_1]));
         });
 
 
