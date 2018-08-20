@@ -11,6 +11,7 @@
     <span>{{ log.timestamp | date:'dd MMM yyyy hh:mm' }}</span>
     <span> - </span>
     
+    <span *ngIf="log.details">{{ log.details }}</span>
     <span *ngIf="log.translationKey" [innerHTML]="log.translationKey | translate: log.translationArgs"></span>
 
     <label
