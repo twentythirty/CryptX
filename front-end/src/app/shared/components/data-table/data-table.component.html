@@ -88,7 +88,7 @@
           [class.highlight]="filterAppliedMap[item.name]"
         >
           <ng-container *ngIf="item.value">
-            <span class="upper-case">{{ item.template | translate: item.args }} </span>
+            {{ item.template | translate: item.args }}
           </ng-container>
           <ng-container *ngIf="!item.value">
             -
