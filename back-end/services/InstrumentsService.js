@@ -107,7 +107,8 @@ const addInstrumentExchangeMappings = async (instrument_id, exchange_mappings) =
 
     if (error) {
         //TE(`error occurred while saving models ${models}: ${error}`);
-        TE(err.message);
+        console.error(error) //temp.;
+        TE(error.message);
     }
 
     return saved_models;
