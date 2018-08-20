@@ -26,8 +26,8 @@ const get_order_sold_symbol = (order) => {
 
 const fills_sum_decimal = (fills) => {
     return _.map(fills, 'quantity')
-    .map(qty => Decimal(qty))
-    .reduce((acc, current) => acc.plus(current), Decimal(0))
+        .map(qty => Decimal(qty))
+        .reduce((acc, current) => acc.plus(current), Decimal(0))
 }
 
 //every day, every 5 minutes
@@ -110,7 +110,7 @@ module.exports.JOB_BODY = async (config, log) => {
                         InstrumentExchangeMapping.find({
                             where: {
                                 exchange_id: pending_order.target_exchange_id,
-                                instrument_id: pending_order.instrument_id 
+                                instrument_id: pending_order.instrument_id
                             }
                         }),
                         //fetch CCXT connector for this exchange with markets preloaded
@@ -126,30 +126,30 @@ module.exports.JOB_BODY = async (config, log) => {
                     ]).then(pendingAndMappingAndOrdersAndFills => {
 
                         const [
-                            pending_order, 
-                            exchange_mapping, 
-                            exchange_connector, 
-                            resumable_execution_orders, 
+                            pending_order,
+                            exchange_mapping,
+                            exchange_connector,
+                            resumable_execution_orders,
                             execution_fills
                         ] = pendingAndMappingAndOrdersAndFills;
 
                         log(`4a. retrieving market data with limits for ${pending_order.Instrument.symbol} for exchange with id ${pending_order.target_exchange_id}`);
 
-                        if(!exchange_connector) {
+                        if (!exchange_connector) {
                             log(`[ERROR.4A]: Failed to retrieve exchange connector with id: ${pending_order.target_exchange_id}`);
                             return pending_order;
                         }
                         //Get market based on instrument symbol.
                         const exchange_market = exchange_connector.markets[pending_order.Instrument.symbol];
 
-                        if(!exchange_market || !exchange_market.active) {
+                        if (!exchange_market || !exchange_market.active) {
                             log(`[ERROR.4A]: Market for ${pending_order.Instrument.symbol} is not available or is not active`);
                             return pending_order;
                         }
 
                         const market_limits = exchange_market.limits;
                         const amount_limit = market_limits.amount;
-    
+
                         //if there is no mapping we quit early
                         if (exchange_mapping == null || exchange_mapping.tick_size == null) {
                             log(`[ERROR.3A] Exchange ${pending_order.exchange_id} and instrument ${pending_order.instrument_id} in recipe order ${pending_order.id} have no associating exchange mapping tick size! Skipping order...`);
@@ -165,10 +165,11 @@ module.exports.JOB_BODY = async (config, log) => {
                             return Decimal(execution_order.total_quantity).minus(fills_sum)
                         }).reduce((acc, current) => acc.plus(current), Decimal(0))
 
-    
+
                         //realized total is the sum of actual fills and potential quantity in resumable execution orders
                         const realized_total = fills_sum_decimal(execution_fills).plus(potential_qnatity)
                         const order_total = Decimal(pending_order.quantity)
+                        const remain_quantity = order_total.minus(realized_total);
 
                         if (realized_total.gte(order_total)) {
                             log(`[WARN.3B]: Current fulfilled execution order total ${realized_total.toString()} covers recipe order ${pending_order.id} quantity ${pending_order.quantity}. Skipping recipe order...`);
@@ -177,24 +178,30 @@ module.exports.JOB_BODY = async (config, log) => {
 
                         const sold_symbol = get_order_sold_symbol(pending_order);
                         const base_trade_amount = trade_base[sold_symbol];
-                        const fuzzy_trade_amount = 
+                        let fuzzy_trade_amount =
                             Decimal(base_trade_amount)
-                                .div(pending_order.price) //divide base trading amoutn by tx asset price to know how much quantity we are actually buying
-                                .mul(
-                                    Decimal(1).plus(_.random(-fuzzyness, fuzzyness, true))
-                                ).toDP(
-                                    Decimal(exchange_mapping.tick_size).dp(), Decimal.ROUND_HALF_DOWN
-                                );
+                            .div(pending_order.price) //divide base trading amoutn by tx asset price to know how much quantity we are actually buying
+                            .mul(
+                                Decimal(1).plus(_.random(-fuzzyness, fuzzyness, true))
+                            );
+                        //adjust fuzzy total to not be larger than remaning order quantity
+                        if (fuzzy_trade_amount.gt(remain_quantity)) {
+                            fuzzy_trade_amount = remain_quantity;
+                        }
+
+                        //minimize the DP to accepted levels
+                        fuzzy_trade_amount = fuzzy_trade_amount.toDP(
+                            Decimal(exchange_mapping.tick_size).dp(), Decimal.ROUND_HALF_DOWN
+                        );
                         log(`4b. predicting fuzzy ${sold_symbol} amount ${fuzzy_trade_amount.toString()} reduced to tick size ${exchange_mapping.tick_size} for recipe order ${pending_order.id}...`);
-    
+
                         //next total is either the fuzzy amount or order or market upper bound, whichever fits
                         let next_total = fuzzy_trade_amount;
                         log(`4c. actually using clamped fuzzy total ${next_total.toString()} of ${sold_symbol} on recipe order ${pending_order.id}`);
-                    
+
                         //Check if the next total is within the amount limit.
-                        if(next_total.lt(amount_limit.min)) {
+                        if (next_total.lt(amount_limit.min)) {
                             log(`[WARN.4C]: Next total of ${next_total.toString()} is less than the markets min limit of ${amount_limit.min}`);
-                            const remain_quantity = order_total.minus(realized_total);
                             if (remain_quantity.gte(amount_limit.min)) {
                                 log(`[REC.4C]: Bumping total of new execution order for ${pending_order.id} to minimum supported ${amount_limit.min} since unrealized quantity ${remain_quantity.toString()} allows it...`)
                                 next_total = Decimal(amount_limit.min)
@@ -203,8 +210,8 @@ module.exports.JOB_BODY = async (config, log) => {
                                 return pending_order;
                             }
                         }
-                        
-                        if(next_total.gt(amount_limit.max)) {
+
+                        if (next_total.gt(amount_limit.max)) {
                             log(`[WARN.4C]: Next total of ${next_total.toString()} is greater than the markets max limit of ${amount_limit.max}, setting the next total to limit\`s max ${amount_limit.max}`);
                             next_total = Decimal(amount_limit.max);
                         }

@@ -122,7 +122,7 @@ describe('Execution Order generator job', () => {
     }
     const PENDING_ORDER_IDS = [488, 512, 569, 599]; //ids for testing various pending orders
     const PENDING_ORDER_QNTY = 2.0;
-    const PENDING_ORDER_PRICE = _.random();
+    const PENDING_ORDER_PRICE = 0.25;
     const TEST_SYMBOL_PENDING_ORDER_BASE = Object.assign({}, TEST_PENDING_ORDER_BASE, {
         id: PENDING_ORDER_IDS[0],
         quantity: PENDING_ORDER_QNTY,
@@ -302,7 +302,7 @@ describe('Execution Order generator job', () => {
         });
     });
 
-    it("shall skip a pending order if the execution total is less than the minimum limit of the market", () => {
+    it("shall skip a pending order if the execution total is less than the minimum limit of the market and order cant cover the remainder", () => {
         ccxtUtils.getConnector.restore();
         sinon.stub(ccxtUtils, 'getConnector').callsFake(exhange => {
             const connector = {
@@ -334,7 +334,16 @@ describe('Execution Order generator job', () => {
         }, TEST_SYMBOL_PENDING_ORDER_BASE, {
             id: PENDING_ORDER_IDS[2]
         });
-
+        sinon.stub(ExecutionOrder, 'findAll').callsFake(options => {
+            switch (options.where.recipe_order_id) {
+                case PENDING_ORDER_IDS[0]:
+                    return Promise.resolve([new ExecutionOrder(TEST_PENDING_EXECUTION_ORDER)]);
+                case PENDING_ORDER_IDS[1]:
+                    return Promise.resolve([new ExecutionOrder(TEST_PARTIAL_EXECUTION_ORDER)]);
+                default:
+                    return Promise.resolve([]);
+            }
+        });
         sinon.stub(RecipeOrder, 'findAll').callsFake(options => {
 
             stubSave(not_completed_order);
@@ -360,6 +369,7 @@ describe('Execution Order generator job', () => {
 
             restoreSymbols(
                 RecipeOrder.findAll,
+                ExecutionOrder.findAll,
                 ExecutionOrderFill.findAll,
                 InstrumentExchangeMapping.find
             );
@@ -545,7 +555,7 @@ describe('Execution Order generator job', () => {
             });
 
             //correct quantity was used for line order even though theres more quantity left
-            chai.assert.closeTo(line_order.total_quantity, SYSTEM_SETTINGS.BASE_BTC_TRADE, SYSTEM_SETTINGS.TRADE_BASE_FUZYNESS);
+            chai.assert.closeTo(parseFloat(line_order.total_quantity), SYSTEM_SETTINGS.BASE_BTC_TRADE, SYSTEM_SETTINGS.TRADE_BASE_FUZYNESS);
             //quantity in order was capped to total available
             chai.assert.isAtMost(whole_order.total_quantity, low_total_qnty);
         });
