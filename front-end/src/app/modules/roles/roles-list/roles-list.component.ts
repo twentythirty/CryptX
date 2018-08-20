@@ -29,21 +29,20 @@ export class RolesListComponent extends DataTableCommonManagerComponent {
   constructor(
     public route: ActivatedRoute,
     private rolesService: RolesService,
-    private router: Router
+    private router: Router,
   ) {
     super(route);
   }
 
   getAllData(): void {
-    this.rolesService.getAllRoles(this.requestData).subscribe(res => {
-      this.rolesDataSource.body = res.roles;
+    this.rolesService.getAllRoles(this.requestData)
+    .finally(() => this.stopTableLoading())
+    .subscribe(res => {
+      Object.assign(this.rolesDataSource, {
+        body: res.roles,
+        footer: res.footer
+      });
       this.count = res.count;
-      if(res.footer) {
-        this.rolesDataSource.footer = this.rolesColumnsToShow.map(col => {
-            let key = (typeof col == 'string') ? col : col.column;
-            return res.footer.find(f => f.name == key) || '';
-        })
-      }
     });
   }
 

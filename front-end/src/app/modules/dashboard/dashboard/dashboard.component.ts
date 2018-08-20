@@ -56,13 +56,14 @@ export class DashboardComponent extends DataTableCommonManagerComponent implemen
 
 
   getAllData() {
-    this.investmentService.getAllInvestments(this.requestData).subscribe(
+    this.investmentService.getAllInvestments(this.requestData)
+    .finally(() => this.stopTableLoading())
+    .subscribe(
       res => {
         Object.assign(this.investmentsDataSource, {
           body: res.investment_runs,
           footer: res.footer
         });
-
         this.count = res.count;
       }
     );

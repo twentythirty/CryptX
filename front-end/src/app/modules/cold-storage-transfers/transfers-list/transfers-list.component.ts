@@ -84,7 +84,9 @@ export class TransfersListComponent extends DataTableCommonManagerComponent impl
   }
 
   getAllData(): void {
-    this.coldStorageService.getAllTransfers(this.requestData).subscribe(
+    this.coldStorageService.getAllTransfers(this.requestData)
+    .finally(() => this.stopTableLoading())
+    .subscribe(
       res => {
         Object.assign(this.transfersDataSource, {
           body: res.transfers,

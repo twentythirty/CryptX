@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
-import { ActivatedRoute, Router, Params } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { mergeMap } from 'rxjs/operators/mergeMap';
+import _ from 'lodash';
 
 import { StatusClass } from '../../../shared/models/common';
 
@@ -17,7 +18,6 @@ import {
 } from '../../../shared/components/data-table-cells';
 
 import { InvestmentService } from '../../../services/investment/investment.service';
-import _ from 'lodash';
 
 /**
  * 0. Set HTML and SCSS files in component decorator
@@ -119,6 +119,15 @@ export class RecipeRunDetailComponent extends TimelineDetailComponent implements
 
     this.getFilterLOV();
   }
+  
+  /**
+   * + If custom ngOnInit() is needed, call super.ngOnInit() to
+   * perform parent component class initialization
+   */
+
+  ngOnInit() {
+    super.ngOnInit();
+  }
 
   /**
    * 4. Implement abstract methods to fetch data OnInit
@@ -127,6 +136,7 @@ export class RecipeRunDetailComponent extends TimelineDetailComponent implements
     this.route.params.pipe(
       mergeMap(
         params => this.investmentService.getAllRecipeDetails(params['id'], this.requestData)
+          .finally(() => this.stopTableLoading())
       )
     ).subscribe(
       res => {
@@ -190,8 +200,8 @@ export class RecipeRunDetailComponent extends TimelineDetailComponent implements
   }
 
   removeActionColumn(){
-     this.singleDataSource.header.splice(-1,1);
-     this.singleColumnsToShow.splice(-1,1);
+    this.singleDataSource.header.splice(-1,1);
+    this.singleColumnsToShow.splice(-1,1);
   }
 
   protected getTimelineData(): void {
@@ -212,15 +222,6 @@ export class RecipeRunDetailComponent extends TimelineDetailComponent implements
 
   public openListRow(row: any): void {
     // Do nothing
-  }
-
-  /**
-   * + If custom ngOnInit() is needed, call super.ngOnInit() to
-   * perform parent component class initialization
-   */
-
-  ngOnInit() {
-    super.ngOnInit();
   }
 
   /**

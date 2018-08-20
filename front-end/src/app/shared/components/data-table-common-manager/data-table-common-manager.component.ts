@@ -14,9 +14,14 @@ export class DataTableCommonManagerComponent implements OnInit, OnDestroy {
   private queryParamsSubscription;
   
   public routeParamId: number;
+
   public count: number = 0;
   public pageSize: number = 10;
   public page: number = 1;
+  /**
+   * @param isTableLoading - When true table will get loading state and lock until get false
+   */
+  public isTableLoading: boolean = false;
 
   public requestData: RolesAllRequestData = {
     filter: {},
@@ -36,6 +41,8 @@ export class DataTableCommonManagerComponent implements OnInit, OnDestroy {
     this.queryParamsSubscription = this.route.queryParams
     .filter(params => !params.page || params.page != this.prevQueryParams.page )
     .subscribe(params => {
+      this.startTableLoading();
+
       this.routeParamId = params.id
       this.page = params.page || 1;
       this.requestData.offset = (this.page - 1) * this.pageSize;
@@ -95,6 +102,8 @@ export class DataTableCommonManagerComponent implements OnInit, OnDestroy {
       this.getAllData();
     }
 
+    this.startTableLoading();
+
     // this.router.navigate([], {
     //   queryParamsHandling: 'merge',
     //   queryParams: {
@@ -113,6 +122,14 @@ export class DataTableCommonManagerComponent implements OnInit, OnDestroy {
     ];
 
     this.orderingCleared = false;
+  }
+
+  public startTableLoading() {
+    this.isTableLoading = true;
+  }
+
+  public stopTableLoading() {
+    this.isTableLoading = false;
   }
 
   public getAllData() {}

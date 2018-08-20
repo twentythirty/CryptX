@@ -77,7 +77,9 @@ export class OrdersListComponent extends DataTableCommonManagerComponent impleme
   }
 
   getAllData(): void {
-    this.ordersService.getAllOrders(this.requestData).subscribe(
+    this.ordersService.getAllOrders(this.requestData)
+    .finally(() => this.stopTableLoading())
+    .subscribe(
       res => {
         Object.assign(this.ordersDataSource, {
           body: res.recipe_orders,

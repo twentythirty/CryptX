@@ -5,6 +5,7 @@
 <app-data-table
   [dataSource]="orderDataSource"
   [columnsToShow]="orderColumnsToShow"
+  [loading]="isTableLoading"
   (setFilter)="onSetFilter($event)"
   (openRow)="openRow($event)"
 ></app-data-table>

@@ -59,29 +59,33 @@ export class RecipeRunListComponent extends DataTableCommonManagerComponent impl
   private readModalIsShown: boolean = false;
   private readData: { title: string, content: string };
 
-    constructor(public route: ActivatedRoute,
-              protected recipeService: RecipeRunsService,
-              protected router: Router,) {
+  constructor(
+    public route: ActivatedRoute,
+    protected recipeService: RecipeRunsService,
+    protected router: Router,
+  ) {
     super (route)
-   }
+  }
 
-   ngOnInit() {
+  ngOnInit() {
     super.ngOnInit();
     this.getFilterLOV();
   }
 
   getFilterLOV(): void {
-   this.recipeDataSource.header.filter(
+    this.recipeDataSource.header.filter(
        col => ['id', 'investment_run_id', 'user_created', 'approval_status', 'approval_user'].includes(col.column)
     ).map(
       col => {
-        col.filter.rowData$ = this.recipeService.getHeaderLOV(col.column)
+        col.filter.rowData$ = this.recipeService.getHeaderLOV(col.column);
       }
-    )
+    );
   }
 
   getAllData(): void {
-    this.recipeService.getAllRecipeRuns(this.requestData).subscribe(
+    this.recipeService.getAllRecipeRuns(this.requestData)
+    .finally(() => this.stopTableLoading())
+    .subscribe(
       res => {
         Object.assign(this.recipeDataSource, {
           body: res.recipe_runs,
@@ -89,7 +93,7 @@ export class RecipeRunListComponent extends DataTableCommonManagerComponent impl
         });
         this.count = res.count;
       }
-    )
+    );
   }
 
   openRow(recipe: Recipe): void {
