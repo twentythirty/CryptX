@@ -482,7 +482,7 @@ const fetchAssetsViewFooter = async (where_clause = '') => {
 FROM
   (SELECT (CASE WHEN is_base = 'assets.is_base.yes' THEN 1 ELSE 0 END) AS is_base,
           (CASE WHEN is_deposit = 'assets.is_deposit.yes' THEN 1 ELSE 0 END) AS is_deposit,
-          (CASE WHEN status = 'assets.status.400' THEN 1 ELSE 0 END) AS status,
+          (CASE WHEN status = 'assets.status.401' THEN 1 ELSE 0 END) AS status,
           (CASE WHEN is_cryptocurrency = 'assets.is_cryptocurrency.yes' THEN 1 ELSE 0 END) AS is_cryptocurrency,
           symbol,
           capitalization
