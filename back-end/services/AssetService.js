@@ -235,8 +235,8 @@ const getBaseAssetPrices = async function () {
   (
     SELECT assetBuy.symbol as symbol, imd1.ask_price as price, imd1.timestamp as timestamp
     FROM asset as a1
-    JOIN instrument i ON i.transaction_asset_id=a1.id
-    JOIN asset as assetBuy ON assetBuy.id=i.quote_asset_id
+    JOIN instrument i ON i.quote_asset_id=a1.id
+    JOIN asset as assetBuy ON assetBuy.id=i.transaction_asset_id
     JOIN instrument_exchange_mapping as iem1 ON iem1.instrument_id=i.id
     JOIN instrument_market_data imd1 ON imd1.id=(
         SELECT id FROM instrument_market_data imdd 
@@ -253,8 +253,8 @@ const getBaseAssetPrices = async function () {
     
     SELECT assetSell.symbol as symbol, (1 / imd2.bid_price) as price, imd2.timestamp as timestamp
     FROM asset as a2
-    JOIN instrument i ON i.quote_asset_id=a2.id
-    JOIN asset as assetSell ON assetSell.id=i.transaction_asset_id
+    JOIN instrument i ON i.transaction_asset_id=a2.id
+    JOIN asset as assetSell ON assetSell.id=i.quote_asset_id
     JOIN instrument_exchange_mapping as iem2 ON iem2.instrument_id=i.id
     JOIN instrument_market_data imd2 ON imd2.id=(
         SELECT id FROM instrument_market_data imdd 

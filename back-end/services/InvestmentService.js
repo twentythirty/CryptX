@@ -38,7 +38,6 @@ const createInvestmentRun = async function (user_id, strategy_type, is_simulated
   // only allow one REAL investment run at the same time.
   if (executing_investment_run && !is_simulated) {
     let message = `Investment run cannot be initiated as other investment runs are still in progress`;
-
     TE(message);
   }
   let investment_run;
@@ -141,6 +140,7 @@ module.exports.createRecipeRun = createRecipeRun;
 const generateRecipeDetails = async function (strategy_type) {
   // get assets for recipe
   let err, assets, instruments;
+
   [err, assets] = await to(AssetService.getStrategyAssets(strategy_type));
   if (err) TE(err.message);
 
@@ -186,8 +186,19 @@ const generateRecipeDetails = async function (strategy_type) {
 
   _.zipWith(assets, possible_actions, (a, b) => a.possible_actions = b);
 
+  let excluded_assets;
+  [assets, excluded_assets] = _.partition(assets, (asset) => !asset.is_base);
+
+  // find assets that have no instruments/possible ways to acquire them
+  let inaccessible = assets.filter(a => 
+    typeof a.possible_actions === 'undefined' || !a.possible_actions.length
+  );
+  if (inaccessible.length) {
+    TE(`Couldn't find a way to acquire these assets: ${inaccessible.map(a => a.symbol)}. `);
+  }
+
   assets.map(asset => {
-    //if this is a base asset we find a buy action involving another base asset
+/*  //if this is a base asset we find a buy action involving another base asset
     if (asset.is_base) {
       const base_asset_ids = _.map(base_assets, 'id');
       asset.suggested_action = _.find(asset.possible_actions, action => {
@@ -205,11 +216,7 @@ const generateRecipeDetails = async function (strategy_type) {
 
       })
       return;
-    }
-    /* Return empty object is there is no ways found to get asset.
-      Asset may be greylisted if it is not tradeable on any exchanges. */
-    if (typeof asset.possible_actions === 'undefined' || !asset.possible_actions.length)
-      return {};
+    } */
 
     /* Cancel recipe generation if asset doesn't meet minimum volume requirements */
     asset.possible_actions = asset.possible_actions.filter(a =>
