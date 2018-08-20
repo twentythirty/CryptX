@@ -21,3 +21,10 @@
 .word-wrap{
     word-wrap: break-word;
 }
+.column-align-left {
+    text-align: left !important;
+
+    &.padded-40 {
+        padding-left: 40%
+    }
+}

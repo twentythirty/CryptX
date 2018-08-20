@@ -21,6 +21,13 @@ export class AccountsAllResponse {
   count: number;
 }
 
+export class CustodiansAllResponse {
+  success: boolean;
+  custodians: Array<any>;
+  footer: Array<any>;
+  count: number;
+}
+
 @Injectable()
 export class ColdStorageService {
 
@@ -71,6 +78,10 @@ export class ColdStorageService {
         }
       )
     )
+  }
+
+  getAllCustodians(requestData: EntitiesFilter): Observable<CustodiansAllResponse>{
+    return this.http.post<CustodiansAllResponse>(this.baseUrl + 'cold_storage/custodians/all', requestData);
   }
 
 }

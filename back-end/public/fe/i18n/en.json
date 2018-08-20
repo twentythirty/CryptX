@@ -465,6 +465,9 @@
   },
 
   "cold_storage": {
+    "custodians": {
+      "header": "Custodians"
+    },
     "transfers": {
       "status": {
         "91": "Pending",

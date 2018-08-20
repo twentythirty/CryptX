@@ -38,6 +38,7 @@ import { ExecutionOrderListComponent } from "../../modules/execution-orders/exec
 import { TransfersListComponent } from "../../modules/cold-storage-transfers/transfers-list/transfers-list.component";
 import { AddAccountComponent } from "../../modules/cold-storage-accounts/add-account/add-account.component";
 import { AccountsListComponent } from "../../modules/cold-storage-accounts/accounts-list/accounts-list.component";
+import { CustodiansListComponent } from '../../modules/cold-storage-custodians/custodians-list/custodians-list.component';
 
 const routes: Routes = [
   { path: 'login', component: LoginComponent },
@@ -193,6 +194,12 @@ const routes: Routes = [
     path: 'cold_storage/accounts/add',
     component: AddAccountComponent,
     canActivate: [AuthGuard],
+  },
+
+  {
+    path: 'cold_storage/custodians',
+    component: CustodiansListComponent,
+    canActivate: [AuthGuard]
   },
 
 

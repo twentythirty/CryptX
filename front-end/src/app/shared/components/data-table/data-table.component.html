@@ -3,6 +3,7 @@
     <tr>
       <th
         *ngFor="let item of dataSource.header"
+        class="{{ getColumnClass(item.column) }} thead"
         [class.sort-open]="filterMap[item.column]"
         [class.highlight]="filterAppliedMap[item.column]"
         [class.sortable]="showFilter(item.filter)"
@@ -42,7 +43,7 @@
       >
         <td
           *ngFor="let index of columnsToShow"
-          class="{{ getColumnClass(index.column) }}"
+          class="{{ getColumnClass(index.column) }} tbody"
           [class.highlight]="filterAppliedMap[index.column]"
         >
           <ng-container *ngIf="columnIsBasic(index); else dynamicColumn">
@@ -79,6 +80,7 @@
     <tr>
       <td
         *ngFor="let item of getFooterData()"
+        class="{{ getColumnClass(item.column) }} tfoot"
         [class.highlight]="filterAppliedMap[item.name]"
       >
         <ng-container *ngIf="item.value">
