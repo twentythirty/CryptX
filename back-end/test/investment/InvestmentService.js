@@ -475,6 +475,18 @@ describe('InvestmentService testing:', () => {
         });
     });
 
+    it("shall throw if no instrument found for an asset", () => {
+      if (assetService.getAssetInstruments.restore)
+        assetService.getAssetInstruments.restore();
+
+      sinon.stub(assetService, 'getAssetInstruments').callsFake(() => {
+        return Promise.resolve([]);
+      });
+
+      return chai.expect(investmentService.generateRecipeDetails(STRATEGY_TYPE))
+        .eventually.to.be.rejected;
+    });
+
     it("shall throw if none of exchanges satisfy liquidity requirements of instrument", () => {
       if (assetService.getAssetInstruments.restore)
         assetService.getAssetInstruments.restore();
