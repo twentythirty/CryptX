@@ -71,7 +71,7 @@ const universal_actions = {
 
             const template = _.get(templates, this.template, '');
 
-            this.details = _replaceArgs(template, args || {});
+            this.details = _replaceArgs(template, this.options.args || {});
 
             return this;
         }
@@ -79,7 +79,6 @@ const universal_actions = {
     modified: {
         level: LOG_LEVELS.Info,
         handler: function(params = {}) {
-
             this.options = params;
 
             let { previous_instance, updated_instance } = params;
@@ -119,15 +118,17 @@ const universal_actions = {
                         updated = replace[key][updated];
                     }
 
-                    const args = {
+                    let args = {
                         column: _.startCase(key),
                         prev_value: previous,
                         new_value: updated
-                    }
+                    };
 
-                    this.options.args = Object.assign(params.args || {}, args);
-
-                    if(this.user) args.user_name = this.user.full_name();
+                    let _options = _.clone(this.options);
+                    _options.args = Object.assign({}, params.args || {}, args);
+                    //console.log(`PREV: ${previous}, UPDATED: ${updated}>>>>>>>>>`);
+                    //console.log(JSON.stringify(this.options, null, 4));
+                    //console.log('<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<');
 
                     this.template = 'logs.universal.modified';
 
@@ -137,16 +138,17 @@ const universal_actions = {
 
                     const template = _.get(templates, this.template, '');
 
-                    this.details = _replaceArgs(template, args || {});
+                    this.details = _replaceArgs(template, _options.args || {});
 
                     action_logs.push({
                         details: this.details,
                         template: this.template,
-                        options: this.options
+                        options: _options
                     });
+                    
                 }
             }
-
+            console.log(JSON.stringify(action_logs, null, 4));
             return action_logs;
         }
     }
@@ -175,8 +177,8 @@ module.exports.logAction = async (action_path_or_template, options = {}) => {
         let action_logs = null;
         if(_.isFunction(action.handler)) action_logs = action.handler(options);
         else {
-            action.hander = _defaultHandler;
-            action_logs = action.hander(options);
+            action.handler = _defaultHandler;
+            action_logs = action.handler(options);
         }
     
         if(!action_logs) module.exports.log(`Handler failed to return module.exports.log string for action path "${action_path}" and params: ${JSON.stringify(params)}`);
