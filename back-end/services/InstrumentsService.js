@@ -58,6 +58,15 @@ const addInstrumentExchangeMappings = async (instrument_id, exchange_mappings) =
         TE(`Supplied bad instrument id or exchange mappings!`)
     }
 
+    //Check for duplicate exchanges
+    const duplicates = exchange_mappings.map(mapping => {
+        const found = exchange_mappings.filter(map => map.exchange_id === mapping.exchange_id).length;
+        //2 is used because it would always find it self.
+        if(found >= 2) return true;
+    }).filter(mapping => mapping);
+
+    if(duplicates.length) TE(`Only 1 unique exchange mapping is allowed per instrument`);
+
     //rebuild list of exchange id/external mapping pairs into more convenient lookup
     const exchange_to_external = _.fromPairs(_.map(
         exchange_mappings,
@@ -103,13 +112,16 @@ const addInstrumentExchangeMappings = async (instrument_id, exchange_mappings) =
         })
     })
 
-    const [error, saved_models] = await to(Promise.all(_.map(models, m => m.save())));
+    let [ err ] = await to(InstrumentExchangeMapping.destroy({
+        where: { instrument_id }
+    }));
 
-    if (error) {
-        //TE(`error occurred while saving models ${models}: ${error}`);
-        console.error(error) //temp.;
-        TE(error.message);
-    }
+    if (err) TE(err.message);
+
+    let saved_models = [];
+    [ err, saved_models ] = await to(Promise.all(_.map(models, m => m.save())));
+
+    if (err) TE(err.message);
 
     return saved_models;
 };
