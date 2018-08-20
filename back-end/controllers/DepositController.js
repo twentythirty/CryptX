@@ -133,7 +133,7 @@ const getRecipeDeposit = async function (req, res) {
     AdminViewService.fetchRecipeDepositView(deposit_id),
     ActionLog.findAll({
       where: { recipe_run_deposit_id: deposit_id },
-      attributes: ['id', 'timestamp', 'level', 'translation_key', 'translation_args'],
+      attributes: ['id', 'details', 'timestamp', 'level', 'translation_key', 'translation_args'],
       order: [ [ 'timestamp', 'DESC' ] ]
     })
   ]));

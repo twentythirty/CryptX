@@ -280,7 +280,7 @@ const getExecutionOrder = async function (req, res) {
     adminViewsService.fetchExecutionOrderView(execution_order_id),
     ActionLog.findAll({
       where: { execution_order_id },
-      attributes: ['id', 'timestamp', 'level', 'translation_key', 'translation_args'],
+      attributes: ['id', 'details', 'timestamp', 'level', 'translation_key', 'translation_args'],
       order: [ [ 'timestamp', 'DESC' ] ]
     })
   ]));
