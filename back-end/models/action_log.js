@@ -6,7 +6,7 @@ module.exports = (sequelize, DataTypes) => {
     {
       timestamp: DataTypes.DATE,
       details: {
-        type: DataTypes.TEXT("medium"),
+        type: DataTypes.TEXT("long"),
         allowNull: true
       },
       level: {

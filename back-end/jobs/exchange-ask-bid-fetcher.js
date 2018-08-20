@@ -5,12 +5,14 @@ const { logAction } = require('../utils/ActionLogUtil');
 const action_path = 'ask_bid_fetcher';
 
 const actions = {
+    instrument_error: `${action_path}.instrument_error`,
+    job_error: `${action_path}.job_error`,
     failed_to_fetch: `${action_path}.failed_to_fetch`,
 };
 
 
 //run once every 5 minutes
-module.exports.SCHEDULE = '*/5 * * * *';
+module.exports.SCHEDULE = '*/5 * * * * *';
 module.exports.NAME = 'EXCH_ASK_BID';
 
 module.exports.JOB_BODY = async (config, log) => {
@@ -54,6 +56,13 @@ module.exports.JOB_BODY = async (config, log) => {
                             Promise.resolve(mapping),
                             //wrap exchange promise into a promise that returns empty array if broken
                             Promise.resolve(fetcher.fetch_order_book(mapping.external_instrument_id)).catch(err => {
+                                logAction(actions.instrument_error, {
+                                    args: {
+                                        instrument: mapping.external_instrument_id,
+                                        exchange: exchange.name,
+                                        error: err
+                                    },
+                                });
                                 return []
                             })
                         ]);
@@ -74,7 +83,7 @@ module.exports.JOB_BODY = async (config, log) => {
                         market_data.hasOwnProperty('bids')
                     );
 
-                    failed_to_fetch = failed_to_fetch.map(([symbol_mapping, failed_data]) => {
+                    /* failed_to_fetch = failed_to_fetch.map(([symbol_mapping, failed_data]) => {
                         return symbol_mapping.external_instrument_id
                     });
 
@@ -86,7 +95,7 @@ module.exports.JOB_BODY = async (config, log) => {
                             },
                             relations: { exchange_id: exchange.id }
                         });
-                    }
+                    } */
 
                     return _.map(successfully_fetched, ([symbol_mapping, market_data]) => {
 
@@ -104,6 +113,12 @@ module.exports.JOB_BODY = async (config, log) => {
                 else
                     return "No records inserted!";
             });
+        });
+    }).catch(err => {
+        logAction(actions.job_error, {
+            args: {
+                error: err
+            },
         });
     });
 };

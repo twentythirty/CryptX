@@ -504,7 +504,9 @@
     },
 
     "ask_bid_fetcher": {
-      "failed_to_fetch": "System didn't receive prices from {{exchange}} exchange for instruments: {{instruments}}"
+      "error": "Price fetching job failed. Error: {{ error }}",
+      "failed_to_fetch": "System didn't receive prices from {{exchange}} exchange for instruments: {{instruments}}",
+      "instrument_error": "Error while fetching price for {{instrument}} from {{exchange}}: {{error}}"
     },
 
     "execution_orders": {
