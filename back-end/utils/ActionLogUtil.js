@@ -204,6 +204,11 @@ module.exports.logAction = async (action_path_or_template, options = {}) => {
  * @returns {Promise} Resolves in a new action module.exports.log object.
  */
 module.exports.log = async (details, translation_key = null, options = {}) => {
+    //If the second parameter is an object, treat it like options.
+    if(_.isPlainObject(translation_key)) {
+        options = _.clone(translation_key);
+        translation_key = null;
+    }
 
     if(!_.isString(details)) details = JSON.stringify(details);
 
