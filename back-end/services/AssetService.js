@@ -3,8 +3,11 @@
 const Asset = require('../models').Asset;
 const AssetStatusChange = require('../models').AssetStatusChange;
 const AssetMarketCapitalization = require('../models').AssetMarketCapitalization;
+const Exchange = require('../models').Exchange;
+const InstrumentExchangeMapping = require('../models').InstrumentExchangeMapping;
 const User = require('../models').User;
 const sequelize = require('../models').sequelize;
+const Op = require('../models').Sequelize.Op;
 
 const { logAction } = require('../utils/ActionLogUtil');
 
@@ -275,7 +278,40 @@ const getBaseAssetPrices = async function () {
 
   if (err) TE(err.message);
 
-  if (!prices.length) TE(`No base asset prices in USD for past ${Math.floor(ttl_threshold/60)} minutes found!`);
+  if (!prices.length){
+    const message_start = `No base asset prices in USD for past ${Math.floor(ttl_threshold/60)} minutes found!`;
+
+    const existing_mappings = await InstrumentExchangeMapping.findAll({
+      where: {
+        external_instrument_id: {
+          [Op.iLike]: '%/USDT'
+        }
+      }
+    });
+    const missing_exchanges = await Exchange.findAll({
+      where: {
+        id: {
+          [Op.notIn]: _.map(existing_mappings, 'exchange_id')
+        }
+      }
+    });
+    if (!_.isEmpty(missing_exchanges)) {
+      const missing_exchanges_message = `
+      Missing USDT instrument mappings for exchanges: ${_.join(_.map(missing_exchanges, 'name'), ', ')}. 
+      Please use/create an instrument with either 'Us Dollars' or 'Tether' as the Quote Asset and add the missing mappings`;
+
+      TE(message_start + '\n' + missing_exchanges_message);
+    } else {
+      //we really are missing recent ask/bids
+      const missing_prices = `Missing recent prices. Please wait for new prices to be fetched 
+      OR manually launch the job EXCH_ASK_BID, 
+      OR increase its automatic frequency, 
+      OR increase the BASE_ASSET_PRICE_TTL_THRESHOLD system threshold to allow for older price points.`;
+
+      TE(message_start + '\n' + missing_prices);
+    }
+
+  } 
 
   prices.map(p => {
     Object.assign(p, {

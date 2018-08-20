@@ -4,14 +4,17 @@ const util = require('util');
 
 const IncomingMessage = require("http").IncomingMessage;
 
-to = function(promise) {
+//allow the to mechanism to not parse the error it receives assuming the error is preparsed
+to = function(promise, parse_error = true) {
   
   //global function that will help use handle promise rejections, this article talks about it http://blog.grossman.io/how-to-write-async-await-without-try-catch-blocks-in-javascript/
   return promise
     .then(data => {
       return [null, data];
     })
-    .catch(err => [pe(err)]);
+    .catch(err => [
+      parse_error? pe(err) : err
+    ]);
 };
 
 pe = require("parse-error"); //parses error so you can read error message and handle them accordingly

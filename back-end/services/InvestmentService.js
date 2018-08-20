@@ -102,7 +102,7 @@ const createRecipeRun = async function (user_id, investment_run_id) {
   ));
   if (err) TE(err.message);
 
-  [err, recipe_run_detail] = await to(this.generateRecipeDetails(investment_run.strategy_type));
+  [err, recipe_run_detail] = await to(this.generateRecipeDetails(investment_run.strategy_type), false);
   if (err) TE(err.message);
 
   [err, recipe_run] = await to(RecipeRun.create({
@@ -154,7 +154,7 @@ const generateRecipeDetails = async function (strategy_type) {
   base_assets.map(asset => asset.toJSON());
 
   let prices;
-  [err, prices] = await to(AssetService.getBaseAssetPrices());
+  [err, prices] = await to(AssetService.getBaseAssetPrices(), false);
   if (err) TE(err.message);
 
   base_assets.map((a) => {

@@ -34,7 +34,7 @@ const createRecipeRun = async function (req, res) {
   let investment_run_id = req.params.investment_id,
 
     [err, recipe_run] = await to(
-      investmentService.createRecipeRun(req.user.id, investment_run_id)
+      investmentService.createRecipeRun(req.user.id, investment_run_id), false
     );
   if (err) return ReE(res, err, 422);
 
