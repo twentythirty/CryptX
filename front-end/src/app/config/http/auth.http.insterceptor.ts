@@ -7,6 +7,7 @@ import 'rxjs/add/operator/catch';
 
 import { AuthService } from '../../services/auth/auth.service';
 import { MatSnackBar } from '@angular/material';
+import _ from 'lodash';
 
 @Injectable()
 export class PreRequestAuthInterceptor implements HttpInterceptor {
@@ -39,6 +40,10 @@ export class PostRequestAuthInterceptor implements HttpInterceptor {
     return next.handle(request).do((event: HttpEvent<any>) => {
       if (event instanceof HttpResponse) {
         // do stuff if needed
+        const nextToken = _.get(event, 'body.next_token');
+
+        if(nextToken) this.authService.setToken(nextToken);
+
       }
     }, (err: any) => {
       if (err instanceof HttpErrorResponse) {
