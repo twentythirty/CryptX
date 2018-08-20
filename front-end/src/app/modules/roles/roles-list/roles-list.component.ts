@@ -16,7 +16,7 @@ import { Role } from "../../../shared/models/role";
 export class RolesListComponent extends DataTableCommonManagerComponent {
   rolesDataSource: TableDataSource = {
     header: [
-      { column: 'name', nameKey: 'table.header.role_name', filter: { type: 'text', sortable: true } }
+      { column: 'name', nameKey: 'table.header.role_name', column_class: 'column-align-left', filter: { type: 'text', sortable: true } }
     ],
     body: null,
   };

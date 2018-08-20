@@ -83,9 +83,9 @@
     <tfoot *ngIf="dataSource.footer?.length > 0">
       <tr>
         <td
-          *ngFor="let item of columnsToShow"
-          class="{{ getColumnClass(item.column) }} tbody"
-          [class.highlight]="filterAppliedMap[item.column]"
+          *ngFor="let item of getFooterData()"
+          class="{{ getColumnClass(item.name) }} tbody"
+          [class.highlight]="filterAppliedMap[item.name]"
         >
           <ng-container *ngIf="item.value">
             <span class="upper-case">{{ item.template | translate: item.args }} </span>

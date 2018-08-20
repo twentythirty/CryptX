@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
-import { DataTableCommonManagerComponent } from "../../../shared/components/data-table-common-manager/data-table-common-manager.component";
 import { ActivatedRoute, Router } from "@angular/router";
+import { DataTableCommonManagerComponent } from "../../../shared/components/data-table-common-manager/data-table-common-manager.component";
 import { TableDataSource, TableDataColumn } from "../../../shared/components/data-table/data-table.component";
 import { NumberCellDataColumn, StatusCellDataColumn, DateCellDataColumn, ActionCellDataColumn, DataCellAction } from "../../../shared/components/data-table-cells/index";
 import { StatusClass } from "../../../shared/models/common";
@@ -72,11 +72,12 @@ export class TransfersListComponent extends DataTableCommonManagerComponent impl
   ];
 
   constructor(
-      private coldStorageService: ColdStorageService,
-      public route: ActivatedRoute,
-      private router: Router) {
+    private coldStorageService: ColdStorageService,
+    public route: ActivatedRoute,
+    private router: Router,
+  ) {
     super(route);
-   }
+  }
 
   ngOnInit() {
     super.ngOnInit();

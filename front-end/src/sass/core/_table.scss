@@ -98,6 +98,19 @@
             }
         }
 
+        // Custom class for custom styling column styling
+        &.word-wrap {
+            word-wrap: break-word;
+        }
+        &.column-align-left {
+            text-align: left;
+            padding-left: 20px;
+        }
+        &.column-padded-40 {
+            padding-left: 40%;
+        }
+        //-------------
+
         .selectable {
             position: absolute;
             width: 100%;
@@ -144,6 +157,7 @@
                     }
                 }
             }
+            //-----------------
 
             td {
                 &.highlight {
@@ -151,7 +165,14 @@
                 }
 
                 &.empty-col {
+                    color: #78909C;
                     padding: 0;
+                    text-align: center !important;
+
+                    span {
+                        margin: 0 auto;
+                        width: auto;
+                    }
                 }
             }
         }
