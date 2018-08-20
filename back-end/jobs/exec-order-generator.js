@@ -44,7 +44,7 @@ module.exports.JOB_BODY = async (config, log) => {
     const InstrumentExchangeMapping = models.InstrumentExchangeMapping;
 
     //settings should be injected before this point in db-config, so its safe to reference
-    const trade_base = {
+    let trade_base = {
         BTC: SYSTEM_SETTINGS.BASE_BTC_TRADE,
         ETH: SYSTEM_SETTINGS.BASE_ETH_TRADE
     };
@@ -168,8 +168,9 @@ module.exports.JOB_BODY = async (config, log) => {
     
                         //realized total is the sum of actual fills and potential quantity in resumable execution orders
                         const realized_total = fills_sum_decimal(execution_fills).plus(potential_qnatity)
-        
-                        if (realized_total.gte(Decimal(pending_order.quantity))) {
+                        const order_total = Decimal(pending_order.quantity)
+
+                        if (realized_total.gte(order_total)) {
                             log(`[WARN.3B]: Current fulfilled execution order total ${realized_total.toString()} covers recipe order ${pending_order.id} quantity ${pending_order.quantity}. Skipping recipe order...`);
                             return pending_order;
                         }
@@ -178,33 +179,37 @@ module.exports.JOB_BODY = async (config, log) => {
                         const base_trade_amount = trade_base[sold_symbol];
                         const fuzzy_trade_amount = 
                             Decimal(base_trade_amount)
+                                .div(pending_order.price) //divide base trading amoutn by tx asset price to know how much quantity we are actually buying
                                 .mul(
                                     Decimal(1).plus(_.random(-fuzzyness, fuzzyness, true))
                                 ).toDP(
                                     Decimal(exchange_mapping.tick_size).dp(), Decimal.ROUND_HALF_DOWN
-                                ).toNumber();
-                        log(`4b. predicting fuzzy ${sold_symbol} amount ${fuzzy_trade_amount} for recipe order ${pending_order.id}...`);
+                                );
+                        log(`4b. predicting fuzzy ${sold_symbol} amount ${fuzzy_trade_amount.toString()} reduced to tick size ${exchange_mapping.tick_size} for recipe order ${pending_order.id}...`);
     
                         //next total is either the fuzzy amount or order or market upper bound, whichever fits
-                        let next_total = clamp(
-                            fuzzy_trade_amount, 
-                            0.0, 
-                            Math.min(Decimal(pending_order.quantity).minus(Decimal(realized_total)).toNumber(), amount_limit.max)
-                        );
-                        log(`4c. actually using clamped fuzzy total ${next_total} of ${sold_symbol} on recipe order ${pending_order.id}`);
+                        let next_total = fuzzy_trade_amount;
+                        log(`4c. actually using clamped fuzzy total ${next_total.toString()} of ${sold_symbol} on recipe order ${pending_order.id}`);
                     
                         //Check if the next total is within the amount limit.
-                        if(next_total < amount_limit.min) {
-                            log(`[WARN.4C]: Next total of ${next_total} is less than the markets min limit of ${amount_limit.min}, skipping order execution`);
-                            return pending_order;
+                        if(next_total.lt(amount_limit.min)) {
+                            log(`[WARN.4C]: Next total of ${next_total.toString()} is less than the markets min limit of ${amount_limit.min}`);
+                            const remain_quantity = order_total.minus(realized_total);
+                            if (remain_quantity.gte(amount_limit.min)) {
+                                log(`[REC.4C]: Bumping total of new execution order for ${pending_order.id} to minimum supported ${amount_limit.min} since unrealized quantity ${remain_quantity.toString()} allows it...`)
+                                next_total = Decimal(amount_limit.min)
+                            } else {
+                                log(`[WARN.4C]: Skipping order generation since total remaining quantity ${remain_quantity.toString()} is too low for required exchange minimum ${amount_limit.min}`);
+                                return pending_order;
+                            }
                         }
                         
-                        if(next_total > amount_limit.max) {
-                            log(`[WARN.4C]: Next total of ${next_total} is greater than the markets max limit of ${amount_limit.max}, setting the next total to limit\`s max ${amount_limit.max}`);
-                            next_total = amount_limit.max;
+                        if(next_total.gt(amount_limit.max)) {
+                            log(`[WARN.4C]: Next total of ${next_total.toString()} is greater than the markets max limit of ${amount_limit.max}, setting the next total to limit\`s max ${amount_limit.max}`);
+                            next_total = Decimal(amount_limit.max);
                         }
 
-                        log(`4d. Current fulfilled recipe order total is ${realized_total}, adding another ${next_total}...`);
+                        log(`4d. Current fulfilled recipe order total is ${realized_total.toString()}, adding another ${next_total.toString()}...`);
 
                         //create next pending execution order and save it
                         return Promise.all([
@@ -212,7 +217,7 @@ module.exports.JOB_BODY = async (config, log) => {
                             ExecutionOrder.create({
                                 side: pending_order.side,
                                 type: EXECUTION_ORDER_TYPES.Market,
-                                total_quantity: next_total,
+                                total_quantity: next_total.toString(),
                                 status: EXECUTION_ORDER_STATUSES.Pending,
                                 recipe_order_id: pending_order.id,
                                 instrument_id: pending_order.instrument_id,

@@ -14,8 +14,7 @@ let dbPromise = models.sequelize.authenticate().then(() => {
     return migratorPerform();
 }).then((migrations) => {
     let settingsService = require('../services/SettingService');
-    settingsService.refreshSettingValues();
-    return migrations;
+    return settingsService.refreshSettingValues();
 }).catch(err => {
         console.error('Unable prepare RDBMS for app:', process.env.DATABASE_URL, err);
         process.exit(2);
