@@ -39,7 +39,7 @@ export class InstrumentAddComponent implements OnInit {
       this.assets = res.assets.map(asset => {
         return {
           id: asset.id,
-          value: asset.long_name,
+          value: asset.long_name
         };
       });
     });

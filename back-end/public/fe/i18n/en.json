@@ -17,7 +17,8 @@
     "save_changes": "Save changes",
     "sign_up": "Sign up",
     "activity_log": "Activity log",
-    "rationale": "Rationale"
+    "rationale": "Rationale",
+    "add_new_user": "Add new user"
   },
   "table": {
     "header": {
@@ -552,6 +553,11 @@
   },
 
   "cold_storage_accounts": {
-    "header": "Cold storage accounts"
+    "header": "Cold storage accounts",
+    "new_account": "New account",
+    "add_new_account": "Add new cold storage account",
+    "parameters": "Parameters",
+    "address": "Address",
+    "enter_address": "Enter Address"
   }
 }

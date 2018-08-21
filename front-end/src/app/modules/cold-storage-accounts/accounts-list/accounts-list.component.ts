@@ -74,4 +74,8 @@ export class AccountsListComponent extends DataTableCommonManagerComponent imple
     )
   }
 
+  AddAccount(){
+    this.router.navigate(['/cold_storage/accounts/add']);
+  }
+
 }

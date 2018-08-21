@@ -1,3 +1,99 @@
-<p>
-  add-account works!
-</p>
+<app-page-heading
+  [heading]="'cold_storage_accounts.add_new_account' | translate"
+></app-page-heading>
+
+<div class="split-content horizontal">
+  <form [formGroup]="form">
+  <app-content-block
+    [heading]="'cold_storage_accounts.parameters' | translate"
+  >
+   <div class="form-item">
+        <label class="label-name">
+          Portfolio
+        </label>
+        <input
+          ngui-auto-complete
+          formControlName="strategy_type"
+          [source]="strategies"
+          value-formatter="value"
+          list-formatter="value"
+          max-num-list="15"
+          [accept-user-input]="false"
+          (valueChanged)="ValueChanged($event, 'strategy_id')"
+        >
+        <mat-progress-spinner
+          *ngIf="strategiesLoading"
+          class="progress-spinner"
+          mode="indeterminate"
+          color="accent"
+          strokeWidth="1"
+          diameter="25"
+        ></mat-progress-spinner>
+      </div>
+
+      <div class="form-item">
+        <label class="label-name">
+          Asset
+        </label>
+        <input
+          ngui-auto-complete
+          formControlName="asset_id"
+          [source]="assets"
+          value-formatter="value"
+          list-formatter="value"
+          max-num-list="15"
+          [accept-user-input]="false"
+          (valueChanged)="ValueChanged($event, 'asset_id')"
+        >
+        <mat-progress-spinner
+          *ngIf="assetsLoading"
+          class="progress-spinner"
+          mode="indeterminate"
+          color="accent"
+          strokeWidth="1"
+          diameter="25"
+        ></mat-progress-spinner>
+      </div>
+
+      <div class="form-item">
+        <label class="label-name">
+          Custodians
+        </label>
+        <input
+          ngui-auto-complete
+          formControlName="custodian_id"
+          [source]="custodians"
+          value-formatter="value"
+          list-formatter="value"
+          max-num-list="15"
+          [accept-user-input]="false"
+          (valueChanged)="ValueChanged($event, 'custodian_id')"
+        >
+        <mat-progress-spinner
+          *ngIf="assetsLoading"
+          class="progress-spinner"
+          mode="indeterminate"
+          color="accent"
+          strokeWidth="1"
+          diameter="25"
+        ></mat-progress-spinner>
+      </div>
+    <app-input-item class="form-item"
+      type="text"
+      [label]="'cold_storage_accounts.address' | translate"
+      [formGroup]="form"
+      formControlName="address"
+      [placeholder]="'cold_storage_accounts.enter_address' | translate"
+    ></app-input-item>
+  </app-content-block>
+</form>
+
+<app-form-action-bar>
+  <div>
+    <button
+      class="btn submit"
+      [disabled]="buttonLoading || !form.valid"
+      (click)="Add()"
+    >{{ 'common.add_new_user' | translate }}</button>
+  </div>
+</app-form-action-bar>

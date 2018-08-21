@@ -6,6 +6,7 @@ import { BrowserModule } from "@angular/platform-browser";
 import { SharedModule } from "../../shared/shared.module";
 import { RouterModule } from "@angular/router";
 import { ColdStorageService } from "../../services/cold-storage/cold-storage.service";
+import { NguiAutoCompleteModule } from "@ngui/auto-complete/dist";
 
 @NgModule({
   imports: [
@@ -13,6 +14,7 @@ import { ColdStorageService } from "../../services/cold-storage/cold-storage.ser
     BrowserModule,
     SharedModule,
     RouterModule,
+    NguiAutoCompleteModule,
   ],
   declarations: [AccountsListComponent, AddAccountComponent],
   providers: [ColdStorageService]
