@@ -196,5 +196,5 @@ export class DataTableComponent implements OnInit {
     if(header) return header.column_class || '';
     else return '';
   }
-log = (a) => console.log(a)
+  
 }

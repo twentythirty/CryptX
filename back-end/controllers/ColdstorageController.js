@@ -26,25 +26,6 @@ module.exports.approveColdStorageTransfer = approveColdStorageTransfer;
 
 const getColdStorageTransfers = async function (req, res) {
 
-  // mock data below
-  // will leave it for now in case it will be need by FE
-  let mock_coldstorage_transfers = [...Array(10)].map((a, index) => ({
-    "id": index + 1,
-    "asset_id": 2,
-    "asset": "BTC",
-    "gross_amount": _.random(10, 100, true),
-    "net_amount": _.random(10, 100, true),
-    "exchange_withdrawal_fee": _.random(1, 10, true),
-    "status": `cold_storage_transfers.status.${_.random(91, 95, false)}`,
-    "destination_account": "F%jf5FYUfy543v",
-    "custodian": "DADDY LIMITED",
-    "strategy_type": "investment.strategy.101",
-    "source_exchange": "Binance",
-    "source_account": "BSKJHSJKSBSKBS",
-    "placed_timestamp": 1531819249470,
-    "completed_timestamp": 1531819249470
-}));
-
   const { seq_query, sql_where } = req;
 
   let [ err, result ] = await to(AdminViewsService.fetchColdStorageTransferViewDataWithCount(seq_query));
@@ -55,7 +36,7 @@ const getColdStorageTransfers = async function (req, res) {
 
   let footer = [];
   [ err, footer ] = await to(AdminViewsService.fetchColdStorageTransfersViewsFooter(sql_where));
-  transfers = transfers.concat(mock_coldstorage_transfers);
+
   return ReS(res, {
     transfers,
     count,
@@ -158,20 +139,6 @@ module.exports.addColdstorageAccount = addColdstorageAccount;
 
 const getColdstorageAccounts = async function (req, res) {
 
-  let mock_accounts = [...Array(20)].map((cust, index) => ({
-    id: index + 1,
-    asset_id: 2,
-    asset: "BTC",
-    strategy_type: "investment.strategy.101",
-    address: "x98m1b4B4Kdk4n2kmadmIxSaiu",
-    custodian: "Custodian ID",
-    balance: 32,
-    balance_usd: 186800,
-    balance_update_timestamp: 1532606182713
-  }));
-
-  //let footer = create_mock_footer(mock_accounts[0], 'cold_storage');
-
   const { seq_query, sql_where } = req;
 
   let [ err, result ] = await to(AdminViewsService.fetchColdStorageAccountsViewDataWithCount(seq_query));
@@ -184,12 +151,14 @@ const getColdstorageAccounts = async function (req, res) {
   [ err, footer ] = await to(AdminViewsService.fetchColdStorageAccountsViewsFooter(sql_where));
 
   if(err) return ReE(res, err.message, 422);
+
   accounts = accounts.map(a => a.toWeb());
-  accounts = accounts.concat(mock_accounts); //MOCKED FOR EASY LIFE
+
   return ReS(res, {
     accounts,
     footer,
     count
   });
+  
 };
 module.exports.getColdstorageAccounts = getColdstorageAccounts;
