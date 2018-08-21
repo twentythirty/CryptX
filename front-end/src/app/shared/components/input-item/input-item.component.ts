@@ -1,4 +1,4 @@
-import { Component, forwardRef, Input, OnInit } from '@angular/core';
+import { Component, forwardRef, Input, OnInit} from '@angular/core';
 import {
   NG_VALUE_ACCESSOR,
   ControlValueAccessor, 
@@ -30,6 +30,8 @@ export class InputItemComponent implements ControlValueAccessor, OnInit {
   @Input() placeholder: string;
   @Input() type: string;
   @Input() readonly: boolean; //makes input readonly
+  @Input() source: Array<Object>;
+  @Input() spinnerLoading: boolean; //shows spinner while loading input selection data
 
   //The internal data model
   private innerValue: any = '';
@@ -57,6 +59,13 @@ export class InputItemComponent implements ControlValueAccessor, OnInit {
   ngOnInit() {
     if (this.formGroup) {
       this.fieldControl = this.formGroup.get( this.formControlName );
+    }
+  }
+
+    // reset form group control value if user dont pick anything from autocomplete
+  ValueChanged(value, controlName) {
+    if (typeof value === 'string') {
+      this.formGroup.controls[ controlName ].setValue('');
     }
   }
 

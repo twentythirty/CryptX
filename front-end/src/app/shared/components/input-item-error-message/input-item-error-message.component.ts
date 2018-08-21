@@ -21,7 +21,7 @@ export class InputItemErrorMessageComponent implements OnInit {
   constructor() {}
 
   ngOnInit() {
-    console.log('errors', this.errors);
+    //console.log('errors', this.errors);
   }
 
   getErrorMessage(): string {

@@ -7,77 +7,37 @@
   <app-content-block
     [heading]="'cold_storage_accounts.parameters' | translate"
   >
-   <div class="form-item">
-        <label class="label-name">
-          {{'cold_storage_accounts.portfolio' | translate}}
-        </label>
-        <input
-          ngui-auto-complete
-          formControlName="strategy_type"
-          [source]="strategies"
-          value-formatter="value"
-          list-formatter="value"
-          max-num-list="15"
-          [accept-user-input]="false"
-          (valueChanged)="ValueChanged($event, 'strategy_id')"
-        >
-        <mat-progress-spinner
-          *ngIf="strategiesLoading"
-          class="progress-spinner"
-          mode="indeterminate"
-          color="accent"
-          strokeWidth="1"
-          diameter="25"
-        ></mat-progress-spinner>
-      </div>
 
-      <div class="form-item">
-        <label class="label-name">
-          {{'cold_storage_accounts.asset' | translate}}
-        </label>
-        <input
-          ngui-auto-complete
-          formControlName="asset_id"
-          [source]="assets"
-          value-formatter="value"
-          list-formatter="value"
-          max-num-list="15"
-          [accept-user-input]="false"
-          (valueChanged)="ValueChanged($event, 'asset_id')"
-        >
-        <mat-progress-spinner
-          *ngIf="assetsLoading"
-          class="progress-spinner"
-          mode="indeterminate"
-          color="accent"
-          strokeWidth="1"
-          diameter="25"
-        ></mat-progress-spinner>
-      </div>
+   <app-input-item class="form-item"
+      select = "true"
+      [label] = "'cold_storage_accounts.portfolio' | translate"
+      [formGroup] = "form"
+      formControlName="strategy_type"
+      [source]="strategies"
+      [spinnerLoading] = "strategiesLoading"
+    > 
+    </app-input-item>
 
-      <div class="form-item">
-        <label class="label-name">
-          {{'cold_storage_accounts.custodian' | translate}}
-        </label>
-        <input
-          ngui-auto-complete
-          formControlName="custodian_id"
-          [source]="custodians"
-          value-formatter="value"
-          list-formatter="value"
-          max-num-list="15"
-          [accept-user-input]="false"
-          (valueChanged)="ValueChanged($event, 'custodian_id')"
-        >
-        <mat-progress-spinner
-          *ngIf="assetsLoading"
-          class="progress-spinner"
-          mode="indeterminate"
-          color="accent"
-          strokeWidth="1"
-          diameter="25"
-        ></mat-progress-spinner>
-      </div>
+    <app-input-item class="form-item"
+      select = "true"
+      [label] = "'cold_storage_accounts.asset' | translate"
+      [formGroup] = "form"
+      formControlName="asset_id"
+      [source]="assets"
+      [spinnerLoading] = "assetsLoading"
+    > 
+    </app-input-item>
+
+    <app-input-item class="form-item"
+      select = "true"
+      [label] = "'cold_storage_accounts.custodian' | translate"
+      [formGroup] = "form"
+      formControlName="custodian_id"
+      [source]="custodians"
+      [spinnerLoading] = "custodiansLoading"
+    > 
+    </app-input-item>
+
     <app-input-item class="form-item"
       type="text"
       [label]="'cold_storage_accounts.address' | translate"
@@ -85,6 +45,7 @@
       formControlName="address"
       [placeholder]="'cold_storage_accounts.enter_address' | translate"
     ></app-input-item>
+
     <app-input-item class="form-item"
       type="text"
       [label]="'cold_storage_accounts.tag' | translate"

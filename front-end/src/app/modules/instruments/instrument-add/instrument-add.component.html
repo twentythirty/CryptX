@@ -8,53 +8,26 @@
   >
     
     <form [formGroup]="form">
-      <div class="form-item">
-        <label class="label-name">
-          {{ 'instruments.transaction_asset' | translate }}
-        </label>
-        <input
-          ngui-auto-complete
-          formControlName="transaction_asset_id"
-          [source]="assets"
-          value-formatter="value"
-          list-formatter="value"
-          max-num-list="15"
-          [accept-user-input]="false"
-          (valueChanged)="assetValueChanged($event, 'transaction_asset_id')"
-        >
-        <mat-progress-spinner
-          *ngIf="assetsLoading"
-          class="progress-spinner"
-          mode="indeterminate"
-          color="accent"
-          strokeWidth="1"
-          diameter="25"
-        ></mat-progress-spinner>
-      </div>
 
-      <div class="form-item">
-        <label class="label-name">
-          {{ 'instruments.quote_asset' | translate }}
-        </label>
-        <input
-          ngui-auto-complete
-          formControlName="quote_asset_id"
-          [source]="assets"
-          value-formatter="value"
-          list-formatter="value"
-          max-num-list="15"
-          [accept-user-input]="false"
-          (valueChanged)="assetValueChanged($event, 'quote_asset_id')"
-        >
-        <mat-progress-spinner
-          *ngIf="assetsLoading"
-          class="progress-spinner"
-          mode="indeterminate"
-          color="accent"
-          strokeWidth="1"
-          diameter="25"
-        ></mat-progress-spinner>
-      </div>
+      <app-input-item class="form-item"
+        select = "true"
+        [label] = "'instruments.transaction_asset' | translate"
+        [formGroup] = "form"
+        formControlName="transaction_asset_id"
+        [source]="assets"
+        [spinnerLoading] = "assetsLoading"
+      > 
+      </app-input-item>
+
+      <app-input-item class="form-item"
+        select = "true"
+        [label] = "'instruments.quote_asset' | translate"
+        [formGroup] = "form"
+        formControlName="quote_asset_id"
+        [source]="assets"
+        [spinnerLoading] = "assetsLoading"
+      > 
+      </app-input-item>
     </form>
 
   </app-content-block>

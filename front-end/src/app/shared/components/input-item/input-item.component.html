@@ -2,16 +2,6 @@
   {{ label }}
 </label>
 
-<ng-container *ngIf="select">
-  <select
-    [(ngModel)]="value"
-    [class.error]="isInvalid()"
-    (blur)="onBlur()"
-  >
-    <option *ngFor="let item of items" [value]="item.value">{{ item.name }}</option>
-  </select>
-</ng-container>
-
 <ng-container *ngIf="!select">
   <input
     [type]="type"
@@ -21,6 +11,28 @@
     (blur)="onBlur()"
     [readonly]="readonly"
   >
+</ng-container>
+
+<ng-container *ngIf="select">
+    <input
+        ngui-auto-complete
+        [source]="source"
+        value-formatter="value"
+        list-formatter="value"
+        [(ngModel)]="value"
+        max-num-list="15"
+        [accept-user-input]="false"
+        (valueChanged)="ValueChanged($event, formControlName)"
+        (blur)="onBlur()"
+    >
+      <mat-progress-spinner
+          *ngIf="spinnerLoading"
+          class="progress-spinner"
+          mode="indeterminate"
+          color="accent"
+          strokeWidth="1"
+          diameter="25"
+      ></mat-progress-spinner>
 </ng-container>
 
 <app-input-item-error-message

@@ -8,53 +8,25 @@
   >
     
     <form [formGroup]="form">
-      <div class="form-item">
-        <label class="label-name">
-          {{ 'instruments.instruments' | translate }}
-        </label>
-        <input
-          ngui-auto-complete
-          formControlName="instrument_id"
-          [source]="instruments"
-          value-formatter="value"
-          list-formatter="value"
-          max-num-list="15"
-          [accept-user-input]="false"
-          (valueChanged)="assetValueChanged($event, 'instrument_id')"
-        >
-        <mat-progress-spinner
-          *ngIf="instrumentsLoading"
-          class="progress-spinner"
-          mode="indeterminate"
-          color="accent"
-          strokeWidth="1"
-          diameter="25"
-        ></mat-progress-spinner>
-      </div>
+      <app-input-item class="form-item"
+        select = "true"
+        [label] = "'instruments.instruments' | translate"
+        [formGroup] = "form"
+        formControlName="instrument_id"
+        [source]="instruments"
+        [spinnerLoading] = "instrumentsLoading"
+      > 
+      </app-input-item>
 
-      <div class="form-item">
-        <label class="label-name">
-          {{ 'exchanges.exchange' | translate }}
-        </label>
-        <input
-          ngui-auto-complete
-          formControlName="exchange_id"
-          [source]="exchanges"
-          value-formatter="value"
-          list-formatter="value"
-          max-num-list="15"
-          [accept-user-input]="false"
-          (valueChanged)="assetValueChanged($event, 'exchange_id')"
-        >
-        <mat-progress-spinner
-          *ngIf="exchangesLoading"
-          class="progress-spinner"
-          mode="indeterminate"
-          color="accent"
-          strokeWidth="1"
-          diameter="25"
-        ></mat-progress-spinner>
-      </div>
+      <app-input-item class="form-item"
+        select = "true"
+        [label] = "'exchanges.exchange' | translate"
+        [formGroup] = "form"
+        formControlName="exchange_id"
+        [source]="exchanges"
+        [spinnerLoading] = "exchangesLoading"
+      > 
+      </app-input-item>
 
       <app-input-item
         type="number"

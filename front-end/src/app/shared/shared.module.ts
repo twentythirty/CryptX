@@ -37,6 +37,7 @@ import { SelectCellComponent } from './components/data-table-cells/select-cell/s
 import { TimelineComponent } from './components/timeline/timeline.component';
 import { ButtonRadioComponent } from './components/button-radio/button-radio.component';
 import { ActionLogComponent } from './components/action-log/action-log.component';
+import { NguiAutoCompleteModule } from "@ngui/auto-complete/dist";
 
 @NgModule({
     imports: [
@@ -61,7 +62,8 @@ import { ActionLogComponent } from './components/action-log/action-log.component
           BooleanCellComponent,
           StatusCellComponent,
           ConfirmCellComponent
-        ])
+        ]),
+        NguiAutoCompleteModule,
     ],
     declarations: [
         BtnComponent,

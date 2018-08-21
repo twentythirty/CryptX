@@ -21,7 +21,7 @@ export class AddAccountComponent implements OnInit {
 
   strategiesLoading: boolean = true;
   assetsLoading: boolean = true;
-  custodiantsLoading: boolean = true;
+  custodiansLoading: boolean = true;
 
   form: FormGroup = new FormGroup({
     strategy_type: new FormControl('', Validators.required),
@@ -69,7 +69,7 @@ export class AddAccountComponent implements OnInit {
 
   getCustodians(){
     this.coldStorageService.getAllCustodians().subscribe(res => {
-      this.custodiantsLoading = false;
+      this.custodiansLoading = false;
       this.custodians = res.custodians.map(custodian => {
         return {
           id: custodian.id,
@@ -77,13 +77,6 @@ export class AddAccountComponent implements OnInit {
         };
       });
     });
-  }
-
-  // reset form group control value if user dont pick anything from autocomplete
-  ValueChanged(value, controlName) {
-    if (typeof value === 'string') {
-      this.form.controls[ controlName ].setValue('');
-    }
   }
 
   Add(){
