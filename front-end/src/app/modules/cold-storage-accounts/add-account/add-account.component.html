@@ -9,7 +9,7 @@
   >
    <div class="form-item">
         <label class="label-name">
-          Portfolio
+          {{'cold_storage_accounts.portfolio' | translate}}
         </label>
         <input
           ngui-auto-complete
@@ -33,7 +33,7 @@
 
       <div class="form-item">
         <label class="label-name">
-          Asset
+          {{'cold_storage_accounts.asset' | translate}}
         </label>
         <input
           ngui-auto-complete
@@ -57,7 +57,7 @@
 
       <div class="form-item">
         <label class="label-name">
-          Custodians
+          {{'cold_storage_accounts.custodian' | translate}}
         </label>
         <input
           ngui-auto-complete
@@ -84,6 +84,13 @@
       [formGroup]="form"
       formControlName="address"
       [placeholder]="'cold_storage_accounts.enter_address' | translate"
+    ></app-input-item>
+    <app-input-item class="form-item"
+      type="text"
+      [label]="'cold_storage_accounts.tag' | translate"
+      [formGroup]="form"
+      formControlName="tag"
+      [placeholder]="'cold_storage_accounts.enter_tag' | translate"
     ></app-input-item>
   </app-content-block>
 </form>

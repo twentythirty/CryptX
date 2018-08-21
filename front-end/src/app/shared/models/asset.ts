@@ -14,7 +14,7 @@ export class Asset {
 
   // Not yet implemented
   public capitalization_updated_timestamp: number;
-  public is_cryptocurrency: boolean;
+  public is_cryptocurrency: boolean | string;
 }
 
 

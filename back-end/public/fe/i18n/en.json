@@ -558,6 +558,11 @@
     "add_new_account": "Add new cold storage account",
     "parameters": "Parameters",
     "address": "Address",
-    "enter_address": "Enter Address"
+    "enter_address": "Enter Address",
+    "portfolio": "Portfolio",
+    "custodian": "Custodian",
+    "asset": "Asset",
+    "tag": "Tag",
+    "enter_tag": "Enter Tag"
   }
 }

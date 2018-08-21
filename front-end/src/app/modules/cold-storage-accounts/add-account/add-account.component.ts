@@ -27,7 +27,8 @@ export class AddAccountComponent implements OnInit {
     strategy_type: new FormControl('', Validators.required),
     asset_id: new FormControl('', Validators.required),
     custodian_id: new FormControl('', Validators.required),
-    address: new FormControl('', Validators.required)
+    address: new FormControl('', Validators.required),
+    tag: new FormControl('', Validators.required)
   });
 
   constructor(private modelConstantService: ModelConstantsService,
@@ -53,14 +54,16 @@ export class AddAccountComponent implements OnInit {
   }
 
   getAssets(){
-      this.assetService.getAllAssets().subscribe(res => {
+      this.assetService.getAllAssetsDetailed().subscribe(res => {
       this.assetsLoading = false;
-      this.assets = res.assets.map(asset => {
-        return {
-          id: asset.id,
-          value: asset.symbol,
-        };
-      });
+      res.assets.map(asset => {
+        if (asset.is_cryptocurrency === "assets.is_cryptocurrency.yes"){
+          this.assets.push( {
+            id: asset.id,
+            value: asset.symbol,
+          })
+      }
+    });
     });
   }
 
