@@ -132,6 +132,10 @@ describe('ColdStorage testing', () => {
                 return Promise.resolve(Object.assign({ id: _.random(false) }, data));
             });
 
+            sinon.stub(ColdStorageAccount, 'count').callsFake(() => {
+                return Promise.resolve(0);
+            });
+
             done();
         });
 
@@ -139,6 +143,7 @@ describe('ColdStorage testing', () => {
             Asset.findById.restore();
             ColdStorageCustodian.findById.restore();
             ColdStorageAccount.create.restore();
+            ColdStorageAccount.count.restore();
 
             done();
         });
@@ -171,6 +176,16 @@ describe('ColdStorage testing', () => {
 
         it('reject if it did not find the custodian', () => {
             chai.assert.isRejected(createColdStorageAccount(STRATEGY_TYPES.MCI, MOCK_IDS.CRYPTO_ASSET, MOCK_IDS.NOT_FOUND, MOCK_ADDRESS));
+        });
+
+        it('reject if it finds an account with the same public address', () => {
+            ColdStorageAccount.count.restore();
+
+            sinon.stub(ColdStorageAccount, 'count').callsFake(() => {
+                return Promise.resolve(1);
+            });
+
+            chai.assert.isRejected(createColdStorageAccount(STRATEGY_TYPES.MCI, MOCK_IDS.CRYPTO_ASSET, MOCK_IDS.VALID_CUSTODIAN, MOCK_ADDRESS));
         });
 
         it('create a new cold storage account', () => {
