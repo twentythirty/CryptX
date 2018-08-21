@@ -7,7 +7,7 @@ module.exports = {
       allowNull: true
     }).then(() => {
       return queryInterface.addColumn('action_log', 'translation_args', {
-        type: Sequelize.STRING,
+        type: Sequelize.TEXT('medium'),
         allowNull: true
       });
     });
