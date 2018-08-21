@@ -983,6 +983,12 @@ router.use(
   express.static(path.join(__dirname, "/../public/v1/documentation/dist"))
 );
 
+//********* SYSTEM TEST COVERAGE *********
+router.use(
+  '/coverage',
+  express.static(path.join(__dirname, '/../public/coverage'))
+);
+
 //********* FE TRANSLATIONS **********
 router.use(
   "/fe/i18n",
