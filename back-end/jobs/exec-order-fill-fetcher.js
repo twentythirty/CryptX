@@ -399,12 +399,24 @@ const simulateFill = async (placed_order, log, config) => {
         placed_order.failed_attempts++;
         return updateOrderStatus(placed_order, log, config);
     }
+    
+    let price = 0;
+    switch(placed_order.side) {
 
-    const fee = market_data.ask_price/_.random(98, 100, false); //Make fee around 1-3% of the price.
+        case ORDER_SIDES.Sell:
+            price = market_data.bid_price;
+            break
+        
+        case ORDER_SIDES.Buy:
+        default:
+            price = market_data.ask_price;
+
+    }
+    const fee = price/_.random(98, 100, false); //Make fee around 1-3% of the price.
 
     [ err ] = await to(ExecutionOrderFill.create({
         execution_order_id: placed_order.id,
-        price: market_data.ask_price,
+        price: price,
         fee: fee,
         fee_asset_id: placed_order.Instrument.quote_asset_id,
         quantity: parseFloat(placed_order.total_quantity),
