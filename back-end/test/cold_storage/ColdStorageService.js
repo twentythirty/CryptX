@@ -185,7 +185,7 @@ describe('ColdStorage testing', () => {
                 return Promise.resolve(1);
             });
 
-            chai.assert.isRejected(createColdStorageAccount(STRATEGY_TYPES.MCI, MOCK_IDS.CRYPTO_ASSET, MOCK_IDS.NOT_FOUND, MOCK_ADDRESS));
+            chai.assert.isRejected(createColdStorageAccount(STRATEGY_TYPES.MCI, MOCK_IDS.CRYPTO_ASSET, MOCK_IDS.VALID_CUSTODIAN, MOCK_ADDRESS));
         });
 
         it('create a new cold storage account', () => {
