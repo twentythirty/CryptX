@@ -187,7 +187,7 @@ export class ExecutionOrderDetailComponent extends TimelineDetailComponent imple
   protected getTimelineData(): void {
     this.timeline$ = this.route.params.pipe(
       mergeMap(
-        params => this.investmentService.getAllTimelineData({ execution_order_id: params['id'] })
+        params => this.investmentService.getAllTimelineData({ recipe_order_id: params['id'] })
       )
     )
   }
