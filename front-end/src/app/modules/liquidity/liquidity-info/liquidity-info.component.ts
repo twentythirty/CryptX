@@ -33,7 +33,7 @@ export class LiquidityInfoComponent extends DataTableCommonManagerComponent impl
     new TableDataColumn({ column: 'periodicity' }),
     new TableDataColumn({ column: 'quote_asset' }),
     new NumberCellDataColumn({ column: 'minimum_circulation' }),
-    new TableDataColumn({ column: 'exchange' }),
+    new StatusCellDataColumn({ column: 'exchange' }),
     new TableDataColumn({ column: 'exchange_count' }),
     new TableDataColumn({ column: 'exchange_not_pass' }),
   ];

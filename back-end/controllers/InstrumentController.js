@@ -317,6 +317,13 @@ const getLiquidityRequirementExchanges = async function (req, res) {
     where: { instrument_id: liquidity_requirement.instrument_id }
   };
 
+  let sql_where = `instrument_id=${liquidity_requirement.instrument_id}`;
+
+  if(liquidity_requirement.exchange) {
+    seq_query.where.exchange_id = liquidity_requirement.exchange;
+    sql_where += ` AND exchange_id=${liquidity_requirement.exchange}`
+  }
+
   let result;
   [ err, result ] = await to(adminViewService.fetchLiquidityExchangesViewDataWithCount(seq_query));
   if(err) return ReE(res, err.message, 422);
@@ -326,7 +333,7 @@ const getLiquidityRequirementExchanges = async function (req, res) {
   exchanges = exchanges.map(ex => ex.toWeb());
 
   let footer = [];
-  [ err, footer ] = await to(adminViewService.fetchLiquidityExchangesViewFooter(`instrument_id=${liquidity_requirement.instrument_id}`));
+  [ err, footer ] = await to(adminViewService.fetchLiquidityExchangesViewFooter(sql_where));
   if(err) return ReE(res, err.message, 422);
 
   // mock data below
