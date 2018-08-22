@@ -702,24 +702,17 @@
         ]
       }
     },
-    "/instruments/{instrument_id}/check_mapping": {
+    "/instruments/check_mapping": {
       "post": {
         "tags": [
           "instrument"
         ],
         "summary": "Check if instrument is valid",
-        "description": "When mapping instruments with exchanges it's possible that exchange and instrument couldn't be mapped(for example: exchange doesn't support instrument), so mapping checking actions are done first to ensure that exchange has instrument and it can be used for trading.",
+        "description": "When mapping instruments with exchanges it's possible that exchange and instrument couldn't be mapped(for example: exchange doesn't support instrument). This route is used to check and ensure that exchange has instrument and it can be used for trading.",
         "produces": [
           "application/json"
         ],
         "parameters": [
-          {
-            "name": "instrument_id",
-            "in": "path",
-            "description": "ID of instrument",
-            "required": true,
-            "type": "integer"
-          },
           {
             "name": "body",
             "in": "body",
@@ -734,7 +727,7 @@
           "200": {
             "description": "success",
             "schema": {
-              "$ref": "#/definitions/InstrumentExchangeMap"
+              "$ref": "#/definitions/InstrumentExchangeMapCheck"
             }
           }
         },
@@ -5274,6 +5267,19 @@
         }
       }
     },
+    "InstrumentExchangeMapCheck": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean",
+          "example": true
+        },
+        "mapping_status": {
+          "type": "boolean",
+          "example": true
+        }
+      }
+    },
     "InstrumentExchangeMap": {
       "description": "Servers response with instrument information that includes price, trading volume.",
       "type": "object",
@@ -5341,11 +5347,11 @@
       "properties": {
         "exchange_id": {
           "type": "number",
-          "example": "12,"
+          "example": "12"
         },
         "external_instrument_id": {
           "type": "string",
-          "example": "BTC/USD"
+          "example": "XRP/BTC"
         }
       }
     },
