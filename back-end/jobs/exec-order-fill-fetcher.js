@@ -44,12 +44,7 @@ module.exports.JOB_BODY = async (config, log) => {
                 //Check if simulated
                 let [ err, is_simulated ] = await to(module.exports.isSimulated(placed_order.id, models.sequelize));
                 if(err) {
-                    log(`[ERROR.1A] Error occured during simulation check: ${err.message}`);
-                    logAction(actions.error, {
-                        args: { error: err.message },
-                        relations: { execution_order_id: placed_order.id },
-                        log_level: LOG_LEVELS.Error
-                    });
+                    logError(log, placed_order, '[ERROR.1A]', 'simulation checking', err);
                     placed_order.failed_attempts++;
                     return updateOrderStatus(placed_order, log, config);
                 }
@@ -60,23 +55,14 @@ module.exports.JOB_BODY = async (config, log) => {
                 let exchange = null;
                 [ err, exchange ] = await to(ccxtUtils.getConnector(placed_order.exchange_id));
                 if(err) {
-                    log(`[ERROR.1A] Error occured during exchange connection fetching: ${err.message}`);
-                    logAction(actions.error, {
-                        args: { error: err.message },
-                        relations: { execution_order_id: placed_order.id },
-                        log_level: LOG_LEVELS.Error
-                    });
+                    logError(log, placed_order, '[ERROR.1A]', 'exchange connection fetching', err);
                     placed_order.failed_attempts++;
                     return updateOrderStatus(placed_order, log, config);
                 }
+                
 
                 if(!exchange) {
-                    log(`[ERROR.1B] Error: could not find an exchange connector for order ${placed_order.id}`);
-                    logAction(actions.error, {
-                        args: { error: 'could not find exchange API' },
-                        relations: { execution_order_id: placed_order.id },
-                        log_level: LOG_LEVELS.Error
-                    });
+                    logError(log, placed_order, '[ERROR.1B]', 'exchange connection fetching', 'Unable to find exchange connection');
                     placed_order.failed_attempts++;
                     return updateOrderStatus(placed_order, log, config);
                 }
@@ -88,30 +74,20 @@ module.exports.JOB_BODY = async (config, log) => {
                 [ err, external_order ] = await to(fetchOrderFromExchange(placed_order, exchange, log));
                 
                 if(err){
-                    log(`[ERROR.2A] Error occured during order fetching from the exchange: ${err.message}`);
-                    logAction(actions.error, {
-                        args: { error: err.message },
-                        relations: { execution_order_id: placed_order.id },
-                        log_level: LOG_LEVELS.Error
-                    });
+                    logError(log, placed_order, '[ERROR.2A]', `order fetching from exchange ${exchange.name}`, err);
                     placed_order.failed_attempts++; 
                     return updateOrderStatus(placed_order, log, config);
                 }
 
                 if(!external_order) {
-                    log(`[ERROR.2B] Error: could not fetch order from exchange with id ${placed_order.id} and external identifier ${placed_order.external_identifier}`);
-                    logAction(actions.error, {
-                        args: { error: `Order with id ${placed_order.external_identifier} was not found on ${exchange.name} exchange` },
-                        relations: { execution_order_id: placed_order.id },
-                        log_level: LOG_LEVELS.Error
-                    });
+                    logError(log, placed_order, '[ERROR.2B]', `order fetching from exchange ${exchange.name}`, `Could not find order with external id ${placed_order.external_identifier}`);
                     placed_order.failed_attempts++; //Not marked as Failed, in case it's only a connection issue.
                     return updateOrderStatus(placed_order, log, config);
                 }
 
-                console.log('\x1b[36m', '<<<<<<<<<<<<<<ORDER>>>>>>>>>>>>>>', '\x1b[0m')
+                console.log('\x1b[36m', `<<<<<<<<<<<<<<ORDER ${placed_order.id}/${placed_order.external_identifier}>>>>>>>>>>>>>>`, '\x1b[0m')
                 console.log(JSON.stringify(external_order, null, 3));
-                console.log('\x1b[36m', '<<<<<<<<<<<<<<ORDER>>>>>>>>>>>>>>', '\x1b[0m')
+                console.log('\x1b[36m', `<<<<<<<<<<<<<<ORDER ${placed_order.id}/${placed_order.external_identifier}>>>>>>>>>>>>>>`, '\x1b[0m')
 
                 /** 
                  * When succesfully placed orders somehow fail during trading on the exchanges, CCXT library always marks them as 'closed'.
@@ -186,7 +162,7 @@ module.exports.handleFillsWithTrades = async (placed_order, exchange, external_o
     }));
 
     if(err) {
-        log(`[ERROR.3A] Error occured execution order fill fetching from the database: ${err.message}`);
+        logError(log, placed_order, '[ERROR.3A]', `execution order fill fetching from the database`, err);
         placed_order.failed_attempts++;
         return updateOrderStatus(placed_order, log, config);
     }
@@ -200,12 +176,7 @@ module.exports.handleFillsWithTrades = async (placed_order, exchange, external_o
     [ err, trades ] = await to(exchange.fetchMyTrades(placed_order.Instrument.symbol, since));
 
     if(err) {
-        log(`[ERROR.4A] Error occured while attepting to fetch recent trades: ${err.message}`);
-        logAction(actions.error, {
-            args: { error: err.message },
-            relations: { execution_order_id: placed_order.id },
-            log_level: LOG_LEVELS.Error
-        });
+        logError(log, placed_order, '[ERROR.4A]', `recent trades fetching`, err);
         placed_order.failed_attempts++;
         return updateOrderStatus(placed_order, log, config);
     }
@@ -250,9 +221,9 @@ module.exports.handleFillsWithTrades = async (placed_order, exchange, external_o
         if(placed_order.fee == null) placed_order.fee = 0;
 
         placed_order.fee = parseFloat(placed_order.fee) + fee;
-        console.log('\x1b[36m', '<<<<<<<<<<<<<<TRADE>>>>>>>>>>>>>>', '\x1b[0m')
+        console.log('\x1b[36m', `<<<<<<<<<<<<<<TRADE ${placed_order.id}/${placed_order.external_identifier}>>>>>>>>>>>>>>`, '\x1b[0m')
         console.log(JSON.stringify(trade, null, 3));
-        console.log('\x1b[36m', '<<<<<<<<<<<<<<TRADE>>>>>>>>>>>>>>', '\x1b[0m')
+        console.log('\x1b[36m', `<<<<<<<<<<<<<<TRADE ${placed_order.id}/${placed_order.external_identifier}>>>>>>>>>>>>>>`, '\x1b[0m')
         return {
             execution_order_id: placed_order.id,
             timestamp: trade.timestamp || Date.now(),
@@ -267,13 +238,9 @@ module.exports.handleFillsWithTrades = async (placed_order, exchange, external_o
     let saved_fills = [];
     [ err, saved_fills ] = await to(ExecutionOrderFill.bulkCreate(new_fills));
     if(err) {
-        log(`[ERROR.5C] Error occured during new fill saving: ${err.message}`);
-        logAction(actions.error, {
-            args: { error: err.message },
-            relations: { execution_order_id: placed_order.id },
-            log_level: LOG_LEVELS.Error
-        });
+        logError(log, placed_order, '[ERROR.5C]', `new fill saving`, err);
         placed_order.failed_attempts++;
+        return updateOrderStatus(placed_order, log, config);
     }
     //Make sure to log only after they were save.
     saved_fills.map(sf => {
@@ -315,12 +282,7 @@ module.exports.handleFillsWithoutTrades = async (placed_order, external_order, l
     }));
     
     if(err) {
-        log(`[ERROR.3A] Error occured during fill amount summing: ${err.message}`);
-        logAction(actions.error, {
-            args: { error: err.message },
-            relations: { execution_order_id: placed_order.id },
-            log_level: LOG_LEVELS.Error
-        });
+        logError(log, placed_order, '[ERROR.3A]', `fill amount summing`, err);
         placed_order.failed_attempts++;
         return updateOrderStatus(placed_order, log, config);
     }
@@ -342,12 +304,7 @@ module.exports.handleFillsWithoutTrades = async (placed_order, external_order, l
         }));
 
         if(err) {
-            log(`[ERROR.4A] Error occured during the insertion of a new fill entry: ${err.message}`);
-            logAction(actions.error, {
-                args: { error: err.message },
-                relations: { execution_order_id: placed_order.id },
-                log_level: LOG_LEVELS.Error
-            });
+            logError(log, placed_order, '[ERROR.4A]', `emulation of new fill`, err);
             placed_order.failed_attempts++;
             return updateOrderStatus(placed_order, log, config);
         }
@@ -379,23 +336,13 @@ const simulateFill = async (placed_order, log, config) => {
     }));
 
     if(err) { 
-        log(`[ERROR.1B] Error occured during market data retrieval: ${err.message}`);
-        logAction(actions.error, {
-            args: { error: err.message },
-            relations: { execution_order_id: placed_order.id },
-            log_level: LOG_LEVELS.Error
-        });
+        logError(log, placed_order, '[ERROR.1B]', `market data retireval`, err);
         placed_order.failed_attempts++;
         return updateOrderStatus(placed_order, log, config);
     }
 
     if(!market_data) {
-        log(`[ERROR.C] Error: unable to find the newest market data for order ${placed_order.id}`);
-        logAction(actions.error, {
-            args: { error: `unable to find the newest market data for order ${placed_order.id}` },
-            relations: { execution_order_id: placed_order.id },
-            log_level: LOG_LEVELS.Error
-        });
+        logError(log, placed_order, '[ERROR.1C]', `market data retrieval`, 'Unable to find the newest market data');
         placed_order.failed_attempts++;
         return updateOrderStatus(placed_order, log, config);
     }
@@ -424,12 +371,7 @@ const simulateFill = async (placed_order, log, config) => {
     }));
 
     if(err) { 
-        log(`[ERROR.1C] Error occured during simulated fill creation: ${err.message}`);
-        logAction(actions.error, {
-            args: { error: err.message },
-            relations: { execution_order_id: placed_order.id },
-            log_level: LOG_LEVELS.Error
-        });
+        logError(log, placed_order, '[ERROR.3A]', `simulated fill creation`, err);
         placed_order.failed_attempts++;
         return updateOrderStatus(placed_order, log, config);
     }
@@ -495,12 +437,7 @@ const updateOrderStatus = async (placed_order, log, config) => {
     }));
 
     if(err) {
-        log(`[ERROR.7A] Error occured during the calculation of the sum of current fills for order ${placed_order.id}`);
-        logAction(actions.error, {
-            args: { error: err.message },
-            relations: { execution_order_id: placed_order.id },
-            log_level: LOG_LEVELS.Error
-        });
+        logError(log, placed_order, '[ERROR.7A]', `the calculation of the current fill sum`, err);
         placed_order.failed_attempts++;
     }
 
@@ -518,12 +455,7 @@ const updateOrderStatus = async (placed_order, log, config) => {
         `));
 
         if(err) {
-            log(`[ERROR.7B] Error occured during fill price/fee calculation and update: ${err.message}`);
-            logAction(actions.error, {
-                args: { error: err.message },
-                relations: { execution_order_id: placed_order.id },
-                log_level: LOG_LEVELS.Error
-            });
+            logError(log, placed_order, '[ERROR.7B]', `fee calculation for fills`, err);
         }
     }
 
@@ -584,12 +516,7 @@ const fetchOrderFromExchange = (placed_order, exchange, log) => {
     
         //In case somehow the exchange does not support order retrieval at all.
         if(!can_fetch_by_id && !can_fetch_open_orders && !can_fetch_all_orders) {
-            log(`[ERROR] Exchange ${exchange.name} has no method of retrieving the orders`);
-            logAction(actions.error, {
-                args: { error: `Exchange ${exchange.name} has no way of fetching order information.` },
-                relations: { execution_order_id: placed_order.id },
-                log_level: LOG_LEVELS.Error
-            });
+            logError(log, placed_order, '[ERROR]', `order fetching from exchange ${exchange.name}`, `Exchange ${exchange.name} has no way of fetching order information.`);
             placed_order.failed_attempts++;
             return updateOrderStatus(placed_order, log, ExecutionOrderFill);
         }
@@ -642,4 +569,16 @@ module.exports.isSimulated = async (execuiton_id, sequelize) => {
     if(!row.length) return false;
     
     return row[0].is_simulated;
+};
+
+const logError = async (log, placed_order, tag = '[ERROR]', when = '', error) => {
+
+    const error_message = _.isObject(error) ? error.message : error;
+
+    log(`${tag} Error occured during ${when}: ${error_message}`);
+    logAction(actions.error, {
+        args: { error: `Error occured during ${when}: ${error_message}` },
+        relations: { execution_order_id: placed_order.id },
+        log_level: LOG_LEVELS.Error
+    });
 };
