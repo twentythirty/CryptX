@@ -162,6 +162,7 @@ describe('InstrumentService testing:', () => {
     });
 
     const instrumentService = require('../../services/InstrumentsService');
+    const Exchange = require('../../models').Exchange;
     const Instrument = require('../../models').Instrument;
     const InstrumentExchangeMapping = require('../../models').InstrumentExchangeMapping;
     const InstrumentLiquidityRequirement = require('../../models').InstrumentLiquidityRequirement;
@@ -411,5 +412,50 @@ describe('InstrumentService testing:', () => {
 
         });
 
+    });
+
+    describe('method getInstrumentIdentifiersFromCCXT shall', () => {
+        let ID = 2;
+        beforeEach(() => {
+            sinon.stub(Exchange, "findAll").callsFake(query => {
+                let exchanges = _.times(
+                    _.isEmpty(query) ? 5 : 1
+                ).map(e => {
+                    return new Exchange({
+                        id: query.where.id,
+                        api_id: "some_id"
+                    });
+                })
+    
+                return Promise.resolve(exchanges);
+            })
+
+            sinon.stub(ccxtUtils, 'getConnector').callsFake((id) => {
+                let con =  {
+                    markets: {
+                        "XRP/BTC": {},
+                        "LTC/BTC": {},
+                        "EOS/BTC": {}
+                    }
+                }
+                return con;
+            });
+        });
+        
+        afterEach(() => {
+            Exchange.findAll.restore();
+            ccxtUtils.getConnector.restore();
+        });
+
+        it('exist', () => {
+            chai.expect(instrumentService.getInstrumentIdentifiersFromCCXT).to.exist;
+        });
+
+        it('shall get exchange by id', () => {
+            return instrumentService.getInstrumentIdentifiersFromCCXT(ID).then(async (data) => {
+                let exhangeFindAllResult = await Exchange.findAll.returnValues[0];
+                chai.assert.isTrue(exhangeFindAllResult.length == 1);
+            });
+        });
     });
 });

@@ -507,11 +507,6 @@ ROUTES = {
     permissions_matcher: ROUTE_MATCHERS.GetInstrumentExchanges,
     required_permissions: []
   },
-  GetIdentifiersForInstrument: {
-    router_string: "/instruments/identifiers",
-    permissions_matcher: ROUTE_MATCHERS.GetIdentifiersForInstrument,
-    required_permissions: []
-  },
   RemoveInstrumentExchangeMapping: {
     router_string: "/instruments/:instrument_id/exchanges/:exchange_id/delete",
     permissions_matcher: ROUTE_MATCHERS.RemoveInstrumentExchangeMapping,
@@ -614,7 +609,7 @@ ROUTES = {
   CheckAuth: {
     router_string: "/users/login/check",
     permissions_matcher: ROUTE_MATCHERS.CheckAuth,
-    required_permissions: [PERMISSIONS.VIEW_USERS]
+    required_permissions: []
   },
   Logout: {
     router_string: "/logout",
@@ -625,6 +620,11 @@ ROUTES = {
   GetExchanges: {
     router_string: "/exchanges/all",
     permissions_matcher: ROUTE_MATCHERS.GetExchanges,
+    required_permissions: []
+  },
+  GetExchangeInstrumentIDs: {
+    router_string: "/exchanges/:exchange_id/instruments",
+    permissions_matcher: ROUTE_MATCHERS.GetExchangeInstrumentIDs,
     required_permissions: []
   },
 

@@ -130,13 +130,18 @@ const addInstrumentExchangeMappings = async (instrument_id, exchange_mappings) =
 };
 module.exports.addInstrumentExchangeMappings = addInstrumentExchangeMappings;
 
-
-const getInstrumentIdentifiersFromCCXT = async function () {
+/** Fetches instrument identifiers of certain exchange if exchange id is supplied.
+ * If exchange id is not given, then returns identifiers from all exchanges.
+ * @param exchange_id id of exchange. If not set then return identifiers from all exchanges.
+ */
+const getInstrumentIdentifiersFromCCXT = async function (exchange_id) {
   
-    let err, exchanges;
-    [err, exchanges] = await to(Exchange.findAll());
-    if (err) TE(err);
+    let search = exchange_id ? { where: { id: exchange_id } } : {};
 
+    let err, exchanges;
+    [err, exchanges] = await to(Exchange.findAll(search));
+    if (err) TE(err);
+    
     let connectors = await Promise.all(_.map(exchanges, (exchange) => {
         return ccxtUtil.getConnector(exchange.api_id)
     }));

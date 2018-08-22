@@ -312,6 +312,40 @@
         ]
       }
     },
+    "/exchanges/{exchange_id}/instruments": {
+      "get": {
+        "tags": [
+          "exchange"
+        ],
+        "summary": "Get instruments identifiers of exchange",
+        "description": "Fetches a list of instrument identifiers. Provides only a list of instrument available in exchange.",
+        "parameters": [
+          {
+            "name": "exchange_id",
+            "in": "path",
+            "description": "Exchange id",
+            "required": true,
+            "type": "integer"
+          }
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "$ref": "#/definitions/ExchangeInstrumentIDsResponse"
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
     "/settings": {
       "get": {
         "tags": [
@@ -4881,6 +4915,22 @@
         "status": {
           "type": "boolean",
           "example": true
+        }
+      }
+    },
+    "ExchangeInstrumentIDsResponse": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean",
+          "example": true
+        },
+        "identifiers": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "example": "XRP/BTC"
+          }
         }
       }
     },

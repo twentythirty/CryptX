@@ -54,7 +54,7 @@ const getInstrumentsColumnLOV = async (req, res) => {
 module.exports.getInstrumentsColumnLOV = getInstrumentsColumnLOV;
 
 const getInstruments = async function (req, res) {
-   // mock data below
+
   const instruments_and_count = await adminViewService.fetchInstrumentsViewDataWithCount(req.seq_query);
 
   const { data: instruments, total: count } = instruments_and_count;
@@ -150,9 +150,9 @@ module.exports.getInstrumentExchanges = getInstrumentExchanges;
 
 const getIdentifiersForInstrument = async function (req, res) {
 
-  /* let instrument_id = req.params.instrument_id; */
+  let exchange_id = req.params.exchange_id;
 
-  let [err, identifiers] = await to(instrumentService.getInstrumentIdentifiersFromCCXT());
+  let [err, identifiers] = await to(instrumentService.getInstrumentIdentifiersFromCCXT(exchange_id));
   if (err) return ReE(res, err.message);
 
   return ReS(res, {
