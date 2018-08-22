@@ -1,6 +1,6 @@
 'use strict';
 const ccxt = require('ccxt');
-
+const ccxtUtils = require('../utils/CCXTUtils')
 const { logAction } = require('../utils/ActionLogUtil');
 
 const actions = {
@@ -42,11 +42,11 @@ module.exports.JOB_BODY = async (config, log) => {
         const exchanges_with_mappings = _.filter(exchanges, exchange => associatedMappings[exchange.id]);
 
         let data = null;
-        [ err, data ] = await to(Promise.all(_.map(exchanges_with_mappings, exchange => {
+        [ err, data ] = await to(Promise.all(_.map(exchanges_with_mappings, async (exchange) => {
             const mappings = associatedMappings[exchange.id];
             log(`Building volume fetcher for ${exchange.name} with ${mappings.length} mappings...`);
 
-            const fetcher = new ccxt[exchange.api_id]();
+            const fetcher = await ccxtUtils.getConnector(exchange.api_id);
 
             //promise pairs made of arrays where [exchange, [mapping, fetched-data]]
             return Promise.all([

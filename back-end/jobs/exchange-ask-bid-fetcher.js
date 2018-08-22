@@ -1,5 +1,6 @@
 'use strict';
 const ccxt = require('ccxt');
+const ccxtUtils = require('../utils/CCXTUtils')
 const { logAction } = require('../utils/ActionLogUtil');
 
 const action_path = 'ask_bid_fetcher';
@@ -39,11 +40,11 @@ module.exports.JOB_BODY = async (config, log) => {
             const associatedMappings = _.groupBy(mappings, 'exchange_id');
             const exchanges_with_mappings = _.filter(exchanges, exchange => associatedMappings[exchange.id]);
 
-            return Promise.all(_.map(exchanges_with_mappings, exchange => {
+            return Promise.all(_.map(exchanges_with_mappings, async (exchange) => {
                 const mappings = associatedMappings[exchange.id];
                 log(`Building price fetcher for ${exchange.name} with ${mappings.length} mappings...`);
 
-                const fetcher = new ccxt[exchange.api_id]();
+                const fetcher = await ccxtUtils.getConnector(exchange.api_id);/* new ccxt[exchange.api_id](); */
 
                 //promise pairs made of arrays where [exchange, [mapping, fetched-data]]
                 return Promise.all([
