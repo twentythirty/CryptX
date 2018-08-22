@@ -28,7 +28,7 @@ export class AddAccountComponent implements OnInit {
     asset_id: new FormControl('', Validators.required),
     custodian_id: new FormControl('', Validators.required),
     address: new FormControl('', Validators.required),
-    tag: new FormControl('', Validators.required)
+    tag: new FormControl()
   });
 
   constructor(private modelConstantService: ModelConstantsService,
@@ -81,10 +81,16 @@ export class AddAccountComponent implements OnInit {
 
   Add(){
     const request = _.mapValues(this.form.value, val => {
-      return typeof val === 'object' ? val.id : val;
+      if (val === null){
+        return val;
+      } else {
+        return typeof val === 'object' ? val.id : val;
+      }
     });
 
     this.buttonLoading = true;
+
+    console.log(request);
 
     this.coldStorageService.addAccount(request)
     .finally(() => this.buttonLoading = false)
