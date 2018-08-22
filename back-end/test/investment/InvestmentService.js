@@ -433,6 +433,17 @@ describe('InvestmentService testing:', () => {
         return Promise.resolve(instruments);
       });
 
+      sinon.stub(assetService, "getInstrumentLiquidityRequirements").callsFake((...params) => {
+        let requirement = [{
+          avg_vol: 30000,
+          instrument_id: params.instrument_id,
+          exchange_id: params.exchange_id,
+          minimum_volume: 10000,
+          periodicity_in_days: 7
+        }];
+
+        return requirement;
+      });
     });
     
     afterEach(() => {
@@ -440,6 +451,7 @@ describe('InvestmentService testing:', () => {
       Asset.findAll.restore();
       assetService.getBaseAssetPrices.restore();
       assetService.getAssetInstruments.restore();
+      assetService.getInstrumentLiquidityRequirements.restore()
     });
 
     it('shall exist', () => {
@@ -491,42 +503,51 @@ describe('InvestmentService testing:', () => {
       if (assetService.getAssetInstruments.restore)
         assetService.getAssetInstruments.restore();
 
-        sinon.stub(assetService, 'getAssetInstruments').callsFake((asset_id) => {
-          let instruments = [
-            { // doesn't satisfy liquidity requirement
-              instrument_id: 1,
-              quote_asset_id: asset_id,
-              transaction_asset_id: 2,
-              exchange_id: 1,
-              average_volume: 2000,
-              min_volume_requirement: 3000,
-              ask_price: 0.00008955,
-              bid_price: 0.00008744
-            },
-            {
-              instrument_id: 1,
-              quote_asset_id: asset_id,
-              transaction_asset_id: 2,
-              exchange_id: 2,
-              average_volume: 2000,
-              min_volume_requirement: 3000,
-              ask_price: 0.00009100,
-              bid_price: 0.00008700
-            },
-            {
-              instrument_id: 2,
-              quote_asset_id: 2,
-              transaction_asset_id: asset_id,
-              exchange_id: 3,
-              average_volume: 2000,
-              min_volume_requirement: 3000,
-              ask_price: 11363.636363636, // 1 / 0.00008800
-              bid_price: 11111.111111111, // 1 / 0.00009000 
-            }
-          ];
-  
-          return Promise.resolve(instruments);
-        });
+      sinon.stub(assetService, 'getAssetInstruments').callsFake((asset_id) => {
+        let instruments = [
+          { // doesn't satisfy liquidity requirement
+            instrument_id: 1,
+            quote_asset_id: asset_id,
+            transaction_asset_id: 2,
+            exchange_id: 1,
+            ask_price: 0.00008955,
+            bid_price: 0.00008744
+          },
+          {
+            instrument_id: 1,
+            quote_asset_id: asset_id,
+            transaction_asset_id: 2,
+            exchange_id: 2,
+            ask_price: 0.00009100,
+            bid_price: 0.00008700
+          },
+          {
+            instrument_id: 2,
+            quote_asset_id: 2,
+            transaction_asset_id: asset_id,
+            exchange_id: 3,
+            ask_price: 11363.636363636, // 1 / 0.00008800
+            bid_price: 11111.111111111, // 1 / 0.00009000 
+          }
+        ];
+
+        return Promise.resolve(instruments);
+      });
+
+      if (assetService.getInstrumentLiquidityRequirements.restore)
+        assetService.getInstrumentLiquidityRequirements.restore();
+
+      sinon.stub(assetService, "getInstrumentLiquidityRequirements").callsFake((...params) => {
+        let requirement = {
+          avg_vol: 30000,
+          instrument_id: params.instrument_id,
+          exchange_id: params.exchange_id,
+          minimum_volume: 50000,
+          periodicity_in_days: 7
+        };
+
+        return requirement;
+      });
 
       return chai.assert.isRejected(investmentService.generateRecipeDetails(STRATEGY_TYPE));
     });
