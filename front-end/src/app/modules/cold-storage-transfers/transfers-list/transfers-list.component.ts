@@ -112,7 +112,7 @@ export class TransfersListComponent extends DataTableCommonManagerComponent impl
     this.coldStorageService.ConfirmTransfer(this.selectedTransfer).subscribe(
       res => {
         if (res.success){
-          this.getAllData;
+          this.getAllData();
         }
       }, error => {
           console.log('Error', error);
