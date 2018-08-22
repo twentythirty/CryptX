@@ -156,6 +156,17 @@ const getInstrumentIdentifiersFromCCXT = async function (exchange_id) {
 };
 module.exports.getInstrumentIdentifiersFromCCXT = getInstrumentIdentifiersFromCCXT;
 
+const checkIfCCXTMarketExist = async (exchange_id, external_instrument_id) => {
+
+    if (!exchange_id)
+        TE("Exchage ID not provided");
+
+    let exchange = await ccxtUtil.getConnector(exchange_id);
+
+    return Object.keys(exchange.markets).includes(external_instrument_id);
+};
+module.exports.checkIfCCXTMarketExist = checkIfCCXTMarketExist;
+
 const deleteExchangeMapping = async (instrument_id, exchange_id) => {
 
     if(!_.isNumber(instrument_id) || !_.isNumber(exchange_id)) TE(`Valid instrument and exchange ids must be provided`);

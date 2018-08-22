@@ -72,7 +72,7 @@ ROUTE_MATCHERS = {
     GetInstrument: /\/instruments\/\d+$/,
     GetInstruments: /\/instruments\/all$/,
     GetInstrumentsColLOV: /\/instruments\/header_lov\/\w+/,
-    InstrumentCheckMapping: /\/instruments\/\d+\/check_mapping$/,
+    InstrumentCheckMapping: /\/instruments\/check_mapping$/,
     InstrumentMapExchanges: /\/instruments\/\d+\/add_mapping$/,
     InstrumentMappingExchanges: /\/instruments\/\d+\/mapping_exchanges/,
     GetInstrumentExchanges: /\/instruments\/\d+\/exchanges$/,

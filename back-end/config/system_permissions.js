@@ -488,7 +488,7 @@ ROUTES = {
     required_permissions: [PERMISSIONS.VIEW_ASSETS]
   },
   InstrumentCheckMapping: {
-    router_string: "/instruments/:instrument_id/check_mapping",
+    router_string: "/instruments/check_mapping",
     permissions_matcher: ROUTE_MATCHERS.InstrumentCheckMapping,
     required_permissions: []
   },

@@ -81,22 +81,14 @@ const checkInstrumentExchangeMap = async function (req, res) {
     external_instrument_id
   } = req.body;
 
-  if (!instrument_id || !exchange_id || !external_instrument_id)
+  if (!exchange_id || !external_instrument_id)
     return ReE(res, "Instrument ID, exchange and external instrument ID must be specified to map", 422);
 
-  // mock data below
-  let mapping_data = {
-    instrument_id,
-    exchange_id,
-    external_instrument_id,
-    current_price: 7422.46,
-    last_day_vol: 12300,
-    last_week_vol: 86100,
-    last_updated: 1531486061727
-  };
+  let [err, mapping_status] = await to(instrumentService.checkIfCCXTMarketExist(exchange_id, external_instrument_id));
+  if (err) return ReE(res, err.message);
 
   return ReS(res, {
-    mapping_data
+    mapping_status
   });
 };
 module.exports.checkInstrumentExchangeMap = checkInstrumentExchangeMap;
@@ -235,19 +227,6 @@ const getLiquidityRequirement = async function (req, res) {
   if(err) return ReE(res, err.message, 422);
   if(!liquidity_requirement) return ReE(res, `Liquidity requirement with id ${liquidity_req_id} was not found`);
 
-  // mock data below
-
-  let liquidity_mock = {
-    id: liquidity_req_id,
-    instrument: "BTC/ETH",
-    periodicity: 7,
-    quote_asset: "BTC",
-    minimum_circulation: 60000,
-    exchange: "All exchanges",
-    exchange_count: 2,
-    exchange_pass: 2
-  };
-
   return ReS(res, {
     liquidity_requirement
   });
@@ -267,20 +246,6 @@ const getLiquidityRequirements = async function (req, res) {
   if(err) return ReE(res, err.message, 422);
 
   const { total: count, data: liquidity_requirements } = result;
-
-  // mock data below
-  let liquidity_mock = [...Array(20)].map((map, index) => ({
-    id: index,
-    instrument: "BTC/ETH",
-    periodicity: 7,
-    quote_asset: "BTC",
-    minimum_circulation: 60000,
-    exchange: "All exchanges",
-    exchange_count: 2,
-    exchange_pass: 2
-  }));
-
-  //let footer = await adminViewService.fetchLiquidityViewFooter();
 
   return ReS(res, {
     liquidity_requirements,
@@ -336,22 +301,6 @@ const getLiquidityRequirementExchanges = async function (req, res) {
   [ err, footer ] = await to(adminViewService.fetchLiquidityExchangesViewFooter(sql_where));
   if(err) return ReE(res, err.message, 422);
 
-  // mock data below
-
-  let liquidity_mock = [...Array(8)].map((map, index) => ({
-    id: index,
-    exchange_id: 1,
-    exchange: "Bitstamp",
-    instrument: "BTC/ETH",
-    instrument_identifier: "XRP/BTC",
-    last_day_vol: 12300,
-    last_week_vol: 86100,
-    last_updated: 1531725075560,
-    passes: true 
-  }));
-
-  //let footer = create_mock_footer(liquidity_mock, 'liquidity')
-
   return ReS(res, {
     exchanges,
     count,
@@ -359,18 +308,3 @@ const getLiquidityRequirementExchanges = async function (req, res) {
   });
 };
 module.exports.getLiquidityRequirementExchanges = getLiquidityRequirementExchanges;
-
-const create_mock_footer = function (keys, name) {
-  // delete this function after mock data is replaced
-  let footer = [...Object.keys(keys)].map((key, index) => {
-    return {
-      "name": key,
-      "value": 999,
-      "template": name + ".footer." + key,
-      "args": {
-          [key]: 999
-      }
-    }
-  });
-  return footer;
-};
