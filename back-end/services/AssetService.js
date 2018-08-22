@@ -179,36 +179,23 @@ module.exports.getStrategyAssets = getStrategyAssets;
 const getAssetInstruments = async function (asset_id) {
   let err, instruments;
   [err, instruments] = await to(sequelize.query(`
-    SELECT i.id as instrument_id,
-      i.transaction_asset_id,
-      i.quote_asset_id,
-      imp.exchange_id,
-      ilh.avg_vol as average_volume,
-      ilh.min_vol as min_volume_requirement,
-      imd.ask_price,
-      imd.bid_price
-    FROM instrument as i
-    -- only leave instruments satisfying liquidity requirements
-    JOIN instrument_exchange_mapping AS imp ON imp.instrument_id=i.id
-    LEFT JOIN
-      ( SELECT inlh.instrument_id AS instrument_id,
-          inlh.exchange_id AS exchange_id,
-          avg(inlh.volume) avg_vol,
-          ilr.minimum_volume AS min_vol
-        FROM instrument_liquidity_history AS inlh
-        INNER JOIN instrument_liquidity_requirement AS ilr ON ilr.instrument_id=inlh.instrument_id
-        WHERE inlh.timestamp_to >= NOW() - (ilr.periodicity_in_days * interval '1 day')
-        GROUP BY inlh.instrument_id,
-                  inlh.exchange_id,
-                  ilr.minimum_volume ) AS ilh ON ilh.instrument_id=i.id
-    -- add newest ask and bid price
-    JOIN instrument_market_data as imd ON imd.id=(
-      SELECT id
-      FROM instrument_market_data as imdd
-      WHERE imdd.instrument_id=i.id
-      AND imdd.exchange_id=imp.exchange_id
-      ORDER BY timestamp DESC LIMIT 1)
-    WHERE i.transaction_asset_id=${asset_id} OR i.quote_asset_id=${asset_id}
+  SELECT i.id as instrument_id,
+    i.transaction_asset_id,
+    i.quote_asset_id,
+    imp.exchange_id,
+    imd.ask_price,
+    imd.bid_price
+  FROM instrument as i
+  JOIN instrument_exchange_mapping AS imp ON imp.instrument_id=i.id
+
+  JOIN instrument_market_data as imd ON imd.id=(
+    SELECT id
+    FROM instrument_market_data as imdd
+    WHERE imdd.instrument_id=i.id
+    AND imdd.exchange_id=imp.exchange_id
+    ORDER BY timestamp DESC LIMIT 1
+  )
+  WHERE i.transaction_asset_id=${asset_id} OR i.quote_asset_id=${asset_id}
     `, {
       type: sequelize.QueryTypes.SELECT
     })
@@ -218,8 +205,7 @@ const getAssetInstruments = async function (asset_id) {
 
   instruments.map(i => {
     Object.assign(i, {
-      average_volume: parseFloat(i.average_volume),
-      min_volume_requirement: parseFloat(i.min_volume_requirement),
+      
       ask_price: parseFloat(i.ask_price),
       bid_price: parseFloat(i.bid_price)
     });
@@ -228,6 +214,47 @@ const getAssetInstruments = async function (asset_id) {
   return instruments;
 };
 module.exports.getAssetInstruments = getAssetInstruments;
+
+const getInstrumentLiquidityRequirements = async function (instrument_id, exchange_id) {
+   let [err, requirements] = await to(sequelize.query(
+    `SELECT AVG(ilh.volume) as avg_vol,
+    iem.instrument_id,
+    iem.exchange_id,
+    ilr.minimum_volume,
+    ilr.periodicity_in_days
+  FROM instrument AS i
+  JOIN instrument_exchange_mapping AS iem ON iem.instrument_id=i.id
+  JOIN instrument_liquidity_requirement AS ilr ON ilr.instrument_id=iem.instrument_id AND
+    (ilr.exchange=iem.exchange_id OR ilr.exchange IS NULL)
+  LEFT JOIN instrument_liquidity_history AS ilh ON (
+    ilh.instrument_id=iem.instrument_id
+    AND 
+    ilh.exchange_id=iem.exchange_id
+    AND
+    timestamp_to > NOW() - ilr.periodicity_in_days * interval '1 days'
+  )
+  WHERE iem.instrument_id=:instrument_id AND iem.exchange_id=:exchange_id
+  GROUP BY iem.instrument_id, iem.exchange_id, ilr.minimum_volume, ilr.periodicity_in_days`,
+  {
+    replacements: {
+      instrument_id,
+      exchange_id
+    },
+    type: sequelize.QueryTypes.SELECT
+  }));
+  
+  if (err) TE(err.message);
+
+  requirements.map(r => {
+    Object.assign(r, {
+      minimum_volume: parseFloat(r.minimum_volume),
+      avg_vol: parseFloat(r.avg_vol)
+    });
+  });
+
+  return requirements;
+};
+module.exports.getInstrumentLiquidityRequirements = getInstrumentLiquidityRequirements;
 
 const getBaseAssetPrices = async function () {
   const ttl_threshold = SYSTEM_SETTINGS.BASE_ASSET_PRICE_TTL_THRESHOLD;
