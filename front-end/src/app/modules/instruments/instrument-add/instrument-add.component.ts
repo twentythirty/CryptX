@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { FormGroup, FormControl } from '@angular/forms';
+import { FormGroup, FormControl, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import _ from 'lodash';
 
@@ -18,12 +18,8 @@ export class InstrumentAddComponent implements OnInit {
   assetsLoading: boolean = true;
 
   form: FormGroup = new FormGroup({
-    transaction_asset_id: new FormControl('', _.compact([
-      this.authService.getValidators('\\/instrument\\/create', 'transaction_asset_id')
-    ])),
-    quote_asset_id: new FormControl('', _.compact([
-      this.authService.getValidators('\\/instrument\\/create', 'quote_asset_id')
-    ])),
+    transaction_asset_id: new FormControl('', Validators.required),
+    quote_asset_id: new FormControl('', Validators.required),
   });
 
   constructor(
