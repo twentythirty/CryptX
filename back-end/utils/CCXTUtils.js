@@ -8,6 +8,10 @@ let con_by_id = {}, con_by_api = {};
 
 const cache_init_promise = Exchange.findAll({}).then(exchanges => {
 
+    _.mapValues(EXCHANGE_KEYS, exchange_options => {
+        exchange_options.timeout = 120000 // request timeout after 120 seconds
+    });
+    
     const connectors = _.map(exchanges, exchange => {
         return [exchange.id, exchange.api_id, new ccxt[exchange.api_id](EXCHANGE_KEYS[exchange.api_id])];
     });
