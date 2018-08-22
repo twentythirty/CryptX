@@ -2,7 +2,7 @@
   <span class="headline-title">{{count}} {{'cold_storage_transfers.header' | translate}}</span>
 </div>
 
-<app-data-table
+<app-data-table class="table"
   [dataSource]="transfersDataSource"
   [columnsToShow]="transfersColumnsToShow"
   [loading]="isTableLoading"
