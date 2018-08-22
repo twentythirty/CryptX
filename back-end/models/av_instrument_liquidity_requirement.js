@@ -16,7 +16,9 @@ module.exports = (sequelize, DataTypes) => {
                 type: DataTypes.VIRTUAL,
                 get: function() {
                     if(_.isNull(this.exchange_count) || _.isNull(this.exchange_pass)) return null;
-                    return this.exchange_count - this.exchange_pass;
+                    let not_pass = this.exchange_count - this.exchange_pass;
+                    if(not_pass < 0) not_pass = 0;
+                    return String(not_pass);  //Converts to because FE does not display number 0
                 }
             }
         },
