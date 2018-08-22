@@ -90,8 +90,6 @@ export class AddAccountComponent implements OnInit {
 
     this.buttonLoading = true;
 
-    console.log(request);
-
     this.coldStorageService.addAccount(request)
     .finally(() => this.buttonLoading = false)
     .subscribe(
