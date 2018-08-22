@@ -3,7 +3,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 
 import { TableDataSource, TableDataColumn } from '../../../shared/components/data-table/data-table.component';
 import { DataTableCommonManagerComponent } from '../../../shared/components/data-table-common-manager/data-table-common-manager.component';
-import { NumberCellDataColumn } from '../../../shared/components/data-table-cells';
+import { StatusCellDataColumn, NumberCellDataColumn } from '../../../shared/components/data-table-cells';
 import { LiquidityRequirement } from '../../../shared/models/liquidityRequirement';
 
 import { LiquidityService } from '../../../services/liquidity/liquidity.service';
@@ -32,7 +32,7 @@ export class LiquidityListComponent extends DataTableCommonManagerComponent impl
     new TableDataColumn({ column: 'periodicity' }),
     new TableDataColumn({ column: 'quote_asset' }),
     new NumberCellDataColumn({ column: 'minimum_circulation' }),
-    new TableDataColumn({ column: 'exchange' }),
+    new StatusCellDataColumn({ column: 'exchange' }),
     new TableDataColumn({ column: 'exchange_count' }),
     new TableDataColumn({ column: 'exchange_not_pass' }),
   ];

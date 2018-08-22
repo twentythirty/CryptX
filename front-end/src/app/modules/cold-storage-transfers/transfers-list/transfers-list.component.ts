@@ -109,10 +109,11 @@ export class TransfersListComponent extends DataTableCommonManagerComponent impl
   }
 
   Confirm(){
+    this.isTableLoading = true;
     this.coldStorageService.ConfirmTransfer(this.selectedTransfer).subscribe(
       res => {
         if (res.success){
-          this.getAllData;
+          this.getAllData();
         }
       }, error => {
           console.log('Error', error);

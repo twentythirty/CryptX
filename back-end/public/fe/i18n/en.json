@@ -319,7 +319,8 @@
     "footer": {
       "instrument": "{{ instrument }} instruments",
       "quote_asset": "{{ quote_asset }} asset"
-    }
+    },
+    "all": "All"
   },
   "liquidity_exchanges": {
     "status": {
