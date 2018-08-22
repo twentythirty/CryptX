@@ -172,8 +172,6 @@ const generateRecipeDetails = async function (strategy_type) {
    * transaction_asset_id
    * quote_asset_id
    * exchange_id
-   * average_volume
-   * min_volume_requirement
    * ask_price
    * bid_price
    */
@@ -197,7 +195,30 @@ const generateRecipeDetails = async function (strategy_type) {
     TE(`Couldn't find a way to acquire these assets: ${inaccessible.map(a => a.symbol)}. `);
   }
 
-  assets.map(asset => {
+  // fetch liquidity requirements for all possible_actions
+  let liquidity_requirements;
+  [err, liquidity_requirements] = await to(Promise.all(assets.map(asset => {
+    return Promise.all(
+      asset.possible_actions.map(action => {
+        console.log(action);
+        return AssetService.getInstrumentLiquidityRequirements(action.instrument_id, action.exchange_id)
+      })
+    )
+  })));
+  if (err) TE(err);
+  
+  // assign liquidity requirements to their possible_actions
+  _.zipWith(assets, liquidity_requirements, 
+    (asset, requirements) => {
+      _.zipWith(
+        asset.possible_actions,
+        requirements,
+        (a, b) => a.liquidity = b
+      )
+    }
+  );
+
+  assets.map((asset) => {
 /*  //if this is a base asset we find a buy action involving another base asset
     if (asset.is_base) {
       const base_asset_ids = _.map(base_assets, 'id');
@@ -218,12 +239,14 @@ const generateRecipeDetails = async function (strategy_type) {
       return;
     } */
 
-    /* Cancel recipe generation if asset doesn't meet minimum volume requirements */
-    asset.possible_actions = asset.possible_actions.filter(a =>
-      !a.min_volume_requirement // if doesn't have liquidity requirement set
-      ||
-      a.average_volume >= a.min_volume_requirement // or passes liquidity history
+    // filter out actions that do not pass all requirements assigned to them
+    asset.possible_actions = asset.possible_actions.filter(possible_action =>
+      possible_action.liquidity.every(requirement => {
+        // if !isNaN(requirement.avg_vol) true that means we have liquidity history for that action
+        return !isNaN(requirement.avg_vol) && requirement.avg_vol >= requirement.minimum_volume;
+      })
     );
+    /* Cancel recipe generation if asset doesn't meet minimum volume requirements */
     if (!asset.possible_actions.length) TE('None of instruments for asset %s fulfill liquidity requirements', asset.symbol);
 
     // calculate asset price in usd when buying through certain insturment/exchange
