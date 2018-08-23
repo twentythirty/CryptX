@@ -2,7 +2,7 @@
   {{ label }}
 </label>
 
-<ng-container *ngIf="!select">
+<ng-container *ngIf="fieldType === 'input' || fieldType === undefined">
   <input
     [type]="type"
     [placeholder]="placeholder"
@@ -13,8 +13,28 @@
   >
 </ng-container>
 
-<ng-container *ngIf="select">
-    <input
+<ng-container *ngIf="fieldType === 'select'">	
+  <ng-select
+    class="custom"
+    [searchable] = "false"
+    [items]="items"
+    [(ngModel)]="value"
+    bindValue="id"
+    bindLabel="value"
+    [placeholder]="placeholder"
+  ></ng-select>
+  <mat-progress-spinner
+    *ngIf="spinnerLoading"
+    class="progress-spinner select"
+    mode="indeterminate"
+    color="accent"
+    strokeWidth="1"
+    diameter="25"
+  ></mat-progress-spinner>
+</ng-container>
+
+<ng-container *ngIf="fieldType === 'autocomplete'">
+    <!--<input
         ngui-auto-complete
         [source]="source"
         value-formatter="value"
@@ -24,10 +44,19 @@
         [accept-user-input]="false"
         (valueChanged)="ValueChanged($event, formControlName)"
         (blur)="onBlur()"
-    >
+    >-->
+      <ng-select
+        class="custom"
+        [searchable] = "true"
+        [items]="items"
+        [(ngModel)]="value"
+        bindValue="id"
+        bindLabel="value"
+        [placeholder]="placeholder"
+      ></ng-select>
       <mat-progress-spinner
           *ngIf="spinnerLoading"
-          class="progress-spinner"
+          class="progress-spinner select"
           mode="indeterminate"
           color="accent"
           strokeWidth="1"

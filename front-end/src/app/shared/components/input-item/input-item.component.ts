@@ -19,10 +19,9 @@ export const CUSTOM_INPUT_CONTROL_VALUE_ACCESSOR: any = {
     providers: [CUSTOM_INPUT_CONTROL_VALUE_ACCESSOR]
 })
 export class InputItemComponent implements ControlValueAccessor, OnInit {
-  @Input() select: boolean; // True if this will be select field
   @Input() items: Array<{
-    value: number | string
-    name: string
+    id: number | string
+    value: string
   }>; // select field items array
   @Input() formGroup: FormGroup; // reactive forms form group instance
   @Input() formControlName: string; // reactive forms form group control name
@@ -32,6 +31,7 @@ export class InputItemComponent implements ControlValueAccessor, OnInit {
   @Input() readonly: boolean; //makes input readonly
   @Input() source: Array<Object>;
   @Input() spinnerLoading: boolean; //shows spinner while loading input selection data
+  @Input() fieldType: string; //type of input (input/select/autocomplete)
 
   //The internal data model
   private innerValue: any = '';
@@ -83,6 +83,7 @@ export class InputItemComponent implements ControlValueAccessor, OnInit {
 
   //From ControlValueAccessor interface
   writeValue(value: any) {
+    value=null;                                    ///??????????????????????????
     if (value !== this.innerValue) {
       this.innerValue = value;
     }

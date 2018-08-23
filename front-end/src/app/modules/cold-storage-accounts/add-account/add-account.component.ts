@@ -79,7 +79,7 @@ export class AddAccountComponent implements OnInit {
     });
   }
 
-  Add(){
+  add(){
     const request = _.mapValues(this.form.value, val => {
       if (val === null){
         return val;

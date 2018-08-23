@@ -109,6 +109,14 @@
         &.column-padded-40 {
             padding-left: 40%;
         }
+        &.column-source-account {
+            //width: 94px;
+            word-wrap: break-word;
+            
+            span {
+                width: 94px;
+            }
+        }
         //-------------
 
         .selectable {

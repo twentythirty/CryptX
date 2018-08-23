@@ -29,7 +29,7 @@ export class TransfersListComponent extends DataTableCommonManagerComponent impl
       { column: 'custodian', nameKey: 'table.header.custodian', filter: { type: 'text', sortable: true } },
       { column: 'strategy_type', nameKey: 'table.header.portfolio', filter: { type: 'text', sortable: true } },
       { column: 'source_exchange', nameKey: 'table.header.source_exchange', filter: { type: 'text', sortable: true } },
-      { column: 'source_account', nameKey: 'table.header.source_account', filter: { type: 'text', sortable: true } },
+      { column: 'source_account', nameKey: 'table.header.source_account', filter: { type: 'text', sortable: true }, column_class: 'column-source-account' },
       { column: 'placed_timestamp', nameKey: 'table.header.placed_time', filter: { type: 'date', sortable: true } },
       { column: 'completed_timestamp', nameKey: 'table.header.completion_time', filter: { type: 'date', sortable: true } },
       { column: 'actions', nameKey: 'table.header.actions' },
@@ -108,9 +108,9 @@ export class TransfersListComponent extends DataTableCommonManagerComponent impl
     )
   }
 
-  Confirm(){
+  confirm(){
     this.isTableLoading = true;
-    this.coldStorageService.ConfirmTransfer(this.selectedTransfer).subscribe(
+    this.coldStorageService.confirmTransfer(this.selectedTransfer).subscribe(
       res => {
         if (res.success){
           this.getAllData();

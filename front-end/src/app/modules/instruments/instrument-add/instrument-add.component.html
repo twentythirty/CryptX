@@ -10,7 +10,7 @@
     <form [formGroup]="form">
 
       <app-input-item class="form-item"
-        select = "true"
+        fieldType = "autocomplete"
         [label] = "'instruments.transaction_asset' | translate"
         [formGroup] = "form"
         formControlName="transaction_asset_id"
@@ -20,7 +20,7 @@
       </app-input-item>
 
       <app-input-item class="form-item"
-        select = "true"
+        fieldType = "autocomplete"
         [label] = "'instruments.quote_asset' | translate"
         [formGroup] = "form"
         formControlName="quote_asset_id"

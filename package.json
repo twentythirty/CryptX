@@ -25,6 +25,7 @@
     "@angular/platform-browser": "^5.2.0",
     "@angular/platform-browser-dynamic": "^5.2.0",
     "@angular/router": "^5.2.0",
+    "@ng-select/ng-select": "^1.5.2",
     "@ngui/auto-complete": "^2.0.0",
     "@ngx-translate/core": "^9.1.1",
     "@ngx-translate/http-loader": "^2.0.1",

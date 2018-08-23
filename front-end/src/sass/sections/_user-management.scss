@@ -9,8 +9,13 @@
         grid-column-gap: unset;
 
         .form-item {
+            select {
+                width: 100%;
+            }
+
             width: 50%;
         }
+
     }
 
     .part {

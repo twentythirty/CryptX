@@ -9,7 +9,7 @@
   >
 
    <app-input-item class="form-item"
-      select = "true"
+      fieldType = "autocomplete"
       [label] = "'cold_storage_accounts.portfolio' | translate"
       [formGroup] = "form"
       formControlName="strategy_type"
@@ -19,7 +19,7 @@
     </app-input-item>
 
     <app-input-item class="form-item"
-      select = "true"
+      fieldType = "autocomplete"
       [label] = "'cold_storage_accounts.asset' | translate"
       [formGroup] = "form"
       formControlName="asset_id"
@@ -29,7 +29,7 @@
     </app-input-item>
 
     <app-input-item class="form-item"
-      select = "true"
+      fieldType = "autocomplete"
       [label] = "'cold_storage_accounts.custodian' | translate"
       [formGroup] = "form"
       formControlName="custodian_id"
@@ -61,7 +61,7 @@
     <button
       class="btn submit"
       [disabled]="buttonLoading || !form.valid"
-      (click)="Add()"
+      (click)="add()"
     >{{ 'common.add_new_user' | translate }}</button>
   </div>
 </app-form-action-bar>
