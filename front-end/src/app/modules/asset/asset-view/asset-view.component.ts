@@ -35,7 +35,7 @@ export class AssetViewComponent extends AssetListComponent implements OnInit {
     this.getAsset();
   }
 
-  private getAsset(): void {
+  public getAsset(): void {
     this.route.params.filter(
       (params: Params) => params.assetId
     ).subscribe(

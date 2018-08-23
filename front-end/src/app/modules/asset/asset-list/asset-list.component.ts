@@ -166,7 +166,7 @@ export class AssetListComponent extends DataTableCommonManagerComponent implemen
   /**
    * Actions
    */
-
+  
   public doDeGreylist({ rationale, data }): void {
     let asset: Asset = data;
 
@@ -177,6 +177,8 @@ export class AssetListComponent extends DataTableCommonManagerComponent implemen
       res => {
         asset.status = 'assets.status.400';
         asset.statusCode = 400;
+
+        this.getAsset();
       }
     );
   }
@@ -191,6 +193,8 @@ export class AssetListComponent extends DataTableCommonManagerComponent implemen
       res => {
         asset.status = 'assets.status.401';
         asset.statusCode = 401;
+
+        this.getAsset();
       }
     );
   }
@@ -205,6 +209,8 @@ export class AssetListComponent extends DataTableCommonManagerComponent implemen
       res => {
         asset.status = 'assets.status.400';
         asset.statusCode = 400;
+
+        this.getAsset();
       }
     );
   }
@@ -245,5 +251,8 @@ export class AssetListComponent extends DataTableCommonManagerComponent implemen
     }
     this.hideRationaleModal();
   }
+
+  //Virtual method to call inside the View to update the activity log.
+  public getAsset(): void {};
 
 }

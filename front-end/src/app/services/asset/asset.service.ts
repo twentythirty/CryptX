@@ -93,6 +93,8 @@ export class AssetService {
   private mapActivityLog(data): ActionLog {
     let status,
         prevStatus;
+
+    data.asset.statusCode = _.toNumber( data.asset.status.replace('assets.status.', '') );
     
     // default status 400, so first preStatus should be default
     this.translate.get('assets.status.400').subscribe(value => prevStatus = value);
