@@ -49,7 +49,7 @@ const universal_actions = {
 
     create: {
         level: LOG_LEVELS.Info,
-        handler: function(params = {}) {
+        handler: async function(params = {}) {
             this.options = _.clone(params);
 
             let table_name = params.instance.constructor.getTableName();
@@ -71,14 +71,14 @@ const universal_actions = {
 
             const template = _.get(templates, this.template, '');
 
-            this.details = _replaceArgs(template, this.options.args || {});
+            this.details = replaceArgs(template, this.options.args || {});
 
             return this;
         }
     },
     modified: {
         level: LOG_LEVELS.Info,
-        handler: function(params = {}) {
+        handler: async function(params = {}) {
             this.options = params;
 
             let { previous_instance, updated_instance } = params;
@@ -135,7 +135,7 @@ const universal_actions = {
 
                     const template = _.get(templates, this.template, '');
 
-                    this.details = _replaceArgs(template, _options.args || {});
+                    this.details = replaceArgs(template, _options.args || {});
 
                     action_logs.push({
                         details: this.details,
@@ -153,7 +153,7 @@ const universal_actions = {
 
 const loggers = Object.assign({}, universal_actions, custom_loggers);
 
-const _defaultHandler = function(options = {}) {
+const _defaultHandler = async function(options = {}) {
 
     this.options = _.clone(options)
 
@@ -161,7 +161,7 @@ const _defaultHandler = function(options = {}) {
 
     const template = _.get(templates, this.template, '');
 
-    this.details = _replaceArgs(template, options.args || {});
+    this.details = replaceArgs(template, options.args || {});
 
     return this;
 }
@@ -172,10 +172,10 @@ module.exports.logAction = async (action_path_or_template, options = {}) => {
         if(!action) action = { template: `logs.${action_path_or_template}`, level: options.log_level || LOG_LEVELS.Info };
     
         let action_logs = null;
-        if(_.isFunction(action.handler)) action_logs = action.handler(options);
+        if(_.isFunction(action.handler)) action_logs = await action.handler(options);
         else {
             action.handler = _defaultHandler;
-            action_logs = action.handler(options);
+            action_logs = await action.handler(options);
         }
     
         if(!action_logs) module.exports.log(`Handler failed to return module.exports.log string for action path "${action_path}" and params: ${JSON.stringify(params)}`);
@@ -310,7 +310,7 @@ const _getFormatedName = (instance) => {
 }
 
 //This might not be needed in the future, its here to have readable logs in the db.
-const _replaceArgs = (template_string = '', args = {}) => {
+const replaceArgs = (template_string = '', args = {}) => {
     for(let arg_name in args) {
 
         const arg = args[arg_name];
@@ -336,3 +336,4 @@ const _replaceArgs = (template_string = '', args = {}) => {
 
     return template_string;
 };
+module.exports.replaceArgs = replaceArgs;

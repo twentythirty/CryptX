@@ -79,6 +79,16 @@ describe('InstrumentService testing:', () => {
     };
     const MOCK_MAPPINGS = [MOCK_MAPPING_1, MOCK_MAPPING_2];
 
+    const MOCK_EXCHANGE_1 = {
+        id: 1,
+        name: 'Binance'
+    };
+    const MOCK_EXCHANGE_2 = {
+        id: 2,
+        name: 'Kraken'
+    };
+    const MOCK_EXCHANGES = [MOCK_EXCHANGE_1, MOCK_EXCHANGE_2];
+
     //ensure working DB before test
     before(done => {
 
@@ -240,6 +250,25 @@ describe('InstrumentService testing:', () => {
 
 
     describe(' the method addInstrumentExchangeMappings shall ', () => {
+
+        before(done => {
+            sinon.stub(Exchange, "findAll").callsFake(query => {
+                return Promise.resolve(MOCK_EXCHANGES);
+            });
+
+            sinon.stub(InstrumentExchangeMapping, 'findAll').callsFake(options => {
+
+                return Promise.resolve(MOCK_MAPPINGS);
+            });
+
+            done();
+        });
+
+        after(done => {
+            Exchange.findAll.restore();
+            InstrumentExchangeMapping.findAll.restore();
+            done();
+        });
 
         it('exist', () => {
             chai.expect(instrumentService.addInstrumentExchangeMappings).to.exist;

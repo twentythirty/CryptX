@@ -108,7 +108,7 @@ const mapInstrumentsWithExchanges = async function (req, res) {
    return ReE(res, `Supplied array of exchange mappings ${exchange_mappings} is supposed to contain exchange_id and external_intrument_id keys!`) 
   };
 
-  const [error, mappings] = await to(instrumentService.addInstrumentExchangeMappings(instrument_id, exchange_mappings));
+  const [error, mappings] = await to(instrumentService.addInstrumentExchangeMappings(instrument_id, exchange_mappings, req.user));
 
   if (error) {
     return ReE(res, error)

@@ -1,3 +1,6 @@
+const { in: opIn } = require('sequelize').Op;
+const translations = require('../public/fe/i18n/en.json');
+
 /**
  * Example of custom loggers:
  * They can be created without a handler and create 2 getters (template and template_user).
@@ -6,6 +9,8 @@
  * You can add your own handler which will receive the passed options.
  * 
  * NEW: a "level" can be added for specific log type. "level" is overriden if "log_level" is passed in the options.
+ * 
+ * !!!!!!!!!!!DEPRICATED!!!!!!!!!! 
  */
 module.exports = {
     example: {
@@ -22,6 +27,61 @@ module.exports = {
             return this.custom_template;
         }
     },
+    instrument_exchange_mappings: {
+        add_and_remove: {
+            handler: async function(options = {}) {
+                const { Exchange } = require('../models');
+                const { replaceArgs } = require('../utils/ActionLogUtil');
+
+                const { deleted_mappings, new_mappings, modified_mappings } = options;
+                const exchange_ids = _.uniq(deleted_mappings.map(map => map.exchange_id).concat(
+                    new_mappings.map(map => map.exchange_id).concat(
+                        modified_mappings.map(map => map.exchange_id)
+                    )
+                ));
+
+                const exchanges = await Exchange.findAll({
+                    where: { id: { [opIn]: exchange_ids } }
+                });
+
+                const logs = [];
+
+                addLogs('removed', deleted_mappings);
+                addLogs('added', new_mappings);
+                addLogs('modified', modified_mappings);
+
+                return logs;
+
+                function addLogs (type, mappings) {
+
+                    for(let mapping of mappings) {
+                        const exchange = exchanges.find(ex => ex.id === mapping.exchange_id) || {};
+    
+                        let template = `logs.instruments.mapping_${type}`;
+                        if(options.user) template += '_user';
+    
+                        const _options = Object.assign({}, options);
+    
+                        _options.args = Object.assign({}, _options.args || {}, {
+                            exchange: exchange.name,
+                            identifier: mapping.external_instrument_id
+                        });
+    
+                        logs.push({
+                            details: replaceArgs(_.get(translations, template, ''), _options.args),
+                            template,
+                            options: _options
+                        });
+                    }
+
+                }
+
+            }
+        }
+    }
+
+
+
     /*deposits: {
         generate: {
             level: LOG_LEVELS.Info,

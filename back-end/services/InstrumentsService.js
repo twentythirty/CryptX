@@ -9,6 +9,8 @@ const sequelie = require('../models').sequelize;
 
 const ccxtUtil = require('../utils/CCXTUtils');
 
+const { logAction } = require('../utils/ActionLogUtil');
+
 const createInstrument = async (transaction_asset_id, quote_asset_id) => {
 
     if (transaction_asset_id == null || quote_asset_id == null) {
@@ -53,7 +55,7 @@ const createInstrument = async (transaction_asset_id, quote_asset_id) => {
 module.exports.createInstrument = createInstrument;
 
 
-const addInstrumentExchangeMappings = async (instrument_id, exchange_mappings) => {
+const addInstrumentExchangeMappings = async (instrument_id, exchange_mappings, user = null) => {
 
     if (instrument_id == null || !_.isArray(exchange_mappings)) {
         TE(`Supplied bad instrument id or exchange mappings!`)
@@ -67,6 +69,19 @@ const addInstrumentExchangeMappings = async (instrument_id, exchange_mappings) =
     }).filter(mapping => mapping);
 
     if(duplicates.length) TE(`Only 1 unique exchange mapping is allowed per instrument`);
+
+    let [ err, instrument_mappings ] = await to(InstrumentExchangeMapping.findAll({
+        where: { instrument_id },
+        raw: true
+    }));
+
+    if(err) TE(err.message);
+
+    const deleted_mappings = _.differenceBy(instrument_mappings, exchange_mappings, 'exchange_id');
+    const new_mappings = _.differenceBy(exchange_mappings, instrument_mappings, 'exchange_id');
+    const modified_mappings = _.intersectionWith(exchange_mappings, instrument_mappings, (a, b) => {
+        return a.exchange_id === b.exchange_id && a.external_instrument_id !== b.external_instrument_id;
+    });
 
     //rebuild list of exchange id/external mapping pairs into more convenient lookup
     const exchange_to_external = _.fromPairs(_.map(
@@ -113,7 +128,8 @@ const addInstrumentExchangeMappings = async (instrument_id, exchange_mappings) =
         };
     })
 
-    const [ err, saved_models ] = await to(
+    let saved_models = [];
+    [ err, saved_models ] = await to(
         sequelie.transaction(transaction => {
             return InstrumentExchangeMapping.destroy({
                 where: { instrument_id },
@@ -125,6 +141,15 @@ const addInstrumentExchangeMappings = async (instrument_id, exchange_mappings) =
     );
 
     if (err) TE(err.message);
+
+    //new_mappings = _.intersectionBy(saved_models, new_mappings, 'exchange_id');
+
+    const log_options = {
+        deleted_mappings, new_mappings, modified_mappings,
+        relations: { instrument_id }
+    };
+    if(user) user.logAction('instrument_exchange_mappings.add_and_remove', log_options);
+    else logAction('instrument_exchange_mappings.add_and_remove', log_options);
 
     return saved_models;
 };

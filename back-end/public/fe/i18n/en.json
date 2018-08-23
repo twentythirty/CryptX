@@ -504,8 +504,14 @@
     },
     
     "instruments": {
-      "mapping_removed": "System removed Instrument Exchange Mapping with id: {{identifier}}, exchange: {{exchange}} and instrument: {{instrument}}",
-      "mapping_removed_user": "{{user_name}} removed Instrument Exchange Mapping with id: {{identifier}}, exchange: {{exchange}} and instrument: {{instrument}}"
+      "mapping_removed": "System removed mapping <b>{{ identifier }}</b> for exchange <b>{{ exchange }}</b>",
+      "mapping_removed_user": "{{user_name}} removed mapping <b>{{ identifier }}</b> for exchange <b>{{ exchange }}</b>",
+      
+      "mapping_added": "System added mapping <b>{{ identifier }}</b> for exchange <b>{{ exchange }}</b>",
+      "mapping_added_user": "{{user_name}} added mapping <b>{{ identifier }}</b> for exchange <b>{{ exchange }}</b>",
+
+      "mapping_modified": "System set mapping to <b>{{ identifier }}</b> for exchange <b>{{ exchange }}</b>",
+      "mapping_modified_user": "{{user_name}} set mapping to <b>{{ identifier }}</b> for exchange <b>{{ exchange }}</b>"
     },
 
     "ask_bid_fetcher": {
