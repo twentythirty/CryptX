@@ -7,6 +7,8 @@ const InstrumentLiquidityRequirement = require('../models').InstrumentLiquidityR
 const Exchange = require('../models').Exchange;
 const sequelie = require('../models').sequelize;
 
+const { or: opOr } = require('sequelize').Op;
+
 const ccxtUtil = require('../utils/CCXTUtils');
 
 const { logAction } = require('../utils/ActionLogUtil');
@@ -30,8 +32,16 @@ const createInstrument = async (transaction_asset_id, quote_asset_id) => {
     //check that an instrument with the same assets doesnt already exist
     const old_instrument = await Instrument.findOne({
         where: {
-            transaction_asset_id: transaction_asset_id,
-            quote_asset_id: quote_asset_id
+            [opOr]: [
+                {
+                    transaction_asset_id: transaction_asset_id,
+                    quote_asset_id: quote_asset_id
+                },
+                {
+                    transaction_asset_id: quote_asset_id,
+                    quote_asset_id: transaction_asset_id
+                }
+            ]
         }
     });
     if (old_instrument != null) {
