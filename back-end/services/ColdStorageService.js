@@ -117,13 +117,16 @@ const changeTransferStatus = async (transfer_id, status, user = null) => {
         previous_instance: original_transfer,
         updated_instance: transfer,
         replace: {
-            [COLD_STORAGE_ORDER_STATUSES.Pending]: `{cold_storage.status.${COLD_STORAGE_ORDER_STATUSES.Pending}}`,
-            [COLD_STORAGE_ORDER_STATUSES.Approved]: `{cold_storage.status.${COLD_STORAGE_ORDER_STATUSES.Approved}}`,
-            [COLD_STORAGE_ORDER_STATUSES.Sent]: `{cold_storage.status.${COLD_STORAGE_ORDER_STATUSES.Sent}}`,
-            [COLD_STORAGE_ORDER_STATUSES.Completed]: `{cold_storage.status.${COLD_STORAGE_ORDER_STATUSES.Completed}}`,
-            [COLD_STORAGE_ORDER_STATUSES.Failed]: `{cold_storage.status.${COLD_STORAGE_ORDER_STATUSES.Failed}}`,
+            status: {
+                [COLD_STORAGE_ORDER_STATUSES.Pending]: `{cold_storage.transfers.status.${COLD_STORAGE_ORDER_STATUSES.Pending}}`,
+                [COLD_STORAGE_ORDER_STATUSES.Approved]: `{cold_storage.transfers.status.${COLD_STORAGE_ORDER_STATUSES.Approved}}`,
+                [COLD_STORAGE_ORDER_STATUSES.Sent]: `{cold_storage.transfers.status.${COLD_STORAGE_ORDER_STATUSES.Sent}}`,
+                [COLD_STORAGE_ORDER_STATUSES.Completed]: `{cold_storage.transfers.status.${COLD_STORAGE_ORDER_STATUSES.Completed}}`,
+                [COLD_STORAGE_ORDER_STATUSES.Failed]: `{cold_storage.transfers.status.${COLD_STORAGE_ORDER_STATUSES.Failed}}`,
+            }
         }
     };
+
     if(user) user.logAction('modified', log_options);
     else logAction('modified', log_options);
     

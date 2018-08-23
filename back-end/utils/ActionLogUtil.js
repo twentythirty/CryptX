@@ -31,6 +31,7 @@ const templates = require('../public/fe/i18n/en.json');
 
 const allowed_keys = [
     'asset_id',
+    'cold_storage_transfer_id',
     'exchange_account_id',
     'exchange_id',
     'execution_order_id',
@@ -94,8 +95,9 @@ const universal_actions = {
 
             const relation_key = `${table_name}_id`;
 
-            this.options.relations = Object.assign(this.options.relations || {}, { [relation_key]: params.updated_instance.id });
-            if(!allowed_keys.includes(relation_key)) this.relations = {};
+            if(allowed_keys.includes(relation_key)) {
+                this.options.relations = Object.assign({}, this.options.relations || {}, { [relation_key]: params.updated_instance.id });
+            }
 
             if(params.user) this.user = params.user;
 
