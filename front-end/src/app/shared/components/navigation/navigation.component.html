@@ -11,7 +11,7 @@
               <div *ngIf="showUserMenu"  class="filter-sort-box display-block">
                   <ul class="bottom-part user-dropdown">
                     <li class="row">
-                      <button routerLink="/change_my_info">{{'common.change_password' |translate}}</button>
+                      <button routerLink="/change_my_info" (click)="hideAll()">{{'common.change_password' |translate}}</button>
                     </li>
                     <li class="row">
                       <button (click)="logout()">{{'common.logout' | translate}}</button>
@@ -28,7 +28,7 @@
       <div *ngFor="let item of nav" class="navigation">
         <div class="menu-item" routerLinkActive="active">
           <ng-container *ngIf="!item.items">
-            <a routerLink="{{item.link}}" *ngIf="checkPerm(item.permission)">{{item.name}}</a>
+            <a routerLink="{{item.link}}" *ngIf="checkPerm(item.permission)" (click)="hideAll()">{{item.name}}</a>
           </ng-container>
           <ng-container *ngIf="item.items">
             <a routerLinkActive="active" (click)="toggleDropDownMenu(item)">
@@ -36,7 +36,7 @@
               <div [class.dropdown-open]="item.show" class="open-arrow"></div>
             </a>
             <ul [hidden]="!item.show" class="dropdown-box">
-              <li *ngFor="let submenu of item.items"><a class="menu-item" (click)="hideAll()" routerLinkActive="active" routerLink="{{submenu.link}}">{{submenu.name}}</a></li>
+              <li *ngFor="let submenu of item.items"><a class="menu-item" (click)="hideAllDropDownMenus()" routerLinkActive="active" routerLink="{{submenu.link}}">{{submenu.name}}</a></li>
             </ul>
           </ng-container>
         </div>
