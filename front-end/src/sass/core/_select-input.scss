@@ -1,5 +1,10 @@
 .ng-select.custom {
     .ng-select-container {
+        
+        :hover {
+            border-color: $green;
+        }
+
         height: 45px;
         opacity: 0.7;
         background: #F7F9FA;
@@ -27,10 +32,19 @@
                 margin-left: 2px;
             }
         }
-    }&.ng-select-opened .ng-arrow{
-            transform: rotate(180deg);
-    }:hover{
-        border-color: $green;
+    } &.ng-select-opened .ng-arrow {
+        transform: rotate(180deg);
+    }
+
+    .ng-clear-wrapper .ng-clear{
+        margin-top: 15px;
+        @include backgroundC("icons/close-modal.svg");
+    }
+
+    .ng-value-container {
+        .ng-input {
+            color: blue;
+        }
     }
 
     .ng-has-value {
@@ -42,12 +56,6 @@
                 margin-top: 15px;
                 text-transform: capitalize;
                 font-size: 15px;
-            }
-        }
-        .ng-clear-wrapper{
-            margin-top: 15px;
-            .ng-clear {
-                 @include backgroundC("icons/close-modal.svg");
             }
         }
     }

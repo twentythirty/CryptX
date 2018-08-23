@@ -9,32 +9,35 @@
   >
 
    <app-input-item class="form-item"
-      fieldType = "autocomplete"
+      fieldType = "select"
       [label] = "'cold_storage_accounts.portfolio' | translate"
       [formGroup] = "form"
       formControlName="strategy_type"
-      [source]="strategies"
+      [items]="strategies"
       [spinnerLoading] = "strategiesLoading"
+      placeholder="{{'cold_storage_accounts.select_portfolio' | translate}}"
     > 
     </app-input-item>
 
     <app-input-item class="form-item"
-      fieldType = "autocomplete"
+      fieldType = "select"
       [label] = "'cold_storage_accounts.asset' | translate"
       [formGroup] = "form"
       formControlName="asset_id"
-      [source]="assets"
+      [items]="assets"
       [spinnerLoading] = "assetsLoading"
+      placeholder="{{'cold_storage_accounts.enter_asset' | translate}}"
     > 
     </app-input-item>
 
     <app-input-item class="form-item"
-      fieldType = "autocomplete"
+      fieldType = "select"
       [label] = "'cold_storage_accounts.custodian' | translate"
       [formGroup] = "form"
       formControlName="custodian_id"
-      [source]="custodians"
+      [items]="custodians"
       [spinnerLoading] = "custodiansLoading"
+      placeholder="{{'cold_storage_accounts.select_custodian' | translate}}"
     > 
     </app-input-item>
 

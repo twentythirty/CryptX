@@ -49,11 +49,9 @@ export class InstrumentAddComponent implements OnInit {
   }
 
   saveInstrument() {
-    const request = _.mapValues(this.form.value, o => o.id);
-
     this.loading = true;
 
-    this.instrumentsService.createInstrument(request)
+    this.instrumentsService.createInstrument(this.form.value)
     .finally(() => this.loading = false)
     .subscribe(
       data => {

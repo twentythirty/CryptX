@@ -20,8 +20,8 @@ export const CUSTOM_INPUT_CONTROL_VALUE_ACCESSOR: any = {
 })
 export class InputItemComponent implements ControlValueAccessor, OnInit {
   @Input() items: Array<{
-    id: number | string
-    value: string
+    value: number | string
+    name: string
   }>; // select field items array
   @Input() formGroup: FormGroup; // reactive forms form group instance
   @Input() formControlName: string; // reactive forms form group control name
@@ -62,13 +62,6 @@ export class InputItemComponent implements ControlValueAccessor, OnInit {
     }
   }
 
-    // reset form group control value if user dont pick anything from autocomplete
-  ValueChanged(value, controlName) {
-    if (typeof value === 'string') {
-      this.formGroup.controls[ controlName ].setValue('');
-    }
-  }
-
   isInvalid(): boolean {
     if (!this.fieldControl) {
       return true;
@@ -83,7 +76,7 @@ export class InputItemComponent implements ControlValueAccessor, OnInit {
 
   //From ControlValueAccessor interface
   writeValue(value: any) {
-    value=null;                                    ///??????????????????????????
+    value=null;
     if (value !== this.innerValue) {
       this.innerValue = value;
     }

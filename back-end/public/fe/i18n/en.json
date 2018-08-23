@@ -342,6 +342,9 @@
     "transaction_asset": "Transaction asset",
     "quote_asset": "Quote asset",
     "add_instrument": "Add instrument",
+    "enter_instrument": "Enter instrument",
+    "enter_transaction_asset": "Enter transaction asset",
+    "enter_quote_asset": "Enter quote asset",
     "footer": {
       "symbol": "{{ symbol }} Instruments",
       "exchanges_connected": "{{ exchanges_connected }} Connected",
@@ -355,7 +358,8 @@
     "mapping": "Mapping",
     "new_mapping": "New mapping",
     "exchange_delete_confirm_msg": "Are you sure you want delete this exchange?",
-    "all_exchanges": "All exchanges"
+    "all_exchanges": "All exchanges",
+    "select_exchange": "Select exchange"
   },
 
   "assets": {
@@ -570,6 +574,9 @@
     "custodian": "Custodian",
     "asset": "Asset",
     "tag": "Tag",
-    "enter_tag": "Enter Tag"
+    "enter_tag": "Enter Tag",
+    "select_portfolio": "Select portfolio",
+    "enter_asset": "Enter asset",
+    "select_custodian": "Select custodian"
   }
 }

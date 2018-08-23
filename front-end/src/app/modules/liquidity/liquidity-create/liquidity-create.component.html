@@ -15,7 +15,7 @@
         formControlName="instrument_id"
         [items]="instruments"
         [spinnerLoading] = "instrumentsLoading"
-        placeholder="Enter instrument"
+        placeholder="{{'instruments.enter_instrument' | translate}}"
       > 
       </app-input-item>
 
@@ -26,7 +26,7 @@
         formControlName="exchange_id"
         [items]="exchanges"
         [spinnerLoading] = "exchangesLoading"
-        placeholder= "Select exchange"
+        placeholder="{{'exchanges.select_exchange' | translate}}"
       > 
       </app-input-item>
 
