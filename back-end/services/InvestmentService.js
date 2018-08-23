@@ -56,13 +56,25 @@ const createInvestmentRun = async function (user_id, strategy_type, is_simulated
 };
 module.exports.createInvestmentRun = createInvestmentRun;
 
-const changeInvestmentRunStatus = async function (investment_run_id, status_number) {
+/** Changes investment run status. Finds investment run by ID if number provided(could be string),
+ * or by association if object provided with same keys as in 
+ * findInvestmentRunFromAssociations methods allowed_entities object.
+ * @param {*} identifying_value integer OR object with "investment_run_id","recipe_run_id",
+ * "recipe_deposit_id", "recipe_order_group_id", "recipe_order_id", "execution_order_id"
+ * @param {*} status_number 
+ */
+const changeInvestmentRunStatus = async function (identifying_value, status_number) {
   // check for valid recipe run status
   if (!Object.values(INVESTMENT_RUN_STATUSES).includes(parseInt(status_number, 10)))
     TE(`Unknown investment run status ${status_number}!`);
 
   let err, investment_run;
-  investment_run = await InvestmentRun.findById(investment_run_id);
+  if(_.isNumber(identifying_value) || _.isString(identifying_value)) 
+    [err, investment_run] = await to(InvestmentRun.findById(identifying_value));
+  else 
+    [err, investment_run] = await to(this.findInvestmentRunFromAssociations(identifying_value));
+  
+  if (err) TE(err.message);
 
   if (!investment_run) TE("Investment run not found");
 

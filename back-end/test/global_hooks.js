@@ -1,8 +1,10 @@
 const sinon = require('sinon');
 
 const ActionLogUtil = require('../utils/ActionLogUtil');
+const InvestmentService = require('../services/InvestmentService');
+const InvestmentRun = require('../models').InvestmentRun;
 
-before(done => {
+beforeEach(done => {
     sinon.stub(ActionLogUtil, 'log').callsFake((details, key, options) => {
         let level = options.log_level;
         switch(level) {
@@ -21,10 +23,26 @@ before(done => {
         }
         return Promise.resolve(console.log(`\t  \x1b[1m\x1b[31m[>_]\x1b[0m${level}: ${details}`));
     });
+
+    sinon.stub(InvestmentService, 'changeInvestmentRunStatus').callsFake((id, status) => {
+        let investment_run = new InvestmentRun({
+            id: id,
+            strategy_type: 101,
+            is_simulated: true,
+            user_created_id: 1,
+            started_timestamp: new Date,
+            updated_timestamp: new Date,
+            status: status
+        });
+
+        return Promise.resolve(investment_run);
+    });
     done();
 });
 
-after(done => {
+afterEach(done => {
     ActionLogUtil.log.restore();
+    if(InvestmentService.changeInvestmentRunStatus.restore)
+        InvestmentService.changeInvestmentRunStatus.restore();
     done();
 });

@@ -1,6 +1,6 @@
 'use strict';
 
-
+const InvestmentService = require('../services/InvestmentService');
 const RecipeRun = require('../models').RecipeRun;
 const RecipeRunDetail = require('../models').RecipeRunDetail;
 const RecipeRunDeposit = require('../models').RecipeRunDeposit;
@@ -373,6 +373,12 @@ const generateApproveRecipeOrders = async (recipe_run_id) => {
 
     if (err) TE(`Error saving new recipe orders based on recipe run details: ${err}`, err);
 
+    let investment_run;
+    [err, investment_run] = await to(InvestmentService.changeInvestmentRunStatus(
+        { recipe_run_id: recipe_run_id }, INVESTMENT_RUN_STATUSES.OrdersGenerated
+    ));
+    if (err) TE(err.message);
+
     //filter out non-generated null reicpe orders (skipped due to low quantity)
     return _.filter(results, order => order != null);
 }
@@ -452,6 +458,12 @@ const changeRecipeOrderGroupStatus = async (user_id, order_group_id, status, com
         }));
 
         if (err) TE(err);
+
+        let investment_run;
+        [err, investment_run] = await to(InvestmentService.changeInvestmentRunStatus(
+            { recipe_order_group_id: order_group_id }, INVESTMENT_RUN_STATUSES.OrdersApproved
+        ));
+        if (err) TE(err.message);
     }
 
     let [err, results] = await to(update_group_promise);

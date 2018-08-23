@@ -1,6 +1,6 @@
 'use strict';
 
-const InvestmentRun = require('../models').InvestmentRun;
+const InvestmentService = require('../services/InvestmentService');
 const RecipeRunDeposit = require('../models').RecipeRunDeposit;
 const RecipeRunDetail = require('../models').RecipeRunDetail;
 const Asset = require('../models').Asset;
@@ -8,32 +8,9 @@ const Exchange = require('../models').Exchange;
 const ExchangeAccount = require('../models').ExchangeAccount;
 const Sequelize = require('../models').Sequelize;
 
-const { in: opIn } = Sequelize.Op;
+const { in: opIn, ne: opNe } = Sequelize.Op;
 
 const { logAction } = require('../utils/ActionLogUtil'); 
-
-const saveDeposit = async function (investment_run_id, asset_id, amount) {
-
-  let investment_run = await InvestmentRun.findById(investment_run_id);
-  if (!investment_run) TE('Investment run not found');
-
-  let asset = await Asset.findById(asset_id);
-
-  if (!asset || !asset.is_base)
-    TE('Asset not usable for deposits');
-
-  let [err, deposit] = await to(InvestmentRunDeposit.create({
-    investment_run_id: investment_run.id,
-    asset_id: asset_id,
-    amount: amount
-  }));
-
-  if (err) TE(err.message);
-
-  return deposit;
-}
-module.exports.saveDeposit = saveDeposit;
-
 
 const generateRecipeRunDeposits = async function (approved_recipe_run) {
 
@@ -175,6 +152,25 @@ const approveDeposit = async (deposit_id, user_id) => {
   if(err) TE(err.message);
 
   logAction('deposits.completed', { relations: { recipe_run_deposit_id: deposit.id } });
+
+  let left_deposits;
+  [err, left_deposits] = await to(RecipeRunDeposit.findAll({
+    where: {
+      recipe_run_id: deposit.recipe_run_id,
+      status: {
+        [opNe]: RECIPE_RUN_DEPOSIT_STATUSES.Completed
+      }
+    }
+  }));
+  if (err) TE(err.message);
+
+  if (!left_deposits.length) { // all deposits completed. Change investment run status to deposits completed
+    let investment_run;
+    [err, investment_run] = await to(InvestmentService.changeInvestmentRunStatus(
+      { recipe_deposit_id: deposit_id }, INVESTMENT_RUN_STATUSES.DepositsCompleted
+    ));
+    if (err) TE(err.message);
+  }
 
   return { original_deposit: original_values, updated_deposit: deposit };
 

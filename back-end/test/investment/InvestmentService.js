@@ -172,7 +172,33 @@ describe('InvestmentService testing:', () => {
 
 
   describe('and method changeInvestmentRunStatus shall', () => {
-    
+    beforeEach(() => {
+      if(investmentService.changeInvestmentRunStatus.restore)
+        investmentService.changeInvestmentRunStatus.restore();
+
+      sinon.stub(investmentService, 'findInvestmentRunFromAssociations').callsFake((args) => {
+        let investment_run = new InvestmentRun({
+          id: 1,
+          strategy_type: STRATEGY_TYPE,
+          is_simulated: IS_SIMULATED,
+          user_created_id: USER_ID,
+          started_timestamp: new Date,
+          updated_timestamp: new Date,
+          status: INVESTMENT_RUN_STATUSES.Initiated
+        });
+
+        sinon.stub(investment_run, 'save').returns(
+          Promise.resolve(investment_run)
+        );
+
+        return Promise.resolve(investment_run);
+      });
+    });
+
+    afterEach(() => {
+      investmentService.findInvestmentRunFromAssociations.restore();
+    });
+
     it('shall exist', () => {
       return chai.expect(investmentService.changeInvestmentRunStatus).to.exist;
     });
@@ -201,6 +227,18 @@ describe('InvestmentService testing:', () => {
         INVESTMENT_RUN_ID, RECIPE_STATUS
       ).then(investment_run => {
         chai.expect(investment_run.status).to.be.eq(INVESTMENT_RUN_STATUSES.RecipeRun);
+      });
+    });
+
+    it('shall search investment run through associations if object is given', () => {
+      let assoc = { recipe_order_id: 1 };
+      return investmentService.changeInvestmentRunStatus(
+        assoc, RECIPE_STATUS
+      ).then(investment_run => {
+        let v = investmentService.findInvestmentRunFromAssociations.called;
+        chai.assert.isTrue(investmentService.findInvestmentRunFromAssociations.called);
+        let v2 = investmentService.findInvestmentRunFromAssociations.calledWith(assoc);
+        chai.assert.isTrue(investmentService.findInvestmentRunFromAssociations.calledWith(assoc));
       });
     });
   });
@@ -252,11 +290,6 @@ describe('InvestmentService testing:', () => {
 
   describe('and method createRecipeRun shall', () => {
     beforeEach(() => {
-      sinon.stub(investmentService, 'changeInvestmentRunStatus').returns(
-        Promise.resolve({
-          strategy_type: STRATEGY_TYPE
-        })
-      );
       sinon.stub(investmentService, 'generateRecipeDetails').callsFake(() => {
         return Promise.resolve([
           {
@@ -276,7 +309,6 @@ describe('InvestmentService testing:', () => {
     });
 
     afterEach(() => {
-      investmentService.changeInvestmentRunStatus.restore();
       investmentService.generateRecipeDetails.restore();
     });
 
