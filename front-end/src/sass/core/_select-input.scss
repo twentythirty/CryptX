@@ -41,12 +41,6 @@
         @include backgroundC("icons/close-modal.svg");
     }
 
-    .ng-value-container {
-        .ng-input {
-            color: blue;
-        }
-    }
-
     .ng-has-value {
         .ng-placeholder {
              text-indent: -9999px;

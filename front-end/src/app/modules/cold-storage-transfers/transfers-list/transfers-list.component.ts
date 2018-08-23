@@ -25,7 +25,7 @@ export class TransfersListComponent extends DataTableCommonManagerComponent impl
       { column: 'net_amount', nameKey: 'table.header.net_amount', filter: { type: 'number', sortable: true } },
       { column: 'exchange_withdrawal_fee', nameKey: 'table.header.exchange_withdrawal_fee', filter: { type: 'number', sortable: true } },
       { column: 'status', nameKey: 'table.header.status', filter: { type: 'text', sortable: true } },
-      { column: 'cold_storage_account_id', nameKey: 'table.header.destination_account', filter: { type: 'text', sortable: true } },
+      { column: 'destination_account', nameKey: 'table.header.destination_account', filter: { type: 'text', sortable: true } },
       { column: 'custodian', nameKey: 'table.header.custodian', filter: { type: 'text', sortable: true } },
       { column: 'strategy_type', nameKey: 'table.header.portfolio', filter: { type: 'text', sortable: true } },
       { column: 'source_exchange', nameKey: 'table.header.source_exchange', filter: { type: 'text', sortable: true } },
@@ -40,9 +40,15 @@ export class TransfersListComponent extends DataTableCommonManagerComponent impl
   public transfersColumnsToShow: Array<TableDataColumn> = [
     new TableDataColumn({ column: 'id' }),
     new TableDataColumn({ column: 'asset' }),
-    new NumberCellDataColumn({ column: 'gross_amount' }),
-    new NumberCellDataColumn({ column: 'net_amount' }),
-    new NumberCellDataColumn({ column: 'exchange_withdrawal_fee' }),
+    new NumberCellDataColumn({ column: 'gross_amount', inputs: {
+      digitsInfo: '1.2-4'
+    } }),
+    new NumberCellDataColumn({ column: 'net_amount', inputs: {
+      digitsInfo: '1.2-4'
+    } }),
+    new NumberCellDataColumn({ column: 'exchange_withdrawal_fee', inputs: {
+      digitsInfo: '1.2-4'
+    } }),
     new StatusCellDataColumn({ column: 'status', inputs: { classMap: {
       'cold_storage_transfers.status.91': StatusClass.PENDING,
       'cold_storage_transfers.status.92': StatusClass.APPROVED,
@@ -50,7 +56,7 @@ export class TransfersListComponent extends DataTableCommonManagerComponent impl
       'cold_storage_transfers.status.94': StatusClass.APPROVED,
       'cold_storage_transfers.status.95': StatusClass.FAILED,
     }} }),
-    new TableDataColumn({ column: 'cold_storage_account_id' }),
+    new TableDataColumn({ column: 'destination_account' }),
     new TableDataColumn({ column: 'custodian' }),
     new StatusCellDataColumn({ column: 'strategy_type' }),
     new TableDataColumn({ column: 'source_exchange' }),
