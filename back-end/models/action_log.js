@@ -46,6 +46,7 @@ module.exports = (sequelize, DataTypes) => {
     ActionLog.belongsTo(models.RecipeRunDeposit);
     ActionLog.belongsTo(models.RecipeOrder);
     ActionLog.belongsTo(models.ExecutionOrder);
+    ActionLog.belongsTo(models.ColdStorageTransfer);
   };
 
   ActionLog.prototype.toWeb = function() {

@@ -1,8 +1,7 @@
-import { Component, OnInit, Input } from '@angular/core';
+import { Component, HostListener, ElementRef, OnInit, Input } from '@angular/core';
 import { Router } from '@angular/router';
 
 import { AuthService } from '../../../services/auth/auth.service';
-
 
 @Component({
   selector: 'app-navigation',
@@ -50,7 +49,7 @@ export class NavigationComponent implements OnInit {
     ]}
   ];
 
-  constructor(private authService: AuthService, private router: Router) {}
+  constructor(private authService: AuthService, private router: Router, private elementRef : ElementRef) {}
 
   ngOnInit() {
     this.initials= (this.authService.user.first_name.charAt(0) + this.authService.user.last_name.charAt(0)).toUpperCase();
@@ -69,17 +68,43 @@ export class NavigationComponent implements OnInit {
     });
   }
 
+  @HostListener('document:click', ['$event.target'])
+  onClick(targetElement) {
+    const clickedInside = this.elementRef.nativeElement.contains(targetElement);
+    if (!clickedInside) {
+        this.hideAllDropDownMenus();
+        this.hideUserMenu();
+    }
+  }
+
   toggleUserMenu () {
     this.showUserMenu = !this.showUserMenu;
+
+    this.hideAllDropDownMenus();
+  }
+
+  hideUserMenu() {
+    this.showUserMenu = false;
   }
 
   toggleDropDownMenu (item) {
+    this.nav.forEach(i => {
+      if(i !== item) i.show = false;
+    });
+
+    this.hideUserMenu();
+
     item.show = !item.show;
   }
 
-  hideAll (){
+  hideAllDropDownMenus (){
     this.nav.forEach(item => {
       item.show = false;
     });
+  }
+
+  hideAll() {
+    this.hideUserMenu();
+    this.hideAllDropDownMenus();
   }
 }

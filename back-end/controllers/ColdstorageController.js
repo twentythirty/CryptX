@@ -11,7 +11,7 @@ const { logAction } = require('../utils/ActionLogUtil');
 const approveColdStorageTransfer = async function (req, res) {
 
   const { transfer_id } = req.params;
-  const { user } = req.user;
+  const { user } = req;
 
   const [ err, transfer ] = await to(ColdStorageService.changeTransferStatus(parseInt(transfer_id), COLD_STORAGE_ORDER_STATUSES.Approved, user));
 

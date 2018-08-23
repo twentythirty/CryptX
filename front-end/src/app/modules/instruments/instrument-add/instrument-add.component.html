@@ -10,22 +10,24 @@
     <form [formGroup]="form">
 
       <app-input-item class="form-item"
-        select = "true"
-        [label] = "'instruments.transaction_asset' | translate"
-        [formGroup] = "form"
+        fieldType ="autocomplete"
+        [label]="'instruments.transaction_asset' | translate"
+        [formGroup]="form"
         formControlName="transaction_asset_id"
-        [source]="assets"
-        [spinnerLoading] = "assetsLoading"
+        [items]="assets"
+        [spinnerLoading] = "assetsLoading" 
+        placeholder="{{'instruments.enter_transaction_asset' | translate}}"
       > 
       </app-input-item>
 
       <app-input-item class="form-item"
-        select = "true"
-        [label] = "'instruments.quote_asset' | translate"
-        [formGroup] = "form"
+        fieldType="autocomplete"
+        [label]="'instruments.quote_asset' | translate"
+        [formGroup]="form"
         formControlName="quote_asset_id"
-        [source]="assets"
-        [spinnerLoading] = "assetsLoading"
+        [items]="assets"
+        [spinnerLoading] ="assetsLoading"
+        placeholder="{{'instruments.enter_quote_asset' | translate}}"
       > 
       </app-input-item>
     </form>
@@ -36,7 +38,7 @@
 <app-form-action-bar>
   <button
     class="btn submit"
-    [disabled]="loading"
+    [disabled]="loading || !form.valid"
     (click)="saveInstrument()"
   >{{ 'instruments.add_instrument' | translate }}</button>
 </app-form-action-bar>

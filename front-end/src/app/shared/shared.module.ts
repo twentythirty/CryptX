@@ -38,6 +38,7 @@ import { TimelineComponent } from './components/timeline/timeline.component';
 import { ButtonRadioComponent } from './components/button-radio/button-radio.component';
 import { ActionLogComponent } from './components/action-log/action-log.component';
 import { NguiAutoCompleteModule } from "@ngui/auto-complete/dist";
+import { NgSelectModule } from '@ng-select/ng-select';
 
 @NgModule({
     imports: [
@@ -64,6 +65,7 @@ import { NguiAutoCompleteModule } from "@ngui/auto-complete/dist";
           ConfirmCellComponent
         ]),
         NguiAutoCompleteModule,
+        NgSelectModule,
     ],
     declarations: [
         BtnComponent,

@@ -2,7 +2,7 @@
   {{ label }}
 </label>
 
-<ng-container *ngIf="!select">
+<ng-container *ngIf="fieldType === 'input' || !fieldType">
   <input
     [type]="type"
     [placeholder]="placeholder"
@@ -13,26 +13,26 @@
   >
 </ng-container>
 
-<ng-container *ngIf="select">
-    <input
-        ngui-auto-complete
-        [source]="source"
-        value-formatter="value"
-        list-formatter="value"
-        [(ngModel)]="value"
-        max-num-list="15"
-        [accept-user-input]="false"
-        (valueChanged)="ValueChanged($event, formControlName)"
-        (blur)="onBlur()"
-    >
-      <mat-progress-spinner
-          *ngIf="spinnerLoading"
-          class="progress-spinner"
-          mode="indeterminate"
-          color="accent"
-          strokeWidth="1"
-          diameter="25"
-      ></mat-progress-spinner>
+<ng-container *ngIf="fieldType === 'select' || fieldType === 'autocomplete'">	
+  <ng-select
+    class="custom"
+    [searchable]="fieldType === 'autocomplete'"
+    [items]="items"
+    [(ngModel)]="value"
+    [markFirst]="false"
+    bindValue="id"
+    bindLabel="value"
+    [placeholder]="placeholder"
+  ></ng-select>
+
+  <mat-progress-spinner
+    *ngIf="spinnerLoading"
+    class="progress-spinner select"
+    mode="indeterminate"
+    color="accent"
+    strokeWidth="1"
+    diameter="25"
+  ></mat-progress-spinner>
 </ng-container>
 
 <app-input-item-error-message

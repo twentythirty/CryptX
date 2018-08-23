@@ -54,16 +54,16 @@ export class AddAccountComponent implements OnInit {
   }
 
   getAssets(){
-      this.assetService.getAllAssetsDetailed().subscribe(res => {
-      this.assetsLoading = false;
+    this.assetService.getAllAssetsDetailed().subscribe(res => {
+    this.assetsLoading = false;
       res.assets.map(asset => {
         if (asset.is_cryptocurrency === "assets.is_cryptocurrency.yes"){
           this.assets.push( {
             id: asset.id,
             value: asset.symbol,
           })
-      }
-    });
+        }
+      });
     });
   }
 
@@ -79,7 +79,7 @@ export class AddAccountComponent implements OnInit {
     });
   }
 
-  Add(){
+  add(){
     const request = _.mapValues(this.form.value, val => {
       if (val === null){
         return val;

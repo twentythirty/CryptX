@@ -9,22 +9,24 @@
     
     <form [formGroup]="form">
       <app-input-item class="form-item"
-        select = "true"
+        fieldType = "autocomplete"
         [label] = "'instruments.instruments' | translate"
         [formGroup] = "form"
         formControlName="instrument_id"
-        [source]="instruments"
+        [items]="instruments"
         [spinnerLoading] = "instrumentsLoading"
+        placeholder="{{'instruments.enter_instrument' | translate}}"
       > 
       </app-input-item>
 
       <app-input-item class="form-item"
-        select = "true"
+        fieldType = "select"
         [label] = "'exchanges.exchange' | translate"
         [formGroup] = "form"
         formControlName="exchange_id"
-        [source]="exchanges"
+        [items]="exchanges"
         [spinnerLoading] = "exchangesLoading"
+        placeholder="{{'exchanges.select_exchange' | translate}}"
       > 
       </app-input-item>
 

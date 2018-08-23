@@ -281,7 +281,7 @@ const getExecutionOrder = async function (req, res) {
     ActionLog.findAll({
       where: { execution_order_id },
       attributes: ['id', 'details', 'timestamp', 'level', 'translation_key', 'translation_args'],
-      order: [ [ 'timestamp', 'DESC' ] ]
+      order: [ [ 'timestamp', 'ASC' ] ]
     })
   ]));
   

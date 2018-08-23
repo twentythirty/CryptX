@@ -111,6 +111,10 @@
         position: absolute;
         right: 9px;
         bottom: 10px;
+
+        &.select {
+            margin-right: 20px;
+        }
     }
 }
 
@@ -223,3 +227,6 @@
         }
     }
 }
+
+
+

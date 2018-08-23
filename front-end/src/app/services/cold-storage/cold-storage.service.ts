@@ -49,7 +49,7 @@ export class ColdStorageService {
       return this.http.post<TransfersAllResponse>(this.baseUrl + `cold_storage/all`, requestData);
   }
 
-  ConfirmTransfer(transfer: Transfer) {
+  confirmTransfer(transfer: Transfer) {
     return this.http.post<any>(this.baseUrl + `cold_storage/${transfer.id}/approve`, {});
   }
 
