@@ -361,7 +361,8 @@ const simulateFill = async (placed_order, log, config) => {
     }
     const fee = price/_.random(98, 100, false); //Make fee around 1-3% of the price.
 
-    [ err ] = await to(ExecutionOrderFill.create({
+    let new_fill;
+    [ err, new_fill ] = await to(ExecutionOrderFill.create({
         execution_order_id: placed_order.id,
         price: price,
         fee: fee,
@@ -376,9 +377,18 @@ const simulateFill = async (placed_order, log, config) => {
         return updateOrderStatus(placed_order, log, config);
     }
 
+    logAction(actions.generate_fill, {
+        args: { amount: new_fill.quantity },
+        relations: { execution_order_id: placed_order.id }
+    });
+
     placed_order.fee = fee;
     placed_order.status = MODEL_CONST.EXECUTION_ORDER_STATUSES.FullyFilled;
     placed_order.completed_timestamp = new Date();
+
+    logAction(actions.fully_filled, {
+        relations: { execution_order_id: placed_order.id }
+    });
 
     return updateOrderStatus(placed_order, log, config);
 
