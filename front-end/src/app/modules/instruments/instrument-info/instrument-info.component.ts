@@ -87,23 +87,38 @@ export class InstrumentInfoComponent extends DataTableCommonManagerComponent imp
       new SelectCellDataColumn({
         column: 'exchange_id',
         inputs: {
-          items: [
-            { id: '', name: 'Select' },
-            ...this.exchanges
-          ]
+          items: (row) => {
+            return [
+              { id: '', name: 'Select' },
+              ...this.exchanges
+            ];
+          }
         },
         outputs: {
-          data: ({ value, row }) => {
+          valueChange: ({ value, row }) => {
             row.exchange_id = +value;
+
+            this.exchangesService.getExchangeInstrumentIdentifiers(row.exchange_id)
+            .subscribe(res => {
+              row.external_instrument_list = res.identifiers;
+            });
 
             this.checkMapping(row);
           }
         }
       }),
-      new InputCellDataColumn({
+      new SelectCellDataColumn({
         column: 'external_instrument',
+        inputs: {
+          items: (row) => {
+            return [
+              { id: '', name: 'Select' },
+              ...(row.external_instrument_list || []).map(item => ({ id: item, name: item }))
+            ];
+          }
+        },
         outputs: {
-          dataDelayed: ({ value, row }) => {
+          valueChange: ({ value, row }) => {
             row.external_instrument = value;
 
             this.checkMapping(row);
@@ -260,14 +275,12 @@ export class InstrumentInfoComponent extends DataTableCommonManagerComponent imp
       return;
     }
 
-    this.route.params.pipe(
-      mergeMap(
-        params => this.instrumentsService.checkMapping(params['id'], {
-          exchange_id: row.exchange_id,
-          external_instrument_id: row.external_instrument,
-        })
-      )
-    ).subscribe(
+    const request = {
+      exchange_id: row.exchange_id,
+      external_instrument_id: row.external_instrument,
+    };
+
+    this.instrumentsService.checkMapping(request).subscribe(
       res => {
         if (res.success) {
           Object.assign(row, res.mapping_data, { valid: true });

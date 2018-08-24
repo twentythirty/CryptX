@@ -78,8 +78,8 @@ export class InstrumentsService {
     }
   }
 
-  checkMapping(instrumentId: number, request: CheckMappingRequestData): Observable<CheckMappingResponse> {
-    return this.http.post<CheckMappingResponse>(this.baseUrl + `instruments/${instrumentId}/check_mapping`, request);
+  checkMapping(request: CheckMappingRequestData): Observable<CheckMappingResponse> {
+    return this.http.post<CheckMappingResponse>(this.baseUrl + `instruments/check_mapping`, request);
   }
 
   addMapping(instrumentId: number, request: AddMappingRequestData): Observable<AddMappingResponse> {

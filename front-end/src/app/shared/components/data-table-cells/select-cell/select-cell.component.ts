@@ -6,10 +6,10 @@ export class SelectCellDataColumn extends TableDataColumn {
   inputs?: {
     value?: any;
     data?: any;
-    items: Array<{id: number, value: string}>;
+    items: (row: any) => Array<{id: number, value: string}>
   }
   outputs?: {
-    data?: any;
+    valueChange?: any;
   }
   constructor(val: SelectCellDataColumn) {
     super(val);
@@ -24,7 +24,9 @@ export class SelectCellDataColumn extends TableDataColumn {
 export class SelectCellComponent implements OnInit {
   @Input() row: any;
   @Input() value: string;
-  @Output('data') valueChange = new EventEmitter();
+  @Input() items: (row: any) => void = (row) => null;
+  
+  @Output() valueChange = new EventEmitter();
 
   constructor() { }
 
