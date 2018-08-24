@@ -87,6 +87,9 @@ export class InstrumentInfoComponent extends DataTableCommonManagerComponent imp
       new SelectCellDataColumn({
         column: 'exchange_id',
         inputs: {
+          isDisabled: (row) => {
+            return !row.isNew;
+          },
           items: (row) => {
             return [
               { id: '', name: 'Select' },
@@ -105,11 +108,14 @@ export class InstrumentInfoComponent extends DataTableCommonManagerComponent imp
 
             this.checkMapping(row);
           }
-        }
+        },
       }),
       new SelectCellDataColumn({
         column: 'external_instrument',
         inputs: {
+          isDisabled: (row) => {
+            return !row.isNew;
+          },
           items: (row) => {
             return [
               { id: '', name: 'Select' },

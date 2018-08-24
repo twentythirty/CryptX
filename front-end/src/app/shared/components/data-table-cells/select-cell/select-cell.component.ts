@@ -6,7 +6,8 @@ export class SelectCellDataColumn extends TableDataColumn {
   inputs?: {
     value?: any;
     data?: any;
-    items: (row: any) => Array<{id: number, value: string}>
+    items: (row: any) => Array<{id: number, value: string}>;
+    isDisabled?: (row: any) => boolean;
   }
   outputs?: {
     valueChange?: any;
@@ -25,6 +26,7 @@ export class SelectCellComponent implements OnInit {
   @Input() row: any;
   @Input() value: string;
   @Input() items: (row: any) => void = (row) => null;
+  @Input() isDisabled?: (row: any) => boolean = (row) => false;
   
   @Output() valueChange = new EventEmitter();
 
