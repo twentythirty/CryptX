@@ -27,9 +27,9 @@ export class CustodiansListComponent extends DataTableCommonManagerComponent imp
   constructor(
     private coldStorageService: ColdStorageService,
     public route: ActivatedRoute,
-    private router: Router
+    public router: Router
   ) {
-    super(route);
+    super(route, router);
   }
 
   ngOnInit() {

@@ -25,7 +25,7 @@ export class AssetViewComponent extends AssetListComponent implements OnInit {
     protected assetService: AssetService,
     protected authService: AuthService,
     protected modelConstantsService: ModelConstantsService,
-    protected router: Router,
+    public router: Router,
     protected currencyPipe: CurrencyPipe,
     private modelConstants: ModelConstantsService
   ) {

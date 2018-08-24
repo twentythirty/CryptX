@@ -34,7 +34,7 @@ export class InstrumentListComponent extends DataTableCommonManagerComponent {
     public instrumentsService: InstrumentsService,
     public router: Router,
   ) {
-    super(route);
+    super(route, router);
     this.getFilterLOV();
   }
 

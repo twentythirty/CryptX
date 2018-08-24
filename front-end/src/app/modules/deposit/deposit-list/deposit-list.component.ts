@@ -47,9 +47,9 @@ export class DepositListComponent extends DataTableCommonManagerComponent implem
   constructor(
     public route: ActivatedRoute,
     protected depositService: DepositService,
-    protected router: Router,
+    public router: Router,
   ) { 
-    super(route);
+    super(route, router);
   }
 
   ngOnInit() {

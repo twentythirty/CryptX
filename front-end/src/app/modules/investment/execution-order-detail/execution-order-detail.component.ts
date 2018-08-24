@@ -111,10 +111,10 @@ export class ExecutionOrderDetailComponent extends TimelineDetailComponent imple
    */
   constructor(
     public route: ActivatedRoute,
-    private router: Router,
+    public router: Router,
     private investmentService: InvestmentService
   ) {
-    super(route);
+    super(route, router);
 
     this.getFilterLOV();
   }

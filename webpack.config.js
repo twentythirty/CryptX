@@ -137,10 +137,7 @@ let configuration = {
       "./front-end/src",
       "./node_modules"
     ],
-    "alias": {
-      ...rxPaths(),
-      Images: path.resolve(__dirname, 'front-end/src/assets/img')
-    },
+    "alias": rxPaths(),
     "mainFields": [
       "browser",
       "module",
@@ -162,7 +159,6 @@ let configuration = {
     ],
     "styles": [
       "./front-end/src/styles.scss"
-      //'./html/css/index.css'
     ]
   },
   "output": {

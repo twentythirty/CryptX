@@ -113,10 +113,10 @@ export class InvestmentRunDetailComponent extends TimelineDetailComponent implem
    */
   constructor(
     public route: ActivatedRoute,
-    private router: Router,
+    public router: Router,
     private investmentService: InvestmentService
   ) {
-    super(route);
+    super(route, router);
   }
 
   /**

@@ -29,9 +29,9 @@ export class RolesListComponent extends DataTableCommonManagerComponent {
   constructor(
     public route: ActivatedRoute,
     private rolesService: RolesService,
-    private router: Router,
+    public router: Router,
   ) {
-    super(route);
+    super(route, router);
   }
 
   getAllData(): void {

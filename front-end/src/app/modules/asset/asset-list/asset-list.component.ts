@@ -95,10 +95,10 @@ export class AssetListComponent extends DataTableCommonManagerComponent implemen
     protected assetService: AssetService,
     protected authService: AuthService,
     protected modelConstantsService: ModelConstantsService,
-    protected router: Router,
+    public router: Router,
     protected currencyPipe: CurrencyPipe,
   ) {
-    super(route);
+    super(route, router);
   }
 
   ngOnInit() {
