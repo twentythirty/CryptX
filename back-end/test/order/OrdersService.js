@@ -427,6 +427,7 @@ describe('OrdersService testing', () => {
             recipe_order_group_id: TEST_ORDER_GROUP_ID,
             status: RECIPE_ORDER_STATUSES.Pending,
             side: ORDER_SIDES.Buy,
+            instrument_id: TEST_INSTRUMENTS[0].id,
             Instrument: TEST_INSTRUMENTS[0],
             target_exchange: {
                 id: TEST_EXCHANGE_IDS[0],
@@ -455,7 +456,7 @@ describe('OrdersService testing', () => {
             recipe_order_group_id: TEST_ORDER_GROUP_ID,
             status: RECIPE_ORDER_STATUSES.Pending,
             side: ORDER_SIDES.Buy,
-            Instrument: TEST_INSTRUMENTS[1],
+            Instrument: TEST_INSTRUMENTS[0],
             target_exchange: {
                 id: TEST_EXCHANGE_IDS[0],
                 name: 'Test exchange'
@@ -600,6 +601,9 @@ describe('OrdersService testing', () => {
                     obj_bad
                 ])
             });
+            sinon.stub(InstrumentExchangeMapping, 'findAll').callsFake(options => {
+                return Promise.resolve([])
+            });
             sinon.stub(ccxtUtils, 'allConnectors').callsFake(options => {
 
                 return Promise.resolve({
@@ -640,6 +644,15 @@ describe('OrdersService testing', () => {
                     obj
                 ])
             });
+            sinon.stub(InstrumentExchangeMapping, 'findAll').callsFake(options => {
+                return Promise.resolve([
+                    {
+                        external_instrument_id: TEST_INSTRUMENTS[0].symbol,
+                        instrument_id: TEST_INSTRUMENTS[0].id,
+                        exchange_id: TEST_EXCHANGE_IDS[0]
+                    }
+                ])
+            });
             sinon.stub(ccxtUtils, 'allConnectors').callsFake(options => {
 
                 return Promise.resolve({
@@ -648,7 +661,9 @@ describe('OrdersService testing', () => {
                         getMarket: (symbol) => {
                             if (symbol == TEST_INSTRUMENTS[0].symbol) {
                                 return {
-                                    active: true
+                                    market: {
+                                        active: true
+                                    }
                                 }
                             } else {
                                 return null
