@@ -1,5 +1,5 @@
 import { Component, OnInit, Input, EventEmitter, Output } from '@angular/core';
-import { ActivatedRoute, Router, NavigationStart } from "@angular/router";
+import { Router, NavigationStart } from "@angular/router";
 import { trigger, state, style, transition, animate } from '@angular/animations';
 import { Observable } from 'rxjs/Observable';
 import _ from 'lodash';
@@ -93,8 +93,7 @@ export class DataTableComponent implements OnInit {
 
   constructor(
     private translate: TranslateService,
-    private route: ActivatedRoute,
-    private router: Router
+    private router: Router,
   ) {}
 
   ngOnInit() {

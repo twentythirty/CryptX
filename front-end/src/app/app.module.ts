@@ -42,9 +42,9 @@ import { ColdStorageTransfersModule } from "./modules/cold-storage-transfers/col
 import { ColdStorageAccountsModule } from "./modules/cold-storage-accounts/cold-storage-accounts.module";
 import { ColdStorageCustodiansModule } from "./modules/cold-storage-custodians/cold-storage-custodians.module";
 
-export function HttpLoaderFactory(http: HttpClient) {
+export function HttpLoaderFactory(httpClient: HttpClient) {
   return new TranslateHttpLoader(
-    http,
+    httpClient,
     `${environment.baseUrl}fe/i18n/`,
     `.json?d=${Date.now()}`
   );
