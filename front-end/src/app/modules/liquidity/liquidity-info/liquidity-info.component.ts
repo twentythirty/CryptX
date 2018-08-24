@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { mergeMap } from 'rxjs/operators/mergeMap';
 
 import { DataTableCommonManagerComponent } from '../../../shared/components/data-table-common-manager/data-table-common-manager.component';
@@ -44,8 +44,9 @@ export class LiquidityInfoComponent extends DataTableCommonManagerComponent impl
   constructor(
     public route: ActivatedRoute,
     private liquidityService: LiquidityService,
+    public router: Router,
   ) {
-    super(route);
+    super(route, router);
   }
 
   ngOnInit() {

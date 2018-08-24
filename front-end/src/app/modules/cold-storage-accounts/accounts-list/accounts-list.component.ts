@@ -40,9 +40,9 @@ export class AccountsListComponent extends DataTableCommonManagerComponent imple
   constructor(
       private coldStorageService: ColdStorageService,
       public route: ActivatedRoute,
-      private router: Router,
+      public router: Router,
   ) {
-    super(route);
+    super(route, router);
   }
 
   ngOnInit() {

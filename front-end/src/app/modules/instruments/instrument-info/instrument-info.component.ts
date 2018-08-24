@@ -61,9 +61,9 @@ export class InstrumentInfoComponent extends DataTableCommonManagerComponent imp
     public route: ActivatedRoute,
     private instrumentsService: InstrumentsService,
     private exchangesService: ExchangesService,
-    private router: Router,
+    public router: Router,
   ) {
-    super(route);
+    super(route, router);
   }
 
   ngOnInit() {

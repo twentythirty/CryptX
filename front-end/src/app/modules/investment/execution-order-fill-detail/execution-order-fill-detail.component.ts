@@ -117,12 +117,12 @@ export class ExecutionOrderFillDetailComponent extends TimelineDetailComponent i
    */
   constructor(
     public route: ActivatedRoute,
-    private router: Router,
+    public router: Router,
     private investmentService: InvestmentService,
     private executionOrdersService: ExecutionOrdersService,
     private translate: TranslateService,
   ) {
-    super(route);
+    super(route, router);
 
     this.getFilterLOV();
   }

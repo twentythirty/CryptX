@@ -39,10 +39,10 @@ export class LiquidityListComponent extends DataTableCommonManagerComponent impl
 
   constructor(
     public route: ActivatedRoute,
-    private router: Router,
+    public router: Router,
     private liquidityService: LiquidityService,
   ) {
-    super(route);
+    super(route, router);
 
     this.getFilterLOV();
   }

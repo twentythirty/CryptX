@@ -128,11 +128,11 @@ export class OrderGroupComponent extends TimelineDetailComponent implements OnIn
    */
   constructor(
     public route: ActivatedRoute,
-    private router: Router,
+    public router: Router,
     private investmentService: InvestmentService,
     private ordersService: OrdersService,
   ) {
-    super(route);
+    super(route, router);
 
     this.getFilterLOV();
   }

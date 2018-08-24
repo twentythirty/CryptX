@@ -57,9 +57,9 @@ export class ExecutionOrderListComponent extends DataTableCommonManagerComponent
   constructor(
     public route: ActivatedRoute,
     protected orderService: ExecutionOrdersService,
-    protected router: Router,
+    public router: Router,
   ) {
-    super(route);
+    super(route, router);
   }
 
   ngOnInit() {

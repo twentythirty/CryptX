@@ -42,7 +42,7 @@ export class UsersListComponent extends DataTableCommonManagerComponent implemen
     public router: Router,
 
   ) {
-    super(route);
+    super(route, router);
   }
 
   ngOnInit() {

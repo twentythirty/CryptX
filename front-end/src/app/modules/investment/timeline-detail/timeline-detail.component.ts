@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { Observable } from 'rxjs/Observable';
 
 import { DataTableCommonManagerComponent } from '../../../shared/components/data-table-common-manager/data-table-common-manager.component';
@@ -90,9 +90,10 @@ export abstract class TimelineDetailComponent extends DataTableCommonManagerComp
    * @param route
    */
   constructor(
-    public route: ActivatedRoute
+    public route: ActivatedRoute,
+    public router: Router
   ) {
-    super(route)
+    super(route, router)
   }
 
   /**

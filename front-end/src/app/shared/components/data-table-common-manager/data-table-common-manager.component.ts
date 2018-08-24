@@ -32,7 +32,7 @@ export class DataTableCommonManagerComponent implements OnInit, OnDestroy {
 
   constructor(
     public route: ActivatedRoute,
-    //public router: Router,
+    public router: Router,
   ) {
     this.setOrderById();
   }
@@ -104,13 +104,13 @@ export class DataTableCommonManagerComponent implements OnInit, OnDestroy {
 
     this.startTableLoading();
 
-    // this.router.navigate([], {
-    //   queryParamsHandling: 'merge',
-    //   queryParams: {
-    //     page: this.page
-    //   },
-    //   skipLocationChange: false
-    // });
+    this.router.navigate([], {
+      queryParamsHandling: 'merge',
+      queryParams: {
+        page: this.page
+      },
+      skipLocationChange: false
+    });
   }
 
   private setOrderById(): void {

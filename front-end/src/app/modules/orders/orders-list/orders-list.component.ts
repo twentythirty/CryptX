@@ -55,10 +55,10 @@ export class OrdersListComponent extends DataTableCommonManagerComponent impleme
 
   constructor(
     public route: ActivatedRoute,
-    private router: Router,
+    public router: Router,
     private ordersService: OrdersService,
   ) {
-    super(route);
+    super(route, router);
 
     this.getFilterLOV();
   }

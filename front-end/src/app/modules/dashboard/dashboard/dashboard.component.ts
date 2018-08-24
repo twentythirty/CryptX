@@ -44,9 +44,9 @@ export class DashboardComponent extends DataTableCommonManagerComponent implemen
   constructor(
     private investmentService: InvestmentService,
     public route: ActivatedRoute,
-    private router: Router
+    public router: Router
   ) {
-    super(route);
+    super(route, router);
   }
 
   ngOnInit() {

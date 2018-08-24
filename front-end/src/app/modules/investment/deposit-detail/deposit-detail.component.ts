@@ -107,10 +107,10 @@ export class DepositDetailComponent extends TimelineDetailComponent implements O
    */
   constructor(
     public route: ActivatedRoute,
-    private router: Router,
+    public router: Router,
     private investmentService: InvestmentService,
   ) {
-    super(route);
+    super(route, router);
 
     this.getFilterLOV();
   }

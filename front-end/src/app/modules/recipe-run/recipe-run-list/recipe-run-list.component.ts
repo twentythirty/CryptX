@@ -62,9 +62,9 @@ export class RecipeRunListComponent extends DataTableCommonManagerComponent impl
   constructor(
     public route: ActivatedRoute,
     protected recipeService: RecipeRunsService,
-    protected router: Router,
+    public router: Router,
   ) {
-    super (route)
+    super (route, router)
   }
 
   ngOnInit() {
