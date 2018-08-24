@@ -292,7 +292,7 @@ export class InstrumentInfoComponent extends DataTableCommonManagerComponent imp
     );
   }
 
-  public saveMapping(): void {
+  public saveMapping(ignoreDeleted: boolean = false): void {
     const exchange_mapping = _.chain(this.mappingDataSource.body)
     .map((item: InstrumentExchangeMap) => {
       if ( item.valid && !item.isDeleted ) {
