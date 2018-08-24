@@ -44,8 +44,14 @@ const createInstrument = async (transaction_asset_id, quote_asset_id) => {
             ]
         }
     });
-    if (old_instrument != null) {
-        TE(`Instrument ${old_instrument.symbol} already exists!!`);
+    if (old_instrument) {
+        let message = `Instrument ${old_instrument.symbol} already exists!!`
+
+        if(old_instrument.transaction_asset_id === quote_asset_id && old_instrument.quote_asset_id === transaction_asset_id) {
+            message = `Only one unique asset pair is allow. Asset pair ${assets_by_id[transaction_asset_id].symbol} and ${assets_by_id[quote_asset_id].symbol} already used in instrument ${old_instrument.symbol}`
+        }
+
+        TE(message);
     }
 
     const instrument_symbol = `${assets_by_id[transaction_asset_id].symbol}/${assets_by_id[quote_asset_id].symbol}`;
