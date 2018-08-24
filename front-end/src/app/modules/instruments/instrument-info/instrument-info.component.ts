@@ -202,6 +202,17 @@ export class InstrumentInfoComponent extends DataTableCommonManagerComponent imp
     );
   }
 
+  public getIdentifiers(row): void {
+    this.exchangesService.getExchangeInstrumentIdentifiers(row.exchange_id)
+      .subscribe(
+        res => {
+          if(res.success) {
+
+          }
+        }
+      )
+  }
+
   public deleteExchangeMapping(mapping) {
     if(mapping.isNew) _.remove(this.mappingDataSource.body, item => _.isEqual(item, mapping) );
     else mapping.isDeleted = true;
