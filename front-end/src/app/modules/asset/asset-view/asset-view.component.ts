@@ -7,6 +7,7 @@ import { Asset, AssetStatus } from '../../../shared/models/asset';
 import { AssetListComponent } from '../asset-list/asset-list.component';
 import { AuthService } from '../../../services/auth/auth.service';
 import { ModelConstantsService } from '../../../services/model-constants/model-constants.service';
+import { TableDataSource } from "../../../shared/components/data-table/data-table.component";
 
 @Component({
   selector: 'app-asset-view',
@@ -30,6 +31,23 @@ export class AssetViewComponent extends AssetListComponent implements OnInit {
   ) {
     super(route, assetService, authService, modelConstantsService, router, currencyPipe);
   }
+
+  public assetsDataSource: TableDataSource = {
+    header: [
+      { column: 'symbol', nameKey: 'table.header.symbol'},
+      { column: 'is_cryptocurrency', nameKey: 'table.header.crypto'},
+      { column: 'long_name', nameKey: 'table.header.long_name'},
+      { column: 'is_base', nameKey: 'table.header.base'},
+      { column: 'is_deposit', nameKey: 'table.header.deposit'},
+      { column: 'capitalization', nameKey: 'table.header.capitalisation'},
+      { column: 'nvt_ratio', nameKey: 'table.header.nvt_ratio'},
+      { column: 'market_share', nameKey: 'table.header.market_share'},
+      { column: 'capitalization_updated', nameKey: 'table.header.capitalisation_updated'},
+      { column: 'status', nameKey: 'table.header.status'},
+      { column: '', nameKey: 'table.header.actions' }
+    ],
+    body: null
+  };
 
   ngOnInit() {
     this.getAsset();
