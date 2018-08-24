@@ -105,7 +105,9 @@ export class ExecutionOrderFillDetailComponent extends TimelineDetailComponent i
   public listColumnsToShow: Array<TableDataColumn> = [
     new TableDataColumn({ column: 'id' }),
     new DateCellDataColumn({ column: 'fill_time' }),
-    new NumberCellDataColumn({ column: 'fill_price' }),
+    new NumberCellDataColumn({ column: 'fill_price', inputs: {
+      digitsInfo: '1.2-6'
+    } }),
     new NumberCellDataColumn({ column: 'quantity' }),
   ];
 

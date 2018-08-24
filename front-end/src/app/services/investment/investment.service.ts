@@ -2,9 +2,18 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs/Observable';
 import { map } from 'rxjs/operators/map';
+import _ from 'lodash';
 
 import { environment } from '../../../environments/environment';
 import { EntitiesFilter } from '../../shared/models/api/entitiesFilter';
+import { TranslateService } from "@ngx-translate/core";
+import { ActionLog } from "../../shared/models/actionLog";
+
+export class ExecutionOrderFillResultData {
+  success: boolean;
+  recipe_deposit: any;
+  action_logs: Array<ActionLog>;
+}
 
 
 @Injectable()
@@ -12,7 +21,8 @@ export class InvestmentService {
 
   private baseUrl: string = environment.baseUrl;
 
-  constructor(private http: HttpClient) { }
+  constructor(private http: HttpClient,
+              private translate: TranslateService,) { }
 
   /**
    * Create and investment
@@ -166,11 +176,13 @@ export class InvestmentService {
   }
 
   getSingleRecipeDeposit(recipe_detail_id: number): Observable<any> {
-    return this.http.get<any>(this.baseUrl + `recipe_deposits/${recipe_detail_id}`);
+    return this.http.get<any>(this.baseUrl + `recipe_deposits/${recipe_detail_id}`)
+    .do(data => this.translateStatus(data));
   }
 
   getSingleExecutionOrder(order_detail_id: number): Observable<any> {
-    return this.http.get<any>(this.baseUrl + `execution_orders/${order_detail_id}`);
+    return this.http.get<any>(this.baseUrl + `execution_orders/${order_detail_id}`)
+    .do(data => this.translateStatus(data));
   }
 
   getSingleExecOrdersFill(exec_order_fill_id: number): Observable<any> {
@@ -278,6 +290,22 @@ export class InvestmentService {
 
   alterOrderGroup(order_group_id: any, data: any): Observable<any> {
     return this.http.post<any>(this.baseUrl + `orders/${order_group_id}/alter`, data)
+  }
+
+  private translateStatus(data: ExecutionOrderFillResultData): ExecutionOrderFillResultData {
+    data.action_logs = data.action_logs.map(item => {
+      if(item.translationArgs) {
+        if(/(^\{|\}$)/.test(item.translationArgs.prev_value)) {
+          this.translate.get(_.trim(item.translationArgs.prev_value, '{}')).subscribe(value => item.translationArgs.prev_value = value);
+        }
+        if(/(^\{|\}$)/.test(item.translationArgs.new_value)) {
+          this.translate.get(_.trim(item.translationArgs.new_value, '{}')).subscribe(value => item.translationArgs.new_value = value);
+        }
+      }
+      return item;
+    });
+
+    return data;
   }
 
 }
