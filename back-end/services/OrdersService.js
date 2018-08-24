@@ -504,9 +504,9 @@ const changeRecipeOrderGroupStatus = async (user_id, order_group_id, status, com
             })
         }));
 
-        //separately update investmetn run status
+        //separately update investment run status
         let [err_status, investment_run] = await to(InvestmentService.changeInvestmentRunStatus(
-            { recipe_order_group_id: order_group_id }, INVESTMENT_RUN_STATUSES.OrdersApproved
+            { recipe_order_group_id: order_group_id }, INVESTMENT_RUN_STATUSES.OrdersExecuting
         ));
         if (err_status) TE(err_status.message);
     }
