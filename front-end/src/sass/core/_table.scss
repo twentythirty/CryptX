@@ -165,6 +165,26 @@
                     }
                 }
             }
+            &.color-light-green {
+                td {
+                    background-color: #8cdf9e;
+                    color: #000000;
+
+                    &.highlight {
+                        background-color: lighten(#8cdf9e, 10%);
+                    }
+                }
+            }
+            &.color-light-red {
+                td {
+                    background-color: #df8c8c;
+                    color: #000000;
+
+                    &.highlight {
+                        background-color: lighten(#df8c8c, 10%);
+                    }
+                }
+            }
             //-----------------
 
             td {

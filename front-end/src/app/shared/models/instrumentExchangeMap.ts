@@ -9,4 +9,6 @@ export class InstrumentExchangeMap {
     public last_updated: number;
 
     public valid?: boolean = false;
+    public isDeleted?: boolean = false;
+    public isNew?: boolean = true;
 }

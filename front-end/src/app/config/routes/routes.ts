@@ -3,6 +3,7 @@ import { RouterModule, Routes, CanActivate } from '@angular/router';
 
 import { AuthGuard } from './route-auth.guard';
 import { PermissionGuard } from './route-permission.guard';
+import { PendingChangesGuard } from './route-pending-changes.guard'
 
 import { LoginComponent } from '../../modules/auth/login/login.component';
 import { PasswordResetComponent } from '../../modules/auth/password-reset/password-reset.component';
@@ -136,7 +137,8 @@ const routes: Routes = [
   {
     path: 'instrument/:id',
     component: InstrumentInfoComponent,
-    canActivate: [AuthGuard]
+    canActivate: [AuthGuard],
+    canDeactivate: [PendingChangesGuard]
   },
 
   {

@@ -12,6 +12,8 @@ import { InstrumentListComponent } from './instrument-list/instrument-list.compo
 import { InstrumentsService } from '../../services/instruments/instruments.service';
 import { InstrumentInfoComponent } from './instrument-info/instrument-info.component';
 
+import { PendingChangesGuard } from '../../config/routes/route-pending-changes.guard';
+
 @NgModule({
   declarations: [
     InstrumentAddComponent,
@@ -28,7 +30,8 @@ import { InstrumentInfoComponent } from './instrument-info/instrument-info.compo
     NguiAutoCompleteModule,
   ],
   providers: [
-    InstrumentsService
+    InstrumentsService,
+    PendingChangesGuard
   ],
 })
 export class InstrumentsModule { }

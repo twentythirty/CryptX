@@ -21,13 +21,14 @@
   <app-data-table
     [dataSource]="mappingDataSource"
     [columnsToShow]="mappingColumnsToShow"
+    [rowClass]="rowClass"
   ></app-data-table>
 </ng-container>
 
 <app-form-action-bar>
   <button
     class="btn submit"
-    [disabled]="loading"
+    [disabled]="loading || noChanges"
     (click)="saveMapping()"
   >{{ 'common.save_changes' | translate }}</button>
 </app-form-action-bar>
