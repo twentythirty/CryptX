@@ -126,11 +126,13 @@ const getInstrumentExchanges = async function (req, res) {
   const seq_query = Object.assign({ where: {} }, req.seq_query);
   //add instrument id to search conditions
   seq_query.where['instrument_id'] = instrument_id;
-  const { data: instrument_exchanges, total: count} = await adminViewService.fetchInstrumentExchangesViewDataWithCount(seq_query);
+  let { data: instrument_exchanges, total: count} = await adminViewService.fetchInstrumentExchangesViewDataWithCount(seq_query);
 
   //add instrument id to search condition
   let sql_where = adminViewUtils.addToWhere(req.sql_where, `instrument_id = ${instrument_id}`);
   const instrument_exchanges_footer = await adminViewService.fetchInstrumentExchangesViewFooter(sql_where)
+
+  instrument_exchanges = await Promise.all(instrument_exchanges.map(ie => ie.toWeb()));
 
   return ReS(res, {
     count,
