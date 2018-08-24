@@ -11,6 +11,11 @@ export class ExchangesAllResponse {
   count: number;
 }
 
+export class ExchangesInstrumentIdentifiersResponse {
+  identifiers: Array<string>;
+  success: boolean;
+}
+
 @Injectable()
 export class ExchangesService {
   private baseUrl: string = environment.baseUrl;
@@ -25,6 +30,10 @@ export class ExchangesService {
     } else {
       return this.http.get<ExchangesAllResponse>(this.baseUrl + `exchanges/all`);
     }
+  }
+
+  getExchangeInstrumentIdentifiers(exchangeId): Observable<ExchangesInstrumentIdentifiersResponse>{
+    return this.http.get<ExchangesInstrumentIdentifiersResponse>(this.baseUrl + `exchanges/${exchangeId}/instruments`);
   }
 
 }
