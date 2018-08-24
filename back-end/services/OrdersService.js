@@ -446,38 +446,61 @@ const changeRecipeOrderGroupStatus = async (user_id, order_group_id, status, com
 
         [err, results] = await to(sequelize.transaction(transaction => {
 
-            return Promise.all([
-                RecipeOrder.findAll({
-                    where: {
-                        recipe_order_group_id: recipe_order_group.id
+            //start with fetching relevant orders
+            return RecipeOrder.findAll({
+                where: {
+                    recipe_order_group_id: recipe_order_group.id
+                },
+                include: [
+                    {
+                        model: Instrument,
+                        as: 'Instrument'
                     },
-                    includes: [
-                        Instrument, Exchange
-                    ],
-                    transaction
-                }),
-                ccxtUtils.allConnectors()
-            ]).then(order_data => {
+                    {
+                        model: Exchange,
+                        as: 'target_exchange'
+                    }
+                ],
+                transaction
+            }).then(recipe_orders => {
+                //add relevant mappings and ccxt connectors to orders
 
-                const [recipe_orders, connectors_map] = order_data;
+                return Promise.all([
+                    Promise.resolve(recipe_orders),
+                    InstrumentExchangeMapping.findAll({
+                        where: {
+                            instrument_id: _.map(recipe_orders, 'instrument_id'),
+                            exchange_id: _.map(recipe_orders, 'target_exchange_id')
+                        },
+                        transaction
+                    }),
+                    ccxtUtils.allConnectors()
+                ])
+            }).then(order_data => {
+
+                const [recipe_orders, exchange_mappings, connectors_map] = order_data;
 
                 return Promise.all(_.map(recipe_orders, recipe_order => {
 
                     const connector = connectors_map[String(recipe_order.target_exchange_id)];
-
+                    const exchange = recipe_order.target_exchange != null ? recipe_order.target_exchange : {
+                        name: '<NONE>'
+                    }
                     if (connector == null) {
-                        const exchange = recipe_order.target_exchange != null ? recipe_order.target_exchange : {
-                            name: '<NONE>'
-                        }
-                        TE(`No connector found for exchange ${exchange.name}, recipe order ${recipe_order.id} cant be approved!`)
+                        TE(`Can't approve recipe order ${recipe_order.id}: No connector found for exchange ${exchange.name}!`)
+                    }
+
+                    const mapping = _.find(exchange_mappings, mapping => mapping.instrument_id == recipe_order.instrument_id && recipe_order.target_exchange_id == mapping.exchange_id);
+                    if (mapping == null) {
+                        TE(`Can't approve recipe order ${recipe_order.id}: No mapping found for ${recipe_order.Instrument.symbol} on ${exchange.name}`);
                     }
                     //pick correct symbol to check market
-                    const check_symbol = recipe_order.side == ORDER_SIDES.Buy ? recipe_order.Instrument.symbol : recipe_order.Instrument.reverse_symbol()
+                    const check_symbol = mapping.external_instrument_id;
                     const check_market = connector.getMarket(check_symbol);
 
-                    if (check_market == null || !check_market.active) {
+                    if (check_market == null || check_market.market == null || !check_market.market.active) {
 
-                        TE(`Can't approve recipe order ${recipe_order.id}: No market for pair ${check_symbol} on exchange ${connector.name}.`)
+                        TE(`Can't approve recipe order ${recipe_order.id}: No market for mapping ${check_symbol} on exchange ${connector.name}.`)
                     }
 
                     //market exists for this order, we can approve it
@@ -501,18 +524,28 @@ const changeRecipeOrderGroupStatus = async (user_id, order_group_id, status, com
                     }),
                     Promise.resolve(recipe_orders)
                 ])
+            }).then(recipe_data => {
+                //handle investmetn run status change
+                const [recipe_order_group, recipe_orders] = recipe_data
+                //put investment run status change result as 3rd array parameter not ot mess up intended method returns
+                return Promise.all([
+                    Promise.resolve(recipe_order_group),
+                    Promise.resolve(recipe_orders),
+                    InvestmentService.changeInvestmentRunStatus(
+                        { recipe_order_group_id: order_group_id }, INVESTMENT_RUN_STATUSES.OrdersExecuting
+                    )
+                ])
             })
-        }));
-
-        //separately update investment run status
-        let [err_status, investment_run] = await to(InvestmentService.changeInvestmentRunStatus(
-            { recipe_order_group_id: order_group_id }, INVESTMENT_RUN_STATUSES.OrdersExecuting
-        ));
-        if (err_status) TE(err_status.message);
+        }), false);
     }
 
     if (err) {
-        TE(err);
+        //this is an error already, dont rewrap it
+        if (err.stack && err.message) {
+            throw err;
+        } else {
+            TE(err);
+        }
     }
 
     return results;
