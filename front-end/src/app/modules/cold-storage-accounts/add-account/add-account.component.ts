@@ -5,6 +5,7 @@ import { ColdStorageService } from "../../../services/cold-storage/cold-storage.
 import { FormGroup, FormControl, Validators } from "@angular/forms";
 import _ from 'lodash';
 import { Router } from "@angular/router";
+import { Observable } from "rxjs/Observable";
 
 @Component({
   selector: 'app-add-account',
@@ -13,9 +14,9 @@ import { Router } from "@angular/router";
 })
 export class AddAccountComponent implements OnInit {
 
-  strategies = [];
-  assets = [];
-  custodians = [];
+  strategies: Array<Object> = [];
+  assets: Array<Object> = []
+  custodians:Array<Object> = [];
 
   buttonLoading: boolean = false;
 
@@ -54,15 +55,14 @@ export class AddAccountComponent implements OnInit {
   }
 
   getAssets(){
-    this.assetService.getAllAssetsDetailed().subscribe(res => {
-    this.assetsLoading = false;
-      res.assets.map(asset => {
-        if (asset.is_cryptocurrency === "assets.is_cryptocurrency.yes"){
-          this.assets.push( {
-            id: asset.id,
-            value: asset.symbol,
-          })
-        }
+    let filter = {filter : {is_cryptocurrency: "assets.is_cryptocurrency.yes"}};
+    this.assetService.getAllAssetsDetailed(filter).subscribe(res => {
+      this.assetsLoading = false;
+      this.assets = res.assets.map(asset => {
+        return {
+          id: asset.id,
+          value: asset.symbol
+        };
       });
     });
   }

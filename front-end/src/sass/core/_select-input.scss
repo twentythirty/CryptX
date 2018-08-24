@@ -1,7 +1,7 @@
 .ng-select.custom {
     .ng-select-container {
         
-        :hover {
+        &:hover {
             border-color: $green;
         }
 
@@ -13,6 +13,10 @@
         font-size: 15px;
         padding: 0 10px;
         color: $black;
+
+        .ng-spinner-loader {
+            margin-top: 15px;
+        }
 
         .ng-placeholder {
             position: inherit;

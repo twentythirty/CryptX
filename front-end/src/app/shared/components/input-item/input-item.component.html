@@ -17,6 +17,8 @@
   <ng-select
     class="custom"
     [searchable]="fieldType === 'autocomplete'"
+    [loading]="spinnerLoading"
+    loadingText="Loading..."
     [items]="items"
     [(ngModel)]="value"
     [markFirst]="false"
@@ -24,15 +26,6 @@
     bindLabel="value"
     [placeholder]="placeholder"
   ></ng-select>
-
-  <mat-progress-spinner
-    *ngIf="spinnerLoading"
-    class="progress-spinner select"
-    mode="indeterminate"
-    color="accent"
-    strokeWidth="1"
-    diameter="25"
-  ></mat-progress-spinner>
 </ng-container>
 
 <app-input-item-error-message
