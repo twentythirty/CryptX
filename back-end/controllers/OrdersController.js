@@ -39,7 +39,7 @@ const changeOrdersGroupStatus = async (req, res) => {
 
     let [err, result] = await to(ordersService.changeRecipeOrderGroupStatus(
         user_id, order_group_id, status, comment
-    ));
+    ), false);
 
     if (err) {
         return ReE(res, err, 422);
