@@ -390,6 +390,7 @@ const findInvestmentRunFromAssociations = async function (entities) {
     LEFT JOIN recipe_order ON recipe_order.recipe_order_group_id=recipe_order_group.id
     LEFT JOIN execution_order ON execution_order.recipe_order_id=recipe_order.id
     WHERE ${allowed_entities[foundClosestEntity]}.id=:entity_id
+    LIMIT 1
   `, {
     replacements: {
       entity_id: id_to_find
@@ -415,14 +416,14 @@ const getWholeInvestmentRun = async function (investment_run_id) {
           model: RecipeOrderGroup,
           include: [{
             /* This makes sequelize get further includes as in separate query. This is a quick workaround for postgres truncating too long paths. */
-            separate: true,
+            /* separate: true, */
             model: RecipeOrder,
-            include: [{
+            /* include: [{
               model: ExecutionOrder,
               include: [{
                 model: ExecutionOrderFill,
               }]
-            }]
+            }] */
           }]
         },
         {
@@ -547,24 +548,26 @@ const getInvestmentRunTimeline = async function (investment_run_id) {
     status: `order.status.${order_status}`
   };
 
-  // prepare execution order data 
-  // collects all execution orders into single flat array
-  let execution_orders = _.flatten(recipes.map(recipe_run => {
-
-    return _.flatten(
-      recipe_run.RecipeOrderGroups.map(recipe_order_group => {
-
-        return _.flatten(
-          recipe_order_group.RecipeOrders.map(recipe_order => {
-
-            return recipe_order.ExecutionOrders;
-          })
-        );
-      })
-    )
+  // find at least one failed execution order
+  let exec_order_statuses;
+  [err, exec_order_statuses] = await to(sequelize.query(`
+    SELECT eo.status, COUNT(eo.id) as count
+    FROM execution_order as eo
+    JOIN recipe_order as ro ON ro.id=eo.recipe_order_id
+    JOIN recipe_order_group as rog ON rog.id=ro.recipe_order_group_id
+    WHERE rog.id=:rog_id
+    GROUP BY eo.status
+  `, {
+    type: sequelize.QueryTypes.SELECT,
+    replacements: {
+      rog_id: prepared_recipe_orders.order_group_id
+    }
   }));
 
-  if (!execution_orders.length) {
+  if (err) TE(err.message);
+
+  let exec_order_count = _.sumBy(exec_order_statuses, eos => parseInt(eos.count, 10));
+  if (!exec_order_count) {
     return { // no execution orders found. Return current status
       investment_run: investment_run_data,
       recipe_run: recipe_run_data,
@@ -575,7 +578,7 @@ const getInvestmentRunTimeline = async function (investment_run_id) {
   }
 
   let exec_order_status;
-  if (execution_orders.some(exec_order => exec_order.status === EXECUTION_ORDER_STATUSES.Failed)) {
+  if (exec_order_statuses.some(e => e.status == EXECUTION_ORDER_STATUSES.Failed && e.count)) { // if at least one failed execution order found
     exec_order_status = EXECUTION_ORDER_STATUSES.Failed;
   } else if (whole_investment.status === INVESTMENT_RUN_STATUSES.OrdersFilled) {
     exec_order_status = EXECUTION_ORDER_STATUSES.FullyFilled;
@@ -583,7 +586,7 @@ const getInvestmentRunTimeline = async function (investment_run_id) {
     exec_order_status = EXECUTION_ORDER_STATUSES.Placed;
   }
   let exec_order_data = {
-    count: execution_orders.length,
+    count: exec_order_count,
     status: `execution_orders_timeline.status.${exec_order_status}`
   };
 

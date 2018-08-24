@@ -28,7 +28,7 @@ describe('InvestmentService testing:', () => {
   const RecipeRun = require('./../../models').RecipeRun;
   const RecipeRunDetail = require('./../../models').RecipeRunDetail;
   const Asset = require('./../../models').Asset;
-
+  const sequelize = require('./../../models').sequelize
 
 
   let USER_ID = 1;
@@ -609,7 +609,7 @@ describe('InvestmentService testing:', () => {
     };
 
     let RECIPE_ORDER_GROUP = {
-      id: 2,
+      id: 0,
       recipe_run_id: 2,
       approval_status: 81,
       created_timestamp: new Date()
@@ -699,7 +699,11 @@ describe('InvestmentService testing:', () => {
 
           recipe_runs.RecipeOrderGroups = [...Array(ORDER_GROUPS_PER_RECIPE)].map(
             () => {
-              let recipe_order_group = Object.assign(RECIPE_ORDER_GROUP);
+              let recipe_order_group = Object.assign({}, RECIPE_ORDER_GROUP);
+              recipe_order_group.id = 0;
+              if(inv_id == INVESTMENT_ID.EXEC_ORDERS_FAILED) recipe_order_group.id = 1;
+              if(inv_id == INVESTMENT_ID.NO_EXEC_ORDERS) 
+                recipe_order_group.id = 2;
 
               recipe_order_group.RecipeOrders = [...Array(inv_id != 4 ? ORDERS_PER_GROUP : 0)].map(
                 (ord, order_index) => {
@@ -708,6 +712,7 @@ describe('InvestmentService testing:', () => {
                   if(inv_id == INVESTMENT_ID.ORDERS_PENDING) order.status = 51; // Pending
                   if(inv_id == INVESTMENT_ID.ORDERS_COMPLETED) order.status = 53; // Completed
 
+                  /* // Execution orders not needed now
                   order.ExecutionOrders = [...Array(inv_id != 5 ? EXECUTION_ORDERS_PER_ORDER : 0)].map(
                     () => {
                       let exec_order = Object.assign({}, EXECUTION_ORDER);
@@ -715,7 +720,7 @@ describe('InvestmentService testing:', () => {
                       
                       return exec_order;
                     }
-                  );
+                  ); */
 
                   return order;
                 }
@@ -733,11 +738,27 @@ describe('InvestmentService testing:', () => {
           return whole_investment;
         }
         return Promise.resolve(whole_investment);
-      }); 
+      });
+
+      sinon.stub(sequelize, 'query').callsFake((query, options) => {
+        let exec_order_statuses = [{
+          status: 61,
+          count: 1000
+        }];
+
+        if(options.replacements.rog_id == 1)
+          exec_order_statuses.push({
+            status: 66,
+            count: 1
+          });
+
+        return Promise.resolve(exec_order_statuses);
+      });
     });
 
     afterEach(() => {
       investmentService.getWholeInvestmentRun.restore();
+      sequelize.query.restore();
     })
 
     it('it should throw if investment run is not found', () => {
@@ -778,12 +799,12 @@ describe('InvestmentService testing:', () => {
       });
     })
 
-    it('it should return null in execution orders property if there are no orders', () => {
+   /*  it('it should return null in execution orders property if there are no orders', () => {
 
       return investmentService.getInvestmentRunTimeline(INVESTMENT_ID.NO_EXEC_ORDERS).then(result => {
         chai.assert.isNull(result.execution_orders);
       });
-    })
+    }) */
 
     it('it should count recipe deposits and have status PENDING if at least one of deposits have status PENDING', () => {
 
@@ -825,13 +846,13 @@ describe('InvestmentService testing:', () => {
       });
     });
 
-    it('it should count execution orders and return status FAILED if at least one of orders have status FAILED', () => {
+/*     it('it should count execution orders and return status FAILED if at least one of orders have status FAILED', () => {
 
       return investmentService.getInvestmentRunTimeline(INVESTMENT_ID.EXEC_ORDERS_FAILED).then(result => {
         chai.assert.isNumber(result.execution_orders.count);
         chai.expect(result.execution_orders.status).to.be.equal('execution_orders_timeline.status.66');
       });
-    });
+    }); */
 
     it('it should count execution orders and return status FILLED if investment run status is ORDERSFILLED', () => {
 
