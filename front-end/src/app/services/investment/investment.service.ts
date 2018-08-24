@@ -11,7 +11,7 @@ import { ActionLog } from "../../shared/models/actionLog";
 
 export class ExecutionOrderFillResultData {
   success: boolean;
-  recipe_deposit: any;
+  execution_order: any;
   action_logs: Array<ActionLog>;
 }
 
@@ -177,7 +177,6 @@ export class InvestmentService {
 
   getSingleRecipeDeposit(recipe_detail_id: number): Observable<any> {
     return this.http.get<any>(this.baseUrl + `recipe_deposits/${recipe_detail_id}`)
-    .do(data => this.translateStatus(data));
   }
 
   getSingleExecutionOrder(order_detail_id: number): Observable<any> {
