@@ -76,7 +76,7 @@ export class LiquidityInfoComponent extends DataTableCommonManagerComponent impl
         column: 'current_price',
         inputs: {
           suffix: this.cryptoSuffix,
-          digitsInfo: '1.0-2',
+          digitsInfo: '1.0-7',
         }
       }),
       new NumberCellDataColumn({

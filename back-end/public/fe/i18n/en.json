@@ -18,7 +18,8 @@
     "sign_up": "Sign up",
     "activity_log": "Activity log",
     "rationale": "Rationale",
-    "add_new_user": "Add new user"
+    "add_new_user": "Add new user",
+    "all": "All"
   },
   "table": {
     "header": {
