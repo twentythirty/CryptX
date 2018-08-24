@@ -64,7 +64,9 @@ export class LiquidityCreateComponent implements OnInit {
 
       this.translate.get('exchanges.all_exchanges').subscribe(value => {
         this.exchanges.push({
-          id: null,
+          /*set id value as number 0 instead of 'null' 
+          to make selector input understand that option is selected */
+          id: 0,
           value: value
         });
       });
@@ -81,7 +83,9 @@ export class LiquidityCreateComponent implements OnInit {
 
   saveLiquidityRequirement() {
     const request = _.mapValues(this.form.value, val => {
-      return typeof val === 'object' ? val.id : _.toNumber(val);
+      /*in case of 'All Exchanges' selection, return id value back to 
+      expression: 'null'*/
+      return val === 0 ? val = null : typeof val === 'object' ? val.id : _.toNumber(val);
     });
 
     this.loading = true;

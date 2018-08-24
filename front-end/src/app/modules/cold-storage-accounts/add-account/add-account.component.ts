@@ -5,7 +5,6 @@ import { ColdStorageService } from "../../../services/cold-storage/cold-storage.
 import { FormGroup, FormControl, Validators } from "@angular/forms";
 import _ from 'lodash';
 import { Router } from "@angular/router";
-import { Observable } from "rxjs/Observable";
 
 @Component({
   selector: 'app-add-account',
