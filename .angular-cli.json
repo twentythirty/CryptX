@@ -1,8 +1,7 @@
 {
   "$schema": "./node_modules/@angular/cli/lib/config/schema.json",
   "project": {
-    "name": "cryptx",
-    "ejected": true
+    "name": "cryptx-front-end"
   },
   "apps": [
     {
@@ -20,7 +19,7 @@
       "testTsconfig": "tsconfig.spec.json",
       "prefix": "app",
       "styles": [
-        "styles.css"
+        "styles.scss"
       ],
       "scripts": [],
       "environmentSource": "environments/environment.ts",
@@ -51,12 +50,11 @@
   ],
   "test": {
     "karma": {
-      "config": "./karma.conf.js"
+      "config": "./front-end/karma.conf.js"
     }
   },
   "defaults": {
     "styleExt": "scss",
-    "component": {
-    }
+    "component": {}
   }
 }
