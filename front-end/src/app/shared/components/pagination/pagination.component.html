@@ -1,4 +1,4 @@
-<div class="pagination" *ngIf="count > 0">
+<div class="pagination" *ngIf="count > 0" [class.disable-paging]="loading">
   <ul class="pager-nav left-nav">
     <li>
       <button 

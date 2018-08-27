@@ -12,6 +12,7 @@ export class PaginationComponent {
   @Input() page: number = 1; // page number
   @Input() perPage: number = 20; // how much records show per single page
   @Input() pagesToShow: number = 5; // how much pages buttons to show between arrows buttons
+  @Input() loading: boolean; //is Table loading
 
   constructor(
     private router: Router

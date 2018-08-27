@@ -1,5 +1,5 @@
 import { Component, OnInit, Input, EventEmitter, Output } from '@angular/core';
-import { Router, NavigationStart } from "@angular/router";
+import { ActivatedRoute, Router, NavigationStart } from "@angular/router";
 import { trigger, state, style, transition, animate } from '@angular/animations';
 import { Observable } from 'rxjs/Observable';
 import _ from 'lodash';
@@ -94,6 +94,7 @@ export class DataTableComponent implements OnInit {
   constructor(
     private translate: TranslateService,
     private router: Router,
+    private route: ActivatedRoute
   ) {}
 
   ngOnInit() {
@@ -112,15 +113,15 @@ export class DataTableComponent implements OnInit {
     // clone object
     Object.apply(this.filterAppliedMap, this.filterMap);
 
-    // remove all _dirty properties on url change
-    this.router.events.subscribe(val => {
-      if(val instanceof NavigationStart){
-        this.dataSource.header.map(item => {
+    // remove all _dirty properties on url param change
+
+    this.route.params.subscribe(params => {
+      this.dataSource.header.map(item => {
           delete item._dirty;
           return item;
         });
-      }
-    });
+    })
+
   }
 
   toggleFilter(item: any): void {
