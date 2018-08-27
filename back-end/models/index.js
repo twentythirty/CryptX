@@ -11,7 +11,9 @@ const sequelize = new Sequelize(process.env.DATABASE_URL, {
   dialectOptions: {
     ssl: (process.env.DB_USE_SSL || 'false') == 'true'
   },
-  operatorsAliases: false
+  operatorsAliases: false,
+  //only log sql queries on local deploy
+  logging: process.env.NODE_ENV == 'dev'? console.log : false
 });
 
 fs

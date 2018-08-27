@@ -103,7 +103,7 @@ export class InstrumentInfoComponent extends DataTableCommonManagerComponent imp
 
             this.exchangesService.getExchangeInstrumentIdentifiers(row.exchange_id)
             .subscribe(res => {
-              row.external_instrument_list = res.identifiers;
+              row.external_instrument_list = _.sortBy(res.identifiers);
             });
 
             this.checkMapping(row);
@@ -228,7 +228,6 @@ export class InstrumentInfoComponent extends DataTableCommonManagerComponent imp
       .subscribe(
         res => {
           if(res.success) {
-
           }
         }
       )
