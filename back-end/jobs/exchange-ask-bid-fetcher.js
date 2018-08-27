@@ -62,7 +62,7 @@ module.exports.JOB_BODY = async (config, log) => {
                                     args: {
                                         instrument: mapping.external_instrument_id,
                                         exchange: exchange.name,
-                                        error: err
+                                        error: err.message
                                     },
                                 });
                                 return []
@@ -119,7 +119,7 @@ module.exports.JOB_BODY = async (config, log) => {
     }).catch(err => {
         logAction(actions.job_error, {
             args: {
-                error: err
+                error: err.message
             },
         });
     });
