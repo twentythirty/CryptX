@@ -1,5 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { Router, ActivatedRoute } from "@angular/router";
+import { finalize } from 'rxjs/operators';
+
 import { DataTableCommonManagerComponent } from "../../../shared/components/data-table-common-manager/data-table-common-manager.component";
 import { TableDataSource, TableDataColumn } from "../../../shared/components/data-table/data-table.component";
 import { DateCellDataColumn, StatusCellDataColumn, NumberCellDataColumn } from "../../../shared/components/data-table-cells";
@@ -78,9 +80,9 @@ export class ExecutionOrderListComponent extends DataTableCommonManagerComponent
   }
 
   getAllData(): void {
-    this.orderService.getAllExecutionOrders(this.requestData)
-    .finally(() => this.stopTableLoading())
-    .subscribe(
+    this.orderService.getAllExecutionOrders(this.requestData).pipe(
+      finalize(() => this.stopTableLoading())
+    ).subscribe(
       res => {
         Object.assign(this.orderDataSource, {
           body: res.execution_orders,

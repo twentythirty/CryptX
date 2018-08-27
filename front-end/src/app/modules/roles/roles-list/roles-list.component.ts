@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import 'rxjs/add/operator/filter';
+import { finalize } from 'rxjs/operators';
 
 import { RolesService } from '../../../services/roles/roles.service';
 
@@ -35,9 +35,9 @@ export class RolesListComponent extends DataTableCommonManagerComponent {
   }
 
   getAllData(): void {
-    this.rolesService.getAllRoles(this.requestData)
-    .finally(() => this.stopTableLoading())
-    .subscribe(res => {
+    this.rolesService.getAllRoles(this.requestData).pipe(
+      finalize(() => this.stopTableLoading())
+    ).subscribe(res => {
       Object.assign(this.rolesDataSource, {
         body: res.roles,
         footer: res.footer

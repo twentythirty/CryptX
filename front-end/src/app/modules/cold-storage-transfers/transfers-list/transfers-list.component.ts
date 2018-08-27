@@ -1,5 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from "@angular/router";
+import { finalize } from 'rxjs/operators';
+
 import { DataTableCommonManagerComponent } from "../../../shared/components/data-table-common-manager/data-table-common-manager.component";
 import { TableDataSource, TableDataColumn } from "../../../shared/components/data-table/data-table.component";
 import { NumberCellDataColumn, StatusCellDataColumn, DateCellDataColumn, ActionCellDataColumn, DataCellAction } from "../../../shared/components/data-table-cells/index";
@@ -91,9 +93,9 @@ export class TransfersListComponent extends DataTableCommonManagerComponent impl
   }
 
   getAllData(): void {
-    this.coldStorageService.getAllTransfers(this.requestData)
-    .finally(() => this.stopTableLoading())
-    .subscribe(
+    this.coldStorageService.getAllTransfers(this.requestData).pipe(
+      finalize(() => this.stopTableLoading())
+    ).subscribe(
       res => {
         Object.assign(this.transfersDataSource, {
           body: res.transfers,

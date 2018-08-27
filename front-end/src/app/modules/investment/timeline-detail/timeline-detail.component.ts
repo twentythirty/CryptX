@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { Observable } from 'rxjs/Observable';
+import { Observable } from 'rxjs';
 
 import { DataTableCommonManagerComponent } from '../../../shared/components/data-table-common-manager/data-table-common-manager.component';
 import { TableDataColumn, TableDataSource } from '../../../shared/components/data-table/data-table.component';
@@ -20,6 +20,53 @@ import { ActionLog } from '../../../shared/models/actionLog';
  * +  If custom ngOnInit() is needed, call super.ngOnInit() to
  *    perform parent component class initialization
  */
+
+export interface ITimelineDetailComponent {
+  pageTitle: string;
+  singleTitle: string;
+  listTitle: string;
+  addTitle?: string;  // Optional
+  singleTableEmptyText?: string; // Optional
+  listTableEmptyText?: string; // Optional
+
+  showGenerateOrders?: boolean; // Optional
+  disableGenerateOrders?: boolean; // Optional
+
+  singleDataSource: SingleTableDataSource;
+  listDataSource: TableDataSource;
+
+  timeline$: Observable<Array<TimelineEvent>>;
+
+  singleColumnsToShow: Array<string | TableDataColumn>;
+  listColumnsToShow: Array<string | TableDataColumn>;
+
+  getAllData: () => void;
+  getSingleData: () => void;
+  getTimelineData: () => void;
+
+  addAction?: () => void // optional
+
+  generateOrders?: () => void // optional
+
+  openSingleRow: (row: any) => void; // optional
+  openListRow: (row: any) => void; // optional
+
+  goBack?: () => void // optional
+
+  /**
+   * Rationale set modal
+   */
+  rationaleModalIsShown?: boolean;
+  rationaleData?: any;
+  rationaleDone?: (data: any) => void;
+
+  /**
+   * Read set modal
+   */
+  readModalIsShown?: boolean;
+  readData?: { title: string, content: string };
+
+}
 
 export interface SingleTableDataSource extends TableDataSource {
   header: Array<{
@@ -46,16 +93,16 @@ export class TagLineItem {
   templateUrl: './timeline-detail.component.html',
   styleUrls: ['./timeline-detail.component.scss']
 })
-export abstract class TimelineDetailComponent extends DataTableCommonManagerComponent implements OnInit {
+export class TimelineDetailComponent extends DataTableCommonManagerComponent implements OnInit {
 
   public tagLine: Array<TagLineItem> = [];
 
   /**
    * 1. Abstract attributes to display titles
    */
-  public abstract pageTitle: string;
-  public abstract singleTitle: string;
-  public abstract listTitle: string;
+  public pageTitle: string;
+  public singleTitle: string;
+  public listTitle: string;
   public addTitle: string;  // Optional
   public singleTableEmptyText: string; // Optional
   public listTableEmptyText: string; // Optional
@@ -69,8 +116,8 @@ export abstract class TimelineDetailComponent extends DataTableCommonManagerComp
   /**
    * 2. Abstract attributes to preset data structure
    */
-  public abstract singleDataSource: SingleTableDataSource;
-  public abstract listDataSource: TableDataSource;
+  public singleDataSource: SingleTableDataSource;
+  public listDataSource: TableDataSource;
 
   public timeline$: Observable<Array<TimelineEvent>>;
 
@@ -82,8 +129,8 @@ export abstract class TimelineDetailComponent extends DataTableCommonManagerComp
    * component used. This config would be perfectly valid only by passing an object
    * that fits the type TableDataColumn, without constructing DataColumn classes, too.
    */
-  public abstract singleColumnsToShow: Array<string | TableDataColumn>;
-  public abstract listColumnsToShow: Array<string | TableDataColumn>;
+  public singleColumnsToShow: Array<string | TableDataColumn>;
+  public listColumnsToShow: Array<string | TableDataColumn>;
 
   /**
    * 3. Construct with ActivatedRoute
@@ -93,7 +140,7 @@ export abstract class TimelineDetailComponent extends DataTableCommonManagerComp
     public route: ActivatedRoute,
     public router: Router
   ) {
-    super(route, router)
+    super(route, router);
   }
 
   /**
@@ -108,9 +155,9 @@ export abstract class TimelineDetailComponent extends DataTableCommonManagerComp
   /**
    * 4. Abstract methods to fetch data OnInit
    */
-  public abstract getAllData(): void;
-  protected abstract getSingleData(): void;
-  protected abstract getTimelineData(): void;
+  public getAllData(): void {};
+  protected getSingleData(): void {};
+  protected getTimelineData(): void {};
 
   /**
    * 5. Abstract methods to handle user actions
@@ -123,16 +170,14 @@ export abstract class TimelineDetailComponent extends DataTableCommonManagerComp
     // Do nothing by default
   }
 
-  public abstract openSingleRow(row: any): void;
-  public abstract openListRow(row: any): void;
+  public openSingleRow(row: any): void {};
+  public openListRow(row: any): void {};
 
   /**
    * Additional
    */
 
-  public goBack(): void {
-
-  }
+  public goBack(): void {}
 
   public setTagLine(items: Array<TagLineItem>): void {
     this.tagLine = items;

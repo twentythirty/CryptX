@@ -1,13 +1,13 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from "@angular/common/http";
-import { Observable } from "rxjs/Observable";
-import { map } from "rxjs/operators/map";
+import { Observable } from "rxjs";
+import { map, tap } from "rxjs/operators";
 import _ from 'lodash';
 
 import { environment } from "../../../environments/environment";
 import { EntitiesFilter } from "../../shared/models/api/entitiesFilter";
 import { Deposit } from "../../shared/models/deposit";
-import { TranslateService } from '../../../../../node_modules/@ngx-translate/core';
+import { TranslateService } from '@ngx-translate/core';
 import { ActionLog } from '../../shared/models/actionLog';
 
 export class DepositsAllResponse {
@@ -46,8 +46,9 @@ export class DepositService {
   }
 
   getDeposit(depositId: number): Observable<DepositResultData> {
-    return this.http.get<DepositResultData>(this.baseUrl + `deposits/${depositId}`)
-      .do(data => this.translateStatus(data));
+    return this.http.get<DepositResultData>(this.baseUrl + `deposits/${depositId}`).pipe(
+      tap(data => this.translateStatus(data))
+    );
   }
 
   private translateStatus(data: DepositResultData): DepositResultData {

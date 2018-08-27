@@ -1,5 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { Router, ActivatedRoute } from "@angular/router";
+import { finalize } from 'rxjs/operators';
+
 import { DataTableCommonManagerComponent } from "../../../shared/components/data-table-common-manager/data-table-common-manager.component";
 import { ColdStorageService } from "../../../services/cold-storage/cold-storage.service";
 import { TableDataSource, TableDataColumn } from "../../../shared/components/data-table/data-table.component";
@@ -37,9 +39,9 @@ export class CustodiansListComponent extends DataTableCommonManagerComponent imp
   }
 
   getAllData(): void {
-    this.coldStorageService.getAllCustodians(this.requestData)
-    .finally(() => this.stopTableLoading())
-    .subscribe(
+    this.coldStorageService.getAllCustodians(this.requestData).pipe(
+      finalize(() => this.stopTableLoading())
+    ).subscribe(
       res => {
         Object.assign(this.custodiansDataSource, {
           body: res.custodians,

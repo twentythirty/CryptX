@@ -9,7 +9,7 @@ import { RolesPermissionsResultData } from '../../shared/models/api/rolesPermiss
 import { RolesAllRequestData } from "../../shared/models/api/rolesAllRequestData";
 import { environment } from '../../../environments/environment';
 import { EntitiesFilter } from "../../shared/models/api/entitiesFilter";
-import { map } from 'rxjs/operators';
+import { map, tap } from 'rxjs/operators';
 
 
 export class UsersAllResponse {
@@ -42,12 +42,13 @@ export class UsersService {
   constructor(private http: HttpClient) { }
 
   getAllUsers(requestData?: EntitiesFilter): Observable<UsersAllResponse>{
-    return this.http.post<UsersAllResponse>(this.baseUrl + 'users/all', requestData)
-    .do(data => {
-      if (data.success) {
-        return data;
-      }
-    });
+    return this.http.post<UsersAllResponse>(this.baseUrl + 'users/all', requestData).pipe(
+      tap(data => {
+        if (data.success) {
+          return data;
+        }
+      })
+    );
   }
 
   getUser(userId: number){
@@ -55,30 +56,33 @@ export class UsersService {
   }
 
   saveUser(user: User) {
-    return this.http.post<UserCreateResponse>(this.baseUrl + 'users/' + user.id + '/edit', user)
-    .do(data => {
-      if (data.success) {
-        return data.user;
-      }
-    });
+    return this.http.post<UserCreateResponse>(this.baseUrl + 'users/' + user.id + '/edit', user).pipe(
+      tap(data => {
+        if (data.success) {
+          return data.user;
+        }
+      })
+    );
   }
 
   updateUserRoles(userId: number, list: Array<Number>){
-    return this.http.post<UserRoleResponse>(this.baseUrl + 'users/' + userId + '/change_role', list)
-    .do(data => {
-      if (data.success) {
-        return data.list;
-      }
-    });
+    return this.http.post<UserRoleResponse>(this.baseUrl + 'users/' + userId + '/change_role', list).pipe(
+      tap(data => {
+        if (data.success) {
+          return data.list;
+        }
+      })
+    );
   }
 
   sendInvite(invite: object){
-    return this.http.post<UserInviteResponse>(this.baseUrl + 'users/invite', invite)
-    .do(data => {
-      if (data.success) {
-        return data.message;
-      }
-    });
+    return this.http.post<UserInviteResponse>(this.baseUrl + 'users/invite', invite).pipe(
+      tap(data => {
+        if (data.success) {
+          return data.message;
+        }
+      })
+    );
   }
 
   getHeaderLOV(column_name: string): Observable<any> {
@@ -89,8 +93,9 @@ export class UsersService {
             return res.lov.map(lov => {
               return { value: lov.toString() }
             });
-          } else {console.log("else")
-            return null};
+          } else {
+            return null
+          }
         }
       )
     )

@@ -1,10 +1,12 @@
 import { Component, OnInit } from '@angular/core';
+import { FormGroup, FormControl, Validators } from "@angular/forms";
+import { Router } from "@angular/router";
+import { finalize } from 'rxjs/operators';
+import _ from 'lodash';
+
 import { ModelConstantsService } from "../../../services/model-constants/model-constants.service";
 import { AssetService } from "../../../services/asset/asset.service";
 import { ColdStorageService } from "../../../services/cold-storage/cold-storage.service";
-import { FormGroup, FormControl, Validators } from "@angular/forms";
-import _ from 'lodash';
-import { Router } from "@angular/router";
 
 @Component({
   selector: 'app-add-account',
@@ -31,10 +33,12 @@ export class AddAccountComponent implements OnInit {
     tag: new FormControl()
   });
 
-  constructor(private modelConstantService: ModelConstantsService,
-              private assetService: AssetService,
-              private coldStorageService: ColdStorageService,
-              private router: Router) { }
+  constructor(
+    private modelConstantService: ModelConstantsService,
+    private assetService: AssetService,
+    private coldStorageService: ColdStorageService,
+    private router: Router,
+  ) {}
 
   ngOnInit() {
     this.getStrategies();
@@ -43,20 +47,23 @@ export class AddAccountComponent implements OnInit {
   }
 
   getStrategies(){
-      let group_name = 'STRATEGY_TYPES';
-      Object.entries(this.modelConstantService.getGroup(group_name)).map((item, index) => {
-        this.strategies[index]= {
-          id: item[1],
-          value: item[0]
-        }
-        this.strategiesLoading = false;
-      })
+    let group_name = 'STRATEGY_TYPES';
+
+    Object.entries(this.modelConstantService.getGroup(group_name)).map((item, index) => {
+      this.strategies[index]= {
+        id: item[1],
+        value: item[0]
+      }
+      this.strategiesLoading = false;
+    });
   }
 
   getAssets(){
     let filter = {filter : {is_cryptocurrency: "assets.is_cryptocurrency.yes"}};
+
     this.assetService.getAllAssetsDetailed(filter).subscribe(res => {
       this.assetsLoading = false;
+
       this.assets = res.assets.map(asset => {
         return {
           id: asset.id,
@@ -69,6 +76,7 @@ export class AddAccountComponent implements OnInit {
   getCustodians(){
     this.coldStorageService.getAllCustodians().subscribe(res => {
       this.custodiansLoading = false;
+
       this.custodians = res.custodians.map(custodian => {
         return {
           id: custodian.id,
@@ -89,9 +97,9 @@ export class AddAccountComponent implements OnInit {
 
     this.buttonLoading = true;
 
-    this.coldStorageService.addAccount(request)
-    .finally(() => this.buttonLoading = false)
-    .subscribe(
+    this.coldStorageService.addAccount(request).pipe(
+      finalize(() => this.buttonLoading = false)
+    ).subscribe(
       data => {
         if (data.success) {
           this.router.navigate(['/cold_storage/accounts']);

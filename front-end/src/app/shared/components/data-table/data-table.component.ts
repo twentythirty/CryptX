@@ -1,7 +1,7 @@
 import { Component, OnInit, Input, EventEmitter, Output } from '@angular/core';
 import { Router, NavigationStart } from "@angular/router";
 import { trigger, state, style, transition, animate } from '@angular/animations';
-import { Observable } from 'rxjs/Observable';
+import { Observable } from 'rxjs';
 import _ from 'lodash';
 import { TranslateService } from '@ngx-translate/core';
 

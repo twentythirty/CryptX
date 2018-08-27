@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CurrencyPipe } from '@angular/common';
 import { ActivatedRoute, Params, Router } from '@angular/router';
+import { filter } from 'rxjs/operators';
 
 import { AssetService, AssetResultData } from '../../../services/asset/asset.service';
 import { Asset, AssetStatus } from '../../../shared/models/asset';
@@ -54,8 +55,8 @@ export class AssetViewComponent extends AssetListComponent implements OnInit {
   }
 
   public getAsset(): void {
-    this.route.params.filter(
-      (params: Params) => params.assetId
+    this.route.params.pipe(
+      filter((params: Params) => params.assetId)
     ).subscribe(
       (params: Params) => {
         this.assetId = params.assetId;

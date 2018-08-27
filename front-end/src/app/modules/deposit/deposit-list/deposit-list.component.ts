@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from "@angular/router";
+import { finalize } from 'rxjs/operators';
 
 import { DataTableCommonManagerComponent } from "../../../shared/components/data-table-common-manager/data-table-common-manager.component";
 import { TableDataSource, TableDataColumn } from "../../../shared/components/data-table/data-table.component";
@@ -58,9 +59,9 @@ export class DepositListComponent extends DataTableCommonManagerComponent implem
   }
 
   getAllData(): void {
-    this.depositService.getAllDeposits(this.requestData)
-    .finally(() => this.stopTableLoading())
-    .subscribe(
+    this.depositService.getAllDeposits(this.requestData).pipe(
+      finalize(() => this.stopTableLoading())
+    ).subscribe(
       res => {
         Object.assign(this.depositDataSource, {
           body: res.recipe_deposits,

@@ -1,12 +1,12 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { mergeMap } from 'rxjs/operators/mergeMap';
-import 'rxjs/add/operator/finally';
+import { mergeMap, finalize } from 'rxjs/operators';
+
 import _ from 'lodash';
 
 import { StatusClass } from '../../../shared/models/common';
 
-import { TimelineDetailComponent, SingleTableDataSource, TagLineItem } from '../timeline-detail/timeline-detail.component'
+import { TimelineDetailComponent, SingleTableDataSource, ITimelineDetailComponent } from '../timeline-detail/timeline-detail.component'
 import { TableDataSource, TableDataColumn } from '../../../shared/components/data-table/data-table.component';
 import { TimelineEvent } from '../../../shared/components/timeline/timeline.component';
 import {
@@ -29,10 +29,10 @@ import { OrdersService } from '../../../services/orders/orders.service';
   templateUrl: '../timeline-detail/timeline-detail.component.html',
   styleUrls: ['../timeline-detail/timeline-detail.component.scss']
 })
-export class OrderGroupComponent extends TimelineDetailComponent implements OnInit {
+export class OrderGroupComponent extends TimelineDetailComponent implements OnInit, ITimelineDetailComponent {
 
   /**
-   * 1. Implement abstract attributes to display titles
+   * 1. Implement attributes to display titles
    */
   public pageTitle: string = 'Recipe orders';
   public singleTitle: string = 'Orders';
@@ -42,7 +42,7 @@ export class OrderGroupComponent extends TimelineDetailComponent implements OnIn
   public showGenerateOrders = true;
 
   /**
-   * 2. Implement abstract attributes to preset data structure
+   * 2. Implement attributes to preset data structure
    */
   public timelineEvents: Array<TimelineEvent>;
 
@@ -146,21 +146,21 @@ export class OrderGroupComponent extends TimelineDetailComponent implements OnIn
   }
 
   /**
-   * 4. Implement abstract methods to fetch data OnInit
+   * 4. Implement methods to fetch data OnInit
    */
-  protected getSingleData(): void {
+  public getSingleData(): void {
     this.route.params.pipe(
       mergeMap(
         params => this.ordersService.getOrderGroupOfRecipe(params['id'], true)
-          .finally(() => {
-            this.getAllData_call = this.getAllDataReal;
-            this.getAllData();
-            
-            // stop loading and show empty
-            if(!this.singleDataSource.body)
-              this.singleDataSource.body = [];
-          })
       ),
+      finalize(() => {
+        this.getAllData_call = this.getAllDataReal;
+        this.getAllData();
+        
+        // stop loading and show empty
+        if(!this.singleDataSource.body)
+          this.singleDataSource.body = [];
+      })
     ).subscribe(
       res => {
         if(res.recipe_order_group) {
@@ -187,9 +187,9 @@ export class OrderGroupComponent extends TimelineDetailComponent implements OnIn
   public getAllDataReal(): void {
     let orderGroupId = _.isEmpty(this.singleDataSource.body) ? 0 : this.singleDataSource.body[0]['id'];
 
-    this.ordersService.getAllOrdersByGroupId(orderGroupId, this.requestData)
-    .finally(() => this.stopTableLoading())
-    .subscribe(
+    this.ordersService.getAllOrdersByGroupId(orderGroupId, this.requestData).pipe(
+      finalize(() => this.stopTableLoading())
+    ).subscribe(
       res => {
         Object.assign(this.listDataSource, {
           body: res.recipe_orders,
@@ -213,7 +213,7 @@ export class OrderGroupComponent extends TimelineDetailComponent implements OnIn
     );
   }
 
-  protected getTimelineData(): void {
+  public getTimelineData(): void {
     this.timeline$ = this.route.params.pipe(
       mergeMap(
         params => this.investmentService.getAllTimelineData({ recipe_run_id: params['id'] })
@@ -222,12 +222,8 @@ export class OrderGroupComponent extends TimelineDetailComponent implements OnIn
   }
 
   /**
-   * 5. Implement abstract methods to handle user actions
+   * 5. Implement methods to handle user actions
    */
-
-  public openSingleRow(row: any): void {
-    //this.router.navigate([`/run/recipe/${row.id}`]);
-  }
 
   public openListRow(row: any): void {
     this.router.navigate([`/run/execution-order/${row.id}`]);

@@ -1,11 +1,11 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { mergeMap } from 'rxjs/operators/mergeMap';
+import { mergeMap, finalize } from 'rxjs/operators';
 import _ from 'lodash';
 
 import { StatusClass } from '../../../shared/models/common';
 
-import { TimelineDetailComponent, SingleTableDataSource, TagLineItem } from '../timeline-detail/timeline-detail.component'
+import { TimelineDetailComponent, SingleTableDataSource, TagLineItem, ITimelineDetailComponent } from '../timeline-detail/timeline-detail.component'
 import { TableDataSource, TableDataColumn } from '../../../shared/components/data-table/data-table.component';
 import { TimelineEvent } from '../../../shared/components/timeline/timeline.component';
 import {
@@ -27,10 +27,10 @@ import { InvestmentService } from '../../../services/investment/investment.servi
   templateUrl: '../timeline-detail/timeline-detail.component.html',
   styleUrls: ['../timeline-detail/timeline-detail.component.scss']
 })
-export class RecipeRunDetailComponent extends TimelineDetailComponent implements OnInit {
+export class RecipeRunDetailComponent extends TimelineDetailComponent implements OnInit, ITimelineDetailComponent {
 
   /**
-   * 1. Implement abstract attributes to display titles
+   * 1. Implement attributes to display titles
    */
   public pageTitle: string = 'Recipe run';
   public singleTitle: string = 'Recipe runs';
@@ -38,7 +38,7 @@ export class RecipeRunDetailComponent extends TimelineDetailComponent implements
   public recipeStatus;
 
   /**
-   * 2. Implement abstract attributes to preset data structure
+   * 2. Implement attributes to preset data structure
    */
   public timelineEvents: Array<TimelineEvent>;
 
@@ -130,14 +130,14 @@ export class RecipeRunDetailComponent extends TimelineDetailComponent implements
   }
 
   /**
-   * 4. Implement abstract methods to fetch data OnInit
+   * 4. Implement methods to fetch data OnInit
    */
   public getAllData(): void {
     this.route.params.pipe(
       mergeMap(
         params => this.investmentService.getAllRecipeDetails(params['id'], this.requestData)
-          .finally(() => this.stopTableLoading())
-      )
+      ),
+      finalize(() => this.stopTableLoading())
     ).subscribe(
       res => {
         Object.assign(this.listDataSource, {
@@ -162,7 +162,7 @@ export class RecipeRunDetailComponent extends TimelineDetailComponent implements
     );
   }
 
-  protected getSingleData(): void {
+  public getSingleData(): void {
     this.route.params.pipe(
       mergeMap(
         params => this.investmentService.getSingleRecipe(params['id'])
@@ -176,7 +176,7 @@ export class RecipeRunDetailComponent extends TimelineDetailComponent implements
         }
         if(res.recipe_stats) {
           this.setTagLine(res.recipe_stats.map(stat => {
-            return new TagLineItem(`${stat.count} ${stat.name}`)
+            return new TagLineItem(`${stat.count} ${stat.name}`);
           }))
         }
       },
@@ -184,7 +184,7 @@ export class RecipeRunDetailComponent extends TimelineDetailComponent implements
     )
   }
 
-  appendActionColumn() {
+  private appendActionColumn() {
     if (!_.find(this.singleDataSource.header, col => col.column == 'actions')){
       if (this.recipeStatus[0].approval_status === 'recipes.status.41') {
         this.singleDataSource.header.push({ column: 'actions', nameKey: 'table.header.action' })
@@ -199,29 +199,17 @@ export class RecipeRunDetailComponent extends TimelineDetailComponent implements
     }
   }
 
-  removeActionColumn(){
+  private removeActionColumn(){
     this.singleDataSource.header.splice(-1,1);
     this.singleColumnsToShow.splice(-1,1);
   }
 
-  protected getTimelineData(): void {
+  public getTimelineData(): void {
     this.timeline$ = this.route.params.pipe(
       mergeMap(
         params => this.investmentService.getAllTimelineData({ recipe_run_id: params['id'] })
       )
     );
-  }
-
-  /**
-   * 5. Implement abstract methods to handle user actions
-   */
-
-  public openSingleRow(row: any): void {
-    // Do nothing
-  }
-
-  public openListRow(row: any): void {
-    // Do nothing
   }
 
   /**

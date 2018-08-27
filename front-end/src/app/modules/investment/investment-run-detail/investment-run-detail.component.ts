@@ -1,9 +1,9 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { mergeMap } from 'rxjs/operators/mergeMap';
+import { mergeMap, finalize } from 'rxjs/operators';
 
 import { StatusClass } from '../../../shared/models/common';
-import { TimelineDetailComponent, SingleTableDataSource, TagLineItem } from '../timeline-detail/timeline-detail.component'
+import { TimelineDetailComponent, SingleTableDataSource, TagLineItem, ITimelineDetailComponent } from '../timeline-detail/timeline-detail.component'
 import { TableDataSource, TableDataColumn } from '../../../shared/components/data-table/data-table.component';
 import { TimelineEvent } from '../../../shared/components/timeline/timeline.component';
 import {
@@ -23,10 +23,10 @@ import { InvestmentService } from '../../../services/investment/investment.servi
   templateUrl: '../timeline-detail/timeline-detail.component.html',
   styleUrls: ['../timeline-detail/timeline-detail.component.scss']
 })
-export class InvestmentRunDetailComponent extends TimelineDetailComponent implements OnInit {
+export class InvestmentRunDetailComponent extends TimelineDetailComponent implements OnInit, ITimelineDetailComponent {
 
   /**
-   * 1. Implement abstract attributes to display titles
+   * 1. Implement attributes to display titles
    */
   public pageTitle: string = 'Recipe run';
   public singleTitle: string = 'Investment run';
@@ -35,7 +35,7 @@ export class InvestmentRunDetailComponent extends TimelineDetailComponent implem
   public listTableEmptyText: string = 'investment.no_recipe_runs'; // custom data-table message on empty data set
 
   /**
-   * 2. Implement abstract attributes to preset data structure
+   * 2. Implement attributes to preset data structure
    */
   public timelineEvents: Array<TimelineEvent>;
 
@@ -118,11 +118,20 @@ export class InvestmentRunDetailComponent extends TimelineDetailComponent implem
   ) {
     super(route, router);
   }
+  
+  /**
+   * + If custom ngOnInit() is needed, call super.ngOnInit() to
+   * perform parent component class initialization
+   */
+
+  ngOnInit() {
+    super.ngOnInit();
+  }
 
   /**
-   * 4. Implement abstract methods to fetch data OnInit
+   * 4. Implement methods to fetch data OnInit
    */
-  protected getSingleData(): void {
+  public getSingleData(): void {
     this.route.params.pipe(
       mergeMap(
         params => this.investmentService.getSingleInvestment(params['id'])
@@ -137,8 +146,8 @@ export class InvestmentRunDetailComponent extends TimelineDetailComponent implem
             return new TagLineItem(`${stat.count} ${stat.name}`)
           }))
         }
-        if (res.investment_run.status === 'investment.status.303'){
-            this.addTitle='';
+        if(res.investment_run.status === 'investment.status.303') {
+          this.addTitle = '';
         }
       },
       err => this.singleDataSource.body = []
@@ -149,8 +158,8 @@ export class InvestmentRunDetailComponent extends TimelineDetailComponent implem
     this.route.params.pipe(
       mergeMap(
         params => this.investmentService.getAllRecipes(params['id'], this.requestData)
-          .finally(() => this.stopTableLoading())
-      )
+      ),
+      finalize(() => this.stopTableLoading())
     ).subscribe(
       res => {
         this.listDataSource.body = res.recipe_runs;
@@ -169,7 +178,7 @@ export class InvestmentRunDetailComponent extends TimelineDetailComponent implem
     )
   }
 
-  protected getTimelineData(): void {
+  public getTimelineData(): void {
     this.timeline$ = this.route.params.pipe(
       mergeMap(
         params => this.investmentService.getAllTimelineData({ investment_run_id: params['id'] })
@@ -178,7 +187,7 @@ export class InvestmentRunDetailComponent extends TimelineDetailComponent implem
   }
 
   /**
-   * 5. Implement abstract methods to handle user actions
+   * 5. Implement methods to handle user actions
    */
 
   public addAction(): void {
@@ -197,21 +206,8 @@ export class InvestmentRunDetailComponent extends TimelineDetailComponent implem
     )
   }
 
-  public openSingleRow(row: any): void {
-    // Do nothing
-  }
-
   public openListRow(row: any): void {
-    this.router.navigate([`/run/recipe/${row.id}`])
-  }
-
-  /**
-   * + If custom ngOnInit() is needed, call super.ngOnInit() to
-   * perform parent component class initialization
-   */
-
-  ngOnInit() {
-    super.ngOnInit();
+    this.router.navigate([`/run/recipe/${row.id}`]);
   }
 
 }

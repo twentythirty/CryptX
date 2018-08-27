@@ -3,7 +3,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 
 import { StatusClass } from '../../../shared/models/common';
 
-import { TimelineDetailComponent, SingleTableDataSource, TagLineItem } from '../timeline-detail/timeline-detail.component'
+import { TimelineDetailComponent, SingleTableDataSource, TagLineItem, ITimelineDetailComponent } from '../timeline-detail/timeline-detail.component'
 import { TableDataSource, TableDataColumn } from '../../../shared/components/data-table/data-table.component';
 import { TimelineEvent } from '../../../shared/components/timeline/timeline.component';
 import {
@@ -13,7 +13,7 @@ import {
   StatusCellDataColumn,
   NumberCellDataColumn,
 } from '../../../shared/components/data-table-cells';
-import { mergeMap, map } from 'rxjs/operators';
+import { mergeMap, map, finalize } from 'rxjs/operators';
 import { InvestmentService } from '../../../services/investment/investment.service';
 
 /**
@@ -24,17 +24,17 @@ import { InvestmentService } from '../../../services/investment/investment.servi
   templateUrl: '../timeline-detail/timeline-detail.component.html',
   styleUrls: ['../timeline-detail/timeline-detail.component.scss']
 })
-export class OrderDetailComponent extends TimelineDetailComponent implements OnInit {
+export class OrderDetailComponent extends TimelineDetailComponent implements OnInit, ITimelineDetailComponent {
 
   /**
-   * 1. Implement abstract attributes to display titles
+   * 1. Implement attributes to display titles
    */
   public pageTitle: string = 'Recipe orders';
   public singleTitle: string = 'Recipe run';
   public listTitle: string = 'Orders';
 
   /**
-   * 2. Implement abstract attributes to preset data structure
+   * 2. Implement attributes to preset data structure
    */
   public timelineEvents: Array<TimelineEvent>;
 
@@ -135,14 +135,14 @@ export class OrderDetailComponent extends TimelineDetailComponent implements OnI
   }
 
   /**
-   * 4. Implement abstract methods to fetch data OnInit
+   * 4. Implement methods to fetch data OnInit
    */
   public getAllData(): void {
     this.route.params.pipe(
       mergeMap(
         params => this.investmentService.getAllOrders(params['id'], this.requestData)
-          .finally(() => this.stopTableLoading())
-      )
+      ),
+      finalize(() => this.stopTableLoading())
     ).subscribe(
       res => {
         Object.assign(this.listDataSource, {
@@ -167,7 +167,7 @@ export class OrderDetailComponent extends TimelineDetailComponent implements OnI
     );
   }
 
-  protected getSingleData(): void {
+  public getSingleData(): void {
     this.route.params.pipe(
       mergeMap(
         params => this.investmentService.getSingleRecipe(params['id'])
@@ -188,7 +188,7 @@ export class OrderDetailComponent extends TimelineDetailComponent implements OnI
     )
   }
 
-  protected getTimelineData(): void {
+  public getTimelineData(): void {
     this.timeline$ = this.route.params.pipe(
       mergeMap(
         params => this.investmentService.getAllTimelineData({ recipe_run_id: params['id'] })
@@ -197,7 +197,7 @@ export class OrderDetailComponent extends TimelineDetailComponent implements OnI
   }
 
   /**
-   * 5. Implement abstract methods to handle user actions
+   * 5. Implement methods to handle user actions
    */
 
   public openSingleRow(row: any): void {

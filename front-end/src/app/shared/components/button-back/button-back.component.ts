@@ -11,7 +11,7 @@ export class ButtonBackComponent {
   @Input() heading: string;
 
   constructor(
-    private location: Location
+    public location: Location
   ) { }
 
 }

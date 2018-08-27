@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CurrencyPipe } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
+import { finalize } from 'rxjs/operators';
 import _ from 'lodash';
 
 import { AssetService, AssetsAllResponseDetailed } from '../../../services/asset/asset.service';
@@ -111,9 +112,9 @@ export class AssetListComponent extends DataTableCommonManagerComponent implemen
   }
 
   getAllData(): void {
-    this.assetService.getAllAssetsDetailed(this.requestData)
-    .finally(() => this.stopTableLoading())
-    .subscribe(
+    this.assetService.getAllAssetsDetailed(this.requestData).pipe(
+      finalize(() => this.stopTableLoading())
+    ).subscribe(
       (res: AssetsAllResponseDetailed) => {
         Object.assign(this.assetsDataSource, {
           body: res.assets,

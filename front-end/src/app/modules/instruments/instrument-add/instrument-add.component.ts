@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { FormGroup, FormControl, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
+import { finalize } from 'rxjs/operators';
 import _ from 'lodash';
 
 import { AuthService } from '../../../services/auth/auth.service';
@@ -51,9 +52,9 @@ export class InstrumentAddComponent implements OnInit {
   saveInstrument() {
     this.loading = true;
 
-    this.instrumentsService.createInstrument(this.form.value)
-    .finally(() => this.loading = false)
-    .subscribe(
+    this.instrumentsService.createInstrument(this.form.value).pipe(
+      finalize(() => this.loading = false)
+    ).subscribe(
       data => {
         if (data.success) {
           this.router.navigate(['/instrument/', data.instrument.id]);

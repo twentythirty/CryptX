@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs/Observable';
-import { map } from 'rxjs/operators/map';
+import { Observable } from 'rxjs';
+import { map, tap } from 'rxjs/operators';
 import _ from 'lodash';
 
 import { environment } from '../../../environments/environment';
@@ -21,8 +21,10 @@ export class InvestmentService {
 
   private baseUrl: string = environment.baseUrl;
 
-  constructor(private http: HttpClient,
-              private translate: TranslateService,) { }
+  constructor(
+    private http: HttpClient,
+    private translate: TranslateService,
+  ) {}
 
   /**
    * Create and investment
@@ -180,8 +182,9 @@ export class InvestmentService {
   }
 
   getSingleExecutionOrder(order_detail_id: number): Observable<any> {
-    return this.http.get<any>(this.baseUrl + `execution_orders/${order_detail_id}`)
-    .do(data => this.translateStatus(data));
+    return this.http.get<any>(this.baseUrl + `execution_orders/${order_detail_id}`).pipe(
+      tap(data => this.translateStatus(data))
+    );
   }
 
   getSingleExecOrdersFill(exec_order_fill_id: number): Observable<any> {
@@ -265,10 +268,11 @@ export class InvestmentService {
    */
 
   getRecipeDetails(recipe_id: any): Observable<any> {
-    return this.http.get<any>(this.baseUrl + `recipes/${recipe_id}/details`)
-    .do ( data => {
-      return data.statistics;
-    });
+    return this.http.get<any>(this.baseUrl + `recipes/${recipe_id}/details`).pipe(
+      tap(data => {
+        return data.statistics;
+      })
+    );
   }
 
   approveRecipe(recipe_id: any, data: any): Observable<any> {
