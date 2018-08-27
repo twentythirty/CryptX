@@ -16,6 +16,7 @@ const actions = {
 };
 
 module.exports.SCHEDULE = '0 */5 * * * *';
+module.exports.LIMITER = 'CCXT_REQUEST';
 module.exports.NAME = 'FETCH_EXEC_OR_FILLS';
 module.exports.JOB_BODY = async (config, log) => {
 
