@@ -140,7 +140,8 @@ if (one_off_list.length > 0) {
                         if(limiters[limiter].jobStatus(loaded_job.NAME)) return;
 
                         const result = await limiters[limiter].schedule({
-                            id: loaded_job.NAME
+                            id: loaded_job.NAME,
+                            priority: loaded_job.PRIORITY
                         }, loaded_job.JOB_BODY, config, log, date);
                         log(`Job finish at ${date} (result: ${result}). Job took ${new Date().getTime() - start.getTime()}ms`);
                     }
