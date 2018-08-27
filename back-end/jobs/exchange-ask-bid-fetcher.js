@@ -7,13 +7,14 @@ const action_path = 'ask_bid_fetcher';
 
 const actions = {
     instrument_error: `${action_path}.instrument_error`,
+    instrument_without_data: `${action_path}.instrument_without_data`,
     job_error: `${action_path}.job_error`,
     failed_to_fetch: `${action_path}.failed_to_fetch`,
 };
 
 
 //run once every 5 minutes
-module.exports.SCHEDULE = '*/5 * * * *';
+module.exports.SCHEDULE = '*/5 * * * * *';
 module.exports.LIMITER = 'CCXT_REQUEST';
 module.exports.NAME = 'EXCH_ASK_BID';
 
@@ -58,6 +59,7 @@ module.exports.JOB_BODY = async (config, log) => {
                             Promise.resolve(mapping),
                             //wrap exchange promise into a promise that returns empty array if broken
                             Promise.resolve(fetcher.fetch_order_book(mapping.external_instrument_id)).catch(err => {
+                                
                                 logAction(actions.instrument_error, {
                                     args: {
                                         instrument: mapping.external_instrument_id,
@@ -81,23 +83,34 @@ module.exports.JOB_BODY = async (config, log) => {
                     to avoid errors when assigning asks and bids values. */
                     let [successfully_fetched, failed_to_fetch] = _.partition(markets_data, ([symbol_mapping, market_data]) =>
                         !_.isArray(market_data) &&
-                        market_data.hasOwnProperty('asks') &&
-                        market_data.hasOwnProperty('bids')
+                        market_data.hasOwnProperty('asks') && market_data.asks.length &&
+                        market_data.hasOwnProperty('bids') && market_data.bids.length
                     );
 
-                    /* failed_to_fetch = failed_to_fetch.map(([symbol_mapping, failed_data]) => {
+                   /*  failed_to_fetch = failed_to_fetch.map(([symbol_mapping, failed_data]) => {
                         return symbol_mapping.external_instrument_id
-                    });
+                    }); */
 
                     if(failed_to_fetch.length) {
-                        logAction(actions.failed_to_fetch, {
-                            args: {
-                                instruments: failed_to_fetch,
-                                exchange: exchange.name,
-                            },
-                            relations: { exchange_id: exchange.id }
-                        });
-                    } */
+                        failed_to_fetch.map(([symbol_mapping, failed_data]) => {
+                            if(!_.isArray(failed_data)) {
+                                // determine which price (ask or bid) is not received
+                                let price_types = [];
+                                if (!_.get(failed_data, 'asks[0][0]', false)) price_types.push('ask');
+                                if (!_.get(failed_data, 'bids[0][0]', false)) price_types.push('bid');
+
+                                logAction(actions.instrument_without_data, {
+                                    args: {
+                                        types: price_types,
+                                        instrument: symbol_mapping.external_instrument_id,
+                                        exchange: exchange.name,
+                                    },
+                                    relations: { exchange_id: exchange.id }
+                                });
+
+                            }
+                        })
+                    }
 
                     return _.map(successfully_fetched, ([symbol_mapping, market_data]) => {
 

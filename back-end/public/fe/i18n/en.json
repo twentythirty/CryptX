@@ -520,9 +520,10 @@
     },
 
     "ask_bid_fetcher": {
-      "job_error": "Price fetching job failed. Error: {{ error }}",
-      "failed_to_fetch": "System didn't receive prices from {{exchange}} exchange for instruments: {{instruments}}",
-      "instrument_error": "Error while fetching price for {{instrument}} from {{exchange}}: {{error}}"
+      "job_error": "Ask & Bid Fetcher: Job failed with error: {{ error }}",
+      "instrument_without_data": "Ask & Bid Fetcher: Received {{ instrument }} instrument data without {{types}} price from {{exchange}} exchange. Skipping price update for this instrument.",
+      "failed_to_fetch": "Ask & Bid Fetcher: System didn't receive prices from {{exchange}} exchange for instruments: {{instruments}}",
+      "instrument_error": "Ask & Bid Fetcher: Error while fetching price for {{instrument}} from {{exchange}}: {{error}}"
     },
 
     "execution_orders": {
