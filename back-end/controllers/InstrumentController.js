@@ -111,7 +111,7 @@ const mapInstrumentsWithExchanges = async function (req, res) {
   const [error, mappings] = await to(instrumentService.addInstrumentExchangeMappings(instrument_id, exchange_mappings, req.user));
 
   if (error) {
-    return ReE(res, error)
+    return ReE(res, error, 422)
   }
 
   return ReS(res, {
