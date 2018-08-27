@@ -2,7 +2,7 @@
 const ccxtUtils = require('../utils/CCXTUtils');
 
 //everyday, every 5 seconds
-module.exports.SCHEDULE = '*/5 * * * * *';
+module.exports.SCHEDULE = '*/5 * * * *';
 module.exports.NAME = 'ORD_ST_CHANGE';
 module.exports.JOB_BODY = async (config, log) => {
 
