@@ -151,9 +151,10 @@ export class DepositDetailComponent extends TimelineDetailComponent implements O
   public getAllData(): void {
     this.route.params.pipe(
       mergeMap(
-        params => this.investmentService.getAllRecipeDeposits(params['id'])
-      ),
-      finalize(() => this.stopTableLoading())
+        params => this.investmentService.getAllRecipeDeposits(params['id']).pipe(
+          finalize(() => this.stopTableLoading())
+        )
+      )
     ).subscribe(
       res => {
         this.count = res.count;

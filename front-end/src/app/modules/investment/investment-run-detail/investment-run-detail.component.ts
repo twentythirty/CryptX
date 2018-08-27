@@ -157,9 +157,10 @@ export class InvestmentRunDetailComponent extends TimelineDetailComponent implem
   public getAllData(): void {
     this.route.params.pipe(
       mergeMap(
-        params => this.investmentService.getAllRecipes(params['id'], this.requestData)
-      ),
-      finalize(() => this.stopTableLoading())
+        params => this.investmentService.getAllRecipes(params['id'], this.requestData).pipe(
+          finalize(() => this.stopTableLoading())
+        )
+      )
     ).subscribe(
       res => {
         this.listDataSource.body = res.recipe_runs;

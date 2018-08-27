@@ -135,9 +135,10 @@ export class RecipeRunDetailComponent extends TimelineDetailComponent implements
   public getAllData(): void {
     this.route.params.pipe(
       mergeMap(
-        params => this.investmentService.getAllRecipeDetails(params['id'], this.requestData)
-      ),
-      finalize(() => this.stopTableLoading())
+        params => this.investmentService.getAllRecipeDetails(params['id'], this.requestData).pipe(
+          finalize(() => this.stopTableLoading())
+        )
+      )
     ).subscribe(
       res => {
         Object.assign(this.listDataSource, {

@@ -105,9 +105,10 @@ export class ExecutionOrdersComponent extends TimelineDetailComponent implements
   public getAllData(): void {
     this.route.params.pipe(
       mergeMap(
-        params => this.investmentService.getAllExecOrders(params['id'], this.requestData)
-      ),
-      finalize(() => this.stopTableLoading())
+        params => this.investmentService.getAllExecOrders(params['id'], this.requestData).pipe(
+          finalize(() => this.stopTableLoading())
+        )
+      )
     ).subscribe(
       res => {
         this.listDataSource.body = res.execution_orders;

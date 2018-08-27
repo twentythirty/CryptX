@@ -317,9 +317,10 @@ export class InstrumentInfoComponent extends DataTableCommonManagerComponent imp
 
     this.route.params.pipe(
       mergeMap(
-        params => this.instrumentsService.addMapping(params['id'], request)
-      ),
-      finalize(() => this.loading = false)
+        params => this.instrumentsService.addMapping(params['id'], request).pipe(
+          finalize(() => this.loading = false)
+        )
+      )
     ).subscribe(
       data => {
         if (data.success) {
