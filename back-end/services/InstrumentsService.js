@@ -175,7 +175,7 @@ module.exports.addInstrumentExchangeMappings = addInstrumentExchangeMappings;
  * If exchange id is not given, then returns identifiers from all exchanges.
  * @param exchange_id id of exchange. If not set then return identifiers from all exchanges.
  */
-const getInstrumentIdentifiersFromCCXT = async function (exchange_id) {
+const getInstrumentIdentifiersFromCCXT = async function (exchange_id, query) {
   
     let search = exchange_id ? { where: { id: exchange_id } } : {};
 
@@ -191,8 +191,10 @@ const getInstrumentIdentifiersFromCCXT = async function (exchange_id) {
         _.flatten( 
             _.map(connectors, connector => Object.keys(connector.markets))
         )
-    );
-    
+    ).sort();
+
+    if(query) external_ids = external_ids.filter(id => id.startsWith(query.toUpperCase())).slice(0, 30);
+
     return external_ids;
 };
 module.exports.getInstrumentIdentifiersFromCCXT = getInstrumentIdentifiersFromCCXT;

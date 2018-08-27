@@ -146,7 +146,7 @@ const getIdentifiersForInstrument = async function (req, res) {
 
   let exchange_id = req.params.exchange_id;
 
-  let [err, identifiers] = await to(instrumentService.getInstrumentIdentifiersFromCCXT(exchange_id));
+  let [err, identifiers] = await to(instrumentService.getInstrumentIdentifiersFromCCXT(exchange_id, req.query.q));
   if (err) return ReE(res, err.message);
 
   return ReS(res, {
