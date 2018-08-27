@@ -14,7 +14,7 @@ const actions = {
 
 
 //run once every 5 minutes
-module.exports.SCHEDULE = '*/5 * * * * *';
+module.exports.SCHEDULE = '*/5 * * * *';
 module.exports.LIMITER = 'CCXT_REQUEST';
 module.exports.NAME = 'EXCH_ASK_BID';
 
