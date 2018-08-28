@@ -594,6 +594,11 @@ ROUTES = {
     permissions_matcher: ROUTE_MATCHERS.GetColdStorageTransfers,
     required_permissions: [PERMISSIONS.CREATE_INVESTMENT_RUN]
   },
+  GetColdstorageAccountsFees: {
+    router_string: "/cold_storage/accounts/fees",
+    permissions_matcher: ROUTE_MATCHERS.GetColdStorageTransfers,
+    required_permissions: []
+  },
   // System settings
   ChangeSettingValues: {
     router_string: "/settings/:setting_id",

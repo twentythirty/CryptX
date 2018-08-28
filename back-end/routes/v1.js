@@ -973,6 +973,13 @@ router.post(
   check_permissions,
   MockController.fetchColLOV
 );
+router.post(
+  ROUTES.GetColdstorageAccountsFees.router_string,
+  stateless_auth,
+  res_new_token,
+  check_permissions,
+  ColdstorageController.getColdstorageAccountsFees
+);
 //********* API DOCUMENTATION **********
 router.use(
   "/docs/api.json",

@@ -217,6 +217,42 @@
         ]
       }
     },
+    "/cold_storage/accounts/fees": {
+      "post": {
+        "tags": [
+          "cold storage"
+        ],
+        "summary": "Get list of cold storage accounts fees",
+        "description": "Get list of cold storage accounts fees",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "description": "Filter object used to filter out data",
+            "required": false,
+            "schema": {
+              "$ref": "#/definitions/EntitiesFilter"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "$ref": "#/definitions/ColdStorageAccountFeeListResponse"
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
     "/cold_storage/accounts/add": {
       "post": {
         "tags": [
@@ -4520,6 +4556,25 @@
         }
       ]
     },
+    "ColdStorageAccountFeeListResponse": {
+      "description": "Cold storage accounts fees response",
+      "type": "object",
+      "allOf": [
+        {
+          "$ref": "#/definitions/ListResponse"
+        },
+        {
+          "properties": {
+            "fees": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/ColdStorageAccountFee"
+              }
+            }
+          }
+        }
+      ]
+    },
     "ColdStorageAccountResponse": {
       "description": "Cold storage transfer information",
       "type": "object",
@@ -4572,6 +4627,40 @@
         "update_timestamp": {
           "type": "number",
           "example": 1532606182713
+        }
+      }
+    },
+    "ColdStorageAccountFee": {
+      "description": "Cold storage account fee",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "number",
+          "example": 18
+        },
+        "creation_timestamp": {
+          "type": "number",
+          "example": 21313141515
+        },
+        "amount": {
+          "type": "number",
+          "example": 6.315185
+        },
+        "asset": {
+          "type": "string",
+          "example": "DOGE"
+        },
+        "cold_storage_account_id":{
+          "type": "number",
+          "example": 45
+        },
+        "custodian": {
+          "type": "string",
+          "example": "CoinCare Ltd."
+        },
+        "strategy_type": {
+          "type": "string",
+          "example": "investment.strategy.102"
         }
       }
     },

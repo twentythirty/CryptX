@@ -162,3 +162,32 @@ const getColdstorageAccounts = async function (req, res) {
   
 };
 module.exports.getColdstorageAccounts = getColdstorageAccounts;
+
+const getColdstorageAccountsFees = async (req, res) => {
+
+  //MOCK DATA
+  let fees = [];
+  const assets = ['ETH', 'BTC', 'DOGE', 'XRP', 'BRT', 'XPX', 'RBT', 'ARP', 'WAWE'];
+  const custodian = ['Coinbase', 'Cointop', 'Little Inc', 'Big Crypto', '2030 Ltd', 'Really Long Coins and Jebs'];
+  for(let i = 0; i < _.random(9, 30, false); i++) {
+    
+    fees.push({
+      id: i,
+      creation_timestamp: Date.now(),
+      amount: _.random(1, 20, true),
+      asset: assets[_.random(0, assets.length - 1, false)],
+      cold_storage_account_id: _.random(1, 99, false),
+      custodian: custodian[_.random(0, custodian.length - 1, false)],
+      strategy_type: `investment.strategy.${_.random(101, 102, false)}`
+    });
+
+  }
+
+  return ReS(res, {
+    fees,
+    count: fees.length,
+    footer: []
+  });
+
+};
+module.exports.getColdstorageAccountsFees = getColdstorageAccountsFees;
