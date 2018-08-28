@@ -1,0 +1,17 @@
+<div class="top-controls">
+  <span class="headline-title">{{count}} {{'cold_storage.account_storage_fee.header' | translate}}</span>
+</div>
+
+<app-data-table
+  [dataSource]="storageFeeDataSource"
+  [columnsToShow]="storageFeeColumnsToShow"
+  [loading]="isTableLoading"
+  (setFilter)="onSetFilter($event)"
+></app-data-table>
+
+<app-pagination
+  [count]="count"
+  [perPage]="pageSize"
+  [page]="page"
+  [loading]="isTableLoading"
+></app-pagination>

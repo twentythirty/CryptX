@@ -41,6 +41,7 @@ import { ExecutionOrdersModule } from "./modules/execution-orders/execution-orde
 import { ColdStorageTransfersModule } from "./modules/cold-storage-transfers/cold-storage-transfers.module";
 import { ColdStorageAccountsModule } from "./modules/cold-storage-accounts/cold-storage-accounts.module";
 import { ColdStorageCustodiansModule } from "./modules/cold-storage-custodians/cold-storage-custodians.module";
+import { ColdStorageAccountStorageFeeModule } from './modules/cold-storage-account-storage-fee/cold-storage-account-storage-fee.module';
 
 export function HttpLoaderFactory(httpClient: HttpClient) {
   return new TranslateHttpLoader(
@@ -85,6 +86,7 @@ export function HttpLoaderFactory(httpClient: HttpClient) {
     ColdStorageTransfersModule,
     ColdStorageAccountsModule,
     ColdStorageCustodiansModule,
+    ColdStorageAccountStorageFeeModule,
   ],
   providers: [
     {

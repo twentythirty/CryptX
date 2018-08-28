@@ -101,7 +101,8 @@
       "address": "Address",
       "balance": "Balance",
       "balance_usd": "Balance USD",
-      "balance_updated": "Balance updated"
+      "balance_updated": "Balance updated",
+      "cold_storage_account_id": "Cold storage account id"
     },
     "filter": {
       "all": "All",
@@ -483,6 +484,9 @@
         "94": "Completed",
         "95": "Failed"
       }
+    },
+    "account_storage_fee": {
+      "header": "Cold storage account storage fee"
     }
   },
 
