@@ -1,5 +1,4 @@
 'use strict';
-const ccxt = require('ccxt');
 const ccxtUtils = require('../utils/CCXTUtils')
 const { logAction } = require('../utils/ActionLogUtil');
 
@@ -10,10 +9,7 @@ const actions = {
 
 //run once per day at midnight
 module.exports.SCHEDULE = '0 0 * * *';
-module.exports.PRIORITY = 0; 
-module.exports.LIMITER = 'CCXT_REQUEST';
 module.exports.NAME = 'EXCH_VOL24';
-
 module.exports.JOB_BODY = async (config, log) => {
 
     log('1. Fetch all active exchanges...');
@@ -49,6 +45,7 @@ module.exports.JOB_BODY = async (config, log) => {
             log(`Building volume fetcher for ${exchange.name} with ${mappings.length} mappings...`);
 
             const fetcher = await ccxtUtils.getConnector(exchange.api_id);
+            const throttle = await ccxtUtils.getThrottle(exchange.api_id);
 
             //promise pairs made of arrays where [exchange, [mapping, fetched-data]]
             return Promise.all([
@@ -59,10 +56,8 @@ module.exports.JOB_BODY = async (config, log) => {
                     //promise pairs made of arrays where [symbol mapping, fetched-data]
                     return Promise.all([
                         Promise.resolve(mapping),
-                        //wrap exchange promise into a promise that returns empty array if broken
-                        Promise.resolve(fetcher.fetch_ticker(mapping.external_instrument_id)).catch(err => {
-                            return []
-                        })
+                        //perform throttled ccxt request, maybe return empty list promise if error
+                        throttle.throttled(Promise.resolve([]), fetcher.fetch_ticker, mapping.external_instrument_id)
                     ]);
                 }))
             ])
@@ -77,8 +72,6 @@ module.exports.JOB_BODY = async (config, log) => {
 
             return;
         }
-
-        log(`4. Saving fetched results...`);
 
         const records = _.flatMap(data, ([exchange, markets_data]) => {
 
@@ -100,6 +93,8 @@ module.exports.JOB_BODY = async (config, log) => {
                 }
             });
         });
+
+        log(`4. Saving ${records.length} fetched results...`);
         
         if(!records.length) {
             log(`[WARN.4A]: Job received 0 records.`);

@@ -1,5 +1,4 @@
 'use strict';
-const ccxt = require('ccxt');
 const ccxtUtils = require('../utils/CCXTUtils')
 const { logAction } = require('../utils/ActionLogUtil');
 
@@ -15,9 +14,7 @@ const actions = {
 
 //run once every 5 minutes
 module.exports.SCHEDULE = '*/5 * * * *';
-module.exports.LIMITER = 'CCXT_REQUEST';
 module.exports.NAME = 'EXCH_ASK_BID';
-
 module.exports.JOB_BODY = async (config, log) => {
 
     log('1. Fetch all active exchanges...');
@@ -46,7 +43,8 @@ module.exports.JOB_BODY = async (config, log) => {
                 const mappings = associatedMappings[exchange.id];
                 log(`Building price fetcher for ${exchange.name} with ${mappings.length} mappings...`);
 
-                const fetcher = await ccxtUtils.getConnector(exchange.api_id);/* new ccxt[exchange.api_id](); */
+                const fetcher = await ccxtUtils.getConnector(exchange.api_id);
+                const throttle = await ccxtUtils.getThrottle(exchange.api_id);
 
                 //promise pairs made of arrays where [exchange, [mapping, fetched-data]]
                 return Promise.all([
@@ -58,23 +56,11 @@ module.exports.JOB_BODY = async (config, log) => {
                         return Promise.all([
                             Promise.resolve(mapping),
                             //wrap exchange promise into a promise that returns empty array if broken
-                            Promise.resolve(fetcher.fetch_order_book(mapping.external_instrument_id)).catch(err => {
-                                
-                                logAction(actions.instrument_error, {
-                                    args: {
-                                        instrument: mapping.external_instrument_id,
-                                        exchange: exchange.name,
-                                        error: err.message
-                                    },
-                                });
-                                return []
-                            })
+                            throttle.throttled(Promise.resolve([]), fetcher.fetch_order_book, mapping.external_instrument_id)
                         ]);
                     }))
                 ])
             })).then(data => {
-
-                log(`4. Saving fetched results...`);
 
                 const records = _.flatMap(data, ([exchange, markets_data]) => {
 
@@ -123,6 +109,9 @@ module.exports.JOB_BODY = async (config, log) => {
                         }
                     });
                 });
+
+                log(`4. Saving ${records.length} fetched results...`);
+
                 if (records.length > 0)
                     return config.models.sequelize.queryInterface.bulkInsert('instrument_market_data', records);
                 else

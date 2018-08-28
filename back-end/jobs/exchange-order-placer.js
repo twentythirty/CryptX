@@ -19,7 +19,6 @@ const actions = {
 
 //every 5 seconds
 module.exports.SCHEDULE = "*/5 * * * * *";
-module.exports.LIMITER = 'CCXT_REQUEST';
 module.exports.NAME = "PLACE_EXCH_OR";
 module.exports.JOB_BODY = async (config, log) => {
 
