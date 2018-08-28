@@ -95,16 +95,6 @@ if (one_off_list.length > 0) {
     //once DB is loaded, load the jobs
     config.dbPromise.then(async () => {
 
-        /**
-         * Wait for limiters to be ready.
-         * Currently, this will be done instantly, however in case the app will be clustered and
-         * Redis will be used, this code will be compatible with clustering.
-         */
-        await Promise.all(Object.values(limiters).map(limiter => limiter.ready()));
-
-        //Once the database and limiters are ready, register events
-        registerEvents();
-
         console.log(`scheduling ${Object.keys(runnable_jobs).length} jobs...`);
         _.forEach(runnable_jobs, (loaded_job, job_name) => {
 
