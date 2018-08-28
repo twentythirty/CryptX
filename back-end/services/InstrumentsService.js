@@ -193,7 +193,7 @@ const getInstrumentIdentifiersFromCCXT = async function (exchange_id, query) {
         )
     ).sort();
 
-    if(query) external_ids = external_ids.filter(id => id.startsWith(query.toUpperCase())).slice(0, 30);
+    if(query) external_ids = external_ids.filter(instrument => instrument.search(new RegExp(`(${query.toUpperCase()})`, 'g')) !== -1);
 
     return external_ids;
 };
