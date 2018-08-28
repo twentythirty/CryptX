@@ -9,27 +9,27 @@
     
     <form [formGroup]="form">
 
-      <app-input-item class="form-item"
+      <app-input-item
+        class="form-item"
         fieldType ="autocomplete"
         [label]="'instruments.transaction_asset' | translate"
         [formGroup]="form"
         formControlName="transaction_asset_id"
         [items]="assets"
-        [spinnerLoading] = "assetsLoading" 
-        placeholder="{{'instruments.enter_transaction_asset' | translate}}"
-      > 
-      </app-input-item>
+        [spinnerLoading]="assetsLoading" 
+        [placeholder]="'instruments.enter_transaction_asset' | translate"
+      ></app-input-item>
 
-      <app-input-item class="form-item"
+      <app-input-item
+        class="form-item"
         fieldType="autocomplete"
         [label]="'instruments.quote_asset' | translate"
         [formGroup]="form"
         formControlName="quote_asset_id"
         [items]="assets"
-        [spinnerLoading] ="assetsLoading"
-        placeholder="{{'instruments.enter_quote_asset' | translate}}"
-      > 
-      </app-input-item>
+        [spinnerLoading]="assetsLoading"
+        [placeholder]="'instruments.enter_quote_asset' | translate"
+      ></app-input-item>
     </form>
 
   </app-content-block>

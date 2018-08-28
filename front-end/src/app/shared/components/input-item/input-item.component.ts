@@ -45,6 +45,7 @@ export class InputItemComponent implements ControlValueAccessor, OnInit {
 
   //get accessor
   get value(): any {
+    if(!this.innerValue) return null;
     return this.innerValue;
   }
 
@@ -76,7 +77,6 @@ export class InputItemComponent implements ControlValueAccessor, OnInit {
 
   //From ControlValueAccessor interface
   writeValue(value: any) {
-    value=null;
     if (value !== this.innerValue) {
       this.innerValue = value;
     }

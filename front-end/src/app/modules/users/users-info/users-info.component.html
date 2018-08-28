@@ -1,68 +1,96 @@
-<app-page-heading heading="{{userName}}">
-</app-page-heading>
+<app-page-heading
+  [heading]="userName"
+></app-page-heading>
 
 <div class="split-content">
-<form [formGroup]="userForm">
-<app-content-block *ngIf="user" [heading]="'users.user_information' | translate">
-      <app-input-item  class="form-item"
+  <form [formGroup]="userForm">
+    <app-content-block *ngIf="user" [heading]="'users.user_information' | translate">
+      <app-input-item
+        class="form-item"
         [label]="'users.name' | translate"
         [placeholder]="'users.enter_name' | translate"
         [formGroup]="userForm"
         formControlName="Firstname"
-        [(ngModel)]="user.first_name">
-      </app-input-item>
-      <app-input-item  class="form-item"
+        [(ngModel)]="user.first_name"
+      ></app-input-item>
+
+      <app-input-item
+        class="form-item"
         [label]="'users.surname' | translate"
         [placeholder]="'users.enter_surname' | translate"
         [formGroup]="userForm"
         formControlName="Lastname"
-        [(ngModel)]="user.last_name">
-      </app-input-item>
-      <app-input-item class="form-item"
+        [(ngModel)]="user.last_name"
+      ></app-input-item>
+
+      <app-input-item
+        class="form-item"
         [readonly]="true"
         [label]="'users.email' | translate"
         [placeholder]="'users.enter_email' | translate"
         [formGroup]="userForm"
         formControlName="Email"
-        [(ngModel)]="user.email">
-      </app-input-item>
-  </app-content-block>
-</form>
-<form *ngIf="form" [formGroup]="form">
-<app-content-block [heading]="'users.user_roles' | translate">
-  <div class="check-list" [formArrayName]="'items'" [class.invalid]="!form.controls.selectedItems.valid">
-    <div class="checkboxes-item" *ngFor="let control of form.controls.items.controls; let i = index;" [formGroup]="control">
-      <label class="label-name">{{ control.controls.text.value }}</label>
-      <div class="checkboxes-modal">
-      <input class="checkall" type="checkbox" formControlName="checkbox" id="{{ control.controls.id.value }}" (click)="click()">
-      <label [class.checked]="checked" attr.for={{control.controls.id.value}}>
-        <ng-container *ngIf="checked">
-          {{'users.select' | translate}}
-        </ng-container>
-        <ng-container *ngIf="!checked">
-          {{'users.select' | translate }}
-        </ng-container>
-      </label>
+        [(ngModel)]="user.email"
+      ></app-input-item>
+    </app-content-block>
+  </form>
+
+  <form *ngIf="form" [formGroup]="form">
+    <app-content-block [heading]="'users.user_roles' | translate">
+      <div
+        class="check-list"
+        [formArrayName]="'items'"
+        [class.invalid]="!form.controls.selectedItems.valid"
+      >
+        <div class="checkboxes-item" *ngFor="let control of form.controls.items.controls; let i = index;" [formGroup]="control">
+          <label class="label-name">{{ control.controls.text.value }}</label>
+          <div class="checkboxes-modal">
+            <input
+              class="checkall"
+              type="checkbox"
+              formControlName="checkbox"
+              id="{{ control.controls.id.value }}"
+              (click)="click()"
+            >
+            <label [class.checked]="checked" attr.for={{control.controls.id.value}}>
+              <ng-container *ngIf="checked">
+                {{'users.select' | translate}}
+              </ng-container>
+              <ng-container *ngIf="!checked">
+                {{'users.select' | translate }}
+              </ng-container>
+            </label>
+          </div>
+        </div>
       </div>
-    </div>
-  </div>
- <app-input-item-error-message
+
+      <app-input-item-error-message
         *ngIf="show"
         [errors]="form.controls.selectedItems.errors"
-  ></app-input-item-error-message>
-  </app-content-block>
-</form>
+      ></app-input-item-error-message>
+    </app-content-block>
+  </form>
 </div>
+
 <app-form-action-bar>
   <div *ngIf="userId">
-    <button *ngIf="buttonName" class="btn deactive" (click)="isValid()">
-      {{buttonName}}</button>
-    <button type="button" class="btn submit" (click)="saveUser()">
-       {{'common.submit' | translate}}</button>
+    <button
+      *ngIf="buttonName"
+      class="btn deactive"
+      (click)="isValid()"
+    >{{ buttonName }}</button>
+    
+    <button
+      type="button"
+      class="btn submit" 
+      (click)="saveUser()"
+    >{{ 'common.submit' | translate }}</button>
   </div>
 </app-form-action-bar>
-<app-confirm *ngIf="showDeactivateConfirm" 
+
+<app-confirm
+  *ngIf="showDeactivateConfirm" 
   [heading]="'users.user_deactivate_confirm_msg' | translate: {buttonName: buttonName}" 
   (onReject)="closeDeactivateConfirm()"
-  (onConfirm)="deactivateUser()">
-</app-confirm>
+  (onConfirm)="deactivateUser()"
+></app-confirm>
