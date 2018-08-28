@@ -29,6 +29,13 @@ export class CustodiansAllResponse {
   count: number;
 }
 
+export class StorageFeesAllResponse {
+  success: boolean;
+  fees: Array<any>;
+  footer: Array<any>;
+  count: number;
+}
+
 export class AddAccountResponse {
   success: boolean;
   account: any;
@@ -90,6 +97,28 @@ export class ColdStorageService {
   addAccount(request: ColdStorageAccountRequestData): Observable<AddAccountResponse> {
     return this.http.post<AddAccountResponse>(this.baseUrl + `cold_storage/accounts/add`, request);
   }
+
+  //Cold Storage Account Storage Fees
+
+  getAllStorageFees(requestData: EntitiesFilter): Observable<StorageFeesAllResponse> {
+    return this.http.post<StorageFeesAllResponse>(this.baseUrl + `cold_storage/accounts/fees`, requestData);
+  }
+
+  getAllStorageFeesHeaderLOV(column_name: string): Observable<any> {
+    return this.http.post<any>(this.baseUrl + `cold_storage/fees/header_lov/${column_name}`, {}).pipe(
+      map(
+        res => {
+          if(res && Array.isArray(res.lov)) {
+            return res.lov.map(lov => {
+              return { value: lov.toString() }
+            });
+          } else return null;
+        }
+      )
+    )
+  }
+
+  //Cold Storage Custodians
 
   getAllCustodians(requestData?: EntitiesFilter): Observable<CustodiansAllResponse>{
     return this.http.post<CustodiansAllResponse>(this.baseUrl + 'cold_storage/custodians/all', requestData);

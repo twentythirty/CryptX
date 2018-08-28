@@ -40,6 +40,7 @@ import { TransfersListComponent } from "../../modules/cold-storage-transfers/tra
 import { AddAccountComponent } from "../../modules/cold-storage-accounts/add-account/add-account.component";
 import { AccountsListComponent } from "../../modules/cold-storage-accounts/accounts-list/accounts-list.component";
 import { CustodiansListComponent } from '../../modules/cold-storage-custodians/custodians-list/custodians-list.component';
+import { ColdStorageAccountStorageFeeListComponent } from '../../modules/cold-storage-account-storage-fee/cold-storage-account-storage-fee-list/cold-storage-account-storage-fee-list.component';
 
 const routes: Routes = [
   { path: 'login', component: LoginComponent },
@@ -201,6 +202,12 @@ const routes: Routes = [
   {
     path: 'cold_storage/custodians',
     component: CustodiansListComponent,
+    canActivate: [AuthGuard]
+  },
+
+  {
+    path: 'cold_storage/account_storage_fee',
+    component: ColdStorageAccountStorageFeeListComponent,
     canActivate: [AuthGuard]
   },
 
