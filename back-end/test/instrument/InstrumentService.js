@@ -486,5 +486,14 @@ describe('InstrumentService testing:', () => {
                 chai.assert.isTrue(exhangeFindAllResult.length == 1);
             });
         });
+
+        it('shall filter out identifiers if a query is provided', () => {
+            return instrumentService.getInstrumentIdentifiersFromCCXT(ID, 'x').then(identifiers => {
+
+                chai.expect(identifiers.length).to.equal(1);
+                chai.expect(identifiers[0]).to.equal('XRP/BTC');
+
+            });
+        });
     });
 });
