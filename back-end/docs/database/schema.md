@@ -113,6 +113,7 @@ id PK int
 asset_id int FK >- asset.id
 strategy_type enum # Strategy type for which this account is used. Possible values: Large Cap Index (LCI), Mid Cap Index (MCI)
 address nvarchar # Address that can be used to send the coins to this cold storage account
+tag varchar NULLABLE # Tag used to identify certain account in address. Required only for some assets
 cold_storage_custodian_id int FK >- cold_storage_custodian.id
 
 cold_storage_custodian # This table defines available custodians
@@ -167,7 +168,7 @@ asset_id int FK >- asset.id # Currency in which the investment was denominated
 amount decimal # Amount deposited
 fee decimal # Deposit management fees deducted
 depositor_user_id int FK >- user.id # Depositor who made the deposit
-completion_timestamp timestamp # Time when deposit was completed
+completion_timestamp timestamp NULLABLE # Time when deposit was completed
 target_exchange_account_id int FK >- exchange.id # Exchange account to which deposit will be made
 status enum # Status of the deposit. Possible values: PENDING, COMPLETED
 
@@ -208,7 +209,7 @@ created_timestamp timestamp # Time when recipe order has been placed
 recipe_run_id int FK >- recipe_run.id
 approval_status enum # Possible statuses are Pending, Approved, Rejected
 approval_user_id int FK >- user.id # User who approved/rejected the recipe order group
-approval_timestamp timestamp # Time and date when the user approved this recipe order group
+approval_timestamp timestamp NULLABLE # Time and date when the user approved this recipe order group
 approval_comment nvarchar # Comment that should be provided when approving the order group
 
 recipe_order
@@ -216,6 +217,7 @@ recipe_order
 id PK int
 recipe_order_group_id int FK >- recipe_order_group.id
 instrument_id int FK >- instrument.id
+exchange_id int FK >- exchange.id
 side enum # Buy = 0 / Sell = 1
 price decimal # Market price when the recipe order was placed
 quantity decimal # Size of the order
@@ -235,7 +237,7 @@ total_quantity decimal # Order size
 fee decimal # Fee deducted on during placement
 status enum # Pending, Placed, FullyFilled, PartiallyFilled, Cancelled, Failed
 placed_timestamp timestamp # Time the execution order has been placed
-completed_timestamp timestamp # Time the execution order was fully filled or cancelled
+completed_timestamp timestamp NULLABLE # Time the execution order was fully filled or cancelled
 time_in_force timestamp NULLABLE # time till when order should be active on exchange. NULL if order is Good Till Cancelled
 failed_attempts int # Number of times execution order failed to be placed into exchange
 
@@ -257,7 +259,7 @@ id PK int
 recipe_run_order_id PK int FK >- recipe_order.id # ID of the recipe order for cold storage is needed
 status enum # Pending - order was generated internally, but not yet sent, Sent - recipe order was sent to exchange or blockchain (waiting confirmation), Completed - when order reaches its final successful state, Failed - system failed to execute the order
 placed_timestamp timestamp # Time when the order was generated
-completed_timestamp timestamp # Time when the order reached its final state
+completed_timestamp timestamp NULLABLE # Time when the order reached its final state
 cold_storage_account_id int # ID of the cold storage account to which the transfer will be made
 asset_id int FK >- asset.id # Asset for which cold storage transfer will be made
 amount decimal # Amount that will be transfered
@@ -284,6 +286,9 @@ recipe_order_id int # Recipe order related to the action
 execution_order_id int # Execution order related to the action
 details nvarchar # More detailed information about the action
 level int # Debug = 0, Info = 1, Warning = 2, Error = 3.
+translation_key nvarchar # Key of translation
+translation_args nvarchar # Arguments of translation
+cold_storage_transfer_id int # Cold storage transfer related to action
 
 setting
 # This table will contain system settings (controlled by admins via web interface)
