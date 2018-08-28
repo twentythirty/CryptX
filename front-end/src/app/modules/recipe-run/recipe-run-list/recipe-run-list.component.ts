@@ -1,9 +1,11 @@
 import { Component, OnInit } from '@angular/core';
+import { ActivatedRoute, Router } from "@angular/router";
+import { finalize } from 'rxjs/operators';
+
 import { DataTableCommonManagerComponent } from "../../../shared/components/data-table-common-manager/data-table-common-manager.component";
 import { TableDataSource, TableDataColumn } from "../../../shared/components/data-table/data-table.component";
 import { DateCellDataColumn, StatusCellDataColumn, ActionCellDataColumn, DataCellAction } from "../../../shared/components/data-table-cells";
 import { StatusClass } from "../../../shared/models/common";
-import { ActivatedRoute, Router } from "@angular/router";
 import { RecipeRunsService } from "../../../services/recipe-runs/recipe-runs.service";
 import { Recipe } from "../../../shared/models/recipe";
 
@@ -56,8 +58,8 @@ export class RecipeRunListComponent extends DataTableCommonManagerComponent impl
     }}),
   ];
 
-  private readModalIsShown: boolean = false;
-  private readData: { title: string, content: string };
+  public readModalIsShown: boolean = false;
+  public readData: { title: string, content: string };
 
   constructor(
     public route: ActivatedRoute,
@@ -83,9 +85,9 @@ export class RecipeRunListComponent extends DataTableCommonManagerComponent impl
   }
 
   getAllData(): void {
-    this.recipeService.getAllRecipeRuns(this.requestData)
-    .finally(() => this.stopTableLoading())
-    .subscribe(
+    this.recipeService.getAllRecipeRuns(this.requestData).pipe(
+      finalize(() => this.stopTableLoading())
+    ).subscribe(
       res => {
         Object.assign(this.recipeDataSource, {
           body: res.recipe_runs,

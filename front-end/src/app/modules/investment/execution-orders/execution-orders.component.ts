@@ -1,7 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { mergeMap } from "rxjs/operators/mergeMap";
-import { TimelineDetailComponent, SingleTableDataSource, TagLineItem } from "../timeline-detail/timeline-detail.component";
+import { mergeMap, finalize } from "rxjs/operators";
+
+import { TimelineDetailComponent, SingleTableDataSource, TagLineItem, ITimelineDetailComponent } from "../timeline-detail/timeline-detail.component";
 import { InvestmentService } from "../../../services/investment/investment.service";
 import { TimelineEvent } from "../../../shared/components/timeline/timeline.component";
 import { TableDataSource, TableDataColumn } from "../../../shared/components/data-table/data-table.component";
@@ -13,17 +14,17 @@ import { StatusClass } from "../../../shared/models/common";
   templateUrl: './../timeline-detail/timeline-detail.component.html',
   styleUrls: ['../timeline-detail/timeline-detail.component.scss']
 })
-export class ExecutionOrdersComponent extends TimelineDetailComponent implements OnInit {
+export class ExecutionOrdersComponent extends TimelineDetailComponent implements OnInit, ITimelineDetailComponent {
 
     /**
-   * 1. Implement abstract attributes to display titles
+   * 1. Implement attributes to display titles
    */
   public pageTitle: string = 'Execution orders';
   public singleTitle: string = '';
   public listTitle: string = '';
 
   /**
-   * 2. Implement abstract attributes to preset data structure
+   * 2. Implement attributes to preset data structure
    */
   public timelineEvents: Array<TimelineEvent>;
 
@@ -99,20 +100,21 @@ export class ExecutionOrdersComponent extends TimelineDetailComponent implements
 
 
   /**
-   * 4. Implement abstract methods to fetch data OnInit
+   * 4. Implement methods to fetch data OnInit
    */
   public getAllData(): void {
     this.route.params.pipe(
       mergeMap(
-        params => this.investmentService.getAllExecOrders(params['id'], this.requestData)
-          .finally(() => this.stopTableLoading())
+        params => this.investmentService.getAllExecOrders(params['id'], this.requestData).pipe(
+          finalize(() => this.stopTableLoading())
+        )
       )
     ).subscribe(
       res => {
         this.listDataSource.body = res.execution_orders;
         this.listDataSource.footer = res.footer;
         this.count = res.count;
-        this.getFilterLOV()
+        this.getFilterLOV();
       },
       err => this.listDataSource.body = []
     )
@@ -123,16 +125,15 @@ export class ExecutionOrdersComponent extends TimelineDetailComponent implements
       col => ['id', 'instrument', 'side', 'exchange', 'type', 'status'].includes(col.column)
     ).map(
       col => {
-        let filter = {filter : {investment_run_id: this.routeParamId}}
+        let filter = {filter : {investment_run_id: this.routeParamId}};
         col.filter.rowData$ = this.investmentService.getAllExecutionOrdersHeaderLOV(col.column, filter);
       }
     );
   }
 
-  protected getSingleData(): void {
-  }
+  public getSingleData(): void {}
 
-  protected getTimelineData(): void {
+  public getTimelineData(): void {
     this.timeline$ = this.route.params.pipe(
       mergeMap(
          params => this.investmentService.getAllTimelineData({ investment_run_id: params['id'] })
@@ -144,12 +145,8 @@ export class ExecutionOrdersComponent extends TimelineDetailComponent implements
    * 5. Implement abstract methods to handle user actions
    */
 
-  public openSingleRow(row: any): void {
-    // Do nothing
-  }
-
   public openListRow(row: any): void {
-    this.router.navigate([`/run/execution-order-fill/${row.id}`])
+    this.router.navigate([`/run/execution-order-fill/${row.id}`]);
   }
 
 

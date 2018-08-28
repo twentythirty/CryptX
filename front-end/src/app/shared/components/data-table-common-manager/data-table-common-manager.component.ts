@@ -1,6 +1,7 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { ActivatedRoute, Router, Params } from '@angular/router';
 import _ from 'lodash';
+import { filter } from 'rxjs/operators';
 
 import { RolesAllRequestData } from '../../models/api/rolesAllRequestData';
 
@@ -38,9 +39,9 @@ export class DataTableCommonManagerComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
-    this.queryParamsSubscription = this.route.queryParams
-    .filter(params => !params.page || params.page != this.prevQueryParams.page )
-    .subscribe(params => {
+    this.queryParamsSubscription = this.route.queryParams.pipe(
+      filter(params => !params.page || params.page != this.prevQueryParams.page )
+    ).subscribe(params => {
       this.startTableLoading();
 
       this.routeParamId = params.id
@@ -51,8 +52,8 @@ export class DataTableCommonManagerComponent implements OnInit, OnDestroy {
       this.prevQueryParams = params;
     });
 
-    this.route.params.filter(
-      (params: Params) => params.id
+    this.route.params.pipe(
+      filter((params: Params) => params.id)
     ).subscribe(
       (params: Params) => {
         this.routeParamId= params.id;

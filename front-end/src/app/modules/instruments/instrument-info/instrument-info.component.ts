@@ -1,7 +1,8 @@
 import { Component, OnInit, HostListener } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { Observable } from 'rxjs/Observable';
-import { mergeMap } from 'rxjs/operators/mergeMap';
+import { Observable } from 'rxjs';
+import { mergeMap, finalize } from 'rxjs/operators';
+import {zip} from 'rxjs/observable/zip';
 import _ from 'lodash';
 
 import { InstrumentsService } from '../../../services/instruments/instruments.service';
@@ -13,7 +14,6 @@ import {
   ActionCellDataColumn,
   DataCellAction,
   DateCellDataColumn,
-  InputCellDataColumn,
   SelectCellDataColumn,
   NumberCellDataColumn,
 } from '../../../shared/components/data-table-cells';
@@ -180,7 +180,7 @@ export class InstrumentInfoComponent extends DataTableCommonManagerComponent imp
   private getInstrumentData(): void {
     this.route.params.pipe(
       mergeMap(
-        params => Observable.zip(
+        params => zip(
           this.instrumentsService.getInstrument(params['id']),
           this.exchangesService.getAllExchanges(),
         )
@@ -316,8 +316,9 @@ export class InstrumentInfoComponent extends DataTableCommonManagerComponent imp
 
     this.route.params.pipe(
       mergeMap(
-        params => this.instrumentsService.addMapping(params['id'], request)
-          .finally(() => this.loading = false)
+        params => this.instrumentsService.addMapping(params['id'], request).pipe(
+          finalize(() => this.loading = false)
+        )
       )
     ).subscribe(
       data => {

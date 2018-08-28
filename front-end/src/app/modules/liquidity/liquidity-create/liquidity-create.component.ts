@@ -3,6 +3,7 @@ import { FormGroup, FormControl, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { TranslateService } from '@ngx-translate/core';
 import _ from 'lodash';
+import { finalize } from 'rxjs/operators';
 
 import { LiquidityService } from '../../../services/liquidity/liquidity.service';
 import { InstrumentsService } from '../../../services/instruments/instruments.service';
@@ -90,9 +91,9 @@ export class LiquidityCreateComponent implements OnInit {
 
     this.loading = true;
 
-    this.liquidityService.createLiquidityRequirement(request)
-    .finally(() => this.loading = false)
-    .subscribe(
+    this.liquidityService.createLiquidityRequirement(request).pipe(
+      finalize(() => this.loading = false)
+    ).subscribe(
       data => {
         if (data.success) {
           this.router.navigate(['/liquidity_requirements']);

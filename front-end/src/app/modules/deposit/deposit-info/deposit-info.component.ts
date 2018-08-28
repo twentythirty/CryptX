@@ -1,8 +1,9 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router, Params } from "@angular/router";
 import { FormGroup, FormControl, Validators } from '@angular/forms';
+import { Observable } from "rxjs";
+import { filter } from 'rxjs/operators';
 import _ from 'lodash';
-import { Observable } from "rxjs/Observable";
 
 import { DepositService, DepositResultData, DepositResponseData } from "../../../services/deposit/deposit.service";
 import { InvestmentService } from "../../../services/investment/investment.service";
@@ -10,7 +11,6 @@ import { ActionCellDataColumn, DataCellAction, StatusCellDataColumn, PercentCell
 import { TableDataSource, TableDataColumn } from "../../../shared/components/data-table/data-table.component";
 import { StatusClass } from "../../../shared/models/common";
 import { DepositStatus } from "../../../shared/models/deposit";
-
 
 
 @Component({
@@ -77,8 +77,8 @@ export class DepositInfoComponent implements OnInit {
   }
 
   private getDeposit(): void {
-    this.route.params.filter(
-      (params: Params) => params.depositId
+    this.route.params.pipe(
+      filter((params: Params) => params.depositId)
     ).subscribe(
       (params: Params) => {
         this.depositId = params.depositId;
@@ -96,6 +96,8 @@ export class DepositInfoComponent implements OnInit {
       }
     )
   }
+
+  public onSetFilter(filterData): void {}
 
   appendActionColumn() {
     if (!_.find(this.depositDataSource.header, col => col.column == 'action')){

@@ -1,5 +1,6 @@
 import { Component } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
+import { finalize } from 'rxjs/operators';
 
 import { DataTableCommonManagerComponent } from '../../../shared/components/data-table-common-manager/data-table-common-manager.component';
 import { TableDataSource, TableDataColumn } from '../../../shared/components/data-table/data-table.component';
@@ -56,9 +57,9 @@ export class InstrumentListComponent extends DataTableCommonManagerComponent {
   }
 
   getAllData(): void {
-    this.instrumentsService.getAllInstruments(this.requestData)
-    .finally(() => this.stopTableLoading())
-    .subscribe(
+    this.instrumentsService.getAllInstruments(this.requestData).pipe(
+      finalize(() => this.stopTableLoading())
+    ).subscribe(
       data => {
         Object.assign(this.instrumentsDataSource, {
           body: data.instruments,

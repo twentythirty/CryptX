@@ -14,6 +14,7 @@ import { ExecutionOrderFillDetailComponent } from './execution-order-fill-detail
 import { DepositDetailComponent } from './deposit-detail/deposit-detail.component';
 import { ExecutionOrdersComponent } from './execution-orders/execution-orders.component';
 import { OrderGroupComponent } from './order-group/order-group.component';
+import { TimelineDetailComponent } from './timeline-detail/timeline-detail.component';
 
 @NgModule({
   imports: [
@@ -33,6 +34,7 @@ import { OrderGroupComponent } from './order-group/order-group.component';
     DepositDetailComponent,
     ExecutionOrdersComponent,
     OrderGroupComponent,
+    TimelineDetailComponent
   ]
 })
 export class InvestmentModule { }

@@ -3,11 +3,8 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { Validators } from '@angular/forms';
 
-import { Observable } from 'rxjs/Observable';
-import { of } from 'rxjs/observable/of';
-import { forkJoin } from 'rxjs/observable/forkJoin';
-import { catchError } from 'rxjs/operators/catchError';
-import { tap } from 'rxjs/operators/tap';
+import { Observable,  of, forkJoin } from 'rxjs';
+import { catchError, tap } from 'rxjs/operators';
 
 import { User } from '../../shared/models/user';
 import PERMISSIONS from '../../config/permissions';
@@ -38,12 +35,14 @@ export class AuthService {
     return this.http.post<LoginReponse>(this.baseUrl + 'users/login', {
       username: username,
       password: password
-    }).do(data => {
-      if (data.success) {
-        this.setAuthData(data);
-      }
-    });
-  }
+    }).pipe(
+      tap(data => {
+        if (data.success) {
+          this.setAuthData(data);
+        }
+      })
+    );
+  } 
 
   setAuthData(data): void {
     //this.setToken(data.token);

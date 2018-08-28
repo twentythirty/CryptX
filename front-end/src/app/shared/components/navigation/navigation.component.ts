@@ -49,10 +49,14 @@ export class NavigationComponent implements OnInit {
     ]}
   ];
 
-  constructor(private authService: AuthService, private router: Router, private elementRef : ElementRef) {}
+  constructor(
+    public authService: AuthService,
+    private router: Router,
+    private elementRef : ElementRef,
+  ) {}
 
   ngOnInit() {
-    this.initials= (this.authService.user.first_name.charAt(0) + this.authService.user.last_name.charAt(0)).toUpperCase();
+    this.initials = (this.authService.user.first_name.charAt(0) + this.authService.user.last_name.charAt(0)).toUpperCase();
   }
 
   checkPerm (perm_code) {

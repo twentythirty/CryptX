@@ -1,10 +1,10 @@
 import { Component, OnInit } from '@angular/core';
-import { ActivatedRoute, Router, Params } from '@angular/router';
-import { mergeMap, map } from 'rxjs/operators';
+import { ActivatedRoute, Router } from '@angular/router';
+import { mergeMap, finalize } from 'rxjs/operators';
 
 import { StatusClass } from '../../../shared/models/common';
 
-import { TimelineDetailComponent, SingleTableDataSource, TagLineItem } from '../timeline-detail/timeline-detail.component';
+import { TimelineDetailComponent, SingleTableDataSource, TagLineItem, ITimelineDetailComponent } from '../timeline-detail/timeline-detail.component';
 import { TimelineEvent } from '../../../shared/components/timeline/timeline.component';
 import { TableDataSource, TableDataColumn } from '../../../shared/components/data-table/data-table.component';
 import {
@@ -22,16 +22,16 @@ import { InvestmentService } from '../../../services/investment/investment.servi
   templateUrl: '../timeline-detail/timeline-detail.component.html',
   styleUrls: ['../timeline-detail/timeline-detail.component.scss']
 })
-export class DepositDetailComponent extends TimelineDetailComponent implements OnInit {
+export class DepositDetailComponent extends TimelineDetailComponent implements OnInit, ITimelineDetailComponent {
   /**
-   * 1. Implement abstract attributes to display titles
+   * 1. Implement attributes to display titles
    */
   public pageTitle: string = 'Recipe run';
   public singleTitle: string = 'Recipe run';
   public listTitle: string = 'Deposits';
 
   /**
-   * 2. Implement abstract attributes to preset data structure
+   * 2. Implement attributes to preset data structure
    */
   public timelineEvents: Array<TimelineEvent>;
 
@@ -116,9 +116,19 @@ export class DepositDetailComponent extends TimelineDetailComponent implements O
   }
 
   /**
-   * 4. Implement abstract methods to fetch data OnInit
+   * + If custom ngOnInit() is needed, call super.ngOnInit() to
+   * perform parent component class initialization
    */
-  protected getSingleData(): void {
+
+  ngOnInit() {
+    super.ngOnInit();
+  }
+
+
+  /**
+   * 4. Implement methods to fetch data OnInit
+   */
+  public getSingleData(): void {
     this.route.params.pipe(
       mergeMap(
         params => this.investmentService.getSingleRecipe(params['id'])
@@ -141,8 +151,9 @@ export class DepositDetailComponent extends TimelineDetailComponent implements O
   public getAllData(): void {
     this.route.params.pipe(
       mergeMap(
-        params => this.investmentService.getAllRecipeDeposits(params['id'])
-          .finally(() => this.stopTableLoading())
+        params => this.investmentService.getAllRecipeDeposits(params['id']).pipe(
+          finalize(() => this.stopTableLoading())
+        )
       )
     ).subscribe(
       res => {
@@ -155,7 +166,7 @@ export class DepositDetailComponent extends TimelineDetailComponent implements O
     )
   }
 
-  protected getTimelineData(): void {
+  public getTimelineData(): void {
     this.timeline$ = this.route.params.pipe(
       mergeMap(
         params => this.investmentService.getAllTimelineData({ recipe_run_id: params['id'] })
@@ -175,37 +186,12 @@ export class DepositDetailComponent extends TimelineDetailComponent implements O
   }
 
   /**
-   * 5. Implement abstract methods to handle user actions
+   * 5. Implement methods to handle user actions
    */
-
-  public openSingleRow(row: any): void {
-    // Navigate to a single item page
-  }
 
   public openListRow(row: any): void {
     this.router.navigate([`/deposits/view/${row.id}`]);
   }
 
-
-  /**
-   * + If custom ngOnInit() is needed, call super.ngOnInit() to
-   * perform parent component class initialization
-   */
-
-  ngOnInit() {
-    super.ngOnInit();
-  }
-
-  /**
-   * Additional
-   */
-
-  private confirmRun(run: any): void {
-    alert('confirmRun');
-  }
-
-  private declineRun(run: any): void {
-    alert('declineRun');
-  }
 
 }

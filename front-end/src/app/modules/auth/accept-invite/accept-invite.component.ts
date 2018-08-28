@@ -3,7 +3,7 @@ declare function require(path: string);
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormGroup, FormControl, Validators, AbstractControl } from '@angular/forms';
-import { tap } from 'rxjs/operators/tap';
+import { tap } from 'rxjs/operators';
 import { TokenCheck } from '../models/tokenCheck';
 import { InviteService } from './invite.service';
 import { AuthService } from '../../../services/auth/auth.service';

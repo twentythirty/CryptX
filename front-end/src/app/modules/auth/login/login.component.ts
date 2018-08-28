@@ -3,7 +3,7 @@ declare function require(path: string);
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { FormGroup, FormControl, Validators } from '@angular/forms';
-import 'rxjs/add/operator/finally';
+import { finalize } from 'rxjs/operators';
 
 import { AuthService } from '../../../services/auth/auth.service';
 
@@ -44,7 +44,7 @@ export class LoginComponent implements OnInit {
   constructor(
     private authService: AuthService,
     private router: Router,
-  ) { }
+  ) {}
 
   ngOnInit() { }
 
@@ -52,9 +52,9 @@ export class LoginComponent implements OnInit {
     if(this.loginForm.valid) {
       this.loading = true;
 
-      this.authService.authenticate(this.username, this.password)
-      .finally(() => this.loading = false)
-      .subscribe(
+      this.authService.authenticate(this.username, this.password).pipe(
+        finalize(() => this.loading = false)
+      ).subscribe(
         data => {
           this.redirectToDashboard();
           this.touched = true;
@@ -103,9 +103,9 @@ export class LoginComponent implements OnInit {
       this.password_reset_sent = true;
       this.loading2 = true;
 
-      this.authService.requestPasswordReset(this.reset_email)
-      .finally(() => this.loading2 = false )
-      .subscribe(
+      this.authService.requestPasswordReset(this.reset_email).pipe(
+        finalize(() => this.loading2 = false)
+      ).subscribe(
         res => {},
         error => {
           if (error.error) {

@@ -1,13 +1,13 @@
 import { Component, OnInit } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
+import { FormGroup, FormControl, FormArray } from "@angular/forms";
 import _ from 'lodash';
-import 'rxjs/add/operator/filter';
+import { filter } from 'rxjs/operators';
 
 import { RolesService } from '../../../services/roles/roles.service';
 
 import { Role } from '../../../shared/models/role';
 import { RolesPermissionsResultData } from '../../../shared/models/api/rolesPermissionsResultData';
-import { FormGroup, FormControl, FormArray } from "@angular/forms";
 import { AuthService } from "../../../services/auth/auth.service";
 
 @Component({
@@ -48,9 +48,9 @@ export class RolesAddComponent implements OnInit {
     });
 
     // get roleId from url
-    this.route.params
-      .filter(params => params.roleId)
-      .subscribe(params => {
+    this.route.params.pipe(
+      filter(params => params.roleId)
+    ).subscribe(params => {
         this.roleId = params.roleId;
 
         this.rolesService.getRole(this.roleId).subscribe(data => {

@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { RouterModule, Router, ActivatedRoute } from '@angular/router';
+import { finalize } from 'rxjs/operators';
 
 import { TableDataSource, TableDataColumn } from '../../../shared/components/data-table/data-table.component';
 
@@ -56,9 +57,9 @@ export class DashboardComponent extends DataTableCommonManagerComponent implemen
 
 
   getAllData() {
-    this.investmentService.getAllInvestments(this.requestData)
-    .finally(() => this.stopTableLoading())
-    .subscribe(
+    this.investmentService.getAllInvestments(this.requestData).pipe(
+      finalize(() => this.stopTableLoading())
+    ).subscribe(
       res => {
         Object.assign(this.investmentsDataSource, {
           body: res.investment_runs,

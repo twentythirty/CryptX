@@ -1,9 +1,11 @@
 import { Component, OnInit } from '@angular/core';
-import { DataTableCommonManagerComponent } from "../../../shared/components/data-table-common-manager/data-table-common-manager.component";
 import { Router, ActivatedRoute } from "@angular/router";
+import { finalize } from 'rxjs/operators';
+
 import { ColdStorageService } from "../../../services/cold-storage/cold-storage.service";
 import { TableDataSource, TableDataColumn } from "../../../shared/components/data-table/data-table.component";
 import { StatusCellDataColumn, NumberCellDataColumn, DateCellDataColumn, CurrencyCellDataColumn } from "../../../shared/components/data-table-cells/index";
+import { DataTableCommonManagerComponent } from "../../../shared/components/data-table-common-manager/data-table-common-manager.component";
 
 @Component({
   selector: 'app-accounts-list',
@@ -38,9 +40,9 @@ export class AccountsListComponent extends DataTableCommonManagerComponent imple
   ];
 
   constructor(
-      private coldStorageService: ColdStorageService,
-      public route: ActivatedRoute,
-      public router: Router,
+    private coldStorageService: ColdStorageService,
+    public route: ActivatedRoute,
+    public router: Router,
   ) {
     super(route, router);
   }
@@ -51,9 +53,9 @@ export class AccountsListComponent extends DataTableCommonManagerComponent imple
   }
 
   getAllData(): void {
-    this.coldStorageService.getAllAccounts(this.requestData)
-    .finally(() => this.stopTableLoading())
-    .subscribe(
+    this.coldStorageService.getAllAccounts(this.requestData).pipe(
+      finalize(() => this.stopTableLoading())
+    ).subscribe(
       res => {
         Object.assign(this.accountsDataSource, {
           body: res.accounts,

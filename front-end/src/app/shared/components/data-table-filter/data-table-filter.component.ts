@@ -1,6 +1,6 @@
 import { Component, OnInit, Input, EventEmitter, Output, OnChanges } from '@angular/core';
 import _ from 'lodash';
-import { Observable } from 'rxjs/Observable';
+import { Observable } from 'rxjs';
 
 export interface DataTableFilterData {
   column: string
@@ -26,8 +26,8 @@ export class DataTableFilterComponent implements OnInit, OnChanges {
     values: [],
     order: ''
   };
-  private _showSearch: boolean = false;
-  private _filterSearchText: string = '';
+  public _showSearch: boolean = false;
+  public _filterSearchText: string = '';
 
   active = false;
   name = 'ORDER BY';

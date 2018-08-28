@@ -2,9 +2,9 @@ import { Injectable } from '@angular/core';
 import { environment } from "../../../environments/environment";
 import { HttpClient } from "@angular/common/http";
 import { EntitiesFilter } from "../../shared/models/api/entitiesFilter";
-import { Observable } from "rxjs/Observable";
+import { Observable } from "rxjs";
 import { Order } from "../../shared/models/order";
-import { map } from "rxjs/operators/map";
+import { map } from "rxjs/operators";
 
 export class OrderAllResponse {
     success: boolean;

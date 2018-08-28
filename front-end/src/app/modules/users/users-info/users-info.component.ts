@@ -3,13 +3,14 @@ import { Router, ActivatedRoute } from '@angular/router';
 import { FormsModule, FormGroup, FormControl, ReactiveFormsModule } from '@angular/forms';
 import { UsersService } from '../../../services/users/users.service';
 import { NgForm, Validators, FormArray, AbstractControl } from '@angular/forms'
+import { filter } from 'rxjs/operators';
+import { zip } from 'rxjs/observable/zip';
+
 import { User } from '../../../shared/models/user';
-import { RolesPermissionsResultData } from '../../../shared/models/api/rolesPermissionsResultData';
 import { RolesService } from "../../../services/roles/roles.service";
 import { RolesAllRequestData } from "../../../shared/models/api/rolesAllRequestData";
 import { AuthService } from "../../../services/auth/auth.service";
-import { Observable } from 'rxjs/Observable';
-import 'rxjs/add/observable/zip';
+
 
 
 @Component({
@@ -43,20 +44,22 @@ export class UsersInfoComponent implements OnInit {
 
   form: FormGroup;
 
-  constructor(private router: Router,
+  constructor(
+    private router: Router,
     private route: ActivatedRoute,
     private usersService: UsersService,
     private rolesService: RolesService,
-    private authService: AuthService) {
-    this.route.params
-      .filter(params => params.userId)
-      .subscribe(params => {
-        this.userId = params.userId;
-      });
+    private authService: AuthService,
+  ) {
+    this.route.params.pipe(
+      filter(params => params.userId)
+    ).subscribe(params => {
+      this.userId = params.userId;
+    });
   }
 
   ngOnInit() {
-    Observable.zip(
+    zip(
       this.rolesService.getAllRoles(this.rolesRequestData),
       this.usersService.getUser(this.userId),
     ).subscribe((res) => {
@@ -175,20 +178,20 @@ export class UsersInfoComponent implements OnInit {
   }
 
   deactivateUser() {
-     this.user.roles = this.form.controls.selectedItems.value;
-      this.user.is_active = !this.user.is_active;
-      console.log(this.user);
-        this.usersService.saveUser(this.user).subscribe(
-          data => {
-            if (data.success == true) {
-              this.loading = false;
-              this.router.navigate(['/users']);
-            }
-          }, error => {
-            this.loading = true;
-          }, () => {
-            this.loading = false;
-          });
+    this.user.roles = this.form.controls.selectedItems.value;
+    this.user.is_active = !this.user.is_active;
+
+    this.usersService.saveUser(this.user).subscribe(
+      data => {
+        if (data.success == true) {
+          this.loading = false;
+          this.router.navigate(['/users']);
+        }
+      }, error => {
+        this.loading = true;
+      }, () => {
+      this.loading = false;
+    });
   }
 
   isValid(){

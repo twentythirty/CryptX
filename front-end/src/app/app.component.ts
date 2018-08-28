@@ -12,7 +12,7 @@ export class AppComponent {
   title = 'CryptX';
 
   constructor(
-    private authService: AuthService,
+    public authService: AuthService,
     private translate: TranslateService
   ) {
     translate.setDefaultLang('en');

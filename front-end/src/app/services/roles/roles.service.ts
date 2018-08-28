@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 
 import { Observable } from 'rxjs';
+import { tap } from 'rxjs/operators';
 
 import { Role } from '../../shared/models/role';
 import { RolesAllRequestData } from '../../shared/models/api/rolesAllRequestData';
@@ -26,12 +27,13 @@ export class RolesService {
   constructor(private http: HttpClient) { }
 
   getAllRoles(requestData: RolesAllRequestData): Observable<any>{
-    return this.http.post<RolesAllResponse>(this.baseUrl + 'roles/all', requestData)
-    .do(data => {
-      if (data.success) {
-        return data.roles;
-      }
-    });
+    return this.http.post<RolesAllResponse>(this.baseUrl + 'roles/all', requestData).pipe(
+      tap(data => {
+        if (data.success) {
+          return data.roles;
+        }
+      })
+    );
   }
 
   getPermissionsList() {
@@ -43,21 +45,23 @@ export class RolesService {
   }
 
   createRole(role: Role) {
-    return this.http.post<RolesCreateResponse>(this.baseUrl + 'roles/create', role)
-    .do(data => {
-      if (data.success) {
-        return data.role;
-      }
-    });
+    return this.http.post<RolesCreateResponse>(this.baseUrl + 'roles/create', role).pipe(
+      tap(data => {
+        if (data.success) {
+          return data.role;
+        }
+      })
+    );
   }
 
   editRole(role: Role) {
-    return this.http.post<RolesCreateResponse>(this.baseUrl + 'roles/' + role.id + '/edit', role)
-    .do(data => {
-      if (data.success) {
-        return data.role;
-      }
-    });
+    return this.http.post<RolesCreateResponse>(this.baseUrl + 'roles/' + role.id + '/edit', role).pipe(
+      tap(data => {
+        if (data.success) {
+          return data.role;
+        }
+      })
+    );
   }
 
   deleteRole(roleId: number) {

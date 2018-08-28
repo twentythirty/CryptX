@@ -1,8 +1,8 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { TranslateService } from '@ngx-translate/core';
-import { Observable } from 'rxjs/Observable';
-import { map } from 'rxjs/operators/map';
+import { Observable } from 'rxjs';
+import { map, tap } from 'rxjs/operators';
 import _ from 'lodash';
 
 import { Asset, AssetStatus } from '../../shared/models/asset';
@@ -50,21 +50,26 @@ export class AssetService {
 
   getAllAssetsDetailed(filter?: object, requestData?: EntitiesFilter): Observable<AssetsAllResponseDetailed> {
     if(requestData) {
-      return this.http.post<AssetsAllResponseDetailed>(this.baseUrl + `assets/detailed/all`, requestData)
-        .do(this.addStatusCode);
+      return this.http.post<AssetsAllResponseDetailed>(this.baseUrl + `assets/detailed/all`, requestData).pipe(
+        tap(this.addStatusCode)
+      );
     }
+
     if(filter) {
-      return this.http.post<AssetsAllResponseDetailed>(this.baseUrl + `assets/detailed/all`, filter)
-        .do(this.addStatusCode);
+      return this.http.post<AssetsAllResponseDetailed>(this.baseUrl + `assets/detailed/all`, filter).pipe(
+        tap(this.addStatusCode)
+      );
     } else {
-      return this.http.get<AssetsAllResponseDetailed>(this.baseUrl + `assets/detailed/all`)
-        .do(this.addStatusCode);
+      return this.http.get<AssetsAllResponseDetailed>(this.baseUrl + `assets/detailed/all`).pipe(
+        tap(this.addStatusCode)
+      );
     }
   }
 
   getAsset(assetId: number) {
-    return this.http.get<AssetResultData>(this.baseUrl + `assets/detailed/${assetId}`)
-      .do((data) => this.mapActivityLog(data));
+    return this.http.get<AssetResultData>(this.baseUrl + `assets/detailed/${assetId}`).pipe(
+      tap(data => this.mapActivityLog(data))
+    );
   }
 
   changeAssetStatus(assetId: number, status: AssetStatus): Observable<any> {

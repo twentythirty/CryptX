@@ -1,8 +1,7 @@
 import { Component, OnInit, Input, Output, EventEmitter, ViewChild, ElementRef } from '@angular/core';
 import { TableDataColumn } from '../../data-table/data-table.component';
-import { fromEvent } from 'rxjs/observable/fromEvent';
-import { map } from 'rxjs/operators';
-import { Observable } from 'rxjs';
+import { fromEvent } from 'rxjs';
+import { map, debounceTime } from 'rxjs/operators';
 
 export class InputCellDataColumn extends TableDataColumn {
   component? = InputCellComponent;
@@ -36,9 +35,10 @@ export class InputCellComponent implements OnInit {
   constructor() {}
 
   ngOnInit() {
-    let input$ = Observable.fromEvent(this.input.nativeElement, 'keyup')
-      .map((x: any) => x.target.value)
-      .debounceTime(1000);
+    let input$ = fromEvent(this.input.nativeElement, 'keyup').pipe(
+      map((x: any) => x.target.value),
+      debounceTime(1000)
+    );
 
     input$.subscribe(val => {
       this.valueDelayedChange.emit({ value: val, row: this.row });
