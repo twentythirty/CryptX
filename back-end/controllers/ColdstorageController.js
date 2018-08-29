@@ -61,27 +61,7 @@ const getColdStorageTransferColumnLOV = async (req, res) => {
 };
 module.exports.getColdStorageTransferColumnLOV = getColdStorageTransferColumnLOV;
 
-const create_mock_footer = function (keys, name) {
-  // delete this function after mock data is replaced
-  let footer = [...Object.keys(keys)].map((key, index) => {
-    return {
-      "name": key,
-      "value": 999,
-      "template": name + ".footer." + key,
-      "args": {
-        [key]: 999
-      }
-    }
-  });
-  return footer;
-};
-
 const getCustodians = async function (req, res) {
-
-  /*let mock_custodians = [...Array(5)].map((cust, index) => ({
-    id: index + 1,
-    name: "Custodian " + (index + 1)
-  }))*/
 
   const { seq_query } = req;
 
@@ -90,7 +70,6 @@ const getCustodians = async function (req, res) {
 
   const { count, rows: custodians } = result;
 
-  //let footer = create_mock_footer(mock_custodians[0], 'cold_storage');
 
   return ReS(res, {
     custodians,

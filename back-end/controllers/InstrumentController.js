@@ -201,20 +201,6 @@ const createLiquidityRequirement = async function (req, res) {
   const [ err, liquidity_requirement ] = await to(instrumentService.createLiquidityRequirement(instrument_id, periodicity, minimum_circulation, exchange_id));
   if(err) return ReE(res, err.message, 422);
 
-  // mock data below
-
-  let liquidity_mock = {
-    id: 1,
-    instrument_id: instrument_id,
-    instrument: "BTC/ETH",
-    periodicity: 7,
-    quote_asset: "BTC",
-    minimum_circulation: 60000,
-    exchange: "All exchanges",
-    exchange_count: 2,
-    exchange_pass: 2
-  };
-
   return ReS(res, {
     liquidity_requirement
   });

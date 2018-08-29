@@ -13,12 +13,26 @@ PERMISSIONS = {
   CHANGE_ASSET_STATUS: "perm_change_asset_status",
   VIEW_INVESTMENT_RUN: "perm_view_investment_run",
   CREATE_INVESTMENT_RUN: "perm_create_investment_run",
+  START_RECIPE_RUN: "perm_start_recipe_run",
   APPROVE_RECIPE_RUN: "perm_approve_recipe_run",
   VIEW_ORDERS: "perm_view_orders",
   GENERATE_ORDERS: "perm_generate_orders",
   ALTER_ORDERS: "perm_alter_orders",
   CHANGE_SETTING_VALUES: "perm_change_settings",
-  VIEW_SETTING_VALUES: "perm_view_settings"
+  VIEW_SETTING_VALUES: "perm_view_settings",
+  VIEW_INSTRUMENTS: "perm_view_instruments",
+  CREATE_INSTRUMENT: "perm_create_instrument",
+  ALTER_INSTRUMENT_MAPPINGS: "perm_alter_instrument_mappings",
+  VIEW_COLD_STORAGE_TRANSFERS: "perm_view_cold_storage_transfers",
+  APPROVE_COLD_STORAGE_TRANSFERS: "perm_approve_cold_storage_transfers",
+  VIEW_COLD_STORAGE_CUSTODIANS: "perm_view_cold_storag_custodians",
+  ALTER_COLD_STORAGE_CUSTODIANS: "perm_alter_cold_storag_custodians",
+  VIEW_COLD_STORAGE_ACCOUNTS: "perm_view_cold_storage_accounts",
+  ALTER_COLD_STORAGE_ACCOUNTS: "perm_alter_cold_storage_accounts",
+  VIEW_COLS_STORAGE_ACCOUNT_FEES: "perm_view_cold_storage_account_fees",
+  CREATE_LIQUIDITY_REQUIREMENTS: "perm_create_liquidity_requirements",
+  VIEW_LIQUIDITY_REQUIREMENTS: "perm_view_liquidity_requirements",
+  ADD_EXCHANGE_ACCOUNTS: "perm_add_exchange_account"
 };
 //list of permissions that dotn apply to users
 //as long as they are altering themselves
@@ -28,6 +42,10 @@ PERMISSIONS_CATEGORIES = {
   INVESTMENT_RUN: "Investment run",
   ORDERS: "Orders",
   RECIPE_RUN: "Recipe run",
+  INSTRUMENTS: "Instruments",
+  COLD_STORAGE: "Cold storage",
+  LIQUIDITY: "Liquidity",
+  EXCHANGES: "Exchanges",
   OTHER: "Other groups"
 };
 
@@ -42,7 +60,29 @@ CATEGORY_TO_PERM_ASSOC = {
     PERMISSIONS.GENERATE_ORDERS
   ],
   [PERMISSIONS_CATEGORIES.RECIPE_RUN]: [
+    PERMISSIONS.START_RECIPE_RUN,
     PERMISSIONS.APPROVE_RECIPE_RUN
+  ],
+  [PERMISSIONS_CATEGORIES.INSTRUMENTS]: [
+    PERMISSIONS.VIEW_INSTRUMENTS,
+    PERMISSIONS.CREATE_INSTRUMENT,
+    PERMISSIONS.ALTER_INSTRUMENT_MAPPINGS
+  ], 
+  [PERMISSIONS_CATEGORIES.COLD_STORAGE]: [
+    PERMISSIONS.VIEW_COLD_STORAGE_TRANSFERS,
+    PERMISSIONS.APPROVE_COLD_STORAGE_TRANSFERS,
+    PERMISSIONS.VIEW_COLD_STORAGE_CUSTODIANS,
+    PERMISSIONS.ALTER_COLD_STORAGE_CUSTODIANS,
+    PERMISSIONS.VIEW_COLD_STORAGE_ACCOUNTS,
+    PERMISSIONS.ALTER_COLD_STORAGE_ACCOUNTS,
+    PERMISSIONS.VIEW_COLS_STORAGE_ACCOUNT_FEES,
+  ],
+  [PERMISSIONS_CATEGORIES.EXCHANGES]: [
+    PERMISSIONS.ADD_EXCHANGE_ACCOUNTS
+  ],
+  [PERMISSIONS_CATEGORIES.LIQUIDITY]: [
+    PERMISSIONS.CREATE_LIQUIDITY_REQUIREMENTS,
+    PERMISSIONS.VIEW_LIQUIDITY_REQUIREMENTS
   ]
 }
 //fill other category with remaining permissions
@@ -81,6 +121,8 @@ all_permissions[PERMISSIONS.VIEW_INVESTMENT_RUN] =
   "Permission to view investment runs";
 all_permissions[PERMISSIONS.CREATE_INVESTMENT_RUN] =
   "Permission to create investment runs";
+all_permissions[PERMISSIONS.START_RECIPE_RUN] =
+  "Permission to start recipe run";
 all_permissions[PERMISSIONS.APPROVE_RECIPE_RUN] =
   "Permission to approve/reject investment recipes";
 all_permissions[PERMISSIONS.VIEW_ORDERS] = 
@@ -93,6 +135,32 @@ all_permissions[PERMISSIONS.VIEW_SETTING_VALUES] =
   "Permission to view system setting values";
 all_permissions[PERMISSIONS.GENERATE_ORDERS] = 
   "Permission to generate recipe orders";
+all_permissions[PERMISSIONS.VIEW_INSTRUMENTS] = 
+"Permission to view instruments";
+all_permissions[PERMISSIONS.CREATE_INSTRUMENT] = 
+"Permission to create new instruments";
+all_permissions[PERMISSIONS.ALTER_INSTRUMENT_MAPPINGS] = 
+"Permission to alter instrument exchange mappings";
+all_permissions[PERMISSIONS.VIEW_COLD_STORAGE_TRANSFERS] = 
+"Permission to view cold storage transfers";
+all_permissions[PERMISSIONS.APPROVE_COLD_STORAGE_TRANSFERS] = 
+"Permission to approve cold storage transfers";
+all_permissions[PERMISSIONS.VIEW_COLD_STORAGE_CUSTODIANS] = 
+"Permission to view cold storage custodians";
+all_permissions[PERMISSIONS.ALTER_COLD_STORAGE_CUSTODIANS] = 
+"Permission to alter cold storage custodians";
+all_permissions[PERMISSIONS.VIEW_COLD_STORAGE_ACCOUNTS] = 
+"Permission to view cold storage accounts";
+all_permissions[PERMISSIONS.ALTER_COLD_STORAGE_ACCOUNTS] = 
+"Permission to alter cold storage accounts";
+all_permissions[PERMISSIONS.VIEW_COLD_STORAGE_ACCOUNT_FEES] = 
+"Permission to view cold storage account fees";
+all_permissions[PERMISSIONS.CREATE_LIQUIDITY_REQUIREMENTS] = 
+"Permission to create liquidity requirements";
+all_permissions[PERMISSIONS.VIEW_LIQUIDITY_REQUIREMENTS] = 
+"Permission to view liquidity requirements";
+all_permissions[PERMISSIONS.ADD_EXCHANGE_ACCOUNTS] =
+"Permission to add exchange accounts";
 
 all_roles = Object.values(ROLES);
 
@@ -223,7 +291,7 @@ ROUTES = {
   GetAssets: {
     router_string: "/assets/all",
     permissions_matcher: ROUTE_MATCHERS.GetAssets,
-    required_permissions: [PERMISSIONS.VIEW_ASSETS]
+    required_permissions: [] // adding a permission might cause failure on FE pages that use this route
   },
   GetAssetDetailedInfo: {
     router_string: "/assets/detailed/:asset_id",
@@ -287,7 +355,7 @@ ROUTES = {
   CreateNewRecipeRun: {
     router_string: "/investments/:investment_id/start_recipe_run",
     permissions_matcher: ROUTE_MATCHERS.CreateNewRecipeRun,
-    required_permissions: [PERMISSIONS.CREATE_INVESTMENT_RUN]
+    required_permissions: [PERMISSIONS.START_RECIPE_RUN]
   },
   GetRecipeRun: {
     router_string: "/recipes/:recipe_id",
@@ -307,7 +375,7 @@ ROUTES = {
   GetRecipeRunsColLOV: {
     router_string: "/recipes/header_lov/:field_name",
     permissions_matcher: ROUTE_MATCHERS.GetRecipeRunsColLOV,
-    required_permissions: [PERMISSIONS.VIEW_ASSETS]
+    required_permissions: [PERMISSIONS.VIEW_INVESTMENT_RUN]
   },
   ApproveRecipeRun: {
     router_string: "/recipes/:recipe_id/approve",
@@ -324,7 +392,7 @@ ROUTES = {
   GetRecipeRunDetailsColLOV: {
     router_string: "/recipe_details/header_lov/:field_name",
     permissions_matcher: ROUTE_MATCHERS.GetRecipeRunDetailsColLOV,
-    required_permissions: [PERMISSIONS.VIEW_ASSETS]
+    required_permissions: [PERMISSIONS.VIEW_INVESTMENT_RUN]
   },
   GetRecipeRunDetail: {
     router_string: "/recipe_details/:recipe_detail_id",
@@ -470,134 +538,126 @@ ROUTES = {
   InstrumentCreate: {
     router_string: "/instruments/create",
     permissions_matcher: ROUTE_MATCHERS.InstrumentCreate,
-    required_permissions: []
+    required_permissions: [PERMISSIONS.CREATE_INSTRUMENT]
   },
   GetInstrument: {
     router_string: "/instruments/:instrument_id",
     permissions_matcher: ROUTE_MATCHERS.GetInstrument,
-    required_permissions: []
+    required_permissions: [PERMISSIONS.VIEW_INSTRUMENTS]
   },
   GetInstruments: {
     router_string: "/instruments/all",
     permissions_matcher: ROUTE_MATCHERS.GetInstruments,
-    required_permissions: []
+    required_permissions: [PERMISSIONS.VIEW_INSTRUMENTS]
   },
   GetInstrumentsColLOV: {
     router_string: "/instruments/header_lov/:field_name",
     permissions_matcher: ROUTE_MATCHERS.GetInstrumentsColLOV,
-    required_permissions: [PERMISSIONS.VIEW_ASSETS]
+    required_permissions: [PERMISSIONS.VIEW_INSTRUMENTS]
   },
   InstrumentCheckMapping: {
     router_string: "/instruments/check_mapping",
     permissions_matcher: ROUTE_MATCHERS.InstrumentCheckMapping,
-    required_permissions: []
+    required_permissions: [PERMISSIONS.ALTER_INSTRUMENT_MAPPINGS]
   },
   InstrumentMapExchanges: {
     router_string: "/instruments/:instrument_id/add_mapping",
     permissions_matcher: ROUTE_MATCHERS.InstrumentMapExchanges,
-    required_permissions: []
+    required_permissions: [PERMISSIONS.ALTER_INSTRUMENT_MAPPINGS]
   },
   InstrumentCheckMapExchanges: {
     router_string: "/instruments/:instrument_id/mapping_exchanges",
     permissions_matcher: ROUTE_MATCHERS.InstrumentMappingExchanges,
-    required_permissions: []
+    required_permissions: [PERMISSIONS.ALTER_INSTRUMENT_MAPPINGS]
   },
   GetInstrumentExchanges: {
     router_string: "/instruments/:instrument_id/exchanges",
     permissions_matcher: ROUTE_MATCHERS.GetInstrumentExchanges,
-    required_permissions: []
+    required_permissions: [PERMISSIONS.VIEW_INSTRUMENTS]
   },
   RemoveInstrumentExchangeMapping: {
     router_string: "/instruments/:instrument_id/exchanges/:exchange_id/delete",
     permissions_matcher: ROUTE_MATCHERS.RemoveInstrumentExchangeMapping,
-    required_permissions: []
+    required_permissions: [PERMISSIONS.ALTER_INSTRUMENT_MAPPINGS]
   },
 
   // Liquidity requirements
   LiquidityReqCreate: {
     router_string: "/liquidity_requirements/create",
     permissions_matcher: ROUTE_MATCHERS.LiquidityReqCreate,
-    required_permissions: []
+    required_permissions: [PERMISSIONS.CREATE_LIQUIDITY_REQUIREMENTS]
   },
   GetLiquidityRequirement: {
     router_string: "/liquidity_requirements/:liquidity_requirement_id",
     permissions_matcher: ROUTE_MATCHERS.GetLiquidityRequirement,
-    required_permissions: []
+    required_permissions: [PERMISSIONS.VIEW_LIQUIDITY_REQUIREMENTS]
   },
   GetLiquidityRequirements: {
     router_string: "/liquidity_requirements/all",
     permissions_matcher: ROUTE_MATCHERS.GetLiquidityRequirements,
-    required_permissions: []
+    required_permissions: [PERMISSIONS.VIEW_LIQUIDITY_REQUIREMENTS]
   },
   GetLiquidityRequirementsColLOV: {
     router_string: "/liquidity_requirements/header_lov/:field_name",
     permissions_matcher: ROUTE_MATCHERS.GetLiquidityRequirementsColLOV,
-    required_permissions: [PERMISSIONS.VIEW_ASSETS]
+    required_permissions: [PERMISSIONS.VIEW_LIQUIDITY_REQUIREMENTS]
   },
   GetLiquidityRequirementExchanges: {
     router_string: "/liquidity_requirements/:liquidity_requirement_id/exchanges",
     permissions_matcher: ROUTE_MATCHERS.GetLiquidityRequirementExchanges,
-    required_permissions: []
-  },
-
-  // route is useless right now
-  CreateDeposit: {
-    router_string: "/investments/:investment_id/deposit",
-    permissions_matcher: ROUTE_MATCHERS.CreateDeposit,
-    required_permissions: [PERMISSIONS.CREATE_INVESTMENT_RUN]
-  },
-  
+    required_permissions: [PERMISSIONS.VIEW_LIQUIDITY_REQUIREMENTS]
+  },  
 
   // Cold storage
   GetColdStorageTransfers: {
     router_string: "/cold_storage/all",
     permissions_matcher: ROUTE_MATCHERS.GetColdStorageTransfers,
-    required_permissions: [PERMISSIONS.CREATE_INVESTMENT_RUN]
+    required_permissions: [PERMISSIONS.VIEW_COLD_STORAGE_TRANSFERS]
   },
   GetColdStorageTransfersColLOV: {
     router_string: "/cold_storage/header_lov/:field_name",
     permissions_matcher: ROUTE_MATCHERS.GetColdStorageTransfersColLOV,
-    required_permissions: [PERMISSIONS.CREATE_INVESTMENT_RUN]
+    required_permissions: [PERMISSIONS.VIEW_COLD_STORAGE_TRANSFERS]
   },
   ApproveColdStorageTransfer: {
     router_string: "/cold_storage/:transfer_id/approve",
     permissions_matcher: ROUTE_MATCHERS.GetColdStorageTransfers,
-    required_permissions: [PERMISSIONS.CREATE_INVESTMENT_RUN]
+    required_permissions: [PERMISSIONS.APPROVE_COLD_STORAGE_TRANSFERS]
   },
   GetColdStorageCustodians: {
     router_string: "/cold_storage/custodians/all",
     permissions_matcher: ROUTE_MATCHERS.GetColdStorageTransfers,
-    required_permissions: [PERMISSIONS.CREATE_INVESTMENT_RUN]
+    required_permissions: [] // adding a permission might cause failure on FE pages that use this route
   },
   AddColdStorageCustodians: {
     router_string: "/cold_storage/custodians/add",
     permissions_matcher: ROUTE_MATCHERS.AddColdStorageCustodians,
-    required_permissions: [PERMISSIONS.CREATE_INVESTMENT_RUN]
+    required_permissions: [PERMISSIONS.ALTER_COLD_STORAGE_CUSTODIANS]
   },
   GetColdStorageCustodiansColLOV: {
     router_string: "/cold_storage/custodians/header_lov/:fields_name",
     permissions_matcher: ROUTE_MATCHERS.GetColdStorageTransfers,
-    required_permissions: [PERMISSIONS.CREATE_INVESTMENT_RUN]
+    required_permissions: [PERMISSIONS.VIEW_COLD_STORAGE_CUSTODIANS]
   },
   AddColdstorageAccount: {
     router_string: "/cold_storage/accounts/add",
     permissions_matcher: ROUTE_MATCHERS.GetColdStorageTransfers,
-    required_permissions: [PERMISSIONS.CREATE_INVESTMENT_RUN]
+    required_permissions: [PERMISSIONS.ALTER_COLD_STORAGE_ACCOUNTS]
   },
   GetColdstorageAccounts: {
     router_string: "/cold_storage/accounts/all",
     permissions_matcher: ROUTE_MATCHERS.GetColdStorageTransfers,
-    required_permissions: [PERMISSIONS.CREATE_INVESTMENT_RUN]
+    required_permissions: [PERMISSIONS.VIEW_COLD_STORAGE_ACCOUNTS]
   },
   GetColdstorageAccountsColLOV: {
     router_string: "/cold_storage/accounts/header_lov/:fields_name",
     permissions_matcher: ROUTE_MATCHERS.GetColdStorageTransfers,
-    required_permissions: [PERMISSIONS.CREATE_INVESTMENT_RUN]
+    required_permissions: [PERMISSIONS.VIEW_COLD_STORAGE_ACCOUNTS]
   },
   GetColdstorageAccountsFees: {
     router_string: "/cold_storage/accounts/fees",
     permissions_matcher: ROUTE_MATCHERS.GetColdStorageTransfers,
-    required_permissions: []
+    required_permissions: [PERMISSIONS.VIEW_COLS_STORAGE_ACCOUNT_FEES]
   },
   // System settings
   ChangeSettingValues: {
@@ -625,17 +685,17 @@ ROUTES = {
   GetExchanges: {
     router_string: "/exchanges/all",
     permissions_matcher: ROUTE_MATCHERS.GetExchanges,
-    required_permissions: []
+    required_permissions: [] // adding a permission might cause failure on FE pages that use this route
   },
   GetExchangeInstrumentIDs: {
     router_string: "/exchanges/:exchange_id/instruments",
     permissions_matcher: ROUTE_MATCHERS.GetExchangeInstrumentIDs,
-    required_permissions: []
+    required_permissions: [] // adding a permission might cause failure on FE pages that use this route
   },
 
   CreateExchangeAccount: {
     router_string: '/exchanges/:exchange_id/accounts/create',
     permissions_matcher: ROUTE_MATCHERS.CreateExchangeAccount,
-    required_permissions: []
+    required_permissions: [PERMISSIONS.ADD_EXCHANGE_ACCOUNTS]
   }
 };
