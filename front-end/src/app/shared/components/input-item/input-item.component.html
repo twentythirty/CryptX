@@ -1,0 +1,34 @@
+<label class="label-name">
+  {{ label }}
+</label>
+
+<ng-container *ngIf="fieldType === 'input' || !fieldType">
+  <input
+    [type]="type"
+    [placeholder]="placeholder"
+    [(ngModel)]="value"
+    [class.error]="isInvalid()"
+    (blur)="onBlur()"
+    [readonly]="readonly"
+  >
+</ng-container>
+
+<ng-container *ngIf="fieldType === 'select' || fieldType === 'autocomplete'">	
+  <ng-select
+    class="custom"
+    [searchable]="fieldType === 'autocomplete'"
+    [loading]="spinnerLoading"
+    loadingText="Loading..."
+    [items]="items"
+    [(ngModel)]="value"
+    [markFirst]="false"
+    bindValue="id"
+    bindLabel="value"
+    [placeholder]="placeholder"
+  ></ng-select>
+</ng-container>
+
+<app-input-item-error-message
+  *ngIf="isInvalid()"
+  [errors]="fieldControl?.errors || {}"
+></app-input-item-error-message>

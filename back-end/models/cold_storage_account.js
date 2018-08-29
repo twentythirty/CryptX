@@ -9,9 +9,9 @@ module.exports = (sequelize, DataTypes) => {
         allowNull: false
       },
       address: DataTypes.TEXT("medium"),
-      custodian: {
+      tag: {
         type: DataTypes.STRING,
-        allowNull: false
+        allowNull: true
       }
     },
     modelProps(
@@ -22,6 +22,7 @@ module.exports = (sequelize, DataTypes) => {
 
   ColdStorageAccount.associate = function(models) {
     ColdStorageAccount.belongsTo(models.Asset);
+    ColdStorageAccount.belongsTo(models.ColdStorageCustodian);
   };
 
   return ColdStorageAccount;

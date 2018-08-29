@@ -1,10 +1,20 @@
 'use strict';
-const ccxt = require('ccxt');
+const ccxtUtils = require('../utils/CCXTUtils')
+const { logAction } = require('../utils/ActionLogUtil');
 
-//run once every 10 minutes
-module.exports.SCHEDULE = '*/10 * * * *';
+const action_path = 'ask_bid_fetcher';
+
+const actions = {
+    instrument_error: `${action_path}.instrument_error`,
+    instrument_without_data: `${action_path}.instrument_without_data`,
+    job_error: `${action_path}.job_error`,
+    failed_to_fetch: `${action_path}.failed_to_fetch`,
+};
+
+
+//run once every 5 minutes
+module.exports.SCHEDULE = '*/5 * * * *';
 module.exports.NAME = 'EXCH_ASK_BID';
-
 module.exports.JOB_BODY = async (config, log) => {
 
     log('1. Fetch all active exchanges...');
@@ -29,11 +39,12 @@ module.exports.JOB_BODY = async (config, log) => {
             const associatedMappings = _.groupBy(mappings, 'exchange_id');
             const exchanges_with_mappings = _.filter(exchanges, exchange => associatedMappings[exchange.id]);
 
-            return Promise.all(_.map(exchanges_with_mappings, exchange => {
+            return Promise.all(_.map(exchanges_with_mappings, async (exchange) => {
                 const mappings = associatedMappings[exchange.id];
                 log(`Building price fetcher for ${exchange.name} with ${mappings.length} mappings...`);
 
-                const fetcher = new ccxt[exchange.api_id]();
+                const fetcher = await ccxtUtils.getConnector(exchange.api_id);
+                const throttle = await ccxtUtils.getThrottle(exchange.api_id);
 
                 //promise pairs made of arrays where [exchange, [mapping, fetched-data]]
                 return Promise.all([
@@ -45,28 +56,49 @@ module.exports.JOB_BODY = async (config, log) => {
                         return Promise.all([
                             Promise.resolve(mapping),
                             //wrap exchange promise into a promise that returns empty array if broken
-                            Promise.resolve(fetcher.fetch_order_book(mapping.external_instrument_id)).catch(err => {
-                                return []
-                            })
+                            throttle.throttled(Promise.resolve([]), fetcher.fetch_order_book, mapping.external_instrument_id)
                         ]);
                     }))
                 ])
             })).then(data => {
-
-                log(`4. Saving fetched results...`);
 
                 const records = _.flatMap(data, ([exchange, markets_data]) => {
 
                     /* Sometimes for some reason market_data is empty and set to array.
                     Filtering out results that don't have needed properties
                     to avoid errors when assigning asks and bids values. */
-                    markets_data = markets_data.filter(
-                        ([symbol_mapping, market_data]) => !Array.isArray(market_data) &&
-                        market_data.hasOwnProperty('asks') &&
-                        market_data.hasOwnProperty('bids')
+                    let [successfully_fetched, failed_to_fetch] = _.partition(markets_data, ([symbol_mapping, market_data]) =>
+                        !_.isArray(market_data) &&
+                        market_data.hasOwnProperty('asks') && market_data.asks.length &&
+                        market_data.hasOwnProperty('bids') && market_data.bids.length
                     );
 
-                    return _.map(markets_data, ([symbol_mapping, market_data]) => {
+                   /*  failed_to_fetch = failed_to_fetch.map(([symbol_mapping, failed_data]) => {
+                        return symbol_mapping.external_instrument_id
+                    }); */
+
+                    if(failed_to_fetch.length) {
+                        failed_to_fetch.map(([symbol_mapping, failed_data]) => {
+                            if(!_.isArray(failed_data)) {
+                                // determine which price (ask or bid) is not received
+                                let price_types = [];
+                                if (!_.get(failed_data, 'asks[0][0]', false)) price_types.push('ask');
+                                if (!_.get(failed_data, 'bids[0][0]', false)) price_types.push('bid');
+
+                                logAction(actions.instrument_without_data, {
+                                    args: {
+                                        types: price_types,
+                                        instrument: symbol_mapping.external_instrument_id,
+                                        exchange: exchange.name,
+                                    },
+                                    relations: { exchange_id: exchange.id }
+                                });
+
+                            }
+                        })
+                    }
+
+                    return _.map(successfully_fetched, ([symbol_mapping, market_data]) => {
 
                         return {
                             exchange_id: symbol_mapping.exchange_id,
@@ -77,11 +109,20 @@ module.exports.JOB_BODY = async (config, log) => {
                         }
                     });
                 });
+
+                log(`4. Saving ${records.length} fetched results...`);
+
                 if (records.length > 0)
                     return config.models.sequelize.queryInterface.bulkInsert('instrument_market_data', records);
-                else 
+                else
                     return "No records inserted!";
             });
+        });
+    }).catch(err => {
+        logAction(actions.job_error, {
+            args: {
+                error: err.message
+            },
         });
     });
 };

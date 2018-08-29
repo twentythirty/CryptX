@@ -1,4 +1,4 @@
-import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
+import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { Router } from '@angular/router';
 import _ from 'lodash';
 
@@ -7,19 +7,16 @@ import _ from 'lodash';
   templateUrl: './pagination.component.html',
   styleUrls: ['./pagination.component.scss']
 })
-export class PaginationComponent implements OnChanges {
+export class PaginationComponent {
   @Input() count: number; // total records count
-  @Input() page: number = 1; // initial page number
+  @Input() page: number = 1; // page number
   @Input() perPage: number = 20; // how much records show per single page
   @Input() pagesToShow: number = 5; // how much pages buttons to show between arrows buttons
+  @Input() loading: boolean; //is Table loading
 
   constructor(
     private router: Router
   ) { }
-
-  ngOnChanges(changes: SimpleChanges) {
-    changes.page && this.onPageChange();
-  }
 
   onFirst(): void {
     this.page = 1;
@@ -51,7 +48,8 @@ export class PaginationComponent implements OnChanges {
       queryParamsHandling: 'merge',
       queryParams: {
         page: this.page
-      }
+      },
+      skipLocationChange: false
     });
   }
 

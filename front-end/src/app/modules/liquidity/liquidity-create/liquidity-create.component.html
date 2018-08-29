@@ -1,0 +1,61 @@
+<app-page-heading
+  [heading]="'liquidity.liquidity_requirements' | translate"
+></app-page-heading>
+
+<div class="split-content horizontal">
+  <app-content-block
+    [heading]="'liquidity.enter_liquidity_information' | translate"
+  >
+    
+    <form [formGroup]="form">
+      <app-input-item
+        class="form-item"
+        fieldType="autocomplete"
+        [label]="'instruments.instruments' | translate"
+        [formGroup]="form"
+        formControlName="instrument_id"
+        [items]="instruments"
+        [spinnerLoading]="instrumentsLoading"
+        placeholder="{{'instruments.enter_instrument' | translate}}"
+      ></app-input-item>
+
+      <app-input-item
+        class="form-item"
+        fieldType="select"
+        [label]="'exchanges.exchange' | translate"
+        [formGroup]="form"
+        formControlName="exchange_id"
+        [items]="exchanges"
+        [spinnerLoading]="exchangesLoading"
+        placeholder="{{'exchanges.select_exchange' | translate}}"
+      ></app-input-item>
+
+      <app-input-item
+        type="number"
+        class="form-item"
+        [label]="'liquidity.periodicity' | translate"
+        [placeholder]="'liquidity.enter_periodicity' | translate"
+        [formGroup]="form"
+        formControlName="periodicity"
+      ></app-input-item>
+
+      <app-input-item
+        type="number"
+        class="form-item"
+        [label]="'liquidity.minimum_circulation' | translate"
+        [placeholder]="'liquidity.enter_minimum_circulation' | translate"
+        [formGroup]="form"
+        formControlName="minimum_circulation"
+      ></app-input-item>
+    </form>
+
+  </app-content-block>
+</div>
+
+<app-form-action-bar>
+  <button
+    class="btn submit"
+    [disabled]="loading || !form.valid"
+    (click)="saveLiquidityRequirement()"
+  >{{ 'liquidity.add_requirement' | translate }}</button>
+</app-form-action-bar>

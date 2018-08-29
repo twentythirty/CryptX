@@ -4,7 +4,7 @@
 DEFAULT_SETTINGS = {
     /* Maximum marketshare percentage for LCI. Total marketshare of coins
     in LCI index should not go over this value */
-    MARKETCAP_LIMIT_PERCENT: 90,
+    MARKETCAP_LIMIT_PERCENT: 90.0,
 
     /* Maximum sizes of coins in indexes */
     INDEX_LCI_CAP: 20,
@@ -22,11 +22,23 @@ DEFAULT_SETTINGS = {
      * Uses 0 to 1 ranging, with 1 being 100%
      */
     TRADE_BASE_FUZYNESS: 0.15,
+    /**
+     * Max number of exexcution order fails tolerated.
+     * When this threshold is reached by a specific execution order, it will no longer be placed on exchanges and marked as failed
+     */
+    EXEC_ORD_FAIL_TOLERANCE: 5,
+
+    /**
+     * Threshold which is used to make rcipe runs fail if base asset
+     * haven't updated too long. The value is in seconds.
+     * Currently it is 900 seconds, or 15 minutes.
+     */
+    BASE_ASSET_PRICE_TTL_THRESHOLD: 900
 };
 /**
  * Actual system-used active database settings values
  */
-SYSTEM_SETTINGS = Object.assign({}, DEFAULT_SETTINGS);
+SYSTEM_SETTINGS = {};
 
 //KEYS for various exchanges
 EXCHANGE_KEYS = {
@@ -36,16 +48,19 @@ EXCHANGE_KEYS = {
     },
     bitfinex: {
         apiKey: process.env.BITFINEX_APIKEY,
-        secret: process.env.BITFINEX_SECRETKEY
+        secret: process.env.BITFINEX_SECRETKEY,
+        nonce: function () { // for some reason it doesn't work witout this
+            return this.microseconds();
+        }
     },
     bitstamp: {
         apiKey: process.env.BITSTAMP_APIKEY,
         secret: process.env.BITSTAMP_SECRETKEY,
         uid: process.env.BITSTAMP_UID
     },
-    bittrex: {
-        apiKey: process.env.BITTREX_APIKEY,
-        secret: process.env.BITTREX_SECRETKEY
+    huobipro: {
+        apiKey: process.env.HUOBIPRO_APIKEY,
+        secret: process.env.HUOBIPRO_SECRETKEY
     },
     hitbtc2: {
         apiKey: process.env.HITBTC_APIKEY,
@@ -54,5 +69,9 @@ EXCHANGE_KEYS = {
     kraken: {
         apiKey: process.env.KRAKEN_APIKEY,
         secret: process.env.KRAKEN_SECRETKEY
+    },
+    okex: {
+        apiKey: process.env.OKEX_APIKEY,
+        secret: process.env.OKEX_SECRETKEY
     }
 }

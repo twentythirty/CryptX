@@ -30,11 +30,11 @@ describe('InvitationService testing', () => {
         INVITE_ID = 455;
     const FUTURE_EXPIRY = new Date(new Date().getTime() * 2);
     const NO_ROLE_ID = 55,
-        ROLE_ID = 35;
-    const ROLE = new Role({
-        id: ROLE_ID,
+        ROLE_IDS = [35, 1, 5];
+    const ROLES = ROLE_IDS.map(role => new Role({
+        id: role,
         name: 'Test Role'
-    });
+    }));
     const FIRST_NAME = 'Johny',
         LAST_NAME = 'Smith';
 
@@ -56,18 +56,28 @@ describe('InvitationService testing', () => {
             }
         });
 
-        sinon.stub(Role, 'findById').callsFake(id => {
-            if (id === NO_ROLE_ID) {
+        sinon.stub(User, 'create').callsFake(user_data => {
+            let user = new User(user_data);
+            /* user.setRoles = function () { return Promise.resolve(user); }; */
+            sinon.stub(user, "save").returns(Promise.resolve(user));
+            sinon.stub(user, "setRoles").returns(Promise.resolve(user));
+
+            return Promise.resolve(user);
+        });
+
+        sinon.stub(Role, 'findAll').callsFake(query => {
+            if (query.where.id === NO_ROLE_ID) {
                 return Promise.resolve(null);
             } else {
 
-                return Promise.resolve(ROLE);
+                return Promise.resolve(ROLES);
             }
         });
 
         sinon.stub(UserInvitation, 'create').callsFake(data => {
 
             let invitation = new UserInvitation(data);
+
 
             return Promise.resolve(invitation);
         });
@@ -79,9 +89,10 @@ describe('InvitationService testing', () => {
 
         [
             User.findOne,
-            Role.findById,
+            Role.findAll,
             UserInvitation.create,
-            UserInvitation.findOne
+            UserInvitation.findOne,
+            User.create
         ].forEach(model => {
             if (model.restore) {
                 model.restore();
@@ -95,28 +106,36 @@ describe('InvitationService testing', () => {
         chai.expect(inviteService).to.exist;
     });
 
-    describe('and the method createInvitation shall', () => {
+    describe('and the method createUserAndInvitation shall', () => {
 
         it("exist", function () {
-            chai.expect(inviteService.createInvitation).to.exist;
+            chai.expect(inviteService.createUserAndInvitation).to.exist;
         });
 
         it('refuse to create an invitation for exisiting user email', () => {
 
-            inviteService.createInvitation({}, ROLE_ID, '', '', USER_EMAIL).should.be.rejected;
+            inviteService.createUserAndInvitation({}, ROLE_IDS, '', '', USER_EMAIL).should.be.rejected;
         });
 
-        it('refuse to create an invitation for missing role', () => {
+        it('refuse to create an invitation with missing roles', () => {
 
-            inviteService.createInvitation({}, NO_ROLE_ID, '', '', NO_USER_MAIL).should.be.rejected;
+            inviteService.createUserAndInvitation({}, NO_ROLE_ID, '', '', NO_USER_MAIL).should.be.rejected;
         });
 
-        it('save a valid invitation', (done) => {
+        it('create user and save a valid invitation', (done) => {
 
-            inviteService.createInvitation({
+            inviteService.createUserAndInvitation({
                 id: 9
-            }, ROLE_ID, FIRST_NAME, LAST_NAME, NO_USER_MAIL).then(invitation => {
+            }, ROLE_IDS, FIRST_NAME, LAST_NAME, NO_USER_MAIL).then(data => {
                 try {
+                    let [user, invitation] = data;
+                    // user created
+                    chai.expect(User.create.called).to.be.true;
+                    // user data matches what we expect
+                    chai.expect(user.first_name).to.be.eq(FIRST_NAME);
+                    chai.expect(user.last_name).to.be.eq(LAST_NAME);
+                    chai.expect(user.email).to.be.eq(NO_USER_MAIL);
+
                     chai.expect(invitation).to.be.a('object');
                     //invitation created not used
                     chai.expect(invitation.was_used).to.eq(false);
@@ -125,7 +144,6 @@ describe('InvitationService testing', () => {
                     //future expiry
                     chai.expect(invitation.token_expiry_timestamp).to.be.above(new Date());
                     //correct data
-                    chai.expect(invitation.role_id).to.eq(ROLE_ID);
                     chai.expect(invitation.email).to.eq(NO_USER_MAIL);
                     //this was saved
                     sinon.assert.called(UserInvitation.create);
@@ -179,47 +197,42 @@ describe('InvitationService testing', () => {
     describe('and the method createUserByInvite shall', () => {
 
         it("exist", function () {
-            chai.expect(inviteService.createUserByInvite).to.exist;
+            chai.expect(inviteService.setUpProfile).to.exist;
         });
 
         //no need to retest getting valid invite - tested above
-        it('create a user with associated invitaiton info and role', done => {
+        it('create a user with associated invitation info and role', done => {
             let invite = new UserInvitation({
                 id: INVITE_ID,
                 token: TEST_TOKEN,
                 token_expiry_timestamp: FUTURE_EXPIRY,
                 was_used: false,
-                first_name: FIRST_NAME,
-                last_name: LAST_NAME,
-                email: NO_USER_MAIL,
-                role_id: ROLE_ID
+                email: NO_USER_MAIL
             });
+            let password = 'pwd';
+
             sinon.stub(invite, 'save').callsFake(() => {
                 return Promise.resolve(invite);
             });
             //test with bad role id
             sinon.stub(UserInvitation, 'findOne').callsFake(options => {
-                return Promise.resolve(invite);
-            });
-            sinon.stub(User, 'create').callsFake(data => {
-                let user = new User(data);
-                sinon.stub(user, 'setRoles');
-                return Promise.resolve(user);
+                let invitation = invite;
+                invitation.user = new User({});
+                sinon.stub(invitation.user, 'save').returns(Promise.resolve(invitation.user));
+                return Promise.resolve(invitation);
             });
 
-            inviteService.createUserByInvite(INVITE_ID, 'pwd').then(user => {
+            inviteService.setUpProfile(INVITE_ID, password).then(user => {
                 try {
                     chai.expect(user).to.be.a('object');
                     //assert method calles
                     chai.assert.isTrue(UserInvitation.findOne.called);
-                    chai.assert.isTrue(Role.findById.calledWith(ROLE_ID));
-                    chai.assert.isTrue(User.create.called);
-                    chai.assert.isTrue(user.setRoles.calledWith([ROLE]));
+                    //chai.assert.isTrue(Role.findById.calledWith(ROLE_IDS));
+                    //chai.assert.isTrue(user.setRoles.calledWith(ROLES));
+                    chai.assert.isTrue(user.save.called);
 
                     //assert user data based on invite
-                    chai.expect(user.first_name).to.be.eq(FIRST_NAME);
-                    chai.expect(user.last_name).to.be.eq(LAST_NAME);
-                    chai.expect(user.email).to.be.eq(NO_USER_MAIL);
+                    chai.expect(user.password).to.be.eq(password);
 
                     //assert invite altered
                     chai.assert.isTrue(invite.save.called);

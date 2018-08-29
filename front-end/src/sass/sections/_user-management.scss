@@ -1,0 +1,42 @@
+.split-content {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    grid-column-gap: 40px;
+
+    &.horizontal {
+        grid-template-columns: repeat(1, 1fr);
+        grid-row-gap: 40px;
+        grid-column-gap: unset;
+
+        .form-item {
+            width: 50%;
+            margin-right: 10px; // hotfix, we should dont use this file styles anymore
+        }
+
+    }
+
+    .part {
+        .part-heading {
+            padding: 0 30px;
+            display: flex;
+            width: 100%;
+            height: 70px;
+            align-items: center;
+            font-size: 18px;
+            border-bottom: 1px solid #E6EBED;
+        }
+
+        .part-content {
+            padding: 25px 30px 35px 30px;
+
+            &.no-padding-top-bottom {
+                padding: 0 30px;
+
+                .checkboxes-item {
+                    padding-top: 35px;
+                    padding-bottom: 35px;
+                }
+            }
+        }
+    }
+}

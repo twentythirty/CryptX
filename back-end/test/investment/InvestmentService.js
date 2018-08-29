@@ -23,11 +23,12 @@ describe('InvestmentService testing:', () => {
   const investmentService = require('./../../services/InvestmentService');
   const assetService = require('./../../services/AssetService');
   const ordersService = require('./../../services/OrdersService');
+  const depositSerive = require('./../../services/DepositService');
   const InvestmentRun = require('./../../models').InvestmentRun;
   const RecipeRun = require('./../../models').RecipeRun;
   const RecipeRunDetail = require('./../../models').RecipeRunDetail;
   const Asset = require('./../../models').Asset;
-
+  const sequelize = require('./../../models').sequelize
 
 
   let USER_ID = 1;
@@ -44,6 +45,9 @@ describe('InvestmentService testing:', () => {
       return Promise.resolve(data);
     })
     sinon.stub(InvestmentRun, 'findOne').returns(Promise.resolve());
+    sinon.stub(InvestmentRun, 'count').callsFake(options => {
+      return Promise.resolve(0);
+    });
     sinon.stub(InvestmentRun, 'findById').callsFake(id => {
       let investment_run = new InvestmentRun({
         id: id,
@@ -61,6 +65,10 @@ describe('InvestmentService testing:', () => {
 
       return Promise.resolve(investment_run);
     });
+
+    sinon.stub(InvestmentRun, 'update').callsFake((update, options) => {
+      return Promise.resolve([1]);
+    })
 
     sinon.stub(RecipeRun, 'findOne').callsFake((query) => {
       return Promise.resolve();
@@ -95,17 +103,24 @@ describe('InvestmentService testing:', () => {
     sinon.stub(ordersService, 'generateApproveRecipeOrders').callsFake((id) => {
       return Promise.resolve();
     });
+
+    sinon.stub(depositSerive, 'generateRecipeRunDeposits').callsFake(recipe => {
+      return Promise.resolve([]);
+    });
   });
 
   afterEach(() => {
     InvestmentRun.create.restore();
     InvestmentRun.findOne.restore();
+    InvestmentRun.count.restore();
     InvestmentRun.findById.restore();
+    InvestmentRun.update.restore();
     RecipeRun.findOne.restore();
     RecipeRun.create.restore();
     RecipeRun.findById.restore();
     RecipeRunDetail.create.restore();
     ordersService.generateApproveRecipeOrders.restore();
+    depositSerive.generateRecipeRunDeposits.restore();
   });
 
 
@@ -125,21 +140,21 @@ describe('InvestmentService testing:', () => {
       return investmentService.createInvestmentRun(
         USER_ID, STRATEGY_TYPE, IS_SIMULATED
       ).then(investment_run => {
-        chai.assert.isTrue(InvestmentRun.findOne.called);
+        chai.assert.isTrue(InvestmentRun.count.called);
         chai.assert.isTrue(InvestmentRun.create.called);
       });
     });
 
-    it('shall reject already existing investment run of same type and mode', ()=> {
-      if(InvestmentRun.findOne.restore)
-        InvestmentRun.findOne.restore();
+    it('shall reject already existing investment run of same type and not simulated', ()=> {
+      if(InvestmentRun.count.restore)
+        InvestmentRun.count.restore();
 
-      sinon.stub(InvestmentRun, 'findOne').callsFake(query => {
-        return Promise.resolve(query.where);
+      sinon.stub(InvestmentRun, 'count').callsFake(query => {
+        return Promise.resolve(1);
       });
 
       return chai.assert.isRejected(investmentService.createInvestmentRun(
-        USER_ID, STRATEGY_TYPE, IS_SIMULATED
+        USER_ID, STRATEGY_TYPE, false
       ));
     })
 
@@ -157,7 +172,33 @@ describe('InvestmentService testing:', () => {
 
 
   describe('and method changeInvestmentRunStatus shall', () => {
-    
+    beforeEach(() => {
+      if(investmentService.changeInvestmentRunStatus.restore)
+        investmentService.changeInvestmentRunStatus.restore();
+
+      sinon.stub(investmentService, 'findInvestmentRunFromAssociations').callsFake((args) => {
+        let investment_run = new InvestmentRun({
+          id: 1,
+          strategy_type: STRATEGY_TYPE,
+          is_simulated: IS_SIMULATED,
+          user_created_id: USER_ID,
+          started_timestamp: new Date,
+          updated_timestamp: new Date,
+          status: INVESTMENT_RUN_STATUSES.Initiated
+        });
+
+        sinon.stub(investment_run, 'save').returns(
+          Promise.resolve(investment_run)
+        );
+
+        return Promise.resolve(investment_run);
+      });
+    });
+
+    afterEach(() => {
+      investmentService.findInvestmentRunFromAssociations.restore();
+    });
+
     it('shall exist', () => {
       return chai.expect(investmentService.changeInvestmentRunStatus).to.exist;
     });
@@ -186,6 +227,18 @@ describe('InvestmentService testing:', () => {
         INVESTMENT_RUN_ID, RECIPE_STATUS
       ).then(investment_run => {
         chai.expect(investment_run.status).to.be.eq(INVESTMENT_RUN_STATUSES.RecipeRun);
+      });
+    });
+
+    it('shall search investment run through associations if object is given', () => {
+      let assoc = { recipe_order_id: 1 };
+      return investmentService.changeInvestmentRunStatus(
+        assoc, RECIPE_STATUS
+      ).then(investment_run => {
+        let v = investmentService.findInvestmentRunFromAssociations.called;
+        chai.assert.isTrue(investmentService.findInvestmentRunFromAssociations.called);
+        let v2 = investmentService.findInvestmentRunFromAssociations.calledWith(assoc);
+        chai.assert.isTrue(investmentService.findInvestmentRunFromAssociations.calledWith(assoc));
       });
     });
   });
@@ -227,8 +280,8 @@ describe('InvestmentService testing:', () => {
         chai.expect(recipe_run.approval_user_id).to.be.eq(USER_ID);
         chai.expect(recipe_run.approval_comment).to.be.eq(RECIPE_APPROVAL_COMMENT);
         
-        //check if generateApproveRecipeOrders called
-        chai.assert.isTrue(
+        //check if generateApproveRecipeOrders was not called (this is not done seperately)
+        chai.assert.isFalse(
           ordersService.generateApproveRecipeOrders.calledWith(RECIPE_RUN_ID)
         );
       });
@@ -237,11 +290,6 @@ describe('InvestmentService testing:', () => {
 
   describe('and method createRecipeRun shall', () => {
     beforeEach(() => {
-      sinon.stub(investmentService, 'changeInvestmentRunStatus').returns(
-        Promise.resolve({
-          strategy_type: STRATEGY_TYPE
-        })
-      );
       sinon.stub(investmentService, 'generateRecipeDetails').callsFake(() => {
         return Promise.resolve([
           {
@@ -261,7 +309,6 @@ describe('InvestmentService testing:', () => {
     });
 
     afterEach(() => {
-      investmentService.changeInvestmentRunStatus.restore();
       investmentService.generateRecipeDetails.restore();
     });
 
@@ -279,6 +326,25 @@ describe('InvestmentService testing:', () => {
           investment_run_id: query.where.investment_run_id,
           user_created_id: USER_ID,
           approval_status: RECIPE_RUN_STATUSES.Pending,
+          approval_comment: ''
+        });
+      });
+
+      return chai.assert.isRejected(investmentService.createRecipeRun(
+        USER_ID, INVESTMENT_RUN_ID
+      ));
+    });
+
+    it('shall throw if investment run already has an approved recipe run', () => {
+      if (RecipeRun.findOne.restore) 
+        RecipeRun.findOne.restore();
+      
+      sinon.stub(RecipeRun, 'findOne').callsFake((query) => {
+        return Promise.resolve({
+          created_timestamp: new Date(),
+          investment_run_id: query.where.investment_run_id,
+          user_created_id: USER_ID,
+          approval_status: RECIPE_RUN_STATUSES.Approved,
           approval_comment: ''
         });
       });
@@ -399,6 +465,17 @@ describe('InvestmentService testing:', () => {
         return Promise.resolve(instruments);
       });
 
+      sinon.stub(assetService, "getInstrumentLiquidityRequirements").callsFake((...params) => {
+        let requirement = [{
+          avg_vol: 30000,
+          instrument_id: params.instrument_id,
+          exchange_id: params.exchange_id,
+          minimum_volume: 10000,
+          periodicity_in_days: 7
+        }];
+
+        return requirement;
+      });
     });
     
     afterEach(() => {
@@ -406,6 +483,7 @@ describe('InvestmentService testing:', () => {
       Asset.findAll.restore();
       assetService.getBaseAssetPrices.restore();
       assetService.getAssetInstruments.restore();
+      assetService.getInstrumentLiquidityRequirements.restore()
     });
 
     it('shall exist', () => {
@@ -425,8 +503,8 @@ describe('InvestmentService testing:', () => {
         .then(recipe => {
           chai.assert.isTrue(assetService.getAssetInstruments.called);
           chai.expect(recipe).to.satisfy(data => {
-            return data.every(a => a.suggested_action.quote_asset_id == a.id);
-          }, 'Asset to be acquired should be in quote_asset_id');
+            return data.every(a => a.suggested_action.transaction_asset_id == a.id);
+          }, 'Asset to be acquired should be in transaction_asset_id');
         });
     });
 
@@ -441,48 +519,355 @@ describe('InvestmentService testing:', () => {
         });
     });
 
+    it("shall throw if no instrument found for an asset", () => {
+      if (assetService.getAssetInstruments.restore)
+        assetService.getAssetInstruments.restore();
+
+      sinon.stub(assetService, 'getAssetInstruments').callsFake(() => {
+        return Promise.resolve([]);
+      });
+
+      return chai.expect(investmentService.generateRecipeDetails(STRATEGY_TYPE))
+        .eventually.to.be.rejected;
+    });
+
     it("shall throw if none of exchanges satisfy liquidity requirements of instrument", () => {
       if (assetService.getAssetInstruments.restore)
         assetService.getAssetInstruments.restore();
 
-        sinon.stub(assetService, 'getAssetInstruments').callsFake((asset_id) => {
-          let instruments = [
-            { // doesn't satisfy liquidity requirement
-              instrument_id: 1,
-              quote_asset_id: asset_id,
-              transaction_asset_id: 2,
-              exchange_id: 1,
-              average_volume: 2000,
-              min_volume_requirement: 3000,
-              ask_price: 0.00008955,
-              bid_price: 0.00008744
-            },
-            {
-              instrument_id: 1,
-              quote_asset_id: asset_id,
-              transaction_asset_id: 2,
-              exchange_id: 2,
-              average_volume: 2000,
-              min_volume_requirement: 3000,
-              ask_price: 0.00009100,
-              bid_price: 0.00008700
-            },
-            {
-              instrument_id: 2,
-              quote_asset_id: 2,
-              transaction_asset_id: asset_id,
-              exchange_id: 3,
-              average_volume: 2000,
-              min_volume_requirement: 3000,
-              ask_price: 11363.636363636, // 1 / 0.00008800
-              bid_price: 11111.111111111, // 1 / 0.00009000 
-            }
-          ];
-  
-          return Promise.resolve(instruments);
-        });
+      sinon.stub(assetService, 'getAssetInstruments').callsFake((asset_id) => {
+        let instruments = [
+          { // doesn't satisfy liquidity requirement
+            instrument_id: 1,
+            quote_asset_id: asset_id,
+            transaction_asset_id: 2,
+            exchange_id: 1,
+            ask_price: 0.00008955,
+            bid_price: 0.00008744
+          },
+          {
+            instrument_id: 1,
+            quote_asset_id: asset_id,
+            transaction_asset_id: 2,
+            exchange_id: 2,
+            ask_price: 0.00009100,
+            bid_price: 0.00008700
+          },
+          {
+            instrument_id: 2,
+            quote_asset_id: 2,
+            transaction_asset_id: asset_id,
+            exchange_id: 3,
+            ask_price: 11363.636363636, // 1 / 0.00008800
+            bid_price: 11111.111111111, // 1 / 0.00009000 
+          }
+        ];
+
+        return Promise.resolve(instruments);
+      });
+
+      if (assetService.getInstrumentLiquidityRequirements.restore)
+        assetService.getInstrumentLiquidityRequirements.restore();
+
+      sinon.stub(assetService, "getInstrumentLiquidityRequirements").callsFake((...params) => {
+        let requirement = {
+          avg_vol: 30000,
+          instrument_id: params.instrument_id,
+          exchange_id: params.exchange_id,
+          minimum_volume: 50000,
+          periodicity_in_days: 7
+        };
+
+        return requirement;
+      });
 
       return chai.assert.isRejected(investmentService.generateRecipeDetails(STRATEGY_TYPE));
+    });
+  });
+
+  describe('and method getInvestmentRunTimeline shall', () => {
+    let INVESTMENT_RUN = {
+      id: 2,
+      strategy_type: 101,
+      is_simulated: true,
+      user_created_id: 2,
+      started_timestamp: new Date(),
+      updated_timestamp: new Date(),
+      status: 301,
+      deposit_usd: 150
+    };
+
+    let RECIPE_RUN = {
+      id: 5,
+      created_timestamp: new Date(),
+      approval_status: 43,
+      approval_timestamp: new Date(),
+      approval_comment: "Approved",
+      investment_run_id: 15,
+      user_created_id: 2,
+      approval_user_id: 2
+    };
+
+    let RECIPE_ORDER_GROUP = {
+      id: 0,
+      recipe_run_id: 2,
+      approval_status: 81,
+      created_timestamp: new Date()
+    };
+
+    let RECIPE_DEPOSIT = {
+      id: 4,
+      amount: "3800",
+      asset_id: 2,
+      completion_timestamp: new Date(),
+      creation_timestamp: new Date(),
+      depositor_user_id: 2,
+      recipe_run_id: 5,
+      status: 151,
+      target_exchange_account_id: 3
+    };
+
+    let RECIPE_ORDER = {
+      id:12,
+      instrument_id:1,
+      price:"2",
+      quantity:"6",
+      recipe_order_group_id:2,
+      side:999,
+      status:51,
+      target_exchange_id:2
+    };
+
+    let EXECUTION_ORDER = {
+      id: 4,
+      external_identifier: null,
+      side: 999,
+      type: 71,
+      price: '0.01',
+      total_quantity: '5',
+      status: 61,
+      placed_timestamp: null,
+      completed_timestamp: null,
+      time_in_force: null,
+      recipe_order_id: 2,
+      instrument_id: 3,
+      exchange_id: 6,
+      failed_attempts: 4
+    };
+
+    const INVESTMENT_ID = { // is used for building certain type of object
+      NORMAL: 1,
+      NO_RECIPES: 2,
+      NO_DEPOSITS: 3,
+      NO_ORDERS: 4,
+      NO_EXEC_ORDERS: 5,
+      DEPOSIT_PENDING: 6,
+      DEPOSIT_COMPLETED: 7,
+      ORDERS_PENDING: 8,
+      ORDERS_COMPLETED: 9,
+      ORDERS_EXECUTING: 10,
+      EXEC_ORDERS_FAILED: 11,
+      EXEC_ORDERS_FILLED: 12,
+      EXEC_ORDERS_EXECUTING: 13
+    };
+    let RECIPE_RUNS_COUNT = 5;
+    let DEPOSITS_PER_RECIPE = 5;
+    let ORDER_GROUPS_PER_RECIPE = 5;
+    let ORDERS_PER_GROUP = 50;
+    let EXECUTION_ORDERS_PER_ORDER = 1;
+
+    beforeEach(() => {
+      sinon.stub(investmentService, 'getWholeInvestmentRun').callsFake((inv_id) => {
+        let whole_investment = Object.assign({}, INVESTMENT_RUN);
+
+        if(inv_id == INVESTMENT_ID.EXEC_ORDERS_FILLED) whole_investment.status = 308; 
+        if(inv_id == INVESTMENT_ID.EXEC_ORDERS_EXECUTING) whole_investment.status = 307; 
+
+        whole_investment.RecipeRuns = [...Array(inv_id != INVESTMENT_ID.NO_RECIPES ? RECIPE_RUNS_COUNT : 0)].map(() => {
+          let recipe_runs = Object.assign({}, RECIPE_RUN);
+
+          recipe_runs.RecipeRunDeposits = [...Array(inv_id != INVESTMENT_ID.NO_DEPOSITS ? DEPOSITS_PER_RECIPE : 0)].map(
+            (depo, depo_index) => {
+              let deposit = Object.assign(RECIPE_DEPOSIT);
+              if (inv_id == INVESTMENT_ID.DEPOSIT_PENDING)
+                deposit.status = 150; // Pending, assigned to first deposit only
+              else 
+                deposit.status = 151; // Completed
+              return deposit;
+            }
+          );
+
+          recipe_runs.RecipeOrderGroups = [...Array(ORDER_GROUPS_PER_RECIPE)].map(
+            () => {
+              let recipe_order_group = Object.assign({}, RECIPE_ORDER_GROUP);
+              recipe_order_group.id = 0;
+              if(inv_id == INVESTMENT_ID.EXEC_ORDERS_FAILED) recipe_order_group.id = 1;
+              if(inv_id == INVESTMENT_ID.NO_EXEC_ORDERS) 
+                recipe_order_group.id = 2;
+
+              recipe_order_group.RecipeOrders = [...Array(inv_id != 4 ? ORDERS_PER_GROUP : 0)].map(
+                (ord, order_index) => {
+                  let order = Object.assign({}, RECIPE_ORDER);
+                  if(inv_id == INVESTMENT_ID.ORDERS_EXECUTING) order.status = 52; // Executing, assigned to first deposit only
+                  if(inv_id == INVESTMENT_ID.ORDERS_PENDING) order.status = 51; // Pending
+                  if(inv_id == INVESTMENT_ID.ORDERS_COMPLETED) order.status = 53; // Completed
+
+                  /* // Execution orders not needed now
+                  order.ExecutionOrders = [...Array(inv_id != 5 ? EXECUTION_ORDERS_PER_ORDER : 0)].map(
+                    () => {
+                      let exec_order = Object.assign({}, EXECUTION_ORDER);
+                      if(inv_id == INVESTMENT_ID.EXEC_ORDERS_FAILED) exec_order.status = 66;
+                      
+                      return exec_order;
+                    }
+                  ); */
+
+                  return order;
+                }
+              );
+
+              return recipe_order_group;
+            }
+          );
+
+          return recipe_runs;
+        });
+
+        whole_investment.toJSON = () => {
+          delete whole_investment.toJSON;
+          return whole_investment;
+        }
+        return Promise.resolve(whole_investment);
+      });
+
+      sinon.stub(sequelize, 'query').callsFake((query, options) => {
+        let exec_order_statuses = [{
+          status: 61,
+          count: 1000
+        }];
+
+        if(options.replacements.rog_id == 1)
+          exec_order_statuses.push({
+            status: 66,
+            count: 1
+          });
+
+        return Promise.resolve(exec_order_statuses);
+      });
+    });
+
+    afterEach(() => {
+      investmentService.getWholeInvestmentRun.restore();
+      sequelize.query.restore();
+    })
+
+    it('it should throw if investment run is not found', () => {
+      if(investmentService.getWholeInvestmentRun.restore)
+        investmentService.getWholeInvestmentRun.restore();
+
+      sinon.stub(investmentService, 'getWholeInvestmentRun').returns(Promise.resolve(null));
+
+      return chai.assert.isRejected(investmentService.getInvestmentRunTimeline(INVESTMENT_RUN_ID));
+    })
+
+    it('it should return investment run if investment run is found', () => {
+
+      return investmentService.getInvestmentRunTimeline(INVESTMENT_RUN_ID).then(result => {
+        chai.assert.isObject(result.investment_run);
+        /* chai.expect(result.investment_run).to.be.equal(INVESTMENT_RUN); */
+      });
+    })
+
+    it('it should return null in recipe property if there are no recipe runs', () => {
+
+      return investmentService.getInvestmentRunTimeline(INVESTMENT_ID.NO_RECIPES).then(result => {
+        chai.assert.isNull(result.recipe_run);
+      });
+    })
+
+    it('it should return null in deposits property if deposits not found', () => {
+
+      return investmentService.getInvestmentRunTimeline(INVESTMENT_ID.NO_DEPOSITS).then(result => {
+        chai.assert.isNull(result.recipe_deposits);
+      });
+    })
+
+    it('it should return null in orders property if there are no orders', () => {
+
+      return investmentService.getInvestmentRunTimeline(INVESTMENT_ID.NO_DEPOSITS).then(result => {
+        chai.assert.isNull(result.recipe_orders);
+      });
+    })
+
+   /*  it('it should return null in execution orders property if there are no orders', () => {
+
+      return investmentService.getInvestmentRunTimeline(INVESTMENT_ID.NO_EXEC_ORDERS).then(result => {
+        chai.assert.isNull(result.execution_orders);
+      });
+    }) */
+
+    it('it should count recipe deposits and have status PENDING if at least one of deposits have status PENDING', () => {
+
+      return investmentService.getInvestmentRunTimeline(INVESTMENT_ID.DEPOSIT_PENDING).then(result => {
+        chai.assert.isNumber(result.recipe_deposits.count);
+        chai.expect(result.recipe_deposits.status).to.be.equal('deposits.status.150');
+      });
+    });
+
+    it('it should count recipe deposits and have status COMPLETED if all of deposits have status COMPLETED', () => {
+
+      return investmentService.getInvestmentRunTimeline(INVESTMENT_ID.DEPOSIT_COMPLETED).then(result => {
+        chai.assert.isNumber(result.recipe_deposits.count);
+        chai.expect(result.recipe_deposits.status).to.be.equal('deposits.status.151');
+      });
+    });
+
+    it('it should count recipe orders and have status PENDING if all related orders have status PENDING', () => {
+
+      return investmentService.getInvestmentRunTimeline(INVESTMENT_ID.ORDERS_PENDING).then(result => {
+        chai.assert.isNumber(result.recipe_orders.count);
+        chai.expect(result.recipe_orders.status).to.be.equal('order.status.51');
+      });
+    });
+
+    it('it should count recipe orders and have status COMPLETED if all related orders have status COMPLETED', () => {
+
+      return investmentService.getInvestmentRunTimeline(INVESTMENT_ID.ORDERS_COMPLETED).then(result => {
+        chai.assert.isNumber(result.recipe_orders.count);
+        chai.expect(result.recipe_orders.status).to.be.equal('order.status.53');
+      });
+    });
+
+    it('it should count recipe orders and have status EXECUTION if atleast one of related orders have status EXECUTING', () => {
+
+      return investmentService.getInvestmentRunTimeline(INVESTMENT_ID.ORDERS_EXECUTING).then(result => {
+        chai.assert.isNumber(result.recipe_orders.count);
+        chai.expect(result.recipe_orders.status).to.be.equal('order.status.52');
+      });
+    });
+
+/*     it('it should count execution orders and return status FAILED if at least one of orders have status FAILED', () => {
+
+      return investmentService.getInvestmentRunTimeline(INVESTMENT_ID.EXEC_ORDERS_FAILED).then(result => {
+        chai.assert.isNumber(result.execution_orders.count);
+        chai.expect(result.execution_orders.status).to.be.equal('execution_orders_timeline.status.66');
+      });
+    }); */
+
+    it('it should count execution orders and return status FILLED if investment run status is ORDERSFILLED', () => {
+
+      return investmentService.getInvestmentRunTimeline(INVESTMENT_ID.EXEC_ORDERS_FILLED).then(result => {
+        chai.assert.isNumber(result.execution_orders.count);
+        chai.expect(result.execution_orders.status).to.be.equal('execution_orders_timeline.status.63');
+      });
+    });
+
+    it('it should count execution orders and return status EXECUTING if investment run status is EXECUTING', () => {
+
+      return investmentService.getInvestmentRunTimeline(INVESTMENT_ID.EXEC_ORDERS_EXECUTING).then(result => {
+        chai.assert.isNumber(result.execution_orders.count);
+        chai.expect(result.execution_orders.status).to.be.equal('execution_orders_timeline.status.62');
+      });
     });
   });
 });

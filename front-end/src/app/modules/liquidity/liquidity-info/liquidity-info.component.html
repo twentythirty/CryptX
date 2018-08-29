@@ -1,0 +1,19 @@
+<app-page-heading
+  [heading]="'liquidity.liquidity_requirements' | translate"
+></app-page-heading>
+
+<app-data-table
+  [dataSource]="liquidityDataSource"
+  [columnsToShow]="liquidityColumnsToShow"
+></app-data-table>
+
+<ng-container *ngIf="exchangesDataSource && exchangesColumnsToShow">
+  <div class="top-controls">
+    <span class="headline-title">{{ 'exchanges.exchanges' | translate }}</span>
+  </div>
+
+  <app-data-table
+    [dataSource]="exchangesDataSource"
+    [columnsToShow]="exchangesColumnsToShow"
+  ></app-data-table>
+</ng-container>

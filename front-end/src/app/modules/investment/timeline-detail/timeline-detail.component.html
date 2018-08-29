@@ -1,0 +1,84 @@
+<div *ngIf="pageTitle">
+<app-page-heading [heading]="pageTitle">
+  <ul class="dashboard-item-details">
+    <li *ngFor="let item of tagLine">
+      <a (click)="doItemAction(item)">{{ item.title }}</a>
+    </li>
+  </ul>
+</app-page-heading>
+</div>
+
+<div class="left-part-dashboard">
+  <div class="top-controls">
+    <span  class="headline-title">{{ singleTitle }}</span>
+    <a
+      *ngIf="showGenerateOrders"
+      class="btn start"
+      [class.disabled]="disableGenerateOrders"
+      (click)="!disableGenerateOrders && generateOrders()"
+    >
+      <span>{{ 'orders.generate_orders' | translate }}</span>
+    </a>
+  </div>
+
+  <div *ngIf="singleDataSource">
+  <app-data-table 
+    [dataSource]="singleDataSource"
+    [columnsToShow]="singleColumnsToShow"
+    [emptyText]="singleTableEmptyText | translate"
+    (openRow)="openSingleRow($event)"
+  ></app-data-table>
+  </div>
+  
+  <div class="top-controls" *ngIf="listTitle" >
+    <span  class="headline-title">{{ listTitle }}</span>
+    <a *ngIf="addTitle" (click)="addAction()" class="btn start">
+      <span>{{ addTitle }}</span>
+    </a>
+  </div>
+
+  <app-data-table
+    [dataSource]="listDataSource"
+    [columnsToShow]="listColumnsToShow"
+    [emptyText]="listTableEmptyText | translate"
+    [loading]="isTableLoading"
+    (setFilter)="onSetFilter($event)"
+    (openRow)="openListRow($event)"
+  ></app-data-table>
+
+  <app-pagination
+    [count]="count"
+    [perPage]="pageSize"
+    [page]="page"
+    [loading]="isTableLoading"
+  ></app-pagination>
+
+  <app-action-log
+    *ngIf="logsSource"
+    [title]="logsTitle"
+    [source]="logsSource"
+  ></app-action-log>
+</div>
+
+<!-- If there is no step-labels, hide whole container -->
+<div class="step-labels-container">
+  <app-timeline [timelineEvents]="timeline$ | async"></app-timeline>
+</div>
+
+<app-modal *ngIf="rationaleModalIsShown" (close)="hideRationaleModal()">
+  <app-rationale-modal [data]="rationaleData" (close)="submitRationale($event)"></app-rationale-modal>
+</app-modal>
+
+<app-modal
+  class="modal-rationale"
+  *ngIf="readModalIsShown"
+  [heading]="readData?.title"
+  (close)="hideReadModal()"
+>
+  <div>
+    <textarea readonly>{{ readData?.content }}</textarea>
+  </div>
+  <div>
+    <app-btn class="right" (onClick)="hideReadModal()">{{ 'common.done' | translate }}</app-btn>
+  </div>
+</app-modal>

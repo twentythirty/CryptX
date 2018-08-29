@@ -1,13 +1,12 @@
-import { NgModule, Component, OnInit } from '@angular/core';
+declare function require(path: string);
+
+import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
-import { FormsModule } from '@angular/forms';
-import { CommonModule } from '@angular/common'; 
-import { BrowserModule } from '@angular/platform-browser';
+import { FormGroup, FormControl, Validators } from '@angular/forms';
+import { finalize } from 'rxjs/operators';
 
 import { AuthService } from '../../../services/auth/auth.service';
 
-import { BtnComponent } from '../../../shared/components/btn/btn.component';
-import { ModalComponent } from '../../../shared/components/modal/modal.component';
 
 @Component({
   selector: 'app-login',
@@ -15,8 +14,10 @@ import { ModalComponent } from '../../../shared/components/modal/modal.component
   styleUrls: ['./login.component.scss']
 })
 export class LoginComponent implements OnInit {
-  username:string = '';
-  password:string = '';
+  imageLogo = require('Images/Logo.png');
+
+  username: string = '';
+  password: string = '';
   status: string = '';
   touched: boolean = false;
   showPasswordReset: boolean = false;
@@ -24,46 +25,96 @@ export class LoginComponent implements OnInit {
   password_reset_sent: boolean = false;
   password_reset_status: string = '';
 
-  constructor(private authService: AuthService, private router: Router) { }
+  loading = false;
+  loading2 = false;
 
-  ngOnInit() {
-    
-  }
+  validation;
+  loginValidation;
+  resetValidation;
 
-  authenticate () {
-    this.authService.authenticate(this.username, this.password).subscribe(
-      (data) => {
-        this.redirectToPage();
-        this.touched = true;
-      }, error => {
-        this.touched = true;
-        this.status = error.error.error;
-        console.log("Error happened", error);
+  loginForm = new FormGroup({
+    Firstname: new FormControl('', [Validators.required]),
+    Lastname: new FormControl('', [Validators.required]),
+  });
+
+  resetForm: FormGroup = new FormGroup({
+    Email: new FormControl('', [Validators.email]),
+  });
+
+  constructor(
+    private authService: AuthService,
+    private router: Router,
+  ) {}
+
+  ngOnInit() { }
+
+  authenticate() {
+    if(this.loginForm.valid) {
+      this.loading = true;
+
+      this.authService.authenticate(this.username, this.password).pipe(
+        finalize(() => this.loading = false)
+      ).subscribe(
+        data => {
+          this.redirectToDashboard();
+          this.touched = true;
+        },
+        error => {
+          this.touched = true;
+          if (error.error) {
+            this.status = error.error.error;
+          }
+          console.log("Error happened", error);
       });
+    } else {
+      this.markAsTouched(this.loginForm);
+    }
   }
 
-  redirectToPage () {
+  markAsTouched(group) {
+    Object.keys(group.controls).map(field => {
+      const control = group.get(field);
+
+      if (control instanceof FormControl) {
+        control.markAsTouched({ onlySelf: true });
+      } else if (control instanceof FormGroup) {
+        this.markAsTouched(control);
+      }
+    });
+  }
+
+  redirectToDashboard() {
     this.router.navigate(['dashboard']);
   }
 
-  showPassReset () {
-    console.log("SshowPasswordReset = true")
+  showPassReset() {
     this.showPasswordReset = true;
   }
 
-  hidePassReset () {
-    console.log("SshowPasswordReset = false")
-
+  hidePassReset() {
     this.showPasswordReset = false;
-
-    console.log(this.showPasswordReset);
+    this.password_reset_sent = false;
+    this.reset_email = '';
+    this.resetForm.reset();
   }
 
   requestPasswordReset() {
-    this.authService.requestPasswordReset(this.reset_email).subscribe(response => {
+    if(this.resetForm.valid) {
       this.password_reset_sent = true;
-    }, error => {
-      this.password_reset_status = error.error.error;
-    });
+      this.loading2 = true;
+
+      this.authService.requestPasswordReset(this.reset_email).pipe(
+        finalize(() => this.loading2 = false)
+      ).subscribe(
+        res => {},
+        error => {
+          if (error.error) {
+            this.password_reset_status = error.error.error;
+          }
+        }
+      );
+    } else {
+      this.markAsTouched(this.resetForm);
+    }
   }
 }

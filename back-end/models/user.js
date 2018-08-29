@@ -3,6 +3,8 @@ const bcrypt = require("bcrypt");
 const bcrypt_p = require("bcrypt-promise");
 const jwt = require("jsonwebtoken");
 
+const ActionLogUtil = require('../utils/ActionLogUtil');
+
 module.exports = (sequelize, DataTypes) => {
   var User = sequelize.define(
     "User",
@@ -88,6 +90,12 @@ module.exports = (sequelize, DataTypes) => {
     );
   };
 
+  User.prototype.fullName = function() {
+     return `${this.first_name} ${this.last_name}`.trim();
+  };
+
+  User.prototype.full_name = function() { return this.fullName() };
+
   User.prototype.toWeb = function(send_roles = true) {
     let json = this.toJSON();
     delete json.password;
@@ -103,6 +111,30 @@ module.exports = (sequelize, DataTypes) => {
     
     return json;
   };
+
+  /**
+   * Logs a user action with session.
+   * @param {String|Number|Object} action Action to log.
+   * @param {Object} [options={}] Additional options. 
+   * @param {Object} options.relations Object of specified relations. Example: `{ asset_id: 21, exchange_id: 1 }`.
+   */
+  User.prototype.logAction = function(action, options = {}) {
+
+    const session = this.session;
+
+    if(!_.isPlainObject(options.relations)) options.relations = {};
+
+    options.relations.performing_user_id = this.id;
+    
+    if(_.isPlainObject(session)) options.relations.user_session_id = this.session.id;
+
+    options.user = this;
+    
+    if(!options.args) options.args = {};
+    options.args.user_name = `${this.first_name} ${this.last_name}`; //Not using full_name() in case it bugs the test
+
+    ActionLogUtil.logAction(action, options);
+  }
 
   return User;
 };

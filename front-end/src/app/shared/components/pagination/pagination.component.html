@@ -1,31 +1,46 @@
-<div class="pagination" *ngIf="count > 0">
-  <button
-    (click)="onFirst()"
-    [disabled]="page == 1"
-    [ngClass]="{ 'disabled': page == 1 }"
-  >First</button>
+<div class="pagination" *ngIf="count > 0" [class.disable-paging]="loading">
+  <ul class="pager-nav left-nav">
+    <li>
+      <button 
+        (click)="onFirst()"
+        [disabled]="page == 1"
+        class="to-jump item"
+        [class.disabled]="page == 1"
+      >{{ 'common.pagination.first' | translate }}</button>
 
-  <button
-    (click)="onPrev()"
-    [disabled]="page == 1"
-    [ngClass]="{ 'disabled': page == 1 }"
-  >&lt;</button>
+      <button
+        [disabled]="page == 1"
+        (click)="onPrev()"
+        class="prev item"
+        [class.disabled]="page == 1"
+      ></button>
+    </li>
+  </ul>
 
-  <button
-    *ngFor="let pageNum of getPages()"
-    (click)="onPage(pageNum)"
-    [ngClass]="{ 'active': pageNum == page }"
-  >{{ pageNum }}</button>
+  <ul class="pages">
+    <li *ngFor="let pageNum of getPages()">
+      <a class="item"
+        [class.active]="pageNum == page"        
+        (click)="onPage(pageNum)"
+      >{{ pageNum }}</a>
+    </li>
+  </ul>
 
-  <button
-    (click)="onNext()"
-    [disabled]="isLastPage()"
-    [ngClass]="{ 'disabled': isLastPage() }"
-  >&gt;</button>
+  <ul class="pager-nav right-nav">
+    <li>
+      <button
+        (click)="onNext()"
+        [disabled]="isLastPage()"
+        class="next item"
+        [class.disabled]="isLastPage()"
+      ></button>
 
-  <button
-    (click)="onLast()"
-    [disabled]="isLastPage()"
-    [ngClass]="{ 'disabled': isLastPage() }"
-  >Last</button>
+      <button
+        (click)="onLast()"
+        [disabled]="isLastPage()"
+        class="to-jump item"
+        [class.disabled]="isLastPage()"
+      >{{ 'common.pagination.last' | translate }}</button>
+    </li>
+  </ul>
 </div>

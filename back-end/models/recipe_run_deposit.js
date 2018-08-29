@@ -5,8 +5,8 @@ module.exports = (sequelize, DataTypes) => {
     "RecipeRunDeposit",
     {
       creation_timestamp: DataTypes.DATE,
-      planned_amount: DataTypes.DECIMAL,
-      actual_amount: DataTypes.DECIMAL,
+      amount: DataTypes.DECIMAL,
+      fee: DataTypes.DECIMAL,
       completion_timestamp: {
         type: DataTypes.DATE,
         allowNull: true
@@ -30,6 +30,18 @@ module.exports = (sequelize, DataTypes) => {
       as: 'target_exchange_account',
       foreignKey: 'target_exchange_account_id'
     })
+  };
+
+  RecipeRunDeposit.prototype.toWeb = function() {
+
+    let json = this.toJSON();
+
+    json.creation_timestamp = json.creation_timestamp ? json.creation_timestamp.getTime() : json.creation_timestamp;
+    json.completion_timestamp = json.completion_timestamp ? json.completion_timestamp.getTime() : json.completion_timestamp;
+    json.status = `deposits.status.${json.status}`;
+
+    return json;
+
   };
 
   return RecipeRunDeposit;

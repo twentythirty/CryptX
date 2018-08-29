@@ -33,6 +33,17 @@ module.exports = (sequelize, DataTypes) => {
       as: 'approval_user',
       foreignKey: 'approval_user_id'
     });
+    RecipeRun.hasMany(models.RecipeOrderGroup);
+    RecipeRun.hasMany(models.RecipeRunDeposit)
+  };
+
+  RecipeRun.prototype.toWeb = function() {
+    let json = this.toJSON();
+    
+    json.created_timestamp = json.created_timestamp.getTime();
+    json.approval_timestamp = ( json.approval_timestamp ? json.approval_timestamp.getTime() : json.approval_timestamp );
+
+    return json;
   };
 
   return RecipeRun;

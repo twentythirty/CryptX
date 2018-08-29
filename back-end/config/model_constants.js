@@ -1,6 +1,13 @@
 //constants for data not directly associated with permissions
 
 MODEL_CONST = {
+  LOG_LEVELS: {
+    Debug: 0,
+    Info: 1,
+    Warning: 2,
+    Error: 3
+  },
+
   STRATEGY_TYPES: {
     MCI: 101, //mid cap index
     LCI: 102 //large cap index
@@ -79,10 +86,11 @@ MODEL_CONST = {
   },
 
   COLD_STORAGE_ORDER_STATUSES: {
-    Pending: 51, //"order was generated internally, but not yet sent",
-    Sent: 52, //"order wassent to exchange or blockchain (waiting confirmation)",
-    Completed: 53, //"when order reaches its final successful state",
-    Failed: 54 //"system failed to execute the order"
+    Pending: 91, //"order was generated internally, but not yet sent",
+    Approved: 92, //"order was approved by a user",
+    Sent: 93, //"order wassent to exchange or blockchain (waiting confirmation)",
+    Completed: 94, //"when order reaches its final successful state",
+    Failed: 95 //"system failed to execute the order"
   },
 
   CUSTODIANS: {

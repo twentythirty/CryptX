@@ -1,27 +1,115 @@
-<table>
-  <thead *ngIf="dataSource.header.length > 0">
-    <tr>
-      <th *ngFor="let item of dataSource.header">
-        <button
-          [ngClass]="'table-order-button'"
-          (click)="isColumnSortable( item ) && onSetOrderBy( item.column )"
+<div class="data-table-wrapper">
+  <table class="data-table">
+    <thead *ngIf="dataSource.header?.length > 0">
+      <tr>
+        <th
+          *ngFor="let item of dataSource.header"
+          class="{{ getColumnClass(item.column) }} thead"
+          [class.sort-open]="filterMap[item.column]"
+          [class.highlight]="filterAppliedMap[item.column]"
+          [class.sortable]="showFilter(item.filter)"
+          (click)="toggleFilter(item)"
         >
-          {{item.name}}
-          <ng-container *ngIf="isColumnSortable( item ) && isColumnOrdered( item.column )">
-            <span [ngClass]="{ 'dcaret': isColumnASC( item.column ), 'ucaret': isColumnDESC( item.column ) }"></span>
+          <a class="filter-button">
+            {{ item.nameKey | translate }}
+            <div *ngIf="showFilter(item.filter)" class="sort-arrow"></div>
+          </a>
+          <app-data-table-filter
+            *ngIf="showFilter(item.filter)"
+            [dirty]="item._dirty"
+            [hidden]="!item.filter || !filterMap[item.column]"
+            [type]="item.filter.type"
+            [column]="item.column"
+            [sortable]="item.filter.sortable"
+            [hasRange]="item.filter.hasRange"
+            [inputSearch]="item.filter.inputSearch"
+            [rowData]="item.filter.rowData"
+            [rowData$]="item.filter.rowData$"
+            (onFilter)="onSetFilter($event); toggleFilter(item)"
+          ></app-data-table-filter>
+        </th>
+      </tr>
+    </thead>
+
+    <tbody>
+      <ng-content *ngIf="customRows; else defaultRows"></ng-content>
+    </tbody>
+
+    <ng-template #defaultRows>
+      <ng-container *ngIf="dataSource.body?.length > 0; else listEmpty">
+        <tr
+          *ngFor="let item of dataSource.body"
+          [class]="getRowClass(item)"
+          (click)="onOpenRow(item)"
+        >
+          <td
+            *ngFor="let index of columnsToShow"
+            class="{{ getColumnClass(index.column) }} tbody"
+            [class.highlight]="filterAppliedMap[index.column]"
+          >
+            <ng-container *ngIf="columnIsBasic(index); else dynamicColumn">
+              <span>{{ item[index?.column || index] || '-' }}</span>
+            </ng-container>
+            <ng-template #dynamicColumn>
+              <ndc-dynamic
+                [ndcDynamicComponent]="index.component"
+                [ndcDynamicInputs]="dynamicInputs(index, item[index.column], item)"
+                [ndcDynamicOutputs]="dynamicOutputs(index)"
+              ></ndc-dynamic>
+            </ng-template>
+          </td>
+        </tr>
+      </ng-container>
+
+      <ng-template #listEmpty>
+        <tr [style.background-color]="'white'">
+          <td class="empty-col" [colSpan]="columnsToShow.length">
+            <span *ngIf="dataSource.body; else loadingList">{{ emptyText }}</span>
+            <ng-template #loadingList>
+              <span>
+                <mat-progress-spinner
+                  mode="indeterminate"
+                  color="accent"
+                  strokeWidth="1"
+                  diameter="25"
+                ></mat-progress-spinner>
+              </span>
+            </ng-template>
+          </td>
+        </tr>
+      </ng-template>
+    </ng-template>
+
+    <tfoot *ngIf="dataSource.footer?.length > 0">
+      <tr>
+        <td
+          *ngFor="let item of getFooterData()"
+          class="{{ getColumnClass(item.name) }} tbody"
+          [class.highlight]="filterAppliedMap[item.name]"
+        >
+          <ng-container *ngIf="item.value">
+            {{ item.template | translate: item.args }}
           </ng-container>
-        </button>
-      </th>
-    </tr>
-  </thead>
+          <ng-container *ngIf="!item.value">
+            -
+          </ng-container>
+        </td>
+      </tr>
+    </tfoot>
+  </table>
 
-  <ng-content></ng-content>
-
-  <tfoot *ngIf="dataSource.footer.length > 0">
-    <tr>
-      <td *ngFor="let item of dataSource.footer">
-        {{item}}
-      </td>
-    </tr>
-  </tfoot>
-</table>
+  <div
+    *ngIf="loading && dataSource.body"
+    [@opacityAnimation]="loading ? 'show' : 'hide'"
+    class="data-table-preloader"
+  >
+    <div class="progress-spinner-container">
+      <mat-progress-spinner
+        mode="indeterminate"
+        color="accent"
+        strokeWidth="1"
+        diameter="25"
+      ></mat-progress-spinner>
+    </div>
+  </div>
+</div>

@@ -1,46 +1,66 @@
-<div class="login-wrapper">
-  <div class="login-form">
-    <div class="login-logo">
-      Logo place holder
-    </div>
-    <form (ngSubmit)="authenticate()">
-      <p>
-        <label for="user">User name</label>
-        <br>
-        <input [(ngModel)]="username" name="user" type="text">
-      </p>
-      <p>
-        <label for="pwd">Password</label>
-        <br>
-        <input [(ngModel)]="password" name="pwd" type="password">
-      </p>
-      <p>
-        {{ status }}
-      </p>
+<div class="login-block">
+  <div class="top">
+    <img [src]="imageLogo" class="logo">
+  </div>
 
-      <app-btn type="submit" big="true">Login</app-btn>
-      <br>
-      <a (click)="showPassReset()">Forgot password?</a>
+  <form (ngSubmit)="authenticate()" action class="the-form login-form" [formGroup]="loginForm">
+    <app-input-item
+      class="form-item with-icons icon-login"
+      [placeholder]="'auth.login' | translate"
+      [formGroup]="loginForm"
+      formControlName="Firstname"
+      [(ngModel)]="username"
+    ></app-input-item>
+    <app-input-item
+      class="form-item with-icons icon-password"
+      [placeholder]="'auth.password' | translate"
+      type="password"
+      [formGroup]="loginForm"
+      formControlName="Lastname"
+      [(ngModel)]="password"
+    ></app-input-item>
+
+    <a (click)="showPassReset()" class="forgot-pass">{{ 'auth.forgot_password' | translate }}</a>
+    <p *ngIf= !loading>
+      {{ status }}
+    </p>
+
+    <div class="btn-wrap btn-right">
+      <button type="submit" class="btn" [disabled]="loading">{{ 'common.login' | translate }}</button>
+    </div>
+  </form>
+</div>
+
+<app-modal
+  *ngIf="showPasswordReset"
+  [heading]="'auth.please_enter_email' | translate"
+  (close)="hidePassReset()"
+>
+  <div *ngIf="!password_reset_sent">
+    <form [formGroup]="resetForm" (ngSubmit)="requestPasswordReset()">
+      <span class="label label-after-title">{{'auth.contact_you_soon' | translate}}</span>
+
+      <app-input-item
+        class="form-item"
+        [placeholder]="'users.enter_email' | translate"
+        type="text"
+        [formGroup]="resetForm"
+        formControlName="Email"
+        [(ngModel)]="reset_email"
+      ></app-input-item>
+
+      <div class="btn-wrap btn-right">
+        <br>
+        <button class="btn submit" [disabled]="loading2" type="submit">{{'common.submit' | translate}}</button>
+      </div>
     </form>
   </div>
 
-  <app-modal *ngIf="showPasswordReset" (close)="hidePassReset()">
-    <div *ngIf="!password_reset_sent">
-      <form>
-        <p>Please enter your Email.
-          <br>We will contact you soon</p>
-        <p>
-          <label for="email">Email</label>
-          <br>
-          <input [(ngModel)]="reset_email" name="email" type="text">
-        </p>
-        <p>{{ password_reset_status }}</p>
-        <button (click)="requestPasswordReset()">Send</button>
-      </form>
-    </div>
-    <div *ngIf="password_reset_sent">
-      Email sent.
-      <br>Please check your inbox.
-    </div>
-  </app-modal>
-</div>
+  <div *ngIf="password_reset_sent">
+    <span class="label label-after-title">
+      {{'auth.password_reset_msg' | translate:{ reset_email: reset_email } }}
+      <br><br>
+      {{'auth.check_your_inbox' | translate}}
+    </span>
+  </div>
+</app-modal>

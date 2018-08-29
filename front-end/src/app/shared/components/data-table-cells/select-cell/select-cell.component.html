@@ -1,0 +1,7 @@
+<select
+ [ngModel]="value"
+ (ngModelChange)="onChange($event)"
+ [disabled]="isDisabled(row)"
+>
+  <option *ngFor="let item of items(row)" [value]="item.id">{{ item.name }}</option>
+</select>

@@ -1,0 +1,92 @@
+.step-labels-container {
+    float: right;
+    width: 210px;
+    margin-top: 49px;
+    position: relative;
+
+    &::after {
+        content: "";
+        height: calc(100% + 10px);
+        width: 3px;
+        background: $gray;
+        position: absolute;
+        top: -5px;
+        right: 0;
+        border-radius: 2px;
+        opacity: .2;
+    }
+
+    .step-label {
+        background: #FFFFFF;
+        box-shadow: 0 3px 8px 0 rgba(0,0,0,0.05);
+        border-radius: 3px;
+        padding: 10px 50px 15px 20px;
+        max-width: 190px;
+        width: 100%;
+        min-height: 102px;
+        position: relative;
+        margin-bottom: 15px;
+        display: inline-block;
+        cursor: pointer;
+
+        &:last-child{
+            margin-bottom: 0;
+        }
+        
+        &.active::before {
+            @include backgroundC("icons/step-label-oval.svg");
+        }
+
+        &.disabled {
+            cursor: default;
+
+            span, label, div {
+                opacity: .4;
+                pointer-events: none;
+            }
+        }
+
+        &::after {
+            content: "";
+            width: 10px;
+            height: 20px;
+            @include backgroundC("icons/step-label-arrow.svg");
+            position: absolute;
+            right: -9px;
+            top: 50%;
+            @include translate(0, -50%);
+        }
+
+        &::before {
+            content: "";
+            width: 15px;
+            height: 15px;
+            @include backgroundC("icons/step-label-oval-prev.svg");
+            position: absolute;
+            right: -26px;
+            top: 50%;
+            @include translate(0, -50%);
+            z-index: 2;
+        }
+
+        .title {
+            font-size: 14px;
+            font-weight: 600;
+            display: block;
+        }
+
+        label {
+            font-size: 11px;
+            display: block;
+        }
+
+        .data {
+            font-size: 13px;
+            text-transform: uppercase;
+            color: $gray;
+            line-height: 14px;
+            display: inline-block;
+            margin-top: 7px;
+        }
+    }
+}

@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="8px" height="5px" viewBox="0 0 8 5" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 50.2 (55047) - http://www.bohemiancoding.com/sketch -->
+    <title>Shape</title>
+    <desc>Created with Sketch.</desc>
+    <defs></defs>
+    <g id="Symbols" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="Menu-/-Default" transform="translate(-1282.000000, -92.000000)" fill="#78909C" fill-rule="nonzero">
+            <path d="M1288.43032,94.3431372 L1283.7529,90.533521 C1283.70339,90.4933296 1283.63919,90.489139 1283.58629,90.5217112 C1283.53323,90.5546644 1283.5,90.6194279 1283.5,90.6902867 L1283.5,98.3095192 C1283.5,98.3803781 1283.53323,98.445332 1283.58629,98.4782852 C1283.60984,98.4927617 1283.63565,98.5 1283.66129,98.5 C1283.69339,98.5 1283.72532,98.4885712 1283.7529,98.4662849 L1288.43032,94.6566687 C1288.47403,94.6210487 1288.5,94.5625711 1288.5,94.499903 C1288.5,94.4372348 1288.47387,94.3787572 1288.43032,94.3431372 Z" id="Shape" transform="translate(1286.000000, 94.500000) rotate(-270.000000) translate(-1286.000000, -94.500000) "></path>
+        </g>
+    </g>
+</svg>

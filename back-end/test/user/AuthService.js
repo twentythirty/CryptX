@@ -107,6 +107,24 @@ describe("AuthService testing", () => {
     sinon.stub(UserSession, "create").callsFake(options => {
       return Promise.resolve(new UserSession(options));
     });
+    sinon.stub(UserSession, "findAll").callsFake(options => {
+      // return 10 fake UserSessions   
+      let fake_sessions = [...Array(10)].map(session => {
+        let fake_session = new UserSession({
+          user_id: USER_ID,
+          token: "token_value",
+          expiry_timestamp: new Date(new Date().getTime() + (60 * 60 * 1000)),
+          ip_address: "0.0.0.0"
+        });
+
+        /* fake_session.save = () => {}; */
+        sinon.stub(fake_session, "save").callsFake(() => Promise.resolve(fake_session));
+
+        return fake_session;
+      })
+
+      return Promise.resolve(fake_sessions);
+    });
     sinon.stub(User, "create").callsFake(options => {
       return Promise.resolve(new User(options));
     });
@@ -118,7 +136,8 @@ describe("AuthService testing", () => {
       User.findOne,
       User.findById,
       UserSession.create,
-      User.create
+      UserSession.findAll,
+      User.create      
     ].forEach(model => {
       if (model.restore) {
         model.restore();
@@ -346,6 +365,7 @@ describe("AuthService testing", () => {
         user_sessions = [],
         tokens = ["token1", "token2", "token3", "token4"];
 
+      if (UserSession.findAll.restore) UserSession.findAll.restore();
       let spy = sinon.stub(UserSession, "findAll").callsFake(options => {
 
         user_sessions = tokens.map(token_value => new UserSession({
@@ -391,15 +411,13 @@ describe("AuthService testing", () => {
 
     it('not change data that can not changed', function () {
       let new_data = {
-        id: 55,
-        email: "Some@newemail.com"
+        id: 55
       };
 
       return AuthService.changeUserInfo(USER_ID, new_data)
         .then(returnedUser => {
           // check if data that can't be changed is not changed
           chai.expect(returnedUser.id).to.be.equal(USER_ID);
-          chai.expect(returnedUser.email).to.be.equal(EMAIL);
 
           // these model methods should've been called
           chai.assert.isTrue(User.findById.calledWith(USER_ID));
@@ -411,14 +429,18 @@ describe("AuthService testing", () => {
       let new_data = {
         first_name: "New_Name",
         last_name: "New_Last_Name",
+        email: "new@email.com",
         is_active: false
       };
 
       return AuthService.changeUserInfo(USER_ID, new_data)
         .then(returnedUser => {
-          _.toPairs(new_data).map(pair => { // checks if all new data was applied
-            chai.expect(returnedUser[pair[0]]).to.be.equal(pair[1]);
-          });
+
+          chai.expect(returnedUser.first_name).to.equal(new_data.first_name);
+          chai.expect(returnedUser.last_name).to.equal(new_data.last_name);
+          chai.expect(returnedUser.email).to.not.equal(new_data.email);
+          chai.expect(returnedUser.is_active).to.equal(new_data.is_active);
+          
         })
     });
 
@@ -523,7 +545,7 @@ describe("AuthService testing", () => {
       })
     });
 
-    it('throw error if user is not active', () => {
+    it('fail silently if user is not active', () => {
 
       if(User.findOne.restore)
         User.findOne.restore();
@@ -538,7 +560,9 @@ describe("AuthService testing", () => {
         return Promise.resolve(user);
       });
 
-      return chai.assert.isRejected(AuthService.sendPasswordResetToken(USER_ID));
+      return AuthService.sendPasswordResetToken(USER_ID).then(resolved => {
+        return chai.expect(resolved).to.be.null;
+      });
     });
   });
 
@@ -604,4 +628,27 @@ describe("AuthService testing", () => {
       return chai.assert.isRejected(AuthService.resetPassword(USER_ID, ''));
     });
   });
+
+  describe('and the method expireUserSessions shall', function () {
+
+    it('exist', () => {
+      chai.expect(AuthService.terminateUserSessions).to.exist;
+    });
+
+    it('shall find user sessions', () => {
+      return AuthService.terminateUserSessions().then((sessions) => {
+        chai.assert.isTrue(UserSession.findAll.called);
+      });
+    });
+
+    it('shall set expiry_timestamp to equal or less that current time', () => {
+      return AuthService.terminateUserSessions().then((sessions) => {
+        let now = new Date();
+        chai.expect(sessions).to.satisfy(sessions => {
+          return sessions.every(session => session.expiry_timestamp <= now);
+        })
+      });
+    });
+  });
+  
 });

@@ -29,6 +29,7 @@ module.exports = (sequelize, DataTypes) => {
             foreignKey: 'target_exchange_id',
             as: 'target_exchange'
         });
+        RecipeOrder.hasMany(models.ExecutionOrder);
     };
 
     return RecipeOrder;

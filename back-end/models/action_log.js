@@ -6,7 +6,19 @@ module.exports = (sequelize, DataTypes) => {
     {
       timestamp: DataTypes.DATE,
       details: {
-        type: DataTypes.TEXT("medium"),
+        type: DataTypes.TEXT("long"),
+        allowNull: true
+      },
+      level: {
+        type: DataTypes.SMALLINT,
+        defaultValue: LOG_LEVELS.Info
+      },
+      translation_key: {
+        type: DataTypes.STRING,
+        allowNull: true
+      },
+      translation_args: {
+        type: DataTypes.STRING,
         allowNull: true
       }
     },
@@ -31,9 +43,34 @@ module.exports = (sequelize, DataTypes) => {
     ActionLog.belongsTo(models.ExchangeAccount);
     ActionLog.belongsTo(models.InvestmentRun);
     ActionLog.belongsTo(models.RecipeRun);
+    ActionLog.belongsTo(models.RecipeRunDeposit);
     ActionLog.belongsTo(models.RecipeOrder);
     ActionLog.belongsTo(models.ExecutionOrder);
+    ActionLog.belongsTo(models.ColdStorageTransfer);
   };
+
+  ActionLog.prototype.toWeb = function() {
+    let json = this.toJSON();
+
+    if(_.isString(json.translation_args)) json.translation_args = JSON.parse(json.translation_args);
+    json.timestamp = json.timestamp ? json.timestamp.getTime() : json.timestamp;
+
+    if(json.translation_key) {
+      json.translationKey = json.translation_key;
+      delete json.translation_key;
+  
+      json.translationArgs = json.translation_args;
+      delete json.translation_args;
+
+      delete json.details;
+    }
+    else {
+      delete json.translation_key;
+      delete json.translation_args;
+    }
+
+    return json;
+  }
 
   return ActionLog;
 };

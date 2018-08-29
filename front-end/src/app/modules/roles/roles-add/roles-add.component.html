@@ -1,60 +1,91 @@
-<app-content-block
-  heading="Enter role information"
->
-  <label>Role name</label>
-  <input type="text" [(ngModel)]="role.name">
-</app-content-block>
+<app-page-heading
+  *ngIf="!roleId"
+  [heading]="'roles.add_new_role' | translate"
+></app-page-heading>
 
-<app-content-block
-  heading="Permissions"
->
-  <div *ngFor="let permBlock of permissionsMap.data; let i = index">
-    <h3>{{ permBlock.name }}</h3>
+<app-page-heading
+  *ngIf="roleId"
+  [heading]="'roles.edit_role' | translate"
+></app-page-heading>
 
-    <app-button-checkbox
-      [value]="i"
-      [checked]="permissionsBlocksCheckboxMap[i]"
-      labelTrue="Selected"
-      labelFalse="Select all"
-      (onToggle)="onPermissionBlockToggle($event)"
-    ></app-button-checkbox>
+<div class="split-content horizontal">
+  <form [formGroup]="roleForm">
+    <app-content-block
+      [heading]="'roles.role_information' | translate"
+    >
+      <app-input-item
+        class="form-item"
+        type="text"
+        [label]="'roles.name' | translate"
+        [placeholder]="'roles.enter_role_name' | translate"
+        [formGroup]="roleForm"
+        formControlName="name"
+      ></app-input-item>
+    </app-content-block>
+  </form>
 
-    <app-checkbox
-      *ngFor="let perm of permBlock.permissions"
-      [value]="perm.code"
-      [label]="perm.name"
-      [checked]="permissionsCheckboxMap[perm.code]"
-      (onToggle)="onPermissionToggle($event)"
-    ></app-checkbox>
-  </div>
-</app-content-block>
+  <app-content-block [heading]="'roles.permissions' | translate">
+    <div class="no-padding-top-bottom">
+      <app-input-item-error-message
+        *ngIf="showError"
+        [errorMessage]="'Permission must be selected'"
+      ></app-input-item-error-message>
+
+      <div class="permision-list">
+        <div class="checkboxes-item" *ngFor="let permBlock of permissionsMap.data; let i = index">
+          <label class="label-name">{{ permBlock.name }}</label>
+
+          <div class="checkboxes-modal">
+            <app-button-checkbox
+              [value]="i"
+              [checked]="permissionsBlocksCheckboxMap[i]"
+              labelTrue="Select all"
+              labelFalse="Select all"
+              (onToggle)="onPermissionBlockToggle($event)"
+            ></app-button-checkbox>
+          </div>
+
+          <div class="checkboxes-list">
+            <app-checkbox
+              *ngFor="let perm of permBlock.permissions"
+              [value]="perm.code"
+              [label]="perm.name"
+              [checked]="permissionsCheckboxMap[perm.code]"
+              (onToggle)="onPermissionToggle($event)"
+            ></app-checkbox>
+          </div>
+        </div>
+      </div>
+    </div>
+  </app-content-block>
+</div>
 
 <app-form-action-bar>
-  <div left *ngIf="roleId">
+  <div *ngIf="roleId">
     <button
-      [disabled]="loading"
+      class="btn deactive" 
+      [disabled]="loading" 
       (click)="showDeleteConfirm = true"
-    >Delete</button>
-  </div>
-  
-  <div center *ngIf="!roleId">
+    >{{ 'common.delete' | translate }}</button>
     <button
-      [disabled]="loading"
-      (click)="addRole()"
-    >Add role</button>
+      class="btn submit" 
+      [disabled]="loading" 
+      (click)="saveRole()"
+    >{{ 'common.submit' | translate }}</button>
   </div>
 
-  <div right *ngIf="roleId">
+  <div *ngIf="!roleId">
     <button
+      class="btn submit"
       [disabled]="loading"
-      (click)="saveRole()"
-    >Save changes</button>
+      (click)="addRole()"
+    >{{ 'common.submit' | translate }}</button>
   </div>
 </app-form-action-bar>
 
 <app-confirm
   *ngIf="showDeleteConfirm"
-  message="Are you sure you want delete this role?"
+  [heading]="'roles.role_delete_confirm_msg' | translate" 
   (onReject)="closeDeleteConfirm()"
   (onConfirm)="deleteRole()"
 ></app-confirm>

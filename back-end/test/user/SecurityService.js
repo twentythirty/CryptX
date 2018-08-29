@@ -71,6 +71,10 @@ describe("SecurityService mocking", () => {
       return Promise.resolve(new Role(options));
     })
 
+    sinon.stub(Role, 'count').callsFake(options => {
+      return Promise.resolve(0);
+    });
+
     sinon.spy(SecurityService, 'deleteRole');
     sinon.spy(SecurityService, 'createRole');
   });
@@ -78,6 +82,7 @@ describe("SecurityService mocking", () => {
   afterEach(function () {
     Role.findById.restore();
     Role.create.restore();
+    Role.count.restore();
     Permission.findAll.restore();
     SecurityService.deleteRole.restore();
     SecurityService.createRole.restore();
@@ -117,7 +122,21 @@ describe("SecurityService mocking", () => {
       );
     });
 
-    it("update only supplied properties", function() {
+    it("reject if the updated info is empty", function() {
+       return Promise.all(_.map([
+         [1],
+         [1, null],
+         [1, {}],
+         [1, { name: null, permissions: null }],
+         [1, { name: '  ', permissions: [PERMISSIONS.ALTER_ROLES] }],
+         [1, { name: 'Super admin', permissions: [] }],
+         [1, { permissions: [PERMISSIONS.ALTER_ROLES, PERMISSIONS.ALTER_PERMS] }]
+       ], params => {
+         return chai.assert.isRejected(SecurityService.editRole(...params));
+       })); 
+    });
+
+    it("update if the arguments are valid", function() {
       let new_info = [
         {
           permissions: [
@@ -125,12 +144,9 @@ describe("SecurityService mocking", () => {
             PERMISSIONS.ALTER_PERMS,
             PERMISSIONS.VIEW_ROLES,
             PERMISSIONS.VIEW_USERS
-          ]
-        },
-        {
+          ],
           name: "updated_test_role"
-        },
-        {}
+        }
       ];
 
       return Promise.all(
@@ -185,7 +201,7 @@ describe("SecurityService mocking", () => {
     });
 
     it("call required DB methods", function () {
-      return SecurityService.createRole(ROLE_NAME).then(new_role => {
+      return SecurityService.createRole(ROLE_NAME, ROLE_PERMISSIONS).then(new_role => {
         chai.expect(Role.create.called);
 
         chai.expect(new_role.name).to.be.equal(ROLE_NAME);

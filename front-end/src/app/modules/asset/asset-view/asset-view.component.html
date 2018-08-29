@@ -1,0 +1,19 @@
+<app-page-heading
+  [heading]="'assets.assets' | translate"
+></app-page-heading>
+
+<app-data-table
+  [dataSource]="assetsDataSource"
+  [columnsToShow]="assetsColumnsToShow"
+  [rowClass]="rowClass"
+  (setFilter)="onSetFilter($event)"
+></app-data-table>
+
+<app-action-log
+  [title]="'assets.blacklisting_activity_log' | translate"
+  [source]="activityLog"
+></app-action-log>
+
+<app-modal *ngIf="rationaleModelIsShown" (close)="hideRationaleModal()">
+  <app-rationale-modal [data]="rationaleData" (close)="submitRationale($event)"></app-rationale-modal>
+</app-modal>

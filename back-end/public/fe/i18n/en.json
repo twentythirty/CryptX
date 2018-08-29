@@ -1,0 +1,588 @@
+{
+  "common": {
+    "list_empty": "This list is empty",
+    "pagination": {
+      "first": "First",
+      "last": "Last"
+    },
+    "delete": "Delete",
+    "submit": "Submit",
+    "confirm": "Confirm",
+    "cancel": "Cancel",
+    "done": "Done",
+    "login": "Login",
+    "read": "Read",
+    "change_password": "Change password",
+    "logout": "Logout",
+    "save_changes": "Save changes",
+    "sign_up": "Sign up",
+    "activity_log": "Activity log",
+    "rationale": "Rationale",
+    "add_new_user": "Add new user",
+    "all": "All"
+  },
+  "table": {
+    "header": {
+      "symbol": "Symbol",
+      "crypto": "Crypto",
+      "long_name": "Long name",
+      "base": "Base",
+      "deposit": "Deposit",
+      "capitalisation": "Capitalisation",
+      "nvt_ratio": "NVT ratio",
+      "market_share": "Market share",
+      "capitalisation_updated": "Capitalisation updated",
+      "status": "Status",
+      "action": "Action",
+      "id": "Id",
+      "creation_time": "Creation time",
+      "creator": "Creator",
+      "decision_by": "Decision by",
+      "decision_time": "Decision time",
+      "rationale": "Rationale",
+      "exchange": "Exchange",
+      "account": "Account",
+      "amount": "Amount",
+      "investment_percentage": "Investment percentage",
+      "instrument": "Instrument",
+      "side": "Side",
+      "price": "Price",
+      "quantity": "Quantity",
+      "total_quantity": "Total quantity",
+      "sum_of_exchange_trading_fee": "Sum of exchange trading fee",
+      "type": "Type",
+      "exchange_trading_fee": "Exchange trading fee",
+      "submission_time": "Submission time",
+      "completion_time": "Completion time",
+      "fill_time": "Fill time",
+      "fill_price": "Fill price",
+      "started": "Started",
+      "updated": "Updated",
+      "completed": "Completed",
+      "completed_time": "Completed time",
+      "strategy": "Strategy",
+      "simulated": "Simulated",
+      "created": "Created",
+      "created_time": "Created time",
+      "actions": "Actions",
+      "quote_asset": "Quote asset",
+      "percentage": "Percentage, %",
+      "role_name": "Role name",
+      "name": "Name",
+      "surname": "Surname",
+      "email": "Email",
+      "creation_date": "Creation date",
+      "exchanges_connected": "Exchanges Connected",
+      "exchanges_failed": "Exchanges Failed",
+      "identifier": "Identifier",
+      "current_price": "Current price",
+      "last_day_vol": "Last day Volume",
+      "last_7days_vol": "Last 7 days Volume",
+      "last_updated": "Last Updated",
+      "periodicity": "Periodicity",
+      "minimum_circulation": "Minimum Circulation",
+      "exchange_count": "Number of Exchanges",
+      "exchange_not_pass": "Exchanges that do not Meet Requirements",
+      "liquidity_status": "Liquidity status",
+      "investment_run_id": "Investment run ID",
+      "transaction_asset": "Transaction asset",
+      "portfolio": "Portfolio",
+      "deposit_management_fee": "Deposit management fee",
+      "depositary": "Depositary",
+      "asset": "Asset",
+      "gross_amount": "Gross amount",
+      "net_amount": "Net amount",
+      "exchange_withdrawal_fee": "Exchange withdrawal fee",
+      "destination_account": "Destination account",
+      "custodian": "Custodian",
+      "source_exchange": "Source exchange",
+      "source_account": "Source account",
+      "placed_time": "Placed time",
+      "address": "Address",
+      "balance": "Balance",
+      "balance_usd": "Balance USD",
+      "balance_updated": "Balance updated",
+      "cold_storage_account_id": "Cold storage account id"
+    },
+    "filter": {
+      "all": "All",
+      "filter": "FILTER",
+      "select_ordering": "Select_ordering",
+      "from": "From",
+      "to": "To"
+    },
+    "footer": {
+      "exchange_id": "{{ exchange_id }} Exchanges",
+      "external_instrument": "{{ external_instrument }} Identifiers"
+    }
+  },
+
+  "investment": {
+    "investment": "Investment run",
+    "investments": "Investment runs",
+    "start_new_run": "Start new run",
+    "recipe_run": "Recipe run",
+    "deposits": "Deposits",
+    "orders": "Orders",
+    "execution_orders": "Execution orders",
+    "no_investment": "There is no investment run",
+    "no_recipe_run": "There is no recipe run",
+    "no_deposits": "Deposits aren't made yet",
+    "no_orders": "Orders are not created yet",
+    "no_recipe_runs": "No recipe runs have been created yet",
+    "no_execution_orders": "Execution orders are not created yet",
+    "enter_usd": "Enter amount, USD",
+    "enter_btc": "Enter amount, BTC",
+    "enter_eth": "Enter amount, ETH",
+    "total_investment_amount": "Total investment amount",
+    "amount_in_btc": "Amount in BTC",
+    "amount_in_eth": "Amount in ETH",
+    "please_select_investment_mode": "Please select investment mode",
+    "please_select_investment_run_portfolio": "Please select investment run portfolio",
+    "is_simulated": {
+      "yes": "Yes",
+      "no": "No"
+    },
+    "strategy": {
+      "101": "MCI",
+      "102": "LCI"
+    },
+    "status": {
+      "301": "Initiated",
+      "302": "Recipe Run",
+      "303": "Recipe Approved",
+      "304": "Deposits Completed",
+      "305": "Orders Generated",
+      "306": "Orders Approved",
+      "307": "Orders Executing",
+      "308": "Orders Filled"
+    }
+  },
+  "investment_runs": {
+    "empty_list_text": "No investment runs have been created yet",
+    "footer": {
+      "id": "{{ id }} Items",
+      "completed_timestamp": "{{ completed_timestamp }} Completed",
+      "user_created": "{{ user_created }} Creators",
+      "strategy_type": "{{ strategy_type }} Portfolios",
+      "is_simulated": "{{ is_simulated }} Simulated",
+      "status": "{{ status }} Executing"
+    }
+  },
+  "recipe_run_details": {
+    "footer": {
+      "id": "{{ id }} Items",
+      "transaction_asset": "{{ transaction_asset }} Assets",
+      "quote_asset": "{{ quote_asset }} Assets",
+      "target_exchange": "{{ target_exchange }} Exchanges"
+    }
+  },
+
+  "recipes": {
+    "recipe_runs_not_created": "Recipe runs are not created yet",
+    "status": {
+      "41": "Pending",
+      "42": "RecipeRejected",
+      "43": "Approved"
+    }
+  },
+
+  "recipe_runs": {
+    "header": "Recipe runs",
+    "footer": {
+      "id": "{{id}} items",
+      "user_created": "{{ user_created }} Creators",
+      "approval_status": "{{approval_status }} Pending"
+    }
+  },
+
+  "orders": {
+    "orders": "Orders",
+    "generate_orders": "Generate orders",
+    "orders_not_generated": "Orders aren't generated yet",
+    "orders_not_created": "Orders are not created yet",
+    "side": {
+      "999": "Buy",
+      "888": "Sell"
+    },
+    "status": {
+      "51": "Pending",
+      "52": "Executing",
+      "53": "Completed",
+      "54": "Rejected",
+      "55": "Cancelled",
+      "56": "Failed"
+    },
+    "footer": {
+      "id": "{{ id }} Items",
+      "investment_id": "{{ investment_id }} IDs",
+      "instrument": "{{ instrument }} Instruments",
+      "exchange": "{{ exchange }} Exchanges",
+      "status":"{{ status }} Pending"
+    }
+  },
+  "order": {
+    "status": {
+      "51": "Pending",
+      "52": "Executing",
+      "53": "Completed",
+      "54": "Rejected",
+      "55": "Cancelled",
+      "56": "Failed"
+    }
+  },
+  "recipe_orders": {
+    "footer": {
+      "id": "{{ id }} items",
+      "instrument": "{{ instrument }} instruments",
+      "exchange": "{{ exchange }} exchanges",
+      "status": "{{ status }} executing",
+      "investment_id": "{{ investment_id }} ids"
+    }
+  },
+  "orders_group": {
+    "status": {
+      "81": "Pending",
+      "82": "Rejected",
+      "83": "Approved"
+    }
+  },
+
+  "execution_orders": {
+    "header": "Execution orders",
+    "exe_orders_not_created": "Execution orders are not created yet",
+    "side": {
+      "999": "Buy",
+      "888": "Sell"
+    },
+    "type": {
+      "71": "Market",
+      "72": "Limit",
+      "73": "Stop"
+    },
+    "status": {
+      "61": "Pending",
+      "62": "Placed",
+      "63": "FullyFilled",
+      "64": "PartiallyFilled",
+      "65": "Cancelled",
+      "66": "Failed"
+    },
+    "footer": {
+      "id": "{{ id }} Items",
+      "instrument": "{{ instrument }} Instruments",
+      "exchange": "{{ exchange }} Exchanges",
+      "status":"{{ status }} Pending"
+    }
+  },
+  "execution_orders_timeline": {
+    "status": {
+      "61": "Pending",
+      "62": "Placed",
+      "63": "FullyFilled",
+      "64": "PartiallyFilled",
+      "65": "Cancelled",
+      "66": "Failed"
+    }
+  },
+
+  "execution_order_fills": {
+    "footer": {
+      "id": "{{id}} items",
+      "fill_price": "{{fill_price}} total",
+      "quantity": "{{quantity}} total"
+    }
+  },
+
+  "roles": {
+    "roles": "Roles",
+    "add_new_role": "Add new role",
+    "edit_role": "Edit role",
+    "name": "Name",
+    "role_information": "Role information",
+    "enter_role_name": "Enter role name",
+    "permissions": "Permissions",
+    "role_delete_confirm_msg": "Are you sure you want delete this role?",
+    "footer": {
+      "name": "{{ name }} Names"
+    }
+  },
+
+  "liquidity": {
+    "liquidity_requirements": "Liquidity requirements",
+    "add_requirement": "Add requirement",
+    "periodicity": "Periodicity",
+    "enter_periodicity": "Enter periodicity",
+    "minimum_circulation": "Minimum circulation",
+    "enter_minimum_circulation": "Enter minimum circulation",
+    "enter_liquidity_information": "Enter liquidity information"
+  },
+  "instrument_liquidity_requirements": {
+    "footer": {
+      "instrument": "{{ instrument }} instruments",
+      "quote_asset": "{{ quote_asset }} asset"
+    },
+    "all": "All"
+  },
+  "liquidity_exchanges": {
+    "status": {
+      "lacking": "Lacking",
+      "meets_liquidity_requirements": "MeetsLiquidityRequirements"
+    },
+    "footer": {
+      "exchange": "{{ exchange }} Exchanges",
+      "instrument_identifier": "{{ instrument_identifier }} Identifiers",
+      "passes": "{{ passes }} Lacking"
+    }
+  },
+
+  "instruments": {
+    "instrument_mapping": "Instrument mapping",
+    "instruments": "Instruments",
+    "new_instrument": "New instrument",
+    "parameters": "Parameters",
+    "transaction_asset": "Transaction asset",
+    "quote_asset": "Quote asset",
+    "add_instrument": "Add instrument",
+    "enter_instrument": "Enter instrument",
+    "enter_transaction_asset": "Enter transaction asset",
+    "enter_quote_asset": "Enter quote asset",
+    "footer": {
+      "symbol": "{{ symbol }} Instruments",
+      "exchanges_connected": "{{ exchanges_connected }} Connected",
+      "exchanges_failed": "{{ exchanges_failed }} Failed"
+    }
+  },
+
+  "exchanges": {
+    "exchange": "Exchange",
+    "exchanges": "Exchanges",
+    "mapping": "Mapping",
+    "new_mapping": "New mapping",
+    "exchange_delete_confirm_msg": "Are you sure you want delete this exchange?",
+    "all_exchanges": "All exchanges",
+    "select_exchange": "Select exchange"
+  },
+
+  "assets": {
+    "assets": "Assets",
+    "headline": "{{ count }} Cryptocurrencies",
+    "blacklisting_activity_log": "Blacklisting activity log",
+    "blacklisting_activity_log_item": "<b>{{ username }}</b> changed Status from <b>{{ prevStatus }}</b> to <b>{{ status }}</b> with rationale:",
+    "is_cryptocurrency": {
+      "no": "No",
+      "yes": "Yes"
+    },
+    "is_base": {
+      "no": "No",
+      "yes": "Yes"
+    },
+    "is_deposit": {
+      "no": "No",
+      "yes": "Yes"
+    },
+    "status": {
+      "400": "Whitelisted",
+      "401": "Blacklisted",
+      "402": "Graylisted"
+    },
+    "footer": {
+      "capitalization": "{{ capitalization }} total",
+      "status": "{{ status }} Blacklisted",
+      "is_deposit": "{{ is_deposit }} Deposit",
+      "is_base": "{{ is_base }} Base",
+      "symbol": "{{ symbol }} Items",
+      "is_cryptocurrency": "{{ is_cryptocurrency }} Cryptos"
+    }
+  },
+
+  "users": {
+    "users": "Users",
+    "headline": "{{ count }} Users",
+    "entity": {
+      "inactive": "Deactivated",
+      "active": "Active"
+    },
+    "add_new_user": "Add new user",
+    "user_information": "User information",
+    "name": "Name",
+    "enter_name": "Enter name",
+    "surname": "Surname",
+    "enter_surname": "Enter surname",
+    "email": "Email",
+    "enter_email": "Enter email",
+    "user_roles": "User roles",
+    "select": "Select",
+    "user_deactivate_confirm_msg": "Are you sure you want {{buttonName}} this user?",
+    "footer": {
+      "first_name": "{{first_name}} Names",
+      "last_name": "{{last_name}} Surnames",
+      "email": "{{email}} Emails",
+      "created_timestamp": "{{created_timestamp}} Dates",
+      "is_active": "{{is_active}} Active"
+    }
+  },
+
+  "auth": {
+    "user_information": "User information",
+    "old_password": "Old password",
+    "new_password": "New password",
+    "repeat_password": "Repeat new password",
+    "enter_here": "Enter here",
+    "login": "Login",
+    "password": "Password",
+    "forgot_password": "Forgot password?",
+    "password_reset_msg": "If this user exists, then a confirmation link will shortly be sent to {{ reset_email }}",
+    "check_your_inbox": "Please check your inbox.",
+    "contact_you_soon": "We will contact you soon",
+    "please_enter_email": "Please enter your Email",
+    "enter_your_new_password": "ENTER YOUR NEW PASSWORD",
+    "enter_new_password": "Enter new password",
+    "repeat_new_password": "Repeat new password",
+    "successfully_changed": "Successfully changed your password.",
+    "you_can_login_now": "You can login now",
+    "invitation": {
+      "to_able_account_msg": "To be able to use CryptX you have to set up your password",
+      "new_password_placeholder": "New password",
+      "repeat_password_placeholder": "Repeat new password"
+    }
+  },
+
+  "deposits": {
+    "header": "Deposits",
+    "please_specify_amount": "Please specify amount",
+    "please_specify_management_fee": "Please specify management fee",
+    "placeholder_amount": "4.55",
+    "placeholder_management_fee": "4.85",
+    "are_you_sure_want_to_approve": "Are you sure want to approve this deposit?",
+    "status": {
+      "150": "Pending",
+      "151": "Completed"
+    },
+    "deposit": "Deposit",
+    "deposit_management_activity_log": "Deposit management activity log",
+    "deposits_not_created": "Deposits are not created yet",
+    "footer": {
+      "id": "{{ id }} items",
+      "investment_run_id": "{{ investment_run_id }} ids",
+      "exchange_id": "{{ assets }} assets",
+      "quote_asset": "{{ quote_asset }} assets",
+      "account": "{{ account }} accounts",
+      "status": "{{ status }} pending"
+    }
+  },
+
+  "cold_storage": {
+    "custodians": {
+      "header": "Custodians"
+    },
+    "transfers": {
+      "status": {
+        "91": "Pending",
+        "92": "Approved",
+        "93": "Sent",
+        "94": "Completed",
+        "95": "Failed"
+      }
+    },
+    "account_storage_fee": {
+      "header": "Cold storage account storage fee"
+    }
+  },
+
+  "error": {
+    
+  },
+
+  "logs": {
+    "universal": {
+
+      "create": "System added a new {{name}}",
+      "create_user": "{{user_name}} add a new {{name}}",
+
+      "modified": "System changed <b>{{column}}</b> from <b>{{prev_value}}</b> to <b>{{new_value}}</b>",
+      "modified_user": "{{user_name}} changed <b>{{column}}</b> from <b>{{prev_value}}</b> to <b>{{new_value}}</b>",
+      "modified_set": "System set <b>{{column}}</b> to <b>{{new_value}}</b>",
+      "modified_set_user": "{{user_name}} set <b>{{column}}</b> to <b>{{new_value}}</b>",
+
+      "error": "Error: {{error}}",
+      "error_user": "{{user_name}} has encountered an Error: {{error}}", 
+      "warning": "Warning: {{warning}}"
+
+
+    },
+    
+    "instruments": {
+      "mapping_removed": "System removed mapping <b>{{ identifier }}</b> for exchange <b>{{ exchange }}</b>",
+      "mapping_removed_user": "{{user_name}} removed mapping <b>{{ identifier }}</b> for exchange <b>{{ exchange }}</b>",
+      
+      "mapping_added": "System added mapping <b>{{ identifier }}</b> for exchange <b>{{ exchange }}</b>",
+      "mapping_added_user": "{{user_name}} added mapping <b>{{ identifier }}</b> for exchange <b>{{ exchange }}</b>",
+
+      "mapping_modified": "System set mapping to <b>{{ identifier }}</b> for exchange <b>{{ exchange }}</b>",
+      "mapping_modified_user": "{{user_name}} set mapping to <b>{{ identifier }}</b> for exchange <b>{{ exchange }}</b>"
+    },
+
+    "ask_bid_fetcher": {
+      "job_error": "Ask & Bid Fetcher: Job failed with error: {{ error }}",
+      "instrument_without_data": "Ask & Bid Fetcher: Received {{ instrument }} instrument data without {{types}} price from {{exchange}} exchange. Skipping price update for this instrument.",
+      "failed_to_fetch": "Ask & Bid Fetcher: System didn't receive prices from {{exchange}} exchange for instruments: {{instruments}}",
+      "instrument_error": "Ask & Bid Fetcher: Error while fetching price for {{instrument}} from {{exchange}}: {{error}}"
+    },
+
+    "execution_orders": {
+      "placed": "Order was placed to {{exchange}}",
+      "error": "Error: {{error}}",
+      "failed_attempts": "Execution order Failed after {{attempts}} attempts`}",
+      "failed": "Execution order Failed due to: {{reason}}",
+      "generate_fill": "Retrieved a new fill with amount of {{amount}}",
+      "fully_filled": "Execution order Fully Filled"
+    },
+
+    "assets": {
+      "status": "System changed Status from {{prev_status}} to {{new_status}} due to {{reason}}",
+      "status_user": "{{user_name}} changed Status from {{prev_status}} to {{new_status}}, reason: {{reason}}"
+    },
+
+    "deposits": {
+      "generate": "System generated {{amount}} Deposits for Recipe Run RR-{{recipe_id}}",
+      "completed": "Deposit Completed"
+    }
+  },
+
+  "cold_storage_transfers": {
+    "header": "Cold storage transfers",
+    "are_you_sure_want_to_approve": "Are you sure want to approve this Cold storage transfer?",
+    "status": {
+      "91":"Pending",
+      "92":"Approved",
+      "93":"Sent",
+      "94":"Completed",
+      "95":"Failed"
+    },
+    "footer": {
+      "id": "{{id}} Items",
+      "asset": "{{asset}} Assets",
+      "status": "{{ status }} Pending",
+      "source_exchange": "{{source_exchange}} Exchanges",
+      "balance_usd": "{{balance_usd}} Total"
+    }
+  },
+
+  "cold_storage_accounts": {
+    "header": "Cold storage accounts",
+    "new_account": "New account",
+    "add_new_account": "Add new cold storage account",
+    "parameters": "Parameters",
+    "address": "Address",
+    "enter_address": "Enter address",
+    "portfolio": "Portfolio",
+    "custodian": "Custodian",
+    "asset": "Asset",
+    "tag": "Tag",
+    "enter_tag": "Enter tag",
+    "select_portfolio": "Select portfolio",
+    "enter_asset": "Enter asset",
+    "select_custodian": "Select custodian"
+  }
+}

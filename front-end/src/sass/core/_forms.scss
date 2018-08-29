@@ -1,0 +1,228 @@
+.form-item {
+    position: relative;
+    display: inline-block;
+    width: 100%;
+    margin-bottom: 15px;
+
+    &:last-child {
+        margin-bottom: 0;
+    }
+
+    &:first-child {
+        .label-name {
+            margin-top: 0;
+        }
+
+        .check-list &{
+            .label-name {
+                margin-top: 5px;
+            }
+        }
+    }
+
+    &.with-icons {
+        position: relative;
+
+        &:before {
+            content: "";
+            width: 20px;
+            height: 20px;
+            position: absolute;
+            left: 13px;
+            top: 50%;
+            @include translate(0, -50%);
+        }
+
+        &.icon-login {
+            input {
+                background: url($imagePath + "icons/user.svg") 14px center no-repeat;
+
+                &:hover, &:focus, &:active, &.focus {
+                    background: rgba(235,255,243,0.40) url($imagePath + "icons/user-focus.svg") 14px center no-repeat;
+                }
+
+                &.focus {
+                    border: 1px solid #10A950;
+                    opacity: 1;
+                }
+            }
+        }
+
+        &.icon-password {
+            input {
+                background: url($imagePath + "icons/password.svg") 14px center no-repeat;
+
+                &:hover, &:focus, &:active, &.focus {
+                    background: rgba(235,255,243,0.40) url($imagePath + "icons/password-focus.svg") 14px center no-repeat;
+                }
+
+                &.focus {
+                    border: 1px solid #10A950;
+                    opacity: 1;
+                }
+            }
+        }
+
+        input {
+            padding-left: 45px;
+        }
+    }
+
+    input, textarea {
+        width: 100%;
+        height: 45px;
+        opacity: 0.7;
+        background: #F7F9FA;
+        border: 1px solid rgba(120,144,156,0.20);
+        border-radius: 3px;
+        font-size: 15px;
+        padding: 0 10px;
+        color: $black;
+
+        @include placeholder() {
+            font-size: 15px;
+            color: #B3C0CD;
+        }
+
+        &:hover, &:focus {
+            background: rgba(235,255,243,0.40);
+            border: 1px solid #10A950;
+            opacity: 1;
+        }
+
+        &:-webkit-autofill {
+            -webkit-box-shadow: 0 0 0 30px white inset;
+            background: rgba(235,255,243,0.40);
+        }
+
+        &.error {
+            border: 1px solid #F74F61;
+            border-radius: 3px;
+        }
+    }
+
+    textarea {
+        height: 80px;
+        resize: none;
+        padding: 10px 15px;
+    }
+
+    .progress-spinner {
+        position: absolute;
+        right: 9px;
+        bottom: 10px;
+    }
+}
+
+.form-item-caledar {
+    width: 100%;
+    display: inline-block;
+    margin-bottom: 10px;
+
+    &:last-child() {
+        margin-bottom: 0;
+    }
+
+    label {
+        color: #404956;
+        text-transform: none;
+        font-weight: 400;
+        font-size: 12px;
+        margin-bottom: 3px;
+        display: inline-block
+    }
+
+    input {
+        opacity: 0.7;
+        background: #F7F9FA;
+        border: 1px solid rgba(120,144,156,0.20);
+        border-radius: 3px;
+        height: 30px;
+        padding: 0 10px;
+        width: 100%;
+        font-size: 13px;
+        padding-right: 35px;
+    }
+}
+
+.label-name {
+    font-size: 15px;
+    line-height: 16px;
+    margin-bottom: 8px;
+    display: inline-block;
+    width: 100%;
+    margin-top: 5px;
+}
+
+.forgot-pass {
+    opacity: 0.8;
+    font-weight: 600;
+    font-size: 11px;
+    color: #78909C;
+    letter-spacing: 0.13px;
+    text-align: center;
+    text-transform: uppercase;
+}
+
+.checkboxes-modal {
+    flex: 1;
+
+    &:first-child {
+        margin-left: 0;
+    }
+
+    &:last-child {
+        margin-right: 0;
+    }
+
+    input {
+        position: absolute;
+        opacity: 0;
+
+        &:checked + label {
+            background: rgba(235,255,243,0.40);
+            border-radius: 3px;
+            border-color: $green;
+        }
+
+        .checkboxes-item & {
+            &:checked + label {
+                position: relative;
+                color: $green;
+
+                &::after {
+                    content: "";
+                    width: 20px;
+                    height: 20px;
+                    @include backgroundC("icons/action-true.svg");
+                    position: absolute;
+                    top: 50%;
+                    right: 9px;
+                    @include translate(0, -50%);
+                }
+            }
+        }
+    }
+
+    label {
+        background: #F9FAFC;
+        border: 1px solid #D6DADF;
+        border-radius: 3px;
+        text-align: center;
+        padding: 10px 20px;
+        font-size: 15px;
+        color: $gray;
+        display: inline-block;
+        width: 100%;
+        cursor: pointer;
+        position: relative;
+
+        .checkboxes-item & {
+            text-align: left;
+            padding: 10px;
+        }
+    }
+}
+
+
+

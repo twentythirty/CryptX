@@ -57,10 +57,15 @@ const authUser = async function (credentials, clientIP) {
   );
   if (err) TE(err.message);
 
-  if (!user) TE("Not registered");
+  const bad_user_pass_pair = "Invalid username or password";
+
+  if (!user) TE(bad_user_pass_pair);
 
   [err, user] = await to(user.comparePassword(credentials.password));
-  if (err) TE(err.message);
+  if (err) TE(bad_user_pass_pair);
+
+  //user entered valid credentials but is blocked in system, let them know
+  if (!user.is_active) TE("Your account has been deactivated. Please contact the system administrator.");
 
   //user valid, lets make a session
   [err, session] = await to(
@@ -114,15 +119,6 @@ const changeUserInfo = async function (user_id, new_info) {
   let err, user = await User.findById(user_id);
   if (!user) TE("User with id %s not found!", user_id)
 
-  // attempt to change password if new_password is supplied.
-  if (new_info.new_password) {
-    [err, user] = await to(this.updatePassword(
-      user.id, new_info.old_password, new_info.new_password
-    ));
-    
-    if (err) TE(err.message);
-  }
-  
   //create object from allowed for editing prop names
   user = Object.assign(user, _.fromPairs(_.zipWith([
     'first_name',
@@ -139,6 +135,12 @@ const changeUserInfo = async function (user_id, new_info) {
 
   [err, user] = await to(user.save());
   if (err) TE(err.message);
+
+  let roles = new_info.roles;
+  if (roles) {
+    [err, user] = await to(this.changeUserRoles(user_id, roles));
+    if (err) return ReE(res, err.message, 422);
+  } 
 
   return user;
 }
@@ -220,12 +222,13 @@ const sendPasswordResetToken = async function (email) {
     }
   }));
 
-  if(!user) TE('User not found');
-  if(!user.is_active) TE('User is inactive');
+  //if there is no user found for this email or the user is inactive,
+  //we need to fail silently for security reasons
+  if(!user || !user.is_active) return null;
 
   user.reset_password_token_hash = uuidv4();
   user.reset_password_token_expiry_timestamp = new Date(
-    new Date().getTime() + (24 * 60 * 60 * 1000)
+    new Date().getTime() + (60 * 60 * 1000) // current time + 1 hour
   );
   
   [err, user] = await to(user.save());
@@ -280,3 +283,29 @@ const resetPassword = async function (user_id, new_password) {
   return user;
 }
 module.exports.resetPassword = resetPassword;
+
+const terminateUserSessions = async function (user_id) {
+
+  let [err, user_sessions] = await to(UserSession.findAll({
+    where: {
+      user_id: user_id,
+      expiry_timestamp: {
+        [Op.gt]: new Date()
+      }
+    }
+  }));
+
+  if (err) TE(err.message);
+
+  [err, user_sessions] = await to(Promise.all(
+    user_sessions.map(session => {
+      session.expiry_timestamp = new Date();
+
+      return session.save();
+    })
+  ));
+  if (err) TE(err.message);
+
+  return user_sessions;
+}
+module.exports.terminateUserSessions = terminateUserSessions;

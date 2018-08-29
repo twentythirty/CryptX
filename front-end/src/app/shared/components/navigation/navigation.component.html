@@ -1,19 +1,47 @@
-<div class="topbar">
-  <nav>
-    <a routerLink="/dashboard" *ngIf="checkPerm(['VIEW_INVESTMENT_RUN'])">Dashboard</a>
-    <a href="#" *ngIf="checkPerm(['ALTER_PERMS'])">Recipe Runs</a>
-    <a href="#" *ngIf="checkPerm(['CHANGE_ASSET_STATUS'])">Assets</a>
-    <a href="#" *ngIf="checkPerm(['EDIT_USERS'])">User Management</a>
-    <a routerLink="/roles" *ngIf="checkPerm(['VIEW_ROLES'])">Role Management</a>
-    <a href="#" *ngIf="checkPerm(['VIEW_SETTING_VALUES'])">Setting Management</a>
-  </nav>
-  <div>
-    <button (click)="toggleUserMenu()">{{ authService.user.first_name }} {{ authService.user.last_name }} </button>
-    <div *ngIf="showUserMenu" class="user-menu">
-      <button routerLink="/change_my_info">Change password</button>
-      <br>
-      <button (click)="logout()">Logout</button>
+<header>
+  <div class="wrapper">
+    <div class="top-header-part">
+      <a routerLink="/dashboard" class="logo"></a>
+      <div class="user-details">
+        <div *ngIf="initials" class="user-initials">{{initials}}</div>
+        <div class="user-name-role">
+          <span class="name">
+            <div>
+              <button (click)="toggleUserMenu()">{{ authService.user.first_name }} {{ authService.user.last_name }} </button>
+              <div *ngIf="showUserMenu"  class="filter-sort-box display-block">
+                  <ul class="bottom-part user-dropdown">
+                    <li class="row">
+                      <button routerLink="/change_my_info" (click)="hideAll()">{{'common.change_password' |translate}}</button>
+                    </li>
+                    <li class="row">
+                      <button (click)="logout()">{{'common.logout' | translate}}</button>
+                    </li>
+                  </ul>
+              </div>
+           </div>
+          </span>
+        </div>
+      </div>
     </div>
-  </div>
-</div>
 
+    <nav>
+      <div *ngFor="let item of nav" class="navigation">
+        <div class="menu-item" routerLinkActive="active">
+          <ng-container *ngIf="!item.items">
+            <a routerLink="{{item.link}}" *ngIf="checkPerm(item.permission)" (click)="hideAll()">{{item.name}}</a>
+          </ng-container>
+          <ng-container *ngIf="item.items">
+            <a routerLinkActive="active" (click)="toggleDropDownMenu(item)">
+              {{item.name}}
+              <div [class.dropdown-open]="item.show" class="open-arrow"></div>
+            </a>
+            <ul [hidden]="!item.show" class="dropdown-box">
+              <li *ngFor="let submenu of item.items"><a class="menu-item" (click)="hideAllDropDownMenus()" routerLinkActive="active" routerLink="{{submenu.link}}">{{submenu.name}}</a></li>
+            </ul>
+          </ng-container>
+        </div>
+      </div>
+    </nav>
+
+  </div>
+</header>

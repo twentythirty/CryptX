@@ -13,11 +13,22 @@ module.exports = (sequelize, DataTypes) => {
           type: DataTypes.SMALLINT,
           allowNull: false
       },
-      placed_timestamp: DataTypes.DATE,
-      completed_timestamp: DataTypes.DATE,
+      placed_timestamp: {
+        type: DataTypes.DATE,
+        allowNull: true
+      },
+      completed_timestamp: {
+        type: DataTypes.DATE,
+        allowNull: true
+      },
       amount: {
         type: DataTypes.DECIMAL,
         allowNull: false
+      },
+      fee: {
+        type: DataTypes.DECIMAL,
+        allowNull: false,
+        defaultValue: 0.0
       }
     },
     modelProps(

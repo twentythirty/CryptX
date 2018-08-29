@@ -1,0 +1,4 @@
+<ng-container *ngIf="show(row)">
+	<a class="action true" (click)="execConfirm(row)"></a> <!-- yes -->
+	<a class="action false" (click)="execDecline(row)"></a> <!-- no -->
+</ng-container>

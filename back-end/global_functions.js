@@ -4,14 +4,17 @@ const util = require('util');
 
 const IncomingMessage = require("http").IncomingMessage;
 
-to = function(promise) {
+//allow the to mechanism to not parse the error it receives assuming the error is preparsed
+to = function(promise, parse_error = true) {
   
   //global function that will help use handle promise rejections, this article talks about it http://blog.grossman.io/how-to-write-async-await-without-try-catch-blocks-in-javascript/
   return promise
     .then(data => {
       return [null, data];
     })
-    .catch(err => [pe(err)]);
+    .catch(err => [
+      parse_error? pe(err) : err
+    ]);
 };
 
 pe = require("parse-error"); //parses error so you can read error message and handle them accordingly
@@ -19,10 +22,15 @@ pe = require("parse-error"); //parses error so you can read error message and ha
 TE = function(err_message, ...args) {
   // TE stands for Throw Error
   if (process.env.NODE_ENV == 'dev') {
-    console.error(err_message, args);
+    if (args.length)
+      console.error(err_message, args);
+    else
+      console.error(err_message);
   }
 
-  throw new CryptXError(util.format(err_message, args));
+  const formatted_error = args.length? util.format(err_message, args) : util.format(err_message);
+
+  throw new CryptXError(formatted_error);
 };
 
 ReE = function(res, err, code) {
@@ -38,7 +46,12 @@ ReE = function(res, err, code) {
 
 ReS = function(res, data, code) {
   // Success Web Response
-  let send_data = { success: true };
+  let send_data = { 
+    success: true,
+   };
+   if (res.next_token != null) {
+    send_data.next_token = res.next_token;
+   }
 
   if (typeof data == "object") {
     send_data = Object.assign(data, send_data); //merge the objects

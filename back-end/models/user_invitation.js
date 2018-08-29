@@ -11,9 +11,16 @@ module.exports = (sequelize, DataTypes) => {
             },
             token: DataTypes.STRING,
             token_expiry_timestamp: DataTypes.DATE,
-            first_name: DataTypes.STRING,
-            last_name: DataTypes.STRING,
-            email: DataTypes.STRING
+            email: {
+                type: DataTypes.STRING,
+                allowNull: false,
+                unique: false,
+                validate: {
+                    isEmail: {
+                        msg: "Email invalid."
+                    }
+                }
+            }
         },
         modelProps(
             'user_invitation',
@@ -22,10 +29,13 @@ module.exports = (sequelize, DataTypes) => {
     );
 
     UserInvitation.associate = function (models) {
-        UserInvitation.belongsTo(models.Role);
         UserInvitation.belongsTo(models.User, {
             as: 'creator',
             foreignKey: 'creator_id'
+        });
+        UserInvitation.belongsTo(models.User, {
+            as: 'user',
+            foreignKey: 'user_id'
         });
     };
 

@@ -4,9 +4,11 @@ const Permission = require("../models").Permission;
 const Sequelize = require('../models').Sequelize;
 const Op = Sequelize.Op;
 const authService = require("./../services/AuthService");
+const adminViewsService = require('../services/AdminViewsService');
 const inviteService = require('./../services/InvitationService');
 const mailUtil = require('./../utils/EmailUtil');
 const model_constants = require('../config/model_constants');
+require('../config/validators');
 
 const create = async function (req, res) {
   const body = req.body;
@@ -31,10 +33,10 @@ const issueInvitation = async function (req, res) {
     first_name,
     last_name,
     email,
-    role_id
+    role_id// array or role ids 
   } = req.body;
-
-  let [err, invitation] = await to(inviteService.createInvitation(
+  
+  let [err, user_and_invite] = await to(inviteService.createUserAndInvitation(
     req.user,
     role_id,
     first_name,
@@ -42,11 +44,16 @@ const issueInvitation = async function (req, res) {
     email));
   if (err) return ReE(res, err, 422);
 
+  const [user, invitation] = user_and_invite;
+
   let email_result;
   [err, email_result] = await to(mailUtil.sendMail(
     email,
-    `Invitation to CryptX`,
-    mailUtil.invitationMailHTML(invitation)
+    `You have been invited to join CryptX!`,
+    mailUtil.invitationMailHTML({
+      full_name: user.full_name(),
+      token: invitation.token
+    })
   ));
 
   if (err) {
@@ -84,13 +91,26 @@ const createByInvite = async function (req, res) {
     password
   } = req.body;
 
-  let [err, user] = await to(inviteService.createUserByInvite(invitation_id, password));
+  let [err, user] = await to(inviteService.setUpProfile(invitation_id, password));
   if (err) {
     return ReE(res, err, 422);
   }
+  
+  //user established, lets log them in
+  [err, userWithSession] = await to(authService.authUser({
+    username: user.email, 
+    password
+  }, req.ip));
+  if (err) return ReE(res, err, 422);
+  let perms, session;
+  [user, perms, session] = userWithSession;
 
   return ReS(res, {
-    user: user.toWeb()
+    token: session.token,
+    permissions: perms,
+    model_constants: model_constants,
+    validators: VALIDATORS,
+    user: user.toWeb(false)
   });
 };
 module.exports.createByInvite = createByInvite;
@@ -104,14 +124,28 @@ const login = async function (req, res) {
   [user, perms, session] = userWithSession;
 
   return ReS(res, {
+    //maintain unified format for JWT-SRT mechanism
+    next_token: session.token, 
     token: session.token,
     permissions: perms,
     model_constants: model_constants,
+    validators: VALIDATORS,
     user: user.toWeb(false)
   });
 };
 module.exports.login = login;
 
+const logout = async function (req, res) {
+
+  let [err, sessions] = await to(authService.terminateUserSessions(req.user.id));
+
+  if (err) return ReE(res, err.message, 422);
+
+  return ReS(res, {
+    message: "OK!"
+  });
+};
+module.exports.logout = logout;
 /** 
  * fetch proper DB-friendly numeric user id from request parameters.
  * 
@@ -127,19 +161,19 @@ function resolveUserId(req) {
 const getUsers = async function (req, res) {
 
   console.log('WHERE clause: %o', req.seq_where);
-  //only search active users
-  if (!req.seq_where.is_active) {
-    req.seq_where.is_active = true;
-  }
+  console.log(`SQL WHERE clause: ${req.sql_where}`);
+  let [err, result] = await to(adminViewsService.fetchUsersViewDataWithCount(req.seq_query));
+  if (err) return ReE(res, err.message, 422);
+  let footer = [];
+  [err, footer] = await to(adminViewsService.fetchUsersViewFooter(req.sql_where));
+  if(err) return ReE(res, err.message, 422);
 
-  let [err, result] = await to(User.findAndCountAll(req.seq_query));
-  if (err) ReE(res, err.message, 422);
-
-  let { rows: users, count } = result;
+  let { data: users, total: count } = result;
   
   return ReS(res, {
-    users: users.map(u => u.toWeb()),
-    count
+    users,
+    count,
+    footer
   });
 };
 module.exports.getUsers = getUsers;
@@ -149,7 +183,7 @@ const getUser = async function (req, res) {
   let user = await User.findOne({
     where: {
       id: resolveUserId(req),
-      is_active: true
+      //is_active: true
     },
     include: [Role]
   });
@@ -161,6 +195,20 @@ const getUser = async function (req, res) {
   });
 };
 module.exports.getUser = getUser;
+
+const getUsersColumnLOV = async (req, res) => {
+
+  const field_name = req.params.field_name
+  const { query } = _.isPlainObject(req.body)? req.body : { query: '' };
+
+  const field_vals = await adminViewsService.fetchUsersViewHeaderLOV(field_name, query, req.sql_where);
+
+  return ReS(res, {
+    query: query,
+    lov: field_vals
+  })
+};
+module.exports.getUsersColumnLOV = getUsersColumnLOV;
 
 const getUserPermissions = async function (req, res) {
 
@@ -196,7 +244,7 @@ const editUser = async function (req, res) {
 
   let [err, user] = await to(authService.changeUserInfo(user_id, req.body));
 
-  if (err) return ReE(res, err, 422);
+  if (err) return ReE(res, err.message, 422);
 
   return ReS(res, {
     user: user.toWeb()
@@ -227,9 +275,19 @@ const changePassword = async function (req, res) {
   let [err, user] = await to(authService.updatePassword(user_id, old_password, new_password));
   if (err) return ReE(res, "Old password doesn't match", 403);
 
-  let status;
+  let status; 
   [err, status] = await to(authService.expireOtherSessions(user_id, req.headers.authorization));
   if (err) return ReE(res, err, 403);
+
+  mailUtil.sendMail(
+    user.email,
+    `Password change notification`,
+    mailUtil.passwordChangeNotification({
+      full_name: user.full_name(),
+      change_time: new Date(),
+      ip_address: req.headers['x-forwarded-for'] || req.connection.remoteAddress || req.ip
+    })
+  );
 
   return ReS(res, {
     user: user.toWeb()
@@ -255,11 +313,17 @@ const sendPasswordResetToken = async function (req, res) {
   let email = req.body.email;
   let [err, user] = await to(authService.sendPasswordResetToken(email));
   if (err) return ReE(res, err, 404);
+
+  //service could have failed silently
+  //return an OK response, but an empty one
+  if (user == null) {
+    return ReS(res, { message: `Password reset token created if ${email} is a valid user` })
+  }
   
   let email_result;
   [err, email_result] = await to(mailUtil.sendMail(
     email,
-    `Reset your password in CryptX`,
+    `Reset your CryptX password`,
     mailUtil.passwordResetMailHTML({
       token: user.reset_password_token_hash,
       email: user.email,
@@ -270,7 +334,7 @@ const sendPasswordResetToken = async function (req, res) {
 
   if (err) return ReE(res, err, 422);
 
-  return ReS(res, {message: 'Password reset token created'});
+  return ReS(res, { message: `Password reset token created if ${email} is a valid user` })
 }
 module.exports.sendPasswordResetToken = sendPasswordResetToken;
 
@@ -293,10 +357,37 @@ const resetPassword = async function (req, res) {
   let [err, user] = await to(authService.verifyResetTokenValidity(token));
   if (err) return ReE(res, "Token not valid or expired", 404);
 
+  //perform password reset
   [err, user] = await to(authService.resetPassword(user.id, password));
   if (err) return ReE(res, err, 422);
 
-  return ReS(res, {message: 'Password successfully changed'});
+  //perform proper user login
+  [err, userWithSession] = await to(authService.authUser({
+    username: user.email,
+    password
+  }, req.ip));
+  if (err) return ReE(res, err, 422);
+  let perms, session;
+
+  [user, perms, session] = userWithSession;
+
+  mailUtil.sendMail(
+    user.email,
+    `Password change notification`,
+    mailUtil.passwordChangeNotification({
+      full_name: user.full_name(),
+      change_time: new Date(),
+      ip_address: req.headers['x-forwarded-for'] || req.connection.remoteAddress || req.ip
+    })
+  )
+
+  return ReS(res, {
+    token: session.token,
+    permissions: perms,
+    model_constants: model_constants,
+    validators: VALIDATORS,
+    user: user.toWeb(false)
+  });
 };
 module.exports.resetPassword = resetPassword;
 

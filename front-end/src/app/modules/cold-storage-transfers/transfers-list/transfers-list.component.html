@@ -1,0 +1,25 @@
+<div class="top-controls">
+  <span class="headline-title">{{count}} {{'cold_storage_transfers.header' | translate}}</span>
+</div>
+
+<app-data-table class="table"
+  [dataSource]="transfersDataSource"
+  [columnsToShow]="transfersColumnsToShow"
+  [loading]="isTableLoading"
+  (setFilter)="onSetFilter($event)"
+  (openRow)="openRow($event)"
+></app-data-table>
+
+<app-pagination
+  [count]="count"
+  [perPage]="pageSize"
+  [page]="page"
+  [loading]="isTableLoading"
+></app-pagination>
+
+<app-confirm
+  *ngIf="modalShow"
+  [heading]="'cold_storage_transfers.are_you_sure_want_to_approve' | translate"
+  (onReject)="hideConfirm()"
+  (onConfirm)="confirm()"
+></app-confirm>

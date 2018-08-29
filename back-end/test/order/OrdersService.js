@@ -15,12 +15,13 @@ const RecipeRunDetail = require('../../models').RecipeRunDetail;
 const ExchangeAccount = require('../../models').ExchangeAccount;
 const RecipeOrderGroup = require('../../models').RecipeOrderGroup;
 const RecipeOrder = require('../../models').RecipeOrder;
+const ExecutionOrder = require('../../models').ExecutionOrder;
 const Instrument = require('../../models').Instrument;
 const Asset = require('../../models').Asset;
 const InstrumentExchangeMapping = require('../../models').InstrumentExchangeMapping;
 const InstrumentMarketData = require('../../models').InstrumentMarketData;
-const CCXTUtils = require('../../utils/CCXTUtils');
-
+const ccxtUtils = require('../../utils/CCXTUtils');
+const Op = require('../../models').Sequelize.Op;
 
 
 
@@ -37,12 +38,18 @@ describe('OrdersService testing', () => {
     const TEST_INSTRUMENTS = [{
             id: 900,
             symbol: 'TST1/TST2',
+            reverse_symbol: () => {
+                return 'TST2/TST1'
+            },
             transaction_asset_id: 800,
             quote_asset_id: QUOTE_ASSET_ID
         },
         {
             id: 901,
             symbol: 'TST3/TST2',
+            reverse_symbol: () => {
+                return 'TST2/TST3'
+            },
             transaction_asset_id: 802,
             quote_asset_id: QUOTE_ASSET_ID
         }
@@ -88,8 +95,8 @@ describe('OrdersService testing', () => {
         return _.map(TEST_INSTRUMENTS, instrument => {
 
             return {
-                tisk_size: 0.00001,
-                exchnage_id: exchange_id,
+                tick_size: 0.00001,
+                exchange_id: exchange_id,
                 instrument_id: instrument.id,
                 external_instrument_id: `TST${instrument.transaction_asset_id - 800 + 1}/TST${instrument.quote_asset_id - 800 +1}`
             }
@@ -107,6 +114,20 @@ describe('OrdersService testing', () => {
             }
         })
     }));
+
+    const TEST_EXECUTION_ORDER = {
+        id: 1,
+        status: EXECUTION_ORDER_STATUSES.Pending,
+        save: function() {
+            return Promise.resolve(this);
+        },
+        toJSON: function() {
+            let json = _.clone(this);
+            delete json.save;
+            delete json.toJSON;
+            return json;
+        }
+    }
 
     it("the service shall exist", function () {
         chai.expect(ordersService).to.exist;
@@ -152,7 +173,7 @@ describe('OrdersService testing', () => {
 
                     return Promise.resolve(new RecipeOrder(options));
                 });
-                sinon.stub(CCXTUtils, 'getConnector').callsFake(data => {
+                sinon.stub(ccxtUtils, 'getConnector').callsFake(data => {
 
                     return Promise.resolve({
                         fetchBalance: async () => {
@@ -166,6 +187,29 @@ describe('OrdersService testing', () => {
                         }
                     });
                 });
+                sinon.stub(ccxtUtils, 'allConnectors').callsFake(data => {
+
+                    const markets = _.fromPairs(_.map(TEST_ASSETS, asset => {
+
+                        return [
+                            asset.symbol,
+                            {
+                                limits: {
+                                    amount: {
+                                        min: 0
+                                    }
+                                }
+                            }
+                        ]
+                    }));
+
+                    return Promise.resolve(_.zipObject(
+                        TEST_EXCHANGE_IDS, 
+                        _.times(TEST_EXCHANGE_IDS.length, _.constant({ 
+                            markets
+                         }))
+                    ))
+                });
                 sinon.stub(RecipeRunDeposit, 'findAll').callsFake(options => {
 
                     return Promise.resolve(
@@ -175,7 +219,8 @@ describe('OrdersService testing', () => {
                                     target_exchange_account_id: exchange_account_id,
                                     asset_id: asset_id,
                                     recipe_run_id: TEST_RECIPE_RUN.id,
-                                    actual_amount: _.random(0, 500, true)
+                                    amount: _.random(0, 500, true),
+                                    status: RECIPE_RUN_DEPOSIT_STATUSES.Completed
                                 })
                             })
                         }))
@@ -193,13 +238,16 @@ describe('OrdersService testing', () => {
             [
                 RecipeRun.findById,
                 RecipeRunDetail.findAll,
+                RecipeRunDeposit.findAll,
                 Instrument.findAll,
                 Asset.findAll,
                 InstrumentExchangeMapping.findAll,
                 InstrumentMarketData.findAll,
                 RecipeOrderGroup.create,
                 RecipeOrder.create,
-                CCXTUtils.getConnector
+                RecipeOrder.findAll,
+                ccxtUtils.getConnector,
+                ccxtUtils.allConnectors
             ].forEach(model => {
 
                 if (model.restore) {
@@ -260,7 +308,7 @@ describe('OrdersService testing', () => {
                                     target_exchange_account_id: exchange_account_id,
                                     asset_id: asset_id,
                                     recipe_run_id: TEST_RECIPE_RUN.id,
-                                    actual_amount: _.random(0, 500, true)
+                                    amount: _.random(0, 500, true)
                                 })
                             })
                         }))
@@ -280,7 +328,7 @@ describe('OrdersService testing', () => {
                                     target_exchange_account_id: exchange_account_id,
                                     asset_id: asset_id,
                                     recipe_run_id: TEST_RECIPE_RUN.id,
-                                    actual_amount: _.random(0, 500, true)
+                                    amount: _.random(0, 500, true)
                                 })
                             })
                         }))
@@ -291,11 +339,46 @@ describe('OrdersService testing', () => {
             });
         });
 
-        it('shall generate a list of recipe orders if all is good', (done) => {
+        it ('shall reject generating a list of recipes if there are incomplete despoits', () => {
             //ensure method call not rejected due to existing RecipeOrderGroup
             sinon.stub(RecipeOrderGroup, 'findOne').callsFake(options => {
 
                 return Promise.resolve(null);
+            });
+            chai.expect(ordersService.generateApproveRecipeOrders(TEST_RECIPE_RUN.id)).isRejected;
+        });
+
+        it('shall generate a list of recipe orders if all is good', (done) => {
+            if(RecipeOrderGroup.findOne.restore) {
+                RecipeOrderGroup.findOne.restore();
+            }
+            //ensure method call not rejected due to existing RecipeOrderGroup
+            sinon.stub(RecipeOrderGroup, 'findOne').callsFake(options => {
+
+                return Promise.resolve(null);
+            });
+
+            //replace recipe deposit stub to ensure no failed deposits when generating orders
+            RecipeRunDeposit.findAll.restore();
+            sinon.stub(RecipeRunDeposit, 'findAll').callsFake(options => {
+
+                if (_.isPlainObject(options.where.status)) {
+                    return Promise.resolve([])
+                }
+
+                return Promise.resolve(
+                    _.flatMap(_.map(TEST_ASSET_IDS, asset_id => {
+                        return _.map(TEST_EXCHANGE_ACCOUNT_IDS, exchange_account_id => {
+                            return new RecipeRunDeposit({
+                                target_exchange_account_id: exchange_account_id,
+                                asset_id: asset_id,
+                                recipe_run_id: TEST_RECIPE_RUN.id,
+                                amount: _.random(0, 500, true),
+                                status: RECIPE_RUN_DEPOSIT_STATUSES.Completed
+                            })
+                        })
+                    }))
+                )
             });
 
             ordersService.generateApproveRecipeOrders(TEST_RECIPE_RUN.id).then(response => {
@@ -336,6 +419,86 @@ describe('OrdersService testing', () => {
             approval_comment: ''
         }
 
+
+
+        const TEST_RECIPE_ORDER_SHOULD_PASS = {
+
+            id: 1225,
+            recipe_order_group_id: TEST_ORDER_GROUP_ID,
+            status: RECIPE_ORDER_STATUSES.Pending,
+            side: ORDER_SIDES.Buy,
+            instrument_id: TEST_INSTRUMENTS[0].id,
+            Instrument: TEST_INSTRUMENTS[0],
+            target_exchange: {
+                id: TEST_EXCHANGE_IDS[0],
+                name: 'Test exchange'
+            },
+            target_exchange_id: TEST_EXCHANGE_IDS[0]
+        }
+
+        const TEST_RECIPE_ORDER_NO_EXCHANGE = {
+
+            id: 1226,
+            recipe_order_group_id: TEST_ORDER_GROUP_ID,
+            status: RECIPE_ORDER_STATUSES.Pending,
+            side: ORDER_SIDES.Buy,
+            Instrument: TEST_INSTRUMENTS[0],
+            target_exchange: {
+                id: TEST_EXCHANGE_IDS[1],
+                name: 'BAD Test exchange'
+            },
+            target_exchange_id: TEST_EXCHANGE_IDS[1]
+        }
+
+        const TEST_RECIPE_ORDER_NO_MARKET = {
+
+            id: 1225,
+            recipe_order_group_id: TEST_ORDER_GROUP_ID,
+            status: RECIPE_ORDER_STATUSES.Pending,
+            side: ORDER_SIDES.Buy,
+            Instrument: TEST_INSTRUMENTS[0],
+            target_exchange: {
+                id: TEST_EXCHANGE_IDS[0],
+                name: 'Test exchange'
+            },
+            target_exchange_id: TEST_EXCHANGE_IDS[0]
+        }
+
+        beforeEach(done => {
+            sinon.stub(RecipeOrder, 'update').callsFake(options => {
+
+                return Promise.resolve([1]);
+            });
+            done();
+        });
+
+        afterEach(done => {
+            
+            [
+                RecipeRun.findById,
+                RecipeRunDetail.findAll,
+                RecipeRunDeposit.findAll,
+                Instrument.findAll,
+                Asset.findAll,
+                InstrumentExchangeMapping.findAll,
+                InstrumentMarketData.findAll,
+                RecipeOrderGroup.findById,
+                RecipeOrderGroup.create,
+                RecipeOrder.create,
+                RecipeOrder.findAll,
+                RecipeOrder.update,
+                ccxtUtils.getConnector,
+                ccxtUtils.allConnectors
+            ].forEach(model => {
+
+                if (model.restore) {
+                    model.restore();
+                }
+            });
+            
+            done();
+        });
+
         it("exist", function () {
             chai.expect(ordersService.changeRecipeOrderGroupStatus).to.exist;
         });
@@ -363,7 +526,106 @@ describe('OrdersService testing', () => {
             });
         });
 
-        it("shall approve recipe order group when approval is required", () => {
+        it("shall reject if the user tries to approve the group, whose status is not Pending", () => {
+
+            sinon.stub(RecipeOrderGroup, 'findById').callsFake(options => {
+
+                return Promise.resolve(Object.assign({}, TEST_RECIPE_ORDER_GROUP, { approval_status: RECIPE_ORDER_GROUP_STATUSES.Approved }));
+            });
+
+            return chai.assert.isRejected(ordersService.changeRecipeOrderGroupStatus(TEST_USER_ID, TEST_ORDER_GROUP_ID, RECIPE_ORDER_GROUP_STATUSES.Approved, APPROVE_COMMENT));
+        });
+
+        it ("shall reject if a recipe order doesnt have valid exchange", () => {
+            //the group is OK
+            sinon.stub(RecipeOrderGroup, 'findById').callsFake(options => {
+                let new_group = Object.assign({}, TEST_RECIPE_ORDER_GROUP);
+                new_group.save = () => {
+                    return Promise.resolve(new_group);
+                };
+                return Promise.resolve(new_group);
+            });
+
+            //the orders are bad + good
+            sinon.stub(RecipeOrder, 'findAll').callsFake(options => {
+                let obj_ok = Object.assign({}, TEST_RECIPE_ORDER_SHOULD_PASS)
+                obj_ok.save = async () => {
+                    return Promise.resolve(obj_ok);
+                }
+                let obj_bad = Object.assign({}, TEST_RECIPE_ORDER_NO_EXCHANGE)
+                return Promise.resolve([
+                    obj_ok,
+                    obj_bad
+                ])
+            });
+            sinon.stub(ccxtUtils, 'allConnectors').callsFake(options => {
+
+                return Promise.resolve({
+                    [String(TEST_EXCHANGE_IDS[0])]: {
+                        name: 'Test Connector',
+                        getMarket: (symbol) => {
+                            if (symbol == TEST_INSTRUMENTS[0].symbol) {
+                                return {
+                                    active: true
+                                }
+                            } else {
+                                return null
+                            }
+                        }
+                    }
+                })
+            });
+
+            return chai.assert.isRejected(ordersService.changeRecipeOrderGroupStatus(TEST_USER_ID, TEST_ORDER_GROUP_ID, RECIPE_ORDER_GROUP_STATUSES.Approved, APPROVE_COMMENT));
+        });
+
+        it ("shall reject if a recipe order doesnt have valid market on exchange", () => {
+            //the group is OK
+            sinon.stub(RecipeOrderGroup, 'findById').callsFake(options => {
+                let new_group = Object.assign({}, TEST_RECIPE_ORDER_GROUP);
+                new_group.save = () => {
+                    return Promise.resolve(new_group);
+                };
+                return Promise.resolve(new_group);
+            });
+
+            //the orders are bad + good
+            sinon.stub(RecipeOrder, 'findAll').callsFake(options => {
+                let obj_ok = Object.assign({}, TEST_RECIPE_ORDER_SHOULD_PASS)
+                obj_ok.save = async () => {
+                    return Promise.resolve(obj_ok);
+                }
+                let obj_bad = Object.assign({}, TEST_RECIPE_ORDER_NO_MARKET)
+                return Promise.resolve([
+                    obj_ok,
+                    obj_bad
+                ])
+            });
+            sinon.stub(InstrumentExchangeMapping, 'findAll').callsFake(options => {
+                return Promise.resolve([])
+            });
+            sinon.stub(ccxtUtils, 'allConnectors').callsFake(options => {
+
+                return Promise.resolve({
+                    [String(TEST_EXCHANGE_IDS[0])]: {
+                        name: 'Test Connector',
+                        getMarket: (symbol) => {
+                            if (symbol == TEST_INSTRUMENTS[0].symbol) {
+                                return {
+                                    active: true
+                                }
+                            } else {
+                                return null
+                            }
+                        }
+                    }
+                })
+            });
+
+            return chai.assert.isRejected(ordersService.changeRecipeOrderGroupStatus(TEST_USER_ID, TEST_ORDER_GROUP_ID, RECIPE_ORDER_GROUP_STATUSES.Approved, APPROVE_COMMENT));
+        })
+
+        it("shall approve recipe order group when approval is required and update the related order status to Executing", () => {
 
             sinon.stub(RecipeOrderGroup, 'findById').callsFake(options => {
                 let new_group = Object.assign({}, TEST_RECIPE_ORDER_GROUP);
@@ -373,13 +635,62 @@ describe('OrdersService testing', () => {
                 return Promise.resolve(new_group);
             });
 
-            return ordersService.changeRecipeOrderGroupStatus(TEST_USER_ID, TEST_ORDER_GROUP_ID, RECIPE_ORDER_GROUP_STATUSES.Approved, APPROVE_COMMENT).then(recipe_order => {
+            sinon.stub(RecipeOrder, 'findAll').callsFake(options => {
+                let obj = Object.assign({}, TEST_RECIPE_ORDER_SHOULD_PASS)
+                obj.save = async () => {
+                    return Promise.resolve(obj);
+                }
+                return Promise.resolve([
+                    obj
+                ])
+            });
+            sinon.stub(InstrumentExchangeMapping, 'findAll').callsFake(options => {
+                return Promise.resolve([
+                    {
+                        external_instrument_id: TEST_INSTRUMENTS[0].symbol,
+                        instrument_id: TEST_INSTRUMENTS[0].id,
+                        exchange_id: TEST_EXCHANGE_IDS[0]
+                    }
+                ])
+            });
+            sinon.stub(ccxtUtils, 'allConnectors').callsFake(options => {
+
+                return Promise.resolve({
+                    [String(TEST_EXCHANGE_IDS[0])]: {
+                        name: 'Test Connector',
+                        getMarket: (symbol) => {
+                            if (symbol == TEST_INSTRUMENTS[0].symbol) {
+                                return {
+                                    market: {
+                                        active: true
+                                    }
+                                }
+                            } else {
+                                return null
+                            }
+                        }
+                    }
+                })
+            })
+
+            return ordersService.changeRecipeOrderGroupStatus(TEST_USER_ID, TEST_ORDER_GROUP_ID, RECIPE_ORDER_GROUP_STATUSES.Approved, APPROVE_COMMENT).then(recipe_data => {
 
                 RecipeOrderGroup.findById.restore();
+
+                chai.assert.isNotNull(recipe_data, 'Should have returned recipe order group and orders in it!');
+                chai.expect(recipe_data).is.a('array');
+                let [recipe_order, orders] = recipe_data;
                 chai.assert.isNotNull(recipe_order, 'Should have returned recipe order!');
+                chai.expect(orders).is.a('array');
                 chai.assert.equal(recipe_order.approval_status, RECIPE_ORDER_GROUP_STATUSES.Approved, 'Status was not Approved!');
                 chai.assert.equal(recipe_order.approval_user_id, TEST_USER_ID, 'Approval not provided by specified user!');
                 chai.assert.equal(recipe_order.approval_comment, APPROVE_COMMENT, 'approval comment not as specified!');
+
+                orders.map(order => {
+                    chai.assert.equal(order.recipe_order_group_id, TEST_ORDER_GROUP_ID);
+                    chai.assert.equal(order.status, RECIPE_ORDER_STATUSES.Executing, `order ${order} is not executing!`);
+                });
+
             });
         });
 
@@ -422,5 +733,69 @@ describe('OrdersService testing', () => {
                 });
             });
         });
+    });
+
+    describe('and the method changeExecutionOrderStatus shall:', () => {
+
+        before(done => {
+            sinon.stub(ExecutionOrder, 'findById').callsFake(execution_id => {
+                switch(execution_id) {
+                    case 1:
+                        return Promise.resolve(TEST_EXECUTION_ORDER);
+                    case 2:
+                        return Promise.resolve(Object.assign({}, TEST_EXECUTION_ORDER, {
+                            status: EXECUTION_ORDER_STATUSES.Failed
+                        }));
+                    default:
+                        return Promise.resolve(null);
+                }
+            });
+            done();
+        });
+
+        after(done => {
+            ExecutionOrder.findById.restore();
+            done();
+        });
+
+        const changeExecutionOrderStatus = ordersService.changeExecutionOrderStatus;
+
+        it('exist', () => {
+            return chai.expect(changeExecutionOrderStatus).to.be.not.undefined;
+        });
+
+        it('reject if the passed arguments are not valid', () => {
+            return Promise.all(_.map([
+                [],
+                [1, '123'],
+                ['ff', 21],
+                [{}, 2],
+                [1, {}]
+            ], params => {
+                return chai.assert.isRejected(changeExecutionOrderStatus(...params));
+            }));
+        });
+
+        it('reject if the user tries to reinitiate an execution order when it is not Failed', () => {
+            return chai.assert.isRejected(changeExecutionOrderStatus(1, EXECUTION_ORDER_STATUSES.Pending));
+        });
+
+        it('update the status to Pending when the execution order is Failed', () => {
+            return changeExecutionOrderStatus(2, EXECUTION_ORDER_STATUSES.Pending).then(execution_order_data => {
+
+                chai.expect(execution_order_data).to.be.an('object');
+                chai.expect(execution_order_data.original_execution_order).to.be.an('object');
+                chai.expect(execution_order_data.updated_execution_order).to.be.an('object');
+
+                const { original_execution_order, updated_execution_order } = execution_order_data;
+
+                chai.expect(original_execution_order.status).to.equal(EXECUTION_ORDER_STATUSES.Failed);
+                chai.expect(updated_execution_order.status).to.equal(EXECUTION_ORDER_STATUSES.Pending);
+
+                chai.expect(updated_execution_order.failed_attempts).to.equal(0);
+
+            });
+        });
+
     });
 });

@@ -1,0 +1,70 @@
+<app-page-heading
+  [heading]="'cold_storage_accounts.add_new_account' | translate"
+></app-page-heading>
+
+<div class="split-content horizontal">
+  <form [formGroup]="form">
+  <app-content-block
+    [heading]="'cold_storage_accounts.parameters' | translate"
+  >
+
+   <app-input-item class="form-item"
+      fieldType = "select"
+      [label] = "'cold_storage_accounts.portfolio' | translate"
+      [formGroup] = "form"
+      formControlName="strategy_type"
+      [items]="strategies"
+      [spinnerLoading] = "strategiesLoading"
+      placeholder="{{'cold_storage_accounts.select_portfolio' | translate}}"
+    > 
+    </app-input-item>
+
+    <app-input-item class="form-item"
+      fieldType="autocomplete"
+      [label]="'cold_storage_accounts.asset' | translate"
+      [formGroup]="form"
+      formControlName="asset_id"
+      [items]="assets"
+      [spinnerLoading]="assetsLoading"
+      placeholder="{{'cold_storage_accounts.enter_asset' | translate}}"
+    > 
+    </app-input-item>
+
+    <app-input-item class="form-item"
+      fieldType="select"
+      [label]="'cold_storage_accounts.custodian' | translate"
+      [formGroup]="form"
+      formControlName="custodian_id"
+      [items]="custodians"
+      [spinnerLoading]="custodiansLoading"
+      placeholder="{{'cold_storage_accounts.select_custodian' | translate}}"
+    > 
+    </app-input-item>
+
+    <app-input-item class="form-item"
+      type="text"
+      [label]="'cold_storage_accounts.address' | translate"
+      [formGroup]="form"
+      formControlName="address"
+      [placeholder]="'cold_storage_accounts.enter_address' | translate"
+    ></app-input-item>
+
+    <app-input-item class="form-item"
+      type="text"
+      [label]="'cold_storage_accounts.tag' | translate"
+      [formGroup]="form"
+      formControlName="tag"
+      [placeholder]="'cold_storage_accounts.enter_tag' | translate"
+    ></app-input-item>
+  </app-content-block>
+</form>
+
+<app-form-action-bar>
+  <div>
+    <button
+      class="btn submit"
+      [disabled]="buttonLoading || !form.valid"
+      (click)="add()"
+    >{{ 'common.add_new_user' | translate }}</button>
+  </div>
+</app-form-action-bar>

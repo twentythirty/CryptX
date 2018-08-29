@@ -1,23 +1,5 @@
 @import "./../../../../sass/variables";
 
-app-login {
-  text-align: center;
-}
-
-.login-logo {
-  min-height: 50px;
-}
-
-.login-wrapper {  
-  height: 100vh;
-  width: 100%;
-}
-
-.login-form {
-  width: 400px;
-  margin: 0 auto;
-}
-
-input {
-  height: $login-input-height;
+p {
+  color: red;
 }

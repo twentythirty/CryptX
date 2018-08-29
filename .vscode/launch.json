@@ -35,6 +35,24 @@
       "outFiles": [],
       "program": "${workspaceFolder}/bin/www",
       "args": ["--delay", "2550ms"]
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Launch GEN_EXEC_OR job",
+      "program": "${workspaceFolder}/back-end/jobs/jobs-runner.js",
+      "args": [
+        "GEN_EXEC_OR"
+      ]
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Launch EXCH_VOL24 job",
+      "program": "${workspaceFolder}/back-end/jobs/jobs-runner.js",
+      "args": [
+        "EXCH_VOL24"
+      ]
     }
   ]
 }

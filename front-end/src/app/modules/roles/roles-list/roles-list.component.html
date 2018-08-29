@@ -1,38 +1,21 @@
-<div>
-  <div>
-    <div>
-      <h1>Roles</h1>
-      <span class="roles-count">{{rolesCount}}</span>
-    </div>
-
-    <div>
-      <app-btn
-        [routerLink]="['/roles/add']"
-      >
-        Add role
-      </app-btn>
-    </div>
-  </div>
-
-  <app-data-table
-    [dataSource]="rolesDataSource"
-    [columnsToShow]="rolesColumnsToShow"
-    [orderBy]="rolesRequestData.order"
-    (setOrderBy)="onSetOrderBy($event)"
-  >
-    <tr
-      *ngFor="let item of rolesDataSource.body"
-      [routerLink]="['/roles/edit', item.id]"
-    >
-      <td *ngFor="let index of rolesColumnsToShow">
-        {{item[index]}}
-      </td>
-    </tr>
-  </app-data-table>
-
-  <app-pagination
-    [count]="rolesCount"
-    [perPage]="rolesPageSize"
-    [page]="rolesPage"
-  ></app-pagination>
+<div class="top-controls">
+  <span class="headline-title">{{count}} {{ 'roles.roles' | translate }}</span>
+  <a [routerLink]="['/roles/add']" class="btn start">
+    <span>{{ 'roles.add_new_role' | translate }}</span>
+  </a>
 </div>
+
+<app-data-table
+  [dataSource]="rolesDataSource"
+  [columnsToShow]="rolesColumnsToShow"
+  [loading]="isTableLoading"
+  (setFilter)="onSetFilter($event)"
+  (openRow)="openRow($event)">
+</app-data-table>
+
+<app-pagination 
+  [count]="count" 
+  [perPage]="pageSize" 
+  [page]="page"
+  [loading]="isTableLoading">
+</app-pagination>

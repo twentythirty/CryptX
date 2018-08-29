@@ -1,0 +1,44 @@
+<app-page-heading
+  [heading]="'instruments.new_instrument' | translate"
+></app-page-heading>
+
+<div class="split-content horizontal">
+  <app-content-block
+    [heading]="'instruments.parameters' | translate"
+  >
+    
+    <form [formGroup]="form">
+
+      <app-input-item
+        class="form-item"
+        fieldType ="autocomplete"
+        [label]="'instruments.transaction_asset' | translate"
+        [formGroup]="form"
+        formControlName="transaction_asset_id"
+        [items]="assets"
+        [spinnerLoading]="assetsLoading" 
+        [placeholder]="'instruments.enter_transaction_asset' | translate"
+      ></app-input-item>
+
+      <app-input-item
+        class="form-item"
+        fieldType="autocomplete"
+        [label]="'instruments.quote_asset' | translate"
+        [formGroup]="form"
+        formControlName="quote_asset_id"
+        [items]="assets"
+        [spinnerLoading]="assetsLoading"
+        [placeholder]="'instruments.enter_quote_asset' | translate"
+      ></app-input-item>
+    </form>
+
+  </app-content-block>
+</div>
+
+<app-form-action-bar>
+  <button
+    class="btn submit"
+    [disabled]="loading || !form.valid"
+    (click)="saveInstrument()"
+  >{{ 'instruments.add_instrument' | translate }}</button>
+</app-form-action-bar>

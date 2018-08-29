@@ -1,9 +1,12 @@
+declare function require(path: string);
+
 import { Component, OnInit } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
-import { InviteService } from './invite.service';
-import { tap } from 'rxjs/operators';
+import { ActivatedRoute, Router } from '@angular/router';
 import { FormGroup, FormControl, Validators, AbstractControl } from '@angular/forms';
+import { tap } from 'rxjs/operators';
 import { TokenCheck } from '../models/tokenCheck';
+import { InviteService } from './invite.service';
+import { AuthService } from '../../../services/auth/auth.service';
 
 class UserFulfillInvitationInfo {
   new_password: string
@@ -36,7 +39,6 @@ class InvitationCheckSuccessResponse {
 })
 export class AcceptInviteComponent implements OnInit {
   token: TokenCheck = new TokenCheck();
-  done: boolean = false;
   message: string;
   invitationInfo: InvitationInfo;
   userInfo: UserFulfillInvitationInfo = {
@@ -45,7 +47,14 @@ export class AcceptInviteComponent implements OnInit {
   };
   userInfoForm: FormGroup;
 
-  constructor(private route: ActivatedRoute, private inviteService: InviteService) { }
+  imageLogo = require('Images/Logo.png');
+
+  constructor(
+    private route: ActivatedRoute,
+    private router: Router,
+    private inviteService: InviteService,
+    private authService: AuthService,
+  ) { }
 
   ngOnInit() {
     this.userInfoForm = new FormGroup({
@@ -63,43 +72,60 @@ export class AcceptInviteComponent implements OnInit {
     });
   }
 
-  checkTokenValidity () {
+  checkTokenValidity() {
     this.inviteService.checkToken(this.token.value).pipe(
-      tap (() => {
+      tap(() => {
         this.token.validityChecked = true;
       })
     ).subscribe((data: InvitationCheckSuccessResponse) => {
-      console.log(data);
       this.invitationInfo = data.invitation;
       this.token.isValid = true;
     }, error => {
       this.token.isValid = false;
-      this.message = error.error.error;
+      if (error.error) {
+        this.message = error.error.error;
+      }
       console.log(error);
     });
   }
 
-
-  fulfillInvitation  () {
-    if(this.userInfoForm.invalid) {
-      this.message = "Password is required";
-      return ;
+  fulfillInvitation() {
+    if (this.userInfoForm.value.password != this.userInfoForm.value.password_repeat) {
+      this.message = "New password was not repeated correctly";
+      return;
     }
+    if (this.userInfoForm.valid) {
+      let data = {
+        invitation_id: this.invitationInfo.id,
+        password: this.userInfoForm.value.password
+      }
 
-    if(this.userInfoForm.value.password != this.userInfoForm.value.password_repeat) {
-      this.message = "Passwords doesn't match";
-      return ;
+      this.inviteService.fulfillInvitation(data).subscribe(data => {
+        this.autoLogin(data);
+      }, error => {
+        if (error.error) {
+          this.message = error.error.error;
+        }
+      });
+    } else {
+      this.markAsTouched(this.userInfoForm)
     }
-    
-    let data = {
-      "invitation_id": this.invitationInfo.id,
-      "password": this.userInfoForm.value.password
-    }
+  }
 
-    this.inviteService.fulfillInvitation(data).subscribe(data => {
-      this.done = true;
-    }, error => {
-      this.message = error.error.error;
+  markAsTouched(group) {
+    Object.keys(group.controls).map(field => {
+      const control = group.get(field);
+      if (control instanceof FormControl) {
+        control.markAsTouched({ onlySelf: true });
+      } else if (control instanceof FormGroup) {
+        this.markAsTouched(control);
+      }
     });
   }
+
+  private autoLogin(userLoginData): void {
+    this.authService.setAuthData(userLoginData);
+    this.router.navigate(['dashboard']);
+  };
+
 }

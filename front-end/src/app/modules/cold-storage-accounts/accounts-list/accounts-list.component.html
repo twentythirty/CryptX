@@ -1,0 +1,23 @@
+<div class="top-controls">
+  <span class="headline-title">{{count}} {{'cold_storage_accounts.header' | translate}}</span>
+  <a
+    class="btn start"
+    (click)="addAccount()"
+  >
+    <span>{{ 'cold_storage_accounts.new_account' | translate }}</span>
+  </a>
+</div>
+
+<app-data-table
+  [dataSource]="accountsDataSource"
+  [columnsToShow]="accountsColumnsToShow"
+  [loading]="isTableLoading"
+  (setFilter)="onSetFilter($event)"
+></app-data-table>
+
+<app-pagination
+  [count]="count"
+  [perPage]="pageSize"
+  [page]="page"
+  [loading]="isTableLoading"
+></app-pagination>

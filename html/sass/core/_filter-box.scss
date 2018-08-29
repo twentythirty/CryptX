@@ -1,0 +1,159 @@
+.filter-sort-box {
+    position: absolute;
+    width: 190px;
+    top: 40px;
+    left: 50%;
+    text-align: left;
+    @include translate(-50%, 0);
+    background: #F7F7F7;
+    box-shadow: 0 12px 35px 0 rgba(121,137,154,0.70);
+    border-radius: 3px;
+    z-index: 2;
+    display: none;
+    cursor: default;
+
+    &::before {
+        content: "";
+        width: 16px;
+        height: 7px;
+        @include backgroundC("icons/filter-box-arrow.png");
+        background-size: 16px;
+        position: absolute;
+        top: -6px;
+        left: 50%;
+        @include translate(-50%, 0);
+    }
+
+    .top-part {
+        height: 40px;
+        padding: 5px 15px;
+        font-weight: 600;
+        font-size: 13px;
+        color: #404956;
+        line-height: 16px;
+        width: 100%;
+        display: inline-block;
+
+        span {
+            line-height: 33px;
+            width: auto;
+            float: left;
+        }
+
+        .search-in-filters {
+            float: right;
+            .ico {
+                width: 20px;
+                height: 20px;
+                display: inline-block;
+                @include backgroundC("icons/search.svg");
+                cursor: pointer;
+                margin-top: 6px;
+            }
+
+            .search-input {
+                width: 100%;
+                height: 30px;
+                position: relative;
+                display: none;
+
+                input {
+                    width: 100%;
+                    height: 30px;
+                    opacity: 1;
+                    background: #F7F9FA;
+                    border: 1px solid rgba(120,144,156,0.20);
+                    border-radius: 3px;
+                    font-size: 15px;
+                    padding: 0 5px;
+                    color: $black;
+                    padding-right: 23px;
+
+                    @include placeholder() {
+                        font-size: 15px;
+                        color: #B3C0CD;
+                    }
+
+                    &:hover, &:focus {
+                        background: rgba(235,255,243,0.40);
+                        border: 1px solid #10A950;
+                        opacity: 1;
+                    }
+
+                    &:-webkit-autofill {
+                        -webkit-box-shadow: 0 0 0 30px white inset;
+                        background: rgba(235,255,243,0.40);
+                    }
+                }
+
+                .close-search {
+                    cursor: pointer;
+                    width: 15px;
+                    height: 15px;
+                    position: absolute;
+                    right: 5px;
+                    top: 7px;
+                    @include backgroundC("icons/search-close.svg");
+                }
+            }
+        }
+    }
+
+    .list-of-filters {
+        width: 100%;
+        overflow: scroll;
+        height: 185px;
+        background: #fff;
+        padding: 0 15px;
+
+        li {
+            padding: 5px 0;
+            border-bottom: 1px solid #DFE4E6;
+
+            &:last-child {
+                border-bottom: 0;
+            }
+
+            &.with-preloader {
+                position: relative;
+                height: 100%;
+            }
+            
+            .preloader {
+                position: absolute;
+                display: inline-block;
+                width: 26px;
+                height: 26px;
+                top: 0;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                margin: auto;
+            }
+
+            .checkbox {
+                label {
+                    width: 100%;    
+                    &::before {
+                        width: 25px;
+                        height: 25px;
+                    }
+
+                    &::after {
+                        left: 6px;
+                    }
+                }
+            }
+        }
+    }
+
+    .bottom-part {
+        padding: 15px;
+        background: #F7F7F7;
+
+        .btn {
+            width: 100%;
+            margin-top: 12px;
+        }
+    }
+}
