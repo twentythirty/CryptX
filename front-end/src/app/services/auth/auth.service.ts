@@ -111,6 +111,7 @@ export class AuthService {
   }
 
   deauthorize () {
+    console.log("Deleting token and validators");
     localStorage.removeItem('token');
     localStorage.removeItem('validators');
     delete this.user;
