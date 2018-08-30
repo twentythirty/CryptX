@@ -8,7 +8,7 @@ const actions = {
 };
 
 //run once per day at midnight
-module.exports.SCHEDULE = '0 0 * * *';
+module.exports.SCHEDULE = '0 17 * * *';
 module.exports.NAME = 'EXCH_VOL24';
 module.exports.JOB_BODY = async (config, log) => {
 
