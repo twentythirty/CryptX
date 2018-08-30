@@ -1,4 +1,5 @@
 import { RouterTestingModule } from '@angular/router/testing';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { TranslateLoader, TranslateModule } from '@ngx-translate/core';
 import { Observable } from 'rxjs/Observable';
 import { of } from 'rxjs/observable/of';
@@ -23,6 +24,7 @@ export class FakeTranslateLoader implements TranslateLoader {
 }
 
 export const extraTestingModules = [
+  BrowserAnimationsModule,
   RouterTestingModule,
   TranslateModule.forRoot({
     loader: { provide: TranslateLoader, useClass: FakeTranslateLoader }

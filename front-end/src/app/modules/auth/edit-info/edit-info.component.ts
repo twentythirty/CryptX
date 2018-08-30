@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 
 import { AuthService } from '../../../services/auth/auth.service';
 import { User } from '../../../shared/models/user';
-import { FormGroup, FormControl, Validator } from "@angular/forms";
+import { FormGroup, FormControl, Validators } from "@angular/forms";
 import { Router } from "@angular/router";
 
 import { MatSnackBar } from '@angular/material';
@@ -24,21 +24,23 @@ export class EditInfoComponent implements OnInit {
   message: string = '';
   status: boolean = false;
 
-  userForm: FormGroup = new FormGroup ({
-    OldPassword: new FormControl('', [this.authService.getValidators('\\/users\\/invite','first_name')]),
-    NewPassword: new FormControl('', [this.authService.getValidators('\\/users\\/invite','last_name')]),
-    RepeatPassword: new FormControl('', [this.authService.getValidators('\\/users\\/invite','last_name')]),
+  userForm: FormGroup = new FormGroup({
+    OldPassword: new FormControl('', [ Validators.required ]),
+    NewPassword: new FormControl('', [ Validators.required ]),
+    RepeatPassword: new FormControl('', [ Validators.required ]),
   });
 
-  constructor(private authService: AuthService,
-              private router: Router,
-              public snackBar: MatSnackBar) { }
+  constructor(
+    private authService: AuthService,
+    private router: Router,
+    public snackBar: MatSnackBar,
+  ) { }
 
   ngOnInit() {
     this.getMyInfo();
   }
 
-  getMyInfo () {
+  getMyInfo() {
     this.authService.checkAuth().subscribe(response => {
       let user = Object.assign({}, response[0].user);
       this.user_info = user;
@@ -46,7 +48,7 @@ export class EditInfoComponent implements OnInit {
     });
   }
 
-  updateInfo () {
+  updateInfo() {
    if (this.userForm.valid){
     if (!this.passwordsMatch()) {
       this.message = "New password was not repeated correctly";

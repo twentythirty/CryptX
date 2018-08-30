@@ -48,15 +48,9 @@ export class AssetService {
     }
   }
 
-  getAllAssetsDetailed(filter?: object, requestData?: EntitiesFilter): Observable<AssetsAllResponseDetailed> {
+  getAllAssetsDetailed(requestData?: EntitiesFilter): Observable<AssetsAllResponseDetailed> {
     if(requestData) {
       return this.http.post<AssetsAllResponseDetailed>(this.baseUrl + `assets/detailed/all`, requestData).pipe(
-        tap(this.addStatusCode)
-      );
-    }
-
-    if(filter) {
-      return this.http.post<AssetsAllResponseDetailed>(this.baseUrl + `assets/detailed/all`, filter).pipe(
         tap(this.addStatusCode)
       );
     } else {

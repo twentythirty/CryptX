@@ -9,8 +9,8 @@ export class EntitiesFilter {
    *                in what order that property should be sorted (asc - ascending / desc - descending)
    */
   constructor(
-    public limit: number = 10,
-    public offset: number = 20,
+    public limit?: number,
+    public offset?: number,
     public filter?: EntitiesFilterRules,
     public order?: Array<{ by: string, order: string }>,
   ) {}

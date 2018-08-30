@@ -46,11 +46,11 @@ export class AddAccountComponent implements OnInit {
     this.getCustodians();
   }
 
-  getStrategies(){
+  getStrategies() {
     let group_name = 'STRATEGY_TYPES';
 
     Object.entries(this.modelConstantService.getGroup(group_name)).map((item, index) => {
-      this.strategies[index]= {
+      this.strategies[index] = {
         id: item[1],
         value: item[0]
       }
@@ -58,8 +58,8 @@ export class AddAccountComponent implements OnInit {
     });
   }
 
-  getAssets(){
-    let filter = {filter : {is_cryptocurrency: "assets.is_cryptocurrency.yes"}};
+  getAssets() {
+    let filter = { filter: { is_cryptocurrency: 'assets.is_cryptocurrency.yes' }};
 
     this.assetService.getAllAssetsDetailed(filter).subscribe(res => {
       this.assetsLoading = false;
@@ -73,7 +73,7 @@ export class AddAccountComponent implements OnInit {
     });
   }
 
-  getCustodians(){
+  getCustodians() {
     this.coldStorageService.getAllCustodians().subscribe(res => {
       this.custodiansLoading = false;
 
@@ -86,7 +86,7 @@ export class AddAccountComponent implements OnInit {
     });
   }
 
-  add(){
+  add() {
     const request = _.mapValues(this.form.value, val => {
       if (val === null){
         return val;

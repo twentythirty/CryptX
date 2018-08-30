@@ -53,7 +53,7 @@ export class ColdStorageService {
   //Cold Storage Transfers
 
   getAllTransfers(requestData: EntitiesFilter): Observable<TransfersAllResponse>{
-      return this.http.post<TransfersAllResponse>(this.baseUrl + `cold_storage/all`, requestData);
+    return this.http.post<TransfersAllResponse>(this.baseUrl + `cold_storage/all`, requestData);
   }
 
   confirmTransfer(transfer: Transfer) {

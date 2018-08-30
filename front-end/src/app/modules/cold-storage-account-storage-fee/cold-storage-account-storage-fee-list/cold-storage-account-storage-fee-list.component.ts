@@ -36,9 +36,11 @@ export class ColdStorageAccountStorageFeeListComponent extends DataTableCommonMa
     new StatusCellDataColumn({ column: 'strategy_type' }),
   ];
 
-  constructor(public route: ActivatedRoute,
-              public router: Router,
-              private coldStorageService: ColdStorageService) { 
+  constructor(
+    public route: ActivatedRoute,
+    public router: Router,
+    private coldStorageService: ColdStorageService,
+  ) { 
     super (route,router)
   }
 
