@@ -178,15 +178,17 @@ const BASE_ORDER = {
     external_identifier: 1,
     exchange_id: 1,
     failed_attempts: 0,
-    Instrument: {
-        symbol: 'ETH/BTC'
-    },
     status: Placed,
     total_quantity: 1,
     price: 1,
     type: 'market',
     side: 1,
     fee: 0,
+    external_instrument: 'BTC/ETH',
+    instrument_quote_asset_id: 1,
+    instrument_quote_asset: 'ETH',
+    instrument_transaction_asset_id: 2,
+    instrument_transaction_asset: 'BTC',
     _previousDataValues: {
         failed_attempts: 0,
         status: Placed,
@@ -195,6 +197,9 @@ const BASE_ORDER = {
         type: 'market',
         side: 1,
         fee: 0,
+    },
+    get(key) {
+        return this[key];
     }
 };
 
@@ -208,14 +213,6 @@ describe('Execution Order Fills fetcher job', () => {
             sequelize: sequelize
         }
     };
-
-    beforeEach(done => {
-        sinon.stub(sequelize, 'query').callsFake(query => {
-            return Promise.resolve(query);
-        });
-
-        done();
-    });
 
     before(done => {
         app.dbPromise.then(migrations => {
@@ -290,6 +287,10 @@ describe('Execution Order Fills fetcher job', () => {
                 return Promise.resolve(connector);
             });
 
+            sinon.stub(execOrderFillFetcher, 'isSimulated').callsFake(() => {
+                return Promise.resolve(false);
+            });
+
             done();
         });
     });
@@ -301,9 +302,9 @@ describe('Execution Order Fills fetcher job', () => {
             ExecutionOrderFill.findAll,
             ExecutionOrderFill.create,
             ExecutionOrderFill.bulkCreate,
-            execOrderFillFetcher.handleFillsWithoutTrades,
-            execOrderFillFetcher.handleFillsWithTrades,
-            sequelize.query
+            execOrderFillFetcher.isSimulated,
+            sequelize.query,
+            sequelize.transaction
         );
         done();
     });
@@ -322,20 +323,21 @@ describe('Execution Order Fills fetcher job', () => {
             exchange_id: 99
         });
 
-        sinon.stub(ExecutionOrder, 'findAll').callsFake(options => {
+        sinon.stub(sequelize, 'query').callsFake(query => {
             stubSave(order_with_invalid_exchanged_id);
             stubChanged(order_with_invalid_exchanged_id, ['failed_attempts']);
-            return Promise.resolve([order_with_invalid_exchanged_id]);
-        })
 
-        sinon.stub(ExecutionOrderFill, 'sum').callsFake(() => {
-            return Promise.resolve(0);
+            return Promise.resolve([order_with_invalid_exchanged_id]);
         });
 
-        return execOrderFillFetcher.JOB_BODY(stubbed_config, console.log).then(orders => {
+        sinon.stub(sequelize, 'transaction').callsFake(query => {
+            return Promise.resolve(order_with_invalid_exchanged_id);
+        });
 
-            const [ failed_order ] = orders;
-
+        return execOrderFillFetcher.JOB_BODY(stubbed_config, console.log).then(result => {
+            
+            const failed_order = result[0].find(r => r.method === 'save').model;
+ 
             chai.expect(failed_order.failed_attempts).to.equal(1);
 
         });
@@ -347,19 +349,21 @@ describe('Execution Order Fills fetcher job', () => {
             exchange_id: 2
         });
 
-        sinon.stub(ExecutionOrder, 'findAll').callsFake(options => {
+        sinon.stub(sequelize, 'query').callsFake(query => {
             stubSave(order_with_invalid_external_identifier);
             stubChanged(order_with_invalid_external_identifier, ['failed_attempts']);
-            return Promise.resolve([order_with_invalid_external_identifier]);
-        })
 
-        sinon.stub(ExecutionOrderFill, 'sum').callsFake(() => {
-            return Promise.resolve(0);
+            return Promise.resolve([order_with_invalid_external_identifier]);
         });
 
-        return execOrderFillFetcher.JOB_BODY(stubbed_config, console.log).then(orders => {
+        sinon.stub(sequelize, 'transaction').callsFake(query => {
+            return Promise.resolve(order_with_invalid_external_identifier);
+        });
 
-            const [ failed_order ] = orders;
+
+        return execOrderFillFetcher.JOB_BODY(stubbed_config, console.log).then(result => {
+           
+            const failed_order = result[0].find(r => r.method === 'save').model;
 
             chai.expect(failed_order.failed_attempts).to.equal(1);
 
@@ -373,19 +377,20 @@ describe('Execution Order Fills fetcher job', () => {
             external_identifier: '4'
         });
 
-        sinon.stub(ExecutionOrder, 'findAll').callsFake(options => {
+        sinon.stub(sequelize, 'query').callsFake(query => {
             stubSave(closed_order);
-            stubChanged(closed_order, ['failed_attempts']);
-            return Promise.resolve([closed_order]);
-        })
+            stubChanged(closed_order, ['status']);
 
-        sinon.stub(ExecutionOrderFill, 'sum').callsFake(() => {
-            return Promise.resolve(0);
+            return Promise.resolve([closed_order]);
         });
 
-        return execOrderFillFetcher.JOB_BODY(stubbed_config, console.log).then(orders => {
+        sinon.stub(sequelize, 'transaction').callsFake(query => {
+            return Promise.resolve(closed_order);
+        });
 
-            const [ failed_order ] = orders;
+        return execOrderFillFetcher.JOB_BODY(stubbed_config, console.log).then(result => {
+
+            const failed_order = result[0].find(r => r.method === 'save').model;
 
             chai.expect(failed_order.status).to.equal(Failed);
 
@@ -398,26 +403,28 @@ describe('Execution Order Fills fetcher job', () => {
             failed_attempts: SYSTEM_SETTINGS.EXEC_ORD_FAIL_TOLERANCE
         });
 
-        sinon.stub(ExecutionOrder, 'findAll').callsFake(options => {
+        sinon.stub(sequelize, 'query').callsFake(query => {
             stubSave(closed_order);
-            stubChanged(closed_order, ['failed_attempts']);
-            return Promise.resolve([closed_order]);
-        })
+            stubChanged(closed_order, ['status']);
 
-        sinon.stub(ExecutionOrderFill, 'sum').callsFake(() => {
-            return Promise.resolve(0);
+            return Promise.resolve([closed_order]);
         });
 
-        return execOrderFillFetcher.JOB_BODY(stubbed_config, console.log).then(orders => {
+        sinon.stub(sequelize, 'transaction').callsFake(query => {
+            return Promise.resolve(closed_order);
+        });
 
-            const [ failed_order ] = orders;
+        return execOrderFillFetcher.JOB_BODY(stubbed_config, console.log).then(result => {
+
+            const failed_order = result[0].find(r => r.method === 'save').model;
 
             chai.expect(failed_order.status).to.equal(Failed);
 
         });
     });
 
-    it('shall handle the fills using "handleFillsWithTrades" methods when fetching trades is available', () => {
+    //No good way to test this ones here
+    /*it('shall handle the fills using "handleFillsWithTrades" methods when fetching trades is available', () => {
         let order = Object.assign({}, BASE_ORDER, {
             exchange_id: 1,
             external_identifier: '1'
@@ -505,42 +512,43 @@ describe('Execution Order Fills fetcher job', () => {
 
         });
 
-    });
+    });*/
 
-    it('shall skip the cycle if there aren\'t any new trades thatare not in the database yet', () => {
+    it('shall skip the cycle if there aren\'t any new trades that are not in the database yet', () => {
         
         let order = Object.assign({}, BASE_ORDER, {
             exchange_id: 1,
-            external_identifier: '1'
+            external_identifier: '1',
+            status: EXECUTION_ORDER_STATUSES.PartiallyFilled
         });
 
-        sinon.stub(ExecutionOrder, 'findAll').callsFake(options => {
+        sinon.stub(sequelize, 'query').callsFake(query => {
             stubSave(order);
-            stubChanged(order, false);
-            return Promise.resolve([order]);
-        })
+            stubChanged(order, null);
 
-        sinon.stub(ExecutionOrderFill, 'sum').callsFake(() => {
-            return Promise.resolve(0);
+            return Promise.resolve([order]);
+        });
+
+        sinon.stub(sequelize, 'transaction').callsFake(query => {
+            return Promise.resolve(order);
         });
 
         sinon.stub(ExecutionOrderFill, 'findAll').callsFake(() => {
             return Promise.resolve([{
                 external_identifier: _.find(MOCK_TRADES, { id: '1' }).id,
+                execution_order_id: order.id,
                 timestamp: new Date()
             }, {
                 external_identifier: _.find(MOCK_TRADES, { id: '2' }).id,
+                execution_order_id: order.id,
                 timestamp: new Date()
             }]);
         });
 
-        sinon.stub(ExecutionOrderFill, 'create').callsFake(options => {
-            return Promise.resolve(options);
-        });
 
-        return execOrderFillFetcher.JOB_BODY(stubbed_config, console.log).then(orders => {
-
-            chai.expect(ExecutionOrderFill.create.calledOnce).to.be.false;
+        return execOrderFillFetcher.JOB_BODY(stubbed_config, console.log).then(result => {
+            
+            chai.expect(result[0]).to.be.undefined;
         });
 
     });
@@ -552,33 +560,33 @@ describe('Execution Order Fills fetcher job', () => {
             external_identifier: '1'
         });
 
-        sinon.stub(ExecutionOrder, 'findAll').callsFake(options => {
-            stubSave(order);
-            stubChanged(order, true);
-            return Promise.resolve([order]);
-        })
 
-        sinon.stub(ExecutionOrderFill, 'sum').callsFake(() => {
-            return Promise.resolve(0);
+        sinon.stub(sequelize, 'query').callsFake(query => {
+            stubSave(order);
+            stubChanged(order, ['fee']);
+
+            return Promise.resolve([order]);
+        });
+
+        sinon.stub(sequelize, 'transaction').callsFake(query => {
+            return Promise.resolve(order);
         });
 
         sinon.stub(ExecutionOrderFill, 'findAll').callsFake(() => {
             return Promise.resolve([{
                 external_identifier: _.find(MOCK_TRADES, { id: '1' }).id,
+                execution_order_id: order.id,
+                fee: 0,
+                price: 0,
                 timestamp: new Date()
             }]);
         });
 
-        const bulkCreate = sinon.stub(ExecutionOrderFill, 'bulkCreate').callsFake(options => {
-            return Promise.resolve(options);
-        });
+        return execOrderFillFetcher.JOB_BODY(stubbed_config, console.log).then(result => {
 
-        return execOrderFillFetcher.JOB_BODY(stubbed_config, console.log).then(orders => {
+            const placed_order = result[0].find(r => r.method === 'save').model;
+            const new_fill = result[0].find(r => r.method === 'bulkCreate').args[0][0];
 
-            chai.expect(ExecutionOrderFill.bulkCreate.calledOnce).to.be.true;
-            
-            const [ placed_order ] = orders;
-            const new_fill = bulkCreate.args[0][0][0];
             const trade = _.find(MOCK_TRADES, { id: '2' });
             
             chai.expect(placed_order.fee).to.equal(new_fill.fee);
@@ -600,23 +608,32 @@ describe('Execution Order Fills fetcher job', () => {
             external_identifier: '1'
         });
 
-        sinon.stub(ExecutionOrder, 'findAll').callsFake(options => {
+        const mocked_order = _.find(MOCK_ORDERS, { id: '1' });
+        const sum_of_fills = mocked_order.filled;
+
+        sinon.stub(sequelize, 'query').callsFake(query => {
             stubSave(order);
             stubChanged(order, false);
+
             return Promise.resolve([order]);
-        })
-
-        sinon.stub(ExecutionOrderFill, 'sum').callsFake(() => {
-            return Promise.resolve(_.find(MOCK_ORDERS, { id: '1' }).filled);
         });
 
-        sinon.stub(ExecutionOrderFill, 'create').callsFake(options => {
-            return Promise.resolve(options);
+        sinon.stub(sequelize, 'transaction').callsFake(query => {
+            return Promise.resolve(order);
         });
 
-        return execOrderFillFetcher.JOB_BODY(stubbed_config, console.log).then(orders => {
+        sinon.stub(ExecutionOrderFill, 'findAll').callsFake(() => {
+            return Promise.resolve([{
+                external_identifier: _.find(MOCK_TRADES, { id: '1' }).id,
+                execution_order_id: order.id,
+                quantity: sum_of_fills,
+                timestamp: new Date()
+            }]);
+        });
 
-            chai.expect(ExecutionOrderFill.create.calledOnce).to.be.false;
+        return execOrderFillFetcher.JOB_BODY(stubbed_config, console.log).then(result => {
+
+            chai.expect(result[0]).to.be.undefined;
         });
 
     });
@@ -631,29 +648,32 @@ describe('Execution Order Fills fetcher job', () => {
         const mocked_order = _.find(MOCK_ORDERS, { id: '1' });
         const sum_of_fills = mocked_order.filled / 3;
 
-        sinon.stub(ExecutionOrder, 'findAll').callsFake(options => {
+        sinon.stub(sequelize, 'query').callsFake(query => {
             stubSave(order);
             stubChanged(order, true);
+
             return Promise.resolve([order]);
-        })
-
-        sinon.stub(ExecutionOrderFill, 'sum').callsFake(() => {
-            return Promise.resolve(sum_of_fills);
         });
 
-        const bulkCreate = sinon.stub(ExecutionOrderFill, 'create').callsFake(options => {
-            return Promise.resolve(options);
+        sinon.stub(sequelize, 'transaction').callsFake(query => {
+            return Promise.resolve(order);
         });
 
-        return execOrderFillFetcher.JOB_BODY(stubbed_config, console.log).then(orders => {
+        sinon.stub(ExecutionOrderFill, 'findAll').callsFake(() => {
+            return Promise.resolve([{
+                external_identifier: _.find(MOCK_TRADES, { id: '1' }).id,
+                execution_order_id: order.id,
+                quantity: sum_of_fills,
+                timestamp: new Date()
+            }]);
+        });
 
-            const [ partially_filled_order ] = orders;
+        return execOrderFillFetcher.JOB_BODY(stubbed_config, console.log).then(result => {
+                  
+            const new_fill = result[0].find(r => r.method === 'create').args[0];
+            const partially_filled_order = result[0].find(r => r.method === 'save').model;
 
             chai.expect(partially_filled_order.status).to.equal(PartiallyFilled);
-
-            chai.expect(ExecutionOrderFill.create.calledOnce).to.be.true;
-            
-            const new_fill = bulkCreate.args[0][0];
 
             chai.expect(new_fill).to.be.an('object', 'bulkCreate did not receive a trade object');
             chai.expect(new_fill.execution_order_id).to.equal(order.id);
@@ -665,47 +685,6 @@ describe('Execution Order Fills fetcher job', () => {
         
     });
 
-    it('shall update the order fills price and fees when it received a fee and the sum of fills is greater than 0 and the fills were emulated', () => {
-        
-        let order = Object.assign({}, BASE_ORDER, {
-            id: 2,
-            exchange_id: 2,
-            external_identifier: '6'
-        });
-
-        const mocked_order = _.find(MOCK_ORDERS, { id: '6' });
-        const sum_of_fills = mocked_order.filled / 5;
-
-        sinon.stub(ExecutionOrder, 'findAll').callsFake(options => {
-            stubSave(order);
-            stubChanged(order, true);
-            return Promise.resolve([order]);
-        })
-
-        sinon.stub(ExecutionOrderFill, 'sum').callsFake(() => {
-            return Promise.resolve(sum_of_fills);
-        });
-
-        const bulkCreate = sinon.stub(ExecutionOrderFill, 'create').callsFake(options => {
-            return Promise.resolve(options);
-        });
-
-        const price_to_spread = sum_of_fills * order.price / order.total_quantity;
-
-        const expected_query =  `
-            UPDATE execution_order_fill AS eof
-            SET fee = ${mocked_order.fee.cost} * quantity / ${sum_of_fills}
-            WHERE eof.execution_order_id = ${order.id}
-        `;
-
-        return execOrderFillFetcher.JOB_BODY(stubbed_config, console.log).then(orders => {
-
-            chai.expect(sequelize.query.calledWith(expected_query)).to.be.true;
-        
-        });
-        
-    });
-
     it('shall mark the order as FullyFilled and saved the last fill', () => {
         
         let order = Object.assign({}, BASE_ORDER, {
@@ -713,33 +692,28 @@ describe('Execution Order Fills fetcher job', () => {
             external_identifier: '5'
         });
 
-        sinon.stub(ExecutionOrder, 'findAll').callsFake(options => {
+        sinon.stub(sequelize, 'query').callsFake(query => {
             stubSave(order);
-            stubChanged(order, ['status']);
-            return Promise.resolve([order]);
-        })
+            stubChanged(order, true);
 
-        sinon.stub(ExecutionOrderFill, 'sum').callsFake(() => {
-            return Promise.resolve(0);
+            return Promise.resolve([order]);
+        });
+
+        sinon.stub(sequelize, 'transaction').callsFake(query => {
+            return Promise.resolve(order);
         });
 
         sinon.stub(ExecutionOrderFill, 'findAll').callsFake(() => {
             return Promise.resolve([]);
         });
 
-        const bulkCreate = sinon.stub(ExecutionOrderFill, 'bulkCreate').callsFake(options => {
-            return Promise.resolve(options);
-        });
-
-        return execOrderFillFetcher.JOB_BODY(stubbed_config, console.log).then(orders => {
-
-            const [ filled_order ] = orders;
+        return execOrderFillFetcher.JOB_BODY(stubbed_config, console.log).then(result => {
+            
+            const new_fill = result[0].find(r => r.method === 'bulkCreate').args[0][0];
+            const filled_order = result[0].find(r => r.method === 'save').model;
 
             chai.expect(filled_order.status).to.equal(FullyFilled);
 
-            chai.expect(ExecutionOrderFill.bulkCreate.calledOnce).to.be.true;
-            
-            const new_fill = bulkCreate.args[0][0][0];
             const trade = _.find(MOCK_TRADES, { id: '3' });
 
             chai.expect(new_fill).to.be.an('object', 'bulkCreate did not receive a trade object');

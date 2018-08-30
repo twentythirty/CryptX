@@ -33,44 +33,5 @@ module.exports = (sequelize, DataTypes) => {
         });
     };
 
-    ExecutionOrderFill.beforeSave(async (fill, options) => {
-        return beforeSave(fill, options);
-    });
-
-    ExecutionOrderFill.beforeCreate(async (fill, options) => {
-        return beforeSave(fill, options);
-    });
-
-    ExecutionOrderFill.beforeBulkCreate(async (fills, options) => {
-        let hooks = [];
-        for(let fill of fills) {
-            hooks.push(beforeSave(fill, options));
-        }
-        return Promise.all(hooks);
-    });
-
-    async function beforeSave(fill, options) {
-        const Asset = require('./index').Asset;
-        const sequelize = fill.sequelize;
-
-        if(fill.fee_asset_symbol && !fill.fee_asset_id) {
-            const [ err, asset ] = await to(Asset.findOne({
-                where: { symbol: fill.fee_asset_symbol }
-            }));
-
-            if(err) TE(err.message);
-
-            if(asset) fill.fee_asset_id = asset.id;
-        }
-        
-        else if(!fill.fee_asset_symbol && fill.fee_asset_id) {
-            const [ err, asset ] = await to(Asset.findById(fill.fee_asset_id));
-
-            if(err) TE(err.message);
-
-            if(asset) fill.fee_asset_symbol = asset.symbol;
-        }
-    }
-
     return ExecutionOrderFill;
 };
