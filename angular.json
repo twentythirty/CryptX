@@ -17,7 +17,6 @@
             "tsConfig": "front-end/src/tsconfig.app.json",
             "polyfills": "front-end/src/polyfills.ts",
             "assets": [
-              "front-end/src/assets",
               "front-end/src/favicon.ico"
             ],
             "styles": [

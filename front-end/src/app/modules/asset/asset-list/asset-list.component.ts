@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CurrencyPipe } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { finalize } from 'rxjs/operators';
-import _ from 'lodash';
+import * as _ from 'lodash';
 
 import { AssetService, AssetsAllResponseDetailed } from '../../../services/asset/asset.service';
 import { TableDataSource, TableDataColumn } from '../../../shared/components/data-table/data-table.component';

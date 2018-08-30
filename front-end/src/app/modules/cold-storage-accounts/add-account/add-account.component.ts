@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { FormGroup, FormControl, Validators } from "@angular/forms";
 import { Router } from "@angular/router";
 import { finalize } from 'rxjs/operators';
-import _ from 'lodash';
+import * as _ from 'lodash';
 
 import { ModelConstantsService } from "../../../services/model-constants/model-constants.service";
 import { AssetService } from "../../../services/asset/asset.service";

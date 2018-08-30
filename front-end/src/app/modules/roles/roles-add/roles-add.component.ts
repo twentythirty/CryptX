@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 import { FormGroup, FormControl, Validators } from "@angular/forms";
 import { filter } from 'rxjs/operators';
-import _ from 'lodash';
+import * as _ from 'lodash';
 
 import { RolesPermissionsResultData } from '../../../shared/models/api/rolesPermissionsResultData';
 import { RolesService } from '../../../services/roles/roles.service';

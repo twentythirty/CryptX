@@ -1,6 +1,6 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { ActivatedRoute, Router, Params } from '@angular/router';
-import _ from 'lodash';
+import * as _ from 'lodash';
 import { filter } from 'rxjs/operators';
 
 import { RolesAllRequestData } from '../../models/api/rolesAllRequestData';

@@ -1,58 +1,28 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
-import { CommonModule, CurrencyPipe } from '@angular/common';
-import { BrowserModule } from '@angular/platform-browser';
-import { TranslateModule, TranslateLoader } from '@ngx-translate/core';
-import { Observable } from 'rxjs/Observable';
-import { of } from 'rxjs/observable/of';
+import { extraTestingModules } from '../../../utils/testing';
 
-import { AssetListComponent } from './asset-list.component';
-import { SharedModule } from '../../../shared/shared.module';
-import { RouterModule } from '@angular/router';
 import { AssetModule } from '../asset.module';
+import { AssetListComponent } from './asset-list.component';
+import { AssetService } from '../../../services/asset/asset.service';
+import { AssetServiceStub } from '../../../services/asset/asset.service.stub';
 
-class FakeLoader implements TranslateLoader {
-  getTranslation(lang: string): Observable<any> {
-    return of({}); // empty translation json
-  }
-}
 
 describe('AssetListComponent', () => {
   let component: AssetListComponent;
   let fixture: ComponentFixture<AssetListComponent>;
 
-  // beforeEach(async(() => {
-  //   TestBed.configureTestingModule({
-  //     imports: [
-  //       CommonModule,
-  //       BrowserModule,
-  //       RouterModule, // TODO: Remove this when moving to lazy loaded modules
-  //       SharedModule,
-  //       //ActivatedRoute,
-  //       // AssetRoutingModule
-  //     ],
-  //     declarations: [
-  //       AssetListComponent,
-  //     ],
-  //     providers: [
-  //       CurrencyPipe
-  //     ],
-  //   })
-  //   .compileComponents();
-  // }));
-
   beforeEach(async(() => {
     TestBed.configureTestingModule({
       imports: [
         AssetModule,
-        TranslateModule.forRoot({
-          loader: { provide: TranslateLoader, useClass: FakeLoader }
-        })
+        ...extraTestingModules
+      ],
+      providers: [
+        { provide: AssetService, useValue: AssetServiceStub }
       ]
-    }).compileComponents();
-    fixture = TestBed.createComponent(AssetListComponent);
-    fixture.detectChanges();
+    })
+    .compileComponents();
   }));
-
 
   beforeEach(() => {
     fixture = TestBed.createComponent(AssetListComponent);
@@ -60,7 +30,16 @@ describe('AssetListComponent', () => {
     fixture.detectChanges();
   });
 
+
   it('should create', () => {
     expect(component).toBeTruthy();
+  });
+
+  it('should correctly load assets on init', () => {
+    AssetServiceStub.getAllAssetsDetailed().subscribe(res => {
+      expect(component.assetsDataSource.body).toEqual(res.assets);
+      expect(component.assetsDataSource.footer).toEqual(res.footer);
+      expect(component.count).toEqual(component.count);
+    });
   });
 });

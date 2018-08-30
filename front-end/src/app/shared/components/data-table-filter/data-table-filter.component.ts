@@ -1,5 +1,5 @@
 import { Component, OnInit, Input, EventEmitter, Output, OnChanges } from '@angular/core';
-import _ from 'lodash';
+import * as _ from 'lodash';
 import { Observable } from 'rxjs';
 
 export interface DataTableFilterData {

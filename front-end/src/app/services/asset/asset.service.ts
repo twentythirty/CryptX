@@ -3,7 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { TranslateService } from '@ngx-translate/core';
 import { Observable } from 'rxjs';
 import { map, tap } from 'rxjs/operators';
-import _ from 'lodash';
+import * as _ from 'lodash';
 
 import { Asset, AssetStatus } from '../../shared/models/asset';
 import { ActionLog } from '../../shared/models/actionLog';

@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { FormGroup, FormControl, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { TranslateService } from '@ngx-translate/core';
-import _ from 'lodash';
+import * as _ from 'lodash';
 import { finalize } from 'rxjs/operators';
 
 import { LiquidityService } from '../../../services/liquidity/liquidity.service';
