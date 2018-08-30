@@ -3,7 +3,7 @@ import { ActivatedRoute, Router, Params } from "@angular/router";
 import { FormGroup, FormControl, Validators } from '@angular/forms';
 import { Observable } from "rxjs";
 import { filter } from 'rxjs/operators';
-import _ from 'lodash';
+import * as _ from 'lodash';
 
 import { DepositService, DepositResultData, DepositResponseData } from "../../../services/deposit/deposit.service";
 import { InvestmentService } from "../../../services/investment/investment.service";

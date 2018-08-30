@@ -3,7 +3,7 @@ import { HttpInterceptor, HttpRequest, HttpHandler, HttpEvent, HttpResponse, Htt
 import { MatSnackBar } from '@angular/material';
 import {throwError as observableThrowError,  Observable } from 'rxjs';
 import { tap, catchError } from 'rxjs/operators';
-import _ from 'lodash';
+import * as _ from 'lodash';
 
 import { AuthService } from '../../services/auth/auth.service';
 

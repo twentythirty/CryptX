@@ -1,6 +1,6 @@
 import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { Router } from '@angular/router';
-import _ from 'lodash';
+import * as _ from 'lodash';
 
 @Component({
   selector: 'app-pagination',

@@ -1,6 +1,7 @@
 import { NgModule } from '@angular/core';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms'
 import { CommonModule } from '@angular/common';
+import { HttpClientModule } from '@angular/common/http';
 import { DynamicModule } from 'ng-dynamic-component';
 
 import { BtnComponent } from './components/btn/btn.component'
@@ -44,6 +45,7 @@ import { NgSelectModule } from '@ng-select/ng-select';
     imports: [
         CommonModule,
         FormsModule,
+        HttpClientModule,
         ReactiveFormsModule,
         RouterModule,
         MatProgressSpinnerModule,

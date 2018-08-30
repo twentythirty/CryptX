@@ -2,7 +2,7 @@ import { Component, OnInit, Input, EventEmitter, Output } from '@angular/core';
 import { ActivatedRoute, Router, NavigationStart } from "@angular/router";
 import { trigger, state, style, transition, animate } from '@angular/animations';
 import { Observable } from 'rxjs';
-import _ from 'lodash';
+import * as _ from 'lodash';
 import { TranslateService } from '@ngx-translate/core';
 
 import { DataTableFilterData } from '../data-table-filter/data-table-filter.component';

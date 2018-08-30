@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { mergeMap, finalize } from 'rxjs/operators';
 
-import _ from 'lodash';
+import * as _ from 'lodash';
 
 import { StatusClass } from '../../../shared/models/common';
 

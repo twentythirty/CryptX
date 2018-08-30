@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from "@angular/common/http";
 import { Observable } from "rxjs";
 import { map, tap } from "rxjs/operators";
-import _ from 'lodash';
+import * as _ from 'lodash';
 
 import { environment } from "../../../environments/environment";
 import { EntitiesFilter } from "../../shared/models/api/entitiesFilter";

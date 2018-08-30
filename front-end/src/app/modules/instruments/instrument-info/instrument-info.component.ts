@@ -3,7 +3,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { Observable } from 'rxjs';
 import { mergeMap, finalize } from 'rxjs/operators';
 import {zip} from 'rxjs/observable/zip';
-import _ from 'lodash';
+import * as _ from 'lodash';
 
 import { InstrumentsService } from '../../../services/instruments/instruments.service';
 import { ExchangesService } from '../../../services/exchanges/exchanges.service';
