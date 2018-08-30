@@ -3,18 +3,12 @@
 let app = require("../../app");
 let chai = require("chai");
 let chaiAsPromised = require("chai-as-promised");
-let should = chai.should();
 const sinon = require("sinon");
 
 chai.use(chaiAsPromised);
 
 const recipeOrderStatusChanger = require('../../jobs/recipe-order-status-changer');
-
-const ccxtUtils = require('../../utils/CCXTUtils');
-const RecipeOrder = require('../../models').RecipeOrder;
-const ExecutionOrder = require('../../models').ExecutionOrder;
-const ExecutionOrderFill = require('../../models').ExecutionOrderFill;
-const Op = require('../../models').Sequelize.Op;
+const sequelize = require('../../models').sequelize;
 
 /**
  * Attempts to call the `restore` method on the provided symbols (method specified by `sinon`) 
@@ -50,154 +44,14 @@ const stubSave = (...symbols) => {
 }
 
 
-xdescribe('Recipe Order status changer job', () => {
+describe('Recipe Order status changer job', () => {
 
 
     const config = {
         models: {
-            RecipeOrder,
-            ExecutionOrder,
-            ExecutionOrderFill,
-            Sequelize: {
-                Op
-            }
+            sequelize
         }
     };
-
-    const FAIL_EXEC_ORD_ID = 455;
-    const ACTIVE_EXEC_ORD_ID = 900;
-    const COMPLETE_FILLS_ORD_ID = 78441;
-    const COMPLETE_FILLS_BALLAST_ORD_ID = 78448;
-    const FAIL_NO_CCXT_ORD_ID = 999852;
-    const COMPLETE_ORD_QNTY = 40;
-    const FAILED_ORDER_IDS = [
-        10, 20, 30, 40
-    ];
-    const EXCHANGE_ID = 77;
-    const INSTRUMENT_STUB = {
-        symbol: 'STUB/MOCK',
-        reverse_symbol: () => {
-            return 'MOCK/STUB'
-        }
-    }
-    const INSTRUMENT_BALLAST_STUB = {
-        symbol: 'STUB2/MOCK2',
-        reverse_symbol: () => {
-            return 'MOCK2/STUB2'
-        }
-    }
-    const FILLS_BALLAST = 5;
-
-    const ORDERS_DB = [{
-            id: FAILED_ORDER_IDS[0],
-            status: RECIPE_ORDER_STATUSES.Completed
-        },
-        {
-            id: FAILED_ORDER_IDS[1],
-            status: RECIPE_ORDER_STATUSES.Failed
-        },
-        {
-            id: FAILED_ORDER_IDS[2],
-            status: RECIPE_ORDER_STATUSES.Cancelled
-        },
-        {
-            id: FAILED_ORDER_IDS[3],
-            status: RECIPE_ORDER_STATUSES.Rejected
-        },
-        {
-            id: FAIL_EXEC_ORD_ID,
-            status: RECIPE_ORDER_STATUSES.Executing,
-            target_exchange_id: EXCHANGE_ID,
-            Instrument: INSTRUMENT_STUB,
-            side: ORDER_SIDES.Buy
-        },
-        {
-            id: ACTIVE_EXEC_ORD_ID,
-            status: RECIPE_ORDER_STATUSES.Pending,
-            quantity: 78.0,
-            target_exchange_id: EXCHANGE_ID,
-            Instrument: INSTRUMENT_STUB,
-            side: ORDER_SIDES.Buy
-        },
-        {
-            id: COMPLETE_FILLS_ORD_ID,
-            status: RECIPE_ORDER_STATUSES.Executing,
-            quantity: COMPLETE_ORD_QNTY,
-            target_exchange_id: EXCHANGE_ID,
-            Instrument: INSTRUMENT_STUB,
-            side: ORDER_SIDES.Buy
-        },
-        {
-            id: FAIL_NO_CCXT_ORD_ID,
-            status: RECIPE_ORDER_STATUSES.Executing,
-            quantity: COMPLETE_ORD_QNTY,
-            target_exchange_id: EXCHANGE_ID,
-            Instrument: INSTRUMENT_STUB,
-            side: ORDER_SIDES.Sell
-        },
-        {
-            id: COMPLETE_FILLS_BALLAST_ORD_ID,
-            status: RECIPE_ORDER_STATUSES.Executing,
-            quantity: COMPLETE_ORD_QNTY + FILLS_BALLAST,
-            target_exchange_id: EXCHANGE_ID,
-            Instrument: INSTRUMENT_BALLAST_STUB,
-            side: ORDER_SIDES.Buy
-        },
-
-    ];
-
-
-    const FILLED_EXEC_ORD_ID = 8888;
-    const FILLED_BALLAST_EXEC_ORD_ID = 9999;
-    const EXECUTION_ORDERS_DB = [{
-            id: 4009,
-            recipe_order_id: FAIL_EXEC_ORD_ID,
-            status: EXECUTION_ORDER_STATUSES.Failed
-        },
-        {
-            id: 4010,
-            recipe_order_id: FAIL_EXEC_ORD_ID,
-            status: EXECUTION_ORDER_STATUSES.Failed
-        },
-        {
-            id: 4011,
-            recipe_order_id: FAIL_EXEC_ORD_ID,
-            status: EXECUTION_ORDER_STATUSES.Failed
-        },
-        {
-            id: 4012,
-            recipe_order_id: ACTIVE_EXEC_ORD_ID,
-            status: EXECUTION_ORDER_STATUSES.PartiallyFilled
-        },
-        {
-            id: FILLED_EXEC_ORD_ID,
-            recipe_order_id: COMPLETE_FILLS_ORD_ID,
-            status: EXECUTION_ORDER_STATUSES.FullyFilled
-        },
-        {
-            id: FILLED_BALLAST_EXEC_ORD_ID,
-            recipe_order_id: COMPLETE_FILLS_BALLAST_ORD_ID,
-            status: EXECUTION_ORDER_STATUSES.FullyFilled
-        }
-    ];
-
-    const EXECUTION_ORDER_FILLS_DB = [
-        {
-            id: 100,
-            execution_order_id: FILLED_EXEC_ORD_ID,
-            quantity: COMPLETE_ORD_QNTY / 2
-        },
-        {
-            id: 101,
-            execution_order_id: FILLED_EXEC_ORD_ID,
-            quantity: COMPLETE_ORD_QNTY / 2
-        },
-        {
-            id: 102,
-            execution_order_id: FILLED_BALLAST_EXEC_ORD_ID,
-            quantity: COMPLETE_ORD_QNTY 
-        },
-    ];
 
     before(done => {
         app.dbPromise.then(migrations => {
@@ -211,63 +65,13 @@ xdescribe('Recipe Order status changer job', () => {
 
     beforeEach(done => {
 
-        //fresh DB fr every test
-        const TEST_ORDERS_DB = _.cloneDeep(ORDERS_DB);
-        const TEST_EXECUTION_ORDERS_DB = _.cloneDeep(EXECUTION_ORDERS_DB);
-        const TEST_EXEC_ORDER_FILL_DB = _.cloneDeep(EXECUTION_ORDER_FILLS_DB);
-
-        stubSave(...TEST_ORDERS_DB);
-
-        sinon.stub(RecipeOrder, 'findAll').callsFake(options => {
-
-            return Promise.resolve(_.filter(TEST_ORDERS_DB,
-                order => !options.where.status[Op.notIn].includes(order.status)));
-        });
-
-        sinon.stub(ExecutionOrder, 'findAll').callsFake(options => {
-
-            return Promise.resolve(_.filter(TEST_EXECUTION_ORDERS_DB,
-                exec_order => options.where.recipe_order_id === exec_order.recipe_order_id));
-        });
-
-        sinon.stub(ExecutionOrderFill, 'findAll').callsFake(options => {
-
-            return Promise.resolve(_.filter(TEST_EXEC_ORDER_FILL_DB,
-                exec_order_fill => options.where.execution_order_id.includes(exec_order_fill.execution_order_id)))
-        });
-
-        sinon.stub(ccxtUtils, 'getConnector').callsFake(id => {
-
-            return {
-                markets: {
-                    [INSTRUMENT_STUB.symbol]: {
-                        limits: {
-                            amount: {
-                                min: 0
-                            }
-                        }
-                    },
-                    [INSTRUMENT_BALLAST_STUB.symbol]: {
-                        limits: {
-                            amount: {
-                                min: FILLS_BALLAST
-                            }
-                        }
-                    }
-                }
-            }
-        });
-
         done();
     });
 
     afterEach(done => {
 
         restoreSymbols(
-            RecipeOrder.findAll,
-            ExecutionOrder.findAll,
-            ExecutionOrderFill.findAll,
-            ccxtUtils.getConnector
+            sequelize.query
         );
 
         done();
@@ -280,88 +84,183 @@ xdescribe('Recipe Order status changer job', () => {
 
     it("shall do nothing if all orders are in terminal state", () => {
 
+
+        const query_stub = sinon.stub(sequelize, 'query').callsFake(query => {
+            return Promise.resolve([])
+        });
+
         return recipeOrderStatusChanger.JOB_BODY(config, console.log).then(results => {
 
-            chai.expect(results).is.a('array');
-
-            const failed_ord_results = _.filter(results, res => FAILED_ORDER_IDS.includes(res.id))
-
-            chai.expect(failed_ord_results).to.be.empty;
+            chai.expect(results).is.a('string');
+            chai.assert(query_stub.calledTwice, 'query was supposed to be called twice!');
+            chai.expect(results).to.eq('Nothing to change!');
         })
     });
 
     it("shall fail recipe orders with all failed execution orders", () => {
 
+        let call_counter = 0;
+        const exec_stats = [
+            {
+                id: 1,
+                status: RECIPE_ORDER_STATUSES.Pending, 
+                all_execution: 1, 
+                failed_execution: 1,
+                current_execution: 0
+            },
+            {
+                id: 2,
+                status: RECIPE_ORDER_STATUSES.Executing, 
+                all_execution: 4, 
+                failed_execution: 4,
+                current_execution: 0
+            },
+            {
+                id: 3,
+                status: RECIPE_ORDER_STATUSES.Failed, 
+                all_execution: 5, 
+                failed_execution: 5,
+                current_execution: 0
+            }
+        ];
+        const query_stub = sinon.stub(sequelize, 'query').callsFake(query => {
+            //first query
+            if (call_counter == 0) {
+                call_counter++;
+                //fail-ready recipe orders
+                return Promise.resolve(exec_stats)
+            } else if (call_counter == 1) {
+                call_counter++;
+                //no fills
+                return Promise.resolve([])
+            } else if (call_counter == 2) {
+
+                return Promise.resolve(query);
+            }
+        });
+
         return recipeOrderStatusChanger.JOB_BODY(config, console.log).then(results => {
 
-            chai.expect(results).is.a('array');
-            chai.expect(results).to.not.be.empty;
-
-            const failed_order = _.find(results, res => res.id === FAIL_EXEC_ORD_ID);
-
-            chai.expect(failed_order).to.not.be.null;
-            chai.expect(failed_order.status).to.not.be.undefined;
-            chai.expect(failed_order.status).to.eq(RECIPE_ORDER_STATUSES.Failed);
+            chai.expect(results).is.a('string');
+            chai.assert(query_stub.calledThrice, 'query was supposed to be called 3 times with save!');
+            _.forEach([0, 1], idx => {
+                chai.assert(results.includes(`(${exec_stats[idx].id}, ${RECIPE_ORDER_STATUSES.Failed})`), `Recipe order ${exec_stats[idx].id} should be updated to ${RECIPE_ORDER_STATUSES.Failed}`)
+            })
+            chai.assert(!results.includes(`(${exec_stats[2].id}, ${RECIPE_ORDER_STATUSES.Failed})`), `Recipe order ${exec_stats[2].id} should not be updated!`);
         })
     });
 
-    it("shall set recipe order to executing if it was pending and has active fills and not compeltely filled", () => {
+    it("shall set recipe order to executing if it has active fills and not completely filled", () => {
+
+        let call_counter = 0;
+        const exec_stats = [
+            {
+                id: 1,
+                status: RECIPE_ORDER_STATUSES.Pending, 
+                all_execution: 1, 
+                failed_execution: 0,
+                current_execution: 1
+            },
+            {
+                id: 2,
+                status: RECIPE_ORDER_STATUSES.Executing, 
+                all_execution: 4, 
+                failed_execution: 1,
+                current_execution: 3
+            },
+            {
+                id: 3,
+                status: RECIPE_ORDER_STATUSES.Pending, 
+                all_execution: 5, 
+                failed_execution: 2,
+                current_execution: 3
+            }
+        ];
+        const query_stub = sinon.stub(sequelize, 'query').callsFake(query => {
+            //first query
+            if (call_counter == 0) {
+                call_counter++;
+                //fail-ready recipe orders
+                return Promise.resolve(exec_stats)
+            } else if (call_counter == 1) {
+                call_counter++;
+                //no fills
+                return Promise.resolve([])
+            } else if (call_counter == 2) {
+
+                return Promise.resolve(query);
+            }
+        });
 
         return recipeOrderStatusChanger.JOB_BODY(config, console.log).then(results => {
 
-            chai.expect(results).is.a('array');
-            chai.expect(results).to.not.be.empty;
-
-            const executing_order = _.find(results, res => res.id === ACTIVE_EXEC_ORD_ID);
-
-            chai.expect(executing_order).to.not.be.null;
-            chai.expect(executing_order.status).to.not.be.undefined;
-            chai.expect(executing_order.status).to.eq(RECIPE_ORDER_STATUSES.Executing);
-        })
-    });
-
-    it("shall set recipe order to failed if it is using an instrument configuration not supported by CCXT", () => {
-
-        return recipeOrderStatusChanger.JOB_BODY(config, console.log).then(results => {
-
-            chai.expect(results).is.a('array');
-            chai.expect(results).to.not.be.empty;
-
-            const failed_order = _.find(results, res => res.id === FAIL_NO_CCXT_ORD_ID);
-
-            chai.expect(failed_order).to.not.be.null;
-            chai.expect(failed_order.status).to.not.be.undefined;
-            chai.expect(failed_order.status).to.eq(RECIPE_ORDER_STATUSES.Failed);
-        })
-    });
-
-    it("shall set recipe order to complete when fills are enough to complete it, substracting ballast", () => {
-
-        return recipeOrderStatusChanger.JOB_BODY(config, console.log).then(results => {
-
-            chai.expect(results).is.a('array');
-            chai.expect(results).to.not.be.empty;
-
-            const complete_order = _.find(results, res => res.id === COMPLETE_FILLS_BALLAST_ORD_ID);
-
-            chai.expect(complete_order).to.not.be.null;
-            chai.expect(complete_order.status).to.not.be.undefined;
-            chai.expect(complete_order.status).to.eq(RECIPE_ORDER_STATUSES.Completed);
+            chai.expect(results).is.a('string');
+            chai.assert(query_stub.calledThrice, 'query was supposed to be called 3 times with save!');
+            _.forEach([0, 2], idx => {
+                chai.assert(results.includes(`(${exec_stats[idx].id}, ${RECIPE_ORDER_STATUSES.Executing})`), `Recipe order ${exec_stats[idx].id} should be updated to ${RECIPE_ORDER_STATUSES.Executing}`)
+            })
+            chai.assert(!results.includes(`(${exec_stats[1].id}, ${RECIPE_ORDER_STATUSES.Executing})`), `Recipe order ${exec_stats[1].id} should not be updated!`);
         })
     });
 
     it("shall set recipe order to complete when fills are enough to complete it", () => {
 
+        let call_counter = 0;
+        const exec_stats = [
+            {
+                id: 1,
+                status: RECIPE_ORDER_STATUSES.Pending, 
+                all_execution: 1, 
+                failed_execution: 0,
+                current_execution: 1
+            },
+            {
+                id: 2,
+                status: RECIPE_ORDER_STATUSES.Executing, 
+                all_execution: 4, 
+                failed_execution: 1,
+                current_execution: 3
+            },
+            {
+                id: 3,
+                status: RECIPE_ORDER_STATUSES.Pending, 
+                all_execution: 5, 
+                failed_execution: 2,
+                current_execution: 3
+            }
+        ];
+        const query_stub = sinon.stub(sequelize, 'query').callsFake(query => {
+            //first query
+            if (call_counter == 0) {
+                call_counter++;
+                //fail-ready recipe orders
+                return Promise.resolve(exec_stats)
+            } else if (call_counter == 1) {
+                call_counter++;
+                //no fills
+                return Promise.resolve([
+                    {
+                        id: 3,
+                        status: RECIPE_ORDER_STATUSES.Pending, 
+                        quantity: 5, 
+                        fills_quantity: 5
+                    }
+                ])
+            } else if (call_counter == 2) {
+
+                return Promise.resolve(query);
+            }
+        });
+
         return recipeOrderStatusChanger.JOB_BODY(config, console.log).then(results => {
 
-            chai.expect(results).is.a('array');
-            chai.expect(results).to.not.be.empty;
-
-            const complete_order = _.find(results, res => res.id === COMPLETE_FILLS_ORD_ID);
-
-            chai.expect(complete_order).to.not.be.null;
-            chai.expect(complete_order.status).to.not.be.undefined;
-            chai.expect(complete_order.status).to.eq(RECIPE_ORDER_STATUSES.Completed);
+            chai.expect(results).is.a('string');
+            chai.assert(query_stub.calledThrice, 'query was supposed to be called 3 times with save!');
+            
+            chai.assert(results.includes(`(${exec_stats[0].id}, ${RECIPE_ORDER_STATUSES.Executing})`), `Recipe order ${exec_stats[0].id} should be updated to ${RECIPE_ORDER_STATUSES.Executing}`)
+            chai.assert(!results.includes(`(${exec_stats[1].id}, ${RECIPE_ORDER_STATUSES.Executing})`), `Recipe order ${exec_stats[1].id} should not be updated!`);
+            chai.assert(results.includes(`(${exec_stats[2].id}, ${RECIPE_ORDER_STATUSES.Completed})`), `Recipe order ${exec_stats[2].id} should be updated to ${RECIPE_ORDER_STATUSES.Completed}`)
         })
     });
+
 });
