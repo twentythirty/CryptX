@@ -93,7 +93,7 @@ describe('Recipe Order status changer job', () => {
 
             chai.expect(results).is.a('string');
             chai.assert(query_stub.calledTwice, 'query was supposed to be called twice!');
-            chai.expect(results).to.eq('Nothing to change!!!');
+            chai.expect(results).to.eq('Nothing to change!');
         })
     });
 
