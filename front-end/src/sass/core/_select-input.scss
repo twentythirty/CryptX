@@ -78,3 +78,48 @@
 
     }
 }
+
+.select-small {
+    .ng-select.custom {
+        .ng-select-container {
+            opacity: 1;
+            height: 100%;
+            width: 100%;
+            font-size: 12px;
+            .ng-placeholder {
+                margin-top: 3px;
+                font-size: 12px;
+            }
+            .ng-arrow-wrapper {
+                margin-top: 0px;
+                padding:0px;
+                width: 25%;
+                .ng-arrow {
+                    margin-top: 0px;
+                    width: 4px;
+                    height: 4px;
+                    margin-left: 1px;
+                }
+            }
+        }
+        .ng-clear-wrapper .ng-clear{
+            margin: 0px;
+            margin-top: 3px;
+            padding: 0px;
+        }
+        .ng-has-value {
+            margin:0;
+            .ng-value-container{
+                font-size: 12px;
+                .ng-value {
+                    margin-top: 5px;
+                    font-size: 12px;
+                }
+            }
+        }
+        .ng-dropdown-panel.custom{
+            font-size: 12px;
+            padding: 0;
+        }
+    }
+}

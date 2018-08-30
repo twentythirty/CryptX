@@ -1,10 +1,11 @@
-import { Component, forwardRef, Input, OnInit} from '@angular/core';
+import { Component, forwardRef, Input, OnInit, Output, EventEmitter} from '@angular/core';
 import {
   NG_VALUE_ACCESSOR,
   ControlValueAccessor, 
   FormGroup,
   AbstractControl
 } from '@angular/forms';
+//import { EventEmitter } from 'protractor';
 
 export const CUSTOM_INPUT_CONTROL_VALUE_ACCESSOR: any = {
   provide: NG_VALUE_ACCESSOR,
@@ -26,12 +27,19 @@ export class InputItemComponent implements ControlValueAccessor, OnInit {
   @Input() formGroup: FormGroup; // reactive forms form group instance
   @Input() formControlName: string; // reactive forms form group control name
   @Input() label: string; //input heading
+  @Input() bindValue: string //input items object field to bind as a option value
+  @Input() bindLabel: string //input items object field to bind as a option label
   @Input() placeholder: string;
   @Input() type: string;
+  @Input() clearable: boolean; //ability to clear selection
+  @Input() values: object; //selected value
   @Input() readonly: boolean; //makes input readonly
   @Input() source: Array<Object>;
   @Input() spinnerLoading: boolean; //shows spinner while loading input selection data
   @Input() fieldType: string; //type of input (input/select/autocomplete)
+
+  @Output() selectChange = new EventEmitter();
+  @Output() openList = new EventEmitter();
 
   //The internal data model
   private innerValue: any = '';
@@ -90,5 +98,13 @@ export class InputItemComponent implements ControlValueAccessor, OnInit {
   //From ControlValueAccessor interface
   registerOnTouched(fn: () => any) {
     this.onTouchedCallback = fn;
+  }
+
+  change(val){
+    this.selectChange.emit(val);
+  }
+
+  listOpen(val){
+    this.openList.emit(val);
   }
 }

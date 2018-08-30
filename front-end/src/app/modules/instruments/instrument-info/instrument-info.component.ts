@@ -87,12 +87,21 @@ export class InstrumentInfoComponent extends DataTableCommonManagerComponent imp
       new SelectCellDataColumn({
         column: 'exchange_id',
         inputs: {
+          placeholder: 'Select',
+          fieldType: 'select',
+          small: true,
+          selectedValue: (row) => {
+            return {
+              id: row.exchange_id,
+              name: row.exchange_name
+            }
+          },
           isDisabled: (row) => {
             return !row.isNew;
           },
           items: (row) => {
             return [
-              { id: '', name: 'Select' },
+              //{ id: '', name: 'Select' },
               ...this.exchanges
             ];
           }
@@ -100,7 +109,6 @@ export class InstrumentInfoComponent extends DataTableCommonManagerComponent imp
         outputs: {
           valueChange: ({ value, row }) => {
             row.exchange_id = +value;
-
             this.exchangesService.getExchangeInstrumentIdentifiers(row.exchange_id)
             .subscribe(res => {
               row.external_instrument_list = _.sortBy(res.identifiers);
@@ -113,15 +121,25 @@ export class InstrumentInfoComponent extends DataTableCommonManagerComponent imp
       new SelectCellDataColumn({
         column: 'external_instrument',
         inputs: {
+          placeholder: 'Enter',
+          fieldType: 'autocomplete',
+          small: true,
+          selectedValue: (row) => {
+            console.log(row);
+            return {
+              id: row.external_instrument,
+              name: row.external_instrument
+            }
+          },
           isDisabled: (row) => {
             return !row.isNew;
           },
           items: (row) => {
             return [
-              { id: '', name: 'Select' },
+              //{ id:'', name: 'Select' },
               ...(row.external_instrument_list || []).map(item => ({ id: item, name: item }))
             ];
-          }
+          },
         },
         outputs: {
           valueChange: ({ value, row }) => {
@@ -344,9 +362,9 @@ export class InstrumentInfoComponent extends DataTableCommonManagerComponent imp
    */
 
   @HostListener('window:beforeunload')
-  canDeactivate(): Observable<boolean> | boolean {
-    return this.noChanges;
-  }
+    canDeactivate(): Observable<boolean> | boolean {
+      return this.noChanges;
+    }
 
   /**
    * Styles

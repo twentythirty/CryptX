@@ -17,7 +17,10 @@
         [items]="instruments"
         [spinnerLoading]="instrumentsLoading"
         placeholder="{{'instruments.enter_instrument' | translate}}"
-      ></app-input-item>
+        bindValue = "id"
+        bindLabel = "value"
+      > 
+      </app-input-item>
 
       <app-input-item
         class="form-item"
@@ -28,7 +31,10 @@
         [items]="exchanges"
         [spinnerLoading]="exchangesLoading"
         placeholder="{{'exchanges.select_exchange' | translate}}"
-      ></app-input-item>
+        bindValue = "id"
+        bindLabel = "value"
+      > 
+      </app-input-item>
 
       <app-input-item
         type="number"

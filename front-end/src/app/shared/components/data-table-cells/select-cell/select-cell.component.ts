@@ -6,8 +6,12 @@ export class SelectCellDataColumn extends TableDataColumn {
   inputs?: {
     value?: any;
     data?: any;
+    fieldType?: string,
+    placeholder?: string,
+    small?: boolean,
     items: (row: any) => Array<{id: number, value: string}>;
     isDisabled?: (row: any) => boolean;
+    selectedValue?: (row: any) => object;
   }
   outputs?: {
     valueChange?: any;
@@ -27,16 +31,27 @@ export class SelectCellComponent implements OnInit {
   @Input() value: string;
   @Input() items: (row: any) => void = (row) => null;
   @Input() isDisabled?: (row: any) => boolean = (row) => false;
+  @Input() selectedValue?: (row: any) => void = (row) => null;
   
   @Output() valueChange = new EventEmitter();
+
+  disabled: boolean = true;
+  dropDownList: any = [];
+  selected: any = {};
 
   constructor() { }
 
   ngOnInit() {
+    this.disabled = this.isDisabled(this.row);
+    this.dropDownList = this.items(this.row);
+    this.selected = this.selectedValue(this.row);
   }
 
   onChange(val) {
-    this.valueChange.emit({ value: val, row: this.row });
+    this.valueChange.emit({ value: val.id, row: this.row }); //val/val.id
   }
 
+  openDropDown(){
+    this.dropDownList = this.items(this.row)
+  }
 }

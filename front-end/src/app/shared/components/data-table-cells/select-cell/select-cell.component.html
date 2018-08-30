@@ -1,7 +1,13 @@
-<select
- [ngModel]="value"
- (ngModelChange)="onChange($event)"
- [disabled]="isDisabled(row)"
->
-  <option *ngFor="let item of items(row)" [value]="item.id">{{ item.name }}</option>
-</select>
+<app-input-item *ngIf="selected"
+  [class.select-small]="small"
+  [class.disable-paging]="disabled"
+  (selectChange)="onChange($event)"
+  [values]="selected"
+  (openList)="openDropDown()"
+  fieldType = "{{fieldType}}"
+  [items]= "dropDownList"
+  placeholder="{{placeholder}}"
+  clearable="false"
+  bindValue = "id"
+  bindLabel = "name"
+></app-input-item> 
