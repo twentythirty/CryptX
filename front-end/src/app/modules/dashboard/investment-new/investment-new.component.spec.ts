@@ -1,6 +1,25 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { extraTestingModules, fakeAsyncResponse } from '../../../utils/testing';
 
 import { InvestmentNewComponent } from './investment-new.component';
+import { DashboardModule } from '../dashboard.module';
+import { ModelConstantsService } from '../../../services/model-constants/model-constants.service';
+import { InvestmentService } from '../../../services/investment/investment.service';
+
+
+const ModelConstantsServiceStub = {
+  getGroup: () => {
+    return fakeAsyncResponse({
+      STRATEGY_TYPES: {
+        MCI: 101,
+        LCI: 102
+      }
+    });
+  }
+};
+
+const InvestmentServiceStub = {};
+
 
 describe('InvestmentNewComponent', () => {
   let component: InvestmentNewComponent;
@@ -8,7 +27,14 @@ describe('InvestmentNewComponent', () => {
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ InvestmentNewComponent ]
+      imports: [
+        DashboardModule,
+        ...extraTestingModules
+      ],
+      providers: [
+        { provide: ModelConstantsService, useValue: ModelConstantsServiceStub },
+        { provide: InvestmentService, useValue: InvestmentServiceStub },
+      ]
     })
     .compileComponents();
   }));

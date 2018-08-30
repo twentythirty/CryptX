@@ -14,8 +14,8 @@ export class InvestmentNewComponent implements OnInit {
   @Output() close: EventEmitter<any> = new EventEmitter();
   @Output() onComplete: EventEmitter<any> = new EventEmitter();
 
-  mode= false;
-  portfolio= false;
+  mode = false;
+  portfolio = false;
   next_step = false;
 
   group_name = 'STRATEGY_TYPES'
@@ -34,10 +34,12 @@ export class InvestmentNewComponent implements OnInit {
     deposit_eth: new FormControl('', [Validators.required])*/
   });
 
-  constructor(private modelConstantService: ModelConstantsService,
-              private investmentService: InvestmentService,
-              private router: Router) { 
-    this.amount ={
+  constructor(
+    private modelConstantService: ModelConstantsService,
+    private investmentService: InvestmentService,
+    private router: Router,
+  ) { 
+    this.amount = {
       strategy_type: null,
       is_simulated: null,
       deposit_usd: null,
@@ -56,32 +58,33 @@ export class InvestmentNewComponent implements OnInit {
     this.isValid();
   }
 
-  onChangePortfolio(value){
+  onChangePortfolio(value) {
     this.amount.strategy_type = value[1];
     this.portfolio = true;
     this.isValid();
   }
 
-  isValid(){
-    if(this.mode && this.portfolio){
+  isValid() {
+    if(this.mode && this.portfolio) {
       this.next_step = true;
     }
   }
 
-  Confirm(){
-    if (this.runForm.valid){
+  Confirm() {
+    if (this.runForm.valid) {
       this.investmentService.createInvestmentRun(this.amount).subscribe(
-      (data) => {
-        if (data.success) {
-          this.onClose();
-          this.onComplete.emit();
-          this.router.navigate(['/run/investment', data.investment_run.id]);
-        } 
-      }, error => {
-        console.log('Error', error);
-      }, () => {
-      });
-    }else {
+        (data) => {
+          if (data.success) {
+            this.onClose();
+            this.onComplete.emit();
+            this.router.navigate(['/run/investment', data.investment_run.id]);
+          } 
+        }, error => {
+          console.log('Error', error);
+        }, () => {
+        }
+      );
+    } else {
       this.markAsTouched(this.runForm);
     }
   }
