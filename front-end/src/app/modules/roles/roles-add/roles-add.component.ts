@@ -126,9 +126,6 @@ export class RolesAddComponent implements OnInit {
   }
 
   addRole() {
-    console.log('form', this.roleForm);
-    return;
-
     if (this.roleForm.valid && this.roleForm.value.permissions.length > 0) {
       this.showError = false;
       this.loading = true;
