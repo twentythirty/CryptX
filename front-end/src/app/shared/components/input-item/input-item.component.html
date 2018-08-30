@@ -16,7 +16,7 @@
 <ng-container *ngIf="fieldType === 'select' || fieldType === 'autocomplete'">	
   <ng-select
     class="custom"
-    [(ngModel)]="values.id"
+    [(ngModel)]="value"
     [searchable]="fieldType === 'autocomplete'"
     [loading]="spinnerLoading"
     loadingText="Loading..."
