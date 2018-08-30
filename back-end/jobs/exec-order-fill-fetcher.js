@@ -385,6 +385,7 @@ module.exports.JOB_BODY = async (config, log) => {
         }
         const fee = price/_.random(98, 100, false); //Make fee around 1-3% of the price.
         
+        placed_order.price = price;
         placed_order.fee = fee;
         placed_order.status = MODEL_CONST.EXECUTION_ORDER_STATUSES.FullyFilled;
         placed_order.completed_timestamp = new Date();
