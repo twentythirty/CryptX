@@ -434,7 +434,7 @@ module.exports.JOB_BODY = async (config, log) => {
         if(placed_order.changed()) {
             queries.push({ model: placed_order, method: 'save', args: [], options: {} });
             logs.push([actions.modified, {
-                previous_instance: placed_order._previousDataValues,
+                previous_instance: Object.assign({}, placed_order._previousDataValues),
                 updated_instance: placed_order,
                 ignore: ['Instrument', 'completed_timestamp'],
                 replace: {
