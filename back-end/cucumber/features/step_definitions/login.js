@@ -20,7 +20,7 @@ Given('I know the Admin credentials', function() {
     this.worldLog('I am calling the world!');
 })
 
-When('When I attempt to login with the default Admin credentials', function() {
+When('I log onto CryptX as Admin', function() {
     return chai
         .request(this.app)
         .post("/v1/users/login")

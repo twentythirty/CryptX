@@ -9,17 +9,21 @@ function CustomWorld() {
     }
 
     this.app = app;
+
+    this.defaultCredentials = {
+        username: process.env.ADMIN_EMAIL,
+        password: process.env.ADMIN_PWD
+    }
 }
 
 BeforeAll(function(){
 
     return app.dbPromise.then(() => {
         setWorldConstructor(CustomWorld);
-        console.log('THIS IS ALL HAPPENING BEFORE@');
     });
     
 });
 
 AfterAll(function() {
-    console.log('IT IS DONE!');
+    console.log('We should end it on a high note!');
 });

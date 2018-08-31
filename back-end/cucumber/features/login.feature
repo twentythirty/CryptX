@@ -7,5 +7,5 @@ Feature: Login
    Scenario: I want to login for the first time.
         
         Given I know the Admin credentials
-        When When I attempt to login with the default Admin credentials
+        When I log onto CryptX as Admin
         Then I should be logged in as the Admin
