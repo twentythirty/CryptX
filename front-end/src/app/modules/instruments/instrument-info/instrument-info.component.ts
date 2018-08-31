@@ -109,9 +109,13 @@ export class InstrumentInfoComponent extends DataTableCommonManagerComponent imp
         outputs: {
           valueChange: ({ value, row }) => {
             row.exchange_id = +value;
+            row.external_instrument = null;
+            row.external_instrument_list = [];
+            this.loading = true;
             this.exchangesService.getExchangeInstrumentIdentifiers(row.exchange_id)
             .subscribe(res => {
               row.external_instrument_list = _.sortBy(res.identifiers);
+              this.declareMappingTable();
             });
 
             this.checkMapping(row);
@@ -125,7 +129,6 @@ export class InstrumentInfoComponent extends DataTableCommonManagerComponent imp
           fieldType: 'autocomplete',
           small: true,
           selectedValue: (row) => {
-            console.log(row);
             return {
               id: row.external_instrument,
               name: row.external_instrument
@@ -143,8 +146,9 @@ export class InstrumentInfoComponent extends DataTableCommonManagerComponent imp
         },
         outputs: {
           valueChange: ({ value, row }) => {
+            this.loading = false;
             row.external_instrument = value;
-
+            
             this.checkMapping(row);
           }
         }

@@ -7,6 +7,7 @@ import * as _ from 'lodash';
 import { ModelConstantsService } from "../../../services/model-constants/model-constants.service";
 import { AssetService } from "../../../services/asset/asset.service";
 import { ColdStorageService } from "../../../services/cold-storage/cold-storage.service";
+import { EntitiesFilter } from '../../../shared/models/api/entitiesFilter';
 
 @Component({
   selector: 'app-add-account',
@@ -58,10 +59,12 @@ export class AddAccountComponent implements OnInit {
     });
   }
 
-  getAssets() {
-    let filter = { filter: { is_cryptocurrency: 'assets.is_cryptocurrency.yes' }};
 
-    this.assetService.getAllAssetsDetailed(filter).subscribe(res => {
+  getAssets(){
+    let requestData = new EntitiesFilter;
+    requestData.filter = {is_cryptocurrency: "assets.is_cryptocurrency.yes"};
+
+    this.assetService.getAllAssetsDetailed(requestData).subscribe(res => {
       this.assetsLoading = false;
 
       this.assets = res.assets.map(asset => {

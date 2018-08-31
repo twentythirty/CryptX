@@ -48,10 +48,10 @@ export class SelectCellComponent implements OnInit {
   }
 
   onChange(val) {
-    this.valueChange.emit({ value: val.id, row: this.row }); //val/val.id
+    this.valueChange.emit({ value: val.id, row: this.row });
   }
 
   openDropDown(){
-    this.dropDownList = this.items(this.row)
+    this.dropDownList = this.items(this.row);
   }
 }

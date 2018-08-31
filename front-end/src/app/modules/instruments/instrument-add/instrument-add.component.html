@@ -16,10 +16,10 @@
         [formGroup]="form"
         formControlName="transaction_asset_id"
         [items]="assets"
-        [spinnerLoading] = "assetsLoading" 
+        [spinnerLoading]="assetsLoading" 
         placeholder="{{'instruments.enter_transaction_asset' | translate}}"
-        bindValue = "id"
-        bindLabel = "value"
+        bindValue="id"
+        bindLabel="value"
       > 
       </app-input-item>
 
@@ -30,10 +30,10 @@
         [formGroup]="form"
         formControlName="quote_asset_id"
         [items]="assets"
-        [spinnerLoading] ="assetsLoading"
+        [spinnerLoading]="assetsLoading"
         placeholder="{{'instruments.enter_quote_asset' | translate}}"
-        bindValue = "id"
-        bindLabel = "value"
+        bindValue="id"
+        bindLabel="value"
       > 
       </app-input-item>
     </form>
