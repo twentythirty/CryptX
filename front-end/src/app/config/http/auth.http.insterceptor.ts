@@ -16,19 +16,19 @@ export class PreRequestAuthInterceptor implements HttpInterceptor {
     const token = localStorage.getItem("token");
 
     console.log("[Request interceptor] Auth Token: " + token);
-    console.log("[Request interceptor] Before adding token to request: ", req);
+    console.log("[Request interceptor] Before adding token to request: ", JSON.stringify(req));
 
     if (token) {
       const cloned = req.clone({ // always add token if found
         headers: req.headers.set("Authorization", token)
       });
 
-      console.log("[Request interceptor] After token should be added:", req);
-
+      console.log("[Request interceptor] After token should be added:", JSON.stringify(cloned));
+      
       return next.handle(cloned);
     }
     else {
-      console.log("[Request interceptor] Token not found: ", req);
+      console.log("[Request interceptor] Token not found: ", JSON.stringify(req));
 
       return next.handle(req);
     }
@@ -48,7 +48,7 @@ export class PostRequestAuthInterceptor implements HttpInterceptor {
           if (event instanceof HttpResponse) {
             // do stuff if needed
             console.log("[Response interceptor] START ANALYZING RESPONSE");
-            console.log("[Response interceptor] Error object:", event);
+            console.log("[Response interceptor] Error object:", JSON.stringify(event));
             const nextToken = _.get(event, 'body.next_token');
 
             if(nextToken) this.authService.setToken(nextToken);
@@ -58,7 +58,7 @@ export class PostRequestAuthInterceptor implements HttpInterceptor {
         (err: any) => {
           const token = localStorage.getItem("token");
           console.log("[Error response interceptor] Auth Token:" + token);
-          console.log("[Error response interceptor]", err);
+          console.log("[Error response interceptor]", JSON.stringify(err));
 
           if (err instanceof HttpErrorResponse) {
             if (err.status === 401) // if returns error code unauthorized
