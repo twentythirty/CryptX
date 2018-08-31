@@ -29,6 +29,10 @@ export class SelectCellDataColumn extends TableDataColumn {
 export class SelectCellComponent implements OnInit {
   @Input() row: any;
   @Input() value: string;
+  @Input() placeholder: string;
+  @Input() fieldtype: string;
+  @Input() small: boolean;
+  @Input() data: any;
   @Input() items: (row: any) => void = (row) => null;
   @Input() isDisabled?: (row: any) => boolean = (row) => false;
   @Input() selectedValue?: (row: any) => void = (row) => null;
