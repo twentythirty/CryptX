@@ -4,7 +4,6 @@ import { Router } from '@angular/router';
 import { finalize } from 'rxjs/operators';
 import * as _ from 'lodash';
 
-import { AuthService } from '../../../services/auth/auth.service';
 import { AssetService } from '../../../services/asset/asset.service';
 import { InstrumentsService } from '../../../services/instruments/instruments.service';
 
@@ -24,7 +23,6 @@ export class InstrumentAddComponent implements OnInit {
   });
 
   constructor(
-    private authService: AuthService,
     private assetService: AssetService,
     private instrumentsService: InstrumentsService,
     private router: Router,

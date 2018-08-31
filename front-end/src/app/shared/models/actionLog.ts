@@ -1,7 +1,7 @@
 export class ActionLog {
     public id?: number;
     public level?: number;
-    public timestamp: string;
+    public timestamp: string | number;
     
     public details?: string; // raw text, without translation (fallback)
     public rationale?: string;

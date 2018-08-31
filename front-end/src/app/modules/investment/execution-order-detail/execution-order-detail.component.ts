@@ -4,7 +4,12 @@ import { mergeMap, finalize } from 'rxjs/operators';
 
 import { StatusClass } from '../../../shared/models/common';
 
-import { TimelineDetailComponent, SingleTableDataSource, TagLineItem, ITimelineDetailComponent } from '../timeline-detail/timeline-detail.component'
+import {
+  TimelineDetailComponent,
+  SingleTableDataSource,
+  TagLineItem,
+  ITimelineDetailComponent
+} from '../timeline-detail/timeline-detail.component';
 import { TableDataSource, TableDataColumn } from '../../../shared/components/data-table/data-table.component';
 import { TimelineEvent } from '../../../shared/components/timeline/timeline.component';
 import { DateCellDataColumn, StatusCellDataColumn, NumberCellDataColumn } from '../../../shared/components/data-table-cells';
@@ -24,9 +29,9 @@ export class ExecutionOrderDetailComponent extends TimelineDetailComponent imple
   /**
    * 1. Implement attributes to display titles
    */
-  public pageTitle: string = 'Execution orders';
-  public singleTitle: string = 'Order';
-  public listTitle: string = 'Execution orders';
+  public pageTitle = 'Execution orders';
+  public singleTitle = 'Order';
+  public listTitle = 'Execution orders';
 
   /**
    * 2. Implement attributes to preset data structure
@@ -112,7 +117,7 @@ export class ExecutionOrderDetailComponent extends TimelineDetailComponent imple
   constructor(
     public route: ActivatedRoute,
     public router: Router,
-    private investmentService: InvestmentService
+    private investmentService: InvestmentService,
   ) {
     super(route, router);
 
@@ -136,7 +141,7 @@ export class ExecutionOrderDetailComponent extends TimelineDetailComponent imple
       col => ['id', 'instrument', 'side', 'exchange', 'type', 'status'].includes(col.column)
     ).map(
       col => {
-        let filter = {filter : {recipe_order_id: this.routeParamId}}
+        const filter = { filter : { recipe_order_id: this.routeParamId }};
         col.filter.rowData$ = this.investmentService.getAllExecutionOrdersHeaderLOV(col.column, filter);
       }
     );
@@ -162,7 +167,7 @@ export class ExecutionOrderDetailComponent extends TimelineDetailComponent imple
         this.getFilterLOV();
       },
       err => this.listDataSource.body = []
-    )
+    );
   }
 
   public getSingleData(): void {
@@ -172,17 +177,17 @@ export class ExecutionOrderDetailComponent extends TimelineDetailComponent imple
       )
     ).subscribe(
       res => {
-        if(res.recipe_order) {
+        if (res.recipe_order) {
           this.singleDataSource.body = [ res.recipe_order ];
         }
-        if(res.recipe_order_stats) {
+        if (res.recipe_order_stats) {
           this.setTagLine(res.recipe_order_stats.map(stat => {
-            return new TagLineItem(`${stat.count} ${stat.name}`)
-          }))
+            return new TagLineItem(`${stat.count} ${stat.name}`);
+          }));
         }
       },
       err => this.singleDataSource.body = []
-    )
+    );
   }
 
   public getTimelineData(): void {
@@ -190,7 +195,7 @@ export class ExecutionOrderDetailComponent extends TimelineDetailComponent imple
       mergeMap(
         params => this.investmentService.getAllTimelineData({ recipe_order_id: params['id'] })
       )
-    )
+    );
   }
   /**
    * 5. Implement methods to handle user actions

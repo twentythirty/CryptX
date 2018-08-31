@@ -5,13 +5,13 @@ export class Asset {
   public is_base: boolean | string;
   public is_deposit: boolean | string;
 
-  public capitalization: number | string;
-  public nvt_ratio: number | string;
-  public market_share: number | string;
-  public capitalization_updated: any;
-  public status: string;
+  public capitalization?: number | string;
+  public nvt_ratio?: number | string;
+  public market_share?: number | string;
+  public capitalization_updated?: any;
+  public status?: string;
   public statusCode?: number;
-  public is_cryptocurrency: boolean | string;
+  public is_cryptocurrency?: boolean | string;
 
   constructor(data: Asset) {
     Object.assign(this, data);

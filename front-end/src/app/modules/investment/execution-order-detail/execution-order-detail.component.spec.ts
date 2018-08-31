@@ -1,6 +1,17 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { extraTestingModules, fakeAsyncResponse } from '../../../utils/testing';
 
+import { InvestmentModule } from '../investment.module';
 import { ExecutionOrderDetailComponent } from './execution-order-detail.component';
+import { InvestmentService } from '../../../services/investment/investment.service';
+
+
+const InvestmentServiceStub = {
+  getAllExecutionOrdersHeaderLOV: () => {
+    return fakeAsyncResponse({});
+  }
+};
+
 
 describe('ExecutionOrderDetailComponent', () => {
   let component: ExecutionOrderDetailComponent;
@@ -8,7 +19,13 @@ describe('ExecutionOrderDetailComponent', () => {
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ ExecutionOrderDetailComponent ]
+      imports: [
+        InvestmentModule,
+        ...extraTestingModules
+      ],
+      providers: [
+        { provide: InvestmentService, useValue: InvestmentServiceStub }
+      ]
     })
     .compileComponents();
   }));

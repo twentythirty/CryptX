@@ -3,10 +3,21 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { TranslateService } from '@ngx-translate/core';
 import { mergeMap, finalize } from 'rxjs/operators';
 
-import { TimelineDetailComponent, SingleTableDataSource, TagLineItem, ITimelineDetailComponent } from '../timeline-detail/timeline-detail.component'
+import {
+  TimelineDetailComponent,
+  SingleTableDataSource,
+  TagLineItem,
+  ITimelineDetailComponent
+} from '../timeline-detail/timeline-detail.component';
 import { TableDataSource, TableDataColumn } from '../../../shared/components/data-table/data-table.component';
 import { TimelineEvent } from '../../../shared/components/timeline/timeline.component';
-import { ActionCellDataColumn, DataCellAction, DateCellDataColumn, StatusCellDataColumn, NumberCellDataColumn } from '../../../shared/components/data-table-cells';
+import {
+  ActionCellDataColumn,
+  DataCellAction,
+  DateCellDataColumn,
+  StatusCellDataColumn,
+  NumberCellDataColumn
+} from '../../../shared/components/data-table-cells';
 import { InvestmentService } from '../../../services/investment/investment.service';
 import { ExecutionOrdersService } from '../../../services/execution-orders/execution-orders.service';
 
@@ -26,9 +37,9 @@ export class ExecutionOrderFillDetailComponent extends TimelineDetailComponent i
   /**
    * 1. Implement attributes to display titles
    */
-  public pageTitle: string = 'Execution order fill';
-  public singleTitle: string = 'Execution order';
-  public listTitle: string = 'Execution order fill';
+  public pageTitle = 'Execution order fill';
+  public singleTitle = 'Execution order';
+  public listTitle = 'Execution order fill';
 
   public logsTitle: string;
   public logsSource: Array<ActionLog>;
@@ -54,7 +65,7 @@ export class ExecutionOrderFillDetailComponent extends TimelineDetailComponent i
       { column: 'action', nameKey: 'table.header.action' }
     ],
     body: null
-  }
+  };
 
   public listDataSource: TableDataSource = {
     header: [
@@ -149,18 +160,18 @@ export class ExecutionOrderFillDetailComponent extends TimelineDetailComponent i
       )
     ).subscribe(
       res => {
-        if(res.execution_order) {
+        if (res.execution_order) {
           this.singleDataSource.body = [ res.execution_order ];
         }
 
-        if(res.action_logs) {
+        if (res.action_logs) {
           this.logsSource = res.action_logs;
         }
 
-        if(res.execution_order_stats) {
+        if (res.execution_order_stats) {
           this.setTagLine(res.execution_order_stats.map(stat => {
-            return new TagLineItem(`${stat.count} ${stat.name}`)
-          }))
+            return new TagLineItem(`${stat.count} ${stat.name}`);
+          }));
         }
       },
       err => this.singleDataSource.body = []
@@ -192,7 +203,7 @@ export class ExecutionOrderFillDetailComponent extends TimelineDetailComponent i
       col => ['id'].includes(col.column)
     ).map(
       col => {
-        let filter = {filter : {execution_order_id: this.routeParamId}}
+        const filter = { filter : { execution_order_id: this.routeParamId }};
         col.filter.rowData$ = this.investmentService.getAllExecutionOrdersFillsHeaderLOV(col.column, filter);
       }
     );

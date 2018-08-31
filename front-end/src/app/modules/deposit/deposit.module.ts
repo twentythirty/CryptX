@@ -8,6 +8,8 @@ import { DepositListComponent } from './deposit-list/deposit-list.component';
 import { DepositInfoComponent } from './deposit-info/deposit-info.component';
 
 import { DepositService } from "../../services/deposit/deposit.service";
+import { AuthService } from '../../services/auth/auth.service';
+import { ModelConstantsService } from '../../services/model-constants/model-constants.service';
 
 @NgModule({
   imports: [
@@ -21,7 +23,9 @@ import { DepositService } from "../../services/deposit/deposit.service";
     DepositInfoComponent,
   ],
   providers: [
+    AuthService,
     DepositService,
+    ModelConstantsService,
   ]
 })
 export class DepositModule { } 

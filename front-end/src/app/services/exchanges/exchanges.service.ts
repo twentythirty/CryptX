@@ -6,8 +6,8 @@ import { EntitiesFilter } from '../../shared/models/api/entitiesFilter';
 import { environment } from '../../../environments/environment';
 
 export class ExchangesAllResponse {
+  success: boolean;
   exchanges: Array<any>;
-  status: boolean;
   count: number;
 }
 

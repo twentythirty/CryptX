@@ -1,11 +1,9 @@
 import { NgModule } from '@angular/core';
-import { CommonModule } from '@angular/common';
-
-import { InvestmentRoutingModule } from './investment-routing.module';
-import { RouterModule } from '@angular/router';
-import { SharedModule } from '../../shared/shared.module';
 import { BrowserModule } from '@angular/platform-browser';
-//import { TimelineComponent } from './timeline/timeline.component';
+import { CommonModule } from '@angular/common';
+import { RouterModule } from '@angular/router';
+
+import { SharedModule } from '../../shared/shared.module';
 import { InvestmentRunDetailComponent } from './investment-run-detail/investment-run-detail.component';
 import { RecipeRunDetailComponent } from './recipe-run-detail/recipe-run-detail.component';
 import { OrderDetailComponent } from './order-detail/order-detail.component';
@@ -15,17 +13,17 @@ import { DepositDetailComponent } from './deposit-detail/deposit-detail.componen
 import { ExecutionOrdersComponent } from './execution-orders/execution-orders.component';
 import { OrderGroupComponent } from './order-group/order-group.component';
 import { TimelineDetailComponent } from './timeline-detail/timeline-detail.component';
+import { AuthService } from '../../services/auth/auth.service';
+import { ModelConstantsService } from '../../services/model-constants/model-constants.service';
 
 @NgModule({
   imports: [
     CommonModule,
     BrowserModule,
     RouterModule, // TODO: Remove this when moving to lazy loaded modules
-    SharedModule
-    // InvestmentRoutingModule
+    SharedModule,
   ],
   declarations: [
-    //TimelineComponent,
     InvestmentRunDetailComponent,
     RecipeRunDetailComponent,
     OrderDetailComponent,
@@ -34,7 +32,11 @@ import { TimelineDetailComponent } from './timeline-detail/timeline-detail.compo
     DepositDetailComponent,
     ExecutionOrdersComponent,
     OrderGroupComponent,
-    TimelineDetailComponent
+    TimelineDetailComponent,
+  ],
+  providers: [
+    AuthService,
+    ModelConstantsService,
   ]
 })
 export class InvestmentModule { }

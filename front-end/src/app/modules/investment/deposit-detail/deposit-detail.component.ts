@@ -4,7 +4,12 @@ import { mergeMap, finalize } from 'rxjs/operators';
 
 import { StatusClass } from '../../../shared/models/common';
 
-import { TimelineDetailComponent, SingleTableDataSource, TagLineItem, ITimelineDetailComponent } from '../timeline-detail/timeline-detail.component';
+import {
+  TimelineDetailComponent,
+  SingleTableDataSource,
+  TagLineItem,
+  ITimelineDetailComponent
+} from '../timeline-detail/timeline-detail.component';
 import { TimelineEvent } from '../../../shared/components/timeline/timeline.component';
 import { TableDataSource, TableDataColumn } from '../../../shared/components/data-table/data-table.component';
 import {
@@ -26,9 +31,9 @@ export class DepositDetailComponent extends TimelineDetailComponent implements O
   /**
    * 1. Implement attributes to display titles
    */
-  public pageTitle: string = 'Recipe run';
-  public singleTitle: string = 'Recipe run';
-  public listTitle: string = 'Deposits';
+  public pageTitle = 'Recipe run';
+  public singleTitle = 'Recipe run';
+  public listTitle = 'Deposits';
 
   /**
    * 2. Implement attributes to preset data structure
@@ -67,7 +72,7 @@ export class DepositDetailComponent extends TimelineDetailComponent implements O
             this.showReadModal({
               title: 'Rationale',
               content: row.approval_comment
-            })
+            });
           }
         })
       ]
@@ -135,17 +140,17 @@ export class DepositDetailComponent extends TimelineDetailComponent implements O
       )
     ).subscribe(
       res => {
-        if(res.recipe_run) {
+        if (res.recipe_run) {
           this.singleDataSource.body = [ res.recipe_run ];
         }
-        if(res.recipe_stats) {
+        if (res.recipe_stats) {
           this.setTagLine(
             res.recipe_stats.map(o => new TagLineItem(`${o.count} ${o.name}`))
           );
         }
       },
       err => this.singleDataSource.body = []
-    )
+    );
   }
 
   public getAllData(): void {
@@ -163,7 +168,7 @@ export class DepositDetailComponent extends TimelineDetailComponent implements O
         this.getFilterLOV();
       },
       err => this.listDataSource.body = []
-    )
+    );
   }
 
   public getTimelineData(): void {
@@ -171,7 +176,7 @@ export class DepositDetailComponent extends TimelineDetailComponent implements O
       mergeMap(
         params => this.investmentService.getAllTimelineData({ recipe_run_id: params['id'] })
       )
-    )
+    );
   }
 
   private getFilterLOV(): void {
@@ -179,7 +184,7 @@ export class DepositDetailComponent extends TimelineDetailComponent implements O
       col => ['id',  'quote_asset', 'exchange', 'account', 'status'].includes(col.column)
     ).map(
       col => {
-        let filter = {filter : {investment_run_id: this.routeParamId}}
+        const filter = { filter : { investment_run_id: this.routeParamId }};
         col.filter.rowData$ = this.investmentService.getAllDepositDetailsHeaderLOV(col.column, filter);
       }
     );

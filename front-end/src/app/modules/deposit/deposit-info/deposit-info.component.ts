@@ -82,9 +82,9 @@ export class DepositInfoComponent implements OnInit {
     ).subscribe(
       (params: Params) => {
         this.depositId = params.depositId;
-        if (this.depositId){
-          this.getTimelineData(this.depositId);
-        }
+        
+        this.getTimelineData(this.depositId);
+        
         this.depositService.getDeposit(this.depositId).subscribe(
           (res: DepositResultData) => {
             this.depositDataSource.body = [res.recipe_deposit];
@@ -97,7 +97,7 @@ export class DepositInfoComponent implements OnInit {
     )
   }
 
-  public onSetFilter(filterData): void {}
+  onSetFilter(filterData): void {}
 
   appendActionColumn() {
     if (!_.find(this.depositDataSource.header, col => col.column == 'action')){

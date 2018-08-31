@@ -69,10 +69,9 @@ describe('AssetViewComponent', () => {
         { provide: AssetService, useValue: AssetServiceStub },
         {
           provide: ActivatedRoute, useValue: {
-            params: of({assetId: 1})
+            params: of({ assetId: 1 })
           }
         },
-
       ]
     })
     .compileComponents();

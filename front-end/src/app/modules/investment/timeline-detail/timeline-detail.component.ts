@@ -44,14 +44,14 @@ export interface ITimelineDetailComponent {
   getSingleData: () => void;
   getTimelineData: () => void;
 
-  addAction?: () => void // optional
+  addAction?: () => void; // optional
 
-  generateOrders?: () => void // optional
+  generateOrders?: () => void; // optional
 
   openSingleRow: (row: any) => void; // optional
   openListRow: (row: any) => void; // optional
 
-  goBack?: () => void // optional
+  goBack?: () => void; // optional
 
   /**
    * Rationale set modal
@@ -106,9 +106,9 @@ export class TimelineDetailComponent extends DataTableCommonManagerComponent imp
   public addTitle: string;  // Optional
   public singleTableEmptyText: string; // Optional
   public listTableEmptyText: string; // Optional
-  
-  public showGenerateOrders: boolean = false; // Optional
-  public disableGenerateOrders: boolean = false; // Optional
+
+  public showGenerateOrders = false; // Optional
+  public disableGenerateOrders = false; // Optional
 
   public logsTitle: string; // Optional
   public logsSource: Array<ActionLog>; // Optional
@@ -155,9 +155,9 @@ export class TimelineDetailComponent extends DataTableCommonManagerComponent imp
   /**
    * 4. Abstract methods to fetch data OnInit
    */
-  public getAllData(): void {};
-  protected getSingleData(): void {};
-  protected getTimelineData(): void {};
+  public getAllData(): void {}
+  protected getSingleData(): void {}
+  protected getTimelineData(): void {}
 
   /**
    * 5. Abstract methods to handle user actions
@@ -170,8 +170,8 @@ export class TimelineDetailComponent extends DataTableCommonManagerComponent imp
     // Do nothing by default
   }
 
-  public openSingleRow(row: any): void {};
-  public openListRow(row: any): void {};
+  public openSingleRow(row: any): void {}
+  public openListRow(row: any): void {}
 
   /**
    * Additional
@@ -184,14 +184,14 @@ export class TimelineDetailComponent extends DataTableCommonManagerComponent imp
   }
 
   public doItemAction(item: TagLineItem): void {
-    if(item.action) item.action();
+    if (item.action) { item.action(); }
   }
 
   /**
    * Rationale set modal
    */
 
-  public rationaleModalIsShown: boolean = false;
+  public rationaleModalIsShown = false;
   public rationaleData: any;
   public rationaleDone: (data: any) => void;
 
@@ -208,7 +208,7 @@ export class TimelineDetailComponent extends DataTableCommonManagerComponent imp
   }
 
   public submitRationale(data): void {
-    if(typeof this.rationaleDone == 'function') {
+    if (typeof this.rationaleDone === 'function') {
       this.rationaleDone(data);
     }
     this.hideRationaleModal();
@@ -218,8 +218,8 @@ export class TimelineDetailComponent extends DataTableCommonManagerComponent imp
    * Read set modal
    */
 
-  public readModalIsShown: boolean = false;
-  public readData: { title: string, content: string };
+  public readModalIsShown = false;
+  public readData;
 
   public showReadModal(data: { title: string, content: string }): void {
     this.readModalIsShown = true;
