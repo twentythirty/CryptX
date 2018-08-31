@@ -3,9 +3,9 @@
   "version": "0.0.1",
   "private": true,
   "scripts": {
-    "postinstall": "ng build --prod",
+    "postinstall": "ng build --prod --aot",
     "start": "./startup.sh",
-    "serve": "ng serve --port 3001 --hmr --open --proxy-config front-end/proxy.config.json",
+    "serve": "ng serve --aot --port 3001 --hmr --open --proxy-config front-end/proxy.config.json",
     "coverage": "nyc npm test",
     "test": "NODE_ENV=test mocha --recursive --timeout 20000 --exit back-end/test",
     "cucumber": "cucumber-js ./back-end/cucumber/features --exit",
