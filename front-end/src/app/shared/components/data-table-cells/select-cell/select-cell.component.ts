@@ -30,7 +30,7 @@ export class SelectCellComponent implements OnInit {
   @Input() row: any;
   @Input() value: string;
   @Input() placeholder: string;
-  @Input() fieldtype: string;
+  @Input() fieldType: string;
   @Input() small: boolean;
   @Input() data: any;
   @Input() items: (row: any) => void = (row) => null;
