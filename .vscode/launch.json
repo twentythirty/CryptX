@@ -7,27 +7,17 @@
     {
       "type": "node",
       "request": "launch",
-      "name": "Launch Jobs",
-      "program": "${workspaceFolder}/back-end/jobs/jobs-runner.js"
+      "name": "Mocha Tests",
+      "program": "${workspaceFolder}/back-end/test-harness/test-runner.js",
+      "args": [
+        "${workspaceFolder}/back-end/test"
+      ]
     },
     {
       "type": "node",
       "request": "launch",
-      "name": "Mocha Tests",
-      "program": "${workspaceFolder}/node_modules/mocha/bin/_mocha",
-      "args": [
-        "-u",
-        "tdd",
-        "--timeout",
-        "999999",
-        "--colors",
-        "--recursive",
-        "--exit",
-        "--reporter",
-        "${workspaceFolder}/back-end/test-harness/heroku-mailing-reporter.js",
-        "${workspaceFolder}/back-end/test"
-      ],
-      "internalConsoleOptions": "openOnSessionStart"
+      "name": "Launch Jobs",
+      "program": "${workspaceFolder}/back-end/jobs/jobs-runner.js"
     },
     {
       "type": "node",
