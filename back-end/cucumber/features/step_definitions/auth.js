@@ -5,6 +5,8 @@ const { expect } = chai;
 const chaiHttp = require("chai-http");
 chai.use(chaiHttp);
 
+const World = require('../support/global_world');
+
 Given('I am logged into the system', function(done){
 
     if(this.token) return done();
@@ -29,8 +31,8 @@ Given('I am logged into the system', function(done){
 });
 
 When(/^I log onto CryptX as (.*)$/, function(role_name){
-    const user = this.users[_.snakeCase(role_name)];
-
+    const user = World.users[_.snakeCase(role_name)];
+    
     //no need for additional logins.
     if(user.token) return;
 
@@ -45,6 +47,6 @@ When(/^I log onto CryptX as (.*)$/, function(role_name){
             expect(result.body.user).to.an('object');
 
             user.token = result.body.token;
-
-        });
+            World.current_user = user;
+        })
 });

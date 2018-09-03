@@ -5,8 +5,12 @@ const { expect } = chai;
 const chaiHttp = require("chai-http");
 chai.use(chaiHttp);
 
+const World = require('../support/global_world');
+
 const roles = [
-    'Investment Manager'
+    'Investment Manager',
+    'Depositor',
+    'Trader'
 ];
 
 const users = {
@@ -20,32 +24,69 @@ const users = {
         role: {
             name: 'INVESTMENT MANAGER'
         }
+    },
+    depositor: {
+        first_name: 'Depositor',
+        last_name: 'Johnson',
+        email: 'depositor@cryptx.io',
+        password: '123',
+        is_active: true,
+        created_timestamp: new Date(),
+        role: {
+            name: 'DEPOSITOR'
+        }
+    },
+    trader: {
+        first_name: 'Trader',
+        last_name: 'Grant',
+        email: 'trader@cryptx.io',
+        password: '123',
+        is_active: true,
+        created_timestamp: new Date(),
+        role: {
+            name: 'TRADER'
+        }
     }
 };
+
+Given('the system has no users', function() {
+
+    const { User, sequelize } = require('../../../models');
+    const Op = sequelize.Op;
+
+    return User.destroy({
+        where: {
+            email: { [Op.ne]: process.env.ADMIN_EMAIL } //Let's not delete the Default admin
+        }
+    });
+
+});
 
 Given(/^the system has (a|an) (.*)$/, async function(a, role_name) {
 
     if(!roles.includes(role_name)) throw new Error(`Invalid role "${role_name}" in test`);
 
     const permisisons_categoriy_mapping = {
-        investment_manager: [PERMISSIONS_CATEGORIES.INVESTMENT_RUN]
+        investment_manager: [PERMISSIONS_CATEGORIES.INVESTMENT_RUN],
+        depositor: [PERMISSIONS_CATEGORIES.INSTRUMENTS],
+        trader: [PERMISSIONS.ORDERS]
     };
 
-    const { User, Role, Permission, RolePermission, PermissionsCategory, sequelize } = require('../../../models');
+    const { User, Role, Permission, PermissionsCategory, sequelize } = require('../../../models');
 
     const user_data = users[_.snakeCase(role_name)];
 
-    if(!this.users) this.users = {};
+    if(!World.users) World.users = {};
 
     const existing_user = await User.findOne({
         where: { email: user_data.email }
     });
 
     if(existing_user) {
-        if(this.users[_.snakeCase(role_name)]) return;
+        if(World.users[_.snakeCase(role_name)]) return;
 
         existing_user.unhashed_password = users[_.snakeCase(role_name)].password;
-        this.users[_.snakeCase(role_name)] = existing_user;
+        World.users[_.snakeCase(role_name)] = existing_user;
 
         return;
     }
@@ -71,7 +112,7 @@ Given(/^the system has (a|an) (.*)$/, async function(a, role_name) {
                                         return user.setRoles([role], { transaction }).then(() => {
                                             
                                             user.unhashed_password = user_data.password;
-                                            this.users[_.snakeCase(role_name)] = user;  //Save the user in the world to use in other tests
+                                            World.users[_.snakeCase(role_name)] = user;  //Save the user in the world to use in other tests
                                         });
                                     });
                             });

@@ -9,13 +9,43 @@ Feature: Investment workflow
     Background: 
 
         Given the system has an Investment Manager
+        Given the system has a Depositor
+        Given the system has a Trader
 
     Scenario: New MCI investment run.
     
         Given there are no incomplete non simulated investment runs
         When I log onto CryptX as Investment Manager
-        When I create a new real MCI Investment Run
+        And I create a new real MCI Investment Run
         Then the investment run information is saved to the database
         And the investment run status is Initiated
         And I am assigned as the user who created it
         But I can only create one real running investment run at the same time
+
+    Scenario: View an existing investment run.
+
+        Given there is a real Investment Run created by an Investment Manager
+        When I log onto CryptX as Investment Manager
+        And I get the Investment Run by id
+        Then I should see the Investment Run information
+        And the creators full name should match
+
+    Scenario: New simulated investment run.
+
+        Given there is a real Investment Run created by an Investment Manager
+        When I log onto CryptX as Investment Manager
+        And I create a new simulated MCI Investment Run
+        Then the investment run information is saved to the database
+        And the investment run should be marked as simulated
+
+    Scenario Outline: <unauth_role> tries to create a new investment run
+
+        Given there are no investment runs in the system
+        When I log onto CryptX as <unauth_role>
+        And I create a new real MCI Investment Run
+        Then I should be blocked by the system for not having the right permissions
+
+    Examples:
+    | unauth_role |
+    | Depositor  |
+    | Trader    |
