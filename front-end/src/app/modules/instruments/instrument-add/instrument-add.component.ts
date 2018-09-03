@@ -14,8 +14,8 @@ import { InstrumentsService } from '../../../services/instruments/instruments.se
 })
 export class InstrumentAddComponent implements OnInit {
   assets: Array<Object> = [];
-  loading: boolean = false;
-  assetsLoading: boolean = true;
+  loading = false;
+  assetsLoading = true;
 
   form: FormGroup = new FormGroup({
     transaction_asset_id: new FormControl('', Validators.required),
@@ -34,7 +34,7 @@ export class InstrumentAddComponent implements OnInit {
       this.assets = res.assets.map(asset => {
         return {
           id: asset.id,
-          value: asset.long_name
+          value: `${asset.long_name} (${asset.symbol})`
         };
       });
     });

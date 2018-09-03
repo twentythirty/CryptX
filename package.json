@@ -3,7 +3,7 @@
   "version": "0.0.1",
   "private": true,
   "scripts": {
-    "postinstall": "ng build --prod --aot",
+    "postinstall": "ng build --prod",
     "start": "./startup.sh",
     "serve": "ng serve --aot --port 3001 --hmr --open --proxy-config front-end/proxy.config.json",
     "coverage": "nyc npm test",
