@@ -3,7 +3,12 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { mergeMap, finalize } from 'rxjs/operators';
 
 import { StatusClass } from '../../../shared/models/common';
-import { TimelineDetailComponent, SingleTableDataSource, TagLineItem, ITimelineDetailComponent } from '../timeline-detail/timeline-detail.component'
+import {
+  TimelineDetailComponent,
+  SingleTableDataSource,
+  TagLineItem,
+  ITimelineDetailComponent
+} from '../timeline-detail/timeline-detail.component';
 import { TableDataSource, TableDataColumn } from '../../../shared/components/data-table/data-table.component';
 import { TimelineEvent } from '../../../shared/components/timeline/timeline.component';
 import {
@@ -28,11 +33,11 @@ export class InvestmentRunDetailComponent extends TimelineDetailComponent implem
   /**
    * 1. Implement attributes to display titles
    */
-  public pageTitle: string = 'Recipe run';
-  public singleTitle: string = 'Investment run';
-  public listTitle: string = 'Recipe runs';
-  public addTitle: string = 'Start new run';
-  public listTableEmptyText: string = 'investment.no_recipe_runs'; // custom data-table message on empty data set
+  public pageTitle = 'Recipe run';
+  public singleTitle = 'Investment run';
+  public listTitle = 'Recipe runs';
+  public addTitle = 'Start new run';
+  public listTableEmptyText = 'investment.no_recipe_runs'; // custom data-table message on empty data set
 
   /**
    * 2. Implement attributes to preset data structure
@@ -52,7 +57,7 @@ export class InvestmentRunDetailComponent extends TimelineDetailComponent implem
       { column: 'status', nameKey: 'table.header.status' }
     ],
     body: null
-  }
+  };
 
   public singleColumnsToShow: Array<TableDataColumn> = [
     new TableDataColumn({ column: 'id' }),
@@ -100,7 +105,7 @@ export class InvestmentRunDetailComponent extends TimelineDetailComponent implem
             this.showReadModal({
               title: 'Rationale',
               content: row.approval_comment
-            })
+            });
           }
         })
       ]
@@ -118,7 +123,7 @@ export class InvestmentRunDetailComponent extends TimelineDetailComponent implem
   ) {
     super(route, router);
   }
-  
+
   /**
    * + If custom ngOnInit() is needed, call super.ngOnInit() to
    * perform parent component class initialization
@@ -138,22 +143,22 @@ export class InvestmentRunDetailComponent extends TimelineDetailComponent implem
       )
     ).subscribe(
       res => {
-        if(res.investment_run) {
+        if (res.investment_run) {
           this.singleDataSource.body = [ res.investment_run ];
         }
-        if(res.investment_stats) {
+        if (res.investment_stats) {
           this.setTagLine(res.investment_stats.map(stat => {
-            return new TagLineItem(`${stat.count} ${stat.name}`)
-          }))
+            return new TagLineItem(`${stat.count} ${stat.name}`);
+          }));
         }
-        if(res.investment_run.status === 'investment.status.303') {
+        if (res.investment_run.status === 'investment.status.303') {
           this.addTitle = '';
         }
       },
       err => this.singleDataSource.body = []
-    )
+    );
   }
-  
+
   public getAllData(): void {
     this.route.params.pipe(
       mergeMap(
@@ -165,18 +170,18 @@ export class InvestmentRunDetailComponent extends TimelineDetailComponent implem
       res => {
         this.listDataSource.body = res.recipe_runs;
         this.count = res.count;
-        let statusPending = res.recipe_runs.filter(run =>{
+        const statusPending = res.recipe_runs.filter(run => {
           return run.approval_status === 'recipes.status.41';
         });
-        let statusApproved = res.recipe_runs.filter(run =>{
+        const statusApproved = res.recipe_runs.filter(run => {
           return run.approval_status === 'recipes.status.43';
         });
-        if (statusPending.length || statusApproved.length){
+        if (statusPending.length || statusApproved.length) {
           this.addTitle = '';
         }
       },
       err => this.listDataSource.body = []
-    )
+    );
   }
 
   public getTimelineData(): void {
@@ -192,19 +197,19 @@ export class InvestmentRunDetailComponent extends TimelineDetailComponent implem
    */
 
   public addAction(): void {
-    let recipeRun = {};
+    const recipeRun = {};
     this.route.params.pipe(
       mergeMap(
         params => this.investmentService.createRecipeRun(params['id'], recipeRun)
       )
     ).subscribe(
       res => {
-        if (res.success){
+        if (res.success) {
           this.getAllData();
           this.getSingleData();
         }
       }
-    )
+    );
   }
 
   public openListRow(row: any): void {

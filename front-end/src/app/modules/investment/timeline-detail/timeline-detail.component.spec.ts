@@ -1,31 +1,8 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { extraTestingModules, fakeAsyncResponse } from '../../../utils/testing';
 
-import { TimelineDetailComponent, SingleTableDataSource } from './timeline-detail.component';
-import { TableDataSource } from '../../../shared/components/data-table/data-table.component';
-
-class TimelineDetailComponentClass extends TimelineDetailComponent {
-  pageTitle = '';
-  singleTitle = '';
-  listTitle = '';
-
-  singleDataSource: SingleTableDataSource = {
-    header: [{column: 'id', nameKey: 'namekey'}],
-    body: null
-  };
-  listDataSource: TableDataSource = {
-    header: [{column: 'id', nameKey: 'namekey'}],
-    body: null
-  };
-
-  singleColumnsToShow = [];
-  listColumnsToShow = [];
-
-  getAllData(){}
-  getSingleData(){}
-  getTimelineData(){}
-  openSingleRow(){}
-  openListRow(){}
-}
+import { InvestmentModule } from '../investment.module';
+import { TimelineDetailComponent } from './timeline-detail.component';
 
 describe('TimelineDetailComponent', () => {
   let component: TimelineDetailComponent;
@@ -33,13 +10,16 @@ describe('TimelineDetailComponent', () => {
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ TimelineDetailComponent ]
+      imports: [
+        InvestmentModule,
+        ...extraTestingModules
+      ]
     })
     .compileComponents();
   }));
 
   beforeEach(() => {
-    fixture = TestBed.createComponent(TimelineDetailComponentClass);
+    fixture = TestBed.createComponent(TimelineDetailComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

@@ -1,16 +1,14 @@
 import { Component, OnInit } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 import { FormsModule, FormGroup, FormControl, ReactiveFormsModule } from '@angular/forms';
-import { UsersService } from '../../../services/users/users.service';
-import { NgForm, Validators, FormArray, AbstractControl } from '@angular/forms'
+import { NgForm, Validators, FormArray, AbstractControl } from '@angular/forms';
 import { filter } from 'rxjs/operators';
 import { zip } from 'rxjs/observable/zip';
 
 import { User } from '../../../shared/models/user';
-import { RolesService } from "../../../services/roles/roles.service";
-import { RolesAllRequestData } from "../../../shared/models/api/rolesAllRequestData";
-import { AuthService } from "../../../services/auth/auth.service";
-
+import { RolesAllRequestData } from '../../../shared/models/api/rolesAllRequestData';
+import { UsersService } from '../../../services/users/users.service';
+import { RolesService } from '../../../services/roles/roles.service';
 
 
 @Component({
@@ -21,9 +19,9 @@ import { AuthService } from "../../../services/auth/auth.service";
 export class UsersInfoComponent implements OnInit {
 
   userForm: FormGroup = new FormGroup({
-    Firstname: new FormControl('', [this.authService.getValidators('\\/users\\/invite', 'first_name')]),
-    Lastname: new FormControl('', [this.authService.getValidators('\\/users\\/invite', 'last_name')]),
-    Email: new FormControl('', [this.authService.getValidators('\\/users\\/invite', 'email')]),
+    Firstname: new FormControl('', Validators.required),
+    Lastname: new FormControl('', Validators.required),
+    Email: new FormControl('', Validators.email),
   });
 
   userId: number;
@@ -49,7 +47,6 @@ export class UsersInfoComponent implements OnInit {
     private route: ActivatedRoute,
     private usersService: UsersService,
     private rolesService: RolesService,
-    private authService: AuthService,
   ) {
     this.route.params.pipe(
       filter(params => params.userId)
@@ -66,19 +63,20 @@ export class UsersInfoComponent implements OnInit {
       const [{ roles }, { user }] = res;
 
       this.user = user;
-      this.userForm.controls.Firstname.setValue(this.user.first_name)
-      this.userForm.controls.Lastname.setValue(this.user.last_name)
-      this.userForm.controls.Email.setValue(this.user.email)
+      this.userForm.controls.Firstname.setValue(this.user.first_name);
+      this.userForm.controls.Lastname.setValue(this.user.last_name);
+      this.userForm.controls.Email.setValue(this.user.email);
       this.userName = String(this.user.first_name + ' ' + this.user.last_name);
+
       if (this.user.is_active) {
-        this.buttonName = 'Deactivate'
+        this.buttonName = 'Deactivate';
       } else {
-        this.buttonName = 'Activate'
+        this.buttonName = 'Activate';
       }
       this.userRoles = Object.values(user.roles);
 
       roles.forEach(role => {
-        let obj = {
+        const obj = {
           id: Number,
           name: String,
           is_active: false
@@ -89,7 +87,7 @@ export class UsersInfoComponent implements OnInit {
           if (obj.id === userrole.id) {
             obj.is_active = true;
           }
-        })
+        });
         this.rolelist.push(obj);
       });
       this.add();
@@ -97,14 +95,14 @@ export class UsersInfoComponent implements OnInit {
   }
 
   add() {
-    let checkboxGroup = new FormArray(this.rolelist.map(item => new FormGroup({
+    const checkboxGroup = new FormArray(this.rolelist.map(item => new FormGroup({
       id: new FormControl(item.id),
       text: new FormControl(item.name),
       checkbox: new FormControl(item.is_active)
     })));
 
     // create a hidden reuired formControl to keep status of checkbox group
-    let hiddenControl = new FormControl(this.mapItems(checkboxGroup.value), this.authService.getValidators('\\/users\\/invite', 'role_id'));
+    const hiddenControl = new FormControl(this.mapItems(checkboxGroup.value), Validators.required);
     // update checkbox group's value to hidden formcontrol
     checkboxGroup.valueChanges.subscribe((v) => {
       hiddenControl.setValue(this.mapItems(v));
@@ -117,15 +115,14 @@ export class UsersInfoComponent implements OnInit {
   }
 
   mapItems(items) {
-    let selectedItems = items.filter((item) => item.checkbox).map((item) => item.id);
+    const selectedItems = items.filter((item) => item.checkbox).map((item) => item.id);
     return selectedItems.length ? selectedItems : null;
   }
-
 
   getAllRoles() {
     this.rolesService.getAllRoles(this.rolesRequestData).subscribe(res => {
       res.roles.forEach(role => {
-        let obj = {
+        const obj = {
           id: Number,
           name: String,
           is_active: false
@@ -136,7 +133,7 @@ export class UsersInfoComponent implements OnInit {
           if (obj.id === userrole.id) {
             obj.is_active = true;
           }
-        })
+        });
         this.rolelist.push(obj);
       });
     });
@@ -147,20 +144,21 @@ export class UsersInfoComponent implements OnInit {
   }
 
   saveUser() {
-    if (this.form.valid && this.userForm.valid){
-        this.user.roles = this.form.controls.selectedItems.value;
-        this.usersService.saveUser(this.user).subscribe(
-          data => {
-            if (data.success == true) {
-              this.loading = false;
-              this.router.navigate(['/users']);
-            }
-          }, error => {
-            this.loading = true;
-          }, () => {
+    if (this.form.valid && this.userForm.valid) {
+      this.user.roles = this.form.controls.selectedItems.value;
+      this.usersService.saveUser(this.user).subscribe(
+        data => {
+          if (data.success === true) {
             this.loading = false;
-          });
-    }else {
+            this.router.navigate(['/users']);
+          }
+        }, error => {
+          this.loading = true;
+        }, () => {
+          this.loading = false;
+        }
+      );
+    } else {
       this.markAsTouched(this.userForm);
       this.show = true;
     }
@@ -183,7 +181,7 @@ export class UsersInfoComponent implements OnInit {
 
     this.usersService.saveUser(this.user).subscribe(
       data => {
-        if (data.success == true) {
+        if (data.success === true) {
           this.loading = false;
           this.router.navigate(['/users']);
         }
@@ -194,17 +192,17 @@ export class UsersInfoComponent implements OnInit {
     });
   }
 
-  isValid(){
-     if (this.form.valid && this.userForm.valid){
-       this.showDeactivateConfirm = true;
-     }else{
+  isValid() {
+    if (this.form.valid && this.userForm.valid) {
+      this.showDeactivateConfirm = true;
+    } else {
       this.showDeactivateConfirm = false;
       this.markAsTouched(this.userForm);
       this.show = true;
-     }
+    }
   }
 
-  click(){
+  click() {
     this.show = true;
   }
 

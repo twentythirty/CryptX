@@ -1,12 +1,10 @@
-<div *ngIf="pageTitle">
-<app-page-heading [heading]="pageTitle">
+<app-page-heading *ngIf="pageTitle" [heading]="pageTitle">
   <ul class="dashboard-item-details">
     <li *ngFor="let item of tagLine">
       <a (click)="doItemAction(item)">{{ item.title }}</a>
     </li>
   </ul>
 </app-page-heading>
-</div>
 
 <div class="left-part-dashboard">
   <div class="top-controls">
@@ -21,23 +19,23 @@
     </a>
   </div>
 
-  <div *ngIf="singleDataSource">
-  <app-data-table 
+  <app-data-table
+    *ngIf="singleDataSource"
     [dataSource]="singleDataSource"
     [columnsToShow]="singleColumnsToShow"
     [emptyText]="singleTableEmptyText | translate"
     (openRow)="openSingleRow($event)"
   ></app-data-table>
-  </div>
   
-  <div class="top-controls" *ngIf="listTitle" >
-    <span  class="headline-title">{{ listTitle }}</span>
+  <div class="top-controls" *ngIf="listTitle">
+    <span class="headline-title">{{ listTitle }}</span>
     <a *ngIf="addTitle" (click)="addAction()" class="btn start">
       <span>{{ addTitle }}</span>
     </a>
   </div>
 
   <app-data-table
+    *ngIf="listDataSource"
     [dataSource]="listDataSource"
     [columnsToShow]="listColumnsToShow"
     [emptyText]="listTableEmptyText | translate"

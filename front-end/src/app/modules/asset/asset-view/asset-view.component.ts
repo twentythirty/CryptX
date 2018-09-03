@@ -8,7 +8,7 @@ import { Asset, AssetStatus } from '../../../shared/models/asset';
 import { AssetListComponent } from '../asset-list/asset-list.component';
 import { AuthService } from '../../../services/auth/auth.service';
 import { ModelConstantsService } from '../../../services/model-constants/model-constants.service';
-import { TableDataSource } from "../../../shared/components/data-table/data-table.component";
+import { TableDataSource } from '../../../shared/components/data-table/data-table.component';
 
 @Component({
   selector: 'app-asset-view',
@@ -66,9 +66,9 @@ export class AssetViewComponent extends AssetListComponent implements OnInit {
             this.activityLog = res.history;
             this.count = 1;
           }
-        )
+        );
       }
-    )
+    );
   }
 
   public openRow(asset: Asset): void {
@@ -76,7 +76,7 @@ export class AssetViewComponent extends AssetListComponent implements OnInit {
   }
 
   public getType(type: number): string {
-    return this.modelConstants.getName(type)
+    return this.modelConstants.getName(type);
   }
 
 }

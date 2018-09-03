@@ -38,7 +38,10 @@ export class LiquidityInfoComponent extends DataTableCommonManagerComponent impl
     new TableDataColumn({ column: 'exchange_not_pass' }),
   ];
 
-  public exchangesDataSource: TableDataSource;
+  public exchangesDataSource: TableDataSource = {
+    header: null,
+    body: null
+  };
   public exchangesColumnsToShow: Array<TableDataColumn>;
 
   constructor(
@@ -57,7 +60,7 @@ export class LiquidityInfoComponent extends DataTableCommonManagerComponent impl
 
 
   private declareExchangesTable() {
-    this.exchangesDataSource = {
+    Object.assign(this.exchangesDataSource, {
       header: [
         { column: 'exchange', nameKey: 'table.header.exchange' },
         { column: 'instrument_identifier', nameKey: 'table.header.identifier' },
@@ -66,9 +69,8 @@ export class LiquidityInfoComponent extends DataTableCommonManagerComponent impl
         { column: 'last_week_vol', nameKey: 'table.header.last_7days_vol' },
         { column: 'last_updated', nameKey: 'table.header.last_updated' },
         { column: 'passes', nameKey: 'table.header.liquidity_status' },
-      ],
-      body: null,
-    };
+      ]
+    });
 
     this.exchangesColumnsToShow = [
       new TableDataColumn({ column: 'exchange' }),

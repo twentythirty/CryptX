@@ -1,6 +1,29 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { extraTestingModules, fakeAsyncResponse } from '../../../utils/testing';
 
+import { InvestmentModule } from '../investment.module';
 import { InvestmentRunDetailComponent } from './investment-run-detail.component';
+import { InvestmentService } from '../../../services/investment/investment.service';
+
+
+const InvestmentServiceStub = {
+  getSingleInvestment: () => {
+    return fakeAsyncResponse({});
+  },
+
+  getAllRecipes: () => {
+    return fakeAsyncResponse({});
+  },
+
+  getAllTimelineData: () => {
+    return fakeAsyncResponse({});
+  },
+
+  createRecipeRun: () => {
+    return fakeAsyncResponse({});
+  }
+};
+
 
 describe('InvestmentRunDetailComponent', () => {
   let component: InvestmentRunDetailComponent;
@@ -8,7 +31,13 @@ describe('InvestmentRunDetailComponent', () => {
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ InvestmentRunDetailComponent ]
+      imports: [
+        InvestmentModule,
+        ...extraTestingModules
+      ],
+      providers: [
+        { provide: InvestmentService, useValue: InvestmentServiceStub }
+      ]
     })
     .compileComponents();
   }));

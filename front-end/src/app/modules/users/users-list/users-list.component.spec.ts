@@ -1,6 +1,21 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { extraTestingModules, fakeAsyncResponse } from '../../../utils/testing';
 
 import { UsersListComponent } from './users-list.component';
+import { UsersModule } from '../users.module';
+import { UsersService } from '../../../services/users/users.service';
+
+
+const UsersServiceStub = {
+  getAllUsers: () => {
+    return fakeAsyncResponse({});
+  },
+
+  getHeaderLOV: () => {
+    return fakeAsyncResponse({});
+  }
+};
+
 
 describe('UsersListComponent', () => {
   let component: UsersListComponent;
@@ -8,7 +23,13 @@ describe('UsersListComponent', () => {
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ UsersListComponent ]
+      imports: [
+        UsersModule,
+        ...extraTestingModules
+      ],
+      providers: [
+        { provide: UsersService, useValue: UsersServiceStub }
+      ]
     })
     .compileComponents();
   }));

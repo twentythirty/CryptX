@@ -3,7 +3,12 @@ import { ActivatedRoute, Router } from '@angular/router';
 
 import { StatusClass } from '../../../shared/models/common';
 
-import { TimelineDetailComponent, SingleTableDataSource, TagLineItem, ITimelineDetailComponent } from '../timeline-detail/timeline-detail.component'
+import {
+  TimelineDetailComponent,
+  SingleTableDataSource,
+  TagLineItem,
+  ITimelineDetailComponent
+} from '../timeline-detail/timeline-detail.component';
 import { TableDataSource, TableDataColumn } from '../../../shared/components/data-table/data-table.component';
 import { TimelineEvent } from '../../../shared/components/timeline/timeline.component';
 import {
@@ -13,7 +18,7 @@ import {
   StatusCellDataColumn,
   NumberCellDataColumn,
 } from '../../../shared/components/data-table-cells';
-import { mergeMap, map, finalize } from 'rxjs/operators';
+import { mergeMap, finalize } from 'rxjs/operators';
 import { InvestmentService } from '../../../services/investment/investment.service';
 
 /**
@@ -29,9 +34,9 @@ export class OrderDetailComponent extends TimelineDetailComponent implements OnI
   /**
    * 1. Implement attributes to display titles
    */
-  public pageTitle: string = 'Recipe orders';
-  public singleTitle: string = 'Recipe run';
-  public listTitle: string = 'Orders';
+  public pageTitle = 'Recipe orders';
+  public singleTitle = 'Recipe run';
+  public listTitle = 'Orders';
 
   /**
    * 2. Implement attributes to preset data structure
@@ -70,7 +75,7 @@ export class OrderDetailComponent extends TimelineDetailComponent implements OnI
               this.showReadModal({
                 title: 'Rationale',
                 content: row.approval_comment
-              })
+              });
             }
           })
         ]
@@ -154,7 +159,7 @@ export class OrderDetailComponent extends TimelineDetailComponent implements OnI
         this.getFilterLOV();
       },
       err => this.listDataSource.body = []
-    )
+    );
   }
 
   private getFilterLOV(): void {
@@ -162,7 +167,7 @@ export class OrderDetailComponent extends TimelineDetailComponent implements OnI
       col => ['id', 'instrument', 'side', 'exchange', 'status'].includes(col.column)
     ).map(
       col => {
-        let filter = {filter : {recipe_run_id: this.routeParamId}}
+        const filter = {filter : {recipe_run_id: this.routeParamId}};
         col.filter.rowData$ = this.investmentService.getAllOrdersHeaderLOV(col.column, filter);
       }
     );
@@ -175,18 +180,18 @@ export class OrderDetailComponent extends TimelineDetailComponent implements OnI
       )
     ).subscribe(
       res => {
-        if(res.recipe_run) {
+        if (res.recipe_run) {
           this.singleDataSource.body = [res.recipe_run];
         }
 
-        if(res.recipe_stats) {
+        if (res.recipe_stats) {
           this.setTagLine(res.recipe_stats.map(stat => {
-            return new TagLineItem(`${stat.count} ${stat.name}`)
-          }))
+            return new TagLineItem(`${stat.count} ${stat.name}`);
+          }));
         }
       },
       err => this.singleDataSource.body = []
-    )
+    );
   }
 
   public getTimelineData(): void {

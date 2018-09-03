@@ -7,7 +7,7 @@ import { defer } from 'rxjs/observable/defer';
 
 /**
  * Helper function for stubbing service data
- * 
+ *
  * @param data - any data
  */
 export function fakeAsyncResponse<T>(data: T) {
@@ -23,10 +23,12 @@ export class FakeTranslateLoader implements TranslateLoader {
   }
 }
 
+export const testingTranslateModule = TranslateModule.forRoot({
+  loader: { provide: TranslateLoader, useClass: FakeTranslateLoader }
+});
+
 export const extraTestingModules = [
   BrowserAnimationsModule,
   RouterTestingModule,
-  TranslateModule.forRoot({
-    loader: { provide: TranslateLoader, useClass: FakeTranslateLoader }
-  })
+  testingTranslateModule,
 ];

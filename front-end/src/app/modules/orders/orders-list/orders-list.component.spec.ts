@@ -1,6 +1,21 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { extraTestingModules, fakeAsyncResponse } from '../../../utils/testing';
 
+import { OrdersModule } from '../orders.module';
 import { OrdersListComponent } from './orders-list.component';
+import { OrdersService } from '../../../services/orders/orders.service';
+
+
+const OrdersServiceStub = {
+  getHeaderLOV: () => {
+    return fakeAsyncResponse({});
+  },
+
+  getAllOrders: () => {
+    return fakeAsyncResponse({});
+  }
+};
+
 
 describe('OrdersListComponent', () => {
   let component: OrdersListComponent;
@@ -8,7 +23,13 @@ describe('OrdersListComponent', () => {
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ OrdersListComponent ]
+      imports: [
+        OrdersModule,
+        ...extraTestingModules
+      ],
+      providers: [
+        { provide: OrdersService, useValue: OrdersServiceStub }
+      ]
     })
     .compileComponents();
   }));

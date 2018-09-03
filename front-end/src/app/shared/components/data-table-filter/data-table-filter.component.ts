@@ -3,17 +3,17 @@ import * as _ from 'lodash';
 import { Observable } from 'rxjs';
 
 export interface DataTableFilterData {
-  column: string
+  column: string;
   values: Array<{
     field: string
     value: any,
     expression?: string,
     type?: string
-  }>
+  }>;
   order?: {
     by: string
     order: string
-  }
+  };
 }
 
 @Component({
@@ -22,22 +22,22 @@ export interface DataTableFilterData {
   styleUrls: ['./data-table-filter.component.scss']
 })
 export class DataTableFilterComponent implements OnInit, OnChanges {
-  private _filterData = {
+  public _filterData = {
     values: [],
     order: ''
   };
-  public _showSearch: boolean = false;
-  public _filterSearchText: string = '';
+  public _showSearch = false;
+  public _filterSearchText = '';
 
   active = false;
   name = 'ORDER BY';
-  rowDataLoading: boolean = false;
+  rowDataLoading = false;
 
   @Input() column: string;
-  @Input() type: string = 'text';
-  @Input() sortable: boolean = true;
-  @Input() hasRange: boolean = true;
-  @Input() inputSearch: boolean = false;
+  @Input() type = 'text';
+  @Input() sortable = true;
+  @Input() hasRange = true;
+  @Input() inputSearch = false;
   @Input() rowData: Array<{
     value: string | boolean | number,
     label?: string
@@ -61,19 +61,19 @@ export class DataTableFilterComponent implements OnInit, OnChanges {
 
   ngOnChanges(changes) {
     // Runs when filter becomes dirty
-    if(changes.dirty && !changes.dirty.previousValue && (changes.dirty.currentValue === true)) {
+    if (changes.dirty && !changes.dirty.previousValue && (changes.dirty.currentValue === true)) {
       this.rowData = [];
       this.getRowData$();
     }
   }
 
   onFilterChange() {
-    let data: DataTableFilterData = {
+    const data: DataTableFilterData = {
       column: this.column,
       values: [],
     };
 
-    switch(this.type) {
+    switch (this.type) {
       case 'text':
         if (this.rowData && this.rowData.length && this._filterData.values.length) {
           // checkbox data pick
@@ -169,26 +169,26 @@ export class DataTableFilterComponent implements OnInit, OnChanges {
     this._showSearch = !this._showSearch;
   }
 
-  isActive(){
+  isActive() {
     this.active = !this.active;
   }
 
-  sortAsc(){
+  sortAsc() {
     this.isActive();
     this._filterData.order = 'asc';
-    this.name = 'A - Z'
+    this.name = 'A - Z';
   }
 
-  sortDesc(){
+  sortDesc() {
     this.isActive();
     this._filterData.order = 'desc';
-    this.name = 'Z - A'
+    this.name = 'Z - A';
   }
 
-  noSort(){
+  noSort() {
     this.isActive();
-    this._filterData.order = ''
-    this.name = 'ORDER BY'
+    this._filterData.order = '';
+    this.name = 'ORDER BY';
   }
 
   onCheckboxToggle({ value }) {
@@ -202,8 +202,7 @@ export class DataTableFilterComponent implements OnInit, OnChanges {
       && this._filterData.values[0] > this._filterData.values[1]
     ) {
       this._filterData.values[0] = this._filterData.values[1];
-    }
-    else if (
+    } else if (
       value === 'max'
       && this._filterData.values[1]
       && this._filterData.values[0] > this._filterData.values[1]
@@ -224,25 +223,25 @@ export class DataTableFilterComponent implements OnInit, OnChanges {
    * If we have a rowData$ Observable, replace rowData items
    */
   getRowData$(): void {
-    if(this.rowData$ && (typeof this.rowData$.subscribe == 'function')) {
+    if (this.rowData$ && (typeof this.rowData$.subscribe === 'function')) {
       this.rowDataLoading = true;
 
       this.rowData$.subscribe(
         res => {
-          if(!Array.isArray(res)) {
+          if (!Array.isArray(res)) {
             return;
           }
-          if(!Array.isArray(this.rowData)) {
+          if (!Array.isArray(this.rowData)) {
             this.rowData = [];
-          }   
-          
+          }
+
           this.rowData.splice(0, this.rowData.length);
           this.rowData.push(...res);
-          this.rowData.map(String); 
+          this.rowData.map(String);
 
           this.rowDataLoading = false;
         }
-      )
+      );
     }
   }
 }

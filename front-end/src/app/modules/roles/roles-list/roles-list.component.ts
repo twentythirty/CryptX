@@ -6,7 +6,7 @@ import { RolesService } from '../../../services/roles/roles.service';
 
 import { TableDataSource, TableDataColumn } from '../../../shared/components/data-table/data-table.component';
 import { DataTableCommonManagerComponent } from '../../../shared/components/data-table-common-manager/data-table-common-manager.component';
-import { Role } from "../../../shared/models/role";
+import { Role } from '../../../shared/models/role';
 
 @Component({
   selector: 'app-roles-list',

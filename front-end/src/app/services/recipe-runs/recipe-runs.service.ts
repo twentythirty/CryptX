@@ -1,10 +1,11 @@
 import { Injectable } from '@angular/core';
-import { EntitiesFilter } from "../../shared/models/api/entitiesFilter";
-import { Observable } from "rxjs";
-import { environment } from "../../../environments/environment";
-import { HttpClient } from "@angular/common/http";
-import { Recipe } from "../../shared/models/recipe";
-import { map } from "rxjs/operators";
+import { HttpClient } from '@angular/common/http';
+import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
+
+import { EntitiesFilter } from '../../shared/models/api/entitiesFilter';
+import { environment } from '../../../environments/environment';
+import { Recipe } from '../../shared/models/recipe';
 
 export class RecipeAllResponse {
     success: boolean;
@@ -20,7 +21,7 @@ export class RecipeRunsService {
 
   constructor(private http: HttpClient) { }
 
-  getAllRecipeRuns(requestData?: EntitiesFilter): Observable<RecipeAllResponse>{
+  getAllRecipeRuns(requestData?: EntitiesFilter): Observable<RecipeAllResponse> {
       return this.http.post<RecipeAllResponse>(this.baseUrl + `recipes/all`, requestData);
   }
 
@@ -28,18 +29,18 @@ export class RecipeRunsService {
     return this.http.get<any>(this.baseUrl + `recipes/header_lov/${column_name}`).pipe(
       map(
         res => {
-          if(res && Array.isArray(res.lov)) {
+          if (res && Array.isArray(res.lov)) {
             return res.lov.map(lov => {
-              if (lov !== null){
-                return { value: lov.toString() }
+              if (lov !== null) {
+                return { value: lov.toString() };
               } else {
-                return {value: '-'}
+                return {value: '-'};
               }
             });
-          } else return null;
+          } else { return null; }
         }
       )
-    )
+    );
   }
 
 }

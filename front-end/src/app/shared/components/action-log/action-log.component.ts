@@ -12,7 +12,7 @@ export class ActionLogComponent implements OnInit {
 
   @Input() title: string;
   @Input() source: Array<ActionLog>;
-  
+
   constructor() { }
 
   ngOnInit() {

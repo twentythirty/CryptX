@@ -6,7 +6,7 @@ import * as _ from 'lodash';
 
 import { StatusClass } from '../../../shared/models/common';
 
-import { TimelineDetailComponent, SingleTableDataSource, ITimelineDetailComponent } from '../timeline-detail/timeline-detail.component'
+import { TimelineDetailComponent, SingleTableDataSource, ITimelineDetailComponent } from '../timeline-detail/timeline-detail.component';
 import { TableDataSource, TableDataColumn } from '../../../shared/components/data-table/data-table.component';
 import { TimelineEvent } from '../../../shared/components/timeline/timeline.component';
 import {
@@ -34,11 +34,11 @@ export class OrderGroupComponent extends TimelineDetailComponent implements OnIn
   /**
    * 1. Implement attributes to display titles
    */
-  public pageTitle: string = 'Recipe orders';
-  public singleTitle: string = 'Orders';
-  public listTitle: string = '';
-  public singleTableEmptyText: string = 'orders.orders_not_generated';
-  public listTableEmptyText: string = 'orders.orders_not_generated';
+  public pageTitle = 'Recipe orders';
+  public singleTitle = 'Orders';
+  public listTitle = '';
+  public singleTableEmptyText = 'orders.orders_not_generated';
+  public listTableEmptyText = 'orders.orders_not_generated';
   public showGenerateOrders = true;
 
   /**
@@ -75,14 +75,14 @@ export class OrderGroupComponent extends TimelineDetailComponent implements OnIn
               this.showReadModal({
                 title: 'Rationale',
                 content: row.approval_comment
-              })
+              });
             }
           })
         ]
       }
     }),
     new ConfirmCellDataColumn({ column: 'actions', inputs: {
-      show: (row) => row.status == 'orders_group.status.81',
+      show: (row) => row.status === 'orders_group.status.81',
       execConfirm: (row) => this.showRationaleModal(row, data => data && this.alterGroup(data, 83)),
       execDecline: (row) => this.showRationaleModal(row, data => data && this.alterGroup(data, 82)),
     }}),
@@ -155,19 +155,20 @@ export class OrderGroupComponent extends TimelineDetailComponent implements OnIn
           finalize(() => {
             this.getAllData_call = this.getAllDataReal;
             this.getAllData();
-            
+
             // stop loading and show empty
-            if(!this.singleDataSource.body)
+            if (!this.singleDataSource.body) {
               this.singleDataSource.body = [];
+            }
           })
         )
       )
     ).subscribe(
       res => {
-        if(res.recipe_order_group) {
+        if (res.recipe_order_group) {
           this.singleDataSource.body = [res.recipe_order_group];
 
-          if(res.recipe_order_group.status == 'orders_group.status.82') { // if rejected
+          if (res.recipe_order_group.status === 'orders_group.status.82') { // if rejected
             this.showGenerateOrders = true;
           } else {
             this.showGenerateOrders = false;
@@ -186,7 +187,7 @@ export class OrderGroupComponent extends TimelineDetailComponent implements OnIn
   }
 
   public getAllDataReal(): void {
-    let orderGroupId = _.isEmpty(this.singleDataSource.body) ? 0 : this.singleDataSource.body[0]['id'];
+    const orderGroupId = _.isEmpty(this.singleDataSource.body) ? 0 : this.singleDataSource.body[0]['id'];
 
     this.ordersService.getAllOrdersByGroupId(orderGroupId, this.requestData).pipe(
       finalize(() => this.stopTableLoading())
@@ -200,7 +201,7 @@ export class OrderGroupComponent extends TimelineDetailComponent implements OnIn
         this.getFilterLOV();
       },
       err => this.listDataSource.body = []
-    )
+    );
   }
 
   private getFilterLOV(): void {
@@ -208,7 +209,7 @@ export class OrderGroupComponent extends TimelineDetailComponent implements OnIn
       col => ['id', 'instrument', 'side', 'exchange', 'status'].includes(col.column)
     ).map(
       col => {
-        let filter = { filter : { recipe_order_group_id: this.routeParamId }};
+        const filter = { filter : { recipe_order_group_id: this.routeParamId }};
         col.filter.rowData$ = this.investmentService.getAllOrdersHeaderLOV(col.column, filter);
       }
     );

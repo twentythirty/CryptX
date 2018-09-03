@@ -9,7 +9,7 @@ import {
   DateCellDataColumn,
   StatusCellDataColumn,
 } from '../../../shared/components/data-table-cells';
-import { User } from "../../../shared/models/user";
+import { User } from '../../../shared/models/user';
 
 
 @Component({
@@ -23,7 +23,7 @@ export class UsersListComponent extends DataTableCommonManagerComponent implemen
     header: [
       { column: 'first_name', nameKey: 'table.header.name', filter: { type: 'text', sortable: true, rowData: []}},
       { column: 'last_name', nameKey: 'table.header.surname', filter: { type: 'text', sortable: true, rowData: [] }},
-      { column: 'email', nameKey: 'table.header.email', filter: { type: 'text', sortable: true, rowData:[] }},
+      { column: 'email', nameKey: 'table.header.email', filter: { type: 'text', sortable: true, rowData: [] }},
       { column: 'created_timestamp', nameKey: 'table.header.creation_date', filter: { type: 'date', sortable: true}},
       { column: 'is_active', nameKey: 'table.header.status', filter: { type: 'text', sortable: true, rowData: [] }}
     ],
@@ -65,15 +65,15 @@ export class UsersListComponent extends DataTableCommonManagerComponent implemen
 
   getFilterLOV(): void {
     this.usersDataSource.header.filter(
-      col => col.filter && (col.filter.type == 'text' || col.filter.type == 'boolean')
+      col => col.filter && (col.filter.type === 'text' || col.filter.type === 'boolean')
     ).map(
       col => {
-        col.filter.rowData$ = this.userService.getHeaderLOV(col.column)
+        col.filter.rowData$ = this.userService.getHeaderLOV(col.column);
       }
-    )
+    );
   }
 
   public openRow(users: User): void {
-    this.router.navigate(['/users/edit', users.id])
+    this.router.navigate(['/users/edit', users.id]);
   }
 }

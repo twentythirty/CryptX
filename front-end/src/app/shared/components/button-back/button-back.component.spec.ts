@@ -1,4 +1,5 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { extraTestingModules } from '../../../utils/testing';
 
 import { ButtonBackComponent } from './button-back.component';
 
@@ -8,7 +9,10 @@ describe('ButtonBackComponent', () => {
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ ButtonBackComponent ]
+      declarations: [ ButtonBackComponent ],
+      imports: [
+        ...extraTestingModules
+      ]
     })
     .compileComponents();
   }));

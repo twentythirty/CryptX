@@ -58,10 +58,10 @@ export class LiquidityListComponent extends DataTableCommonManagerComponent impl
       col => {
         col.filter.rowData$ = this.liquidityService.getHeaderLOV(col.column);
       }
-    )
+    );
   }
 
-  
+
   getAllData(): void {
     this.liquidityService.getAllLiquidities(this.requestData).pipe(
       finalize(() => this.stopTableLoading())

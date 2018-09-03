@@ -1,5 +1,5 @@
 import { Component, OnInit, Input, EventEmitter, Output } from '@angular/core';
-import { ActivatedRoute, Router, NavigationStart } from "@angular/router";
+import { ActivatedRoute, Router, NavigationStart } from '@angular/router';
 import { trigger, state, style, transition, animate } from '@angular/animations';
 import { Observable } from 'rxjs';
 import * as _ from 'lodash';
@@ -82,9 +82,9 @@ export class DataTableComponent implements OnInit {
 
   @Input() dataSource: TableDataSource;
   @Input() columnsToShow: Array<string | TableDataColumn>;
-  @Input() customRows: boolean = false;
+  @Input() customRows = false;
   @Input() emptyText: string;
-  @Input() loading: boolean = false;
+  @Input() loading = false;
 
   @Input() rowClass: (row: any) => string = (row) => null;
 
@@ -99,7 +99,7 @@ export class DataTableComponent implements OnInit {
 
   ngOnInit() {
     // use default empty table disclaimer text if no custom is given
-    if(!this.emptyText) {
+    if (!this.emptyText) {
       this.translate.get('common.list_empty').subscribe(data => {
         this.emptyText = data;
       });
@@ -107,7 +107,7 @@ export class DataTableComponent implements OnInit {
 
     // generate filter flag objects
     this.filterMap = _.zipObject(
-      this.columnsToShow.map(el => (typeof el == 'string') ? el : el.column ),
+      this.columnsToShow.map(el => (typeof el === 'string') ? el : el.column ),
       _.fill( Array(this.columnsToShow.length), false )
     );
     // clone object
@@ -120,7 +120,7 @@ export class DataTableComponent implements OnInit {
           delete item._dirty;
           return item;
         });
-    })
+    });
 
   }
 
@@ -131,8 +131,8 @@ export class DataTableComponent implements OnInit {
   }
 
   /**
-   * 
-   * @param filter 
+   *
+   * @param filter
    * @returns True if column filter are set and table body isint null or empty
    */
   showFilter(filter: any) {
@@ -142,7 +142,7 @@ export class DataTableComponent implements OnInit {
   onSetFilter(filterData: DataTableFilterData): void {
     // mark filter as applied
     this.markFilterAppliedMap(filterData);
-    
+
     this.setFilter.emit(filterData);
   }
 
@@ -157,7 +157,7 @@ export class DataTableComponent implements OnInit {
 
   getFooterData(): Array<object> {
     return this.columnsToShow.map((col: TableDataColumn) => {
-      return _.filter(this.dataSource.footer, ['name', (typeof col == 'string') ? col : col.column])[0] || { name: col.column };
+      return _.filter(this.dataSource.footer, ['name', (typeof col === 'string') ? col : col.column])[0] || { name: col.column };
     });
   }
 
@@ -166,7 +166,7 @@ export class DataTableComponent implements OnInit {
    */
 
   columnIsBasic(column: string | TableDataColumn): boolean {
-    return typeof column == 'string' || !column.component;
+    return typeof column === 'string' || !column.component;
   }
 
   public dynamicInputs(column: TableDataColumn, value: any, row: any): any {
@@ -174,13 +174,13 @@ export class DataTableComponent implements OnInit {
       ...(column.inputs || {}),
       row,
       value
-    }
+    };
   }
 
   public dynamicOutputs(column: TableDataColumn): any {
     return {
       ...(column.outputs || {})
-    }
+    };
   }
 
   /**
@@ -193,8 +193,7 @@ export class DataTableComponent implements OnInit {
 
   public getColumnClass(column: any): string {
     const header = this.dataSource.header.find(h => h.column === column );
-    if(header) return header.column_class || '';
-    else return '';
+    if (header) { return header.column_class || ''; } else { return ''; }
   }
-  
+
 }

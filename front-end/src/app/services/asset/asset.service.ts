@@ -41,7 +41,7 @@ export class AssetService {
   ) {}
 
   getAllAssets(requestData?: EntitiesFilter): Observable<AssetsAllResponse> {
-    if(requestData) {
+    if (requestData) {
       return this.http.post<AssetsAllResponse>(this.baseUrl + `assets/all`, requestData);
     } else {
       return this.http.get<AssetsAllResponse>(this.baseUrl + `assets/all`);
@@ -49,7 +49,7 @@ export class AssetService {
   }
 
   getAllAssetsDetailed(requestData?: EntitiesFilter): Observable<AssetsAllResponseDetailed> {
-    if(requestData) {
+    if (requestData) {
       return this.http.post<AssetsAllResponseDetailed>(this.baseUrl + `assets/detailed/all`, requestData).pipe(
         tap(this.addStatusCode)
       );
@@ -74,11 +74,11 @@ export class AssetService {
     return this.http.get<any>(this.baseUrl + `assets/detailed/header_lov/${column_name}`).pipe(
       map(
         res => {
-          if(res && Array.isArray(res.lov)) {
+          if (res && Array.isArray(res.lov)) {
             return res.lov.map(lov => {
-              return { value: lov.toString() }
+              return { value: lov.toString() };
             });
-          } else return null;
+          } else { return null; }
         }
       )
     );
@@ -98,10 +98,10 @@ export class AssetService {
         prevStatus;
 
     data.asset.statusCode = _.toNumber( data.asset.status.replace('assets.status.', '') );
-    
+
     // default status 400, so first preStatus should be default
     this.translate.get('assets.status.400').subscribe(value => prevStatus = value);
-    
+
     data.history = data.history.reverse().map(item => {
       this.translate.get(item.type).subscribe(value => status = value);
 

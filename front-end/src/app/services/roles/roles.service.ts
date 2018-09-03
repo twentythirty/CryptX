@@ -11,13 +11,13 @@ import { RoleResultData } from '../../shared/models/api/roleResultData';
 import { environment } from '../../../environments/environment';
 
 export class RolesAllResponse {
-  success: boolean
-  roles: Array<Role>
+  success: boolean;
+  roles: Array<Role>;
 }
 
 export class RolesCreateResponse {
-  success: boolean
-  role: Role
+  success: boolean;
+  role: Role;
 }
 
 @Injectable()
@@ -26,7 +26,7 @@ export class RolesService {
 
   constructor(private http: HttpClient) { }
 
-  getAllRoles(requestData: RolesAllRequestData): Observable<any>{
+  getAllRoles(requestData: RolesAllRequestData): Observable<any> {
     return this.http.post<RolesAllResponse>(this.baseUrl + 'roles/all', requestData).pipe(
       tap(data => {
         if (data.success) {

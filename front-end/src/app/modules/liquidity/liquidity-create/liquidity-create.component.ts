@@ -18,9 +18,9 @@ export class LiquidityCreateComponent implements OnInit {
   instruments: Array<{ id: number, value: string }>;
   exchanges: Array<{ id: number, value: string }>;
 
-  loading: boolean = false;
-  instrumentsLoading: boolean = true;
-  exchangesLoading: boolean = true;
+  loading = false;
+  instrumentsLoading = true;
+  exchangesLoading = true;
 
   form: FormGroup = new FormGroup({
     instrument_id: new FormControl('', Validators.required),
@@ -65,7 +65,7 @@ export class LiquidityCreateComponent implements OnInit {
 
       this.translate.get('exchanges.all_exchanges').subscribe(value => {
         this.exchanges.push({
-          /*set id value as number 0 instead of 'null' 
+          /*set id value as number 0 instead of 'null'
           to make selector input understand that option is selected */
           id: 0,
           value: value
@@ -84,7 +84,7 @@ export class LiquidityCreateComponent implements OnInit {
 
   saveLiquidityRequirement() {
     const request = _.mapValues(this.form.value, val => {
-      /*in case of 'All Exchanges' selection, return id value back to 
+      /*in case of 'All Exchanges' selection, return id value back to
       expression: 'null'*/
       return val === 0 ? val = null : typeof val === 'object' ? val.id : _.toNumber(val);
     });

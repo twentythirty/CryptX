@@ -5,7 +5,12 @@ import * as _ from 'lodash';
 
 import { StatusClass } from '../../../shared/models/common';
 
-import { TimelineDetailComponent, SingleTableDataSource, TagLineItem, ITimelineDetailComponent } from '../timeline-detail/timeline-detail.component'
+import {
+  TimelineDetailComponent,
+  SingleTableDataSource,
+  TagLineItem,
+  ITimelineDetailComponent
+} from '../timeline-detail/timeline-detail.component';
 import { TableDataSource, TableDataColumn } from '../../../shared/components/data-table/data-table.component';
 import { TimelineEvent } from '../../../shared/components/timeline/timeline.component';
 import {
@@ -32,9 +37,9 @@ export class RecipeRunDetailComponent extends TimelineDetailComponent implements
   /**
    * 1. Implement attributes to display titles
    */
-  public pageTitle: string = 'Recipe run';
-  public singleTitle: string = 'Recipe runs';
-  public listTitle: string = 'Recipe run details';
+  public pageTitle = 'Recipe run';
+  public singleTitle = 'Recipe runs';
+  public listTitle = 'Recipe run details';
   public recipeStatus;
 
   /**
@@ -51,7 +56,7 @@ export class RecipeRunDetailComponent extends TimelineDetailComponent implements
       { column: 'approval_user', nameKey: 'table.header.decision_by' },
       { column: 'approval_timestamp', nameKey: 'table.header.decision_time' },
       { column: 'approval_comment', nameKey: 'table.header.rationale' },
-      //{ column: 'actions', nameKey: 'table.header.actions' }
+      // { column: 'actions', nameKey: 'table.header.actions' }
     ],
     body: null
   };
@@ -75,7 +80,7 @@ export class RecipeRunDetailComponent extends TimelineDetailComponent implements
             this.showReadModal({
               title: 'Rationale',
               content: row.approval_comment
-            })
+            });
           }
         })
       ]
@@ -119,7 +124,7 @@ export class RecipeRunDetailComponent extends TimelineDetailComponent implements
 
     this.getFilterLOV();
   }
-  
+
   /**
    * + If custom ngOnInit() is needed, call super.ngOnInit() to
    * perform parent component class initialization
@@ -149,15 +154,15 @@ export class RecipeRunDetailComponent extends TimelineDetailComponent implements
         this.getFilterLOV();
       },
       err => this.listDataSource.body = []
-    )
+    );
   }
 
   private getFilterLOV(): void {
     this.listDataSource.header.filter(
-      col => ['id', 'transaction_asset', 'quote_asset','target_exchange'].includes(col.column)
+      col => ['id', 'transaction_asset', 'quote_asset', 'target_exchange'].includes(col.column)
     ).map(
       col => {
-        let filter = {filter : {recipe_run_id: this.routeParamId}}
+        const filter = {filter : {recipe_run_id: this.routeParamId}};
         col.filter.rowData$ = this.investmentService.getAllRecipeDetailsHeaderLOV(col.column, filter);
       }
     );
@@ -170,25 +175,25 @@ export class RecipeRunDetailComponent extends TimelineDetailComponent implements
       )
     ).subscribe(
       res => {
-        if(res.recipe_run) {
+        if (res.recipe_run) {
           this.singleDataSource.body = [ res.recipe_run ];
           this.recipeStatus = [res.recipe_run];
           this.appendActionColumn();
         }
-        if(res.recipe_stats) {
+        if (res.recipe_stats) {
           this.setTagLine(res.recipe_stats.map(stat => {
             return new TagLineItem(`${stat.count} ${stat.name}`);
-          }))
+          }));
         }
       },
       // err => this.singleDataSource.body = []
-    )
+    );
   }
 
   private appendActionColumn() {
-    if (!_.find(this.singleDataSource.header, col => col.column == 'actions')){
+    if (!_.find(this.singleDataSource.header, col => col.column === 'actions')) {
       if (this.recipeStatus[0].approval_status === 'recipes.status.41') {
-        this.singleDataSource.header.push({ column: 'actions', nameKey: 'table.header.action' })
+        this.singleDataSource.header.push({ column: 'actions', nameKey: 'table.header.action' });
         this.singleColumnsToShow.push(
           new ConfirmCellDataColumn({ column: 'actions', inputs: {
             show: (row) => true,
@@ -200,9 +205,9 @@ export class RecipeRunDetailComponent extends TimelineDetailComponent implements
     }
   }
 
-  private removeActionColumn(){
-    this.singleDataSource.header.splice(-1,1);
-    this.singleColumnsToShow.splice(-1,1);
+  private removeActionColumn() {
+    this.singleDataSource.header.splice(-1, 1);
+    this.singleColumnsToShow.splice(-1, 1);
   }
 
   public getTimelineData(): void {
@@ -218,30 +223,30 @@ export class RecipeRunDetailComponent extends TimelineDetailComponent implements
    */
 
   private confirmRun({ rationale, data }): void {
-    let run = data;
+    const run = data;
     this.investmentService.approveRecipe(run.id, { status: 43, comment: rationale }).subscribe(
       res => {
-        if (res.success){
+        if (res.success) {
           this.getSingleData();
           this.getTimelineData();
           this.removeActionColumn();
         }
         // TODO
       }
-    )
+    );
   }
 
   private declineRun({ rationale, data }): void {
-    let run = data;
+    const run = data;
     this.investmentService.approveRecipe(run.id, { status: 42, comment: rationale }).subscribe(
       res => {
-        if (res.success){
+        if (res.success) {
           this.getSingleData();
           this.getTimelineData();
           this.removeActionColumn();
         }
       }
-    )
+    );
   }
 
 }

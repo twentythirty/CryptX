@@ -1,13 +1,13 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { mergeMap, finalize } from "rxjs/operators";
+import { mergeMap, finalize } from 'rxjs/operators';
 
-import { TimelineDetailComponent, SingleTableDataSource, TagLineItem, ITimelineDetailComponent } from "../timeline-detail/timeline-detail.component";
-import { InvestmentService } from "../../../services/investment/investment.service";
-import { TimelineEvent } from "../../../shared/components/timeline/timeline.component";
-import { TableDataSource, TableDataColumn } from "../../../shared/components/data-table/data-table.component";
-import { StatusCellDataColumn, NumberCellDataColumn, DateCellDataColumn } from "../../../shared/components/data-table-cells";
-import { StatusClass } from "../../../shared/models/common";
+import { TimelineDetailComponent, ITimelineDetailComponent } from '../timeline-detail/timeline-detail.component';
+import { InvestmentService } from '../../../services/investment/investment.service';
+import { TimelineEvent } from '../../../shared/components/timeline/timeline.component';
+import { TableDataSource, TableDataColumn } from '../../../shared/components/data-table/data-table.component';
+import { StatusCellDataColumn, NumberCellDataColumn, DateCellDataColumn } from '../../../shared/components/data-table-cells';
+import { StatusClass } from '../../../shared/models/common';
 
 @Component({
   selector: 'app-execution-orders',
@@ -19,9 +19,9 @@ export class ExecutionOrdersComponent extends TimelineDetailComponent implements
     /**
    * 1. Implement attributes to display titles
    */
-  public pageTitle: string = 'Execution orders';
-  public singleTitle: string = '';
-  public listTitle: string = '';
+  public pageTitle = 'Execution orders';
+  public singleTitle = '';
+  public listTitle = '';
 
   /**
    * 2. Implement attributes to preset data structure
@@ -83,7 +83,7 @@ export class ExecutionOrdersComponent extends TimelineDetailComponent implements
     public route: ActivatedRoute,
     public router: Router,
     private investmentService: InvestmentService,
-  ) { 
+  ) {
     super(route, router);
 
     this.getFilterLOV();
@@ -117,7 +117,7 @@ export class ExecutionOrdersComponent extends TimelineDetailComponent implements
         this.getFilterLOV();
       },
       err => this.listDataSource.body = []
-    )
+    );
   }
 
   private getFilterLOV(): void {
@@ -125,7 +125,7 @@ export class ExecutionOrdersComponent extends TimelineDetailComponent implements
       col => ['id', 'instrument', 'side', 'exchange', 'type', 'status'].includes(col.column)
     ).map(
       col => {
-        let filter = {filter : {investment_run_id: this.routeParamId}};
+        const filter = {filter : {investment_run_id: this.routeParamId}};
         col.filter.rowData$ = this.investmentService.getAllExecutionOrdersHeaderLOV(col.column, filter);
       }
     );
@@ -138,7 +138,7 @@ export class ExecutionOrdersComponent extends TimelineDetailComponent implements
       mergeMap(
          params => this.investmentService.getAllTimelineData({ investment_run_id: params['id'] })
       )
-    )
+    );
   }
 
   /**

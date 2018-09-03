@@ -1,6 +1,33 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { extraTestingModules, fakeAsyncResponse } from '../../../utils/testing';
 
 import { RolesAddComponent } from './roles-add.component';
+import { RolesModule } from '../roles.module';
+import { RolesService } from '../../../services/roles/roles.service';
+
+
+const RolesServiceStub = {
+  getPermissionsList: () => {
+    return fakeAsyncResponse({});
+  },
+
+  getRole: () => {
+    return fakeAsyncResponse({});
+  },
+
+  deleteRole: () => {
+    return fakeAsyncResponse({});
+  },
+
+  createRole: () => {
+    return fakeAsyncResponse({});
+  },
+
+  editRole: () => {
+    return fakeAsyncResponse({});
+  }
+};
+
 
 describe('RolesAddComponent', () => {
   let component: RolesAddComponent;
@@ -8,7 +35,13 @@ describe('RolesAddComponent', () => {
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ RolesAddComponent ]
+      imports: [
+        RolesModule,
+        ...extraTestingModules
+      ],
+      providers: [
+        { provide: RolesService, useValue: RolesServiceStub }
+      ]
     })
     .compileComponents();
   }));

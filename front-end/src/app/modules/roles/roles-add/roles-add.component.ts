@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
-import { FormGroup, FormControl, Validators } from "@angular/forms";
+import { FormGroup, FormControl, Validators } from '@angular/forms';
 import { filter } from 'rxjs/operators';
 import * as _ from 'lodash';
 
@@ -76,14 +76,14 @@ export class RolesAddComponent implements OnInit {
   generatePermissions() {
     const perm = [];
 
-    for (let key in this.permissionsCheckboxMap) {
+    for (const key in this.permissionsCheckboxMap) {
       if (this.permissionsCheckboxMap[key]) {
         perm.push(key);
       }
     }
 
     this.roleForm.controls.permissions.setValue(perm);
-    //this.role.permissions = perm;
+    // this.role.permissions = perm;
     this.checkPermission();
   }
 
@@ -103,7 +103,7 @@ export class RolesAddComponent implements OnInit {
     _.map(this.permissionsMap.data, (data, i) => {
       isAllSelected = true;
 
-      for (let { code } of data.permissions) {
+      for (const { code } of data.permissions) {
         isAllSelected = isAllSelected && this.permissionsCheckboxMap[code];
       }
 
@@ -188,8 +188,8 @@ export class RolesAddComponent implements OnInit {
     });
   }
 
-  checkPermission(){
-    if (this.roleForm.value.permissions.length === 0){
+  checkPermission() {
+    if (this.roleForm.value.permissions.length === 0) {
       this.showError = true;
     } else {
       this.showError = false;

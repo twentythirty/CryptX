@@ -29,25 +29,25 @@ const AssetServiceStub = {
       history: [
         {
           asset_id: 1978,
-          timestamp: "2018-08-24T06:42:42.342Z",
+          timestamp: '2018-08-24T06:42:42.342Z',
           user: {
             id: 7,
-            name: "Anatolij Grigorjev",
-            email: "anatolij@mediapark.com"
+            name: 'Anatolij Grigorjev',
+            email: 'anatolij@mediapark.com'
           },
-          comment: "me likey linkey",
-          type: "assets.status.400"
+          comment: 'me likey linkey',
+          type: 'assets.status.400'
         },
         {
-          asset_id:1978,
-          timestamp: "2018-08-24T06:42:29.075Z",
+          asset_id: 1978,
+          timestamp: '2018-08-24T06:42:29.075Z',
           user: {
-            id:7,
-            name: "Anatolij Grigorjev",
-            email: "anatolij@mediapark.com"
+            id: 7,
+            name: 'Anatolij Grigorjev',
+            email: 'anatolij@mediapark.com'
           },
-          comment: "me no likey linkey",
-          type: "assets.status.401"
+          comment: 'me no likey linkey',
+          type: 'assets.status.401'
         }
       ]
     });

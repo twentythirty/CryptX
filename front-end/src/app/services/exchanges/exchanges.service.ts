@@ -24,7 +24,7 @@ export class ExchangesService {
     private http: HttpClient,
   ) {}
 
-  getAllExchanges(request?: EntitiesFilter): Observable<ExchangesAllResponse>{
+  getAllExchanges(request?: EntitiesFilter): Observable<ExchangesAllResponse> {
     if (request) {
       return this.http.post<ExchangesAllResponse>(this.baseUrl + `exchanges/all`, request);
     } else {
@@ -32,7 +32,7 @@ export class ExchangesService {
     }
   }
 
-  getExchangeInstrumentIdentifiers(exchangeId): Observable<ExchangesInstrumentIdentifiersResponse>{
+  getExchangeInstrumentIdentifiers(exchangeId): Observable<ExchangesInstrumentIdentifiersResponse> {
     return this.http.get<ExchangesInstrumentIdentifiersResponse>(this.baseUrl + `exchanges/${exchangeId}/instruments`);
   }
 

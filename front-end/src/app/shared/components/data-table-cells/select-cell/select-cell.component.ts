@@ -2,7 +2,7 @@ import { Component, OnInit, Input, Output, EventEmitter } from '@angular/core';
 import { TableDataColumn } from '../../data-table/data-table.component';
 
 export class SelectCellDataColumn extends TableDataColumn {
-  component? = SelectCellComponent;
+  component ? = SelectCellComponent;
   inputs?: {
     value?: any;
     data?: any;
@@ -12,10 +12,10 @@ export class SelectCellDataColumn extends TableDataColumn {
     items: (row: any) => Array<{id: number, value: string}>;
     isDisabled?: (row: any) => boolean;
     selectedValue?: (row: any) => object;
-  }
+  };
   outputs?: {
     valueChange?: any;
-  }
+  };
   constructor(val: SelectCellDataColumn) {
     super(val);
   }
@@ -36,10 +36,10 @@ export class SelectCellComponent implements OnInit {
   @Input() items: (row: any) => void = (row) => null;
   @Input() isDisabled?: (row: any) => boolean = (row) => false;
   @Input() selectedValue?: (row: any) => void = (row) => null;
-  
+
   @Output() valueChange = new EventEmitter();
 
-  disabled: boolean = true;
+  disabled = true;
   dropDownList: any = [];
   selected: any = {};
 
@@ -55,7 +55,7 @@ export class SelectCellComponent implements OnInit {
     this.valueChange.emit({ value: val.id, row: this.row });
   }
 
-  openDropDown(){
+  openDropDown() {
     this.dropDownList = this.items(this.row);
   }
 }

@@ -192,8 +192,8 @@ export class TimelineDetailComponent extends DataTableCommonManagerComponent imp
    */
 
   public rationaleModalIsShown = false;
-  public rationaleData: any;
-  public rationaleDone: (data: any) => void;
+  public rationaleData;
+  public rationaleDone;
 
   public showRationaleModal(data: any, done?: (data: any) => void): void {
     this.rationaleModalIsShown = true;

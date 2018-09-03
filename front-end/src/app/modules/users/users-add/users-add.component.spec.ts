@@ -1,6 +1,24 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { extraTestingModules, fakeAsyncResponse } from '../../../utils/testing';
 
+import { UsersModule } from '../users.module';
 import { UsersAddComponent } from './users-add.component';
+import { RolesService } from '../../../services/roles/roles.service';
+import { UsersService } from '../../../services/users/users.service';
+
+
+const RolesServiceStub = {
+  getAllRoles: () => {
+    return fakeAsyncResponse({});
+  }
+};
+
+const UsersServiceStub = {
+  sendInvite: () => {
+    return fakeAsyncResponse({});
+  }
+};
+
 
 describe('UsersAddComponent', () => {
   let component: UsersAddComponent;
@@ -8,7 +26,14 @@ describe('UsersAddComponent', () => {
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ UsersAddComponent ]
+      imports: [
+        UsersModule,
+        ...extraTestingModules
+      ],
+      providers: [
+        { provide: RolesService, useValue: RolesServiceStub },
+        { provide: UsersService, useValue: UsersServiceStub },
+      ]
     })
     .compileComponents();
   }));

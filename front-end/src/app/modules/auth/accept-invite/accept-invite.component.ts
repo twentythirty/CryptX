@@ -9,27 +9,27 @@ import { InviteService } from './invite.service';
 import { AuthService } from '../../../services/auth/auth.service';
 
 class UserFulfillInvitationInfo {
-  new_password: string
-  repeat_password: string
+  new_password: string;
+  repeat_password: string;
 }
 class QueryParamsToken {
-  token: string
+  token: string;
 }
 class InvitationInfo {
-  id: number
-  was_used: boolean
-  token: string
-  token_expiry_timestamp: Date
-  email: string
-  first_name: string
-  last_name: string
-  role_id: number
-  creator_id: number
+  id: number;
+  was_used: boolean;
+  token: string;
+  token_expiry_timestamp: Date;
+  email: string;
+  first_name: string;
+  last_name: string;
+  role_id: number;
+  creator_id: number;
 }
 
 class InvitationCheckSuccessResponse {
-  success: true
-  invitation: InvitationInfo
+  success: true;
+  invitation: InvitationInfo;
 }
 
 @Component({
@@ -90,15 +90,15 @@ export class AcceptInviteComponent implements OnInit {
   }
 
   fulfillInvitation() {
-    if (this.userInfoForm.value.password != this.userInfoForm.value.password_repeat) {
-      this.message = "New password was not repeated correctly";
+    if (this.userInfoForm.value.password !== this.userInfoForm.value.password_repeat) {
+      this.message = 'New password was not repeated correctly';
       return;
     }
     if (this.userInfoForm.valid) {
-      let data = {
+      const data = {
         invitation_id: this.invitationInfo.id,
         password: this.userInfoForm.value.password
-      }
+      };
 
       this.inviteService.fulfillInvitation(data).subscribe(data => {
         this.autoLogin(data);
@@ -108,7 +108,7 @@ export class AcceptInviteComponent implements OnInit {
         }
       });
     } else {
-      this.markAsTouched(this.userInfoForm)
+      this.markAsTouched(this.userInfoForm);
     }
   }
 
@@ -126,6 +126,6 @@ export class AcceptInviteComponent implements OnInit {
   private autoLogin(userLoginData): void {
     this.authService.setAuthData(userLoginData);
     this.router.navigate(['dashboard']);
-  };
+  }
 
 }

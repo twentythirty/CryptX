@@ -29,7 +29,7 @@ export class LiquidityRequirementsCreateResponse {
 export class LiquiditiesAllResponse {
   success: boolean;
   count: number;
-  footer: Array<any>
+  footer: Array<any>;
   liquidity_requirements: Array<LiquidityRequirement>;
 }
 
@@ -42,15 +42,15 @@ export class LiquidityService {
     private http: HttpClient,
   ) {}
 
-  getLiquidity(liquidityId: number): Observable<LiquidityResponse>{
+  getLiquidity(liquidityId: number): Observable<LiquidityResponse> {
     return this.http.get<LiquidityResponse>(this.baseUrl + `liquidity_requirements/${liquidityId}`);
   }
 
-  getExchanges(liquidityId: number): Observable<ExchangesResponse>{
+  getExchanges(liquidityId: number): Observable<ExchangesResponse> {
     return this.http.get<ExchangesResponse>(this.baseUrl + `liquidity_requirements/${liquidityId}/exchanges`);
   }
 
-  getAllLiquidities(request?: EntitiesFilter): Observable<LiquiditiesAllResponse>{
+  getAllLiquidities(request?: EntitiesFilter): Observable<LiquiditiesAllResponse> {
     if (request) {
       return this.http.post<LiquiditiesAllResponse>(this.baseUrl + `liquidity_requirements/all`, request);
     } else {
@@ -66,9 +66,9 @@ export class LiquidityService {
     return this.http.get<any>(this.baseUrl + `liquidity_requirements/header_lov/${column_name}`).pipe(
       map(
         res => {
-          if(res && res.lov && Array.isArray(res.lov)) {
+          if (res && res.lov && Array.isArray(res.lov)) {
             return res.lov.map(lov => {
-              return { value: lov.toString() }
+              return { value: lov.toString() };
             });
           }
           return null;
