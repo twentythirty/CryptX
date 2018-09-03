@@ -52,4 +52,8 @@ export class CustodiansListComponent extends DataTableCommonManagerComponent imp
     )
   }
 
+  addCustodian(){
+    this.router.navigate(['cold_storage/custodians/add']);
+  }
+
 }

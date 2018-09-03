@@ -7,6 +7,7 @@ import { map } from "rxjs/operators";
 import { EntitiesFilter } from "../../shared/models/api/entitiesFilter";
 import { Transfer } from "../../shared/models/transfer";
 import { ColdStorageAccountRequestData } from "../../shared/models/api/coldStorageAccountRequestData";
+import { ColdStorageCustodianRequestData } from '../../shared/models/api/coldStorageCustodianRequestData';
 
 export class TransfersAllResponse {
   success: boolean;
@@ -39,6 +40,12 @@ export class StorageFeesAllResponse {
 export class AddAccountResponse {
   success: boolean;
   account: any;
+  error: string;
+}
+
+export class AddCustodianResponse {
+  success: boolean;
+  custodian: any;
   error: string;
 }
 
@@ -122,6 +129,10 @@ export class ColdStorageService {
 
   getAllCustodians(requestData?: EntitiesFilter): Observable<CustodiansAllResponse>{
     return this.http.post<CustodiansAllResponse>(this.baseUrl + 'cold_storage/custodians/all', requestData);
+  }
+
+  addCustodian(request: ColdStorageCustodianRequestData): Observable<AddCustodianResponse>{
+    return this.http.post<AddCustodianResponse>(this.baseUrl + '/cold_storage/custodians/add', request);
   }
 
 }

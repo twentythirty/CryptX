@@ -1,0 +1,29 @@
+<app-page-heading
+  [heading]="'cold_storage.custodians.add_new_custodian' | translate"
+></app-page-heading>
+
+<div class="split-content horizontal">
+  <form [formGroup]="form">
+    <app-content-block
+      [heading]="'cold_storage.custodians.parameters' | translate"
+    >
+      <app-input-item class="form-item"
+      type="text"
+      [label]="'cold_storage.custodians.custodian_name' | translate"
+      [formGroup]="form"
+      formControlName="custodian_name"
+      placeholder="{{'cold_storage.custodians.enter_name' | translate}}"
+      ></app-input-item>
+    </app-content-block>
+  </form>
+</div>
+
+<app-form-action-bar>
+  <div>
+    <button
+      class="btn submit"
+      [disabled]="loading || !form.valid"
+      (click)="add()"
+    >{{ 'common.add_custodian' | translate }}</button>
+  </div>
+</app-form-action-bar>

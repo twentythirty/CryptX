@@ -19,7 +19,8 @@
     "activity_log": "Activity log",
     "rationale": "Rationale",
     "add_new_user": "Add new user",
-    "all": "All"
+    "all": "All",
+    "add_custodian": "Add custodian"
   },
   "table": {
     "header": {
@@ -474,7 +475,11 @@
 
   "cold_storage": {
     "custodians": {
-      "header": "Custodians"
+      "header": "Custodians",
+      "add_new_custodian": "Add new custodian",
+      "parameters": "Parameters",
+      "custodian_name": "Custodian name",
+      "enter_name": "Enter name"
     },
     "transfers": {
       "status": {
