@@ -8,14 +8,14 @@ Feature: Investment workflow
 
     Background: 
 
-        Given The system has an Investment Manager
+        Given the system has an Investment Manager
 
-    @user_cleanup
-    Scenario: Investment dashboard.
+    Scenario: New MCI investment run.
     
-        Given some investment runs have been completed and there are currently ongoing ones
+        Given there are no incomplete non simulated investment runs
         When I log onto CryptX as Investment Manager
-        And I navigate to the investment dashboard
-        Then I can see an overview of all previously completed investment runs with their status
-        And currently ongoing ones with their status
-        And upon selecting a specific one I can retrieve all the details pertaining to the specific investment run, such as approved recipe and order details
+        When I create a new real MCI Investment Run
+        Then the investment run information is saved to the database
+        And the investment run status is Initiated
+        And I am assigned as the user who created it
+        But I can only create one real running investment run at the same time

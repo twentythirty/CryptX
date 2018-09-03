@@ -23,7 +23,7 @@ const users = {
     }
 };
 
-Given(/^The system has (a|an) (.*)$/, async function(a, role_name) {
+Given(/^the system has (a|an) (.*)$/, async function(a, role_name) {
 
     if(!roles.includes(role_name)) throw new Error(`Invalid role "${role_name}" in test`);
 
@@ -35,11 +35,20 @@ Given(/^The system has (a|an) (.*)$/, async function(a, role_name) {
 
     const user_data = users[_.snakeCase(role_name)];
 
-    const exists = await User.count({
+    if(!this.users) this.users = {};
+
+    const existing_user = await User.findOne({
         where: { email: user_data.email }
     });
 
-    if(exists) return;
+    if(existing_user) {
+        if(this.users[_.snakeCase(role_name)]) return;
+
+        existing_user.unhashed_password = users[_.snakeCase(role_name)].password;
+        this.users[_.snakeCase(role_name)] = existing_user;
+
+        return;
+    }
 
     return sequelize.transaction(transaction => {
         return PermissionsCategory.findAll({
@@ -60,7 +69,7 @@ Given(/^The system has (a|an) (.*)$/, async function(a, role_name) {
                                     .then(user => {
                                         user_data.id = user.id;
                                         return user.setRoles([role], { transaction }).then(() => {
-                                            if(!this.users) this.users = {};
+                                            
                                             user.unhashed_password = user_data.password;
                                             this.users[_.snakeCase(role_name)] = user;  //Save the user in the world to use in other tests
                                         });

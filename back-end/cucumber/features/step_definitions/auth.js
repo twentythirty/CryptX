@@ -31,6 +31,9 @@ Given('I am logged into the system', function(done){
 When(/^I log onto CryptX as (.*)$/, function(role_name){
     const user = this.users[_.snakeCase(role_name)];
 
+    //no need for additional logins.
+    if(user.token) return;
+
     return chai
         .request(this.app)
         .post("/v1/users/login")

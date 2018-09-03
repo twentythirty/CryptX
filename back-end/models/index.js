@@ -6,7 +6,9 @@ var Sequelize = require('sequelize');
 var basename  = path.basename(__filename);
 var db        = {};
 
-const sequelize = new Sequelize(process.env.DATABASE_URL, {
+const db_url = process.env.NODE_ENV === 'cucumber' ? process.env.DATABASE_URL_CUCUMBER : process.env.DATABASE_URL;
+
+const sequelize = new Sequelize(db_url, {
   dialect: CONFIG.db_dialect,
   dialectOptions: {
     ssl: (process.env.DB_USE_SSL || 'false') == 'true'
