@@ -3,7 +3,6 @@
 const ccxt = require('ccxt');
 const Bottleneck = require('bottleneck');
 const Exchange = require('../models').Exchange;
-const app = require('../app');
 
 const {
     logAction
@@ -18,7 +17,8 @@ let lim_by_id = {},
 //only fetch exchanges after app DB done loading
 //this will need to be lazy loaded since DB not available on app startup
 const cache_init_promise = async () => {
-    return app.dbPromise.then(() => {
+    const app = require('../app');
+    return app.dbPromise.then(migrations => {
         return Exchange.findAll({})
     }).then(exchanges => {
 
@@ -79,7 +79,9 @@ const cache_init_promise = async () => {
 const from_exchange_data = async (map_id, map_api, exchange_data) => {
 
     //ensure cache loaded
-    await cache_init_promise;
+    if (_.isEmpty(map_id) || _.isEmpty(map_api)) {
+        await cache_init_promise();
+    }
 
     //fetch data by parameter type
 
@@ -148,7 +150,9 @@ module.exports.getThrottle = getThrottle;
 const allConnectors = async (exchange_ids = []) => {
 
     //await cache init
-    await cache_init_promise;
+    if (_.isEmpty(con_by_id) || _.isEmpty(lim_by_id)) {
+        await cache_init_promise();
+    }
 
     //return all connectors if no filter
     if (_.isNull(exchange_ids) || _.isEmpty(exchange_ids)) {
