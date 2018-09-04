@@ -8,6 +8,12 @@ var db        = {};
 
 const db_url = process.env.NODE_ENV === 'cucumber' ? process.env.DATABASE_URL_CUCUMBER : process.env.DATABASE_URL;
 
+//profiles that are allowed to generate SQL logs
+const LOGGING_PROFILES = [
+  'dev',
+  'cucumber'
+]
+
 const sequelize = new Sequelize(db_url, {
   dialect: CONFIG.db_dialect,
   dialectOptions: {
@@ -15,7 +21,7 @@ const sequelize = new Sequelize(db_url, {
   },
   operatorsAliases: false,
   //only log sql queries on local deploy
-  logging: process.env.NODE_ENV == 'dev'? console.log : false
+  logging: LOGGING_PROFILES.includes(process.env.NODE_ENV) ? console.log : false
 });
 
 fs
@@ -37,5 +43,5 @@ Object.keys(db).forEach(modelName => {
 
 db.sequelize = sequelize;
 db.Sequelize = Sequelize;
-
+db.url = db_url;
 module.exports = db;

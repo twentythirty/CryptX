@@ -32,6 +32,15 @@
     {
       "type": "node",
       "request": "launch",
+      "name": "Launch Migrations",
+      "program": "${workspaceFolder}/back-end/migrator.js",
+      "args": [
+        "up"
+      ]
+    },
+    {
+      "type": "node",
+      "request": "launch",
       "name": "Launch Program",
       "outFiles": [],
       "program": "${workspaceFolder}/bin/www",

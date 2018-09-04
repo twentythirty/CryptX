@@ -4,18 +4,12 @@ const depositService = require('../services/DepositService');
 const InvestmentRun = require('../models').InvestmentRun;
 const RecipeRun = require('../models').RecipeRun;
 const RecipeRunDetail = require('../models').RecipeRunDetail;
-const User = require('../models').User;
-const Instrument = require('../models').Instrument;
-const InstrumentMarketData = require('../models').InstrumentMarketData;
 const Asset = require('../models').Asset;
 const AssetService = require('./AssetService');
-const OrdersService = require('./OrdersService');
 const Op = require('sequelize').Op;
 const sequelize = require('../models').sequelize;
 const RecipeOrder = require('../models').RecipeOrder;
 const RecipeOrderGroup = require('../models').RecipeOrderGroup;
-const ExecutionOrder = require('../models').ExecutionOrder;
-const ExecutionOrderFill = require('../models').ExecutionOrderFill;
 const RecipeRunDeposit = require('../models').RecipeRunDeposit;
 
 const createInvestmentRun = async function (user_id, strategy_type, is_simulated = true, deposit_usd) {

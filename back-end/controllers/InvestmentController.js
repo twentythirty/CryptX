@@ -1,8 +1,5 @@
 'use strict';
 
-const InvestmentRun = require('../models').InvestmentRun;
-const RecipeRun = require('../models').RecipeRun;
-const RecipeRunDetail = require('../models').RecipeRunDetail;
 const User = require('../models').User;
 const ActionLog = require('../models').ActionLog;
 const adminViewsService = require('../services/AdminViewsService');

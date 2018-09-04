@@ -15,7 +15,7 @@ function CustomWorld() {
     }
 }
 
-BeforeAll(function(){
+BeforeAll({ timeout: 15000000 }, function(){
 
     return app.dbPromise.then(() => {
         setWorldConstructor(CustomWorld);
