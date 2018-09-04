@@ -41,11 +41,15 @@ Given('there are no incomplete non simulated investment runs', function() {
     
 });
 
-Given('there is a real Investment Run created by an Investment Manager', function() {
+Given(/there is a (.*) (.*) Investment Run created by an Investment Manager/, function(simulated, type) {
     const { InvestmentRun } = require('../../../models');
 
     return InvestmentRun.findOne({
-        where: { user_created_id: World.current_user.id },
+        where: { 
+            user_created_id: World.users.investment_manager.id,
+            is_simulated: (simulated === 'simulated'),
+            strategy_type: STRATEGY_TYPES[type]
+        },
         raw: true
     }).then(investment_run => {
 
@@ -55,10 +59,10 @@ Given('there is a real Investment Run created by an Investment Manager', functio
         }
 
         return InvestmentRun.create({
-            strategy_type: _.random(0, 1, false) ? STRATEGY_TYPES.LCI : STRATEGY_TYPES.MCI,
-            is_simulated: false,
+            strategy_type: STRATEGY_TYPES[type],
+            is_simulated: (simulated === 'simulated'),
             deposit_usd: _.random(1000, 50000, false),
-            user_created_id: this.users.investment_manager.id,
+            user_created_id: World.users.investment_manager.id,
             started_timestamp: new Date(),
             updated_timestamp: new Date()
         }).then(investment_run => {

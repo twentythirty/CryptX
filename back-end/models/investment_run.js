@@ -17,7 +17,8 @@ module.exports = (sequelize, DataTypes) => {
       is_simulated: DataTypes.BOOLEAN,
       status: {
         type: DataTypes.SMALLINT,
-        allowNull: false
+        allowNull: false,
+        defaultValue: INVESTMENT_RUN_STATUSES.Initiated
       },
       deposit_usd: {
         type: DataTypes.DECIMAL,

@@ -24,7 +24,7 @@ Feature: Investment workflow
 
     Scenario: View an existing investment run.
 
-        Given there is a real Investment Run created by an Investment Manager
+        Given there is a real LCI Investment Run created by an Investment Manager
         When I log onto CryptX as Investment Manager
         And I get the Investment Run by id
         Then I should see the Investment Run information
@@ -32,7 +32,7 @@ Feature: Investment workflow
 
     Scenario: New simulated investment run.
 
-        Given there is a real Investment Run created by an Investment Manager
+        Given there is a real MCI Investment Run created by an Investment Manager
         When I log onto CryptX as Investment Manager
         And I create a new simulated MCI Investment Run
         Then the investment run information is saved to the database
