@@ -5,7 +5,6 @@ import {
   FormGroup,
   AbstractControl
 } from '@angular/forms';
-// import { EventEmitter } from 'protractor';
 
 export const CUSTOM_INPUT_CONTROL_VALUE_ACCESSOR: any = {
   provide: NG_VALUE_ACCESSOR,

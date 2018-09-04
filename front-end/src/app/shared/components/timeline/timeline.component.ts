@@ -43,7 +43,7 @@ export class TimelineComponent implements OnInit {
     recipe_deposits: TimelineEvent,
     recipe_orders: TimelineEvent,
     execution_orders: TimelineEvent
-  }
+  };
 
   constructor(
     private router: Router,
@@ -55,7 +55,7 @@ export class TimelineComponent implements OnInit {
   public isActive(key: TimelineStepKey): boolean {
     let routeParts: Array<string>;
 
-    switch(key) {
+    switch (key) {
       case 'investment_run':   routeParts = ['run/investment']; break;
       case 'recipe_run':       routeParts = ['run/recipe']; break;
       case 'recipe_deposits':  routeParts = ['run/deposit']; break;
@@ -67,9 +67,9 @@ export class TimelineComponent implements OnInit {
   }
 
   public isDisabled(key: TimelineStepKey) {
-    let events = this.timelineEvents;
-    
-    switch(key) {
+    const events = this.timelineEvents;
+
+    switch (key) {
       case 'investment_run':
         return !events.investment_run;
 
@@ -80,10 +80,10 @@ export class TimelineComponent implements OnInit {
         return !events.recipe_deposits;
 
       case 'recipe_orders':
-        if(this.authService.hasPermissions(['VIEW_ORDERS'])) {
+        if (this.authService.hasPermissions(['VIEW_ORDERS'])) {
           return false; // can view even empty page
         }
-        return !events.recipe_orders; 
+        return !events.recipe_orders;
 
       case 'execution_orders':
         return !events.execution_orders;
@@ -91,9 +91,9 @@ export class TimelineComponent implements OnInit {
   }
 
   public openStep(key: TimelineStepKey, event: TimelineEvent): void {
-    let events = this.timelineEvents;
+    const events = this.timelineEvents;
 
-    switch(key) {
+    switch (key) {
       case 'investment_run':
         this.router.navigate([`/run/investment/${events.investment_run.id}`]);
         break;
@@ -101,19 +101,19 @@ export class TimelineComponent implements OnInit {
       case 'recipe_run':
         this.router.navigate([`/run/recipe/${events.recipe_run.id}`]);
         break;
-      
+
       case 'recipe_deposits':
         this.router.navigate([`/run/deposit/${events.recipe_run.id}`]);
         break;
-      
+
       case 'recipe_orders':
-        if(this.authService.hasPermissions(['VIEW_ORDERS'])) {
+        if (this.authService.hasPermissions(['VIEW_ORDERS'])) {
           this.router.navigate([`/run/order-group/${events.recipe_run.id}`]);
         } else {
           this.router.navigate([`/run/order/${events.recipe_run.id}`]);
         }
         break;
-      
+
       case 'execution_orders':
         this.router.navigate([`/run/execution-orders/${events.investment_run.id}`]);
         break;

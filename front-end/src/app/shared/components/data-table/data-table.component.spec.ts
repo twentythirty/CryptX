@@ -1,6 +1,8 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { testingTranslateModule, extraTestingModules } from '../../../utils/testing';
 
-import { DataTableComponent } from './data-table.component';
+import { DataTableComponent, TableDataColumn } from './data-table.component';
+import { SharedModule } from '../../shared.module';
 
 describe('DataTableComponent', () => {
   let component: DataTableComponent;
@@ -8,7 +10,10 @@ describe('DataTableComponent', () => {
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ DataTableComponent ]
+      imports: [
+        SharedModule,
+        ...extraTestingModules
+      ]
     })
     .compileComponents();
   }));
@@ -16,6 +21,17 @@ describe('DataTableComponent', () => {
   beforeEach(() => {
     fixture = TestBed.createComponent(DataTableComponent);
     component = fixture.componentInstance;
+
+    component.dataSource = {
+      header: [
+        { column: 'test', nameKey: 'test' }
+      ],
+      body: null
+    };
+    component.columnsToShow = [
+      new TableDataColumn({ column: 'test' })
+    ];
+
     fixture.detectChanges();
   });
 

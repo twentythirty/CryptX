@@ -9,7 +9,7 @@ import { AuthService } from '../../../services/auth/auth.service';
   styleUrls: ['./navigation.component.scss']
 })
 export class NavigationComponent implements OnInit {
-  showUserMenu: boolean = false;
+  showUserMenu = false;
   initials: String;
 
   @Input() label: string;
@@ -52,7 +52,7 @@ export class NavigationComponent implements OnInit {
   constructor(
     public authService: AuthService,
     private router: Router,
-    private elementRef : ElementRef,
+    private elementRef: ElementRef,
   ) {}
 
   ngOnInit() {
@@ -64,8 +64,8 @@ export class NavigationComponent implements OnInit {
   }
 
   logout () {
-    this.authService.logOut().subscribe(res =>{
-      if (res.success){
+    this.authService.logOut().subscribe(res => {
+      if (res.success) {
         this.authService.deauthorize();
         this.router.navigate(['login']);
       }
@@ -93,7 +93,7 @@ export class NavigationComponent implements OnInit {
 
   toggleDropDownMenu (item) {
     this.nav.forEach(i => {
-      if(i !== item) i.show = false;
+      if (i !== item) { i.show = false; }
     });
 
     this.hideUserMenu();
@@ -101,7 +101,7 @@ export class NavigationComponent implements OnInit {
     item.show = !item.show;
   }
 
-  hideAllDropDownMenus (){
+  hideAllDropDownMenus () {
     this.nav.forEach(item => {
       item.show = false;
     });

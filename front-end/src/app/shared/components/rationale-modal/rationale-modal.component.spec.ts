@@ -1,6 +1,8 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { ReactiveFormsModule } from '@angular/forms';
 
 import { RationaleModalComponent } from './rationale-modal.component';
+import { BtnComponent } from '../btn/btn.component';
 
 describe('RationaleModalComponent', () => {
   let component: RationaleModalComponent;
@@ -8,7 +10,13 @@ describe('RationaleModalComponent', () => {
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ RationaleModalComponent ]
+      declarations: [
+        RationaleModalComponent,
+        BtnComponent,
+      ],
+      imports: [
+        ReactiveFormsModule
+      ]
     })
     .compileComponents();
   }));
