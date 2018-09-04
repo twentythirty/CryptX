@@ -7,8 +7,6 @@ chai.use(chaiHttp);
 
 const World = require('../support/global_world');
 
-const investment_runs = [];
-
 Given('there are no investment runs in the system', function() {
     const { InvestmentRun } = require('../../../models');
 
@@ -73,7 +71,20 @@ Given(/there is a (.*) (.*) Investment Run created by an Investment Manager/, fu
     });
 });
 
-When(/I create a new (.*) (.*) Investment Run/, function(simulated, type) {
+Given(/^the status of the Investment Run is (.*)$/, function(status) {
+    
+    const { InvestmentRun } = require('../../../models');
+
+    return InvestmentRun.update({ status: INVESTMENT_RUN_STATUSES[status] }, {
+        where: { id: this.current_investment_run.id },
+        limit: 1
+    }).then(result => {
+        this.current_investment_run.status = INVESTMENT_RUN_STATUSES[status];
+    });
+
+});
+
+When(/^I create a new (.*) (.*) Investment Run$/, function(simulated, type) {
 
     const investment_run_details = {
         strategy_type: STRATEGY_TYPES[type],
@@ -83,8 +94,8 @@ When(/I create a new (.*) (.*) Investment Run/, function(simulated, type) {
 
     return chai
         .request(this.app)
-        .post("/v1/investments/create")
-        .set("Authorization", World.current_user.token)
+        .post('/v1/investments/create')
+        .set('Authorization', World.current_user.token)
         .send(investment_run_details)
         .then(result => {   
             
@@ -102,7 +113,7 @@ When('I get the Investment Run by id', function() {
     return chai
         .request(this.app)
         .get(`/v1/investments/${this.current_investment_run.id}`)
-        .set("Authorization", World.current_user.token)
+        .set('Authorization', World.current_user.token)
         .then(result => {   
             
             expect(result).to.have.status(200);
@@ -111,7 +122,7 @@ When('I get the Investment Run by id', function() {
         });
 });
 
-Then('the investment run information is saved to the database', function() {
+Then('the Investment Run information is saved to the database', function() {
 
     const { InvestmentRun } = require('../../../models');
 
@@ -134,7 +145,7 @@ Then('the investment run information is saved to the database', function() {
 
 });
 
-Then(/the investment run status is (.*)/, function(status) {
+Then(/the Investment Run status is (.*)/, function(status) {
 
     expect(this.current_investment_run.status).to.equal(INVESTMENT_RUN_STATUSES[status]);
 
@@ -156,8 +167,8 @@ Then('I can only create one real running investment run at the same time', funct
 
     return chai
         .request(this.app)
-        .post("/v1/investments/create")
-        .set("Authorization", World.users.investment_manager.token)
+        .post('/v1/investments/create')
+        .set('Authorization', World.current_user.token)
         .send(investment_run_details)
         .catch(result => {   
             
@@ -185,7 +196,7 @@ Then('the creators full name should match', function() {
 
 });
 
-Then('the investment run should be marked as simulated', function() {
+Then('the Investment Run should be marked as simulated', function() {
 
     expect(this.current_investment_run.is_simulated).to.be.true;
 

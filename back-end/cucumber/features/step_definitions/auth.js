@@ -34,7 +34,10 @@ When(/^I log onto CryptX as (.*)$/, function(role_name){
     const user = World.users[_.snakeCase(role_name)];
     
     //no need for additional logins.
-    if(user.token) return;
+    if(user.token) {
+        World.current_user = user;
+        return;
+    };
 
     return chai
         .request(this.app)

@@ -17,8 +17,8 @@ Feature: Investment workflow
         Given there are no incomplete non simulated investment runs
         When I log onto CryptX as Investment Manager
         And I create a new real MCI Investment Run
-        Then the investment run information is saved to the database
-        And the investment run status is Initiated
+        Then the Investment Run information is saved to the database
+        And the Investment Run status is Initiated
         And I am assigned as the user who created it
         But I can only create one real running investment run at the same time
 
@@ -35,8 +35,8 @@ Feature: Investment workflow
         Given there is a real MCI Investment Run created by an Investment Manager
         When I log onto CryptX as Investment Manager
         And I create a new simulated MCI Investment Run
-        Then the investment run information is saved to the database
-        And the investment run should be marked as simulated
+        Then the Investment Run information is saved to the database
+        And the Investment Run should be marked as simulated
 
     Scenario Outline: <unauth_role> tries to create a new investment run
 
