@@ -13,12 +13,12 @@ const ColdStorageServiceStub = {
       custodians: [
         {
           id: 1,
-          name: "Coinbase Custody"
+          name: 'Coinbase Custody'
         }
       ],
       footer: [],
       count: 1
-    })
+    });
   }
 };
 

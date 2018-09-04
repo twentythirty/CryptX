@@ -16,13 +16,38 @@ const LiquidityServiceStub = {
 
 const InstrumentsServiceStub = {
   getAllInstruments: () => {
-    return fakeAsyncResponse({});
+    return fakeAsyncResponse({
+      success: true,
+      instruments: [
+        {
+          id: 1,
+          symbol: 'BTC/GLC',
+          exchanges_connected: '0',
+          exchanges_failed: '0'
+        }
+      ],
+      footer: [],
+      count: 1
+    });
   }
 };
 
 const ExchangesServiceStub = {
   getAllExchanges: () => {
-    return fakeAsyncResponse({});
+    return fakeAsyncResponse({
+      success: true,
+      exchanges: [
+        {
+          id: 1,
+          name: 'Binance'
+        },
+        {
+          id: 2,
+          name: 'Bitfinex'
+        }
+      ],
+      count: 2
+    });
   }
 };
 
