@@ -1,4 +1,8 @@
-require('./config/config');     //instantiate configuration variables
+require('./global_functions'); //instantiate global functions
+require('./config/config'); //instantiate configuration variables
+require('./config/model_constants'); //instantiate model constants
+require('./config/system_permissions') //load permissions
+require('./config/workflow_constants') //load more constants
 //DATABASE
 const models = require("./models");
 const path = require('path');
@@ -93,6 +97,12 @@ let runningMigrator = process.argv[1].split(/\//).pop() === 'migrator.js';
 
 if (runningMigrator) {
 
+    if (process.argv.length < 3) {
+
+        console.log("Usage: migrator.js <cmd> (cmd: status|up|migrate|down|reset|next|prev)")
+        process.exit(1);
+    }
+
     const cmd = process.argv[2].trim();
     let executedCmd;
 
@@ -142,7 +152,7 @@ if (runningMigrator) {
         })
         .then(() => {
             if (cmd !== 'status' && cmd !== 'reset-hard') {
-                return cmdStatus()
+                // return cmdStatus()
             }
             return Promise.resolve();
         })

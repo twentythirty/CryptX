@@ -38,11 +38,14 @@ let dbPromise = models.sequelize.authenticate().then(() => {
     console.log('Performing startup migration...');
     return migratorPerform();
 }, err => {
-    console.error('Unable prepare RDBMS for app:', process.env.DATABASE_URL, err);
+    console.error('Unable prepare RDBMS for app: %s, %o', process.env.DATABASE_URL, err);
     process.exit(2);
 }).then((migrations) => {
     let syncPermissions = require('./config/sync_permissions');
     return syncPermissions();
+}, err => {
+    console.error('Unable prepare RDBMS for app: %s, %o', process.env.DATABASE_URL, err);
+    process.exit(2);
 }).then(done_perm => {
     let settingsService = require('./services/SettingService');
     return settingsService.refreshSettingValues();
