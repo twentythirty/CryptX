@@ -24,7 +24,7 @@ export class OrdersListComponent extends DataTableCommonManagerComponent impleme
       { column: 'side', nameKey: 'table.header.side', filter: { type: 'text', sortable: true } },
       { column: 'exchange', nameKey: 'table.header.exchange', filter: { type: 'text', sortable: true } },
       { column: 'price', nameKey: 'table.header.price', filter: { type: 'number', sortable: true } },
-      { column: 'quantity', nameKey: 'table.header.quantity', filter: { type: 'number', sortable: true } },
+      { column: 'quantity', nameKey: 'table.header.total_quantity', filter: { type: 'number', sortable: true } },
       { column: 'sum_of_exchange_trading_fee', nameKey: 'table.header.sum_of_exchange_trading_fee', filter: { type: 'number', sortable: true } },
       { column: 'status', nameKey: 'table.header.status', filter: { type: 'text', sortable: true } },
       { column: 'created_timestamp', nameKey: 'table.header.created_time', filter: { type: 'date', sortable: true } },
