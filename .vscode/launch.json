@@ -16,8 +16,27 @@
     {
       "type": "node",
       "request": "launch",
+      "name": "Cucumber Tests",
+      "program": "${workspaceFolder}/node_modules/cucumber/bin/cucumber-js",
+      "args": [
+        "${workspaceFolder}/back-end/cucumber/features",
+        "--exit"
+      ]
+    },
+    {
+      "type": "node",
+      "request": "launch",
       "name": "Launch Jobs",
       "program": "${workspaceFolder}/back-end/jobs/jobs-runner.js"
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Launch Migrations",
+      "program": "${workspaceFolder}/back-end/migrator.js",
+      "args": [
+        "up"
+      ]
     },
     {
       "type": "node",

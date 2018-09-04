@@ -37,7 +37,7 @@ function CustomWorld() {
     }
 }
 
-BeforeAll(function(){
+BeforeAll({ timeout: 15000000 }, function(){
 
     sinon.stub(ccxtUtils, 'getConnector').callsFake(api_id => {
         return Promise.resolve(exchanges[api_id]);

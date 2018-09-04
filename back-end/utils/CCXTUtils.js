@@ -3,7 +3,8 @@
 const ccxt = require('ccxt');
 const Bottleneck = require('bottleneck');
 const Exchange = require('../models').Exchange;
-const util = require('util');
+const app = require('../app');
+
 const {
     logAction
 } = require('../utils/ActionLogUtil');
@@ -14,59 +15,65 @@ let con_by_id = {},
 let lim_by_id = {},
     lim_by_api = {};
 
-const cache_init_promise = Exchange.findAll({}).then(exchanges => {
+//only fetch exchanges after app DB done loading
+//this will need to be lazy loaded since DB not available on app startup
+const cache_init_promise = async () => {
+    return app.dbPromise.then(() => {
+        return Exchange.findAll({})
+    }).then(exchanges => {
 
-    _.mapValues(EXCHANGE_KEYS, exchange_options => {
-        exchange_options.timeout = 120000 // request timeout after 120 seconds
-    });
+        _.mapValues(EXCHANGE_KEYS, exchange_options => {
+            exchange_options.timeout = 120000 // request timeout after 120 seconds
+        });
 
-    _.forEach(exchanges, exchange => {
-        const connector = new ccxt[exchange.api_id](EXCHANGE_KEYS[exchange.api_id]);
-        const throttle = {
-            id: `LIM-${exchange.api_id}`,
-            bottleneck: new Bottleneck({
-                id: `bottleneck-${exchange.api_id}`,
-                //request time multiplied when dealing with bitfinex due to strict limits policy
-                // with a one request per 0.5 seconds policy bitfinex will use one per 3 sec
-                minTime: exchange.api_id != 'bitfinex'? CONFIG.ccxt_request_mintime : (CONFIG.ccxt_request_mintime * 6),
-                maxConcurrent: 1
-            }),
-            throttled: async (default_return, fn, ...args) => {
-                const throttler = lim_by_api[exchange.api_id];
-                //bind passed fn back to connector since CCXT uses `this.X` internally
-                const bound_fn = fn.bind(connector);
+        _.forEach(exchanges, exchange => {
+            const connector = new ccxt[exchange.api_id](EXCHANGE_KEYS[exchange.api_id]);
+            const throttle = {
+                id: `LIM-${exchange.api_id}`,
+                bottleneck: new Bottleneck({
+                    id: `bottleneck-${exchange.api_id}`,
+                    //request time multiplied when dealing with bitfinex due to strict limits policy
+                    // with a one request per 0.5 seconds policy bitfinex will use one per 3 sec
+                    minTime: exchange.api_id != 'bitfinex' ? CONFIG.ccxt_request_mintime : (CONFIG.ccxt_request_mintime * 6),
+                    maxConcurrent: 1
+                }),
+                throttled: async (default_return, fn, ...args) => {
+                    const throttler = lim_by_api[exchange.api_id];
+                    //bind passed fn back to connector since CCXT uses `this.X` internally
+                    const bound_fn = fn.bind(connector);
 
-                return throttler.bottleneck.schedule(() => {
-                    if (process.env.NODE_ENV == 'dev') {
-                        console.log(`Scheduling call to ${fn.name} on ${connector.name} for ${args}`)
-                    }
-                    return bound_fn(...args)
-                }).catch((error) => {
-                    //error instanceof Bottleneck.prototype.BottleneckError can used for bottleneck-speicific
-                    //error handling
-                    //for now any error is logged and default value is returned
-                    console.error(`\x1b[41m[LIMITER ${throttler.id}]\x1b[0m ERROR: ${error? error.message : 'N\\A'}`);
-                    logAction('universal.error', {
-                        args: {
-                            error: `[${throttler.id}-${fn.name}-${args}]: ${error.message}`
-                        },
-                        log_level: LOG_LEVELS.Error
-                    });
-                    return default_return;
-                })
+                    return throttler.bottleneck.schedule(() => {
+                        if (process.env.NODE_ENV == 'dev') {
+                            console.log(`Scheduling call to ${fn.name} on ${connector.name} for ${args}`)
+                        }
+                        return bound_fn(...args)
+                    }).catch((error) => {
+                        //error instanceof Bottleneck.prototype.BottleneckError can used for bottleneck-speicific
+                        //error handling
+                        //for now any error is logged and default value is returned
+                        console.error(`\x1b[41m[LIMITER ${throttler.id}]\x1b[0m ERROR: ${error? error.message : 'N\\A'}`);
+                        logAction('universal.error', {
+                            args: {
+                                error: `[${throttler.id}-${fn.name}-${args}]: ${error.message}`
+                            },
+                            log_level: LOG_LEVELS.Error
+                        });
+                        return default_return;
+                    })
+                }
             }
-        }
-        registerEvents(throttle.bottleneck);
+            registerEvents(throttle.bottleneck);
 
-        lim_by_id[exchange.id] = throttle;
-        lim_by_api[exchange.api_id] = throttle;
+            lim_by_id[exchange.id] = throttle;
+            lim_by_api[exchange.api_id] = throttle;
 
-        con_by_id[exchange.id] = connector;
-        con_by_api[exchange.api_id] = connector;
-    });
+            con_by_id[exchange.id] = connector;
+            con_by_api[exchange.api_id] = connector;
+        });
 
-    return Promise.all(_.map(con_by_id, (connector, id) => connector.load_markets()))
-});
+        return Promise.all(_.map(con_by_id, (connector, id) => connector.load_markets()))
+    })
+}
 
 
 const from_exchange_data = async (map_id, map_api, exchange_data) => {

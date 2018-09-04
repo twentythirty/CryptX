@@ -8,7 +8,28 @@ import { RolesService } from '../../../services/roles/roles.service';
 
 const RolesServiceStub = {
   getPermissionsList: () => {
-    return fakeAsyncResponse({});
+    return fakeAsyncResponse({
+      success: true,
+      data: [
+        {
+          id: 1,
+          name: 'Investment run',
+          permissions: [
+            {
+              id: 11,
+              code: 'perm_create_investment_run',
+              name: 'Permission to create investment runs'
+            },
+            {
+              id: 10,
+              code: 'perm_view_investment_run',
+              name: 'Permission to view investment runs'
+            }
+          ]
+        }
+      ],
+      total: 1
+    });
   },
 
   getRole: () => {
