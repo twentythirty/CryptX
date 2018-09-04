@@ -1,6 +1,17 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { extraTestingModules, fakeAsyncResponse } from '../../../utils/testing';
 
+import { ColdStorageCustodiansModule } from '../cold-storage-custodians.module';
 import { CustodiansAddComponent } from './custodians-add.component';
+import { ColdStorageService } from '../../../services/cold-storage/cold-storage.service';
+
+
+const ColdStorageServiceStub = {
+  addCustodian: () => {
+    return fakeAsyncResponse({});
+  }
+};
+
 
 describe('CustodiansAddComponent', () => {
   let component: CustodiansAddComponent;
@@ -8,7 +19,13 @@ describe('CustodiansAddComponent', () => {
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ CustodiansAddComponent ]
+      imports: [
+        ColdStorageCustodiansModule,
+        ...extraTestingModules
+      ],
+      providers: [
+        { provide: ColdStorageService, useValue: ColdStorageServiceStub }
+      ]
     })
     .compileComponents();
   }));

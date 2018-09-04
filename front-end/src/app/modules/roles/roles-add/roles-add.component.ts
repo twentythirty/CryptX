@@ -89,8 +89,8 @@ export class RolesAddComponent implements OnInit {
 
   generatePermissionsMaps() {
     this.permissionsMap.data.map(data => {
-      data.permissions.map(data => {
-        this.permissionsCheckboxMap[data.code] = _.indexOf(this.roleForm.value.permissions, data.code) > -1;
+      data.permissions.map(perm => {
+        this.permissionsCheckboxMap[perm.code] = _.indexOf(this.roleForm.value.permissions, perm.code) > -1;
       });
     });
 
