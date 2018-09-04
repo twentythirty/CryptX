@@ -29,12 +29,12 @@ import { ComponentCanDeactivate } from '../../../config/routes/route-pending-cha
 })
 export class InstrumentInfoComponent extends DataTableCommonManagerComponent implements OnInit, ComponentCanDeactivate {
   private cryptoSuffix: string;
-  
+
   public exchanges: Array<any>;
   public showDeleteExchangeMappingConfirm = false;
   public exchangeMappingTemp: InstrumentExchangeMap;
   public loading: boolean;
-  public noChanges: boolean = true;
+  public noChanges = true;
 
   public instrumentDataSource: TableDataSource = {
     header: [
@@ -94,14 +94,14 @@ export class InstrumentInfoComponent extends DataTableCommonManagerComponent imp
             return {
               id: row.exchange_id,
               name: row.exchange_name
-            }
+            };
           },
           isDisabled: (row) => {
             return !row.isNew;
           },
           items: (row) => {
             return [
-              //{ id: '', name: 'Select' },
+              // { id: '', name: 'Select' },
               ...this.exchanges
             ];
           }
@@ -116,6 +116,7 @@ export class InstrumentInfoComponent extends DataTableCommonManagerComponent imp
             .subscribe(res => {
               row.external_instrument_list = _.sortBy(res.identifiers);
               this.declareMappingTable();
+              this.loading = false;
             });
 
             this.checkMapping(row);
@@ -132,14 +133,14 @@ export class InstrumentInfoComponent extends DataTableCommonManagerComponent imp
             return {
               id: row.external_instrument,
               name: row.external_instrument
-            }
+            };
           },
           isDisabled: (row) => {
             return !row.isNew;
           },
           items: (row) => {
             return [
-              //{ id:'', name: 'Select' },
+              // { id:'', name: 'Select' },
               ...(row.external_instrument_list || []).map(item => ({ id: item, name: item }))
             ];
           },
@@ -148,7 +149,7 @@ export class InstrumentInfoComponent extends DataTableCommonManagerComponent imp
           valueChange: ({ value, row }) => {
             this.loading = false;
             row.external_instrument = value;
-            
+
             this.checkMapping(row);
           }
         }
@@ -225,19 +226,21 @@ export class InstrumentInfoComponent extends DataTableCommonManagerComponent imp
   public getAllData(): void {
     this.route.params.pipe(
       mergeMap(
-        params => this.instrumentsService.getInstrumentExchangesMapping(params['id'])
+        params => {
+          return this.instrumentsService.getInstrumentExchangesMapping(params['id']);
+        }
       )
     ).subscribe(
       res => {
         Object.assign(this.mappingDataSource, {
-          body: res.mapping_data.map(data => Object.assign(data, { 
+          body: res.mapping_data.map(data => Object.assign(data, {
             valid: true,
             isDeleted: false,
             isNew: false
           }) )
         });
 
-        if(_.isEmpty(this.mappingDataSource.body)) {
+        if (_.isEmpty(this.mappingDataSource.body)) {
           this.mappingDataSource.body.push( new InstrumentExchangeMap() );
         }
       },
@@ -249,21 +252,20 @@ export class InstrumentInfoComponent extends DataTableCommonManagerComponent imp
     this.exchangesService.getExchangeInstrumentIdentifiers(row.exchange_id)
       .subscribe(
         res => {
-          if(res.success) {
+          if (res.success) {
           }
         }
-      )
+      );
   }
 
   public deleteExchangeMapping(mapping) {
-    if(mapping.isNew) _.remove(this.mappingDataSource.body, item => _.isEqual(item, mapping) );
-    else mapping.isDeleted = true;
+    if (mapping.isNew) { _.remove(this.mappingDataSource.body, item => _.isEqual(item, mapping) ); } else { mapping.isDeleted = true; }
 
     this.canSave();
-    //this.exchangeMappingTemp = null;
+    // this.exchangeMappingTemp = null;
 
-    //this.closeDeleteConfirm();
-   
+    // this.closeDeleteConfirm();
+
   }
 
   public undoExchangeMappingDeletion(mapping) {
@@ -277,11 +279,12 @@ export class InstrumentInfoComponent extends DataTableCommonManagerComponent imp
   }
 
   public addNewMapping(): void {
-    if ( !this.canAddNewMapping() )
+    if ( !this.canAddNewMapping() ) {
       return;
-    
+    }
+
     const lastItem = _.last(this.mappingDataSource.body);
-    if( !lastItem || lastItem.valid ) {
+    if ( !lastItem || lastItem.valid ) {
       this.mappingDataSource.body.push( new InstrumentExchangeMap() );
     } else {
       this.mappingDataSource.body[ this.mappingDataSource.body.length - 1 ] = new InstrumentExchangeMap();
@@ -327,11 +330,11 @@ export class InstrumentInfoComponent extends DataTableCommonManagerComponent imp
           exchange_id: item.exchange_id,
           external_instrument_id: item.external_instrument
         };
-      } 
+      }
     })
     .compact()
     .value();
-    
+
     const request: AddMappingRequestData = { exchange_mapping: exchange_mapping };
 
     this.loading = true;
@@ -356,9 +359,7 @@ export class InstrumentInfoComponent extends DataTableCommonManagerComponent imp
 
   public canSave() {
     const changes = this.mappingDataSource.body.filter(mapping => (mapping['isNew'] || mapping['isDeleted']) && mapping['valid']);
-    
-    if(changes.length) this.noChanges = false;
-    else this.noChanges = true;
+    if (changes.length) { this.noChanges = false; } else { this.noChanges = true; }
   }
 
   /**
@@ -375,8 +376,7 @@ export class InstrumentInfoComponent extends DataTableCommonManagerComponent imp
    */
 
   public rowClass(row: InstrumentExchangeMap): string {
-    if(row.isNew) return 'color-light-green';
-    else if(row.isDeleted) return 'color-light-red';
+    if (row.isNew) { return 'color-light-green'; } else if (row.isDeleted) { return 'color-light-red'; }
     return '';
   }
 
