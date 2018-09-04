@@ -85,10 +85,37 @@ Given(/^the system has (a|an) (.*)$/, async function(a, role_name) {
     if(existing_user) {
         if(World.users[_.snakeCase(role_name)]) return;
 
-        existing_user.unhashed_password = users[_.snakeCase(role_name)].password;
-        World.users[_.snakeCase(role_name)] = existing_user;
+        //Make sure that user is up to date.
+        ['first_name', 'last_name', 'password', 'is_active'].map(field => {
+            existing_user[field] = user_data[field];
+        });
 
-        return;
+        return sequelize.transaction(transaction => {
+            return existing_user.save({ transaction }).then(user => {
+                user.unhashed_password = user_data.password;
+                World.users[_.snakeCase(role_name)] = user;
+                return PermissionsCategory.findAll({
+                    where: { name: permisisons_categoriy_mapping[_.snakeCase(role_name)] },
+                    raw: true,
+                    transaction
+                }).then(permisisons_categories => {
+                    return Permission.findAll({
+                        where: { category_id: permisisons_categories.map(p => p.id) },
+                        transaction
+                    }).then(permissions => {
+                        return Role.findOrCreate({
+                            where: { name: user_data.role.name },
+                            transaction
+                        }).then(([role, created]) => {
+                            return role.setPermissions(permissions, { transaction }).then(() => {
+                                return user.setRoles([role], { transaction })
+                            })
+                        })
+                    });
+                })
+
+            })
+        });
     }
 
     return sequelize.transaction(transaction => {
