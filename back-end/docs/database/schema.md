@@ -157,13 +157,7 @@ user_created_id int FK >- user.id # User which initiated the investment run
 strategy_type enum # Large Cap Index (LCI), Mid Cap Index (MCI)
 is_simulated bool # True if investment run is simulated, e.g. will not place real orders
 status enum # Status of the investment run: Initiated, RecipeRun, RecipeApproved, DepositsCompleted, OrdersGenerated, OrdersApproved, OrdersExecuting, OrdersFilled
-
-investment_run_assets # List of assets that will be used in investment run
--
-id int PK
-asset_id int FK >- asset.id
-investment_run_id int FK >- investment_run.id
-status enum
+investment_run_asset_group_id int FK >- investment_run_asset_group.id # 
 
 investment_amount # Stores amounts of assets for funding investment run
 -
@@ -171,6 +165,19 @@ id PK int
 investment_run_id int FK >- investment_run.id # Investment run
 asset_id int FK >- asset.id # Asset that will be used to provide funds for invesmtent run
 amount decimal # Amount of asset
+
+investment_run_asset_group # List of assets used in investment run.
+-
+id int PK
+created_timestamp timestamp # Timestamp when asset mix was created.
+user_id int FK >- user.id # User who created investment run asset group
+
+group_asset # Asset
+-
+id int PK
+investment_run_asset_group_id int FK >- investment_run_asset_group.id # List of assets that 
+asset_id int FK >- asset.id # Asset which belongs to list
+status enum
 
 recipe_run_deposit # Funds deposited for investing during single investment run
 -
@@ -299,6 +306,7 @@ level int # Debug = 0, Info = 1, Warning = 2, Error = 3.
 translation_key nvarchar # Key of translation
 translation_args nvarchar # Arguments of translation
 cold_storage_transfer_id int # Cold storage transfer related to action
+investment_run_asset_group_id int # Investment run asset group
 
 setting
 # This table will contain system settings (controlled by admins via web interface)
