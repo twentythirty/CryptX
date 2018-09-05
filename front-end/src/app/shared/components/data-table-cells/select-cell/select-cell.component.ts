@@ -27,6 +27,10 @@ export class SelectCellDataColumn extends TableDataColumn {
   styleUrls: ['./select-cell.component.scss']
 })
 export class SelectCellComponent implements OnInit {
+  disabled = true;
+  dropDownList: any = [];
+  selected: any = {};
+
   @Input() row: any;
   @Input() value: string;
   @Input() placeholder: string;
@@ -38,10 +42,6 @@ export class SelectCellComponent implements OnInit {
   @Input() selectedValue?: (row: any) => void = (row) => null;
 
   @Output() valueChange = new EventEmitter();
-
-  disabled = true;
-  dropDownList: any = [];
-  selected: any = {};
 
   constructor() { }
 

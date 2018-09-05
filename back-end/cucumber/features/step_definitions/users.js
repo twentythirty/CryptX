@@ -7,12 +7,6 @@ chai.use(chaiHttp);
 
 const World = require('../support/global_world');
 
-const roles = [
-    'Investment Manager',
-    'Depositor',
-    'Trader'
-];
-
 const users = {
     investment_manager: {
         first_name: 'Investment',
@@ -46,6 +40,17 @@ const users = {
         role: {
             name: 'TRADER'
         }
+    },
+    compliance_manager: {
+        first_name: 'Compliance Manager',
+        last_name: 'Steve',
+        email: 'compliance.manager@cryptx.io',
+        password: '123',
+        is_active: true,
+        created_timestamp: new Date(),
+        role: {
+            name: 'COMPLIANCE MANAGER'
+        }
     }
 };
 
@@ -64,17 +69,18 @@ Given('the system has no users', function() {
 
 Given(/^the system has (a|an) (.*)$/, async function(a, role_name) {
 
-    if(!roles.includes(role_name)) throw new Error(`Invalid role "${role_name}" in test`);
+    const user_data = users[_.snakeCase(role_name)];
+
+    if(!user_data) throw new Error(`Invalid role "${role_name}" in test`);
 
     const permisisons_categoriy_mapping = {
         investment_manager: [PERMISSIONS_CATEGORIES.INVESTMENT_RUN, PERMISSIONS_CATEGORIES.RECIPE_RUN],
         depositor: [PERMISSIONS_CATEGORIES.INSTRUMENTS],
-        trader: [PERMISSIONS.ORDERS]
+        trader: [PERMISSIONS_CATEGORIES.ORDERS],
+        compliance_manager: [PERMISSIONS_CATEGORIES.OTHER]
     };
 
     const { User, Role, Permission, PermissionsCategory, sequelize } = require('../../../models');
-
-    const user_data = users[_.snakeCase(role_name)];
 
     if(!World.users) World.users = {};
 

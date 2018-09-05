@@ -842,13 +842,17 @@ const fetchRecipeDepositsViewsFooter = async (where_clause = '') => {
         builder.selectCount(view, 'id', where_clause),
         builder.selectCountDistinct('investment_run_id', 'investment_run_id', view, where_clause),
         builder.selectCountDistinct('quote_asset_id', 'quote_asset', view, where_clause),
+        builder.selectCountDistinct('exchange_id', 'exchange', view, where_clause),
         builder.selectCountDistinct('account', 'account', view, where_clause),
+        builder.selectSum('investment_percentage', view, where_clause),
         builder.selectCount(view, 'status', builder.addToWhere(where_clause, `status='deposits.status.${MODEL_CONST.RECIPE_RUN_DEPOSIT_STATUSES.Pending}'`))
     ], [
         'id',
         'investment_run_id',
         'quote_asset',
+        'exchange',
         'account',
+        'investment_percentage',
         'status'
     ]);
 

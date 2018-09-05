@@ -1,4 +1,5 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { extraTestingModules } from '../../../utils/testing';
 
 import { DataTableCommonManagerComponent } from './data-table-common-manager.component';
 
@@ -8,7 +9,10 @@ describe('DataTableCommonManagerComponent', () => {
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ DataTableCommonManagerComponent ]
+      declarations: [ DataTableCommonManagerComponent ],
+      imports: [
+        ...extraTestingModules
+      ]
     })
     .compileComponents();
   }));

@@ -5669,13 +5669,17 @@
           "type": "number",
           "example": "6.01,"
         },
+        "filled_quantity": {
+          "type": "number",
+          "example": "3.69"
+        },
         "exchange_trading_fee": {
           "type": "number",
-          "example": "1.01,"
+          "example": "1.01"
         },
         "status": {
           "type": "number",
-          "example": "61,"
+          "example": "61"
         },
         "submission_time": {
           "type": "number",

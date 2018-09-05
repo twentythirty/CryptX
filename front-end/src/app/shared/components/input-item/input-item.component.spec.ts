@@ -1,6 +1,9 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { FormsModule } from '@angular/forms';
+import { NgSelectModule } from '@ng-select/ng-select';
 
 import { InputItemComponent } from './input-item.component';
+import { InputItemErrorMessageComponent } from '../input-item-error-message/input-item-error-message.component';
 
 describe('InputItemComponent', () => {
   let component: InputItemComponent;
@@ -8,7 +11,14 @@ describe('InputItemComponent', () => {
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ InputItemComponent ]
+      declarations: [
+        InputItemComponent,
+        InputItemErrorMessageComponent
+      ],
+      imports: [
+        FormsModule,
+        NgSelectModule,
+      ]
     })
     .compileComponents();
   }));

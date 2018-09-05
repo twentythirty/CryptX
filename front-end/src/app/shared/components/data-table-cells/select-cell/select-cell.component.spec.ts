@@ -1,6 +1,6 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 import { FormsModule } from '@angular/forms';
-import {  NgSelectModule } from '@ng-select/ng-select';
+import { NgSelectModule } from '@ng-select/ng-select';
 
 import { SelectCellComponent } from './select-cell.component';
 import { InputItemComponent } from '../../input-item/input-item.component';
@@ -28,6 +28,9 @@ describe('SelectCellComponent', () => {
   beforeEach(() => {
     fixture = TestBed.createComponent(SelectCellComponent);
     component = fixture.componentInstance;
+    component.selectedValue = (row) => {
+      return { id: 1, value: 'test value' };
+    };
     fixture.detectChanges();
   });
 
