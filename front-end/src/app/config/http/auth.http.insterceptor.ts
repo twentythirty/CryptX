@@ -12,24 +12,15 @@ import { AuthService } from '../../services/auth/auth.service';
 export class PreRequestAuthInterceptor implements HttpInterceptor {
 
   intercept(req: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
-    console.log('[Request interceptor] STARTING ANALYZING REQUEST')
-    const token = localStorage.getItem("token");
-
-    console.log("[Request interceptor] Auth Token: " + token);
-    console.log("[Request interceptor] Before adding token to request: ", JSON.stringify(req));
+    const token = localStorage.getItem('token');
 
     if (token) {
       const cloned = req.clone({ // always add token if found
-        headers: req.headers.set("Authorization", token)
+        headers: req.headers.set('Authorization', token)
       });
 
-      console.log("[Request interceptor] After token should be added:", JSON.stringify(cloned));
-      
       return next.handle(cloned);
-    }
-    else {
-      console.log("[Request interceptor] Token not found: ", JSON.stringify(req));
-
+    } else {
       return next.handle(req);
     }
   }
@@ -47,25 +38,21 @@ export class PostRequestAuthInterceptor implements HttpInterceptor {
         (event: HttpEvent<any>) => {
           if (event instanceof HttpResponse) {
             // do stuff if needed
-            console.log("[Response interceptor] START ANALYZING RESPONSE");
-            console.log("[Response interceptor] Error object:", JSON.stringify(event));
             const nextToken = _.get(event, 'body.next_token');
 
-            if(nextToken) this.authService.setToken(nextToken);
-
+            if (nextToken) { this.authService.setToken(nextToken); }
           }
         },
         (err: any) => {
-          const token = localStorage.getItem("token");
-          console.log("[Error response interceptor] Auth Token:" + token);
-          console.log("[Error response interceptor]", JSON.stringify(err));
+          const token = localStorage.getItem('token');
 
           if (err instanceof HttpErrorResponse) {
-            if (err.status === 401) // if returns error code unauthorized
+            if (err.status === 401) { // if returns error code unauthorized
               this.authService.deauthorize();
+            }
 
             if (err.status === 403) {
-              console.log("User didn't have permissions needed");
+              // console.log('User didn\'t have permissions needed');
               this.authService.refreshPermissions().subscribe(data => {
                 // do something with permission renewed permission data
               });
@@ -86,14 +73,12 @@ export class PostRequestErrorInterceptor implements HttpInterceptor {
     return next.handle(request).pipe(
       catchError((err, caught) => {
         if (err instanceof HttpErrorResponse) {
-          console.log(err.status, err.error);
-
-          if(err.status > 200 && err.status < 400) {
+          if (err.status > 200 && err.status < 400) {
             return caught;
           } else {
-            if(err && err.error && (err.error.success === false) &&
+            if (err && err.error && (err.error.success === false) &&
             (typeof err.error.error == 'string')) {
-              let snackBarRef = this.snackBar.open(err.error.error, 'Close', {
+              const snackBarRef = this.snackBar.open(err.error.error, 'Close', {
                 panelClass: 'mat-snack-bar-error',
                 verticalPosition: 'top',
                 duration: 5000
