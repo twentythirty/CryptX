@@ -40,7 +40,7 @@ export class DataTableCommonManagerComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     this.queryParamsSubscription = this.route.queryParams.pipe(
-      filter(params => !params.page || params.page !== this.prevQueryParams.page )
+      filter(params => !params.page || params.page != this.prevQueryParams.page )
     ).subscribe(params => {
       this.startTableLoading();
 
@@ -101,7 +101,7 @@ export class DataTableCommonManagerComponent implements OnInit, OnDestroy {
     this.requestData.offset = 0;
 
     // update table data
-    if (_.isEmpty(this.prevQueryParams) || this.prevQueryParams.page === 1) {
+    if (_.isEmpty(this.prevQueryParams) || this.prevQueryParams.page == 1) {
       this.getAllData();
     }
 

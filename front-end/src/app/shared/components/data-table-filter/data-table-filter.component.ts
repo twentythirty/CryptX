@@ -130,11 +130,9 @@ export class DataTableFilterComponent implements OnInit, OnChanges {
           data.values.push({
             field: this.column,
             value: this._filterSearchText,
-            // expression: 'eq',
-            // type: 'number'
           });
         }
-        if ( this._filterData.values[0] ) {
+        if ( !_.isUndefined(this._filterData.values[0]) ) {
           data.values.push({
             field: this.column,
             value: this._filterData.values[0],
@@ -142,7 +140,7 @@ export class DataTableFilterComponent implements OnInit, OnChanges {
             type: 'number'
           });
         }
-        if ( this._filterData.values[1] ) {
+        if ( !_.isUndefined(this._filterData.values[1]) ) {
           data.values.push({
             field: this.column,
             value: this._filterData.values[1],
@@ -225,7 +223,7 @@ export class DataTableFilterComponent implements OnInit, OnChanges {
    * If we have a rowData$ Observable, replace rowData items
    */
   getRowData$(): void {
-    if (this.rowData$ && (typeof this.rowData$.subscribe === 'function')) {
+    if (this.rowData$ && (typeof this.rowData$.subscribe == 'function')) {
       this.rowDataLoading = true;
 
       this.rowData$.subscribe(
