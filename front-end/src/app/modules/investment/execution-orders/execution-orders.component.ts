@@ -36,13 +36,13 @@ export class ExecutionOrdersComponent extends TimelineDetailComponent implements
     header: [
       { column: 'id', nameKey: 'table.header.id', filter: { type: 'number', hasRange: false, inputSearch: true, sortable: true } },
       { column: 'instrument', nameKey: 'table.header.instrument', filter: { type: 'text', sortable: true } },
-      { column: 'side', nameKey: 'table.header.side', filter: { type: 'text', sortable: true } },
+      { column: 'side', nameKey: 'table.header.side', filter: { type: 'text', sortable: true, inputSearch: false } },
       { column: 'exchange', nameKey: 'table.header.exchange', filter: { type: 'text', sortable: true }},
-      { column: 'type', nameKey: 'table.header.type', filter: { type: 'text', sortable: true } },
+      { column: 'type', nameKey: 'table.header.type', filter: { type: 'text', sortable: true, inputSearch: false } },
       { column: 'price', nameKey: 'table.header.price', filter: { type: 'number', sortable: true } },
-      { column: 'quantity', nameKey: 'table.header.total_quantity', filter: { type: 'number', sortable: true } },
-      { column: 'fee', nameKey: 'table.header.exchange_trading_fee', filter: { type: 'number', sortable: true } },
-      { column: 'status', nameKey: 'table.header.status', filter: { type: 'text', sortable: true } },
+      { column: 'total_quantity', nameKey: 'table.header.total_quantity', filter: { type: 'number', sortable: true } },
+      { column: 'exchange_trading_fee', nameKey: 'table.header.exchange_trading_fee', filter: { type: 'number', sortable: true } },
+      { column: 'status', nameKey: 'table.header.status', filter: { type: 'text', sortable: true, inputSearch: false } },
       { column: 'submission_time', nameKey: 'table.header.submission_time', filter: { type: 'date', sortable: true } },
       { column: 'completion_time', nameKey: 'table.header.completion_time', filter: { type: 'date', sortable: true } }
     ],
@@ -59,9 +59,13 @@ export class ExecutionOrdersComponent extends TimelineDetailComponent implements
     new StatusCellDataColumn({ column: 'type', inputs: { classMap: value => {
       return StatusClass.DEFAULT;
     }}}),
-    new NumberCellDataColumn({ column: 'price' }),
+    new NumberCellDataColumn({ column: 'price', inputs: {
+      digitsInfo: '1.2-5'
+    } }),
     new NumberCellDataColumn({ column: 'total_quantity' }),
-    new NumberCellDataColumn({ column: 'exchange_trading_fee' }),
+    new NumberCellDataColumn({ column: 'exchange_trading_fee', inputs: {
+      digitsInfo: '1.2-10'
+    } }),
     new StatusCellDataColumn({ column: 'status', inputs: { classMap: {
       'execution_orders.status.61': StatusClass.PENDING,
       'execution_orders.status.62': StatusClass.APPROVED,
