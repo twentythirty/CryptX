@@ -815,7 +815,7 @@ module.exports.fetchExecutionOrdersViewFooter = fetchExecutionOrdersViewFooter;
 const fetchExecutionOrderFillsViewsFooter = async (where_clause = '') => {
 
     const view = 'av_execution_order_fills';
-
+    /*
     const query = builder.joinQueryParts([
         builder.selectCountDistinct('id', 'id', view, where_clause),
         builder.selectSumTrim('fill_price', view, where_clause),
@@ -825,6 +825,16 @@ const fetchExecutionOrderFillsViewsFooter = async (where_clause = '') => {
         'fill_price',
         'quantity'
     ])
+    */
+    //Desperate math calls for desperate sql queries
+    const query = `
+        SELECT
+            COUNT(id) AS id,
+            (SUM(quantity*price)/SUM(quantity)) AS fill_price,
+            SUM(quantity) as quantity
+        FROM execution_order_fill
+        ${builder.whereOrEmpty(where_clause)}
+    `;
 
     const footer = (await sequelize.query(query))[0];
 

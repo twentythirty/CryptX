@@ -290,7 +290,7 @@
   "execution_order_fills": {
     "footer": {
       "id": "{{id}} items",
-      "fill_price": "{{fill_price}} total",
+      "fill_price": "{{fill_price}} average",
       "quantity": "{{quantity}} total"
     }
   },
