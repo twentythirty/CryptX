@@ -76,7 +76,6 @@ export class RecipeRunListComponent extends DataTableCommonManagerComponent impl
 
   ngOnInit() {
     super.ngOnInit();
-    this.getFilterLOV();
   }
 
   getFilterLOV(): void {
@@ -99,6 +98,7 @@ export class RecipeRunListComponent extends DataTableCommonManagerComponent impl
           footer: res.footer
         });
         this.count = res.count;
+        this.getFilterLOV();
       }
     );
   }

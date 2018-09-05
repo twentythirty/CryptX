@@ -66,7 +66,6 @@ export class ExecutionOrderListComponent extends DataTableCommonManagerComponent
 
   ngOnInit() {
     super.ngOnInit();
-    this.getFilterLOV();
   }
 
   getFilterLOV(): void {
@@ -89,6 +88,7 @@ export class ExecutionOrderListComponent extends DataTableCommonManagerComponent
           footer: res.footer
         });
         this.count = res.count;
+        this.getFilterLOV();
       }
     )
   }

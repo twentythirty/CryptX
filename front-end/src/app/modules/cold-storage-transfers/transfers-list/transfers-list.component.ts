@@ -89,7 +89,6 @@ export class TransfersListComponent extends DataTableCommonManagerComponent impl
 
   ngOnInit() {
     super.ngOnInit();
-    this.getFilterLOV();
   }
 
   getAllData(): void {
@@ -102,6 +101,7 @@ export class TransfersListComponent extends DataTableCommonManagerComponent impl
           footer: res.footer
         });
         this.count = res.count;
+        this.getFilterLOV();
       }
     )
   }

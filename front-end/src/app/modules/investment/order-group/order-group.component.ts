@@ -133,8 +133,6 @@ export class OrderGroupComponent extends TimelineDetailComponent implements OnIn
     private ordersService: OrdersService,
   ) {
     super(route, router);
-
-    this.getFilterLOV();
   }
 
   /**

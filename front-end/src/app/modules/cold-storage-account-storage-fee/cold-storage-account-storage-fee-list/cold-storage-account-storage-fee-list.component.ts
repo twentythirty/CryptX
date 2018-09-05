@@ -46,7 +46,6 @@ export class ColdStorageAccountStorageFeeListComponent extends DataTableCommonMa
 
   ngOnInit() {
     super.ngOnInit();
-    this.getFilterLOV();
   }
 
   getAllData(): void {
@@ -59,6 +58,7 @@ export class ColdStorageAccountStorageFeeListComponent extends DataTableCommonMa
           footer: res.footer
         });
         this.count = res.count;
+        this.getFilterLOV();
       }
     )
   }

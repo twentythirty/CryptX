@@ -127,8 +127,6 @@ export class OrderDetailComponent extends TimelineDetailComponent implements OnI
     private investmentService: InvestmentService,
   ) {
     super(route, router);
-
-    this.getFilterLOV();
   }
 
   /**

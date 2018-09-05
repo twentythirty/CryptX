@@ -120,8 +120,6 @@ export class ExecutionOrderDetailComponent extends TimelineDetailComponent imple
     private investmentService: InvestmentService,
   ) {
     super(route, router);
-
-    this.getFilterLOV();
   }
 
   /**

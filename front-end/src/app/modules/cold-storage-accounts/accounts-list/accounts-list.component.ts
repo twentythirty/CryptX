@@ -49,7 +49,6 @@ export class AccountsListComponent extends DataTableCommonManagerComponent imple
 
   ngOnInit() {
     super.ngOnInit();
-    this.getFilterLOV();
   }
 
   getAllData(): void {
@@ -62,6 +61,7 @@ export class AccountsListComponent extends DataTableCommonManagerComponent imple
           footer: res.footer
         });
         this.count = res.count;
+        this.getFilterLOV();
       }
     )
   }

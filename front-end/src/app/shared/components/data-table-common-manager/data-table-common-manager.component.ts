@@ -44,7 +44,6 @@ export class DataTableCommonManagerComponent implements OnInit, OnDestroy {
     ).subscribe(params => {
       this.startTableLoading();
 
-      this.routeParamId = params.id;
       this.page = params.page || 1;
       this.requestData.offset = (this.page - 1) * this.pageSize;
       this.getAllData();
@@ -68,6 +67,7 @@ export class DataTableCommonManagerComponent implements OnInit, OnDestroy {
   }
 
   onSetFilter(filterData): void {
+
     // filter
     if (!this.requestData.filter.and) {
       this.requestData.filter.and = [];

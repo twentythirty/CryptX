@@ -55,7 +55,6 @@ export class DepositListComponent extends DataTableCommonManagerComponent implem
 
   ngOnInit() {
     super.ngOnInit();
-    this.getFilterLOV();
   }
 
   getAllData(): void {
@@ -68,6 +67,7 @@ export class DepositListComponent extends DataTableCommonManagerComponent implem
           footer: res.footer
         });
         this.count = res.count || res.recipe_deposits.length;
+        this.getFilterLOV();
       }
     )
   }

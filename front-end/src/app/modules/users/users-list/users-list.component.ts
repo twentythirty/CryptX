@@ -47,7 +47,6 @@ export class UsersListComponent extends DataTableCommonManagerComponent implemen
 
   ngOnInit() {
     super.ngOnInit();
-    this.getFilterLOV();
   }
 
   getAllData(): void {
@@ -60,6 +59,7 @@ export class UsersListComponent extends DataTableCommonManagerComponent implemen
         footer: res.footer
       });
       this.count = res.count;
+      this.getFilterLOV();
     });
   }
 

@@ -60,8 +60,6 @@ export class OrdersListComponent extends DataTableCommonManagerComponent impleme
     private ordersService: OrdersService,
   ) {
     super(route, router);
-
-    this.getFilterLOV();
   }
 
   /**
@@ -87,6 +85,7 @@ export class OrdersListComponent extends DataTableCommonManagerComponent impleme
           footer: res.footer
         });
         this.count = res.count;
+        this.getFilterLOV();
       }
     );
   }

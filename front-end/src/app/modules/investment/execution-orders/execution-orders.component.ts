@@ -85,8 +85,6 @@ export class ExecutionOrdersComponent extends TimelineDetailComponent implements
     private investmentService: InvestmentService,
   ) {
     super(route, router);
-
-    this.getFilterLOV();
   }
 
   /**

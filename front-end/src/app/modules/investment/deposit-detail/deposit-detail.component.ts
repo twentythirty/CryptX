@@ -116,8 +116,6 @@ export class DepositDetailComponent extends TimelineDetailComponent implements O
     private investmentService: InvestmentService,
   ) {
     super(route, router);
-
-    this.getFilterLOV();
   }
 
   /**

@@ -104,7 +104,6 @@ export class AssetListComponent extends DataTableCommonManagerComponent implemen
 
   ngOnInit() {
     super.ngOnInit();
-    this.getFilterLOV();
   }
 
   checkPerm (perm_code) {
@@ -126,6 +125,7 @@ export class AssetListComponent extends DataTableCommonManagerComponent implemen
           })
         });
         this.count = res.count || res.assets.length;
+        this.getFilterLOV();
       }
     );
   }

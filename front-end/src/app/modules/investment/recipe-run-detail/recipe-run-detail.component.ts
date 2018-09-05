@@ -122,7 +122,6 @@ export class RecipeRunDetailComponent extends TimelineDetailComponent implements
   ) {
     super(route, router);
 
-    this.getFilterLOV();
   }
 
   /**

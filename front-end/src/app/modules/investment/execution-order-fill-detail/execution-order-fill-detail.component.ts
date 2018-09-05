@@ -134,8 +134,6 @@ export class ExecutionOrderFillDetailComponent extends TimelineDetailComponent i
     private translate: TranslateService,
   ) {
     super(route, router);
-
-    this.getFilterLOV();
   }
 
   /**

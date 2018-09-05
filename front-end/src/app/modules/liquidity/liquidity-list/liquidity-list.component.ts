@@ -44,8 +44,6 @@ export class LiquidityListComponent extends DataTableCommonManagerComponent impl
     private liquidityService: LiquidityService,
   ) {
     super(route, router);
-
-    this.getFilterLOV();
   }
 
   /**
@@ -72,6 +70,7 @@ export class LiquidityListComponent extends DataTableCommonManagerComponent impl
           footer: res.footer
         });
         this.count = res.count;
+        this.getFilterLOV();
       }
     );
   }

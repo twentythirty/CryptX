@@ -52,7 +52,6 @@ export class DashboardComponent extends DataTableCommonManagerComponent implemen
 
   ngOnInit() {
     super.ngOnInit();
-    this.getFilterLOV();
   }
 
 
@@ -66,6 +65,7 @@ export class DashboardComponent extends DataTableCommonManagerComponent implemen
           footer: res.footer
         });
         this.count = res.count;
+        this.getFilterLOV();
       }
     );
   }
