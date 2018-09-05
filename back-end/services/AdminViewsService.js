@@ -830,9 +830,9 @@ const fetchExecutionOrderFillsViewsFooter = async (where_clause = '') => {
     const query = `
         SELECT
             COUNT(id) AS id,
-            (SUM(quantity*price)/SUM(quantity)) AS fill_price,
+            (SUM(quantity*fill_price)/SUM(quantity)) AS fill_price,
             SUM(quantity) as quantity
-        FROM execution_order_fill
+        FROM av_execution_order_fills
         ${builder.whereOrEmpty(where_clause)}
     `;
 

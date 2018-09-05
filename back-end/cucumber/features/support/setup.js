@@ -37,9 +37,17 @@ function CustomWorld() {
     }
 }
 
-BeforeAll({ timeout: 15000000 }, function(){
+BeforeAll({ timeout: 15000000 }, async function(){
 
-    sinon.stub(ccxtUtils, 'getConnector').callsFake(api_id => {
+    const { Exchange } = require('../../../models');
+
+    sinon.stub(ccxtUtils, 'getConnector').callsFake(async id => {
+        let api_id = id;
+        if(_.isNumber(id)) {
+            const exchange = await Exchange.findById(id);
+
+            api_id = exchange.api_id;
+        }
         return Promise.resolve(exchanges[api_id]);
     });
 

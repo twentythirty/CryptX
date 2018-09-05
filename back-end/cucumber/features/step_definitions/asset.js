@@ -94,6 +94,22 @@ When(/^I (.*) an Asset$/, async function(action) {
 
 });
 
+When('I select two different Assets', async function() {
+
+    const { Asset } = require('../../../models');
+
+    const assets = await Asset.findAll({
+        raw: true
+    });
+
+    const divide = Math.round(assets.length/2);
+
+    this.current_assets = [];
+    this.current_assets.push(assets[_.random(0, divide)]);
+    this.current_assets.push(assets[_.random(divide + 1, assets.length - 1)]);
+
+});
+
 Then('the list should have all of the Assets revelant information if it is available', function() {
 
     const assets = this.current_assets;
@@ -148,7 +164,7 @@ Then('I can see the new status and history by getting the Asset details', functi
         .get(`/v1/assets/detailed/${this.current_status_change.asset_id}`)
         .set('Authorization', World.current_user.token)
         .then(result => {   
-            console.log(result.body);
+ 
             expect(result).to.have.status(200);
             expect(result.body.asset).to.be.an('object');
             expect(result.body.history.length).to.be.greaterThan(0);
