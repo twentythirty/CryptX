@@ -132,7 +132,7 @@ export class DataTableFilterComponent implements OnInit, OnChanges {
             value: this._filterSearchText,
           });
         }
-        if ( !_.isUndefined(this._filterData.values[0]) ) {
+        if ( _.isNumber(this._filterData.values[0]) ) {
           data.values.push({
             field: this.column,
             value: this._filterData.values[0],
@@ -140,7 +140,7 @@ export class DataTableFilterComponent implements OnInit, OnChanges {
             type: 'number'
           });
         }
-        if ( !_.isUndefined(this._filterData.values[1]) ) {
+        if ( _.isNumber(this._filterData.values[1]) ) {
           data.values.push({
             field: this.column,
             value: this._filterData.values[1],
