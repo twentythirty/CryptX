@@ -14,6 +14,7 @@ module.exports = (sequelize, DataTypes) => {
             type: DataTypes.SMALLINT,
             price: DataTypes.DECIMAL,
             total_quantity: DataTypes.DECIMAL,
+            filled_quantity: DataTypes.DECIMAL,
             exchange_trading_fee: DataTypes.DECIMAL,
             status: DataTypes.SMALLINT,
             submission_time: DataTypes.DATE,
