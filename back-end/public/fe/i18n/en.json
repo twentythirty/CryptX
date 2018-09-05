@@ -468,7 +468,9 @@
       "investment_run_id": "{{ investment_run_id }} ids",
       "exchange_id": "{{ assets }} assets",
       "quote_asset": "{{ quote_asset }} assets",
+      "exchange": "{{ exchange }} exchanges",
       "account": "{{ account }} accounts",
+      "investment_percentage": "{{ investment_percentage }}%",
       "status": "{{ status }} pending"
     }
   },
