@@ -132,7 +132,7 @@ export class InvestmentService {
   }
 
   getAllDepositDetailsHeaderLOV(column_name: string, requestData?: object): Observable<any> {
-    return this.http.post<any>(this.baseUrl + `/deposits/header_lov/${column_name}`, requestData).pipe(
+    return this.http.post<any>(this.baseUrl + `deposits/header_lov/${column_name}`, requestData).pipe(
       map(
         res => {
           if (res && res.lov && Array.isArray(res.lov)) {
@@ -147,7 +147,7 @@ export class InvestmentService {
   }
 
   getAllOrdersHeaderLOV(column_name: string, requestData?: object): Observable<any> {
-    return this.http.post<any>(this.baseUrl + `/orders/header_lov/${column_name}`, requestData).pipe(
+    return this.http.post<any>(this.baseUrl + `orders/header_lov/${column_name}`, requestData).pipe(
       map(
         res => {
           if (res && res.lov && Array.isArray(res.lov)) {

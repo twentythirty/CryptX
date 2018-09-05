@@ -92,12 +92,12 @@ export class OrderGroupComponent extends TimelineDetailComponent implements OnIn
     header: [
       { column: 'id', nameKey: 'table.header.id', filter: { type: 'number', hasRange: false, inputSearch: true, sortable: true }},
       { column: 'instrument', nameKey: 'table.header.instrument', filter: { type: 'text', sortable: true }},
-      { column: 'side', nameKey: 'table.header.side', filter: { type: 'text', sortable: true }},
+      { column: 'side', nameKey: 'table.header.side', filter: { type: 'text', sortable: true, inputSearch: false }},
       { column: 'exchange', nameKey: 'table.header.exchange', filter: { type: 'text', sortable: true }},
       { column: 'price', nameKey: 'table.header.price', filter: { type: 'number', sortable: true }},
       { column: 'quantity', nameKey: 'table.header.total_quantity', filter: { type: 'number', sortable: true }},
       { column: 'sum_of_exchange_trading_fee', nameKey: 'table.header.sum_of_exchange_trading_fee', filter: { type: 'number', sortable: true }},
-      { column: 'status', nameKey: 'table.header.status', filter: { type: 'text', sortable: true }}
+      { column: 'status', nameKey: 'table.header.status', filter: { type: 'text', sortable: true, inputSearch: false }}
     ],
     body: null
   };
@@ -207,7 +207,7 @@ export class OrderGroupComponent extends TimelineDetailComponent implements OnIn
       col => ['id', 'instrument', 'side', 'exchange', 'status'].includes(col.column)
     ).map(
       col => {
-        const filter = { filter : { recipe_order_group_id: this.routeParamId }};
+        const filter = { filter : { recipe_run_id: this.routeParamId }};
         col.filter.rowData$ = this.investmentService.getAllOrdersHeaderLOV(col.column, filter);
       }
     );
