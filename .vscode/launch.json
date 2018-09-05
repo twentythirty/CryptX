@@ -7,10 +7,11 @@
     {
       "type": "node",
       "request": "launch",
-      "name": "Mocha Tests",
+      "name": "System Tests",
       "program": "${workspaceFolder}/back-end/test-harness/test-runner.js",
       "args": [
-        "${workspaceFolder}/back-end/test"
+        "${workspaceFolder}/back-end/test",
+        "back-end/cucumber/features"
       ]
     },
     {
