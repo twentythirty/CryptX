@@ -31,6 +31,7 @@ module.exports = (sequelize, DataTypes) => {
             as: 'quote_asset',
             through: 'quote_asset_id'
         });
+        Instrument.hasMany(models.InstrumentExchangeMapping);
     };
 
     Instrument.prototype.reverse_symbol = () => {

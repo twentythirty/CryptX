@@ -25,3 +25,16 @@ Feature: Instrument
         And I create a new Exchange Mapping with my selections
         Then the new Mapping is saved to the database
         But I can only have one Instrument Mapping for each Exchange per Instrument
+
+    Scenario: View Instrument and it`s Mappings
+
+        Given the system has Instrument Mappings for Kraken
+        Given the system has Instrument Mappings for Bitfinex
+        And the system has updated the Instrument Market Data
+        And the system has Instrument Liquidity History for the last 7 days
+        When I log onto CryptX as Compliance Manager
+        And I find an Instrument that has Mappings
+        And I retrieve the Instrument information
+        And I retrieve the Instrument Exchange Mappings related to it
+        Then the Instrument information should indidicate the amount of Exchanges connected
+        And the Instrument Exchange Mappings their current price, last day and week volumes

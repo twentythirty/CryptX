@@ -124,6 +124,69 @@ Given(/^there is an Instrument that can be Mapped to (.*)$/, async function(exch
 
 });
 
+Given('the system has updated the Instrument Market Data', async function(){
+
+    const { InstrumentMarketData, InstrumentExchangeMapping } = require('../../../models');
+
+    const mappings = await InstrumentExchangeMapping.findAll({
+        raw: true
+    });
+
+    return InstrumentMarketData.bulkCreate(mappings.map(m => {
+        const bid_price = _.random(0.00001, 0.1, true);
+        return {
+            bid_price: bid_price,
+            ask_price: bid_price * 0.0001,
+            exchange_id: m.exchange_id,
+            instrument_id: m.instrument_id,
+            timestamp: new Date()
+        };
+    }));
+
+});
+
+Given(/^the system has Instrument Liquidity History for the last (.*) days$/, async function(days) {
+
+    days = parseInt(days);
+
+    const today = new Date();
+    today.setHours(0);
+    today.setMinutes(0);
+    today.setSeconds(0);
+
+    const last_days = [];
+
+    for(let day = days; day >= 0; day--) {
+
+        const new_day = new Date(today);
+        new_day.setDate(today.getDate() - day);
+        last_days.push(new_day);
+
+    }
+
+    const { InstrumentLiquidityHistory, InstrumentExchangeMapping } = require('../../../models');
+
+    const mappings = await InstrumentExchangeMapping.findAll({
+        raw: true
+    });
+
+    const history = _.concat(...last_days.map(day => {
+        return mappings.map(m => {
+            const volume = _.random(100, 100000, false);
+            return {
+                volume,
+                exchange_id: m.exchange_id,
+                instrument_id: m.instrument_id,
+                timestamp_to: new Date(day),
+                timestamp_from: new Date().setDate(day.getDate() - 1)
+            };
+        });
+    }));
+
+    return InstrumentLiquidityHistory.bulkCreate(history);
+
+});
+
 When('I create a new Instrument with those Assets', function() {
 
     const new_instrument = {
@@ -205,6 +268,58 @@ When('I create a new Exchange Mapping with my selections', function() {
 
         });
 
+});
+
+When('I find an Instrument that has Mappings', async function(){
+
+    const { Instrument, InstrumentExchangeMapping } = require('../../../models');
+
+    const instrument = await Instrument.findOne({
+        where: {},
+        include: {
+            model: InstrumentExchangeMapping,
+            required: true
+        }
+    });
+
+    expect(instrument).to.not.null;
+
+    this.current_instrument = instrument;
+
+});
+
+When('I retrieve the Instrument information', function(){
+    
+    return chai
+        .request(this.app)
+        .get(`/v1/instruments/${this.current_instrument.id}/`)
+        .set('Authorization', World.current_user.token)
+        .then(result => {   
+
+            expect(result).to.have.status(200);
+            expect(result.body.instrument).to.be.an('object');
+
+            this.current_instrument = result.body.instrument;
+
+        });
+
+});
+
+When('I retrieve the Instrument Exchange Mappings related to it', function(){
+
+    return chai
+        .request(this.app)
+        .get(`/v1/instruments/${this.current_instrument.id}/exchanges`)
+        .set('Authorization', World.current_user.token)
+        .then(result => {   
+
+            expect(result).to.have.status(200);
+            expect(result.body.mapping_data.length).to.be.greaterThan(0);
+
+            this.current_instrument_mappings = result.body.mapping_data;
+
+        });
+    
 });
 
 Then('the new Instrument is saved to the database', async function() {
@@ -292,5 +407,78 @@ Then('I can only have one Instrument Mapping for each Exchange per Instrument', 
             expect(result).to.have.status(422);
 
         });
+
+});
+
+Then('the Instrument information should indidicate the amount of Exchanges connected', async function() {
+
+    const { InstrumentMarketData, sequelize } = require('../../../models');
+    const { Op } = sequelize;
+
+    const instrument = this.current_instrument;
+
+    const exchange_count = await InstrumentMarketData.count({
+        where: {
+            instrument_id: instrument.id,
+            timestamp: { [Op.gte]: Date.now() - 15 * 60 * 1000 }
+        },
+        distinct: true,
+        col: 'exchange_id'
+    });
+
+    //Given that the Market Data was just created, the failed exchanges count should alwas be 0 in this situation
+    expect(parseInt(instrument.exchanges_connected)).to.be.a('number');
+    expect(parseInt(instrument.exchanges_connected)).to.equal(exchange_count);
+    expect(parseInt(instrument.exchanges_failed)).to.be.a('number');
+    expect(parseInt(instrument.exchanges_failed)).to.equal(0);
+
+});
+
+Then('the Instrument Exchange Mappings their current price, last day and week volumes', function() {
+
+    const { InstrumentLiquidityHistory, InstrumentMarketData, sequelize } = require('../../../models');
+    const { Op } = sequelize;
+
+    return Promise.all(this.current_instrument_mappings.map(async mapping => {
+        const where = { instrument_id: this.current_instrument.id, exchange_id: mapping.exchange_id };
+
+        const last_day = new Date();
+        last_day.setDate(last_day.getDate() - 1);
+
+        const last_week = new Date();
+        last_week.setDate(last_week.getDate() - 7);
+
+        const [ market_data, last_day_history, last_week_volume ] = await Promise.all([
+            InstrumentMarketData.findOne({
+                where,
+                order: [[ 'timestamp', 'DESC' ]],
+                raw: true
+            }),
+            InstrumentLiquidityHistory.findOne({
+                where: Object.assign(
+                    { timestamp_from: { [Op.gte]: last_day } },
+                    where
+                ),
+                order: [[ 'timestamp_to', 'DESC' ]],
+                raw: true
+            }),
+            InstrumentLiquidityHistory.sum('volume', {
+                where: Object.assign(
+                    { timestamp_to: { [Op.gte]: last_week } },
+                    where
+                )
+            })
+        ]);
+
+        expect(parseFloat(mapping.current_price)).to.be.a('number');
+        expect(parseFloat(mapping.current_price)).to.equal(parseFloat(market_data.ask_price));
+
+        expect(parseInt(mapping.last_day_vol)).to.be.a('number');
+        expect(parseInt(mapping.last_day_vol)).to.equal(parseInt(last_day_history.volume));
+
+        expect(parseInt(mapping.last_week_vol)).to.be.a('number');
+        expect(parseInt(mapping.last_week_vol)).to.equal(last_week_volume);
+
+    }));
 
 });
