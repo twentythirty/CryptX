@@ -5,7 +5,7 @@
   "scripts": {
     "postinstall": "ng build --prod",
     "start": "./startup.sh",
-    "serve": "ng serve --aot --port 3001 --hmr --open --proxy-config front-end/proxy.config.json",
+    "serve": "ng serve --port 3001 --hmr --open --proxy-config front-end/proxy.config.json",
     "coverage": "nyc npm test",
     "test": "NODE_ENV=test node back-end/test-harness/test-runner.js back-end/test",
     "cucumber": "NODE_ENV=cucumber cucumber-js ./back-end/cucumber/features --exit",
