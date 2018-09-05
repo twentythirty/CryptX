@@ -37,7 +37,7 @@ export class DataTableFilterComponent implements OnInit, OnChanges {
   @Input() type = 'text';
   @Input() sortable = true;
   @Input() hasRange = true;
-  @Input() inputSearch = false;
+  @Input() inputSearch;
   @Input() rowData: Array<{
     value: string | boolean | number,
     label?: string
@@ -56,7 +56,6 @@ export class DataTableFilterComponent implements OnInit, OnChanges {
   ngOnInit() {
     // setting default value
     this.hasRange = _.isUndefined(this.hasRange) ? true : this.hasRange;
-    this.inputSearch = _.isUndefined(this.inputSearch) ? false : this.inputSearch;
   }
 
   ngOnChanges(changes) {
@@ -212,7 +211,10 @@ export class DataTableFilterComponent implements OnInit, OnChanges {
   }
 
   showInputSearch(): boolean {
-    return this.type === 'text' || this.inputSearch;
+    if (typeof this.inputSearch !== 'undefined') {
+      return this.inputSearch;
+    }
+    return this.type === 'text';
   }
 
   public stopPropagation(e) {

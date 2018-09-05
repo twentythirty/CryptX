@@ -88,7 +88,7 @@ export class DepositDetailComponent extends TimelineDetailComponent implements O
       { column: 'account', nameKey: 'table.header.account', filter: { type: 'text', sortable: true }, column_class: 'word-wrap' },
       { column: 'amount', nameKey: 'table.header.amount', filter: { type: 'number', sortable: true }},
       { column: 'investment_percentage', nameKey: 'table.header.investment_percentage', filter: { type: 'number', sortable: true }},
-      { column: 'status', nameKey: 'table.header.status', filter: { type: 'text', sortable: true } },
+      { column: 'status', nameKey: 'table.header.status', filter: { type: 'text', sortable: true, inputSearch: false } },
     ],
     body: null
   };
@@ -156,7 +156,7 @@ export class DepositDetailComponent extends TimelineDetailComponent implements O
   public getAllData(): void {
     this.route.params.pipe(
       mergeMap(
-        params => this.investmentService.getAllRecipeDeposits(params['id']).pipe(
+        params => this.investmentService.getAllRecipeDeposits(params['id'], this.requestData).pipe(
           finalize(() => this.stopTableLoading())
         )
       )
@@ -181,10 +181,10 @@ export class DepositDetailComponent extends TimelineDetailComponent implements O
 
   private getFilterLOV(): void {
     this.listDataSource.header.filter(
-      col => ['id',  'quote_asset', 'exchange', 'account', 'status'].includes(col.column)
+      col => ['id',  'quote_asset', 'exchange', 'status'].includes(col.column)
     ).map(
       col => {
-        const filter = { filter : { investment_run_id: this.routeParamId }};
+        const filter = { filter : { recipe_run_id: this.routeParamId }};
         col.filter.rowData$ = this.investmentService.getAllDepositDetailsHeaderLOV(col.column, filter);
       }
     );
