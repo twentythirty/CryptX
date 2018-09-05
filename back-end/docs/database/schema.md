@@ -157,7 +157,20 @@ user_created_id int FK >- user.id # User which initiated the investment run
 strategy_type enum # Large Cap Index (LCI), Mid Cap Index (MCI)
 is_simulated bool # True if investment run is simulated, e.g. will not place real orders
 status enum # Status of the investment run: Initiated, RecipeRun, RecipeApproved, DepositsCompleted, OrdersGenerated, OrdersApproved, OrdersExecuting, OrdersFilled
-deposit_usd decimal # Total deposits invested during this investment run
+
+investment_run_assets # List of assets that will be used in investment run
+-
+id int PK
+asset_id int FK >- asset.id
+investment_run_id int FK >- investment_run.id
+status enum
+
+investment_amount # Stores amounts of assets for funding investment run
+-
+id PK int
+investment_run_id int FK >- investment_run.id # Investment run
+asset_id int FK >- asset.id # Asset that will be used to provide funds for invesmtent run
+amount decimal # Amount of asset
 
 recipe_run_deposit # Funds deposited for investing during single investment run
 -
@@ -171,16 +184,6 @@ depositor_user_id int FK >- user.id # Depositor who made the deposit
 completion_timestamp timestamp NULLABLE # Time when deposit was completed
 target_exchange_account_id int FK >- exchange.id # Exchange account to which deposit will be made
 status enum # Status of the deposit. Possible values: PENDING, COMPLETED
-
-deposit_history # History of changes to recipe run deposit
--
-id PK int
-deposit_id int FK >- recipe_run_deposit.id 
-user_id int FK >- user.id # User which performed the action
-action enum # Possible actions ChangedAmount, ChangedFee, ChangedStatus
-value_before nvarchar # value after action
-value_after nvarchar # value before action
-timestamp timestamp # Time action was performed
 
 recipe_run
 -
@@ -201,6 +204,13 @@ transaction_asset_id int FK >- asset.id
 quote_asset_id int FK >- asset.id
 target_exchange_id int FK >- exchange.id # The trading exchange on which trading is suggested acording the recipe run
 investment_percentage decimal # Percentage that will be invested this way
+
+recipe_run_detail_investment
+-
+id
+recipe_run_detail_id int FK >- recipe_run_detail.id # Recipe detail
+asset_id int FK >- asset.id # Asset
+amount decimal # Amount of asset to use for detail
 
 recipe_order_group
 -
@@ -235,7 +245,7 @@ type enum # Market, Limit, Stop
 price decimal # order price
 total_quantity decimal # Order size
 fee decimal # Fee deducted on during placement
-status enum # Pending, Placed, FullyFilled, PartiallyFilled, Cancelled, Failed
+status enum # Pending, InProgress, FullyFilled, PartiallyFilled, NotFilled, Failed
 placed_timestamp timestamp # Time the execution order has been placed
 completed_timestamp timestamp NULLABLE # Time the execution order was fully filled or cancelled
 time_in_force timestamp NULLABLE # time till when order should be active on exchange. NULL if order is Good Till Cancelled
@@ -277,7 +287,7 @@ permission_id int # Permission which is related to the action
 role_id int # Role which is related to the action
 asset_id int # Asset which is related to the action
 instrument_id int # Instrument which is related to the action
-exchange_id int # Exchange which is related to the action
+exchange_id int # Exchange which is relsated to the action
 exchange_account_id int # Exchange account related to the action
 investment_run_id int # Investment run related to the action
 recipe_run_id int # Recipe run related to the action
