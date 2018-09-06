@@ -7,7 +7,7 @@
     "start": "./startup.sh",
     "serve": "ng serve --port 3001 --hmr --open --proxy-config front-end/proxy.config.json",
     "coverage": "nyc npm test",
-    "test": "NODE_ENV=test node back-end/test-harness/test-runner.js back-end/test back-end/cucumber/notfound",
+    "test": "NODE_ENV=test node back-end/test-harness/test-runner.js back-end/test back-end/cucumber/features",
     "cucumber": "NODE_ENV=cucumber cucumber-js ./back-end/cucumber/features --exit",
     "test-e2e": "protractor ./front-end/protractor.conf.js",
     "pretest-e2e": "webdriver-manager update --standalone false --gecko false --quiet",
