@@ -50,7 +50,7 @@ Given(/there is a (.*) (.*) Investment Run created by an Investment Manager/, fu
         },
         raw: true
     }).then(investment_run => {
-
+        
         if(investment_run) {
             this.current_investment_run = investment_run;
             return;

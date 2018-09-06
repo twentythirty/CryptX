@@ -24,6 +24,8 @@ const exchanges = {
 
 const { setWorldConstructor } = require('cucumber');
 
+const World = require('./global_world');
+
 function CustomWorld() {
     this.worldLog = function(message) {    //Just an expiremntal exmaple
         console.log(`\x1b[5m\x1b[42m[WORLD]\x1b[0m: ${message}`);
@@ -65,9 +67,24 @@ AfterAll(function() {
         if(method.restore) method.restore();
     });
 
+    if(World._logs.length) {
+        console.log('\n');
+        console.log('\x1b[1m\x1b[35m====================================\x1b[0mPRINT OUT\x1b[1m\x1b[35m====================================\x1b[0m');
+        console.log('\n');
+        for(let log of World._logs) {
+            if(log.scenario.pickle) console.log(`\x1b[1m\x1b[32mScenario:\x1b[0m ${log.scenario.pickle.name}:\n`);
+            console.log(log.message, ...log.args);
+            console.log('\n');
+        }
+        console.log('\n');
+        console.log('\x1b[1m\x1b[35m====================================\x1b[0mPRINT OUT\x1b[1m\x1b[35m====================================\x1b[0m');
+    }
+
 });
 
 After(function (scenario) {
+    World._current_scenario = scenario;
+
     const status = scenario.result.status === 'passed' ? `\x1b[1m\x1b[32m${scenario.result.status}\x1b[0m` : `\x1b[1m\x1b[31m${scenario.result.status}\x1b[0m`;
     let duration = scenario.result.duration;
 
