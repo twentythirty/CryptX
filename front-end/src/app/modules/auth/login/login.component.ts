@@ -49,7 +49,7 @@ export class LoginComponent implements OnInit {
   ngOnInit() { }
 
   authenticate() {
-    if(this.loginForm.valid) {
+    if (this.loginForm.valid) {
       this.loading = true;
 
       this.authService.authenticate(this.username, this.password).pipe(
@@ -64,7 +64,7 @@ export class LoginComponent implements OnInit {
           if (error.error) {
             this.status = error.error.error;
           }
-          console.log("Error happened", error);
+          console.log('Error happened', error);
       });
     } else {
       this.markAsTouched(this.loginForm);
@@ -99,7 +99,7 @@ export class LoginComponent implements OnInit {
   }
 
   requestPasswordReset() {
-    if(this.resetForm.valid) {
+    if (this.resetForm.valid) {
       this.password_reset_sent = true;
       this.loading2 = true;
 

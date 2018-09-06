@@ -1,5 +1,5 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
-import { extraTestingModules, fakeAsyncResponse } from '../../../utils/testing';
+import { extraTestingModules, fakeAsyncResponse } from '../../../testing/utils';
 
 import { OrdersModule } from '../orders.module';
 import { OrdersListComponent } from './orders-list.component';

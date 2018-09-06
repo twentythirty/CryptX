@@ -1,10 +1,11 @@
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
-import { extraTestingModules, fakeAsyncResponse } from '../../../utils/testing';
+import { async, ComponentFixture, TestBed, fakeAsync } from '@angular/core/testing';
+import * as _ from 'lodash';
+import { extraTestingModules, fakeAsyncResponse } from '../../../testing/utils';
 
 import { ColdStorageAccountsModule } from '../cold-storage-accounts.module';
 import { AccountsListComponent } from './accounts-list.component';
 import { ColdStorageService, AccountsAllResponse } from '../../../services/cold-storage/cold-storage.service';
-
+import { testHeaderLov } from '../../../testing/commonTests';
 
 const ColdStorageServiceStub = {
   getAllAccounts: () => {
@@ -13,22 +14,22 @@ const ColdStorageServiceStub = {
       accounts: [
         {
           id: 14,
-          asset: "BTC",
-          strategy_type: "investment.strategy.101",
-          address: "asdf",
-          custodian: "Coinbase Custody",
-          balance: "0",
-          balance_usd: "0",
+          asset: 'BTC',
+          strategy_type: 'investment.strategy.101',
+          address: 'asdf',
+          custodian: 'Coinbase Custody',
+          balance: '0',
+          balance_usd: '0',
           balance_update_timestamp: null
         },
       ],
       footer: [
         {
-          name: "balance_usd",
-          value: "22719.008525",
-          template: "cold_storage_transfers.footer.balance_usd",
+          name: 'balance_usd',
+          value: '22719.008525',
+          template: 'cold_storage_transfers.footer.balance_usd',
           args: {
-            balance_usd: "22719.008525"
+            balance_usd: '22719.008525'
           }
         }
       ],
@@ -54,10 +55,10 @@ describe('AccountsListComponent', () => {
     TestBed.configureTestingModule({
       imports: [
         ColdStorageAccountsModule,
-        ...extraTestingModules
+        ...extraTestingModules,
       ],
       providers: [
-        { provide: ColdStorageService, useValue: ColdStorageServiceStub }
+        { provide: ColdStorageService, useValue: ColdStorageServiceStub },
       ]
     })
     .compileComponents();
@@ -72,4 +73,16 @@ describe('AccountsListComponent', () => {
   it('should create', () => {
     expect(component).toBeTruthy();
   });
+
+  it('sould set header LOV observables for specified columns', () => {
+    const headerLovColumns = ['asset', 'strategy_type', 'address', 'custodian'];
+
+    testHeaderLov(component.accountsDataSource, headerLovColumns);
+  });
+
+  it('sould navigate to new account route on new account button press', fakeAsync(() => {
+    const navigateSpy = spyOn(component.router, 'navigate');
+    component.addAccount();
+    expect(navigateSpy).toHaveBeenCalledWith(['/cold_storage/accounts/add']);
+  }));
 });

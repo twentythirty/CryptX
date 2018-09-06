@@ -74,22 +74,27 @@ export class AssetListComponent extends DataTableCommonManagerComponent implemen
           new DataCellAction({
             label: 'De-greylist',
             isShown: (row: any) => this.checkPerm(['CHANGE_ASSET_STATUS']) && row.statusCode === 402,
-            exec: (row: any) => { this.deGreylist(<Asset>row) }
+            exec: (row: any) => { this.deGreylist(<Asset>row); }
           }),
           new DataCellAction({
             label: 'Blacklist',
             isShown: (row: any) => this.checkPerm(['CHANGE_ASSET_STATUS']) && row.statusCode === 400,
-            exec: (row: any) => { this.blacklist(<Asset>row) }
+            exec: (row: any) => { this.blacklist(<Asset>row); }
           }),
           new DataCellAction({
             label: 'Whitelist',
             isShown: (row: any) => this.checkPerm(['CHANGE_ASSET_STATUS']) && row.statusCode === 401,
-            exec: (row: any) => { this.whitelist(<Asset>row) }
+            exec: (row: any) => { this.whitelist(<Asset>row); }
           })
         ]
       }
     })
   ];
+
+  public rationaleModelIsShown: boolean = false;
+  public rationaleData: any;
+  public rationaleDone: (data: any) => void;
+
 
   constructor(
     public route: ActivatedRoute,
@@ -118,7 +123,7 @@ export class AssetListComponent extends DataTableCommonManagerComponent implemen
         Object.assign(this.assetsDataSource, {
           body: res.assets,
           footer: res.footer.map(item => {
-            if( item.name === 'capitalization' ) {
+            if ( item.name === 'capitalization' ) {
               item.args = _.mapValues(item.args, val => this.currencyPipe.transform(val, 'USD', 'symbol', '1.0-0'));
             }
             return item;
@@ -138,7 +143,7 @@ export class AssetListComponent extends DataTableCommonManagerComponent implemen
       col => ['is_base', 'is_deposit', 'status'].includes(col.column)
     ).map(
       col => {
-        col.filter.rowData$ = this.assetService.getHeaderLOV(col.column)
+        col.filter.rowData$ = this.assetService.getHeaderLOV(col.column);
       }
     );
   }
@@ -167,9 +172,9 @@ export class AssetListComponent extends DataTableCommonManagerComponent implemen
   /**
    * Actions
    */
-  
+
   public doDeGreylist({ rationale, data }): void {
-    let asset: Asset = data;
+    const asset: Asset = data;
 
     this.assetService.changeAssetStatus(
       asset.id,
@@ -185,7 +190,7 @@ export class AssetListComponent extends DataTableCommonManagerComponent implemen
   }
 
   public doBlacklist({ rationale, data }): void {
-    let asset: Asset = data;
+    const asset: Asset = data;
 
     this.assetService.changeAssetStatus(
       asset.id,
@@ -201,7 +206,7 @@ export class AssetListComponent extends DataTableCommonManagerComponent implemen
   }
 
   public doWhitelist({ rationale, data }): void {
-    let asset: Asset = data;
+    const asset: Asset = data;
 
     this.assetService.changeAssetStatus(
       asset.id,
@@ -221,19 +226,14 @@ export class AssetListComponent extends DataTableCommonManagerComponent implemen
    */
 
   public rowClass(row: Asset): string {
-    if(row.statusCode == 401) return 'color-black';
-    if(row.statusCode == 402) return 'color-gray';
+    if (row.statusCode == 401) { return 'color-black'; }
+    if (row.statusCode == 402) { return 'color-gray'; }
     return '';
   }
 
   /**
    * Rationale
    */
-
-  public rationaleModelIsShown: boolean = false;
-  public rationaleData: any;
-  public rationaleDone: (data: any) => void;
-
   public showRationaleModal(data: any, done?: (data: any) => void): void {
     this.rationaleModelIsShown = true;
     this.rationaleData = data;
@@ -247,13 +247,13 @@ export class AssetListComponent extends DataTableCommonManagerComponent implemen
   }
 
   public submitRationale(data): void {
-    if(typeof this.rationaleDone == 'function') {
+    if (typeof this.rationaleDone == 'function') {
       this.rationaleDone(data);
     }
     this.hideRationaleModal();
   }
 
-  //Virtual method to call inside the View to update the activity log.
-  public getAsset(): void {};
+  // Virtual method to call inside the View to update the activity log.
+  public getAsset(): void {}
 
 }

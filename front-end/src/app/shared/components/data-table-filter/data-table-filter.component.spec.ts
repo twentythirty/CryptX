@@ -1,7 +1,7 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 import { FormsModule } from '@angular/forms';
 import { MatProgressSpinnerModule, MatDatepickerModule, MatFormField } from '@angular/material';
-import { testingTranslateModule } from '../../../utils/testing';
+import { testingTranslateModule } from '../../../testing/utils';
 
 import { DataTableFilterComponent } from './data-table-filter.component';
 import { FilterPipe } from '../../pipes/filter.pipe';

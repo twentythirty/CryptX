@@ -1,5 +1,5 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
-import { testingTranslateModule } from '../../../../utils/testing';
+import { testingTranslateModule } from '../../../../testing/utils';
 
 import { StatusCellComponent } from './status-cell.component';
 

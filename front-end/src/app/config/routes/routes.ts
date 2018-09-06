@@ -3,7 +3,7 @@ import { RouterModule, Routes, CanActivate } from '@angular/router';
 
 import { AuthGuard } from './route-auth.guard';
 import { PermissionGuard } from './route-permission.guard';
-import { PendingChangesGuard } from './route-pending-changes.guard'
+import { PendingChangesGuard } from './route-pending-changes.guard';
 
 import { LoginComponent } from '../../modules/auth/login/login.component';
 import { PasswordResetComponent } from '../../modules/auth/password-reset/password-reset.component';
@@ -30,20 +30,20 @@ import { InstrumentInfoComponent } from '../../modules/instruments/instrument-in
 import { LiquidityListComponent } from '../../modules/liquidity/liquidity-list/liquidity-list.component';
 import { LiquidityCreateComponent } from '../../modules/liquidity/liquidity-create/liquidity-create.component';
 import { LiquidityInfoComponent } from '../../modules/liquidity/liquidity-info/liquidity-info.component';
-import { DepositListComponent } from "../../modules/deposit/deposit-list/deposit-list.component";
-import { DepositInfoComponent } from "../../modules/deposit/deposit-info/deposit-info.component";
+import { DepositListComponent } from '../../modules/deposit/deposit-list/deposit-list.component';
+import { DepositInfoComponent } from '../../modules/deposit/deposit-info/deposit-info.component';
 import { OrdersListComponent } from '../../modules/orders/orders-list/orders-list.component';
-import { ExecutionOrdersComponent } from "../../modules/investment/execution-orders/execution-orders.component";
-import { RecipeRunListComponent } from "../../modules/recipe-run/recipe-run-list/recipe-run-list.component";
-import { ExecutionOrderListComponent } from "../../modules/execution-orders/execution-order-list/execution-order-list.component";
-import { TransfersListComponent } from "../../modules/cold-storage-transfers/transfers-list/transfers-list.component";
-import { AddAccountComponent } from "../../modules/cold-storage-accounts/add-account/add-account.component";
-import { AccountsListComponent } from "../../modules/cold-storage-accounts/accounts-list/accounts-list.component";
+import { ExecutionOrdersComponent } from '../../modules/investment/execution-orders/execution-orders.component';
+import { RecipeRunListComponent } from '../../modules/recipe-run/recipe-run-list/recipe-run-list.component';
+import { ExecutionOrderListComponent } from '../../modules/execution-orders/execution-order-list/execution-order-list.component';
+import { TransfersListComponent } from '../../modules/cold-storage-transfers/transfers-list/transfers-list.component';
+import { AddAccountComponent } from '../../modules/cold-storage-accounts/add-account/add-account.component';
+import { AccountsListComponent } from '../../modules/cold-storage-accounts/accounts-list/accounts-list.component';
 import { CustodiansListComponent } from '../../modules/cold-storage-custodians/custodians-list/custodians-list.component';
 import { ColdStorageAccountStorageFeeListComponent } from '../../modules/cold-storage-account-storage-fee/cold-storage-account-storage-fee-list/cold-storage-account-storage-fee-list.component';
 import { CustodiansAddComponent } from '../../modules/cold-storage-custodians/custodians-add/custodians-add.component';
 
-const routes: Routes = [
+export const routes: Routes = [
   { path: 'login', component: LoginComponent },
   { path: 'password_reset', component: PasswordResetComponent },
   { path: 'invitation', component: AcceptInviteComponent },
@@ -187,7 +187,7 @@ const routes: Routes = [
     component: TransfersListComponent,
     canActivate: [AuthGuard],
   },
-  
+
   {
     path: 'cold_storage/accounts',
     component: AccountsListComponent,

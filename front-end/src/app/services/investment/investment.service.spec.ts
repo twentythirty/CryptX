@@ -1,6 +1,6 @@
 import { TestBed, inject } from '@angular/core/testing';
 import { HttpClientModule } from '@angular/common/http';
-import { testingTranslateModule } from '../../utils/testing';
+import { testingTranslateModule } from '../../testing/utils';
 
 import { InvestmentService } from './investment.service';
 

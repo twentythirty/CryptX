@@ -1,5 +1,5 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
-import { extraTestingModules, fakeAsyncResponse } from '../../../utils/testing';
+import { extraTestingModules, fakeAsyncResponse } from '../../../testing/utils';
 
 import { ColdStorageAccountsModule } from '../cold-storage-accounts.module';
 import { AddAccountComponent } from './add-account.component';
@@ -26,28 +26,19 @@ const AssetServiceStub = {
       assets: [
         {
           id: 2,
-          symbol: "BTC",
-          is_cryptocurrency: "assets.is_cryptocurrency.yes",
-          long_name: "Bitcoin",
-          is_base: "assets.is_base.yes",
-          is_deposit: "assets.is_deposit.no",
-          capitalization: "118312061603",
-          nvt_ratio: "30.4819604800685651",
-          market_share: "53.399284579574",
-          capitalization_updated: "2018-08-30T13:49:51.000Z",
-          status: "assets.status.400"
+          symbol: 'BTC',
+          is_cryptocurrency: 'assets.is_cryptocurrency.yes',
+          long_name: 'Bitcoin',
+          is_base: 'assets.is_base.yes',
+          is_deposit: 'assets.is_deposit.no',
+          capitalization: '118312061603',
+          nvt_ratio: '30.4819604800685651',
+          market_share: '53.399284579574',
+          capitalization_updated: '2018-08-30T13:49:51.000Z',
+          status: 'assets.status.400'
         },
       ],
-      footer: [
-        {
-          name: "is_base",
-          value: "2",
-          template: "assets.footer.is_base",
-          args: {
-            is_base: "2"
-          }
-        }
-      ],
+      footer: [],
       count: 1
     });
   }
@@ -60,7 +51,7 @@ const ColdStorageServiceStub = {
       custodians: [
         {
           id: 1,
-          name: "Coinbase Custody"
+          name: 'Coinbase Custody'
         }
       ],
       footer: [],

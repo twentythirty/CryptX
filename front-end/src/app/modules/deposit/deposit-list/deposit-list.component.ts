@@ -1,14 +1,14 @@
 import { Component, OnInit } from '@angular/core';
-import { ActivatedRoute, Router } from "@angular/router";
+import { ActivatedRoute, Router } from '@angular/router';
 import { finalize } from 'rxjs/operators';
 
-import { DataTableCommonManagerComponent } from "../../../shared/components/data-table-common-manager/data-table-common-manager.component";
-import { TableDataSource, TableDataColumn } from "../../../shared/components/data-table/data-table.component";
-import { StatusCellDataColumn, PercentCellDataColumn, NumberCellDataColumn } from "../../../shared/components/data-table-cells";
-import { StatusClass } from "../../../shared/models/common";
-import { Deposit } from "../../../shared/models/deposit";
+import { DataTableCommonManagerComponent } from '../../../shared/components/data-table-common-manager/data-table-common-manager.component';
+import { TableDataSource, TableDataColumn } from '../../../shared/components/data-table/data-table.component';
+import { StatusCellDataColumn, PercentCellDataColumn, NumberCellDataColumn } from '../../../shared/components/data-table-cells';
+import { StatusClass } from '../../../shared/models/common';
+import { Deposit } from '../../../shared/models/deposit';
 
-import { DepositService } from "../../../services/deposit/deposit.service";
+import { DepositService } from '../../../services/deposit/deposit.service';
 
 @Component({
   selector: 'app-deposit-list',
@@ -49,7 +49,7 @@ export class DepositListComponent extends DataTableCommonManagerComponent implem
     public route: ActivatedRoute,
     protected depositService: DepositService,
     public router: Router,
-  ) { 
+  ) {
     super(route, router);
   }
 
@@ -69,7 +69,7 @@ export class DepositListComponent extends DataTableCommonManagerComponent implem
         this.count = res.count || res.recipe_deposits.length;
         this.getFilterLOV();
       }
-    )
+    );
   }
 
   getFilterLOV(): void {
@@ -77,9 +77,9 @@ export class DepositListComponent extends DataTableCommonManagerComponent implem
       col => col.filter && (col.filter.type == 'text' || col.filter.type == 'boolean')
     ).map(
       col => {
-        col.filter.rowData$ = this.depositService.getHeaderLOV(col.column)
+        col.filter.rowData$ = this.depositService.getHeaderLOV(col.column);
       }
-    )
+    );
   }
 
   public openRow(deposit: Deposit): void {

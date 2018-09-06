@@ -56,14 +56,14 @@ export class PasswordResetComponent implements OnInit {
       this.token.isValid = true;
     }, error => {
       this.token.isValid = false;
-      if(error.error) {
+      if (error.error) {
         this.status = error.error.error;
       }
     });
   }
 
   changePassword() {
-    if (this.resetForm.valid){
+    if (this.resetForm.valid) {
       if (!this.passwordsMatch()) {
         this.status = 'Passwords doesn\'t match';
         return false;
@@ -75,7 +75,7 @@ export class PasswordResetComponent implements OnInit {
           this.router.navigate(['dashboard']);
         },
         error => {
-          if(error.error) {
+          if (error.error) {
             this.status = error.error.error;
           }
         }

@@ -1,5 +1,5 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
-import { extraTestingModules, fakeAsyncResponse } from '../../../utils/testing';
+import { extraTestingModules, fakeAsyncResponse } from '../../../testing/utils';
 
 import { ColdStorageAccountStorageFeeModule } from '../cold-storage-account-storage-fee.module';
 import { ColdStorageAccountStorageFeeListComponent } from './cold-storage-account-storage-fee-list.component';

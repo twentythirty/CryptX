@@ -1,5 +1,5 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
-import { extraTestingModules } from '../../../utils/testing';
+import { extraTestingModules } from '../../../testing/utils';
 
 import { ButtonBackComponent } from './button-back.component';
 

@@ -1,8 +1,9 @@
 import { Component, OnInit, Output, EventEmitter } from '@angular/core';
-import { FormGroup, FormControl, FormBuilder, Validators } from "@angular/forms";
-import { ModelConstantsService } from "../../../services/model-constants/model-constants.service";
-import { InvestmentService } from "../../../services/investment/investment.service";
-import { Router } from "@angular/router";
+import { FormGroup, FormControl, FormBuilder, Validators } from '@angular/forms';
+import { Router } from '@angular/router';
+
+import { ModelConstantsService } from '../../../services/model-constants/model-constants.service';
+import { InvestmentService } from '../../../services/investment/investment.service';
 
 @Component({
   selector: 'app-investment-new',
@@ -18,7 +19,7 @@ export class InvestmentNewComponent implements OnInit {
   portfolio = false;
   next_step = false;
 
-  group_name = 'STRATEGY_TYPES'
+  group_name = 'STRATEGY_TYPES';
   strategies = {};
   amount: {
     strategy_type: number,
@@ -26,7 +27,7 @@ export class InvestmentNewComponent implements OnInit {
     deposit_usd: number,
     /*deposit_btc: number,
     deposit_eth: number*/
-  }
+  };
 
   runForm: FormGroup = new FormGroup({
     deposit_usd: new FormControl('', [Validators.required]),
@@ -38,18 +39,18 @@ export class InvestmentNewComponent implements OnInit {
     private modelConstantService: ModelConstantsService,
     private investmentService: InvestmentService,
     private router: Router,
-  ) { 
+  ) {
     this.amount = {
       strategy_type: null,
       is_simulated: null,
       deposit_usd: null,
       /*deposit_btc: null,
       deposit_eth: null*/
-    }
+    };
   }
 
   ngOnInit() {
-    this.strategies = Object.entries(this.modelConstantService.getGroup(this.group_name))
+    this.strategies = Object.entries(this.modelConstantService.getGroup(this.group_name));
   }
 
   onChangeMode(value) {
@@ -65,7 +66,7 @@ export class InvestmentNewComponent implements OnInit {
   }
 
   isValid() {
-    if(this.mode && this.portfolio) {
+    if (this.mode && this.portfolio) {
       this.next_step = true;
     }
   }
@@ -78,7 +79,7 @@ export class InvestmentNewComponent implements OnInit {
             this.onClose();
             this.onComplete.emit();
             this.router.navigate(['/run/investment', data.investment_run.id]);
-          } 
+          }
         }, error => {
           console.log('Error', error);
         }, () => {

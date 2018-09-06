@@ -1,12 +1,12 @@
 import { Component, OnInit } from '@angular/core';
-import { FormGroup, FormControl, Validators } from "@angular/forms";
-import { Router } from "@angular/router";
+import { FormGroup, FormControl, Validators } from '@angular/forms';
+import { Router } from '@angular/router';
 import { finalize } from 'rxjs/operators';
 import * as _ from 'lodash';
 
-import { ModelConstantsService } from "../../../services/model-constants/model-constants.service";
-import { AssetService } from "../../../services/asset/asset.service";
-import { ColdStorageService } from "../../../services/cold-storage/cold-storage.service";
+import { ModelConstantsService } from '../../../services/model-constants/model-constants.service';
+import { AssetService } from '../../../services/asset/asset.service';
+import { ColdStorageService } from '../../../services/cold-storage/cold-storage.service';
 import { EntitiesFilter } from '../../../shared/models/api/entitiesFilter';
 
 @Component({
@@ -17,8 +17,8 @@ import { EntitiesFilter } from '../../../shared/models/api/entitiesFilter';
 export class AddAccountComponent implements OnInit {
 
   strategies: Array<Object> = [];
-  assets: Array<Object> = []
-  custodians:Array<Object> = [];
+  assets: Array<Object> = [];
+  custodians: Array<Object> = [];
 
   buttonLoading: boolean = false;
 
@@ -48,21 +48,21 @@ export class AddAccountComponent implements OnInit {
   }
 
   getStrategies() {
-    let group_name = 'STRATEGY_TYPES';
+    const group_name = 'STRATEGY_TYPES';
 
     Object.entries(this.modelConstantService.getGroup(group_name)).map((item, index) => {
       this.strategies[index] = {
         id: item[1],
         value: item[0]
-      }
+      };
       this.strategiesLoading = false;
     });
   }
 
 
-  getAssets(){
-    let requestData = new EntitiesFilter;
-    requestData.filter = {is_cryptocurrency: "assets.is_cryptocurrency.yes"};
+  getAssets() {
+    const requestData = new EntitiesFilter;
+    requestData.filter = {is_cryptocurrency: 'assets.is_cryptocurrency.yes'};
 
     this.assetService.getAllAssetsDetailed(requestData).subscribe(res => {
       this.assetsLoading = false;
@@ -91,7 +91,7 @@ export class AddAccountComponent implements OnInit {
 
   add() {
     const request = _.mapValues(this.form.value, val => {
-      if (val === null){
+      if (val === null) {
         return val;
       } else {
         return typeof val === 'object' ? val.id : val;

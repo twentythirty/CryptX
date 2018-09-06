@@ -2,7 +2,7 @@ import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { PageHeadingComponent } from './page-heading.component';
 import { ButtonBackComponent } from '../button-back/button-back.component';
-import { extraTestingModules } from '../../../utils/testing';
+import { extraTestingModules } from '../../../testing/utils';
 
 describe('PageHeadingComponent', () => {
   let component: PageHeadingComponent;

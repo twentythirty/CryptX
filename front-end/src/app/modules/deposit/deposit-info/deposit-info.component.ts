@@ -1,16 +1,22 @@
 import { Component, OnInit } from '@angular/core';
-import { ActivatedRoute, Router, Params } from "@angular/router";
+import { ActivatedRoute, Router, Params } from '@angular/router';
 import { FormGroup, FormControl, Validators } from '@angular/forms';
-import { Observable } from "rxjs";
+import { Observable } from 'rxjs';
 import { filter } from 'rxjs/operators';
 import * as _ from 'lodash';
 
-import { DepositService, DepositResultData, DepositResponseData } from "../../../services/deposit/deposit.service";
-import { InvestmentService } from "../../../services/investment/investment.service";
-import { ActionCellDataColumn, DataCellAction, StatusCellDataColumn, PercentCellDataColumn, NumberCellDataColumn } from "../../../shared/components/data-table-cells";
-import { TableDataSource, TableDataColumn } from "../../../shared/components/data-table/data-table.component";
-import { StatusClass } from "../../../shared/models/common";
-import { DepositStatus } from "../../../shared/models/deposit";
+import { DepositService, DepositResultData, DepositResponseData } from '../../../services/deposit/deposit.service';
+import { InvestmentService } from '../../../services/investment/investment.service';
+import {
+  ActionCellDataColumn,
+  DataCellAction,
+  StatusCellDataColumn,
+  PercentCellDataColumn,
+  NumberCellDataColumn
+} from '../../../shared/components/data-table-cells';
+import { TableDataSource, TableDataColumn } from '../../../shared/components/data-table/data-table.component';
+import { StatusClass } from '../../../shared/models/common';
+import { DepositStatus } from '../../../shared/models/deposit';
 
 
 @Component({
@@ -82,9 +88,9 @@ export class DepositInfoComponent implements OnInit {
     ).subscribe(
       (params: Params) => {
         this.depositId = params.depositId;
-        
+
         this.getTimelineData(this.depositId);
-        
+
         this.depositService.getDeposit(this.depositId).subscribe(
           (res: DepositResultData) => {
             this.depositDataSource.body = [res.recipe_deposit];
@@ -92,17 +98,17 @@ export class DepositInfoComponent implements OnInit {
             this.activityLog = res.action_logs;
             this.appendActionColumn();
           }
-        )
+        );
       }
-    )
+    );
   }
 
   onSetFilter(filterData): void {}
 
   appendActionColumn() {
-    if (!_.find(this.depositDataSource.header, col => col.column == 'action')){
+    if (!_.find(this.depositDataSource.header, col => col.column == 'action')) {
       if (this.depositStatus[0].status === 'deposits.status.150') {
-        this.depositDataSource.header.push({ column: 'action', nameKey: 'table.header.action' })
+        this.depositDataSource.header.push({ column: 'action', nameKey: 'table.header.action' });
         this.depositColumnsToShow.push(
           new ActionCellDataColumn({
             column: null,
@@ -134,11 +140,11 @@ export class DepositInfoComponent implements OnInit {
   }
 
   confirm() {
-    let obj = {
+    const obj = {
       amount: parseFloat(this.amount),
       deposit_management_fee: parseFloat(this.management_fee)
     };
-    
+
     if (this.depositForm.valid) {
       this.depositService.Submit(this.depositId, obj).subscribe(
         (res: DepositResponseData) => {
@@ -146,7 +152,7 @@ export class DepositInfoComponent implements OnInit {
             this.hideModal();
             this.showConfirm = true;
           } else {
-            console.log(res.deposit)
+            console.log(res.deposit);
           }
         },
         error => {
@@ -176,17 +182,18 @@ export class DepositInfoComponent implements OnInit {
   }
 
   send() {
-    let obj = {
+    const obj = {
       amount: parseFloat(this.amount),
       deposit_management_fee: parseFloat(this.management_fee)
-    }
+    };
+
     this.depositService.Approve(this.depositId, obj).subscribe(
       (data: DepositResponseData) => {
         if (data.success) {
           this.showConfirm = false;
           this.getDeposit();
         } else {
-          console.log(data.deposit)
+          console.log(data.deposit);
         }
       },
       error => {

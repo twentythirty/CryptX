@@ -1,11 +1,11 @@
 import { Component, OnInit } from '@angular/core';
+import { FormGroup, FormControl, Validators } from '@angular/forms';
+import { Router } from '@angular/router';
+import { MatSnackBar } from '@angular/material';
 
 import { AuthService } from '../../../services/auth/auth.service';
 import { User } from '../../../shared/models/user';
-import { FormGroup, FormControl, Validators } from "@angular/forms";
-import { Router } from "@angular/router";
 
-import { MatSnackBar } from '@angular/material';
 
 class EditInfo extends User {
   old_password: string;
@@ -42,35 +42,36 @@ export class EditInfoComponent implements OnInit {
 
   getMyInfo() {
     this.authService.checkAuth().subscribe(response => {
-      let user = Object.assign({}, response[0].user);
+      const user = Object.assign({}, response[0].user);
       this.user_info = user;
       this.doneLoading = true;
     });
   }
 
   updateInfo() {
-   if (this.userForm.valid){
-    if (!this.passwordsMatch()) {
-      this.message = "New password was not repeated correctly";
-      return false;
-    }
-    this.authService.changeInfo(this.user_info).subscribe(response => {
-      this.status = true;
-      
-      let snackBar = this.snackBar.open('✓ SUCCESS!', '', {
-        panelClass: 'mat-snack-bar-success',
-        verticalPosition: 'bottom',
-        duration: 3000
-      });
-
-      this.router.navigate(['dashboard']);
-    }, error => {
-      if(error.error) {
-        this.message = error.error.error;
+    if (this.userForm.valid) {
+      if (!this.passwordsMatch()) {
+        this.message = 'New password was not repeated correctly';
+        return false;
       }
-    })
-    }else {
-      this.markAsTouched(this.userForm)
+
+      this.authService.changeInfo(this.user_info).subscribe(response => {
+        this.status = true;
+
+        const snackBar = this.snackBar.open('✓ SUCCESS!', '', {
+          panelClass: 'mat-snack-bar-success',
+          verticalPosition: 'bottom',
+          duration: 3000
+        });
+
+        this.router.navigate(['dashboard']);
+      }, error => {
+        if (error.error) {
+          this.message = error.error.error;
+        }
+      });
+    } else {
+      this.markAsTouched(this.userForm);
     }
   }
 
@@ -85,7 +86,7 @@ export class EditInfoComponent implements OnInit {
     });
   }
 
-  passwordsMatch () {
+  passwordsMatch() {
     return this.user_info.new_password === this.user_info.repeat_password;
   }
 }

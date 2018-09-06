@@ -21,7 +21,7 @@
     ></app-input-item>
 
     <a (click)="showPassReset()" class="forgot-pass">{{ 'auth.forgot_password' | translate }}</a>
-    <p *ngIf= !loading>
+    <p *ngIf="!loading">
       {{ status }}
     </p>
 

@@ -83,6 +83,7 @@ export class UsersInfoComponent implements OnInit {
         };
         obj.id = role.id;
         obj.name = role.name;
+
         this.userRoles.forEach(userrole => {
           if (obj.id === userrole.id) {
             obj.is_active = true;
@@ -90,6 +91,7 @@ export class UsersInfoComponent implements OnInit {
         });
         this.rolelist.push(obj);
       });
+
       this.add();
     });
   }

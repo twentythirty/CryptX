@@ -1,5 +1,5 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
-import { testingTranslateModule, extraTestingModules } from '../../../utils/testing';
+import { testingTranslateModule, extraTestingModules } from '../../../testing/utils';
 
 import { DataTableComponent, TableDataColumn } from './data-table.component';
 import { SharedModule } from '../../shared.module';

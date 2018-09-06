@@ -80,7 +80,7 @@ export class DashboardComponent extends DataTableCommonManagerComponent implemen
       col => {
         col.filter.rowData$ = this.investmentService.getAllInvestmentsHeaderLOV(col.column);
       }
-    )
+    );
   }
 
   openRow(investment: any): void {

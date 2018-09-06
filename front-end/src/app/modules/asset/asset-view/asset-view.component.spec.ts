@@ -1,7 +1,7 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 import { ActivatedRoute } from '@angular/router';
 import { of } from 'rxjs/observable/of';
-import { extraTestingModules, fakeAsyncResponse } from '../../../utils/testing';
+import { extraTestingModules, fakeAsyncResponse } from '../../../testing/utils';
 
 import { AssetModule } from '../asset.module';
 import { AssetViewComponent } from './asset-view.component';
@@ -28,23 +28,23 @@ const AssetServiceStub = {
       }),
       history: [
         {
-          asset_id: 1978,
+          asset_id: assetId,
           timestamp: '2018-08-24T06:42:42.342Z',
           user: {
             id: 7,
-            name: 'Anatolij Grigorjev',
-            email: 'anatolij@mediapark.com'
+            name: 'Test User',
+            email: 'test@domain.com'
           },
           comment: 'me likey linkey',
           type: 'assets.status.400'
         },
         {
-          asset_id: 1978,
+          asset_id: assetId,
           timestamp: '2018-08-24T06:42:29.075Z',
           user: {
             id: 7,
-            name: 'Anatolij Grigorjev',
-            email: 'anatolij@mediapark.com'
+            name: 'Test User',
+            email: 'test@domain.com'
           },
           comment: 'me no likey linkey',
           type: 'assets.status.401'
@@ -93,6 +93,10 @@ describe('AssetViewComponent', () => {
       expect(component.assetsDataSource.body).toEqual([res.asset]);
       expect(component.count).toEqual(component.count);
     });
+  });
+
+  it('should show activity log', () => {
+    expect(fixture.nativeElement.querySelector('app-action-log')).not.toBe(undefined);
   });
 
 });

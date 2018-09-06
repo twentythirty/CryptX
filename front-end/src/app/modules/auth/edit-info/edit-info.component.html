@@ -1,33 +1,42 @@
-<form [formGroup]="userForm" *ngIf="doneLoading" (ngSubmit)="updateInfo()">
-<div class="split-content horizontal">
-  <app-content-block [heading]="'auth.user_information' | translate">
-        <app-input-item type="password" class="form-item" 
-            [label]="'auth.old_password' | translate"
-            [placeholder]="'auth.enter_here' | translate"
-            [formGroup]="userForm"
-            formControlName="OldPassword"
-            name="old_password"
-            [(ngModel)]="user_info.old_password">
-        </app-input-item>
-        <app-input-item type="password" class="form-item" 
-            [label]="'auth.new_password' | translate"
-            [placeholder]="'auth.enter_here' | translate"
-            [formGroup]="userForm"
-            formControlName="NewPassword"
-            name="new_password"
-            [(ngModel)]="user_info.new_password">
-        </app-input-item>
-        <app-input-item type="password" class="form-item" 
-            [label]="'auth.repeat_password' | translate"
-            [placeholder]="'auth.enter_here' | translate"
-            [formGroup]="userForm"
-            formControlName="RepeatPassword"
-            name="repeat_password"
-            [(ngModel)]="user_info.repeat_password">
-        </app-input-item>
-        <p>{{message}}</p>
-  </app-content-block>
-</div>
+<form *ngIf="doneLoading" [formGroup]="userForm" (ngSubmit)="updateInfo()">
+  <div class="split-content horizontal">
+    <app-content-block [heading]="'auth.user_information' | translate">
+      <app-input-item
+        type="password"
+        class="form-item" 
+        [label]="'auth.old_password' | translate"
+        [placeholder]="'auth.enter_here' | translate"
+        [formGroup]="userForm"
+        formControlName="OldPassword"
+        name="old_password"
+        [(ngModel)]="user_info.old_password"
+      ></app-input-item>
+
+      <app-input-item
+        type="password"
+        class="form-item" 
+        [label]="'auth.new_password' | translate"
+        [placeholder]="'auth.enter_here' | translate"
+        [formGroup]="userForm"
+        formControlName="NewPassword"
+        name="new_password"
+        [(ngModel)]="user_info.new_password"
+      ></app-input-item>
+
+      <app-input-item
+        type="password"
+        class="form-item" 
+        [label]="'auth.repeat_password' | translate"
+        [placeholder]="'auth.enter_here' | translate"
+        [formGroup]="userForm"
+        formControlName="RepeatPassword"
+        name="repeat_password"
+        [(ngModel)]="user_info.repeat_password"
+      ></app-input-item>
+
+      <p>{{ message }}</p>
+    </app-content-block>
+  </div>
 
   <app-form-action-bar>
     <div>

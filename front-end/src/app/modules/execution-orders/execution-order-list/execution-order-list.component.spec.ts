@@ -1,5 +1,5 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
-import { extraTestingModules, fakeAsyncResponse } from '../../../utils/testing';
+import { extraTestingModules, fakeAsyncResponse } from '../../../testing/utils';
 
 import { ExecutionOrdersModule } from '../execution-orders.module';
 import { ExecutionOrderListComponent } from './execution-order-list.component';
