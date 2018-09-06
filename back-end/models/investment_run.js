@@ -35,6 +35,7 @@ module.exports = (sequelize, DataTypes) => {
       as: "user_created"
     });
     InvestmentRun.belongsTo(models.InvestmentRunAssetGroup);
+    InvestmentRun.hasMany(models.InvestmentAmount);
   };
 
   InvestmentRun.prototype.toWeb = function() {

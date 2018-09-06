@@ -39,35 +39,61 @@ Given('there are no incomplete non simulated investment runs', function() {
     
 });
 
-Given(/there is a (.*) (.*) Investment Run created by an Investment Manager/, function(simulated, type) {
-    const { InvestmentRun } = require('../../../models');
+Given(/there is a (.*) (.*) Investment Run created by an Investment Manager/, async function(simulated, type) {
+    const { Asset, InvestmentRun, InvestmentAmount, sequelize } = require('../../../models');
 
-    return InvestmentRun.findOne({
+    let investment_run = await InvestmentRun.findOne({
         where: { 
             user_created_id: World.users.investment_manager.id,
             is_simulated: (simulated === 'simulated'),
             strategy_type: STRATEGY_TYPES[type]
         },
         raw: true
-    }).then(investment_run => {
-        
-        if(investment_run) {
-            this.current_investment_run = investment_run;
-            return;
-        }
+    });
 
-        return InvestmentRun.create({
-            strategy_type: STRATEGY_TYPES[type],
-            is_simulated: (simulated === 'simulated'),
-            deposit_usd: _.random(1000, 50000, false),
-            user_created_id: World.users.investment_manager.id,
-            started_timestamp: new Date(),
-            updated_timestamp: new Date()
-        }).then(investment_run => {
-            this.current_investment_run = investment_run.toJSON();
-            return;
+    if(investment_run) {
+        this.current_investment_run = investment_run;
+        this.current_investment_run.amounts = await InvestmentAmount.findAll({
+            where: { investment_run_id: investment_run.id }
         });
+    }
 
+    const assets = await Asset.findAll({
+        where: { symbol: ['USD', 'BTC', 'USD'] }
+    });
+
+    const new_investment_run = {
+        strategy_type: STRATEGY_TYPES[type],
+        is_simulated: (simulated === 'simulated'),
+        deposit_usd: _.random(1000, 50000, false),
+        user_created_id: World.users.investment_manager.id,
+        started_timestamp: new Date(),
+        updated_timestamp: new Date()
+    };
+
+    const new_amounts = assets.map(asset => {
+        return {
+            amount: _.random(1000, 50000, false),
+            asset_id: asset.id
+        }
+    });
+
+    return sequelize.transaction(transaction => {
+
+        return InvestmentRun.create(new_investment_run, { transaction }).then(investment_run => {
+
+            this.current_investment_run = investment_run.toJSON();
+
+            return InvestmentAmount.bulkCreate(new_amounts.map(amount => {
+
+                return Object.assign(amount, { investment_run_id: investment_run.id });
+
+            }), { transaction, returning: true }).then(amounts => {
+
+                this.current_investment_run.amounts = amounts.map(amount => amount.toJSON());
+
+            });
+        });
     });
 });
 
@@ -124,22 +150,34 @@ When('I get the Investment Run by id', function() {
 
 Then('the Investment Run information is saved to the database', function() {
 
-    const { InvestmentRun } = require('../../../models');
+    const { InvestmentRun, InvestmentAmount } = require('../../../models');
 
-    return InvestmentRun.findById(this.current_investment_run.id, { raw: true }).then(investment_run => {
+    return InvestmentRun.findById(this.current_investment_run.id, {
+        include: InvestmentAmount
+    }).then(investment_run => {
 
         expect(investment_run).to.be.not.null;
 
         //Compare the object from the database with one sent to the API
         expect(investment_run.strategy_type).to.equal(this.current_investment_run.strategy_type);
-        expect(parseInt(investment_run.deposit_usd)).to.equal(this.current_investment_run.deposit_usd);
+
+        for(let amount of investment_run.InvestmentAmounts) {
+
+            const found_amount = this.current_investment_run.amounts.find(a => a.asset_id === amount.asset_id);
+
+            expect(parseFloat(amount.amount)).to.equal(parseFloat(found_amount.amount));
+            expect(amount.asset_id).text.equal(found_amount.asset_id);
+
+        };
+
         expect(investment_run.is_simulated).to.equal(this.current_investment_run.is_simulated);
         
         expect(investment_run.started_timestamp).to.be.a('date');
         expect(investment_run.updated_timestamp).to.be.a('date');
         expect(investment_run.completed_timestamp).to.be.null;
 
-        this.current_investment_run = investment_run;
+        this.current_investment_run = investment_run.toJSON();
+        this.current_investment_run.amounts = investment_run.InvestmentAmounts.map(a => a.toJSON());
 
     });
 
