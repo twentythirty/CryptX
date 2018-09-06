@@ -57,6 +57,130 @@ const getInvestmentRun = async function (req, res) {
 };
 module.exports.getInvestmentRun = getInvestmentRun;
 
+const getInvestmentRunWithAssetMix = async function (req, res) {
+
+    //MOCK DATA
+    const lazy_mock_response = {
+      "investment_run": {
+          "id": parseInt(req.params.investment_id),
+          "started_timestamp": 1533690306000,
+          "updated_timestamp": 1533690306000,
+          "completed_timestamp": null,
+          "strategy_type": "investment.strategy.101",
+          "is_simulated": "investment.is_simulated.yes",
+          "user_created": "Mocky Doky",
+          "user_created_id": 1,
+          "status": "investment.status.303",
+          "deposit_usd": "123"
+      },
+      "asset_mix": [
+          {
+              "id": 8,
+              "symbol": "FTC",
+              "long_name": "Feathercoin",
+              "capitalization": "11144771",
+              "market_share": "0.004947149171421054"
+          },
+          {
+              "id": 22,
+              "symbol": "XPM",
+              "long_name": "Primecoin",
+              "capitalization": "21191206",
+              "market_share": "0.009406748438735337"
+          },
+          {
+              "id": 54,
+              "symbol": "MOON",
+              "long_name": "Mooncoin",
+              "capitalization": "7704806",
+              "market_share": "0.0034201532376806993"
+          },
+          {
+              "id": 99,
+              "symbol": "MONA",
+              "long_name": "MonaCoin",
+              "capitalization": "96173454",
+              "market_share": "0.04269126958901182"
+          }
+      ],
+      "footer": [
+          {
+              "name": "is_base",
+              "value": "0",
+              "template": "assets.footer.is_base",
+              "args": {
+                  "is_base": "0"
+              }
+          },
+          {
+              "name": "is_deposit",
+              "value": "0",
+              "template": "assets.footer.is_deposit",
+              "args": {
+                  "is_deposit": "0"
+              }
+          },
+          {
+              "name": "status",
+              "value": "0",
+              "template": "assets.footer.status",
+              "args": {
+                  "status": "0"
+              }
+          },
+          {
+              "name": "symbol",
+              "value": "4",
+              "template": "assets.footer.symbol",
+              "args": {
+                  "symbol": "4"
+              }
+          },
+          {
+              "name": "is_cryptocurrency",
+              "value": "4",
+              "template": "assets.footer.is_cryptocurrency",
+              "args": {
+                  "is_cryptocurrency": "4"
+              }
+          },
+          {
+              "name": "capitalization",
+              "value": "136214237",
+              "template": "assets.footer.capitalization",
+              "args": {
+                  "capitalization": "136214237"
+              }
+          }
+      ],
+      "count": 4
+  };
+
+  return ReS(res, lazy_mock_response);
+
+  const { seq_query, sql_where } = req;
+
+  let investment_run_id = req.params.investment_id;
+  let [ err, result ] = await to(investmentService.getInvestmentRunWithAssetMix(investment_run_id, seq_query, sql_where));
+
+  if (err) return ReE(res, err.message, 422);
+  if (!result) return ReE(res, `Investment run not found with id: ${investment_run_id}`, 422);
+
+  let [ investment_run, asset_mix_data, footer ] = result;
+
+  const { data: asset_mix, total: count } = asset_mix_data;
+
+  investment_run = investment_run.toWeb();
+
+  return ReS(res, {
+    investment_run,
+    asset_mix,
+    footer,
+    count
+  });
+};
+module.exports.getInvestmentRunWithAssetMix = getInvestmentRunWithAssetMix;
+
 const getInvestmentStats = async function(req, res) {
 
   let [err, investment_run] = await to(investmentService.findInvestmentRunFromAssociations(req.body));

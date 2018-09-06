@@ -41,6 +41,7 @@ Given('there are no incomplete non simulated investment runs', function() {
 
 Given(/there is a (.*) (.*) Investment Run created by an Investment Manager/, async function(simulated, type) {
     const { Asset, InvestmentRun, InvestmentAmount, sequelize } = require('../../../models');
+    const { Op } = sequelize;
 
     let investment_run = await InvestmentRun.findOne({
         where: { 
@@ -59,7 +60,9 @@ Given(/there is a (.*) (.*) Investment Run created by an Investment Manager/, as
     }
 
     const assets = await Asset.findAll({
-        where: { symbol: ['USD', 'BTC', 'USD'] }
+        where: { 
+            [Op.or]: [{ is_deposit: true }, { is_base: true }]
+        }   
     });
 
     const new_investment_run = {

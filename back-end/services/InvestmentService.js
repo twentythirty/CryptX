@@ -12,6 +12,58 @@ const sequelize = require('../models').sequelize;
 const RecipeOrder = require('../models').RecipeOrder;
 const RecipeOrderGroup = require('../models').RecipeOrderGroup;
 const RecipeRunDeposit = require('../models').RecipeRunDeposit;
+const InvestmentRunAssetGroup = require('../models').InvestmentRunAssetGroup;
+const GroupAsset = require('../models').GroupAsset;
+
+const AdminViewService = require('./AdminViewsService');
+
+const getInvestmentRunWithAssetMix = async (investment_run_id, seq_query = {}, sql_where = '') => {
+  
+  let [ err, investment_run ] = await to(AdminViewService.fetchInvestmentRunView(investment_run_id));
+
+  if(err) TE(err.message);
+  if(!investment_run) return null;
+
+  let group_assets = [];
+  [ err, group_assets ] = await to(InvestmentRun.findAll({
+    where: { id: investment_run_id },
+    include: {
+      model: InvestmentRunAssetGroup,
+      include: GroupAsset,
+    },
+    raw: true
+  }));
+
+  if(err) console.log(err);
+
+  const asset_ids = group_assets.map(asset => asset['InvestmentRunAssetGroup.GroupAssets.asset_id']);
+
+  //Allow only to filter out assets that belong to the investment run.
+  seq_query.where = { 
+    [Op.and]: [
+      { id: asset_ids },
+      seq_query.where
+    ] 
+  };
+  
+  const final_seq_query = _.assign({
+    attributes: ['id', 'symbol', 'long_name', 'capitalization', 'market_share'],
+    raw: true
+  }, seq_query);
+
+  const final_sql_where = `id IN(${asset_ids.join(', ')}) ${ sql_where !== '' ? `AND ${sql_where}` : '' }`;
+  
+  let result = [];
+  [ err, result ] = await to(Promise.all([
+    AdminViewService.fetchAssetsViewDataWithCount(final_seq_query),
+    AdminViewService.fetchAssetsViewFooter(final_sql_where)
+  ]));
+
+  if(err) TE(err.message);
+
+  return [ investment_run, ...result ];
+};
+module.exports.getInvestmentRunWithAssetMix = getInvestmentRunWithAssetMix;
 
 const createInvestmentRun = async function (user_id, strategy_type, is_simulated = true, deposit_amounts) {
   // check for valid strategy type
