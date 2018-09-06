@@ -1014,6 +1014,43 @@
             "bearer": []
           }
         ]
+      },
+      "post": {
+        "tags": [
+          "investment"
+        ],
+        "summary": "Get insvestment run togheter with the asset mix",
+        "description": "Get insvestment run togheter with the asset mix. Asset mix can be filtered out",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/parameters/investment_id"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "description": "The filter definition to perform on the data set. If absent will assume empty filter and return all data",
+            "required": false,
+            "schema": {
+              "$ref": "#/definitions/EntitiesFilter"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "$ref": "#/definitions/InvestmentRunAssetMixResponse"
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
       }
     },
     "/investments/portfolio_stats": {
@@ -6601,6 +6638,12 @@
         },
         "investment_run": {
           "$ref": "#/definitions/InvestmentRunView"
+        },
+        "asset_mix": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/AssetMixItem"
+          }
         }
       }
     },
@@ -6614,6 +6657,58 @@
         },
         "investment_run": {
           "$ref": "#/definitions/InvestmentRun"
+        }
+      }
+    },
+    "InvestmentRunAssetMixResponse": {
+      "description": "Single investment run information with asset mix",
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean",
+          "example": true
+        },
+        "investment_run": {
+          "$ref": "#/definitions/InvestmentRun"
+        },
+        "asset_mix": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/AssetMixItem"
+          }
+        },
+        "count": {
+          "type": "number",
+          "example": 1
+        },
+        "footer": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string",
+                "example": "property_name"
+              },
+              "value": {
+                "type": "number",
+                "example": 10
+              },
+              "template": {
+                "type": "string",
+                "example": "translation.key.property_name"
+              },
+              "args": {
+                "type": "object",
+                "properties": {
+                  "property_name": {
+                    "type": "number",
+                    "example": 10
+                  }
+                }
+              }
+            }
+          }
         }
       }
     },
@@ -6683,6 +6778,36 @@
         "deposit_usd": {
           "type": "number",
           "example": 11000
+        }
+      }
+    },
+    "AssetMixItem": {
+      "description": "Asset mix object which accompanies the investment run",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "number",
+          "example": 1
+        },
+        "symbol": {
+          "type": "string",
+          "example": "LTC"
+        },
+        "long_name": {
+          "type": "string",
+          "example": "Litecoin"
+        },
+        "capitalization": {
+          "type": "number",
+          "example": 578943737543349
+        },
+        "nvt_ratio": {
+          "type": "number",
+          "example": 69.69
+        },
+        "market_share": {
+          "type": "number",
+          "example": 54.65
         }
       }
     },

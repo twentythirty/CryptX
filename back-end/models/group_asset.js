@@ -10,10 +10,6 @@ module.exports = (sequelize, DataTypes) => {
         primaryKey: true,
         type: DataTypes.INTEGER
       },
-      created_timestamp: {
-        type: DataTypes.DECIMAL,
-        allowNull: false
-      },
       status: {
         type: DataTypes.SMALLINT
       }
