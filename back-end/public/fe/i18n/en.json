@@ -103,7 +103,8 @@
       "balance": "Balance",
       "balance_usd": "Balance USD",
       "balance_updated": "Balance updated",
-      "cold_storage_account_id": "Cold storage account id"
+      "cold_storage_account_id": "Cold storage account id",
+      "filled_quantity": "Filled quantity"
     },
     "filter": {
       "all": "All",
