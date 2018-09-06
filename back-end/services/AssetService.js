@@ -370,3 +370,16 @@ const fetchAssetStatusHistory = async (asset) => {
 }
 module.exports.fetchAssetStatusHistory = fetchAssetStatusHistory;
 
+const getDepositAssets = async () => {
+  
+  let [err, assets] = await to(Asset.findAll({
+    where: {
+      is_deposit: true
+    }
+  }));
+
+  if (err) TE(err.message);
+
+  return assets;
+};
+module.exports.getDepositAssets = getDepositAssets;

@@ -25,6 +25,7 @@ describe('InvestmentService testing:', () => {
   const ordersService = require('./../../services/OrdersService');
   const depositSerive = require('./../../services/DepositService');
   const InvestmentRun = require('./../../models').InvestmentRun;
+  const InvestmentAmount = require('./../../models').InvestmentAmount;
   const RecipeRun = require('./../../models').RecipeRun;
   const RecipeRunDetail = require('./../../models').RecipeRunDetail;
   const Asset = require('./../../models').Asset;
@@ -39,11 +40,31 @@ describe('InvestmentService testing:', () => {
   let RECIPE_STATUS = INVESTMENT_RUN_STATUSES.RecipeRun;
   let RECIPE_STATUS_CHANGE = RECIPE_RUN_STATUSES.Approved;
   let RECIPE_APPROVAL_COMMENT = 'Approving recipe';
+  let DEPOSIT_ASSET_SYMBOLS = ['USD', 'BTC', 'ETH'];
+  let DEPOSIT_AMOUNTS = [
+    {
+      symbol: 'USD',
+      amount: 1000
+    },
+    {
+      symbol: 'BTC',
+      amount: 1000
+    },
+    {
+      symbol: 'ETH',
+      amount: 1000
+    }
+  ];
 
   beforeEach(() => {
     sinon.stub(InvestmentRun, 'create').callsFake((data) => {
+      let investment_run = new InvestmentRun(data);
+
+      sinon.stub(investment_run, 'save').returns(investment_run);
+
       return Promise.resolve(data);
     })
+
     sinon.stub(InvestmentRun, 'findOne').returns(Promise.resolve());
     sinon.stub(InvestmentRun, 'count').callsFake(options => {
       return Promise.resolve(0);
@@ -107,6 +128,22 @@ describe('InvestmentService testing:', () => {
     sinon.stub(depositSerive, 'generateRecipeRunDeposits').callsFake(recipe => {
       return Promise.resolve([]);
     });
+
+    sinon.stub(assetService, 'getDepositAssets').callsFake(() => {
+      let assets = DEPOSIT_ASSET_SYMBOLS.map(symbol => {
+        return new Asset({
+          id: 1, 
+          symbol,
+          is_deposit: true
+        })
+      })
+
+      return Promise.resolve(assets);
+    });
+
+    sinon.stub(sequelize, 'transaction').callsFake(investment_create => {
+      return Promise.resolve(investment_create());
+    });
   });
 
   afterEach(() => {
@@ -121,6 +158,8 @@ describe('InvestmentService testing:', () => {
     RecipeRunDetail.create.restore();
     ordersService.generateApproveRecipeOrders.restore();
     depositSerive.generateRecipeRunDeposits.restore();
+    assetService.getDepositAssets.restore();
+    sequelize.transaction.restore();
   });
 
 
@@ -132,16 +171,18 @@ describe('InvestmentService testing:', () => {
 
     it('shall reject bad strategy types', () => {
       return chai.assert.isRejected(investmentService.createInvestmentRun(
-        USER_ID, -1, IS_SIMULATED
+        USER_ID, -1, IS_SIMULATED, DEPOSIT_AMOUNTS
       ));
     });
 
     it('shall call required DB model methods', () => {
       return investmentService.createInvestmentRun(
-        USER_ID, STRATEGY_TYPE, IS_SIMULATED
+        USER_ID, STRATEGY_TYPE, IS_SIMULATED, DEPOSIT_AMOUNTS
       ).then(investment_run => {
         chai.assert.isTrue(InvestmentRun.count.called);
         chai.assert.isTrue(InvestmentRun.create.called);
+        chai.assert.isTrue(sequelize.transaction.called);
+        chai.assert.isTrue(assetService.getDepositAssets.called);
       });
     });
 
@@ -154,18 +195,45 @@ describe('InvestmentService testing:', () => {
       });
 
       return chai.assert.isRejected(investmentService.createInvestmentRun(
-        USER_ID, STRATEGY_TYPE, false
+        USER_ID, STRATEGY_TYPE, false, DEPOSIT_AMOUNTS
       ));
     })
 
-    it('shall create new investment run if everything is good', () => {
+    it('shall reject investment run without any deposit amounts', () => {
+      return chai.assert.isRejected(investmentService.createInvestmentRun(
+        USER_ID, STRATEGY_TYPE, false, []
+      ));
+    });
+
+    it('shall reject investment run with invalid deposit assets', () => {
+
+      return chai.assert.isRejected(investmentService.createInvestmentRun(
+        USER_ID, STRATEGY_TYPE, false, [{
+          symbol: "DOGE",
+          amount: 10000
+        }]
+      ));
+    });
+
+    it('shall reject investment run with deposit less then 0', () => {
+
+      return chai.assert.isRejected(investmentService.createInvestmentRun(
+        USER_ID, STRATEGY_TYPE, false, [{
+          symbol: "USD",
+          amount: -1
+        }]
+      ));
+    });
+
+    it('shall create new investment run and its investment amounts if everything is good', () => {
       return investmentService.createInvestmentRun(
-        USER_ID, STRATEGY_TYPE, IS_SIMULATED
+        USER_ID, STRATEGY_TYPE, IS_SIMULATED, DEPOSIT_AMOUNTS
       ).then(investment_run => {
         chai.expect(investment_run.strategy_type).to.be.eq(STRATEGY_TYPE);
         chai.expect(investment_run.is_simulated).to.be.eq(IS_SIMULATED);
         chai.expect(investment_run.user_created_id).to.be.eq(USER_ID);
         chai.expect(investment_run.status).to.be.eq(INVESTMENT_RUN_STATUSES.Initiated);
+        chai.assert.isArray(investment_run.InvestmentAmounts);
       });
     });
   });

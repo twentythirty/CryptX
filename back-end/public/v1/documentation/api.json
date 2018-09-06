@@ -957,7 +957,7 @@
           "investment"
         ],
         "summary": "Start new investment run",
-        "description": "Start new investment run",
+        "description": "Start new investment run. Deposits are accepted in 3 currencies: USD, BTC, ETH. Investment run can be deposit of atleast one of those currencies or all three of them. All deposit amounts will be used during investment run.",
         "produces": [
           "application/json"
         ],
@@ -4650,7 +4650,7 @@
           "type": "string",
           "example": "DOGE"
         },
-        "cold_storage_account_id":{
+        "cold_storage_account_id": {
           "type": "number",
           "example": 45
         },
@@ -6566,9 +6566,25 @@
           "type": "boolean",
           "example": true
         },
-        "deposit_usd": {
-          "type": "number",
-          "example": 11000
+        "deposit_amounts": {
+          "type": "array",
+          "items": {
+            "type": "object"
+          },
+          "example": [
+            {
+              "symbol": "USD",
+              "amount": 10000.5
+            },
+            {
+              "symbol": "BTC",
+              "amount": 2
+            },
+            {
+              "symbol": "ETH",
+              "amount": 22.43
+            }
+          ]
         }
       }
     },

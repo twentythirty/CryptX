@@ -2,6 +2,7 @@
 
 const depositService = require('../services/DepositService');
 const InvestmentRun = require('../models').InvestmentRun;
+const InvestmentAmount = require('../models').InvestmentAmount;
 const RecipeRun = require('../models').RecipeRun;
 const RecipeRunDetail = require('../models').RecipeRunDetail;
 const Asset = require('../models').Asset;
@@ -12,13 +13,34 @@ const RecipeOrder = require('../models').RecipeOrder;
 const RecipeOrderGroup = require('../models').RecipeOrderGroup;
 const RecipeRunDeposit = require('../models').RecipeRunDeposit;
 
-const createInvestmentRun = async function (user_id, strategy_type, is_simulated = true, deposit_usd) {
+const createInvestmentRun = async function (user_id, strategy_type, is_simulated = true, deposit_amounts) {
   // check for valid strategy type
   if (!Object.values(STRATEGY_TYPES).includes(parseInt(strategy_type, 10))) {
     TE(`Unknown strategy type ${strategy_type}!`);
   }
+  
+  if (!deposit_amounts.length) TE('No investment amounts given!');
 
-  let [err, executing_investment_run] = await to(InvestmentRun.count({
+  let [err, deposit_assets] = await to(AssetService.getDepositAssets());
+  if (err) TE(err.message);
+
+  let deposit_asset_symbols = deposit_assets.map(asset => asset.symbol);
+
+  // if some of deposit info has an asset that is not for deposits
+  if(deposit_amounts.some(
+    amount => !deposit_asset_symbols.includes(amount.symbol)
+  )) TE('Unacceptable deposit asset given!');
+
+  if(deposit_amounts.some(a => a.amount < 0))
+    TE(`Investment amount into any of assets can't be less than 0`);
+
+  // leave only positive investment asset amounts
+  deposit_amounts = deposit_amounts.filter(a => a.amount > 0);
+  if (!deposit_amounts.length)
+    TE(`Total deposit amount must be greather than 0`);
+
+  let executing_investment_run;
+  [err, executing_investment_run] = await to(InvestmentRun.count({
     where: {
       is_simulated: false,
       status: {
@@ -35,15 +57,31 @@ const createInvestmentRun = async function (user_id, strategy_type, is_simulated
     TE(message);
   }
   let investment_run;
-  [err, investment_run] = await to(InvestmentRun.create({
-    strategy_type: strategy_type,
-    is_simulated: is_simulated,
-    user_created_id: user_id,
-    started_timestamp: new Date(),
-    updated_timestamp: new Date(),
-    status: INVESTMENT_RUN_STATUSES.Initiated,
-    deposit_usd: Number(deposit_usd)
-  }));
+  [err, investment_run] = await to(sequelize.transaction(transaction => 
+    InvestmentRun.create({
+      strategy_type: strategy_type,
+      is_simulated: is_simulated,
+      user_created_id: user_id,
+      started_timestamp: new Date(),
+      updated_timestamp: new Date(),
+      status: INVESTMENT_RUN_STATUSES.Initiated,
+      deposit_usd: 0,
+
+      InvestmentAmounts: [ // also create InvestmentAmount for every deposit
+          ...deposit_amounts.map(deposit => {
+            let asset = deposit_assets.find(asset => asset.symbol == deposit.symbol);
+            return {
+              asset_id: asset.id,
+              amount: deposit.amount
+            };
+          })
+        ]
+      }, {
+        include: InvestmentAmount, // include to create investment amounts with investment run
+        transaction
+      })
+  ));
+
   if (err) TE(err.message);
 
   return investment_run;

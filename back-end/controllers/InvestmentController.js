@@ -8,15 +8,15 @@ const investmentService = require('../services/InvestmentService');
 const OrdersService = require('../services/OrdersService');
 
 const createInvestmentRun = async function (req, res) {
-  let err, investment_run = {}, recipe_run;
+  let err, investment_run = {};
 
   let { strategy_type,
     is_simulated,
-    deposit_usd
+    deposit_amounts
   } = req.body;
 
   [err, investment_run] = await to(
-    investmentService.createInvestmentRun(req.user.id, strategy_type, is_simulated, deposit_usd)
+    investmentService.createInvestmentRun(req.user.id, strategy_type, is_simulated, deposit_amounts)
   );
   if (err) return ReE(res, err, 422);
 
