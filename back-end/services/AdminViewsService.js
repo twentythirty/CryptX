@@ -1,25 +1,27 @@
 'use strict';
 
+const {
+    sequelize,
+    AVUser,
+    AVAsset,
+    AVInstrument,
+    AVInvestmentRun,
+    AVRecipeRun,
+    AVRecipeRunDetail,
+    AVInstrumentExchange,
+    AVInstrumentLiquidityRequirement,
+    AVLiquidityRequirementExchange,
+    AVRecipeDeposit,
+    AVRecipeOrdersGroup,
+    AVRecipeOrder,
+    AVExecutionOrder,
+    AVExecutionOrderFill,
+    AVColdStorageTransfer,
+    AVColdStorageAccount,
+    AVColdStorageAccountStorageFee
+} = require('../models');
 
-const sequelize = require('../models').sequelize;
 const builder = require('../utils/AdminViewUtils');
-const AVUser = require('../models').AVUser;
-const Role = require('../models').Role;
-const AVAsset = require('../models').AVAsset;
-const AVInstrument = require('../models').AVInstrument;
-const AVInvestmentRun = require('../models').AVInvestmentRun;
-const AVRecipeRun = require('../models').AVRecipeRun;
-const AVRecipeRunDetail = require('../models').AVRecipeRunDetail;
-const AVInstrumentExchange = require('../models').AVInstrumentExchange;
-const AVInstrumentLiquidityRequirement = require('../models').AVInstrumentLiquidityRequirement;
-const AVLiquidityRequirementExchange = require('../models').AVLiquidityRequirementExchange;
-const AVRecipeDeposit = require('../models').AVRecipeDeposit;
-const AVRecipeOrdersGroup = require('../models').AVRecipeOrdersGroup;
-const AVRecipeOrder = require('../models').AVRecipeOrder;
-const AVExecutionOrder = require('../models').AVExecutionOrder;
-const AVExecutionOrderFill = require('../models').AVExecutionOrderFill;
-const AVColdStorageTransfer = require('../models').AVColdStorageTransfer;
-const AVColdStorageAccount = require('../models').AVColdStorageAccount;
 
 const TABLE_LOV_FIELDS = {
     'av_users': [
@@ -99,6 +101,12 @@ const TABLE_LOV_FIELDS = {
         'asset',
         'strategy_type',
         'custodian'
+    ],
+    'av_cold_storage_account_storage_fees': [
+        'asset',
+        'cold_storage_account_id',
+        'custodian',
+        'strategy_type'
     ]
 }
 
@@ -110,7 +118,7 @@ const fetchViewHeaderLOV = async (table, field, query, where_clause = '') => {
     if (allowed_fields == null || !allowed_fields.includes(field)) {
         return [];
     }
-
+    console.log('>>>>>>>>>>>>>>>>>>>WE CALL GUCHHI');
     const sql = builder.selectDistinct(field, table, builder.addToWhere(where_clause, query ? `${field} LIKE ${sequelize.escape(`%${query}%`)}` : ''))
 
     //returns list of objects with 1 key-value pair, key being field name
@@ -230,6 +238,12 @@ const fetchColdStorageAccountsViewHeaderLOV = async (header_field, query ='', wh
 }
 module.exports.fetchColdStorageAccountsViewHeaderLOV = fetchColdStorageAccountsViewHeaderLOV;
 
+const fetchColdStorageAccountStorageFeesViewHeaderLOV = async (header_field, query ='', where = '') => {
+
+    return fetchViewHeaderLOV('av_cold_storage_account_storage_fees', header_field, query, where);
+}
+module.exports.fetchColdStorageAccountStorageFeesViewHeaderLOV = fetchColdStorageAccountStorageFeesViewHeaderLOV;
+
 
 
 // ************************ DATA ***************************//
@@ -323,6 +337,12 @@ const fetchColdStorageAccountsViewDataWithCount = async (seq_query = {}) => {
     return fetchViewDataWithCount(AVColdStorageAccount, seq_query);
 }
 module.exports.fetchColdStorageAccountsViewDataWithCount = fetchColdStorageAccountsViewDataWithCount;
+
+const fetchColdStorageAccountStorageFeesViewDataWithCount = async (seq_query = {}) => {
+
+    return fetchViewDataWithCount(AVColdStorageAccountStorageFee, seq_query);
+}
+module.exports.fetchColdStorageAccountStorageFeesViewDataWithCount = fetchColdStorageAccountStorageFeesViewDataWithCount;
 
 const fetchAssetView = async (asset_id) => {
 
@@ -424,6 +444,12 @@ const fetchColdStorageAccountView = async (account_id) => {
     return fetchSingleEntity(AVColdStorageAccount, account_id);
 }
 module.exports.fetchColdStorageAccountView = fetchColdStorageAccountView;
+
+const fetchColdStorageAccountStorageFeeView = async (fee_id) => {
+
+    return fetchSingleEntity(AVColdStorageAccountStorageFee, fee_id);
+}
+module.exports.fetchColdStorageAccountStorageFeeView = fetchColdStorageAccountStorageFeeView;
 
 
 // ************************ FOOTERS ***************************//

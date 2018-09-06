@@ -98,7 +98,8 @@ ROUTE_MATCHERS = {
     AddColdstorageAccount: /\/cold_storage\/accounts\/add$/,
     GetColdstorageAccounts: /\/cold_storage\/accounts\/all$/,
     GetColdstorageAccountsColLOV: /\/cold_storage\/accounts\/header_lov\/\w+$/,
-    GetColdstorageAccountsFees: /\/cold_storage\/accounts\/fees/
+    GetColdstorageAccountsFees: /\/cold_storage\/accounts\/fees/,
+    GetColdstorageAccountsFeesColLOV: /\/cold_storage\/accounts\/fees\/header_lov\/\w+$/
 }
 
 //same as above map but with regex strings that can be converted into regex objects

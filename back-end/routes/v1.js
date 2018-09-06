@@ -980,6 +980,13 @@ router.post(
   check_permissions,
   ColdstorageController.getColdstorageAccountsFees
 );
+router.post(
+  ROUTES.GetColdstorageAccountsFeesColLOV.router_string,
+  stateless_auth,
+  res_new_token,
+  check_permissions,
+  ColdstorageController.getColdstorageAccountsFeeColumnLOV
+);
 //********* API DOCUMENTATION **********
 router.use(
   "/docs/api.json",

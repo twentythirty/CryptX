@@ -145,6 +145,7 @@ module.exports.getColdstorageAccounts = getColdstorageAccounts;
 const getColdstorageAccountsFees = async (req, res) => {
 
   //MOCK DATA
+  /*
   let fees = [];
   const assets = ['ETH', 'BTC', 'DOGE', 'XRP', 'BRT', 'XPX', 'RBT', 'ARP', 'WAWE'];
   const custodian = ['Coinbase', 'Cointop', 'Little Inc', 'Big Crypto', '2030 Ltd', 'Really Long Coins and Jebs'];
@@ -161,12 +162,39 @@ const getColdstorageAccountsFees = async (req, res) => {
     });
 
   }
+  */
+
+ const { seq_query, sql_where } = req;
+
+  const [ err, result ] = await to(AdminViewsService.fetchColdStorageAccountStorageFeesViewDataWithCount(seq_query));
+
+  if(err) return ReE(res, err.message, 422);
+
+  let { data: fees, total: count } = result;
+
+  fees = fees.map(fee => fee.toWeb());
 
   return ReS(res, {
     fees,
-    count: fees.length,
+    count,
     footer: []
   });
 
 };
 module.exports.getColdstorageAccountsFees = getColdstorageAccountsFees;
+
+const getColdstorageAccountsFeeColumnLOV = async (req, res) => {
+
+  const field_name = req.params.field_name;
+  const { query } = _.isPlainObject(req.body) ? req.body : { query: '' };
+
+  const [ err, field_vals ] = await to(AdminViewsService.fetchColdStorageAccountStorageFeesViewHeaderLOV(field_name, query, req.sql_where));
+  if(err) return ReE(res, err.message, 422);
+
+  return ReS(res, {
+    query: query,
+    lov: field_vals
+  })
+
+};
+module.exports.getColdstorageAccountsFeeColumnLOV = getColdstorageAccountsFeeColumnLOV;

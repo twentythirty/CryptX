@@ -659,6 +659,11 @@ ROUTES = {
     permissions_matcher: ROUTE_MATCHERS.GetColdStorageTransfers,
     required_permissions: [PERMISSIONS.VIEW_COLS_STORAGE_ACCOUNT_FEES]
   },
+  GetColdstorageAccountsFeesColLOV: {
+    router_string: "/cold_storage/accounts/fees/header_lov/:field_name",
+    permissions_matcher: ROUTE_MATCHERS.GetColdstorageAccountsFeesColLOV,
+    required_permissions: [PERMISSIONS.VIEW_COLS_STORAGE_ACCOUNT_FEES]
+  },
   // System settings
   ChangeSettingValues: {
     router_string: "/settings/:setting_id",
