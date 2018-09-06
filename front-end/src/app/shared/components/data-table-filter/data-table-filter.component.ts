@@ -195,16 +195,16 @@ export class DataTableFilterComponent implements OnInit, OnChanges {
   onNumberRangeChange(value) {
     if (
       value === 'min'
-      && this._filterData.values[0]
-      && this._filterData.values[0] > this._filterData.values[1]
-    ) {
-      this._filterData.values[0] = this._filterData.values[1];
-    } else if (
-      value === 'max'
-      && this._filterData.values[1]
+      && this._filterData.values[0] && this._filterData.values[1]
       && this._filterData.values[0] > this._filterData.values[1]
     ) {
       this._filterData.values[1] = this._filterData.values[0];
+    } else if (
+      value === 'max'
+      && this._filterData.values[1] && this._filterData.values[0]
+      && this._filterData.values[0] > this._filterData.values[1]
+    ) {
+      this._filterData.values[0] = this._filterData.values[1];
     }
   }
 
