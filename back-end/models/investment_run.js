@@ -23,7 +23,7 @@ module.exports = (sequelize, DataTypes) => {
       deposit_usd: {
         type: DataTypes.DECIMAL,
         allowNull: false
-      }
+      },
     },
     modelProps("investment_run", "Investment workflow run")
   );
@@ -34,6 +34,7 @@ module.exports = (sequelize, DataTypes) => {
       foreignKey: "user_created_id",
       as: "user_created"
     });
+    InvestmentRun.belongsTo(models.InvestmentRunAssetGroup);
   };
 
   InvestmentRun.prototype.toWeb = function() {
