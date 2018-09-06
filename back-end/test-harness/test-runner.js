@@ -49,7 +49,6 @@ var mocha = new Mocha({
 });
 
 var baseMochaTestsDir = process.argv[2];
-var baseCucumberFeaturesDir  = process.argv[3];
 
 // Add each .js file to the mocha instance
 const mocha_tests_list = walkSync(baseMochaTestsDir,
@@ -57,8 +56,6 @@ const mocha_tests_list = walkSync(baseMochaTestsDir,
         // Only keep the .js files
         return file.substr(-3) === '.js';
     }, [])
-
-console.log(`Running ${mocha_tests_list.length} tests files!`);
 
 mocha_tests_list.forEach(function (absolutePath) {
     mocha.addFile(absolutePath);
@@ -79,12 +76,14 @@ const mocha_then_cucumber = async (mocha_failures) => {
     tests_info.mocha = mocha_reporter.test_results;
     tests_info.total_failed += mocha_reporter.test_results.failed;
     tests_info.total += mocha_reporter.test_results.failed + mocha_reporter.test_results.passed;
-    
-    await CucumberRuntime.run(baseCucumberFeaturesDir);
 
-    tests_info.cucumber = CucumberRuntime.test_results;
-    tests_info.total_failed += CucumberRuntime.test_results.failed;
-    tests_info.total += CucumberRuntime.test_results.failed + CucumberRuntime.test_results.passed;
+    const baseCucumberFeaturesDir  = process.argv[3];
+
+    const cucumber_test_results = CucumberRuntime.run(baseCucumberFeaturesDir);
+
+    tests_info.cucumber = cucumber_test_results;
+    tests_info.total_failed += cucumber_test_results.failed;
+    tests_info.total += cucumber_test_results.failed + cucumber_test_results.passed;
 
     await generateTestsFailedMail(tests_info);
 

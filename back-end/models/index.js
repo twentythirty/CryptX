@@ -16,9 +16,19 @@ const LOGGING_PROFILES = [
 
 const sequelize = new Sequelize(db_url, {
   dialect: CONFIG.db_dialect,
+  //if cucumber we use different ssl config
   dialectOptions: {
-    ssl: (process.env.DB_USE_SSL || 'false') == 'true'
+    ssl: ((process.env.NODE_ENV === 'cucumber' ? process.env.DB_USE_SSL_CUCUMBER : process.env.DB_USE_SSL) || 'false') == 'true'
   },
+  //if cucumber we use different pool settings for weaker DB
+  pool: (process.env.NODE_ENV === 'cucumber' ? {
+    max: 5,
+    min: 1,
+    idle: 10000,
+    acquire: 10000,
+    evict: 60000,
+    handleDisconnects: true
+  } : {}),
   operatorsAliases: false,
   //only log sql queries on local deploy
   logging: LOGGING_PROFILES.includes(process.env.NODE_ENV) ? console.log : false
