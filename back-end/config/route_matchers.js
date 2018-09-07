@@ -29,6 +29,7 @@ ROUTE_MATCHERS = {
     CreateInvestment: /\/investments\/create$/,
     GetInvestment: /\/investments\/\d+$/,
     GetInvestments: /\/investments\/all$/,
+    GetInvestmentAmounts: /\/investments\/\d+\/deposit_amounts/,
     GetInvestmentsColLOV: /\/investments\/header_lov\/\w+/,
     GetInvestmentPortfolioStats: /\/investments\/portfolio_stats/,
     GetInvestmentStats: /\/investments\/timeline/,

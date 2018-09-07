@@ -1053,6 +1053,35 @@
         ]
       }
     },
+    "/investments/{investment_id}/deposit_amounts": {
+      "get": {
+        "tags": [
+          "investment"
+        ],
+        "description": "Get deposit amounts of investment run in different currencies.",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/parameters/investment_id"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "$ref": "#/definitions/InvestmentAmountsListResponse"
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
     "/investments/portfolio_stats": {
       "get": {
         "tags": [
@@ -6685,6 +6714,50 @@
         },
         "investment_run": {
           "$ref": "#/definitions/InvestmentRun"
+        }
+      }
+    },
+    "InvestmentAmountsListResponse": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean",
+          "example": true
+        },
+        "deposit_amounts": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/InvestmentAmount"
+          }
+        }
+      }
+    },
+    "InvestmentAmount": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "number",
+          "example": 46
+        },
+        "investment_run_id": {
+          "type": "number",
+          "example": 52
+        },
+        "currency_name": {
+          "type": "string",
+          "example": "Bitcoin"
+        },
+        "currency_symbol": {
+          "type": "string",
+          "example": "BTC"
+        },
+        "amount": {
+          "type": "number",
+          "example": 100
+        },
+        "value_usd": {
+          "type": "number",
+          "example": 649712
         }
       }
     },

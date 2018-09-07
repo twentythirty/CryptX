@@ -70,15 +70,15 @@ export class AssetService {
     return this.http.post<ActionResultData>(this.baseUrl + `assets/${assetId}/change_status`, status);
   }
 
-  getHeaderLOV(column_name: string): Observable<any> {
-    return this.http.get<any>(this.baseUrl + `assets/detailed/header_lov/${column_name}`).pipe(
+  getHeaderLOV(column_name: string, requestData?: object): Observable<any> {
+    return this.http.get<any>(this.baseUrl + `assets/detailed/header_lov/${column_name}`, requestData).pipe(
       map(
         res => {
-          if (res && Array.isArray(res.lov)) {
+          if (res && res.lov && Array.isArray(res.lov)) {
             return res.lov.map(lov => {
               return { value: lov.toString() };
             });
-          } else { return null; }
+          } return null;
         }
       )
     );

@@ -104,7 +104,10 @@
       "balance_usd": "Balance USD",
       "balance_updated": "Balance updated",
       "cold_storage_account_id": "Cold storage account id",
-      "filled_quantity": "Filled quantity"
+      "filled_quantity": "Filled quantity",
+      "investment_usd": "Investment USD",
+      "investment_eth": "Investement ETH",
+      "investment_btc": "Investment BTC"
     },
     "filter": {
       "all": "All",
@@ -158,6 +161,10 @@
       "306": "Orders Approved",
       "307": "Orders Executing",
       "308": "Orders Filled"
+    },
+    "footer": {
+      "symbol": "{{symbol}} items",
+      "capitalization": "{{ capitalization }} Total"
     }
   },
   "investment_runs": {

@@ -19,7 +19,8 @@ import {
   DateCellDataColumn,
   PercentCellDataColumn,
   StatusCellDataColumn,
-  ConfirmCellDataColumn
+  ConfirmCellDataColumn,
+  NumberCellDataColumn
 } from '../../../shared/components/data-table-cells';
 
 import { InvestmentService } from '../../../services/investment/investment.service';
@@ -38,7 +39,7 @@ export class RecipeRunDetailComponent extends TimelineDetailComponent implements
    * 1. Implement attributes to display titles
    */
   public pageTitle = 'Recipe run';
-  public singleTitle = 'Recipe runs';
+  public singleTitle = 'Recipe run';
   public listTitle = 'Recipe run details';
   public recipeStatus;
 
@@ -94,21 +95,23 @@ export class RecipeRunDetailComponent extends TimelineDetailComponent implements
 
   public listDataSource: TableDataSource = {
     header: [
-      { column: 'id', nameKey: 'table.header.id', filter: { type: 'number', hasRange: false, inputSearch: true, sortable: true }},
       { column: 'transaction_asset', nameKey: 'table.header.transaction_asset', filter: { type: 'text', sortable: true }},
       { column: 'quote_asset', nameKey: 'table.header.quote_asset', filter: { type: 'text', sortable: true }},
       { column: 'target_exchange', nameKey: 'table.header.exchange', filter: { type: 'text', sortable: true }},
-      { column: 'investment_percentage', nameKey: 'table.header.percentage', filter: { type: 'number', sortable: true }}
+      { column: 'investment_usd', nameKey: 'table.header.investment_usd', filter: { type: 'number', sortable: true }},
+      { column: 'investment_btc', nameKey: 'table.header.investment_btc', filter: { type: 'number', sortable: true }},
+      { column: 'investment_eth', nameKey: 'table.header.investment_eth', filter: { type: 'number', sortable: true }}
     ],
     body: null
   };
 
   public listColumnsToShow: Array<TableDataColumn> = [
-    new TableDataColumn({ column: 'id' }),
     new TableDataColumn({ column: 'transaction_asset' }),
     new TableDataColumn({ column: 'quote_asset' }),
     new TableDataColumn({ column: 'target_exchange' }),
-    new PercentCellDataColumn({ column: 'investment_percentage' })
+    new NumberCellDataColumn({ column: 'investment_usd' }),
+    new NumberCellDataColumn({ column: 'investment_btc' }),
+    new NumberCellDataColumn({ column: 'investment_eth' })
   ];
 
   /**
