@@ -11,7 +11,10 @@ module.exports = (sequelize, DataTypes) => {
             quote_asset: DataTypes.STRING,
             target_exchange_id: DataTypes.SMALLINT,
             target_exchange: DataTypes.STRING,
-            investment_percentage: DataTypes.FLOAT
+            investment_percentage: DataTypes.FLOAT,
+            investment_usd: DataTypes.DECIMAL,
+            investment_btc: DataTypes.DECIMAL,
+            investment_eth: DataTypes.DECIMAL
         },
         //common global model props
         modelProps('av_recipe_run_details', 'Recipe run details of the CryptX system')

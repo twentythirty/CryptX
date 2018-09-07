@@ -6190,6 +6190,18 @@
         "target_exchange": {
           "type": "string",
           "example": "bitstamp"
+        },
+        "investment_usd": {
+          "type": "number",
+          "example": 125462
+        },
+        "investment_btc": {
+          "type": "number",
+          "example": 2.6
+        },
+        "investment_eth": {
+          "type": "number",
+          "example": 36.78
         }
       }
     },
