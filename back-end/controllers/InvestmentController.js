@@ -1,12 +1,15 @@
 'use strict';
 
-const User = require('../models').User;
-const ActionLog = require('../models').ActionLog;
+const { 
+  User,
+  ActionLog,
+  AVInvestmentAmount
+} = require('../models');
 const adminViewsService = require('../services/AdminViewsService');
 const adminViewUtils = require('../utils/AdminViewUtils');
 const investmentService = require('../services/InvestmentService');
 const OrdersService = require('../services/OrdersService');
-const AvInvestmentAmount = require('../models').AvInvestmentAmount;
+
 
 const createInvestmentRun = async function (req, res) {
   let err, investment_run = {};
@@ -60,18 +63,28 @@ const getInvestmentRun = async function (req, res) {
 module.exports.getInvestmentRun = getInvestmentRun;
 
 const getInvestmentAmounts = async function (req, res) {
-  
-  let investment_run_id = req.params.investment_id;
 
-  let [err, deposit_amounts] = await to(AvInvestmentAmount.findAll({
-    where: {
-      investment_run_id: investment_run_id
-    }
-  }));
+  let { seq_query, sql_where } = req;
+  const investment_id = req.params.investment_id;
+  
+  if(investment_id && _.isPlainObject(seq_query)) {
+    if(!_.isPlainObject(seq_query)) seq_query = { where: {} };
+    if (!_.isPlainObject(seq_query.where)) seq_query.where = {};
+    seq_query.where.investment_run_id = investment_id;
+    sql_where = adminViewUtils.addToWhere(sql_where, `investment_run_id=${investment_id}`);
+  }
+
+  let err, deposit_amounts, footer;
+
+  [err, deposit_amounts] = await to(AVInvestmentAmount.findAll(seq_query));
+  if (err) return ReE(res, err.message, 422);
+
+  [err, footer] = await to(adminViewsService.fetchInvestmentAmountFooter(sql_where));
   if (err) return ReE(res, err.message, 422);
 
   return ReS(res, {
-    deposit_amounts
+    deposit_amounts,
+    footer
   });
 };
 module.exports.getInvestmentAmounts = getInvestmentAmounts;

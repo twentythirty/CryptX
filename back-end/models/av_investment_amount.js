@@ -1,8 +1,8 @@
 "use strict";
 
 module.exports = (sequelize, DataTypes) => {
-  var AvInvestmentAmount = sequelize.define(
-    "AvInvestmentAmount",
+  var AVInvestmentAmount = sequelize.define(
+    "AVInvestmentAmount",
     {
       id: { 
         type: DataTypes.INTEGER,
@@ -18,5 +18,5 @@ module.exports = (sequelize, DataTypes) => {
     modelProps('av_investment_amount', 'Different currency deposit amounts that fund investment run')
   );
 
-  return AvInvestmentAmount;
+  return AVInvestmentAmount;
 };

@@ -364,11 +364,12 @@ router.get(
   check_permissions,
   InvestmentController.getInvestmentRun
 );
-router.get(
+router.post(
   ROUTES.GetInvestmentAmounts.router_string,
   stateless_auth,
   res_new_token,
   check_permissions,
+  filter_reducer,
   InvestmentController.getInvestmentAmounts
 );
 router.post(

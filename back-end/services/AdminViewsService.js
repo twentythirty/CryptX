@@ -6,6 +6,7 @@ const {
     AVAsset,
     AVInstrument,
     AVInvestmentRun,
+    AVInvestmentAmount,
     AVRecipeRun,
     AVRecipeRunDetail,
     AVInstrumentExchange,
@@ -450,7 +451,6 @@ const fetchColdStorageAccountStorageFeeView = async (fee_id) => {
     return fetchSingleEntity(AVColdStorageAccountStorageFee, fee_id);
 }
 module.exports.fetchColdStorageAccountStorageFeeView = fetchColdStorageAccountStorageFeeView;
-
 
 // ************************ FOOTERS ***************************//
 
@@ -945,3 +945,25 @@ const fetchColdStorageAccountsViewsFooter = async (where_clause = '') => {
     )
 }
 module.exports.fetchColdStorageAccountsViewsFooter = fetchColdStorageAccountsViewsFooter;
+
+
+const fetchInvestmentAmountFooter = async (where_clause = '') => {
+
+    const view = 'av_investment_amount';
+
+    const query = builder.joinQueryParts([
+        builder.selectCountDistinct('id', 'investment_currency', view, where_clause),
+        builder.selectSumTrim('value_usd', view, where_clause),
+    ], [
+        'investment_currency',
+        'value_usd'
+    ]);
+
+    const footer = (await sequelize.query(query))[0];
+
+    return builder.addFooterLabels(
+        builder.queryReturnRowToFooterObj(footer), 'investment_amounts'
+    )
+}
+module.exports.fetchInvestmentAmountFooter = fetchInvestmentAmountFooter;
+
