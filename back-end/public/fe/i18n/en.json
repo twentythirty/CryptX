@@ -400,7 +400,7 @@
     },
     "footer": {
       "capitalization": "{{ capitalization }} total",
-      "status": "{{ status }} Blacklisted",
+      "status": "{{ status }} Graylisted",
       "is_deposit": "{{ is_deposit }} Deposit",
       "is_base": "{{ is_base }} Base",
       "symbol": "{{ symbol }} Items",

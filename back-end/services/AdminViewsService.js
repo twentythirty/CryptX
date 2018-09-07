@@ -502,13 +502,13 @@ const fetchAssetsViewFooter = async (where_clause = '') => {
        SUM(is_base) AS is_base,
        SUM(is_deposit) AS is_deposit,
        SUM(status) AS status,
-       COUNT(DISTINCT symbol) AS symbol,
+       COUNT(symbol) AS symbol,
        SUM(is_cryptocurrency) AS is_cryptocurrency,
        SUM(capitalization) AS capitalization
 FROM
   (SELECT (CASE WHEN is_base = 'assets.is_base.yes' THEN 1 ELSE 0 END) AS is_base,
           (CASE WHEN is_deposit = 'assets.is_deposit.yes' THEN 1 ELSE 0 END) AS is_deposit,
-          (CASE WHEN status = 'assets.status.401' THEN 1 ELSE 0 END) AS status,
+          (CASE WHEN status = 'assets.status.${INSTRUMENT_STATUS_CHANGES.Graylisting}' THEN 1 ELSE 0 END) AS status,
           (CASE WHEN is_cryptocurrency = 'assets.is_cryptocurrency.yes' THEN 1 ELSE 0 END) AS is_cryptocurrency,
           symbol,
           capitalization
