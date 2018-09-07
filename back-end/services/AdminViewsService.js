@@ -773,12 +773,14 @@ const fetchRecipeRunDetailsViewFooter = async (where_clause = '') => {
         builder.selectCount(view, 'id', where_clause),
         builder.selectCountDistinct('transaction_asset_id', 'transaction_asset', view, where_clause),
         builder.selectCountDistinct('quote_asset_id', 'quote_asset', view, where_clause),
-        builder.selectCountDistinct('target_exchange_id', 'target_exchange', view, where_clause)
+        builder.selectCountDistinct('target_exchange_id', 'target_exchange', view, where_clause),
+        builder.selectSumTrim('investment_percentage', view, where_clause)
     ], [
         'id',
         'transaction_asset',
         'quote_asset',
-        'target_exchange'
+        'target_exchange',
+        'investment_percentage'
     ]);
 
     const footer = (await sequelize.query(query))[0];

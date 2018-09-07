@@ -176,7 +176,8 @@
       "id": "{{ id }} Items",
       "transaction_asset": "{{ transaction_asset }} Assets",
       "quote_asset": "{{ quote_asset }} Assets",
-      "target_exchange": "{{ target_exchange }} Exchanges"
+      "target_exchange": "{{ target_exchange }} Exchanges",
+      "investment_percentage": "{{ investment_percentage }}%"
     }
   },
 
