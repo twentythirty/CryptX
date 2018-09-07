@@ -24,10 +24,10 @@ module.exports.JOB_BODY = async (config, log) => {
     const ExecutionOrder = models.ExecutionOrder;
     const ExecutionOrderFill = models.ExecutionOrderFill;
     const InstrumentMarketData = models.InstrumentMarketData;
-    const { Placed, PartiallyFilled, Failed, FullyFilled } = MODEL_CONST.EXECUTION_ORDER_STATUSES;
+    const { InProgress, NotFilled, PartiallyFilled, Failed, FullyFilled } = MODEL_CONST.EXECUTION_ORDER_STATUSES;
 
     //Fetch all execution orders that are placed on the exchange, not failed, canceled or pending and has an external identifier.
-    log('1. Fetching all Placed or PartiallyFilled execution orders and it fills.')
+    log('1. Fetching all InProgress execution orders and it fills.')
     let [ err, placed_orders ] = await to(sequelize.query(`
         SELECT
             exo.*,
@@ -41,7 +41,7 @@ module.exports.JOB_BODY = async (config, log) => {
         JOIN instrument AS ins On exo.instrument_id = ins.id
         JOIN asset AS quote_asset ON ins.quote_asset_id = quote_asset.id
         JOIN asset AS transaction_asset ON ins.transaction_asset_id = transaction_asset.id
-        WHERE exo.placed_timestamp IS NOT NULL AND exo.external_identifier IS NOT NULL AND exo.status in (${Placed}, ${PartiallyFilled})
+        WHERE exo.placed_timestamp IS NOT NULL AND exo.external_identifier IS NOT NULL AND exo.status = ${InProgress}
     `, { model: ExecutionOrder }))
 
     if(err) {
@@ -50,7 +50,7 @@ module.exports.JOB_BODY = async (config, log) => {
     }
 
     if(!placed_orders.length) {
-        log(`[WARN.1A] No placed or partially filled orders, skipping...`);
+        log(`[WARN.1A] No orders in progress found, skipping...`);
         return;
     }
 
@@ -74,6 +74,11 @@ module.exports.JOB_BODY = async (config, log) => {
         let logs = [];    //Logs thatneed to be logged only after the successful sqltransaction
 
         const placed_order_fills = current_fills.filter(fill => fill.execution_order_id === placed_order.id);
+
+        placed_order.filled_amount = placed_order_fills.reduce((prev, current) => {
+            return prev = parseFloat(prev) + parseFloat(current.quantity);
+        }, 0);
+
         log(`2.(EXEC-${placed_order.id}) Checking if order is simulated.`);
         let [ err, is_simulated ] = await to(module.exports.isSimulated(placed_order.id, models.sequelize));
         if(err) {
@@ -159,8 +164,8 @@ module.exports.JOB_BODY = async (config, log) => {
                 relations: { execution_order_id: placed_order.id },
                 log_level: LOG_LEVELS.Warning
             }]);
-            placed_order.status = Failed;
-            return updateOrderStatus(placed_order, queries, logs);
+            placed_order.status = Failed; //A temporary status to mark that the execution order cannot be changed anymore
+            //The execution should continue, as there might be some more fills left to fetch
         }
 
         /**
@@ -177,14 +182,6 @@ module.exports.JOB_BODY = async (config, log) => {
             placed_order.status = FullyFilled;
             placed_order.completed_timestamp = new Date();
             //The execution will continue, as the job might be missing the last fill/fills.
-        }
-
-        /**
-         * If the order is still in status Placed, but the actual order has some fills,
-         * Mark the order as PartiallyFilled
-         */
-        if(external_order.filled > 0 && placed_order.status === Placed) {
-            placed_order.status = PartiallyFilled;
         }
 
         //Flag that determines how to create new fills (using trades or calculating using the filled field of the order)
@@ -266,6 +263,7 @@ module.exports.JOB_BODY = async (config, log) => {
             const fee = trade.fee ? trade.fee.cost : 0;
             const fee_symbol = trade.fee ? trade.fee.currency : placed_order.get('instrument_quote_asset');
             const fee_id = trade.fee ? (trade.fee.currency === placed_order.get('instrument_quote_asset') ? placed_order.get('instrument_quote_asset_id') : placed_order.get('instrument_transaction_asset_id')) : placed_order.get('instrument_quote_asset_id');
+            placed_order.filled_amount += trade.amount;
 
             console.log('\x1b[36m', `<<<<<<<<<<<<<<TRADE ${placed_order.id}/${placed_order.external_identifier}>>>>>>>>>>>>>>`, '\x1b[0m')
             console.log(JSON.stringify(trade, null, 3));
@@ -333,6 +331,8 @@ module.exports.JOB_BODY = async (config, log) => {
             log(`[WARN.5B](EXEC-${placed_order.id}) Filled amount does not exceed current sum of fills, skipping..`)
             return [[], []];
         };
+
+        placed_order.filled_amount += external_order.filled - current_fill_sum;
 
         return [[
             {
@@ -424,12 +424,15 @@ module.exports.JOB_BODY = async (config, log) => {
     const updateOrderStatus = async (placed_order, queries = [], logs = []) => {
 
         if(placed_order.failed_attempts >= SYSTEM_SETTINGS.EXEC_ORD_FAIL_TOLERANCE) {
-            placed_order.status = Failed;
+            placed_order.status = placed_order.filled_amount ? PartiallyFilled : NotFilled;
             logs.push([actions.failed_attempts, {
                 relations: { execution_order_id: placed_order.id },
                 log_level: LOG_LEVELS.Warning
             }]);
         }
+
+        //In this case theexecution order was closed on the exchange after being placed there. We should change the status.
+        if(placed_order.status === Failed) placed_order.status = placed_order.filled_amount ? PartiallyFilled : NotFilled;
 
         if(placed_order.changed()) {
             queries.push({ model: placed_order, method: 'save', args: [], options: {} });
@@ -440,10 +443,10 @@ module.exports.JOB_BODY = async (config, log) => {
                 replace: {
                     status: {
                         [Failed]: `{execution_orders.status.${Failed}}`,
-                        [Placed]: `{execution_orders.status.${Placed}}`,
+                        [InProgress]: `{execution_orders.status.${InProgress}}`,
                         [PartiallyFilled]: `{execution_orders.status.${PartiallyFilled}}`,
                         [FullyFilled]: `{execution_orders.status.${FullyFilled}}`,
-
+                        [NotFilled]: `{execution_orders.status.${NotFilled}}`
                     }
                 }
             }])

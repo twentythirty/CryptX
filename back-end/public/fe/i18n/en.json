@@ -98,7 +98,7 @@
       "custodian": "Custodian",
       "source_exchange": "Source exchange",
       "source_account": "Source account",
-      "placed_time": "Placed time",
+      "placed_time": "InProgress time",
       "address": "Address",
       "balance": "Balance",
       "balance_usd": "Balance USD",
@@ -272,11 +272,12 @@
     },
     "status": {
       "61": "Pending",
-      "62": "Placed",
+      "62": "InProgress",
       "63": "FullyFilled",
       "64": "PartiallyFilled",
       "65": "Cancelled",
-      "66": "Failed"
+      "66": "Failed",
+      "67": "NotFilled"
     },
     "footer": {
       "id": "{{ id }} Items",
@@ -289,7 +290,7 @@
   "execution_orders_timeline": {
     "status": {
       "61": "Pending",
-      "62": "Placed",
+      "62": "InProgress",
       "63": "FullyFilled",
       "64": "PartiallyFilled",
       "65": "Cancelled",

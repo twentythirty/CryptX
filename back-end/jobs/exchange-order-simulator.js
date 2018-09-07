@@ -54,7 +54,7 @@ module.exports.JOB_BODY = async (config, log) => {
     _.map(pending_simulated_orders, order => {
 
       order.placed_timestamp = new Date();
-      order.status = MODEL_CONST.EXECUTION_ORDER_STATUSES.Placed;
+      order.status = MODEL_CONST.EXECUTION_ORDER_STATUSES.InProgress;
       order.external_identifier = `SIM-${order.id}`;
 
       return order.save();
