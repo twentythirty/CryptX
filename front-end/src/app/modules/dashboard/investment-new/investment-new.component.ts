@@ -4,6 +4,7 @@ import { Router } from '@angular/router';
 
 import { ModelConstantsService } from '../../../services/model-constants/model-constants.service';
 import { InvestmentService } from '../../../services/investment/investment.service';
+import { finalize } from 'rxjs/operators';
 
 @Component({
   selector: 'app-investment-new',
@@ -18,49 +19,37 @@ export class InvestmentNewComponent implements OnInit {
   mode = false;
   portfolio = false;
   next_step = false;
+  loading = false;
 
   group_name = 'STRATEGY_TYPES';
   strategies = {};
-  amount: {
-    strategy_type: number,
-    is_simulated: boolean,
-    deposit_usd: number,
-    /*deposit_btc: number,
-    deposit_eth: number*/
-  };
+  strategy_type; // Selected strategy type
+  is_simulated; // Selected mode type
 
   runForm: FormGroup = new FormGroup({
     deposit_usd: new FormControl('', [Validators.required]),
-    /*deposit_btc: new FormControl('', [Validators.required]),
-    deposit_eth: new FormControl('', [Validators.required])*/
+    deposit_btc: new FormControl(''),
+    deposit_eth: new FormControl('')
   });
 
   constructor(
     private modelConstantService: ModelConstantsService,
     private investmentService: InvestmentService,
     private router: Router,
-  ) {
-    this.amount = {
-      strategy_type: null,
-      is_simulated: null,
-      deposit_usd: null,
-      /*deposit_btc: null,
-      deposit_eth: null*/
-    };
-  }
+  ) { }
 
   ngOnInit() {
     this.strategies = Object.entries(this.modelConstantService.getGroup(this.group_name));
   }
 
   onChangeMode(value) {
-    this.amount.is_simulated = value;
+    this.is_simulated = value;
     this.mode = true;
     this.isValid();
   }
 
   onChangePortfolio(value) {
-    this.amount.strategy_type = value[1];
+    this.strategy_type = value[1];
     this.portfolio = true;
     this.isValid();
   }
@@ -72,9 +61,18 @@ export class InvestmentNewComponent implements OnInit {
   }
 
   Confirm() {
-    if (this.runForm.valid) {
-      this.investmentService.createInvestmentRun(this.amount).subscribe(
-        (data) => {
+    this.loading = true;
+
+    const request = {
+      strategy_type: this.strategy_type,
+      is_simulated: this.is_simulated,
+      deposit_amounts: this.toArray()
+    };
+
+    this.investmentService.createInvestmentRun(request).pipe(
+        finalize(() => this.loading = false)
+      ).subscribe(
+        data => {
           if (data.success) {
             this.onClose();
             this.onComplete.emit();
@@ -84,21 +82,33 @@ export class InvestmentNewComponent implements OnInit {
           console.log('Error', error);
         }, () => {
         }
-      );
-    } else {
-      this.markAsTouched(this.runForm);
-    }
+    );
   }
 
-  markAsTouched(group) {
-    Object.keys(group.controls).map((field) => {
-      const control = group.get(field);
-      if (control instanceof FormControl) {
-        control.markAsTouched({ onlySelf: true });
-      } else if (control instanceof FormGroup) {
-        this.markAsTouched(control);
-      }
-    });
+  toArray() {
+    const array = [];
+    if (this.runForm.get('deposit_usd').value !== '') {
+      const obj = {
+        symbol: 'USD',
+        amount: Number(this.runForm.get('deposit_usd').value)
+      };
+      array.push(obj);
+    }
+    if (this.runForm.get('deposit_btc').value !== '') {
+      const obj = {
+        symbol: 'BTC',
+        amount: Number(this.runForm.get('deposit_btc').value)
+      };
+      array.push(obj);
+    }
+    if (this.runForm.get('deposit_eth').value !== '') {
+      const obj = {
+        symbol: 'ETH',
+        amount: Number(this.runForm.get('deposit_eth').value)
+      };
+      array.push(obj);
+    }
+    return array;
   }
 
   onClose() {

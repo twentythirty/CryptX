@@ -49,10 +49,9 @@
           formControlName='deposit_usd'
           type="number"
           name='USD'
-          [(ngModel)]="amount.deposit_usd">
-        </app-input-item>
+        ></app-input-item>
       </div>
-      <!-- <div class="checkboxes-modal-wrap">
+      <div class="checkboxes-modal-wrap">
       <div class="display-inline">
       <app-input-item class="form-item label"
         [label]="'investment.amount_in_btc' |translate"
@@ -61,8 +60,7 @@
         formControlName='deposit_btc'
         type = "number"
         name='BTC'
-        [(ngModel)]="amount.deposit_btc">
-      </app-input-item>
+      ></app-input-item>
       </div>
       <div class="display-inline">
       <app-input-item class="form-item label"
@@ -72,12 +70,15 @@
         formControlName='deposit_eth'
         type = "number"
         name='ETH'
-        [(ngModel)]="amount.deposit_eth">
-      </app-input-item>
+      ></app-input-item>
       </div>
-      </div> -->
+      </div>
       <div class="margin-bottom">
-        <button class="btn new" type="submit">{{'common.confirm' |translate}}</button>
+        <button 
+          class="btn new" 
+          type="submit" 
+          [disabled]="loading || !runForm.valid"
+        >{{'common.confirm' |translate}}</button>
       </div>
     </form>
   </div>
