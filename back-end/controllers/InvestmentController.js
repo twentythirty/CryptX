@@ -6,6 +6,7 @@ const adminViewsService = require('../services/AdminViewsService');
 const adminViewUtils = require('../utils/AdminViewUtils');
 const investmentService = require('../services/InvestmentService');
 const OrdersService = require('../services/OrdersService');
+const AvInvestmentAmount = require('../models').AvInvestmentAmount;
 
 const createInvestmentRun = async function (req, res) {
   let err, investment_run = {};
@@ -49,13 +50,30 @@ const getInvestmentRun = async function (req, res) {
   if (err) return ReE(res, err.message, 422);
   if (!investment_run) return ReE(res, `Investment run not found with id: ${investment_run_id}`, 422);
 
-  investment_run = investment_run.toWeb();  
+  investment_run = investment_run.toWeb();
 
   return ReS(res, {
     investment_run
   });
 };
 module.exports.getInvestmentRun = getInvestmentRun;
+
+const getInvestmentAmounts = async function (req, res) {
+  
+  let investment_run_id = req.params.investment_id;
+
+  let [err, deposit_amounts] = await to(AvInvestmentAmount.findAll({
+    where: {
+      investment_run_id: investment_run_id
+    }
+  }));
+  if (err) return ReE(res, err.message, 422);
+
+  return ReS(res, {
+    deposit_amounts
+  });
+};
+module.exports.getInvestmentAmounts = getInvestmentAmounts;
 
 const getInvestmentRunWithAssetMix = async function (req, res) {
 
@@ -655,3 +673,4 @@ const GetInvestmentPortfolioStats = async function (req, res) {
   })
 }
 module.exports.GetInvestmentPortfolioStats = GetInvestmentPortfolioStats;
+

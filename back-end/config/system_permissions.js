@@ -330,6 +330,11 @@ ROUTES = {
     permissions_matcher: ROUTE_MATCHERS.GetInvestments,
     required_permissions: [PERMISSIONS.VIEW_INVESTMENT_RUN]
   },
+  GetInvestmentAmounts: {
+    router_string: "/investments/:investment_id/deposit_amounts",
+    permissions_matcher: ROUTE_MATCHERS.GetInvestmentAmounts,
+    required_permissions: [PERMISSIONS.VIEW_INVESTMENT_RUN]
+  },
   GetInvestmentsColLOV: {
     router_string: "/investments/header_lov/:field_name",
     permissions_matcher: ROUTE_MATCHERS.GetInvestmentsColLOV,

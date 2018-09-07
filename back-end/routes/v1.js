@@ -357,6 +357,13 @@ router.get(
   check_permissions,
   InvestmentController.getInvestmentRun
 );
+router.get(
+  ROUTES.GetInvestmentAmounts.router_string,
+  stateless_auth,
+  res_new_token,
+  check_permissions,
+  InvestmentController.getInvestmentAmounts
+);
 router.post(
   ROUTES.GetInvestment.router_string,
   stateless_auth,
