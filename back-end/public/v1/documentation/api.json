@@ -6663,6 +6663,10 @@
               "amount": 22.43
             }
           ]
+        },
+        "investment_group_asset_id": {
+          "type": "number",
+          "example": 5
         }
       }
     },

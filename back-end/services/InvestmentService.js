@@ -65,7 +65,7 @@ const getInvestmentRunWithAssetMix = async (investment_run_id, seq_query = {}, s
 };
 module.exports.getInvestmentRunWithAssetMix = getInvestmentRunWithAssetMix;
 
-const createInvestmentRun = async function (user_id, strategy_type, is_simulated = true, deposit_amounts) {
+const createInvestmentRun = async function (user_id, strategy_type, is_simulated = true, deposit_amounts, asset_group_id) {
   // check for valid strategy type
   if (!Object.values(STRATEGY_TYPES).includes(parseInt(strategy_type, 10))) {
     TE(`Unknown strategy type ${strategy_type}!`);
@@ -118,6 +118,7 @@ const createInvestmentRun = async function (user_id, strategy_type, is_simulated
       updated_timestamp: new Date(),
       status: INVESTMENT_RUN_STATUSES.Initiated,
       deposit_usd: 0,
+      investment_run_asset_group_id: asset_group_id,
 
       InvestmentAmounts: [ // also create InvestmentAmount for every deposit
           ...deposit_amounts.map(deposit => {
