@@ -26,6 +26,17 @@
     [emptyText]="singleTableEmptyText | translate"
     (openRow)="openSingleRow($event)"
   ></app-data-table>
+
+  <div class="top-controls" *ngIf="assetMixTitle">
+    <span class="headline-title">{{assetMixCount}} {{ assetMixTitle }}</span>
+  </div>
+
+  <app-data-table
+    *ngIf="assetMixDataSource"
+    [dataSource]="assetMixDataSource"
+    [columnsToShow]="assetMixColumnsToShow"
+    (setFilter)="onSetFilter($event)"
+  ></app-data-table>
   
   <div class="top-controls" *ngIf="listTitle">
     <span class="headline-title">{{ listTitle }}</span>

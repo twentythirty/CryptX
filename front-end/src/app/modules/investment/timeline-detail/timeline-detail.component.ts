@@ -103,9 +103,12 @@ export class TimelineDetailComponent extends DataTableCommonManagerComponent imp
   public pageTitle: string;
   public singleTitle: string;
   public listTitle: string;
+  public assetMixTitle: string;
   public addTitle: string;  // Optional
   public singleTableEmptyText: string; // Optional
   public listTableEmptyText: string; // Optional
+
+  public assetMixCount: number;
 
   public showGenerateOrders = false; // Optional
   public disableGenerateOrders = false; // Optional
@@ -118,6 +121,7 @@ export class TimelineDetailComponent extends DataTableCommonManagerComponent imp
    */
   public singleDataSource: SingleTableDataSource;
   public listDataSource: TableDataSource;
+  public assetMixDataSource: TableDataSource;
 
   public timeline$: Observable<Array<TimelineEvent>>;
 
@@ -131,6 +135,7 @@ export class TimelineDetailComponent extends DataTableCommonManagerComponent imp
    */
   public singleColumnsToShow: Array<string | TableDataColumn>;
   public listColumnsToShow: Array<string | TableDataColumn>;
+  public assetMixColumnsToShow: Array<string | TableDataColumn>;
 
   /**
    * 3. Construct with ActivatedRoute

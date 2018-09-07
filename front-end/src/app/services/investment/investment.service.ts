@@ -166,7 +166,7 @@ export class InvestmentService {
    */
 
   getSingleInvestment(investment_id: number): Observable<any> {
-    return this.http.get<any>(this.baseUrl + `investments/${investment_id}`);
+    return this.http.post<any>(this.baseUrl + `investments/${investment_id}`, {});
   }
 
   getSingleRecipe(recipe_id: number): Observable<any> {
