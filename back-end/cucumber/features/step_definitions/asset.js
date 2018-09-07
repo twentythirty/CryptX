@@ -27,6 +27,77 @@ Given('the system has only WhiteListed Assets', function() {
 
 });
 
+Given(/^the system has Asset Market Capitalization for the last (.*) hours$/, async function(hours) {
+
+    hours = parseInt(hours);
+
+    const now = new Date();
+
+    const { Asset, AssetMarketCapitalization, sequelize } = require('../../../models');
+    const { Op } = sequelize;
+
+    const last_hours = [];
+
+    for(let hour = 0; hour <= hours; hour += 2) {
+
+        const new_hour = new Date(now);
+        new_hour.setHours(now.getHours() - hour);
+        last_hours.unshift(new_hour);
+
+    }
+
+    const assets = await Asset.findAll({
+        where: {},
+        raw: true
+    });
+
+    const current_capitalization = await AssetMarketCapitalization.count({
+        where: {
+            timestamp: { [Op.gte]: new Date().setHours(now.getHours() - hours) }
+        },
+        distinct: true,
+        col: 'asset_id'
+    });
+
+    if(assets.length === current_capitalization) return;
+
+    let market_cap = _.concat(...last_hours.map(hour => {
+        let total_cap = 0;
+
+        let base_capitalization = assets.map(asset => {
+            const capitalization = _.random(10000, 100000000, false);
+            total_cap += capitalization;
+    
+            return {
+                timestamp: hour,
+                capitalization_usd: capitalization,
+                asset_id: asset.id
+            };
+        });
+
+        base_capitalization.map(cap => {
+            
+            cap.market_share_percentage = (cap.capitalization_usd * 100) / total_cap;
+            cap.daily_volume_usd = ((cap.capitalization_usd * (cap.market_share_percentage)) / _.random(10, 100)).toFixed(2);
+
+        });
+
+        return base_capitalization;
+    }));
+
+    return sequelize.transaction(transaction => {
+        return AssetMarketCapitalization.destroy({
+            where: {
+                timestamp: { [Op.lte]: new Date().setHours(now.getHours() - hours) }
+            },
+            transaction
+        }).then(() => {
+            return AssetMarketCapitalization.bulkCreate(market_cap);
+        });
+    });
+
+});
+
 When('retrieve a list of Assets', function() {
 
     return chai

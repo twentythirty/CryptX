@@ -16,6 +16,7 @@ Feature: Asset
 
     Scenario: Blacklisting an Asset
 
+        Given the system has Asset Market Capitalization for the last 7 hours
         Given the system has only WhiteListed Assets
         When I log onto CryptX as Compliance Manager
         And I provide a rationale
