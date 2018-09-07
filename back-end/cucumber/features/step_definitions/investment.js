@@ -118,9 +118,22 @@ When(/^I create a new (.*) (.*) Investment Run$/, function(simulated, type) {
     const investment_run_details = {
         strategy_type: STRATEGY_TYPES[type],
         is_simulated: (simulated === 'simulated'),
-        deposit_usd: _.random(1000, 50000, false)
+        deposit_amounts: [
+            {
+                symbol: 'USD',
+                amount: _.random(1000, 100000, false)
+            },
+            {
+                symbol: 'BTC',
+                amount: _.random(0.1, 5, true)
+            },
+            {
+                symbol: 'ETH',
+                amount: _.random(10, 100, true)
+            }
+        ]
     };
-
+    
     return chai
         .request(this.app)
         .post('/v1/investments/create')
@@ -129,11 +142,12 @@ When(/^I create a new (.*) (.*) Investment Run$/, function(simulated, type) {
         .then(result => {   
             
             expect(result).to.have.status(200);
-
+            
             this.current_investment_run = investment_run_details;
             this.current_investment_run.id = result.body.investment_run.id;
         })
         .catch(error => {
+
             this.error = error;
         });
 });
@@ -151,9 +165,18 @@ When('I get the Investment Run by id', function() {
         });
 });
 
-Then('the Investment Run information is saved to the database', function() {
+Then('the Investment Run information is saved to the database', async function() {
 
-    const { InvestmentRun, InvestmentAmount } = require('../../../models');
+    const { InvestmentRun, InvestmentAmount, Asset } = require('../../../models');
+
+    const assets = await Asset.findAll({
+        where: { symbol: ['USD', 'BTC', 'ETH'] },
+        raw: true
+    });
+
+    this.current_investment_run.deposit_amounts.map(a => {
+        a.asset_id = ( assets.find(asset => a.symbol === asset.symbol) || {} ).id
+    });
 
     return InvestmentRun.findById(this.current_investment_run.id, {
         include: InvestmentAmount
@@ -166,10 +189,10 @@ Then('the Investment Run information is saved to the database', function() {
 
         for(let amount of investment_run.InvestmentAmounts) {
 
-            const found_amount = this.current_investment_run.amounts.find(a => a.asset_id === amount.asset_id);
+            const found_amount = this.current_investment_run.deposit_amounts.find(a => a.asset_id === amount.asset_id);
 
             expect(parseFloat(amount.amount)).to.equal(parseFloat(found_amount.amount));
-            expect(amount.asset_id).text.equal(found_amount.asset_id);
+            expect(amount.asset_id).to.equal(found_amount.asset_id);
 
         };
 
@@ -180,7 +203,7 @@ Then('the Investment Run information is saved to the database', function() {
         expect(investment_run.completed_timestamp).to.be.null;
 
         this.current_investment_run = investment_run.toJSON();
-        this.current_investment_run.amounts = investment_run.InvestmentAmounts.map(a => a.toJSON());
+        this.current_investment_run.deposit_amounts = investment_run.InvestmentAmounts.map(a => a.toJSON());
 
     });
 

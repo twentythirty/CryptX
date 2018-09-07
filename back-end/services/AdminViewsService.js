@@ -118,7 +118,7 @@ const fetchViewHeaderLOV = async (table, field, query, where_clause = '') => {
     if (allowed_fields == null || !allowed_fields.includes(field)) {
         return [];
     }
-    console.log('>>>>>>>>>>>>>>>>>>>WE CALL GUCHHI');
+
     const sql = builder.selectDistinct(field, table, builder.addToWhere(where_clause, query ? `${field} LIKE ${sequelize.escape(`%${query}%`)}` : ''))
 
     //returns list of objects with 1 key-value pair, key being field name

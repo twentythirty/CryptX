@@ -39,6 +39,10 @@ function CustomWorld() {
     }
 }
 
+Before(function(scenario) {
+    World._current_scenario = scenario;
+});
+
 BeforeAll({ timeout: 15000000 }, async function(){
 
     const { Exchange } = require('../../../models');
@@ -83,7 +87,6 @@ AfterAll(function() {
 });
 
 After(function (scenario) {
-    World._current_scenario = scenario;
 
     const status = scenario.result.status === 'passed' ? `\x1b[1m\x1b[32m${scenario.result.status}\x1b[0m` : `\x1b[1m\x1b[31m${scenario.result.status}\x1b[0m`;
     let duration = scenario.result.duration;
