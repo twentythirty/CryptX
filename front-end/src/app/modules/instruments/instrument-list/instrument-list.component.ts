@@ -48,7 +48,7 @@ export class InstrumentListComponent extends DataTableCommonManagerComponent {
       col => {
         col.filter.rowData$ = this.instrumentsService.getHeaderLOV(col.column);
       }
-    )
+    );
   }
 
   public openRow(instrument: Instrument): void {

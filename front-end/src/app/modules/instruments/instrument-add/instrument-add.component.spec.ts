@@ -5,6 +5,7 @@ import { InstrumentsModule } from '../instruments.module';
 import { InstrumentAddComponent } from './instrument-add.component';
 import { AssetService, AssetsAllResponse } from '../../../services/asset/asset.service';
 import { InstrumentsService } from '../../../services/instruments/instruments.service';
+import { testFormControlForm } from '../../../testing/commonTests';
 
 
 const AssetServiceStub = {
@@ -64,4 +65,16 @@ describe('InstrumentAddComponent', () => {
   it('should create', () => {
     expect(component).toBeTruthy();
   });
+
+  testFormControlForm(() => {
+    return {
+      formControl: component.form,
+      submitButton: fixture.nativeElement.querySelector('button.submit'),
+      fillForm: () => {
+        component.form.controls.transaction_asset_id.setValue(1);
+        component.form.controls.quote_asset_id.setValue(2);
+      }
+    };
+  });
+
 });

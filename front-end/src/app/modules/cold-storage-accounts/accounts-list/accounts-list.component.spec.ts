@@ -77,7 +77,7 @@ describe('AccountsListComponent', () => {
   it('sould set header LOV observables for specified columns', () => {
     const headerLovColumns = ['asset', 'strategy_type', 'address', 'custodian'];
 
-    testHeaderLov(component.accountsDataSource, headerLovColumns);
+    fixture.whenStable().then(() => testHeaderLov(component.accountsDataSource, headerLovColumns));
   });
 
   it('sould navigate to new account route on new account button press', fakeAsync(() => {

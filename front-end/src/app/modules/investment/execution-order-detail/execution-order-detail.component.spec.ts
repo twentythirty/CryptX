@@ -9,6 +9,10 @@ import { InvestmentService } from '../../../services/investment/investment.servi
 const InvestmentServiceStub = {
   getAllExecutionOrdersHeaderLOV: () => {
     return fakeAsyncResponse({});
+  },
+
+  getAllTimelineData: () => {
+    return fakeAsyncResponse({});
   }
 };
 

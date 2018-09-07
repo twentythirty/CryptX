@@ -1,13 +1,13 @@
 import { Component, OnInit } from '@angular/core';
-import { Router, ActivatedRoute } from "@angular/router";
+import { Router, ActivatedRoute } from '@angular/router';
 import { finalize } from 'rxjs/operators';
 
-import { DataTableCommonManagerComponent } from "../../../shared/components/data-table-common-manager/data-table-common-manager.component";
-import { TableDataSource, TableDataColumn } from "../../../shared/components/data-table/data-table.component";
-import { DateCellDataColumn, StatusCellDataColumn, NumberCellDataColumn } from "../../../shared/components/data-table-cells";
-import { ExecutionOrdersService } from "../../../services/execution-orders/execution-orders.service";
-import { StatusClass } from "../../../shared/models/common";
-import { Order } from "../../../shared/models/order";
+import { DataTableCommonManagerComponent } from '../../../shared/components/data-table-common-manager/data-table-common-manager.component';
+import { TableDataSource, TableDataColumn } from '../../../shared/components/data-table/data-table.component';
+import { DateCellDataColumn, StatusCellDataColumn, NumberCellDataColumn } from '../../../shared/components/data-table-cells';
+import { ExecutionOrdersService } from '../../../services/execution-orders/execution-orders.service';
+import { StatusClass } from '../../../shared/models/common';
+import { Order } from '../../../shared/models/order';
 
 @Component({
   selector: 'app-execution-order-list',
@@ -75,7 +75,7 @@ export class ExecutionOrderListComponent extends DataTableCommonManagerComponent
       col => ['id', 'investment_run_id', 'instrument', 'side', 'exchange', 'type', 'status'].includes(col.column)
     ).map(
       col => {
-        col.filter.rowData$ = this.orderService.getHeaderLOV(col.column)
+        col.filter.rowData$ = this.orderService.getHeaderLOV(col.column);
       }
     );
   }
@@ -92,7 +92,7 @@ export class ExecutionOrderListComponent extends DataTableCommonManagerComponent
         this.count = res.count;
         this.getFilterLOV();
       }
-    )
+    );
   }
 
   openRow(order: Order): void {

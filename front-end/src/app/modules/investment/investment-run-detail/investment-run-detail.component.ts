@@ -1,6 +1,8 @@
 import { Component, OnInit } from '@angular/core';
+import { CurrencyPipe } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { mergeMap, finalize } from 'rxjs/operators';
+import * as _ from 'lodash';
 
 import { StatusClass } from '../../../shared/models/common';
 import {
@@ -21,8 +23,6 @@ import {
   PercentCellDataColumn
 } from '../../../shared/components/data-table-cells';
 import { InvestmentService } from '../../../services/investment/investment.service';
-import { CurrencyPipe } from '@angular/common';
-import * as _ from 'lodash';
 
 /**
  * 0. Set HTML and SCSS files in component decorator

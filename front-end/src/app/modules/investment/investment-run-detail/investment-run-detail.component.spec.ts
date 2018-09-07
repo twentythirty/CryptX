@@ -1,4 +1,5 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { CurrencyPipe } from '@angular/common';
 import { extraTestingModules, fakeAsyncResponse } from '../../../testing/utils';
 
 import { InvestmentModule } from '../investment.module';
@@ -66,6 +67,7 @@ describe('InvestmentRunDetailComponent', () => {
         ...extraTestingModules
       ],
       providers: [
+        CurrencyPipe,
         { provide: InvestmentService, useValue: InvestmentServiceStub }
       ]
     })

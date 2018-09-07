@@ -5,11 +5,23 @@ import { UsersModule } from '../users.module';
 import { UsersAddComponent } from './users-add.component';
 import { RolesService } from '../../../services/roles/roles.service';
 import { UsersService } from '../../../services/users/users.service';
+import permissions from '../../../config/permissions';
 
 
 const RolesServiceStub = {
   getAllRoles: () => {
-    return fakeAsyncResponse({});
+    return fakeAsyncResponse({
+      success: true,
+      roles: [
+        {
+          id: 1,
+          name: 'Ultimate role',
+          permissions: Object.values(permissions)
+        }
+      ],
+      footer: [],
+      count: 1
+    });
   }
 };
 
