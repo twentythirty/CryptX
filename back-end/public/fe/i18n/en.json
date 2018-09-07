@@ -272,6 +272,7 @@
     },
     "footer": {
       "id": "{{ id }} Items",
+      "investment_run_id": "{{ investment_run_id }} Investment runs",
       "instrument": "{{ instrument }} Instruments",
       "exchange": "{{ exchange }} Exchanges",
       "status":"{{ status }} Pending"
