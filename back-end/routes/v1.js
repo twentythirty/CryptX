@@ -318,6 +318,13 @@ router.post(
   post_body_validator,
   InvestmentController.createInvestmentRun
 );
+router.post(
+  ROUTES.SelectInvestmentAssets.router_string,
+  stateless_auth,
+  res_new_token,
+  check_permissions,
+  InvestmentController.generateInvestmentAssetGroup
+);
 //get filtered investments
 router.post(
   ROUTES.GetInvestments.router_string,

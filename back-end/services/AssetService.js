@@ -98,47 +98,40 @@ module.exports.getWhitelisted = getWhitelisted;
  * Only checks whitelisted coins. Can exclude assets by list of ids.
  * @param strategy_type a value from the STRATEGY_TYPES enumeration described in model_constants.js 
  */
-const getStrategyAssets = async function (strategy_type, exclude_from_index = []) {  
+const getStrategyAssets = async function (strategy_type) {  
   //check for valid strategy type
   if (!Object.values(STRATEGY_TYPES).includes(parseInt(strategy_type, 10))) {
     TE(`Unknown strategy type ${strategy_type}!`);
   }
-  
-  let exclude_string = exclude_from_index.length ? 
-    `AND asset.id NOT IN (${exclude_from_index.join()})` :
-    ``;
 
   // get assets that aren't blacklisted, sorted by marketcap average of 7 days
   let [err, assets] = await to(sequelize.query(`
     SELECT asset.id,
-          asset.symbol,
-          asset.long_name,
-          asset.is_base,
-          asset.is_deposit,
-          avg(cap.market_share_percentage) AS avg_share
-
+      asset.symbol,
+      asset.long_name,
+      asset.is_base,
+      asset.is_deposit,
+      cap.capitalization_usd,
+      CASE WHEN status.type IS NULL THEN 400 ELSE status.type END as status
     FROM asset
-    INNER JOIN
-      ( SELECT *
+    JOIN LATERAL
+    (
+      SELECT *
       FROM asset_market_capitalization AS c
-      WHERE c.timestamp >= NOW() - interval '7 days' ) AS cap ON cap.asset_id=asset.id
-    WHERE (
-            (SELECT CASE TYPE WHEN ${INSTRUMENT_STATUS_CHANGES.Whitelisting} THEN TRUE ELSE FALSE END
-              FROM asset_status_change
-              WHERE asset_id=asset.id
-              ORDER BY TIMESTAMP DESC LIMIT 1)
-          OR NOT EXISTS
-            (SELECT TRUE
-              FROM asset_status_change
-              WHERE asset_id = asset.id) )
-        ${exclude_string}
-
-    GROUP BY asset.id,
-            asset.symbol,
-            asset.long_name,
-            asset.is_base,
-            asset.is_deposit
-    ORDER BY avg_share DESC LIMIT ${SYSTEM_SETTINGS.INDEX_LCI_CAP + SYSTEM_SETTINGS.INDEX_MCI_CAP}`, {
+      WHERE c.asset_id=asset.id
+        -- AND c.timestamp >= NOW() - interval '7 days'
+      ORDER BY c.asset_id NULLS LAST, c.timestamp DESC NULLS LAST
+      LIMIT 1
+    ) AS cap ON cap.asset_id=asset.id
+    LEFT JOIN LATERAL (
+      SELECT type
+      FROM asset_status_change
+      WHERE asset_id=asset.id
+        ORDER BY TIMESTAMP DESC
+      LIMIT 1
+    ) as status ON TRUE
+    ORDER BY cap.capitalization_usd DESC
+    LIMIT ${SYSTEM_SETTINGS.INDEX_LCI_CAP + SYSTEM_SETTINGS.INDEX_MCI_CAP}`, {
     type: sequelize.QueryTypes.SELECT
   }));
 
@@ -146,7 +139,7 @@ const getStrategyAssets = async function (strategy_type, exclude_from_index = []
 
   assets.map(a => {
     Object.assign(a, {
-      avg_share: parseFloat(a.avg_share),
+      capitalization_usd: parseFloat(a.capitalization_usd),
     });
   });
 

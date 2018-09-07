@@ -674,3 +674,16 @@ const GetInvestmentPortfolioStats = async function (req, res) {
 }
 module.exports.GetInvestmentPortfolioStats = GetInvestmentPortfolioStats;
 
+const generateInvestmentAssetGroup = async function (req, res) {
+
+  let strategy_type = req.body.strategy_type,
+    user_id = req.user.id;
+
+  let [err, list] = await to(investmentService.generateInvestmentAssetGroup(user_id, strategy_type));
+  if (err) TE(err.message);
+
+  return ReS(res, {
+    list
+  })
+};
+module.exports.generateInvestmentAssetGroup = generateInvestmentAssetGroup;

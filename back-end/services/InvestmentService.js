@@ -385,7 +385,7 @@ const generateRecipeDetails = async function (strategy_type) {
   assets = _.filter(assets, a => a.suggested_action != null);
 
   // calculate investment percentage
-  const total_marketshare = _.sumBy(assets, 'avg_share');
+  //const total_marketshare = _.sumBy(assets, 'avg_share');
 
   assets.map(asset => {
     asset.investment_percentage = 100 / assets.length;
@@ -683,3 +683,43 @@ const getInvestmentRunTimeline = async function (investment_run_id) {
   }
 }
 module.exports.getInvestmentRunTimeline = getInvestmentRunTimeline;
+
+const generateInvestmentAssetGroup = async function (user_id, strategy_type) {
+
+  let [err, strategy_assets] = await to(AssetService.getStrategyAssets(strategy_type));
+  if (err) TE(err.message);
+
+  let arr = [...strategy_assets.map(asset => {
+          
+    return {
+      asset_id: asset.id,
+      status: asset.status
+    };
+  })]
+
+  let group;
+  [err, group] = await to(sequelize.transaction(transaction => 
+    InvestmentRunAssetGroup.create({
+      created_timestamp: new Date(),
+      user_id: user_id,
+
+      GroupAssets: [
+        ...strategy_assets.map(asset => {
+          
+          return {
+            asset_id: asset.id,
+            status: asset.status
+          };
+        })
+      ]
+    }, {
+      include: GroupAsset,
+      transaction
+    })
+  ));
+
+  if (err) TE(err.message);
+
+  return group;
+};
+module.exports.generateInvestmentAssetGroup = generateInvestmentAssetGroup;
