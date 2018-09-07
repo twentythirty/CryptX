@@ -13,11 +13,12 @@ const createInvestmentRun = async function (req, res) {
 
   let { strategy_type,
     is_simulated,
-    deposit_amounts
+    deposit_amounts,
+    investment_asset_group_id
   } = req.body;
 
   [err, investment_run] = await to(
-    investmentService.createInvestmentRun(req.user.id, strategy_type, is_simulated, deposit_amounts)
+    investmentService.createInvestmentRun(req.user.id, strategy_type, is_simulated, deposit_amounts, investment_asset_group_id)
   );
   if (err) return ReE(res, err, 422);
 

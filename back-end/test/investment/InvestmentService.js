@@ -40,6 +40,7 @@ describe('InvestmentService testing:', () => {
   let RECIPE_STATUS = INVESTMENT_RUN_STATUSES.RecipeRun;
   let RECIPE_STATUS_CHANGE = RECIPE_RUN_STATUSES.Approved;
   let RECIPE_APPROVAL_COMMENT = 'Approving recipe';
+  let ASSET_GROUP_ID = 1;
   let DEPOSIT_ASSET_SYMBOLS = ['USD', 'BTC', 'ETH'];
   let DEPOSIT_AMOUNTS = [
     {
@@ -171,13 +172,13 @@ describe('InvestmentService testing:', () => {
 
     it('shall reject bad strategy types', () => {
       return chai.assert.isRejected(investmentService.createInvestmentRun(
-        USER_ID, -1, IS_SIMULATED, DEPOSIT_AMOUNTS
+        USER_ID, -1, IS_SIMULATED, DEPOSIT_AMOUNTS, ASSET_GROUP_ID
       ));
     });
 
     it('shall call required DB model methods', () => {
       return investmentService.createInvestmentRun(
-        USER_ID, STRATEGY_TYPE, IS_SIMULATED, DEPOSIT_AMOUNTS
+        USER_ID, STRATEGY_TYPE, IS_SIMULATED, DEPOSIT_AMOUNTS, ASSET_GROUP_ID
       ).then(investment_run => {
         chai.assert.isTrue(InvestmentRun.count.called);
         chai.assert.isTrue(InvestmentRun.create.called);
@@ -195,13 +196,13 @@ describe('InvestmentService testing:', () => {
       });
 
       return chai.assert.isRejected(investmentService.createInvestmentRun(
-        USER_ID, STRATEGY_TYPE, false, DEPOSIT_AMOUNTS
+        USER_ID, STRATEGY_TYPE, false, DEPOSIT_AMOUNTS, ASSET_GROUP_ID
       ));
     })
 
     it('shall reject investment run without any deposit amounts', () => {
       return chai.assert.isRejected(investmentService.createInvestmentRun(
-        USER_ID, STRATEGY_TYPE, false, []
+        USER_ID, STRATEGY_TYPE, false, [], ASSET_GROUP_ID
       ));
     });
 
@@ -211,7 +212,7 @@ describe('InvestmentService testing:', () => {
         USER_ID, STRATEGY_TYPE, false, [{
           symbol: "DOGE",
           amount: 10000
-        }]
+        }], ASSET_GROUP_ID
       ));
     });
 
@@ -221,13 +222,13 @@ describe('InvestmentService testing:', () => {
         USER_ID, STRATEGY_TYPE, false, [{
           symbol: "USD",
           amount: -1
-        }]
+        }], ASSET_GROUP_ID
       ));
     });
 
     it('shall create new investment run and its investment amounts if everything is good', () => {
       return investmentService.createInvestmentRun(
-        USER_ID, STRATEGY_TYPE, IS_SIMULATED, DEPOSIT_AMOUNTS
+        USER_ID, STRATEGY_TYPE, IS_SIMULATED, DEPOSIT_AMOUNTS, ASSET_GROUP_ID
       ).then(investment_run => {
         chai.expect(investment_run.strategy_type).to.be.eq(STRATEGY_TYPE);
         chai.expect(investment_run.is_simulated).to.be.eq(IS_SIMULATED);
