@@ -141,7 +141,7 @@ describe('Execution Order generator job', () => {
     }
     const TEST_PARTIAL_EXECUTION_ORDER = {
         id: EXECUTION_ORDER_IDS[1],
-        status: EXECUTION_ORDER_STATUSES.Placed
+        status: EXECUTION_ORDER_STATUSES.InProgress
     }
     const TEST_FILLED_EXECUTION_ORDER = {
         id: EXECUTION_ORDER_IDS[2],

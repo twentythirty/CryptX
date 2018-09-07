@@ -95,7 +95,7 @@ describe("Execution Order Simulator job", () => {
     
     return execOrderSimulator.JOB_BODY(stubbed_config, console.log).then(result => {
       chai.expect(result).to.satisfy(exec_orders => {
-        return exec_orders.every(order => order.status == MODEL_CONST.EXECUTION_ORDER_STATUSES.Placed) &&
+        return exec_orders.every(order => order.status == MODEL_CONST.EXECUTION_ORDER_STATUSES.InProgress) &&
           exec_orders.every(order => order.external_identifier == 'SIM-' + order.id);
       })
     });

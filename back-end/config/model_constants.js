@@ -67,11 +67,12 @@ MODEL_CONST = {
 
   EXECUTION_ORDER_STATUSES: {
     Pending: 61,
-    Placed: 62,
+    InProgress: 62,
     FullyFilled: 63,
     PartiallyFilled: 64,
     Cancelled: 65,
-    Failed: 66
+    Failed: 66,
+    NotFilled: 67
   },
 
   EXECUTION_ORDER_TYPES: {

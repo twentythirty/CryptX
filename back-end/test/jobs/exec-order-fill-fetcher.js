@@ -17,7 +17,7 @@ const Instrument = require('../../models').Instrument;
 const ExecutionOrder = require('../../models').ExecutionOrder;
 const ExecutionOrderFill = require('../../models').ExecutionOrderFill;
 
-const { Placed, PartiallyFilled, Failed, FullyFilled } = MODEL_CONST.EXECUTION_ORDER_STATUSES; 
+const { InProgress, PartiallyFilled, Failed, FullyFilled, NotFilled } = MODEL_CONST.EXECUTION_ORDER_STATUSES; 
 
 /**
  * Mocked "fetchMyTrades" method.
@@ -132,6 +132,17 @@ const MOCK_ORDERS = [{
     fee: {
         cost: 1
     }
+}, {
+    id: '7',
+    symbol: 'ETH/BTC',
+    amount: 10,
+    filled: 5,
+    remaining: 5,
+    status: 'closed',
+    price: 13223,
+    fee: {
+        cost: 1
+    }
 }];
 
 const MOCK_TRADES = [{
@@ -169,7 +180,18 @@ const MOCK_TRADES = [{
     amount: 4,
     fee: {
         cost: 2
-    }
+    },
+    
+}, {
+    id: '5',
+    timestamp: 1502962946216,
+    symbol: MOCK_ORDERS[6].symbol,
+    order: MOCK_ORDERS[6].id,
+    amount: 4,
+    fee: {
+        cost: 2
+    },
+    
 }];
 
 const BASE_ORDER = {
@@ -178,7 +200,7 @@ const BASE_ORDER = {
     external_identifier: 1,
     exchange_id: 1,
     failed_attempts: 0,
-    status: Placed,
+    status: InProgress,
     total_quantity: 1,
     price: 1,
     type: 'market',
@@ -191,7 +213,7 @@ const BASE_ORDER = {
     instrument_transaction_asset: 'BTC',
     _previousDataValues: {
         failed_attempts: 0,
-        status: Placed,
+        status: InProgress,
         total_quantity: 1,
         price: 1,
         type: 'market',
@@ -229,7 +251,7 @@ describe('Execution Order Fills fetcher job', () => {
                                 fetchTrades: true,
                                 fetchOrder: true
                             },
-                            fetchMyTrades: fetchMyTrades('1', '2', '3', '4'),
+                            fetchMyTrades: fetchMyTrades('1', '2', '3', '4', '5'),
                             fetchOrder: fetchOrder
                         };
                         break;
@@ -371,7 +393,7 @@ describe('Execution Order Fills fetcher job', () => {
 
     });
 
-    it('shall mark the execution order as Failed due to the order on the exchange was closed before getting filled', () => {
+    it('shall mark the execution order as NotFilled due to the order on the exchange was closed before getting filled at all', () => {
         let closed_order = Object.assign({}, BASE_ORDER, {
             exchange_id: 2,
             external_identifier: '4'
@@ -392,12 +414,38 @@ describe('Execution Order Fills fetcher job', () => {
 
             const failed_order = result[0].find(r => r.method === 'save').model;
 
-            chai.expect(failed_order.status).to.equal(Failed);
+            chai.expect(failed_order.status).to.equal(NotFilled);
 
         });
     });
 
-    it('shall mark the execution order as Failed when the failed attemts exceeds the system limit', () => {
+    it('shall mark the execution order as PartiallyFilled due to the order on the exchange was closed but was filled partially', () => {
+        let closed_order = Object.assign({}, BASE_ORDER, {
+            exchange_id: 1,
+            external_identifier: '7'
+        });
+
+        sinon.stub(sequelize, 'query').callsFake(query => {
+            stubSave(closed_order);
+            stubChanged(closed_order, ['status']);
+
+            return Promise.resolve([closed_order]);
+        });
+
+        sinon.stub(sequelize, 'transaction').callsFake(query => {
+            return Promise.resolve(closed_order);
+        });
+
+        return execOrderFillFetcher.JOB_BODY(stubbed_config, console.log).then(result => {
+
+            const failed_order = result[0].find(r => r.method === 'save').model;
+
+            chai.expect(failed_order.status).to.equal(PartiallyFilled);
+
+        });
+    });
+
+    it('shall mark the execution order as NotFilled when the failed attemts exceeds the system limit and was not filled at all', () => {
         let closed_order = Object.assign({}, BASE_ORDER, {
             exchange_id: 999,
             failed_attempts: SYSTEM_SETTINGS.EXEC_ORD_FAIL_TOLERANCE
@@ -418,7 +466,7 @@ describe('Execution Order Fills fetcher job', () => {
 
             const failed_order = result[0].find(r => r.method === 'save').model;
 
-            chai.expect(failed_order.status).to.equal(Failed);
+            chai.expect(failed_order.status).to.equal(NotFilled);
 
         });
     });
@@ -638,7 +686,7 @@ describe('Execution Order Fills fetcher job', () => {
 
     });
 
-    it('shall create a new fill when it filled amount exceeds the sum of fills inside the database and mark the order as PartiallyFilled.', () => {
+    it('shall create a new fill when it filled amount exceeds the sum of fills inside the database.', () => {
         
         let order = Object.assign({}, BASE_ORDER, {
             exchange_id: 2,
@@ -673,7 +721,7 @@ describe('Execution Order Fills fetcher job', () => {
             const new_fill = result[0].find(r => r.method === 'create').args[0];
             const partially_filled_order = result[0].find(r => r.method === 'save').model;
 
-            chai.expect(partially_filled_order.status).to.equal(PartiallyFilled);
+            chai.expect(partially_filled_order.status).to.equal(InProgress);
 
             chai.expect(new_fill).to.be.an('object', 'bulkCreate did not receive a trade object');
             chai.expect(new_fill.execution_order_id).to.equal(order.id);

@@ -67,8 +67,7 @@ module.exports = (sequelize, DataTypes) => {
 
         const is_active = _.reduce([
             EXECUTION_ORDER_STATUSES.Pending,
-            EXECUTION_ORDER_STATUSES.Placed,
-            EXECUTION_ORDER_STATUSES.PartiallyFilled
+            EXECUTION_ORDER_STATUSES.InProgress
         ], (accum, val) => accum || this.status == val, false)
 
         return is_active;

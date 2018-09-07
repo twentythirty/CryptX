@@ -18,8 +18,7 @@ module.exports.JOB_BODY = async (config, log) => {
     ];
     const EXECUTION_ORDER_ACTIVE_STATUSES = [
         EXECUTION_ORDER_STATUSES.Pending,
-        EXECUTION_ORDER_STATUSES.Placed,
-        EXECUTION_ORDER_STATUSES.PartiallyFilled
+        EXECUTION_ORDER_STATUSES.InProgress
     ]
 
     //mark-sweep begin

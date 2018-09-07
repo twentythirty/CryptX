@@ -667,7 +667,7 @@ const getInvestmentRunTimeline = async function (investment_run_id) {
   } else if (whole_investment.status === INVESTMENT_RUN_STATUSES.OrdersFilled) {
     exec_order_status = EXECUTION_ORDER_STATUSES.FullyFilled;
   } else if (whole_investment.status === INVESTMENT_RUN_STATUSES.OrdersExecuting) {
-    exec_order_status = EXECUTION_ORDER_STATUSES.Placed;
+    exec_order_status = EXECUTION_ORDER_STATUSES.InProgress;
   }
   let exec_order_data = {
     count: exec_order_count,

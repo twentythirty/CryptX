@@ -149,7 +149,7 @@ module.exports.JOB_BODY = async (config, log) => {
            max difference between times is of is -1 second. */
           let timestamp = order_response.timestamp - 1000; // subtract 1000 miliseconds from timestamp
           order.placed_timestamp = timestamp;
-          order.status = EXECUTION_ORDER_STATUSES.Placed;
+          order.status = EXECUTION_ORDER_STATUSES.InProgress;
 
           order.save().then(o => {
             logAction(actions.placed, {
