@@ -158,7 +158,10 @@ const getRecipeDeposits = async function (req, res) {
   const recipe_run_id = req.params.recipe_id;
   let { seq_query, sql_where } = req;
 
+  let fetch_footer_percentage = false;
+
   if (recipe_run_id && _.isPlainObject(seq_query)) {
+    fetch_footer_percentage = true;
     if (!_.isPlainObject(seq_query)) seq_query = { where: {} };
     if (!_.isPlainObject(seq_query.where)) seq_query.where = {};
     seq_query.where.recipe_run_id = recipe_run_id;
@@ -171,7 +174,7 @@ const getRecipeDeposits = async function (req, res) {
   const { data: recipe_deposits, total: count } = result;
 
   let footer = [];
-  [err, footer] = await to(AdminViewService.fetchRecipeDepositsViewsFooter(sql_where));
+  [err, footer] = await to(AdminViewService.fetchRecipeDepositsViewsFooter(sql_where, fetch_footer_percentage));
   if (err) return ReE(res, err.message, 422);
 
   return ReS(res, {

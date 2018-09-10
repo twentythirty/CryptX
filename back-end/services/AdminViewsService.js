@@ -874,27 +874,33 @@ const fetchExecutionOrderFillsViewsFooter = async (where_clause = '') => {
 }
 module.exports.fetchExecutionOrderFillsViewsFooter = fetchExecutionOrderFillsViewsFooter;
 
-const fetchRecipeDepositsViewsFooter = async (where_clause = '') => {
+const fetchRecipeDepositsViewsFooter = async (where_clause = '', fetch_footer_percentage = false) => {
 
     const view = 'av_recipe_deposits';
 
-    const query = builder.joinQueryParts([
+    let query_parts = [
         builder.selectCount(view, 'id', where_clause),
         builder.selectCountDistinct('investment_run_id', 'investment_run_id', view, where_clause),
         builder.selectCountDistinct('quote_asset_id', 'quote_asset', view, where_clause),
         builder.selectCountDistinct('exchange_id', 'exchange', view, where_clause),
         builder.selectCountDistinct('account', 'account', view, where_clause),
-        builder.selectSum('investment_percentage', view, where_clause),
         builder.selectCount(view, 'status', builder.addToWhere(where_clause, `status='deposits.status.${MODEL_CONST.RECIPE_RUN_DEPOSIT_STATUSES.Pending}'`))
-    ], [
+    ]
+    let aliases = [
         'id',
         'investment_run_id',
         'quote_asset',
         'exchange',
         'account',
-        'investment_percentage',
         'status'
-    ]);
+    ]
+
+    if (fetch_footer_percentage) {
+        query_parts.push(builder.selectSum('investment_percentage', view, where_clause));
+        aliases.push('investment_percentage');
+    }
+
+    const query = builder.joinQueryParts(query_parts, aliases);
 
     const footer = (await sequelize.query(query))[0];
 
