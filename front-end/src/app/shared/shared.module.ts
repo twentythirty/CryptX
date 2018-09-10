@@ -40,6 +40,7 @@ import { ButtonRadioComponent } from './components/button-radio/button-radio.com
 import { ActionLogComponent } from './components/action-log/action-log.component';
 import { NguiAutoCompleteModule } from '@ngui/auto-complete/dist';
 import { NgSelectModule } from '@ng-select/ng-select';
+import { MarkAsTouchedDirective } from './directives/mark-as-touched.directive';
 
 @NgModule({
     imports: [
@@ -100,6 +101,7 @@ import { NgSelectModule } from '@ng-select/ng-select';
         TimelineComponent,
         ButtonRadioComponent,
         ActionLogComponent,
+        MarkAsTouchedDirective,
 
     ],
     exports: [
@@ -130,6 +132,7 @@ import { NgSelectModule } from '@ng-select/ng-select';
         TimelineComponent,
         ButtonRadioComponent,
         ActionLogComponent,
+        MarkAsTouchedDirective,
     ]
 })
 export class SharedModule {}

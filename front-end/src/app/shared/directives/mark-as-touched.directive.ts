@@ -11,8 +11,6 @@ export class MarkAsTouchedDirective {
 
   @HostListener('click', ['$event'])
   clickEvent(event) {
-    console.log('appMarkAsTouched', this.appMarkAsTouched);
-
     this.markAsTouched(this.appMarkAsTouched);
   }
 

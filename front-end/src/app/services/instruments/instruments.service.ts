@@ -14,7 +14,7 @@ import { AddMappingRequestData } from '../../shared/models/api/addMappingRequest
 export class InstrumentsAllResponse {
   success: boolean;
   instruments: Array<Instrument>;
-  footer: Array<any>
+  footer: Array<any>;
   count: number;
 }
 
@@ -54,7 +54,7 @@ export class InstrumentsService {
     private http: HttpClient,
   ) {}
 
-  getAllInstruments(request?: EntitiesFilter): Observable<InstrumentsAllResponse>{
+  getAllInstruments(request?: EntitiesFilter): Observable<InstrumentsAllResponse> {
     if (request) {
       return this.http.post<InstrumentsAllResponse>(this.baseUrl + `instruments/all`, request);
     } else {
@@ -90,9 +90,9 @@ export class InstrumentsService {
     return this.http.get<any>(this.baseUrl + `instruments/header_lov/${column_name}`).pipe(
       map(
         res => {
-          if(res && res.lov && Array.isArray(res.lov)) {
+          if (res && res.lov && Array.isArray(res.lov)) {
             return res.lov.map(lov => {
-              return { value: lov.toString() }
+              return { value: lov.toString() };
             });
           }
           return null;

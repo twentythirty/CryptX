@@ -41,7 +41,8 @@
 <app-form-action-bar>
   <button
     class="btn submit"
-    [disabled]="loading || !form.valid"
+    [disabled]="loading"
     (click)="saveInstrument()"
+    [appMarkAsTouched]="form"
   >{{ 'instruments.add_instrument' | translate }}</button>
 </app-form-action-bar>

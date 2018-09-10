@@ -34,7 +34,19 @@ const AssetServiceStub = {
 };
 
 const InstrumentsServiceStub = {
-  createInstrument: () => {}
+  successCreateInstrument: true,
+
+  createInstrument: () => {
+    return fakeAsyncResponse({
+      success: InstrumentsServiceStub.successCreateInstrument,
+      instrument: {
+        id: 3927,
+        transaction_asset_id: 4,
+        quote_asset_id: 6,
+        symbol: 'NMC/PPC'
+      }
+    });
+  }
 };
 
 
@@ -69,11 +81,16 @@ describe('InstrumentAddComponent', () => {
   testFormControlForm(() => {
     return {
       component: component,
+      fixture: fixture,
       formControl: component.form,
       submitButton: fixture.nativeElement.querySelector('button.submit'),
       fillForm: () => {
         component.form.controls.transaction_asset_id.setValue(1);
         component.form.controls.quote_asset_id.setValue(2);
+        fixture.detectChanges();
+      },
+      changeToUnsuccess: () => {
+        InstrumentsServiceStub.successCreateInstrument = false;
       }
     };
   });

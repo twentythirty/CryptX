@@ -20,7 +20,7 @@ export interface TableDataSource {
        */
       hasRange?: boolean
       /**
-       * @param inputSearch - If True search will be show independent on filter type
+       * @param inputSearch - Show/hide text search independent on filter type
        */
       inputSearch?: boolean
       rowData?: Array<{

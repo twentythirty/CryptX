@@ -48,6 +48,10 @@ export class InstrumentAddComponent implements OnInit {
   }
 
   saveInstrument() {
+    if (this.form.invalid) {
+      return;
+    }
+
     this.loading = true;
 
     this.instrumentsService.createInstrument(this.form.value).pipe(

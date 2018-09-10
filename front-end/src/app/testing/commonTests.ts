@@ -1,5 +1,4 @@
 import { async } from '@angular/core/testing';
-import { Component } from '@angular/core';
 import { FormGroup } from '@angular/forms';
 import { click } from './utils';
 
@@ -14,25 +13,29 @@ export function testHeaderLov(dataSource, headerLovColumns) {
   }
 }
 
-// export function testFormControlForm(formControl: FormGroup, submitButton: HTMLElement, fillForm: Function) {
+
 export function testFormControlForm(
   additionalData: () => {
     component: any,
+    fixture: any,
     formControl: FormGroup,
     submitButton: HTMLElement,
-    fillForm: Function
+    fillForm: Function,
+    changeToUnsuccess: Function,
   }
 ) {
-  describe('form tests', () => {
+  describe('common form validating/submiting', () => {
     let component: any;
+    let fixture: any;
     let formControl: FormGroup;
     let submitButton: HTMLElement;
     let fillForm: Function;
+    let changeToUnsuccess: Function;
 
     let navigateSpy;
 
     beforeEach(async(() => {
-      ({ component, formControl, submitButton, fillForm } = additionalData());
+      ({ component, fixture, formControl, submitButton, fillForm, changeToUnsuccess } = additionalData());
     }));
 
     it('submit button should be enabled after component init', () => {
@@ -42,10 +45,11 @@ export function testFormControlForm(
       expect(formControl.invalid).toBe(true, 'form isint invalid');
       expect(submitButton.hasAttribute('disabled')).toBe(false, 'button isint enabled');
     });
-    it('should mark all form controls as dirty on submit button press', () => {
+    it('should mark all form controls as touched on submit button press', () => {
       click(submitButton);
+
       for (const field of Object.keys(formControl.controls)) {
-        expect(formControl.controls[field].dirty).toBe(true, `${field} isint dirty`);
+        expect(formControl.controls[field].touched).toBe(true, `${field} isint touched`);
       }
     });
 
@@ -56,30 +60,39 @@ export function testFormControlForm(
         expect(submitButton.hasAttribute('disabled')).toBe(false);
       });
 
-      describe('after form is submited', () => {
+      describe('after form is successfuly submited', () => {
         beforeEach(async(() => {
           navigateSpy = spyOn(component.router, 'navigate');
           click(submitButton);
+          fixture.detectChanges();
         }));
 
         it('submit button should be disabled', () => {
           expect(submitButton.hasAttribute('disabled')).toBe(true);
         });
 
-        describe('after form submit get response', () => {
-          it('should not be redirected on unsuccessful response', () => {
-            expect(navigateSpy).not.toHaveBeenCalled();
-          });
+        it('should be redirected', () => {
+          expect(navigateSpy).toHaveBeenCalled();
+        });
 
-          it('should be redirected on successful response', () => {
-
-          });
-
-          it('submit button should not be disabled', () => {
-            expect(submitButton.hasAttribute('disabled')).toBe(false);
-          });
+        it('submit button should not be disabled', () => {
+          fixture.detectChanges();
+          expect(submitButton.hasAttribute('disabled')).toBe(false);
         });
       });
+
+      describe('after form is unsuccessfuly submited', () => {
+        beforeEach(async(() => {
+          changeToUnsuccess();
+          navigateSpy = spyOn(component.router, 'navigate');
+          click(submitButton);
+        }));
+
+        it('should not be redirected', () => {
+          expect(navigateSpy).not.toHaveBeenCalled();
+        });
+      });
+
     });
   });
 
