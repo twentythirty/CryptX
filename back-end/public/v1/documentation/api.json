@@ -987,6 +987,42 @@
         ]
       }
     },
+    "/investment/select_assets": {
+      "post": {
+        "tags": [
+          "investment"
+        ],
+        "summary": "Create list(mix) of assets to invest into",
+        "description": "Before starting invesment run list of assets should be generated and its ID given as an argument to investmnet run creation API method.",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "description": "Info to start investment run",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/CreateInvestmentAssetGroup"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "$ref": "#/definitions/AssetGroupResponse"
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
     "/investments/{investment_id}": {
       "get": {
         "tags": [
@@ -6667,6 +6703,61 @@
         "investment_group_asset_id": {
           "type": "number",
           "example": 5
+        }
+      }
+    },
+    "CreateInvestmentAssetGroup": {
+      "type": "object",
+      "properties": {
+        "strategy_type": {
+          "type": "number",
+          "example": 102
+        }
+      }
+    },
+    "AssetGroupResponse": {
+      "type": "object",
+      "properties": {
+        "group": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "number",
+              "example": 10
+            },
+            "created_timestamp": {
+              "type": "number",
+              "example": 1532097313472
+            },
+            "user_id": {
+              "type": "number",
+              "example": 10
+            },
+            "GroupAssets": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "number",
+                    "example": 81
+                  },
+                  "asset_id": {
+                    "type": "number",
+                    "example": 2
+                  },
+                  "status": {
+                    "type": "number",
+                    "example": 400
+                  },
+                  "investment_run_asset_group_id": {
+                    "type": "number",
+                    "example": 13
+                  }
+                }
+              }
+            }
+          }
         }
       }
     },
