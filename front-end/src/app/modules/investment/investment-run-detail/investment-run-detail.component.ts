@@ -39,11 +39,11 @@ export class InvestmentRunDetailComponent extends TimelineDetailComponent implem
    */
   public pageTitle = 'Recipe run';
   public singleTitle = 'Investment run';
-  public listTitle = 'Recipe runs';
-  public assetMixTitle = 'Selected asset mix';
+  public extraTableTitle = 'Investment deposits';
+  public detailTableTitle = 'Recipe runs';
+  public listTitle = 'Selected asset mix';
   public addTitle = 'Start new run';
   public listTableEmptyText = 'investment.no_recipe_runs'; // custom data-table message on empty data set
-  public assetMixCount;
 
   /**
    * 2. Implement attributes to preset data structure
@@ -79,7 +79,8 @@ export class InvestmentRunDetailComponent extends TimelineDetailComponent implem
     }}}),
   ];
 
-  public assetMixDataSource: TableDataSource = {
+
+  public listDataSource: TableDataSource = {
     header: [
       { column: 'symbol', nameKey: 'table.header.symbol', filter: { type: 'text', sortable: true } },
       { column: 'long_name', nameKey: 'table.header.long_name', filter: { type: 'text', sortable: true } },
@@ -90,7 +91,7 @@ export class InvestmentRunDetailComponent extends TimelineDetailComponent implem
     body: null
   };
 
-  public assetMixColumnsToShow: Array<TableDataColumn> = [
+  public listColumnsToShow: Array<TableDataColumn> = [
     new TableDataColumn({ column: 'symbol' }),
     new TableDataColumn({ column: 'long_name' }),
     new CurrencyCellDataColumn({ column: 'capitalization' }),
@@ -98,7 +99,22 @@ export class InvestmentRunDetailComponent extends TimelineDetailComponent implem
     new PercentCellDataColumn({ column: 'market_share' }),
   ];
 
-  public listDataSource: TableDataSource = {
+  public extraTableDataSource: TableDataSource = {
+    header: [
+      { column: 'currency_name', nameKey: 'table.header.investment_currency'},
+      { column: 'amount', nameKey: 'table.header.amount'},
+      { column: 'value_usd', nameKey: 'table.header.equivalent_in_usd'},
+    ],
+    body: null
+  };
+
+  public extraTableColumnsToShow: Array<TableDataColumn> = [
+    new TableDataColumn({ column: 'currency_name' }),
+    new NumberCellDataColumn ({ column: 'amount' }),
+    new NumberCellDataColumn({ column: 'value_usd' }),
+  ];
+
+  public detailTableDataSource: TableDataSource = {
     header: [
       { column: 'id', nameKey: 'table.header.id' },
       { column: 'created_timestamp', nameKey: 'table.header.created' },
@@ -111,7 +127,7 @@ export class InvestmentRunDetailComponent extends TimelineDetailComponent implem
     body: null
   };
 
-  public listColumnsToShow: Array<TableDataColumn> = [
+  public detailTableColumnsToShow: Array<TableDataColumn> = [
     new TableDataColumn({ column: 'id' }),
     new DateCellDataColumn({ column: 'created_timestamp' }),
     new TableDataColumn({ column: 'user_created' }),
@@ -163,14 +179,21 @@ export class InvestmentRunDetailComponent extends TimelineDetailComponent implem
    * 4. Implement methods to fetch data OnInit
    */
   public getSingleData(): void {
+    this.getExtraTable();
+    this.getDetailTable();
+  }
+
+  public getAllData(): void {
     this.route.params.pipe(
       mergeMap(
-        params => this.investmentService.getSingleInvestment(params['id'])
+        params => this.investmentService.getSingleInvestment(params['id']).pipe(
+          finalize(() => this.stopTableLoading())
+        )
       )
     ).subscribe(
       res => {
         if (res.asset_mix) {
-          Object.assign(this.assetMixDataSource, {
+          Object.assign(this.listDataSource, {
             body: res.asset_mix,
             footer: res.footer.map(item => {
               if ( item.name === 'capitalization' ) {
@@ -179,7 +202,6 @@ export class InvestmentRunDetailComponent extends TimelineDetailComponent implem
               return item;
             })
           });
-          this.assetMixCount = res.count;
           this.count = res.count;
         }
         if (res.investment_run) {
@@ -194,21 +216,38 @@ export class InvestmentRunDetailComponent extends TimelineDetailComponent implem
           this.addTitle = '';
         }
       },
-      err => this.singleDataSource.body = []
+      err => {
+      this.singleDataSource.body = [];
+      this.listDataSource.body = [];
+      }
     );
   }
 
-  public getAllData(): void {
+  private getExtraTable() {
+    this.route.params.pipe(
+      mergeMap (
+        params => this.investmentService.getDepositAmounts(params['id'])
+      )
+    ).subscribe (
+      res => {
+        if (res.success) {
+          Object.assign(this.extraTableDataSource, {
+            body: res.deposit_amounts,
+            footer: res.footer
+          });
+        }
+      }, err => this.extraTableColumnsToShow = []
+    );
+  }
+
+  private getDetailTable() {
     this.route.params.pipe(
       mergeMap(
-        params => this.investmentService.getAllRecipes(params['id'], this.requestData).pipe(
-          finalize(() => this.stopTableLoading())
-        )
+        params => this.investmentService.getAllRecipes(params['id'], this.requestData)
       )
     ).subscribe(
       res => {
-        this.listDataSource.body = res.recipe_runs;
-        this.count = res.count;
+        this.detailTableDataSource.body = res.recipe_runs;
         const statusPending = res.recipe_runs.filter(run => {
           return run.approval_status === 'recipes.status.41';
         });
@@ -219,7 +258,7 @@ export class InvestmentRunDetailComponent extends TimelineDetailComponent implem
           this.addTitle = '';
         }
       },
-      err => this.listDataSource.body = []
+      err => this.detailTableDataSource.body = []
     );
   }
 

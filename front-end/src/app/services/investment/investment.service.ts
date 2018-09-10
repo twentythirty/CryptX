@@ -244,6 +244,10 @@ export class InvestmentService {
     }
     return stats;
   }
+
+  getDepositAmounts(investments_id: number): Observable<any> {
+    return this.http.post<any>(this.baseUrl + `investments/${investments_id}/deposit_amounts`, {});
+  }
   /**
    * Get timeline data
    * Only one of the ID is needed to find investment run

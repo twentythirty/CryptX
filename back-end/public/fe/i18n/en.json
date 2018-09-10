@@ -107,7 +107,9 @@
       "filled_quantity": "Filled quantity",
       "investment_usd": "Investment USD",
       "investment_eth": "Investement ETH",
-      "investment_btc": "Investment BTC"
+      "investment_btc": "Investment BTC",
+      "investment_currency": "Investment currency",
+      "equivalent_in_usd": "Equivalent in usd"
     },
     "filter": {
       "all": "All",
@@ -602,5 +604,12 @@
     "select_portfolio": "Select portfolio",
     "enter_asset": "Enter asset",
     "select_custodian": "Select custodian"
+  },
+
+  "investment_amounts": {
+    "footer": {
+      "currency_name": "{{currency_name}} Items",
+      "value_usd": "{{value_usd}}"
+    }
   }
 }

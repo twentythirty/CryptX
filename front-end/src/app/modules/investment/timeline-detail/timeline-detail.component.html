@@ -27,22 +27,18 @@
     (openRow)="openSingleRow($event)"
   ></app-data-table>
 
-  <div class="top-controls" *ngIf="assetMixTitle">
-    <span class="headline-title">{{assetMixCount}} {{ assetMixTitle }}</span>
+  <div class="top-controls" *ngIf="extraTableTitle">
+    <span class="headline-title">{{ extraTableTitle }}</span>
   </div>
 
   <app-data-table
-    *ngIf="assetMixDataSource"
-    [dataSource]="assetMixDataSource"
-    [columnsToShow]="assetMixColumnsToShow"
-    (setFilter)="onSetFilter($event)"
+    *ngIf="extraTableDataSource"
+    [dataSource]="extraTableDataSource"
+    [columnsToShow]="extraTableColumnsToShow"
   ></app-data-table>
   
   <div class="top-controls" *ngIf="listTitle">
     <span class="headline-title">{{ listTitle }}</span>
-    <a *ngIf="addTitle" (click)="addAction()" class="btn start">
-      <span>{{ addTitle }}</span>
-    </a>
   </div>
 
   <app-data-table
@@ -61,6 +57,19 @@
     [page]="page"
     [loading]="isTableLoading"
   ></app-pagination>
+
+  <div class="top-controls" *ngIf="detailTableTitle">
+    <span class="headline-title">{{ detailTableTitle }}</span>
+    <a *ngIf="addTitle" (click)="addAction()" class="btn start">
+      <span>{{ addTitle }}</span>
+    </a>
+  </div>
+
+  <app-data-table
+    *ngIf="detailTableDataSource"
+    [dataSource]="detailTableDataSource"
+    [columnsToShow]="detailTableColumnsToShow"
+  ></app-data-table>
 
   <app-action-log
     *ngIf="logsSource"
