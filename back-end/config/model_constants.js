@@ -1,7 +1,15 @@
 //constants for data not directly associated with permissions
 
 MODEL_CONST = {
-  LOG_LEVELS: {
+  LOG_LEVEL: {
+    TRACE: 1,
+    DEBUG: 2,
+    INFO: 3,
+    WARN: 4,
+    ERROR: 5
+  },
+
+  ACTIONLOG_LEVELS: {
     Debug: 0,
     Info: 1,
     Warning: 2,

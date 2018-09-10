@@ -14,10 +14,10 @@ const {
 
 const custom_loggers = require('../config/loggers');
 
-let log_levels = Object.values(LOG_LEVELS);
+let log_levels = Object.values(ACTIONLOG_LEVELS);
 
-if(process.env.LOG_LEVELS) {
-    log_levels = process.env.LOG_LEVELS.split(',').map(ll => LOG_LEVELS[ll.trim()]).filter(ll => ll);
+if(process.env.ACTIONLOG_LEVELS) {
+    log_levels = process.env.ACTIONLOG_LEVELS.split(',').map(ll => ACTIONLOG_LEVELS[ll.trim()]).filter(ll => ll);
 }
 
 const templates = require('../public/fe/i18n/en.json');
@@ -49,7 +49,7 @@ const allowed_keys = [
 const universal_actions = {
 
     create: {
-        level: LOG_LEVELS.Info,
+        level: ACTIONLOG_LEVELS.Info,
         handler: async function(params = {}) {
             this.options = _.clone(params);
 
@@ -78,7 +78,7 @@ const universal_actions = {
         }
     },
     modified: {
-        level: LOG_LEVELS.Info,
+        level: ACTIONLOG_LEVELS.Info,
         handler: async function(params = {}) {
             this.options = params;
 
@@ -171,7 +171,7 @@ const _defaultHandler = async function(options = {}) {
 module.exports.logAction = async (action_path_or_template, options = {}) => {
     try {
         let action = _.get(loggers, action_path_or_template);
-        if(!action) action = { template: `logs.${action_path_or_template}`, level: options.log_level || LOG_LEVELS.Info };
+        if(!action) action = { template: `logs.${action_path_or_template}`, level: options.log_level || ACTIONLOG_LEVELS.Info };
     
         let action_logs = null;
         if(_.isFunction(action.handler)) action_logs = await action.handler(options);
@@ -185,7 +185,7 @@ module.exports.logAction = async (action_path_or_template, options = {}) => {
         if(!_.isArray(action_logs)) action_logs = [action_logs];
         
         //Set log level, can be overriden.
-        if(!options.log_level) options.log_level = action.level || LOG_LEVELS.Info;
+        if(!options.log_level) options.log_level = action.level || ACTIONLOG_LEVELS.Info;
 
         for(let action_log of action_logs) {
             module.exports.log(action_log.details, action_log.template, action_log.options || {});
@@ -218,7 +218,7 @@ module.exports.log = async (details, translation_key = null, options = {}) => {
         details,
         timestamp: new Date(),
         failed_attempts: 0,
-        level: _.isUndefined(options.log_level) ? LOG_LEVELS.Info : options.log_level,
+        level: _.isUndefined(options.log_level) ? ACTIONLOG_LEVELS.Info : options.log_level,
         translation_key,
         translation_args: options.args ? JSON.stringify(options.args) : null
     };

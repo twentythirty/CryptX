@@ -84,39 +84,39 @@ module.exports = {
 
     /*deposits: {
         generate: {
-            level: LOG_LEVELS.Info,
+            level: ACTIONLOG_LEVELS.Info,
             get template() { return `${this.params.amount} ${this.params.amount === 1 ? 'Deposit' : 'Deposits'} were generate for Recipe Run RR-${this.params.relations.recipe_run_id}` }
         }
     },
     execution_orders: {
         placed: {
-            level: LOG_LEVELS.Info,
+            level: ACTIONLOG_LEVELS.Info,
             get template() { return `Order was placed to ${this.params.exchange}` }
         },
         error: {
-            level: LOG_LEVELS.Error,
+            level: ACTIONLOG_LEVELS.Error,
             get template() { return `Error: ${this.params.error}` }
         },
         failed_attempts: {
-            level: LOG_LEVELS.Warning,
+            level: ACTIONLOG_LEVELS.Warning,
             get template() { return `Execution order Failed after ${this.params.attempts === 1 ? `${this.params.attempts} attempt` : `${this.params.attempts} attempts`}` }
         },
         failed: {
-            level: LOG_LEVELS.Warning,
+            level: ACTIONLOG_LEVELS.Warning,
             get template() { return `Execution order Failed due to: ${this.params.reason}` }
         },
         generate_fill: {
-            level: LOG_LEVELS.Info,
+            level: ACTIONLOG_LEVELS.Info,
             get template() { return `Generated a new fill with amount of ${this.params.amount}` }
         },
         fully_filled: {
-            level: LOG_LEVELS.Info,
+            level: ACTIONLOG_LEVELS.Info,
             get template() { return `Execution order was Fully Filled.` }
         }
     },
     ask_bid_fetcher: {
         failed_to_fetch: {
-            level: LOG_LEVELS.Info,
+            level: ACTIONLOG_LEVELS.Info,
             get template() {
                 const { exchange, instruments } = this.params;
                 return `System didn't receive prices from "${exchange.name}" exchange for instruments: ${instruments}`
@@ -125,7 +125,7 @@ module.exports = {
     },
     assets: {
         status: {
-            level: LOG_LEVELS.Info.LOG_LEVELS,
+            level: ACTIONLOG_LEVELS.Info.ACTIONLOG_LEVELS,
             get template() {
                 const { old_status, new_status, reason } = this.params;
                 const { Whitelisting, Blacklisting, Graylisting } = INSTRUMENT_STATUS_CHANGES;

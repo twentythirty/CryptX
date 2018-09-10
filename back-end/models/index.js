@@ -8,12 +8,6 @@ var db        = {};
 
 const db_url = process.env.NODE_ENV === 'cucumber' ? process.env.DATABASE_URL_CUCUMBER : process.env.DATABASE_URL;
 
-//profiles that are allowed to generate SQL logs
-const LOGGING_PROFILES = [
-  'dev',
-  'cucumber'
-]
-
 const sequelize = new Sequelize(db_url, {
   dialect: CONFIG.db_dialect,
   //if cucumber we use different ssl config
@@ -30,8 +24,8 @@ const sequelize = new Sequelize(db_url, {
     handleDisconnects: true
   } : {}),
   operatorsAliases: false,
-  //only log sql queries on local deploy
-  logging: LOGGING_PROFILES.includes(process.env.NODE_ENV) ? console.log : false
+  //only log sql queries on TRACE logging
+  logging: console.trace
 });
 
 fs

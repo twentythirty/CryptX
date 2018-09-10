@@ -56,7 +56,7 @@ const cache_init_promise = async () => {
                             args: {
                                 error: `[${throttler.id}-${fn.name}-${args}]: ${error.message}`
                             },
-                            log_level: LOG_LEVELS.Error
+                            log_level: ACTIONLOG_LEVELS.Error
                         });
                         return default_return;
                     })
@@ -179,7 +179,7 @@ const registerEvents = async (...limiters) => {
                 args: {
                     error: error.message
                 },
-                log_level: LOG_LEVELS.Error
+                log_level: ACTIONLOG_LEVELS.Error
             });
         });
     });

@@ -11,7 +11,7 @@ module.exports = (sequelize, DataTypes) => {
       },
       level: {
         type: DataTypes.SMALLINT,
-        defaultValue: LOG_LEVELS.Info
+        defaultValue: ACTIONLOG_LEVELS.Info
       },
       translation_key: {
         type: DataTypes.STRING,

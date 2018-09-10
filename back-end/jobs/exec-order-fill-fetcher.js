@@ -162,7 +162,7 @@ module.exports.JOB_BODY = async (config, log) => {
             logs.push([actions.failed, {
                 args: { reason: `Execution order was closed on ${exchange.name} before getting filled.` },
                 relations: { execution_order_id: placed_order.id },
-                log_level: LOG_LEVELS.Warning
+                log_level: ACTIONLOG_LEVELS.Warning
             }]);
             placed_order.status = Failed; //A temporary status to mark that the execution order cannot be changed anymore
             //The execution should continue, as there might be some more fills left to fetch
@@ -427,7 +427,7 @@ module.exports.JOB_BODY = async (config, log) => {
             placed_order.status = placed_order.filled_amount ? PartiallyFilled : NotFilled;
             logs.push([actions.failed_attempts, {
                 relations: { execution_order_id: placed_order.id },
-                log_level: LOG_LEVELS.Warning
+                log_level: ACTIONLOG_LEVELS.Warning
             }]);
         }
 
@@ -562,6 +562,6 @@ const logError = async (log, placed_order, tag = '[ERROR]', when = '', error) =>
     logAction(actions.error, {
         args: { error: `Error occured during ${when}: ${error_message}` },
         relations: { execution_order_id: placed_order ? placed_order.id : null },
-        log_level: LOG_LEVELS.Error
+        log_level: ACTIONLOG_LEVELS.Error
     });
 };

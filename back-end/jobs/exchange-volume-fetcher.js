@@ -28,7 +28,7 @@ module.exports.JOB_BODY = async (config, log) => {
             log(`[ERROR.2A]: ${err.message}`);
             logAction(actions.error, {
                 args: { error: err.message },
-                log_level: LOG_LEVELS.Error
+                log_level: ACTIONLOG_LEVELS.Error
             });
 
             return;
@@ -67,7 +67,7 @@ module.exports.JOB_BODY = async (config, log) => {
             log(`[ERROR.3A]: ${err.message}`);
             logAction(actions.error, {
                 args: { error: err.message },
-                log_level: LOG_LEVELS.Error
+                log_level: ACTIONLOG_LEVELS.Error
             });
 
             return;
@@ -100,7 +100,7 @@ module.exports.JOB_BODY = async (config, log) => {
             log(`[WARN.4A]: Job received 0 records.`);
             logAction(actions.warning, {
                 args: { warning: 'Job received 0 records' },
-                log_level: LOG_LEVELS.Warning
+                log_level: ACTIONLOG_LEVELS.Warning
             });
 
             return;
@@ -112,7 +112,7 @@ module.exports.JOB_BODY = async (config, log) => {
             log(`[ERROR.4A]: ${err.message}`);
             logAction(actions.error, {
                 args: { error: err.message },
-                log_level: LOG_LEVELS.Error
+                log_level: ACTIONLOG_LEVELS.Error
             });
 
             return;

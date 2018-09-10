@@ -47,7 +47,7 @@ module.exports = function(passport) {
         //this is an async promise, let is save in the background
         //no relations to add since user or session might not have been found
         logger.log(message, {
-          log_level: LOG_LEVELS.Warning
+          log_level: ACTIONLOG_LEVELS.Warning
         })
         return done(null, false, { message });
       }

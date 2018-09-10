@@ -8,13 +8,13 @@ beforeEach(done => {
     sinon.stub(ActionLogUtil, 'log').callsFake((details, key, options) => {
         let level = options.log_level;
         switch(level) {
-            case LOG_LEVELS.Debug:
+            case ACTIONLOG_LEVELS.Debug:
                 level = '\x1b[1m\x1b[34m(Debug)\x1b[0m';
                 break;
-            case LOG_LEVELS.Warning:
+            case ACTIONLOG_LEVELS.Warning:
                 level = '\x1b[1m\x1b[33m(Warning)\x1b[0m';
                 break;
-            case LOG_LEVELS.Error:
+            case ACTIONLOG_LEVELS.Error:
                 level = '\x1b[1m\x1b[31m(Error)\x1b[0m';
                 break;
             default:

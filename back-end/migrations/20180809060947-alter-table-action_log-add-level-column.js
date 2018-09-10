@@ -4,7 +4,7 @@ module.exports = {
   up: (queryInterface, Sequelize) => {
     return queryInterface.addColumn('action_log', 'level', {
       type: Sequelize.SMALLINT,
-      defaultValue: LOG_LEVELS.Info
+      defaultValue: ACTIONLOG_LEVELS.Info
     }).then(() => {
       return queryInterface.addIndex('action_log', {
         fields: ['level']
