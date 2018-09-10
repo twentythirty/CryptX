@@ -143,16 +143,16 @@ const getStrategyAssets = async function (strategy_type) {
     });
   });
 
-  let totalMarketShare = 0;
+  /* let totalMarketShare = 0;
   // selects all assets before threshold MARKETCAP_LIMIT_PERCENT, total marketshare sum of assets
   let before_marketshare_limit = assets.reduce((acc, coin, currentIndex) => {
     totalMarketShare += coin.avg_share;
     if(totalMarketShare <= SYSTEM_SETTINGS.MARKETCAP_LIMIT_PERCENT)
       acc.push(coin);
     return acc;
-  }, []);
+  }, []); */
 
-  let lci = before_marketshare_limit.slice(0, SYSTEM_SETTINGS.INDEX_LCI_CAP);
+  let lci = assets.slice(0, SYSTEM_SETTINGS.INDEX_LCI_CAP);
 
   if (strategy_type == STRATEGY_TYPES.LCI) {
     return lci;
@@ -253,10 +253,10 @@ const getBaseAssetPrices = async function () {
   const ttl_threshold = SYSTEM_SETTINGS.BASE_ASSET_PRICE_TTL_THRESHOLD;
 
   let [err, prices] = await to(sequelize.query(`
-  SELECT prices.symbol as symbol, AVG(prices.price) as price
+  SELECT id, prices.symbol as symbol, AVG(prices.price) as price
   FROM
   (
-    SELECT assetBuy.symbol as symbol, imd1.ask_price as price, imd1.timestamp as timestamp
+    SELECT assetBuy.id, assetBuy.symbol as symbol, imd1.ask_price as price, imd1.timestamp as timestamp
     FROM asset as a1
     JOIN instrument i ON i.quote_asset_id=a1.id
     JOIN asset as assetBuy ON assetBuy.id=i.transaction_asset_id
@@ -270,11 +270,11 @@ const getBaseAssetPrices = async function () {
       )
     WHERE a1.symbol='USD'
       AND assetBuy.is_base=true
-    GROUP BY assetBuy.symbol, imd1.ask_price, imd1.timestamp
+    GROUP BY assetBuy.id, assetBuy.symbol, imd1.ask_price, imd1.timestamp
     
     UNION 
     
-    SELECT assetSell.symbol as symbol, (1 / imd2.bid_price) as price, imd2.timestamp as timestamp
+    SELECT assetSell.id, assetSell.symbol as symbol, (1 / imd2.bid_price) as price, imd2.timestamp as timestamp
     FROM asset as a2
     JOIN instrument i ON i.transaction_asset_id=a2.id
     JOIN asset as assetSell ON assetSell.id=i.quote_asset_id
@@ -288,10 +288,10 @@ const getBaseAssetPrices = async function () {
       )
     WHERE a2.symbol='USD'
     AND assetSell.is_base=true
-    GROUP BY assetSell.symbol, imd2.bid_price, imd2.timestamp
+    GROUP BY assetSell.id, assetSell.symbol, imd2.bid_price, imd2.timestamp
   ) as prices
   WHERE prices.timestamp >= NOW() - interval '${ttl_threshold} seconds'
-  GROUP BY prices.symbol
+  GROUP BY prices.id, prices.symbol
   `, {
     type: sequelize.QueryTypes.SELECT
   }));
@@ -376,3 +376,92 @@ const getDepositAssets = async () => {
   return assets;
 };
 module.exports.getDepositAssets = getDepositAssets;
+
+const getAssetGroupWithData = async function (investment_run_id) {
+
+  let [err, asset_group] = await to(sequelize.query(`
+    WITH base_assets_with_prices AS (
+      SELECT a.id, a.symbol, a.long_name, a.is_base, a.is_deposit, AVG (prices.ask_price) as value_usd
+      FROM asset a
+      JOIN instrument i ON i.transaction_asset_id=a.id
+      JOIN instrument_exchange_mapping iem ON iem.instrument_id=i.id
+      JOIN asset quote_asset ON quote_asset.id=i.quote_asset_id
+      LEFT JOIN LATERAL (
+        SELECT imd.ask_price
+        FROM instrument_market_data imd
+        WHERE imd.instrument_id=iem.instrument_id
+        ORDER BY instrument_id NULLS LAST, exchange_id NULLS LAST, timestamp DESC NULLS LAST
+        LIMIT 1
+      ) as prices ON TRUE
+      WHERE a.is_base = TRUE
+        AND ( quote_asset.symbol='USD' OR quote_asset.symbol='USDT')
+      GROUP BY a.id
+    )
+    SELECT asset.id,
+      asset.symbol,
+      asset.long_name,
+      i.quote_asset_id,
+      iem.instrument_id,
+      iem.exchange_id,
+      nvt_calc.value as nvt,
+      lh.volume,
+      (lh.volume * ask_price * base_price.value_usd) as volume_usd,
+      ask_price,
+      bid_price,
+      (ask_price * base_price.value_usd) as price_usd
+    FROM investment_run ir
+    JOIN investment_run_asset_group irag ON irag.id=ir.investment_run_asset_group_id
+    JOIN group_asset ga ON ga.investment_run_asset_group_id=irag.id
+    JOIN asset ON asset.id=ga.asset_id
+    JOIN instrument i ON i.transaction_asset_id=asset.id
+    JOIN instrument_exchange_mapping iem ON instrument_id=i.id
+    JOIN LATERAL (
+      SELECT value
+      FROM market_history_calculation
+      WHERE asset_id=asset.id AND type=0
+      ORDER BY asset_id NULLS LAST, timestamp DESC NULLS LAST
+      LIMIT 1
+    ) AS nvt_calc ON TRUE
+    LEFT JOIN LATERAL
+    (
+      SELECT instrument_id, exchange_id, volume, timestamp_from
+      FROM instrument_liquidity_history ilh
+      WHERE ilh.instrument_id=iem.instrument_id AND ilh.exchange_id=iem.exchange_id
+      ORDER BY ilh.instrument_id NULLS LAST, ilh.exchange_id NULLS LAST, ilh.timestamp_from DESC NULLS LAST
+      LIMIT 1
+    ) AS lh ON TRUE
+    JOIN LATERAL 
+    (
+      SELECT ask_price, bid_price
+      FROM instrument_market_data 
+      WHERE instrument_id=iem.instrument_id
+        AND exchange_id=iem.exchange_id
+      ORDER BY instrument_id NULLS LAST, exchange_id NULLS LAST, timestamp DESC NULLS LAST
+      LIMIT 1
+    ) as imd ON TRUE
+    JOIN base_assets_with_prices as base_price ON base_price.id=i.quote_asset_id
+    WHERE ir.id=:investment_run_id
+    ORDER BY nvt DESC, volume_usd DESC, price_usd DESC
+  `, {
+    replacements: {
+      investment_run_id
+    },
+    type: sequelize.QueryTypes.SELECT
+  }));
+
+  asset_group.map(ag => {
+    Object.assign(ag, {
+      nvt: parseFloat(ag.nvt),
+      volume: parseFloat(ag.volume),
+      volume_usd: parseFloat(ag.volume_usd),
+      ask_price: parseFloat(ag.ask_price),
+      bid_price: parseFloat(ag.bid_price),
+      price_usd: parseFloat(ag.price_usd)
+    });
+  });
+  
+  if (err) TE(err.message);
+
+  return asset_group;
+};
+module.exports.getAssetGroupWithData = getAssetGroupWithData;

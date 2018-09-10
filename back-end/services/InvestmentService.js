@@ -108,6 +108,7 @@ const createInvestmentRun = async function (user_id, strategy_type, is_simulated
     let message = `Investment run cannot be initiated as other investment runs are still in progress`;
     TE(message);
   }
+
   let investment_run;
   [err, investment_run] = await to(sequelize.transaction(transaction => 
     InvestmentRun.create({
@@ -198,7 +199,7 @@ const createRecipeRun = async function (user_id, investment_run_id) {
   ));
   if (err) TE(err.message);
 
-  [err, recipe_run_detail] = await to(this.generateRecipeDetails(investment_run.strategy_type), false);
+  [err, recipe_run_detail] = await to(this.generateRecipeDetails(investment_run.id, investment_run.strategy_type), false);
   if (err) TE(err.message);
 
   [err, recipe_run] = await to(RecipeRun.create({
@@ -234,7 +235,61 @@ const createRecipeRun = async function (user_id, investment_run_id) {
 };
 module.exports.createRecipeRun = createRecipeRun;
 
-const generateRecipeDetails = async function (strategy_type) {
+const generateRecipeDetails = async (investment_run_id, strategy_type) => {
+
+  let liquidity_levels = this.getLiquidityLevels();
+
+  let [err, assets] = await to(AssetService.getAssetGroupWithData(investment_run_id));
+  if (err) TE(err.message);
+
+  let prices
+  [err, prices] = await to(AssetService.getBaseAssetPrices(), false);
+  if (err) TE(err.message);
+
+  let investment_run;
+  [err, investment_run] = await to(InvestmentRun.findOne({
+    where: {
+      id: investment_run_id
+    },
+    include: InvestmentAmount
+  }));
+  if (err) TE(err.message);
+
+  if (!investment_run) TE('Investment run not found');
+
+  let investment_size = investment_run.InvestmentAmounts;
+  investment_size = investment_size.map(size => {
+    let base_price_usd = prices.find(price => price.id==size.asset_id);
+    let value_usd;
+    if (!base_price_usd) value_usd = parseFloat(size.amount);
+    else value_usd = parseFloat(size.amount) * base_price_usd.price;
+
+    size.value_usd = value_usd;
+    return size;
+  });
+
+  assets.map(asset => {
+    asset.liquidity_level = liquidity_levels.find(l => 
+      (l.from >= asset.volume && l.to < asset.volume) || 
+      (l.from >= asset.volume && !l.to)
+    );
+  })
+
+  let assets_grouped_by_id = _.map(_.groupBy(assets, 'id'), (asset_group) => {
+    return {
+      possible: asset_group,
+      to_execute: []
+    }
+  });
+
+  console.log(assets_grouped_by_id);
+  assets_grouped_by_id.map(asset => {
+    
+  });
+};
+module.exports.generateRecipeDetails = generateRecipeDetails;
+
+const old_generateRecipeDetails = async function (strategy_type) {
   // get assets for recipe
   let err, assets, instruments;
 
@@ -397,7 +452,7 @@ const generateRecipeDetails = async function (strategy_type) {
 
   return assets;
 };
-module.exports.generateRecipeDetails = generateRecipeDetails;
+module.exports.old_generateRecipeDetails = old_generateRecipeDetails;
 
 const changeRecipeRunStatus = async function (user_id, recipe_run_id, status_constant, comment) {
   // check for valid recipe run status
@@ -724,3 +779,24 @@ const generateInvestmentAssetGroup = async function (user_id, strategy_type) {
   return group;
 };
 module.exports.generateInvestmentAssetGroup = generateInvestmentAssetGroup;
+
+/* Liquidity levels are defined in CryptX according to the following table, whereby
+ * the USD amount denotes the trading volume over the last 24 hours on a connected exchange.
+ */
+const getLiquidityLevels = () => {
+
+  const liquidity_levels = [
+    { level: 1, from: 0, to: 1000 },
+    { level: 2, from: 1000, to: 10000 },
+    { level: 3, from: 10000, to: 100000 },
+    { level: 4, from: 100000, to: 1000000 },
+    { level: 5, from: 1000000, to: 10000000 },
+    { level: 6, from: 10000000, to: 100000000 },
+    { level: 7, from: 100000000, to: 1000000000 },
+    { level: 8, from: 1000000000, to: 10000000000 },
+    { level: 9, from: 10000000000 }
+  ];
+
+  return liquidity_levels;
+};
+module.exports.getLiquidityLevels = getLiquidityLevels;
