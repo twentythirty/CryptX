@@ -456,7 +456,7 @@ Then('the Instrument Exchange Mappings their current price, last day and week vo
             }),
             InstrumentLiquidityHistory.findOne({
                 where: Object.assign(
-                    { timestamp_from: { [Op.gte]: last_day } },
+                    { timestamp_to: { [Op.gte]: last_day } },
                     where
                 ),
                 order: [[ 'timestamp_to', 'DESC' ]],
