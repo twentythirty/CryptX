@@ -6,6 +6,7 @@ var Sequelize = require('sequelize');
 var basename  = path.basename(__filename);
 var db        = {};
 
+//if cucumber we use different DB URL
 const db_url = process.env.NODE_ENV === 'cucumber' ? process.env.DATABASE_URL_CUCUMBER : process.env.DATABASE_URL;
 
 const sequelize = new Sequelize(db_url, {

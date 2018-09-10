@@ -1,6 +1,12 @@
 //constants for data not directly associated with permissions
 
 MODEL_CONST = {
+
+  BUILD_RESULTS_STATUSES: {
+    PASSED: 8080,
+    FAILED: 8005
+  },
+
   LOG_LEVEL: {
     TRACE: 1,
     DEBUG: 2,
