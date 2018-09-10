@@ -952,10 +952,10 @@ const fetchInvestmentAmountFooter = async (where_clause = '') => {
     const view = 'av_investment_amount';
 
     const query = builder.joinQueryParts([
-        builder.selectCountDistinct('id', 'investment_currency', view, where_clause),
+        builder.selectCountDistinct('currency_name', 'currency_name', view, where_clause),
         builder.selectSumTrim('value_usd', view, where_clause),
     ], [
-        'investment_currency',
+        'currency_name',
         'value_usd'
     ]);
 
