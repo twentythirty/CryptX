@@ -123,7 +123,7 @@ module.exports.JOB_BODY = async (config, log) => {
         
 
         if(!exchange) {
-            logError(log, placed_order, '[ERROR.3B]', 'exchange connection fetching', 'Unable to find exchange connection');
+            logError(log, placed_order, `[ERROR.3B](EXEC-${placed_order.id})`, 'exchange connection fetching', 'Unable to find exchange connection');
             placed_order.failed_attempts++;
             return updateOrderStatus(placed_order, queries, logs);
         }
@@ -134,13 +134,13 @@ module.exports.JOB_BODY = async (config, log) => {
         [ err, external_order ] = await to(fetchOrderFromExchange(placed_order, exchange, log));
         
         if(err){
-            logError(log, placed_order, '[ERROR.3C]', `order fetching from exchange ${exchange.name}`, err);
+            logError(log, placed_order, `[ERROR.3C](EXEC-${placed_order.id})`, `order fetching from exchange ${exchange.name}`, err);
             placed_order.failed_attempts++; 
             return updateOrderStatus(placed_order, queries, logs);
         }
 
         if(!external_order) {
-            logError(log, placed_order, '[ERROR.3D]', `order fetching from exchange ${exchange.name}`, `Could not find order with external id ${placed_order.external_identifier}`);
+            logError(log, placed_order, `[ERROR.3D](EXEC-${placed_order.id})`, `order fetching from exchange ${exchange.name}`, `Could not find order with external id ${placed_order.external_identifier}`);
             placed_order.failed_attempts++; //Not marked as Failed, in case it's only a connection issue.
             return updateOrderStatus(placed_order, queries, logs);
         }
@@ -195,7 +195,7 @@ module.exports.JOB_BODY = async (config, log) => {
             [ err, result ] = await to(handleFillsWithTrades(placed_order, external_order, exchange, placed_order_fills));
   
             if(err) {
-                logError(log, placed_order, '[ERROR.3A]', 'fetching trades from exchange', err);
+                logError(log, placed_order, `[ERROR.5A](EXEC-${placed_order.id})`, 'fetching trades from exchange', err);
                 placed_order.failed_attempts++;
                 return updateOrderStatus(placed_order, queries, logs);
             }
@@ -521,7 +521,7 @@ const fetchOrderFromExchange = async (placed_order, exchange, log) => {
 
         //Worst case scenario will take all orders and filter out the correct one.
         if(can_fetch_open_orders && !external_orders.length && !external_order) {
-            [ err, external_orders ] = await to(exchnage.fetchOrders(symbol, since));
+            [ err, external_orders ] = await to(exchange.fetchOrders(symbol, since));
             if(err) TE(err);
         }
 

@@ -3,6 +3,7 @@ const app = require('../../../app');
 
 const sinon = require('sinon');
 const ccxtUtils = require('../../../utils/CCXTUtils');
+const fake_ccxt_methods = require('./stubs/ccxt_methods');
 
 const binance_base = require('./stubs/binance.json');
 const bitfinex_base = require('./stubs/bitfinex.json');
@@ -48,13 +49,21 @@ BeforeAll({ timeout: 15000000 }, async function(){
     const { Exchange } = require('../../../models');
 
     sinon.stub(ccxtUtils, 'getConnector').callsFake(async id => {
+        
         let api_id = id;
         if(_.isNumber(id)) {
             const exchange = await Exchange.findById(id);
 
             api_id = exchange.api_id;
         }
-        return Promise.resolve(exchanges[api_id]);
+
+        const exchange = exchanges[api_id];
+        if(!exchange._init) {
+            Object.assign(exchange, fake_ccxt_methods);
+            exchange._init();
+        }   
+ 
+        return Promise.resolve(exchange);
     });
 
     return app.dbPromise.then(() => {
