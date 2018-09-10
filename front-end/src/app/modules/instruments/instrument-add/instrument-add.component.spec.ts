@@ -68,6 +68,7 @@ describe('InstrumentAddComponent', () => {
 
   testFormControlForm(() => {
     return {
+      component: component,
       formControl: component.form,
       submitButton: fixture.nativeElement.querySelector('button.submit'),
       fillForm: () => {
