@@ -322,7 +322,7 @@ ROUTES = {
   },
   SelectInvestmentAssets: {
     router_string: "/investments/select_assets",
-    permissions_matcher: ROUTE_MATCHERS.CreateInvestment,
+    permissions_matcher: ROUTE_MATCHERS.SelectInvestmentAssets,
     required_permissions: [PERMISSIONS.CREATE_INVESTMENT_RUN, PERMISSIONS.VIEW_INVESTMENT_RUN]
   },
   GetInvestment: {

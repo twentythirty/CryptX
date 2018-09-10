@@ -373,19 +373,19 @@ router.post(
   InvestmentController.getInvestmentAmounts
 );
 router.post(
+  ROUTES.GetInvestmentStats.router_string,
+  stateless_auth,
+  res_new_token,
+  check_permissions,
+  InvestmentController.getInvestmentStats
+);
+router.post(
   ROUTES.GetInvestment.router_string,
   stateless_auth,
   res_new_token,
   check_permissions,
   filter_reducer,
   InvestmentController.getInvestmentRunWithAssetMix
-);
-router.post(
-  ROUTES.GetInvestmentStats.router_string,
-  stateless_auth,
-  res_new_token,
-  check_permissions,
-  InvestmentController.getInvestmentStats
 );
 
 
