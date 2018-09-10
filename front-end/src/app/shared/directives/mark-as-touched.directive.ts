@@ -1,0 +1,30 @@
+import { Directive, Input, HostListener } from '@angular/core';
+import { FormGroup, FormControl } from '@angular/forms';
+
+@Directive({
+  selector: '[appMarkAsTouched]'
+})
+export class MarkAsTouchedDirective {
+  @Input() appMarkAsTouched: FormGroup;
+
+  constructor() { }
+
+  @HostListener('click', ['$event'])
+  clickEvent(event) {
+    console.log('appMarkAsTouched', this.appMarkAsTouched);
+
+    this.markAsTouched(this.appMarkAsTouched);
+  }
+
+  markAsTouched(group) {
+    Object.keys(group.controls).map((field) => {
+      const control = group.get(field);
+      if (control instanceof FormControl) {
+        control.markAsTouched({ onlySelf: true });
+      } else if (control instanceof FormGroup) {
+        this.markAsTouched(control);
+      }
+    });
+  }
+
+}
