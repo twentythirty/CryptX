@@ -1,4 +1,4 @@
-const { Given, AfterAll, After } = require('cucumber');
+const { Given, When, Then, AfterAll, After } = require('cucumber');
 const chai = require('chai');
 const { expect } = chai;
 
@@ -51,6 +51,14 @@ const users = {
         role: {
             name: 'COMPLIANCE MANAGER'
         }
+    },
+    invited_user: {
+        first_name: 'Wallace',
+        last_name: 'Kasinsky',
+        email: 'wallace.kasinsky@cryptx.io',
+        password: null,
+        is_active: true,
+        created_timestamp: new Date()
     }
 };
 
@@ -65,6 +73,38 @@ Given('the system has no users', function() {
         }
     });
 
+});
+
+Given('the system has invited a new user', async function() {
+    const User = require('../../../models').User;
+    const Role = require('../../../models').Role;
+    //erase invited user if present, 
+    //since invitation is supposed to be valid by default
+    await User.destroy({
+        where: {
+            email: users.invited_user.email
+        }
+    })
+
+    //always present admin
+    const admin = await User.findOne({
+        where: {
+            email: process.env.ADMIN_EMAIL
+        }
+    })
+    //whatever role comes up
+    const any_role = await Role.findOne()
+
+    const [user, invitation] = await this.invitationService.createUserAndInvitation(
+        admin,
+        [any_role.id], 
+        users.invited_user.first_name,
+        users.invited_user.last_name,
+        users.invited_user.email
+    );
+
+    this.invitation = invitation;
+    this.invited_user = user;
 });
 
 Given(/^the system has (a|an) (.*)$/, async function(a, role_name) {
@@ -156,14 +196,127 @@ Given(/^the system has (a|an) (.*)$/, async function(a, role_name) {
 
 });
 
+When('I follow the valid invitation link', async function() {
+
+    //check state valid
+    chai.assert.isNotNull(this.invitation, 'Previous step should have generated a user invitation!');
+    chai.assert.isNotNull(this.invited_user, 'Previous step should have generated an invited user!');
+    chai.assert.equal(this.invitation.email, this.invited_user.email, 'invitation should have been sent to user email!');
+
+    //try follow valid link
+    return chai
+        .request(this.app)
+        .post("/v1/users/invitation")
+        .send({
+            token: this.invitation.token
+        })
+        .then(result => {   
+
+            expect(result).to.have.status(200);
+            expect(result.body.invitation).to.be.not.undefined;
+            expect(result.body.invitation).to.an('object');
+            expect(result.body.invitation.was_used).to.be.false;
+
+        });
+});
+
+When('I input my new password', function(done) {
+
+    //check state valid
+    chai.assert.isNotNull(this.invitation, 'Previous step should have generated a user invitation!');
+    chai.assert.isNotNull(this.invited_user, 'Previous step should have generated an invited user!');
+    chai.assert.equal(this.invitation.email, this.invited_user.email, 'invitation should have been sent to user email!');
+
+    //try follow valid link
+    chai
+        .request(this.app)
+        .post("/v1/users/create-invited")
+        .send({
+            invitation_id: this.invitation.id,
+            password: 'pwd'
+        })
+        .then(result => {   
+
+            expect(result).to.have.status(200);
+            
+            //response analysis in next step
+            this.create_response = result;
+
+            done();
+        });
+});
+
+Then('my user is ready for use', function() {
+
+    chai.assert.isDefined(this.create_response, 'Previous step did not record invitation repsonse!');
+
+    const result = this.create_response;
+
+    chai.expect(result.body.user).is.a('object');
+    chai.expect(result.body.user.email).is.eq(users.invited_user.email);
+    chai.expect(result.body.user.first_name).is.eq(users.invited_user.first_name);
+    chai.expect(result.body.user.last_name).is.eq(users.invited_user.last_name);
+    chai.expect(result.body.user.is_active).is.true;
+});
+
+Then('I am logged in to the system', async function() {
+
+    chai.assert.isDefined(this.create_response, 'Previous step did not record invitation repsonse!');
+    chai.assert.isString(this.create_response.body.token, 'No authentication token on invite response!');
+
+    //fetch resource any role has access to
+    return chai
+        .request(this.app)
+        .get("/v1/users/me")
+        .set('Authorization', this.create_response.body.token)
+        .then(result => {   
+
+            //went through OK - means token valid
+            expect(result).to.have.status(200);
+            
+            //response analysis in next step
+            this.create_response = result;
+        });
+});
+
+async function getInvitedUserId() {
+    //scenario finished OK, captured invitation
+    if (this.invited_user) {
+        return this.invited_user.id
+    }
+    //user previously in system
+    const user = await require('../../../models').User.findOne({
+        where: {
+            email: users.invited_user.email
+        }
+    })
+    if (user) {
+        return user.id
+    }
+    //user not present, all good
+    return null
+}
+
 //This will be called after the scenario where the @user_cleanup tag is placed.
 After('@user_cleanup', async function() {
-    const { User, Role, sequelize } = require('../../../models');
+    const { User, Role, UserInvitation, sequelize } = require('../../../models');
+
+    //delete invitations
+    await UserInvitation.destroy({
+        where: {
+            email: users.invited_user.email
+        }
+    });
+
+    const invited_user_id = await getInvitedUserId()
 
     const to_clean_up = {
         users: [],
         roles: []
     };
+    if (invited_user_id) {
+        to_clean_up.users.push(invited_user_id)
+    }
 
     for(let role in users) {
         const user_data = users[role];

@@ -7,7 +7,11 @@ module.exports.SCHEDULE = '0 5 */8 * * *';
 module.exports.NAME = 'SYNC_COINS';
 module.exports.JOB_BODY = async (config, log) => {
 
-    const { Asset, AssetBlockchain, sequelize } = config.models;
+    const {
+        Asset,
+        AssetBlockchain,
+        sequelize
+    } = config.models;
 
     (`1. Fetching CoinMarketCap coins and existing blockchain assets... `);
 
@@ -30,7 +34,7 @@ module.exports.JOB_BODY = async (config, log) => {
 
         //get the difference ids
         const missing_ids = _.difference(
-            _.map(data, 'id'), 
+            _.map(data, 'id'),
             //asset external identifier is a string by type, parse for safe equals
             _.map(assets, asset => parseInt(asset.coinmarketcap_identifier, 10))
         );
@@ -45,21 +49,30 @@ module.exports.JOB_BODY = async (config, log) => {
         //filter down initial data list just to the missing coins
         const missing_coins = _.filter(data, coin => missing_ids.includes(coin.id))
 
+        //create coin insertion chain
+        const insert_coins_chain = missing_coins.reduce((acc, coin_data) => {
+            return acc.then(prev => {
+                return sequelize.transaction(transaction => {
+                    return config.models.Asset.create({
+                        symbol: coin_data.symbol,
+                        long_name: coin_data.name,
+                        is_base: (coin_data.symbol === 'BTC' || coin_data.symbol === 'ETH'),
+                        is_deposit: (coin_data.symbol === 'BTC' || coin_data.symbol === 'ETH')
+                    }, {
+                        transaction
+                    }).then(asset => {
+                        return config.models.AssetBlockchain.create({
+                            asset_id: asset.id,
+                            coinmarketcap_identifier: `${coin_data.id}`
+                        }, {
+                            transaction
+                        })
+                    })
+                })
+            })
+        }, Promise.resolve())
+
         //individual coin insert with supporting object save
-        return Promise.all(_.map(missing_coins, coin_data => {
-            return sequelize.transaction(transaction => {
-                return config.models.Asset.create({
-                    symbol: coin_data.symbol,
-                    long_name: coin_data.name,
-                    is_base: (coin_data.symbol === 'BTC' || coin_data.symbol === 'ETH'),
-                    is_deposit: (coin_data.symbol === 'BTC' || coin_data.symbol === 'ETH')
-                }, { transaction }).then(asset => {
-                    return config.models.AssetBlockchain.create({
-                        asset_id: asset.id,
-                        coinmarketcap_identifier: `${coin_data.id}`
-                    }, { transaction });
-                });
-            });
-        }));
+        return Promise.resolve(insert_coins_chain);
     });
 };
