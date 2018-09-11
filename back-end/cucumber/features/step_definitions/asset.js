@@ -348,15 +348,19 @@ Then('the missing Assets are saved to the database', async function() {
 
     const coin_market_cap_assets = this.current_coin_market_cap_response.data;
 
-    expect(assets.length).to.equal(coin_market_cap_assets.length);
+    /**
+     * Let's use greater than minus 1 to act as greater or equal.
+     * This is done because the coin market api may not return a coin that was already in the database. Removed? Hidden?
+     */
+    expect(assets.length).to.be.greaterThan(coin_market_cap_assets.length - 1);
 
-    for(let asset of assets) {
-        const market_asset = coin_market_cap_assets.find(coin => coin.id === parseInt(asset.coinmarketcap_identifier, 10));
+    for(let market_asset of coin_market_cap_assets) {
+        const databaset_asset = assets.find(a => parseInt(a.coinmarketcap_identifier, 10)  === market_asset.id);
 
-        expect(market_asset).to.be.not.undefined;
+        expect(databaset_asset).to.be.not.undefined;
 
-        expect(asset['Asset.symbol']).to.equal(market_asset.symbol);
-        expect(asset['Asset.long_name']).to.equal(market_asset.name);
+        expect(databaset_asset['Asset.symbol']).to.equal(market_asset.symbol);
+        expect(databaset_asset['Asset.long_name']).to.equal(market_asset.name);
     }
 
 });
