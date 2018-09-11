@@ -13,6 +13,14 @@ const World = require('../support/global_world');
 
 const coin_market_cap_url = 'https://api.coinmarketcap.com/v2';
 
+Given('the system has no Asset market history', function() {
+
+    const { AssetMarketCapitalization } = require('../../../models');
+
+    return AssetMarketCapitalization.destroy({ where: {} });
+
+});
+
 Given('the system has Assets', async function() {
 
     const { Asset } = require('../../../models');
@@ -102,7 +110,7 @@ Given(/^the system has Asset Market Capitalization for the last (.*) hours$/, as
 
 });
 
-Given('the system has some missing Assets rom CoinMarketCap, including ETH and BTC', async function() {
+Given('the system has some missing Assets from CoinMarketCap, including ETH and BTC', async function() {
 
     const { Asset, AssetBlockchain, sequelize } = require('../../../models');
     const { Op } = sequelize;
@@ -124,6 +132,35 @@ Given('the system has some missing Assets rom CoinMarketCap, including ETH and B
             LIMIT ${_.round(asset_count/20) || 1}
         )
     `);
+
+});
+
+Given('the system is missing some of the top 100 coins', function() {
+
+    const { AssetBlockchain, sequelize } = require('../../../models');
+
+    return chai
+        .request(coin_market_cap_url)
+        .get('/ticker')
+        .then(async result => {   
+            
+            expect(result).to.have.status(200);
+            expect(result.body.data).to.be.an('object');
+
+            const ids = _.shuffle(Object.keys(result.body.data)).splice(0, 20).map(id => `\'${id}\'`);
+
+            await sequelize.query(`
+                DELETE FROM asset
+                WHERE asset.id IN (
+                    SELECT bc.asset_id
+                    FROM asset_blockchain AS bc
+                    WHERE bc.coinmarketcap_identifier IN (${ids.join(', ')})
+                )
+            `);
+
+            this.current_asset_count = await AssetBlockchain.count();
+                
+        });
 
 });
 
@@ -210,7 +247,7 @@ When('I select two different Assets', async function() {
 
 });
 
-When('the SYNC_COINS job complete it\`s run', {
+When('the SYNC_COINS job completes it\`s run', {
     timeout: 50000
 }, function() {
 
@@ -243,6 +280,53 @@ When('the SYNC_COINS job complete it\`s run', {
             
         });
 
+
+});
+
+When('the FETCH_MH job completes it`s run', {
+    timeout: 50000
+}, async function() {
+
+    const job = require('../../../jobs/market-history-fetcher');
+    const models = require('../../../models');
+    const config = { models };
+
+    // Same retrieve and stub trick here
+    const request_results = {
+        '/global/': {}
+    };
+
+    const chunks = Math.floor(job.TOP_N / job.LIMIT);
+    if (job.TOP_N % job.LIMIT) chunks++
+
+    for (let i = 0; i < chunks; i++) request_results[`/ticker/?start=${1 + i * job.LIMIT}&limit=${job.LIMIT}`] = {};
+
+    await Promise.all(_.map(request_results, (emptiness, endpoint) => {
+
+        return chai
+            .request(coin_market_cap_url)
+            .get(endpoint)
+            .then(result => {
+
+                expect(result).to.have.status(200);
+                
+                request_results[endpoint] = result.body;
+
+            });
+
+    }));
+
+    this.current_coin_market_cap_responses = request_results;
+
+    sinon.stub(request_promise, 'get').callsFake(options => {
+
+        const response = request_results[options.uri.split('v2')[1]];
+
+        return Promise.resolve(response);
+
+    });
+
+    await job.JOB_BODY(config, console.log);
 
 });
 
@@ -380,5 +464,26 @@ Then('BTC and ETH are marked as base and deposit Assets', async function() {
         expect(asset.is_base).to.be.true;
         expect(asset.is_deposit).to.be.true;
     }
+
+});
+
+/**
+ * Perhaps later there will be a better way to check this.
+ * Considering the asset numbers may not be so predictable (completely new assets appear)
+ * For now, let's check that that the blockchain asset count has increased
+ */
+Then('missing Assets were saved to the database', async function() {
+
+    const { AssetBlockchain } = require('../../../models');
+
+    const asset_count = await AssetBlockchain.count();
+
+    expect(asset_count).to.be.greaterThan(this.current_asset_count);
+
+});
+
+Then('Asset market history is saved to the database', async function() {
+
+
 
 });
