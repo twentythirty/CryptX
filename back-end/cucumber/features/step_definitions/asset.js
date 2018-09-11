@@ -31,7 +31,9 @@ Given('the system has only WhiteListed Assets', function() {
 
 });
 
-Given(/^the system has Asset Market Capitalization for the last (.*) hours$/, async function(hours) {
+Given(/^the system has Asset Market Capitalization for the last (.*) hours$/, {
+    timeout: 15000
+}, async function(hours) {
 
     hours = parseInt(hours);
 
@@ -211,7 +213,7 @@ When('I select two different Assets', async function() {
 });
 
 When('the SYNC_COINS job complete it\`s run', {
-    timeout: 50000
+    timeout: 500000
 }, function() {
 
     const job = require('../../../jobs/coins-list-sync');
@@ -221,7 +223,6 @@ When('the SYNC_COINS job complete it\`s run', {
     return chai
         .request(coin_market_cap_url)
         .get(`/listings`)
-        .set('Authorization', World.current_user.token)
         .then(async result => {   
    
             expect(result).to.have.status(200);
