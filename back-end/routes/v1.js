@@ -255,6 +255,14 @@ router.post(
   filter_reducer,
   AssetController.getAssetsDetailed
 );
+router.post(
+  ROUTES.GetAssetsDetailedOfInvestmentRunAssetGroup.router_string,
+  stateless_auth,
+  res_new_token,
+  check_permissions,
+  filter_reducer,
+  AssetController.getAssetsDetailedOfInvestmentRunAssetGroup
+);
 router.get(
   ROUTES.GetAssetsDetailedColLOV.router_string,
   stateless_auth,

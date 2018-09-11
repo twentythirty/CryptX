@@ -2610,6 +2610,48 @@
         ]
       }
     },
+    "/assets/detailed/of_investment_asset_group/{investment_asset_group_id}": {
+      "post": {
+        "tags": [
+          "assets"
+        ],
+        "description": "Get detailed list of assets from a specific investment run asset group.",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "investment_asset_group_id",
+            "in": "path",
+            "description": "ID of investment run asset group",
+            "required": true,
+            "type": "integer"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "description": "The filter definition to perform on the data set. If absent will assume empty filter and return all data",
+            "required": false,
+            "schema": {
+              "$ref": "#/definitions/EntitiesFilter"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "$ref": "#/definitions/AssetDetailedListResponse"
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
     "/roles/create": {
       "post": {
         "tags": [
@@ -6565,6 +6607,10 @@
             "status": {
               "type": "string",
               "example": "assets.status.400"
+            },
+            "comment": {
+              "type": "string",
+              "example": "I request the return of this fine asset"
             }
           }
         }

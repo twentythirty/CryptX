@@ -303,6 +303,11 @@ ROUTES = {
     permissions_matcher: ROUTE_MATCHERS.GetAssetsDetailed,
     required_permissions: [PERMISSIONS.VIEW_ASSETS]
   },
+  GetAssetsDetailedOfInvestmentRunAssetGroup: {
+    router_string: "/assets/detailed/of_investment_asset_group/:investment_asset_group_id",
+    permissions_matcher: ROUTE_MATCHERS.GetAssetDetailedInfo,
+    required_permissions: [PERMISSIONS.VIEW_ASSETS]
+  },
   GetAssetsDetailedColLOV: { 
     router_string: "/assets/detailed/header_lov/:field_name",
     permissions_matcher: ROUTE_MATCHERS.GetAssetsDetailedColLOV,

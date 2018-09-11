@@ -3,6 +3,8 @@
 const Asset = require('../models').Asset;
 const AssetStatusChange = require('../models').AssetStatusChange;
 const AssetMarketCapitalization = require('../models').AssetMarketCapitalization;
+const GroupAsset = require('../models').GroupAsset;
+const InvestmentRunAssetGroup = require('../models').InvestmentRunAssetGroup;
 const Exchange = require('../models').Exchange;
 const InstrumentExchangeMapping = require('../models').InstrumentExchangeMapping;
 const User = require('../models').User;
@@ -376,3 +378,32 @@ const getDepositAssets = async () => {
   return assets;
 };
 module.exports.getDepositAssets = getDepositAssets;
+
+const getAssetFilteringBasedOnInvestmentAssetGroup = async (id, seq_query = {}, sql_where = '') => {
+
+  let [ err, asset_group ] = await to(InvestmentRunAssetGroup.findById(id, {
+    include: {
+      model: GroupAsset
+    }
+  }));
+
+  if(err) TE(err.message);
+  if(!asset_group) return null;
+
+  const asset_ids = _.map(asset_group.GroupAssets, group_asset => group_asset.asset_id);
+
+  seq_query.where = { 
+    [Op.and]: [
+      { id: asset_ids },
+      seq_query.where
+    ] 
+  };
+  
+  const final_seq_query = _.assign({}, seq_query);
+
+  const final_sql_where = `id IN(${asset_ids.join(', ')}) ${ sql_where !== '' ? `AND ${sql_where}` : '' }`;
+
+  return [ final_seq_query, final_sql_where ];  
+
+};
+module.exports.getAssetFilteringBasedOnInvestmentAssetGroup = getAssetFilteringBasedOnInvestmentAssetGroup;
