@@ -30,7 +30,7 @@ export class OrdersListComponent extends DataTableCommonManagerComponent impleme
       { column: 'created_timestamp', nameKey: 'table.header.created_time', filter: { type: 'date', sortable: true } },
       { column: 'completed_timestamp', nameKey: 'table.header.completed_time', filter: { type: 'date', sortable: true } },
     ],
-    body: null,
+    body: null
   };
 
   public ordersColumnsToShow: Array<TableDataColumn> = [

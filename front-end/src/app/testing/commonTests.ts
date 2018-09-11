@@ -14,6 +14,11 @@ export function testHeaderLov(dataSource, headerLovColumns) {
 }
 
 
+/**
+ * Common tests for common form submiting and validating
+ *
+ * @param additionalData Function that returns all what this test composer need for tests build
+ */
 export function testFormControlForm(
   additionalData: () => {
     component: any,

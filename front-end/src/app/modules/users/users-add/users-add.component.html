@@ -48,10 +48,10 @@
               class="checkall"
               type="checkbox"
               formControlName="checkbox"
-              id="{{ control.controls.id.value }}"
+              [id]="control.controls.id.value"
               (click)="click()"
             >
-            <label [class.checked]="checked" attr.for={{control.controls.id.value}}>
+            <label [class.checked]="checked" [attr.for]="control.controls.id.value">
               <ng-container *ngIf="checked">
                 {{'users.select' | translate}}
               </ng-container>
@@ -76,7 +76,7 @@
     <button
       type="submit"
       class="btn submit"
-      [disabled]=loading
+      [disabled]="loading"
       (click)="saveUser()"
     >{{'common.submit' | translate}}</button>
   </div>

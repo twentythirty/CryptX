@@ -367,9 +367,9 @@ export class InstrumentInfoComponent extends DataTableCommonManagerComponent imp
    */
 
   @HostListener('window:beforeunload')
-    canDeactivate(): Observable<boolean> | boolean {
-      return this.noChanges;
-    }
+  canDeactivate(): Observable<boolean> | boolean {
+    return this.noChanges;
+  }
 
   /**
    * Styles
