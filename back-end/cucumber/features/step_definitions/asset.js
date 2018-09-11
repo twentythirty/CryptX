@@ -1,13 +1,17 @@
 const { Given, When, Then } = require('cucumber');
 const chai = require('chai');
 const { expect } = chai;
+const sinon = require('sinon');
 
 const { nullOrNumber } = require('../support/assert');
 
 const chaiHttp = require("chai-http");
 chai.use(chaiHttp);
+const request_promise = require('request-promise');
 
 const World = require('../support/global_world');
+
+const coin_market_cap_url = 'https://api.coinmarketcap.com/v2';
 
 Given('the system has Assets', async function() {
 
@@ -98,6 +102,31 @@ Given(/^the system has Asset Market Capitalization for the last (.*) hours$/, as
 
 });
 
+Given('the system has some missing Assets rom CoinMarketCap, including ETH and BTC', async function() {
+
+    const { Asset, AssetBlockchain, sequelize } = require('../../../models');
+    const { Op } = sequelize;
+
+    await Asset.destroy({ where: { symbol: ['ETH, BTC'] } });
+
+    const asset_count = await AssetBlockchain.count({});
+
+    /**
+     * This is probably the most efficient way to remove random assets from Coin Martket Cap
+     * For now, lets delete around 5%
+     */
+    await sequelize.query(`
+        DELETE FROM asset
+        WHERE asset.id IN (
+            SELECT bc.asset_id
+            FROM asset_blockchain AS bc
+            ORDER By random()
+            LIMIT ${_.round(asset_count/20) || 1}
+        )
+    `);
+
+});
+
 When('retrieve a list of Assets', function() {
 
     return chai
@@ -181,6 +210,42 @@ When('I select two different Assets', async function() {
 
 });
 
+When('the SYNC_COINS job complete it\`s run', {
+    timeout: 50000
+}, function() {
+
+    const job = require('../../../jobs/coins-list-sync');
+    const models = require('../../../models');
+    const config = { models };
+
+    return chai
+        .request(coin_market_cap_url)
+        .get(`/listings`)
+        .set('Authorization', World.current_user.token)
+        .then(async result => {   
+   
+            expect(result).to.have.status(200);
+            expect(result.body.data.length).to.be.greaterThan(0);
+
+            this.current_coin_market_cap_response = result.body;
+
+            /**
+             * The idea here is to "cache" the response so that when the job runs, it will receive the exact same response, as the test step.
+             * While the chance of the job having a different response is very small (like REALLY small), better be safe than have the test fail for no good reason.
+             */
+            sinon.stub(request_promise, 'get').callsFake(options => {
+                return Promise.resolve(result.body);
+            });
+
+            await job.JOB_BODY(config, console.log);
+
+            request_promise.get.restore();
+            
+        });
+
+
+});
+
 Then('the list should have all of the Assets revelant information if it is available', function() {
 
     const assets = this.current_assets;
@@ -253,8 +318,6 @@ Then('I can see the new status and history by getting the Asset details', functi
 
 Then('I cannot Blacklist an Asset which is already Blacklisted', function() {
 
-
-
     return chai
         .request(this.app)
         .post(`/v1/assets/${this.current_status_change.asset_id}/change_status`)
@@ -268,4 +331,49 @@ Then('I cannot Blacklist an Asset which is already Blacklisted', function() {
             expect(result).to.have.status(422);
             
         });
+
+});
+
+Then('the missing Assets are saved to the database', async function() {
+
+    const { Asset, AssetBlockchain } = require('../../../models');
+
+    const assets = await AssetBlockchain.findAll({
+        include: {
+            model: Asset,
+            required: true
+        },
+        raw: true
+    });
+
+    const coin_market_cap_assets = this.current_coin_market_cap_response.data;
+
+    expect(assets.length).to.equal(coin_market_cap_assets.length);
+
+    for(let asset of assets) {
+        const market_asset = coin_market_cap_assets.find(coin => coin.id === parseInt(asset.coinmarketcap_identifier, 10));
+
+        expect(market_asset).to.be.not.undefined;
+
+        expect(asset['Asset.symbol']).to.equal(market_asset.symbol);
+        expect(asset['Asset.long_name']).to.equal(market_asset.name);
+    }
+
+});
+
+Then('BTC and ETH are marked as base and deposit Assets', async function() {
+
+    const { Asset } = require('../../../models');
+
+    const base_assets = await Asset.findAll({
+        where: { symbol: ['BTC', 'ETH'] }
+    });
+
+    expect(base_assets.length).to.equal(2);
+    
+    for(let asset of base_assets) {
+        expect(asset.is_base).to.be.true;
+        expect(asset.is_deposit).to.be.true;
+    }
+
 });

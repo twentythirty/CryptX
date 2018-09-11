@@ -7,11 +7,13 @@ module.exports.SCHEDULE = '0 5 */8 * * *';
 module.exports.NAME = 'SYNC_COINS';
 module.exports.JOB_BODY = async (config, log) => {
 
+    const { Asset, AssetBlockchain, sequelize } = config.models;
+
     (`1. Fetching CoinMarketCap coins and existing blockchain assets... `);
 
     return Promise.all([
         config.models.AssetBlockchain.findAll(),
-        request_promise({
+        request_promise.get({
             uri: "https://api.coinmarketcap.com/v2/listings/",
             headers: {
                 "User-Agent": "Request-Promise"
@@ -45,14 +47,17 @@ module.exports.JOB_BODY = async (config, log) => {
 
         //individual coin insert with supporting object save
         return Promise.all(_.map(missing_coins, coin_data => {
-            return config.models.Asset.create({
-                symbol: coin_data.symbol,
-                long_name: coin_data.name,
-                is_base: (coin_data.symbol === 'BTC' || coin_data.symbol === 'ETH')
-            }).then(asset => {
-                return config.models.AssetBlockchain.create({
-                    asset_id: asset.id,
-                    coinmarketcap_identifier: `${coin_data.id}`
+            return sequelize.transaction(transaction => {
+                return config.models.Asset.create({
+                    symbol: coin_data.symbol,
+                    long_name: coin_data.name,
+                    is_base: (coin_data.symbol === 'BTC' || coin_data.symbol === 'ETH'),
+                    is_deposit: (coin_data.symbol === 'BTC' || coin_data.symbol === 'ETH')
+                }, { transaction }).then(asset => {
+                    return config.models.AssetBlockchain.create({
+                        asset_id: asset.id,
+                        coinmarketcap_identifier: `${coin_data.id}`
+                    }, { transaction });
                 });
             });
         }));
