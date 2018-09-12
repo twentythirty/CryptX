@@ -300,7 +300,8 @@
       "63": "FullyFilled",
       "64": "PartiallyFilled",
       "65": "Cancelled",
-      "66": "Failed"
+      "66": "Failed",
+      "67": "NotFilled"
     }
   },
 

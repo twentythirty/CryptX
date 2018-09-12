@@ -24,13 +24,13 @@ body {
     }
 }
 
-.rejected, .failed {
+.rejected, .failed, .notfilled, .cancelled {
     color: $red;
 }
-.pending {
+.pending, .inprogress, .partiallyfilled {
     color: $orange;
 }
-.approved {
+.approved, .fullyfilled {
     color: $green;
 }
 

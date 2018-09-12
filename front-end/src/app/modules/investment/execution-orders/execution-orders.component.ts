@@ -42,7 +42,7 @@ export class ExecutionOrdersComponent extends TimelineDetailComponent implements
       { column: 'price', nameKey: 'table.header.price', filter: { type: 'number', sortable: true } },
       { column: 'total_quantity', nameKey: 'table.header.total_quantity', filter: { type: 'number', sortable: true } },
       { column: 'filled_quantity', nameKey: 'table.header.filled_quantity', filter: { type: 'number', sortable: true } },
-      { column: 'exchange_trading_fee', nameKey: 'table.header.exchange_trading_fee', filter: { type: 'number', sortable: true } },
+      { column: 'exchange_trading_fee', nameKey: 'table.header.exchange_trading_fee', filter: { type: 'number', sortable: true }, column_class: 'word-wrap' },
       { column: 'status', nameKey: 'table.header.status', filter: { type: 'text', sortable: true, inputSearch: false } },
       { column: 'submission_time', nameKey: 'table.header.submission_time', filter: { type: 'date', sortable: true } },
       { column: 'completion_time', nameKey: 'table.header.completion_time', filter: { type: 'date', sortable: true } }
@@ -70,11 +70,12 @@ export class ExecutionOrdersComponent extends TimelineDetailComponent implements
     } }),
     new StatusCellDataColumn({ column: 'status', inputs: { classMap: {
       'execution_orders.status.61': StatusClass.PENDING,
-      'execution_orders.status.62': StatusClass.APPROVED,
-      'execution_orders.status.63': StatusClass.APPROVED,
-      'execution_orders.status.64': StatusClass.APPROVED,
-      'execution_orders.status.65': StatusClass.REJECTED,
+      'execution_orders.status.62': StatusClass.INPROGRESS,
+      'execution_orders.status.63': StatusClass.FULLYFILLED,
+      'execution_orders.status.64': StatusClass.PARTIALLYFILLED,
+      'execution_orders.status.65': StatusClass.CANCELED,
       'execution_orders.status.66': StatusClass.FAILED,
+      'execution_orders.status.67': StatusClass.NOTFILLED
     }}}),
     new DateCellDataColumn({ column: 'submission_time' }),
     new DateCellDataColumn({ column: 'completion_time' })
