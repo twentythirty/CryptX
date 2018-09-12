@@ -36,7 +36,7 @@ const getInvestmentRunWithAssetMix = async (investment_run_id, seq_query = {}, s
 
   if(err) console.log(err);
 
-  const asset_ids = group_assets.map(asset => asset['InvestmentRunAssetGroup.GroupAssets.asset_id']);
+  const asset_ids = group_assets.map(asset => asset['InvestmentRunAssetGroup.GroupAssets.asset_id']).filter(id => id);
 
   //Allow only to filter out assets that belong to the investment run.
   seq_query.where = { 
@@ -51,12 +51,12 @@ const getInvestmentRunWithAssetMix = async (investment_run_id, seq_query = {}, s
     raw: true
   }, seq_query);
 
-  const final_sql_where = `id IN(${asset_ids.join(', ')}) ${ sql_where !== '' ? `AND ${sql_where}` : '' }`;
-  
+  if(asset_ids.length) sql_where = `id IN(${asset_ids.join(', ')}) ${ sql_where !== '' ? `AND ${sql_where}` : '' }`;
+
   let result = [];
   [ err, result ] = await to(Promise.all([
     AdminViewService.fetchAssetsViewDataWithCount(final_seq_query),
-    AdminViewService.fetchAssetsViewFooter(final_sql_where)
+    AdminViewService.fetchAssetsViewFooter(sql_where)
   ]));
 
   if(err) TE(err.message);

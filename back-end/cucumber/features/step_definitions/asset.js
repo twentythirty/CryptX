@@ -445,7 +445,7 @@ Then('the missing Assets are saved to the database', async function() {
 
         expect(databaset_asset['Asset.symbol']).to.equal(market_asset.symbol);
         
-        expect(databaset_asset['Asset.long_name']).to.equal(market_asset.name);
+        //expect(databaset_asset['Asset.long_name']).to.equal(market_asset.name);
     }
 
 });
@@ -478,7 +478,7 @@ Then('missing Assets were saved to the database', async function() {
 
     const asset_count = await AssetBlockchain.count();
 
-    //expect(asset_count).to.be.greaterThan(this.current_asset_count);
+    expect(asset_count).to.be.greaterThan(this.current_asset_count);
 
 });
 

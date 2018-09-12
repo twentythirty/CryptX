@@ -390,7 +390,7 @@ const getAssetFilteringBasedOnInvestmentAssetGroup = async (id, seq_query = {}, 
   if(err) TE(err.message);
   if(!asset_group) return null;
 
-  const asset_ids = _.map(asset_group.GroupAssets, group_asset => group_asset.asset_id);
+  const asset_ids = _.map(asset_group.GroupAssets, group_asset => group_asset.asset_id).filter(id => id);
 
   seq_query.where = { 
     [Op.and]: [
@@ -399,11 +399,10 @@ const getAssetFilteringBasedOnInvestmentAssetGroup = async (id, seq_query = {}, 
     ] 
   };
   
-  const final_seq_query = _.assign({}, seq_query);
 
-  const final_sql_where = `id IN(${asset_ids.join(', ')}) ${ sql_where !== '' ? `AND ${sql_where}` : '' }`;
+  if(asset_ids.length) sql_where = `id IN(${asset_ids.join(', ')}) ${ sql_where !== '' ? `AND ${sql_where}` : '' }`;
 
-  return [ final_seq_query, final_sql_where ];  
+  return [ seq_query, sql_where ];  
 
 };
 module.exports.getAssetFilteringBasedOnInvestmentAssetGroup = getAssetFilteringBasedOnInvestmentAssetGroup;
