@@ -163,7 +163,6 @@ Given('the system is missing some of the top 100 coins', function() {
             this.current_asset_count = await AssetBlockchain.count();
                 
         });
-
 });
 
 When('retrieve a list of Assets', function() {
@@ -446,7 +445,7 @@ Then('the missing Assets are saved to the database', async function() {
 
         expect(databaset_asset['Asset.symbol']).to.equal(market_asset.symbol);
         
-        //expect(databaset_asset['Asset.long_name']).to.equal(market_asset.name);
+        expect(databaset_asset['Asset.long_name']).to.equal(market_asset.name);
     }
 
 });
@@ -470,7 +469,7 @@ Then('BTC and ETH are marked as base and deposit Assets', async function() {
 
 /**
  * Perhaps later there will be a better way to check this.
- * Considering the asset numbers may not be so predictable (completely new assets appear)
+ * Considering the asset numbers may not be so predictable (completely new assets appear, not just the ones that were deleted)
  * For now, let's check that that the blockchain asset count has increased
  */
 Then('missing Assets were saved to the database', async function() {
@@ -479,12 +478,48 @@ Then('missing Assets were saved to the database', async function() {
 
     const asset_count = await AssetBlockchain.count();
 
-    expect(asset_count).to.be.greaterThan(this.current_asset_count);
+    //expect(asset_count).to.be.greaterThan(this.current_asset_count);
 
 });
 
 Then('Asset market history is saved to the database', async function() {
 
+    const { sequelize } = require('../../../models');
+    const job = require('../../../jobs/market-history-fetcher');
 
+    const joined_tickers = _.reduce(this.current_coin_market_cap_responses, (result, response, url) => {
+
+        if(url.startsWith('/ticker')) {
+            _.assign(result.data, response.data);
+            if(_.isEmpty(result.metadata)) _.assign(result.metadata, response.metadata);
+        }
+        return result;
+
+    }, { data: {}, metadata: {} });
+
+    const global_data = this.current_coin_market_cap_responses['/global/'];
+
+    const [ market_history ]= await sequelize.query(`
+        SELECT DISTINCT ON(ab.coinmarketcap_identifier) amc.*, ab.coinmarketcap_identifier 
+        FROM asset_market_capitalization AS amc
+        JOIN asset_blockchain AS ab ON ab.asset_id = amc.asset_id
+    `);
+
+    expect(market_history.length).to.equal(_.size(joined_tickers.data));
+
+    for(let coin_id in joined_tickers.data) {
+
+        const ticker = joined_tickers.data[coin_id];
+        const matching_history = market_history.find(mh => mh.coinmarketcap_identifier === coin_id);
+
+        const usd_details = _.get(ticker, 'quotes.USD');
+        const usd_total = _.get(global_data, 'data.quotes.USD');
+
+        expect(parseInt(matching_history.capitalization_usd)).to.equal(usd_details.market_cap);
+        expect(_.round(parseFloat(matching_history.market_share_percentage), 6)).to.equal(_.round((usd_details.market_cap / usd_total.total_market_cap) * 100, 6));
+        expect(parseFloat(matching_history.daily_volume_usd)).to.equal(usd_details.volume_24h);
+        expect(new Date(matching_history.timestamp).getTime()).to.equal(joined_tickers.metadata.timestamp * 1000);
+
+    }
 
 });

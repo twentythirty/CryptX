@@ -30,6 +30,7 @@ module.exports.JOB_BODY = async (config, log) => {
     log(`2. Fetching TMC and other metadata...`);
 
     const models = config.models;
+    const sequelize = models.sequelize;
     const Asset = models.Asset;
     const AssetBlockchain = models.AssetBlockchain;
     const AssetMarketCapitalization = models.AssetMarketCapitalization;
@@ -137,9 +138,12 @@ module.exports.JOB_BODY = async (config, log) => {
             return Promise.all([
                 Promise.resolve(coinmarketcap_id),
                 Asset.findCreateFind({
-                    where: {
-                        symbol: ticker_data.symbol
-                    },
+                    where: sequelize.where(
+                        sequelize.fn('lower', 
+                            sequelize.fn('regexp_replace', sequelize.col('long_name'), '(\s+|\,|\.|\!)', '', 'g')
+                        ),
+                        ticker_data.name.toLowerCase().replace(/(\s+|\,|\.|\!)/g, '')
+                    ),
                     defaults: {
                         symbol: ticker_data.symbol,
                         long_name: ticker_data.name,
