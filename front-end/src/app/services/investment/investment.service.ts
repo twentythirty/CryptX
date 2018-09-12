@@ -245,6 +245,14 @@ export class InvestmentService {
     return stats;
   }
 
+  createAssetMix(request: object): Observable<any> {
+    return this.http.post<any>(this.baseUrl + `investments/select_assets`, request);
+  }
+
+  getAssetMix(asset_group_id: number, requestData?: EntitiesFilter): Observable<any> {
+    return this.http.post<any>(this.baseUrl + `assets/detailed/of_investment_asset_group/${asset_group_id}`, requestData);
+  }
+
   getDepositAmounts(investments_id: number): Observable<any> {
     return this.http.post<any>(this.baseUrl + `investments/${investments_id}/deposit_amounts`, {});
   }

@@ -68,6 +68,7 @@
   <app-data-table
     *ngIf="detailTableDataSource"
     [dataSource]="detailTableDataSource"
+    (openRow)="openListRow($event)"
     [columnsToShow]="detailTableColumnsToShow"
   ></app-data-table>
 

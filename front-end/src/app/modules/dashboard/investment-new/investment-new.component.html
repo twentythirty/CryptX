@@ -1,4 +1,4 @@
-<app-modal
+<app-modal [class.modal-table]="showSelectedAssetsMix || showSkippedAssets"
   [heading]="'investment.start_new_run' | translate"
   (close)="onClose()"
 >
@@ -38,48 +38,90 @@
       </div>
     </form>
   </div>
+
+
   <div *ngIf="next_step" class="step-box step1">
-    <br>
-    <form [formGroup]="runForm" (ngSubmit)="Confirm()">
-      <div class="checkboxes-modal-wrap input-padding">
-        <app-input-item class="form-item label"
-          [label]="'investment.total_investment_amount' |translate"
-          [placeholder]="'investment.enter_usd' |translate"
-          [formGroup]="runForm"
-          formControlName='deposit_usd'
-          type="number"
-          name='USD'
-        ></app-input-item>
-      </div>
-      <div class="checkboxes-modal-wrap">
-      <div class="display-inline">
-      <app-input-item class="form-item label"
-        [label]="'investment.amount_in_btc' |translate"
-        [placeholder]="'investment.enter_btc' |translate"
-        [formGroup]="runForm"
-        formControlName='deposit_btc'
-        type = "number"
-        name='BTC'
-      ></app-input-item>
-      </div>
-      <div class="display-inline">
-      <app-input-item class="form-item label"
-        [label]="'investment.amount_in_eth' |translate"
-        [placeholder]="'investment.enter_eth' |translate"
-        [formGroup]="runForm"
-        formControlName='deposit_eth'
-        type = "number"
-        name='ETH'
-      ></app-input-item>
-      </div>
-      </div>
-      <div class="margin-bottom">
-        <button 
-          class="btn new" 
-          type="submit" 
-          [disabled]="loading || !runForm.valid"
-        >{{'common.confirm' |translate}}</button>
-      </div>
-    </form>
+      <br>
+      <form [formGroup]="runForm">
+        
+        <div *ngIf="showSelectedAssetsMix && !showSkippedAssets || !showSelectedAssetsMix && showSkippedAssets">
+            <div class="top-controls" *ngIf="tableTitle">
+                <span class="headline-title">{{ tableTitle }}</span>
+            </div>
+            <app-data-table
+              *ngIf="assetDataSource"
+              [dataSource]="assetDataSource"
+              [columnsToShow]="assetColumnsToShow"
+              [loading]="tableLoading"
+              [rowClass]="rowClass"
+              (setFilter)="onSetFilter($event)"
+              (openRow)="openListRow($event)"
+            ></app-data-table>
+        </div>
+
+        <div *ngIf="!showSelectedAssetsMix && !showSkippedAssets">
+          <div class="checkboxes-modal-wrap input-padding">
+            <app-input-item class="form-item label"
+              [label]="'investment.total_investment_amount' |translate"
+              [placeholder]="'investment.enter_usd' |translate"
+              [formGroup]="runForm"
+              formControlName='deposit_usd'
+              type="number"
+              name='USD'
+            ></app-input-item>
+          </div>
+          <div class="checkboxes-modal-wrap">
+            <div class="display-inline">
+            <app-input-item class="form-item label"
+              [label]="'investment.amount_in_btc' |translate"
+              [placeholder]="'investment.enter_btc' |translate"
+              [formGroup]="runForm"
+              formControlName='deposit_btc'
+              type = "number"
+              name='BTC'
+            ></app-input-item>
+            </div>
+            <div class="display-inline">
+            <app-input-item class="form-item label"
+              [label]="'investment.amount_in_eth' |translate"
+              [placeholder]="'investment.enter_eth' |translate"
+              [formGroup]="runForm"
+              formControlName='deposit_eth'
+              type = "number"
+              name='ETH'
+            ></app-input-item>
+            </div>
+          </div>
+        </div>
+        <div class="margin-bottom">
+            <app-btn *ngIf="showSelectedAssetsMix || showSkippedAssets"
+              [grey] = true
+              (click)= onClose()
+            >{{'common.discard' |translate}}
+            </app-btn>
+            <button 
+              class="btn new" 
+              type="submit" 
+              (click) = Confirm()
+              [disabled]="loading"
+              [appMarkAsTouched]="runForm"
+            >{{'common.confirm' |translate}}
+            </button>
+        </div>
+      </form>
+  </div>
+</app-modal>
+
+<app-modal
+  class="modal-rationale"
+  *ngIf="readModalIsShown"
+  [heading]="readData?.title"
+  (close)="hideReadModal()"
+>
+  <div>
+    <textarea readonly>{{ readData?.content }}</textarea>
+  </div>
+  <div>
+    <app-btn class="right" (onClick)="hideReadModal()">{{ 'common.done' | translate }}</app-btn>
   </div>
 </app-modal>

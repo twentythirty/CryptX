@@ -126,3 +126,13 @@
       font-size: small;
   }
 }
+
+.modal-table {
+    .modal {
+        .modal-content {
+            max-width: 700px;
+            padding-bottom: 10px;
+            width: 100%;
+        }
+    }
+}

@@ -20,7 +20,8 @@
     "rationale": "Rationale",
     "add_new_user": "Add new user",
     "all": "All",
-    "add_custodian": "Add custodian"
+    "add_custodian": "Add custodian",
+    "discard": "Discard"
   },
   "table": {
     "header": {
@@ -109,7 +110,10 @@
       "investment_eth": "Investement ETH",
       "investment_btc": "Investment BTC",
       "investment_currency": "Investment currency",
-      "equivalent_in_usd": "Equivalent in usd"
+      "equivalent_in_usd": "Equivalent in usd",
+      "deposit_currency": "Deposit currency",
+      "deposit_amount": "Deposit amount",
+      "investment_amount": "Investment amount"
     },
     "filter": {
       "all": "All",

@@ -1,30 +1,68 @@
 import { Component, OnInit, Output, EventEmitter } from '@angular/core';
 import { FormGroup, FormControl, FormBuilder, Validators } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 
 import { ModelConstantsService } from '../../../services/model-constants/model-constants.service';
 import { InvestmentService } from '../../../services/investment/investment.service';
 import { finalize } from 'rxjs/operators';
+import { DataTableCommonManagerComponent } from '../../../shared/components/data-table-common-manager/data-table-common-manager.component';
+import { TableDataSource, TableDataColumn } from '../../../shared/components/data-table/data-table.component';
+import { CurrencyCellDataColumn,
+         NumberCellDataColumn,
+         PercentCellDataColumn,
+         ActionCellDataColumn,
+         DataCellAction } from '../../../shared/components/data-table-cells';
+import * as _ from 'lodash';
 
 @Component({
   selector: 'app-investment-new',
   templateUrl: './investment-new.component.html',
   styleUrls: ['./investment-new.component.scss']
 })
-export class InvestmentNewComponent implements OnInit {
+export class InvestmentNewComponent extends DataTableCommonManagerComponent implements OnInit {
 
   @Output() close: EventEmitter<any> = new EventEmitter();
   @Output() onComplete: EventEmitter<any> = new EventEmitter();
 
-  mode = false;
-  portfolio = false;
+
+  loading = false; // Is submit button loading
+  tableLoading = false; // Is table loading
+
   next_step = false;
-  loading = false;
+  showSelectedAssetsMix = false; // Show/hide selected asset mix
+  showSkippedAssets = false; // Show/hide skipped assets
+  tableTitle; // Selected/skipped assets table title
+
+  readModalIsShown = false; // Show/hide rationale modal
+  readData; // Rationale data
+
+  public pageSize = 999; // Table page size
 
   group_name = 'STRATEGY_TYPES';
-  strategies = {};
-  strategy_type; // Selected strategy type
-  is_simulated; // Selected mode type
+  strategies = {}; // Strategy type list
+  strategyType = null; // Selected strategy type
+  isSimulated = null; // Selected mode
+  assetGroup; // Created asset group id
+
+
+  public assetDataSource: TableDataSource = {
+    header: [
+      { column: 'symbol', nameKey: 'table.header.symbol', filter: { type: 'text', sortable: true } },
+      { column: 'long_name', nameKey: 'table.header.long_name', filter: { type: 'text', sortable: true } },
+      { column: 'capitalization', nameKey: 'table.header.capitalisation', filter: { type: 'number', sortable: true } },
+      { column: 'nvt_ratio', nameKey: 'table.header.nvt_ratio', filter: { type: 'number', sortable: true } },
+      { column: 'market_share', nameKey: 'table.header.market_share', filter: { type: 'number', sortable: true } }
+    ],
+    body: null
+  };
+
+  public assetColumnsToShow: Array<TableDataColumn> = [
+    new TableDataColumn({ column: 'symbol' }),
+    new TableDataColumn({ column: 'long_name' }),
+    new CurrencyCellDataColumn({ column: 'capitalization' }),
+    new NumberCellDataColumn ({ column: 'nvt_ratio' }),
+    new PercentCellDataColumn({ column: 'market_share' }),
+  ];
 
   runForm: FormGroup = new FormGroup({
     deposit_usd: new FormControl('', [Validators.required]),
@@ -35,73 +73,182 @@ export class InvestmentNewComponent implements OnInit {
   constructor(
     private modelConstantService: ModelConstantsService,
     private investmentService: InvestmentService,
-    private router: Router,
-  ) { }
+    public route: ActivatedRoute,
+    public router: Router,
+  ) {
+      super (route, router);
+  }
 
   ngOnInit() {
-    this.strategies = Object.entries(this.modelConstantService.getGroup(this.group_name));
+   this.strategies = Object.entries(this.modelConstantService.getGroup(this.group_name));
+   super.ngOnInit();
   }
 
   onChangeMode(value) {
-    this.is_simulated = value;
-    this.mode = true;
+    this.isSimulated = value;
     this.isValid();
   }
 
   onChangePortfolio(value) {
-    this.strategy_type = value[1];
-    this.portfolio = true;
+    this.strategyType = value[1];
     this.isValid();
   }
 
+  // Check if mode and portfolio selected
   isValid() {
-    if (this.mode && this.portfolio) {
+    if (this.isSimulated != null && this.strategyType != null) {
       this.next_step = true;
+      this.showSelectedAssetsMix = true;
+      this.getAllData();
     }
   }
 
+  // Submit a new investment run
   Confirm() {
+    if (this.showSelectedAssetsMix && !this.showSkippedAssets) {
+      this.showSelectedAssetsMix = false;
+      this.showSkippedAssets = true;
+      this.getAllData();
+    } else if (!this.showSelectedAssetsMix && this.showSkippedAssets) {
+      this.showSkippedAssets = false;
+      this.runForm.reset();
+    } else if (!this.showSelectedAssetsMix && !this.showSkippedAssets && this.runForm.valid) {
+      this.loading = true;
+
+      const request = {
+        strategy_type: this.strategyType,
+        is_simulated: this.isSimulated,
+        deposit_amounts: this.toArray(),
+        investment_group_asset_id: this.assetGroup
+      };
+
+      this.investmentService.createInvestmentRun(request).pipe(
+          finalize(() => this.loading = false)
+        ).subscribe(
+          data => {
+            if (data.success) {
+              this.onClose();
+              this.onComplete.emit();
+              this.router.navigate(['/run/investment', data.investment_run.id]);
+            }
+          }, error => {
+            console.log('Error', error);
+          }, () => {
+          }
+        );
+    }
+  }
+
+  // Get selected asset mix table
+  getAllData() {
     this.loading = true;
-
+    if (!this.showSelectedAssetsMix && this.showSkippedAssets) {
+      this.getSkippedAssets();
+    }
+    if (this.next_step && this.showSelectedAssetsMix && !this.showSkippedAssets) {
+    this.tableLoading = true;
     const request = {
-      strategy_type: this.strategy_type,
-      is_simulated: this.is_simulated,
-      deposit_amounts: this.toArray()
+      strategy_type: this.strategyType
     };
+   this.investmentService.createAssetMix(request).subscribe( data => {
+      if (data.success) {
+        if (!this.requestData.filter.and) {
+          this.requestData.filter.and = [];
+        }
+        if (this.requestData.filter.and.length === 0) {
+          this.requestData.filter.and.push({
+            field: 'status',
+            value: [
+               'assets.status.400'
+            ],
+            expression: 'in',
+            type: 'string'
+         });
+        }
+        this.assetGroup = data.list.id;
 
-    this.investmentService.createInvestmentRun(request).pipe(
-        finalize(() => this.loading = false)
-      ).subscribe(
-        data => {
-          if (data.success) {
-            this.onClose();
-            this.onComplete.emit();
-            this.router.navigate(['/run/investment', data.investment_run.id]);
+        this.investmentService.getAssetMix(this.assetGroup, this.requestData).subscribe( res => {
+          if (res.success) {
+            this.count = res.count;
+            this.tableTitle = this.count + ' Selected asset mix';
+            this.assetDataSource.body = res.assets;
+            this.assetDataSource.footer = res.footer;
+            this.tableLoading = false;
+            this.loading = false;
           }
         }, error => {
           console.log('Error', error);
         }, () => {
+        });
+      }
+    }, error => {
+      console.log('Error', error);
+    }, () => {
+    });
+    }
+  }
+
+  // Get Skipped assets table
+  getSkippedAssets() {
+    this.tableLoading = true;
+    // Append new column
+    if (!_.find(this.assetDataSource.header, ['column', 'actions'])) {
+      this.assetDataSource.header.push({ column: 'actions', nameKey: 'table.header.rationale' });
+      this.assetColumnsToShow.push(
+        new ActionCellDataColumn({ column: 'comment', inputs: {
+          actions: [
+            new DataCellAction({
+              label: 'READ',
+              exec: (row: any) => {
+                this.showReadModal({
+                  title: 'Rationale',
+                  content: row.comment
+                });
+              }
+            })
+          ]
+        }})
+      );
+    }
+
+    // Get table data
+    this.requestData.filter.and[0].value = ['assets.status.401', 'assets.status.402'];
+
+    this.investmentService.getAssetMix(this.assetGroup, this.requestData).subscribe (
+      res => {
+        if (res.success) {
+          this.assetDataSource.body = res.assets;
+          this.assetDataSource.footer = res.footer;
+          this.count = res.count;
+          this.tableTitle = this.count + ' Greylisted / blacklisted assets that were skipped';
+          this.tableLoading = false;
+          this.loading = false;
         }
+      }, error => {
+        console.log('Error', error);
+      }, () => {
+      }
     );
   }
 
+  // Form investment run creation request
   toArray() {
     const array = [];
-    if (this.runForm.get('deposit_usd').value !== '') {
+    if (this.runForm.get('deposit_usd').value !== null) {
       const obj = {
         symbol: 'USD',
         amount: Number(this.runForm.get('deposit_usd').value)
       };
       array.push(obj);
     }
-    if (this.runForm.get('deposit_btc').value !== '') {
+    if (this.runForm.get('deposit_btc').value !== null) {
       const obj = {
         symbol: 'BTC',
         amount: Number(this.runForm.get('deposit_btc').value)
       };
       array.push(obj);
     }
-    if (this.runForm.get('deposit_eth').value !== '') {
+    if (this.runForm.get('deposit_eth').value !== null) {
       const obj = {
         symbol: 'ETH',
         amount: Number(this.runForm.get('deposit_eth').value)
@@ -111,6 +258,30 @@ export class InvestmentNewComponent implements OnInit {
     return array;
   }
 
+  // Show/hide skipped assets rationale modal
+  showReadModal(data: { title: string, content: string }): void {
+    this.readModalIsShown = true;
+    this.readData = data;
+  }
+
+  hideReadModal(): void {
+    this.readModalIsShown = false;
+    this.readData = null;
+  }
+
+  // Set row color
+  rowClass(row): string {
+    if (row.status == 'assets.status.401') { return 'color-black'; }
+    if (row.status == 'assets.status.402') { return 'color-gray'; }
+    return '';
+  }
+
+  // Open asset details in a new tab
+  openListRow(asset) {
+    window.open('/#/assets/view/' + asset.id);
+  }
+
+  // Close investment run creation modal
   onClose() {
     this.close.emit();
   }
