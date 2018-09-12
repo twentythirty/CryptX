@@ -1,7 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { mergeMap, finalize } from 'rxjs/operators';
-
 import * as _ from 'lodash';
 
 import { StatusClass } from '../../../shared/models/common';
@@ -39,7 +38,7 @@ export class OrderGroupComponent extends TimelineDetailComponent implements OnIn
   public listTitle = '';
   public singleTableEmptyText = 'orders.orders_not_generated';
   public listTableEmptyText = 'orders.orders_not_generated';
-  public showGenerateOrders = true;
+  public showGenerateOrders = false;
 
   /**
    * 2. Implement attributes to preset data structure
@@ -172,6 +171,8 @@ export class OrderGroupComponent extends TimelineDetailComponent implements OnIn
             this.showGenerateOrders = false;
           }
           this.disableGenerateOrders = false;
+        } else {
+          this.showGenerateOrders = true;
         }
       },
       err => this.singleDataSource.body = []

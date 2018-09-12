@@ -17,7 +17,6 @@ import {
   ActionCellDataColumn,
   DataCellAction,
   DateCellDataColumn,
-  PercentCellDataColumn,
   StatusCellDataColumn,
   ConfirmCellDataColumn,
   NumberCellDataColumn
@@ -130,7 +129,6 @@ export class RecipeRunDetailComponent extends TimelineDetailComponent implements
     private investmentService: InvestmentService,
   ) {
     super(route, router);
-
   }
 
   /**
