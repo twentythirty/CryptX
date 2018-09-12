@@ -5,6 +5,7 @@ const InvestmentRun = require('../models').InvestmentRun;
 const InvestmentAmount = require('../models').InvestmentAmount;
 const RecipeRun = require('../models').RecipeRun;
 const RecipeRunDetail = require('../models').RecipeRunDetail;
+const RecipeRunDetailInvestment = require('../models').RecipeRunDetailInvestment;
 const Asset = require('../models').Asset;
 const AssetService = require('./AssetService');
 const Op = require('sequelize').Op;
@@ -177,7 +178,7 @@ const changeInvestmentRunStatus = async function (identifying_value, status_numb
 module.exports.changeInvestmentRunStatus = changeInvestmentRunStatus;
 
 const createRecipeRun = async function (user_id, investment_run_id) {
-  let err, investment_run, recipe_run, recipe_run_detail;
+  let err, investment_run, recipe_run, recipe_run_details;
 
   recipe_run = await RecipeRun.findOne({
     where: {
@@ -199,33 +200,28 @@ const createRecipeRun = async function (user_id, investment_run_id) {
   ));
   if (err) TE(err.message);
 
-  [err, recipe_run_detail] = await to(this.generateRecipeDetails(investment_run.id, investment_run.strategy_type), false);
+  [err, recipe_run_details] = await to(this.generateRecipeDetails(investment_run.id, investment_run.strategy_type), false);
   if (err) TE(err.message);
 
-  [err, recipe_run] = await to(RecipeRun.create({
-    created_timestamp: new Date(),
-    investment_run_id,
-    user_created_id: user_id,
-    approval_status: RECIPE_RUN_STATUSES.Pending,
-    approval_comment: '',
-  }));
+  
+  [err, recipe_run] = await to(sequelize.transaction(transaction => 
+    RecipeRun.create({
+      created_timestamp: new Date(),
+      investment_run_id,
+      user_created_id: user_id,
+      approval_status: RECIPE_RUN_STATUSES.Pending,
+      approval_comment: '',
 
-  if (err) TE(err.message);
-
-  // fill recipe_run_details with results from generateRecipeDetails
-  [err, recipe_run_detail] = await to(Promise.all(
-    recipe_run_detail.map(asset => {
-      if (!asset.suggested_action)
-        return `No way found to invest into ${asset.symbol}`;
-      let action = asset.suggested_action;
-
-      return RecipeRunDetail.create({
-        recipe_run_id: recipe_run.id,
-        transaction_asset_id: action.transaction_asset_id,
-        quote_asset_id: action.quote_asset_id,
-        target_exchange_id: action.exchange_id,
-        investment_percentage: asset.investment_percentage
-      });
+      RecipeRunDetails: recipe_run_details.map(detail => {
+        detail.RecipeRunDetailInvestments = detail.detail_investment;
+        return detail;
+      })
+    }, {
+      include: [{
+        model: RecipeRunDetail,
+        include: RecipeRunDetailInvestment
+      }], // include to create investment amounts with investment run
+      transaction
     })
   ));
 
@@ -282,91 +278,118 @@ const generateRecipeDetails = async (investment_run_id, strategy_type) => {
       possible: asset_group,
       to_execute: []
     }
-  }).map((asset, index, array) => {
-    asset.investment_percentage = 100 / array.length;
+  }).map((asset, index, array) => { // calculate investment percentage
+    asset.asset.investment_percentage = Decimal(100).div(Decimal(array.length));
     return asset;
   });
 
-   // calculate investment amounts in USD
+  // calculate investment amounts in USD
+  let total_investment_usd = Decimal(0); 
   let investment_size = investment_run.InvestmentAmounts;
   investment_size = investment_size.map(size => {
     let base_price_usd = prices.find(price => price.id==size.asset_id);
     let value_usd;
 
     if (!base_price_usd) { // not found if it's USD
-      value_usd = parseFloat(size.amount);
+      value_usd = Decimal(parseFloat(size.amount));
       size.price_per_asset_usd = 1;
     } else {
-      value_usd = parseFloat(size.amount) * base_price_usd.price;
+      value_usd = Decimal(parseFloat(size.amount)).mul(Decimal(parseFloat(base_price_usd.price)));
       size.price_per_asset_usd = parseFloat(base_price_usd.price);
     }
 
     size.value_usd = value_usd;
     size.remaining_usd = value_usd;
+
+    total_investment_usd = Decimal(total_investment_usd).add(Decimal(size.value_usd));
     return size;
   });
- 
-  let total_investment_usd = _.sumBy(investment_size, size => size.value_usd);
-
-  investment_size = investment_size.map(size => {
-    size.amount_per_asset = total_investment_usd / assets_grouped_by_id.length;
-    return size;
-  })
-
   assets_grouped_by_id.map(asset => {
     let chosen = [];
-    let total_spent = 0;
+    let total_spent = new Decimal(0);
+    let should_spend = Decimal(total_investment_usd).mul(Decimal(asset.asset.investment_percentage).div(Decimal(100)));
+
+    asset.possible = _.orderBy(asset.possible, ['nvt', 'liquidity_level', 'price_usd'], ['desc', 'desc', 'asc']);
 
     for (let action of asset.possible) {
       let base = investment_size.find(deposit => deposit.asset_id==action.quote_asset_id);
       if (!base) continue;
-      
-      if (base.remaining_usd > 0) { // some amount of base asset left
-        let base_spent = 0;
 
-        if (base.remaining_usd >= base.amount_per_asset) { // enough to buy whole amount
-          chosen.push({ asset_id: base.id, amount: base.amount_per_asset });
-          base_spent += base.amount_per_asset;
-        } else { // not enough to buy whole amount, buy with whats remaining 
-          chosen.push({ asset_id: base.id, amount: base.remaining_usd });
-          base_spent += base.remaining_usd;
+       // if we have some amount of needed base asset left
+      if (base.remaining_usd.gt(0)) {
+        let base_spent = new Decimal(0);
+
+        if (base.remaining_usd.gte(Decimal(should_spend))) { // enough to buy whole amount
+          base_spent = Decimal(should_spend);
+        } else { // not enough to buy whole needed amount, buy with whats remaining 
+          base_spent = Decimal(base.remaining_usd);
         }
 
-        base.remaining_usd -= base_spent;
-        total_spent += base_spent;
+        chosen.push({ asset_id: base.asset_id, from_asset_id: base.asset_id, exchange_id: action.exchange_id, amount_usd: base_spent });
+        base.remaining_usd = Decimal(base.remaining_usd).minus(Decimal(base_spent));
+        total_spent = total_spent.add(Decimal(base_spent));
       }
 
       let usd = investment_size.find(s => s.asset_id==1);
       if (!usd) continue;
 
-      if (total_spent < base.amount_per_asset && usd.remaining_usd > 0) { // if we spent less than we should've and have USD left
+      // if we didn't yet allocate enough base asset to buy required amount
+      if (total_spent.lt(should_spend) && usd.remaining_usd.gt(0)) {
         let deposit_spent = 0;
 
-        let needed = base.amount_per_asset - total_spent;
-        if (needed <= usd.remaining) { // enough to buy whole amount
-          chosen.push({ asset_id: usd.asset_id, amount: usd_needed });
-          deposit_spent += usd_needed;
-        } else { // not enough to buy whole amount, buy whith whats remaining
-          chosen.push({ asset_id: usd.asset_id, amount: usd.remaining_usd });
-          deposit_spent += usd.remaining_usd;
+        let usd_needed = should_spend.minus(total_spent);
+        if (usd_needed.lte(Decimal(usd.remaining_usd))) { // enough to buy whole amount needed
+          deposit_spent = Decimal(usd_needed);
+        } else { // not enough to buy whole needed amount, buy whith whats remaining
+          deposit_spent = Decimal(usd.remaining_usd);
         }
-
-        usd.remaining_usd -= deposit_spent;
-        total_spent += deposit_spent;
+        
+        chosen.push({ asset_id: base.asset_id, from_asset_id: usd.asset_id, exchange_id: action.exchange_id, amount_usd: deposit_spent });
+        usd.remaining_usd = Decimal(usd.remaining_usd).minus(Decimal(deposit_spent));
+        total_spent = total_spent.add(Decimal(deposit_spent));
       }
 
-      if (total_spent >= (total_investment_usd * (asset.investment_percentage / 100)))
-        break; // if already bought needed amount, then skip other iterations
+      if (total_spent.gte(Decimal(should_spend)))
+        break; // break cycle if already allocated needed amount
     }
 
-    if (total_spent < (total_investment_usd * (asset.investment_percentage / 100))) {
+    // if whole needed amount not allocated, then we fail to fully buy an asset
+    if (total_spent.lt(Decimal(should_spend))) {
       TE("Couldn't fully buy asset ID " + asset.possible[0].id + " with remaining funds");
     } else {
       asset.to_execute = chosen;
     }
   });
 
-  console.log(assets_grouped_by_id);
+  // calculate amount in base assets
+  let recipe_details = assets_grouped_by_id.map(asset => {
+    // calculate amount of asset from investment amount in USD
+    asset.to_execute.map(investment_detail => {
+      let base = investment_size.find(s => s.asset_id == investment_detail.from_asset_id);
+      investment_detail.amount = Decimal(investment_detail.amount_usd).div(Decimal(base.price_per_asset_usd));
+    });
+
+    // form similar structure to recipe_run_detail and recipe_run_detail_investment
+    let details = _.map(_.groupBy(asset.to_execute, (detail) => detail.asset_id), details => {
+      let asset_info = details[0];
+      return {
+        transaction_asset_id: asset.asset.id,
+        quote_asset_id: asset_info.asset_id,
+        exchange_id: asset_info.exchange_id,
+        investment_percentage: asset.asset.investment_percentage.toString(),
+        detail_investment: details.map(detail => ({
+          asset_id: detail.from_asset_id,
+          amount: detail.amount.toString(),
+          amount_usd: detail.amount_usd.toString(),
+        }))
+      };
+    });
+    return details;
+  });
+
+  recipe_details = _.flatten(recipe_details);
+
+  return recipe_details;
 };
 module.exports.generateRecipeDetails = generateRecipeDetails;
 

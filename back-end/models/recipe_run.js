@@ -35,6 +35,7 @@ module.exports = (sequelize, DataTypes) => {
     });
     RecipeRun.hasMany(models.RecipeOrderGroup);
     RecipeRun.hasMany(models.RecipeRunDeposit)
+    RecipeRun.hasMany(models.RecipeRunDetail);
   };
 
   RecipeRun.prototype.toWeb = function() {
