@@ -465,3 +465,18 @@ const getAssetGroupWithData = async function (investment_run_id) {
   return asset_group;
 };
 module.exports.getAssetGroupWithData = getAssetGroupWithData;
+
+/** Liquidity levels are defined in CryptX according to the following table, whereby
+ * the USD amount denotes the trading volume over the last 24 hours on a connected exchange. 
+ * @param {*} volume_usd Volume of traded asset represented in USD 
+ */
+const getLiquidityLevel = (volume_usd) => {
+
+  let level = LIQUIDITY_LEVELS.find(l => 
+    (l.from <= volume_usd && l.to > volume_usd) || 
+    (l.from <= volume_usd && !l.to)
+  );
+
+  return level;
+};
+module.exports.getLiquidityLevel = getLiquidityLevel;

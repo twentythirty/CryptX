@@ -41,7 +41,15 @@ describe('InvestmentService testing:', () => {
   let RECIPE_STATUS_CHANGE = RECIPE_RUN_STATUSES.Approved;
   let RECIPE_APPROVAL_COMMENT = 'Approving recipe';
   let ASSET_GROUP_ID = 1;
-  let DEPOSIT_ASSET_SYMBOLS = ['USD', 'BTC', 'ETH'];
+  let BASE_ASSET_PRICES = [
+    { id: 2, symbol: "BTC", price: "7500" },
+    { id: 312, symbol: "ETH", price: "550" }
+  ];
+  let DEPOSIT_ASSETS = {
+    'USD': { symbol: 'USD', asset_id: 1 },
+    'BTC': { symbol: 'BTC', asset_id: 2 },
+    'ETH': { symbol: 'ETH', asset_id: 312 }
+  }
   let DEPOSIT_AMOUNTS = [
     {
       symbol: 'USD',
@@ -57,6 +65,11 @@ describe('InvestmentService testing:', () => {
     }
   ];
 
+  let INVESTMENT_RUN = {
+    id: INVESTMENT_RUN_ID,
+    investment_run_asset_group_id: 1
+  };
+
   beforeEach(() => {
     sinon.stub(InvestmentRun, 'create').callsFake((data) => {
       let investment_run = new InvestmentRun(data);
@@ -66,7 +79,36 @@ describe('InvestmentService testing:', () => {
       return Promise.resolve(data);
     })
 
-    sinon.stub(InvestmentRun, 'findOne').returns(Promise.resolve());
+    sinon.stub(InvestmentRun, 'findOne').callsFake(investment_run_id => {
+      let investment_run = new InvestmentRun(INVESTMENT_RUN);
+
+      investment_run.InvestmentAmounts = [
+        {
+          id: 1,
+          investment_run_id: investment_run_id,
+          asset_id: DEPOSIT_ASSETS.USD,
+          amount: 1000000
+        }, {
+          id: 2,
+          investment_run_id: investment_run_id,
+          asset_id: DEPOSIT_ASSETS.BTC,
+          amount: 1000
+        },
+        {
+          id: 3,
+          investment_run_id: investment_run_id,
+          asset_id: DEPOSIT_ASSETS.ETH,
+          amount: 1000
+        }
+      ];
+
+      return Promise.resolve(investment_run);
+    });
+
+    sinon.stub(assetService, 'getBaseAssetPrices').callsFake(() => {
+      return Promise.resolve(BASE_ASSET_PRICES);
+    });
+
     sinon.stub(InvestmentRun, 'count').callsFake(options => {
       return Promise.resolve(0);
     });
@@ -113,7 +155,9 @@ describe('InvestmentService testing:', () => {
 
     sinon.stub(RecipeRun, 'create').callsFake(recipe_run => {
       recipe_run = new RecipeRun(recipe_run);
+
       sinon.stub(recipe_run, 'toJSON').returns(Promise.resolve(recipe_run));
+      sinon.stub(recipe_run, 'save').returns(recipe_run);
 
       return Promise.resolve(recipe_run);
     });
@@ -131,7 +175,7 @@ describe('InvestmentService testing:', () => {
     });
 
     sinon.stub(assetService, 'getDepositAssets').callsFake(() => {
-      let assets = DEPOSIT_ASSET_SYMBOLS.map(symbol => {
+      let assets = _.keys(DEPOSIT_ASSETS).map(symbol => {
         return new Asset({
           id: 1, 
           symbol,
@@ -142,8 +186,8 @@ describe('InvestmentService testing:', () => {
       return Promise.resolve(assets);
     });
 
-    sinon.stub(sequelize, 'transaction').callsFake(investment_create => {
-      return Promise.resolve(investment_create());
+    sinon.stub(sequelize, 'transaction').callsFake(statement => {
+      return Promise.resolve(statement());
     });
   });
 
@@ -161,6 +205,7 @@ describe('InvestmentService testing:', () => {
     depositSerive.generateRecipeRunDeposits.restore();
     assetService.getDepositAssets.restore();
     sequelize.transaction.restore();
+    assetService.getBaseAssetPrices.restore();
   });
 
 
@@ -362,16 +407,274 @@ describe('InvestmentService testing:', () => {
       sinon.stub(investmentService, 'generateRecipeDetails').callsFake(() => {
         return Promise.resolve([
           {
-            id: 1,
-            symbol: "BTC",
-            suggested_action: {
-              id: 1,
-              recipe_run_id: RECIPE_RUN_ID,
-              transaction_asset_id: 1,
-              quote_asset_id: 2,
-              target_exchange_id: 3,
-              investment_percentage: 100
-            }
+            "transaction_asset_id": 60,
+            "quote_asset_id": 2,
+            "exchange_id": 5,
+            "investment_percentage": "5",
+            "detail_investment": [
+              {
+                "asset_id": 2,
+                "amount": "0.86644453030371221208",
+                "amount_usd": "5534.88015125"
+              }
+            ]
+          },
+          {
+            "transaction_asset_id": 149,
+            "quote_asset_id": 2,
+            "exchange_id": 5,
+            "investment_percentage": "5",
+            "detail_investment": [
+              {
+                "asset_id": 2,
+                "amount": "0.86644453030371221208",
+                "amount_usd": "5534.88015125"
+              }
+            ]
+          },
+          {
+            "transaction_asset_id": 168,
+            "quote_asset_id": 312,
+            "exchange_id": 1,
+            "investment_percentage": "5",
+            "detail_investment": [
+              {
+                "asset_id": 312,
+                "amount": "29.397459341928801901",
+                "amount_usd": "5534.88015125"
+              }
+            ]
+          },
+          {
+            "transaction_asset_id": 367,
+            "quote_asset_id": 312,
+            "exchange_id": 7,
+            "investment_percentage": "5",
+            "detail_investment": [
+              {
+                "asset_id": 312,
+                "amount": "3.9125406580711980986",
+                "amount_usd": "736.64337375"
+              },
+              { "asset_id": 1, "amount": "4798.2367775", "amount_usd": "4798.2367775" }
+            ]
+          },
+          {
+            "transaction_asset_id": 388,
+            "quote_asset_id": 2,
+            "exchange_id": 5,
+            "investment_percentage": "5",
+            "detail_investment": [
+              {
+                "asset_id": 2,
+                "amount": "0.86644453030371221208",
+                "amount_usd": "5534.88015125"
+              }
+            ]
+          },
+          {
+            "transaction_asset_id": 395,
+            "quote_asset_id": 312,
+            "exchange_id": 7,
+            "investment_percentage": "5",
+            "detail_investment": [
+              {
+                "asset_id": 1,
+                "amount": "5534.88015125",
+                "amount_usd": "5534.88015125"
+              }
+            ]
+          },
+          {
+            "transaction_asset_id": 416,
+            "quote_asset_id": 2,
+            "exchange_id": 1,
+            "investment_percentage": "5",
+            "detail_investment": [
+              {
+                "asset_id": 2,
+                "amount": "0.86644453030371221208",
+                "amount_usd": "5534.88015125"
+              }
+            ]
+          },
+          {
+            "transaction_asset_id": 502,
+            "quote_asset_id": 2,
+            "exchange_id": 1,
+            "investment_percentage": "5",
+            "detail_investment": [
+              {
+                "asset_id": 2,
+                "amount": "0.86644453030371221208",
+                "amount_usd": "5534.88015125"
+              }
+            ]
+          },
+          {
+            "transaction_asset_id": 553,
+            "quote_asset_id": 312,
+            "exchange_id": 5,
+            "investment_percentage": "5",
+            "detail_investment": [
+              {
+                "asset_id": 1,
+                "amount": "5534.88015125",
+                "amount_usd": "5534.88015125"
+              }
+            ]
+          },
+          {
+            "transaction_asset_id": 587,
+            "quote_asset_id": 2,
+            "exchange_id": 5,
+            "investment_percentage": "5",
+            "detail_investment": [
+              {
+                "asset_id": 2,
+                "amount": "0.86644453030371221208",
+                "amount_usd": "5534.88015125"
+              }
+            ]
+          },
+          {
+            "transaction_asset_id": 663,
+            "quote_asset_id": 312,
+            "exchange_id": 7,
+            "investment_percentage": "5",
+            "detail_investment": [
+              {
+                "asset_id": 1,
+                "amount": "5534.88015125",
+                "amount_usd": "5534.88015125"
+              }
+            ]
+          },
+          {
+            "transaction_asset_id": 676,
+            "quote_asset_id": 312,
+            "exchange_id": 1,
+            "investment_percentage": "5",
+            "detail_investment": [
+              {
+                "asset_id": 1,
+                "amount": "5534.88015125",
+                "amount_usd": "5534.88015125"
+              }
+            ]
+          },
+          {
+            "transaction_asset_id": 761,
+            "quote_asset_id": 312,
+            "exchange_id": 2,
+            "investment_percentage": "5",
+            "detail_investment": [
+              {
+                "asset_id": 1,
+                "amount": "5534.88015125",
+                "amount_usd": "5534.88015125"
+              }
+            ]
+          },
+          {
+            "transaction_asset_id": 826,
+            "quote_asset_id": 312,
+            "exchange_id": 7,
+            "investment_percentage": "5",
+            "detail_investment": [
+              {
+                "asset_id": 1,
+                "amount": "5534.88015125",
+                "amount_usd": "5534.88015125"
+              }
+            ]
+          },
+          {
+            "transaction_asset_id": 982,
+            "quote_asset_id": 2,
+            "exchange_id": 7,
+            "investment_percentage": "5",
+            "detail_investment": [
+              {
+                "asset_id": 2,
+                "amount": "0.86644453030371221208",
+                "amount_usd": "5534.88015125"
+              }
+            ]
+          },
+          {
+            "transaction_asset_id": 995,
+            "quote_asset_id": 2,
+            "exchange_id": 1,
+            "investment_percentage": "5",
+            "detail_investment": [
+              {
+                "asset_id": 2,
+                "amount": "0.86644453030371221208",
+                "amount_usd": "5534.88015125"
+              }
+            ]
+          },
+          {
+            "transaction_asset_id": 1098,
+            "quote_asset_id": 2,
+            "exchange_id": 1,
+            "investment_percentage": "5",
+            "detail_investment": [
+              {
+                "asset_id": 2,
+                "amount": "0.86644453030371221208",
+                "amount_usd": "5534.88015125"
+              }
+            ]
+          },
+          {
+            "transaction_asset_id": 1327,
+            "quote_asset_id": 312,
+            "exchange_id": 1,
+            "investment_percentage": "5",
+            "detail_investment": [
+              {
+                "asset_id": 1,
+                "amount": "5534.88015125",
+                "amount_usd": "5534.88015125"
+              }
+            ]
+          },
+          {
+            "transaction_asset_id": 1422,
+            "quote_asset_id": 312,
+            "exchange_id": 1,
+            "investment_percentage": "5",
+            "detail_investment": [
+              {
+                "asset_id": 1,
+                "amount": "5534.88015125",
+                "amount_usd": "5534.88015125"
+              }
+            ]
+          },
+          {
+            "transaction_asset_id": 1866,
+            "quote_asset_id": 2,
+            "exchange_id": 1,
+            "investment_percentage": "5",
+            "detail_investment": [
+              {
+                "asset_id": 2,
+                "amount": "0.72199922726659009124",
+                "amount_usd": "4612.15813875"
+              }
+            ]
+          },
+          {
+            "transaction_asset_id": 1866,
+            "quote_asset_id": 312,
+            "exchange_id": 1,
+            "investment_percentage": "5",
+            "detail_investment": [
+              { "asset_id": 1, "amount": "922.7220125", "amount_usd": "922.7220125" }
+            ]
           }
         ]);
       });
@@ -401,7 +704,9 @@ describe('InvestmentService testing:', () => {
 
       return chai.assert.isRejected(investmentService.createRecipeRun(
         USER_ID, INVESTMENT_RUN_ID
-      ));
+      )).then(() => {
+        chai.assert.isTrue(RecipeRun.create.notCalled);
+      });
     });
 
     it('shall throw if investment run already has an approved recipe run', () => {
@@ -429,112 +734,189 @@ describe('InvestmentService testing:', () => {
           chai.assert.isTrue(RecipeRun.findOne.called);
           chai.assert.isTrue(investmentService.changeInvestmentRunStatus.called);
           chai.assert.isTrue(investmentService.generateRecipeDetails.called);
-          chai.assert.isTrue(RecipeRunDetail.create.called);
+          chai.assert.isTrue(RecipeRun.create.called);
         });
     });
   });
 
   describe('and method generateRecipeDetails shall', () => {
     beforeEach(() => {
-      sinon.stub(assetService, 'getStrategyAssets').returns(
-        Promise.resolve([
-          {
-            id: 28,
-            symbol: "XRP",
-            long_name: 'Ripple',
-            is_base: false,
-            is_deposit: false,
-            avg_share: 7.120
-          },
-          {
-            id: 30,
-            symbol: "NMC",
-            long_name: 'NameCoin',
-            is_base: false,
-            is_deposit: false,
-            avg_share: 5.5
-          }
-        ])
-      );
-      sinon.stub(Asset, 'findAll').callsFake(() => {
-        let assets = [{
-            id: 2,
-            symbol: "BTC",
-            is_base: true
-          },
-          {
-            id: 312,
-            symbol: "ETH",
-            is_base: true
-          }];
-
-        assets.map(a => {
-          a.toJSON = function () {
-            return this;
-          };
-        })
-
-        return Promise.resolve(assets);
-      });
-
-      sinon.stub(assetService, 'getBaseAssetPrices').callsFake(() => {
-        return Promise.resolve([
-          {symbol: "BTC", price: "7500" },
-          {symbol: "ETH", price: "550" }
-        ]);
-      });
-
-      sinon.stub(assetService, 'getAssetInstruments').callsFake((asset_id) => {
+      sinon.stub(assetService, 'getAssetGroupWithData').callsFake((recipe_run_id) => {
         let instruments = [
-          { // use exchange with id 1 as a cheapest example
-            instrument_id: 1,
-            quote_asset_id: asset_id,
-            transaction_asset_id: 2,
-            exchange_id: 1,
-            average_volume: 2000,
-            min_volume_requirement: 1500,
-            ask_price: 0.00008955,
-            bid_price: 0.00008744
+          {
+            "id": 553,
+            "symbol": "MKR",
+            "long_name": "Maker",
+            "quote_asset_id": 2,
+            "instrument_id": 3841,
+            "exchange_id": 5,
+            "nvt": 1423.5908183763754,
+            "volume": 111.46,
+            "volume_usd": 36747.347714,
+            "ask_price": 0.0517,
+            "bid_price": 0.0506,
+            "price_usd": 329.6909
           },
           {
-            instrument_id: 1,
-            quote_asset_id: asset_id,
-            transaction_asset_id: 2,
-            exchange_id: 2,
-            average_volume: 2000,
-            min_volume_requirement: 1500,
-            ask_price: 0.00009100,
-            bid_price: 0.00008700
+            "id": 553,
+            "symbol": "MKR",
+            "long_name": "Maker",
+            "quote_asset_id": 312,
+            "instrument_id": 3842,
+            "exchange_id": 5,
+            "nvt": 1423.5908183763754,
+            "volume": 45.94,
+            "volume_usd": 15083.7071436,
+            "ask_price": 1.759,
+            "bid_price": 1.734,
+            "price_usd": 328.33494
           },
           {
-            instrument_id: 2,
-            quote_asset_id: 2,
-            transaction_asset_id: asset_id,
-            exchange_id: 3,
-            average_volume: 2000,
-            min_volume_requirement: 1500,
-            ask_price: 11363.636363636, // 1 / 0.00008800
-            bid_price: 11111.111111111, // 1 / 0.00009000 
+            "id": 553,
+            "symbol": "MKR",
+            "long_name": "Maker",
+            "quote_asset_id": 2,
+            "instrument_id": 3841,
+            "exchange_id": 2,
+            "nvt": 1423.5908183763754,
+            "volume": 2.5,
+            "volume_usd": 834.4145075,
+            "ask_price": 0.052339,
+            "bid_price": 0.050406,
+            "price_usd": 333.765803
+          },
+          {
+            "id": 553,
+            "symbol": "MKR",
+            "long_name": "Maker",
+            "quote_asset_id": 312,
+            "instrument_id": 3842,
+            "exchange_id": 2,
+            "nvt": 1423.5908183763754,
+            "volume": 0.61158609,
+            "volume_usd": 202.26631300734493,
+            "ask_price": 1.7718,
+            "bid_price": 1.7181,
+            "price_usd": 330.724188
+          },
+          {
+            "id": 367,
+            "symbol": "DCR",
+            "long_name": "Decred",
+            "quote_asset_id": 2,
+            "instrument_id": 3835,
+            "exchange_id": 7,
+            "nvt": 314.42052425060086,
+            "volume": 5294.828283448519,
+            "volume_usd": 186113.34123909424,
+            "ask_price": 0.005512,
+            "bid_price": 0.005445,
+            "price_usd": 35.150024
+          },
+          {
+            "id": 367,
+            "symbol": "DCR",
+            "long_name": "Decred",
+            "quote_asset_id": 312,
+            "instrument_id": 3836,
+            "exchange_id": 7,
+            "nvt": 314.42052425060086,
+            "volume": 2994.1674035304313,
+            "volume_usd": 104356.18121002715,
+            "ask_price": 0.18672,
+            "bid_price": 0.185593,
+            "price_usd": 34.8531552
+          },
+          {
+            "id": 149,
+            "symbol": "BCN",
+            "long_name": "Bytecoin",
+            "quote_asset_id": 2,
+            "instrument_id": 3825,
+            "exchange_id": 5,
+            "nvt": 110.70930975269502,
+            "volume": 699830900,
+            "volume_usd": 1317871.23303829,
+            "ask_price": 2.953e-7,
+            "bid_price": 2.952e-7,
+            "price_usd": 0.0018831281
+          },
+          {
+            "id": 149,
+            "symbol": "BCN",
+            "long_name": "Bytecoin",
+            "quote_asset_id": 2,
+            "instrument_id": 3825,
+            "exchange_id": 1,
+            "nvt": 110.70930975269502,
+            "volume": 414942331,
+            "volume_usd": 793826.1734361,
+            "ask_price": 3e-7,
+            "bid_price": 2.9e-7,
+            "price_usd": 0.0019131
+          },
+          {
+            "id": 149,
+            "symbol": "BCN",
+            "long_name": "Bytecoin",
+            "quote_asset_id": 312,
+            "instrument_id": 3826,
+            "exchange_id": 1,
+            "nvt": 110.70930975269502,
+            "volume": 75098860,
+            "volume_usd": 143263.481781672,
+            "ask_price": 0.00001022,
+            "bid_price": 0.00001013,
+            "price_usd": 0.0019076652
+          },
+          {
+            "id": 149,
+            "symbol": "BCN",
+            "long_name": "Bytecoin",
+            "quote_asset_id": 312,
+            "instrument_id": 3826,
+            "exchange_id": 5,
+            "nvt": 110.70930975269502,
+            "volume": 5205600,
+            "volume_usd": 9911.1084192,
+            "ask_price": 0.0000102,
+            "bid_price": 0.00001,
+            "price_usd": 0.001903932
+          },
+          {
+            "id": 60,
+            "symbol": "DGB",
+            "long_name": "DigiByte",
+            "quote_asset_id": 312,
+            "instrument_id": 3824,
+            "exchange_id": 7,
+            "nvt": 96.77459844752693,
+            "volume": 18434805.72,
+            "volume_usd": 468738.58263840014,
+            "ask_price": 0.00013622,
+            "bid_price": 0.00012802,
+            "price_usd": 0.0254268252
+          },
+          {
+            "id": 60,
+            "symbol": "DGB",
+            "long_name": "DigiByte",
+            "quote_asset_id": 2,
+            "instrument_id": 3824,
+            "exchange_id": 7,
+            "nvt": 96.77459844752693,
+            "volume": 18434805.72,
+            "volume_usd": 468738.58263840014,
+            "ask_price": 0.00013622,
+            "bid_price": 0.00012802,
+            "price_usd": 0.0254268252
           }
-        ];
-
-        // when query asset with id 30, add cheapest way to acquire through sell order
-        if(asset_id == 30)
-          instruments.push({
-            instrument_id: 2,
-            quote_asset_id: 2,
-            transaction_asset_id: asset_id,
-            exchange_id: 4,
-            average_volume: 2000,
-            min_volume_requirement: 1500,
-            ask_price: 13363.636363636, // 1 / 0.00008800
-            bid_price: 11235.95505618, // 1 / 0.00008900 
-          });
+        ]
 
         return Promise.resolve(instruments);
       });
 
-      sinon.stub(assetService, "getInstrumentLiquidityRequirements").callsFake((...params) => {
+      /* sinon.stub(assetService, "getInstrumentLiquidityRequirements").callsFake((...params) => {
         let requirement = [{
           avg_vol: 30000,
           instrument_id: params.instrument_id,
@@ -544,30 +926,190 @@ describe('InvestmentService testing:', () => {
         }];
 
         return requirement;
-      });
+      }); */
+
     });
     
     afterEach(() => {
-      assetService.getStrategyAssets.restore();
-      Asset.findAll.restore();
-      assetService.getBaseAssetPrices.restore();
-      assetService.getAssetInstruments.restore();
-      assetService.getInstrumentLiquidityRequirements.restore()
+      // assetService.getStrategyAssets.restore();
+      // Asset.findAll.restore();
+      // assetService.getAssetInstruments.restore();
+      // assetService.getInstrumentLiquidityRequirements.restore()
+      assetService.getAssetGroupWithData.restore();
     });
 
     it('shall exist', () => {
       return chai.expect(investmentService.generateRecipeDetails).to.exist;
     });
 
-    it("shall stop if can't get base assets", () => {
-      if(Asset.findAll.restore)
-      Asset.findAll.restore();
+    it("shall throw if can't get investment asset group data", () => {
+      if(assetService.getAssetGroupWithData.restore)
+        assetService.getAssetGroupWithData.restore();
 
-      sinon.stub(Asset, 'findAll').returns(Promise.resolve());
+      sinon.stub(assetService, 'getAssetGroupWithData').returns(Promise.reject());
+
       return chai.assert.isRejected(investmentService.generateRecipeDetails(STRATEGY_TYPE));
     });
 
-    it("shall call getAssetInstruments to get best way to acquire asset", () => {
+    it("shall stop if can't get investment asset group data", () => {
+      if(assetService.getBaseAssetPrices.restore)
+        assetService.getBaseAssetPrices.restore();
+
+      sinon.stub(assetService, 'getBaseAssetPrices').returns(Promise.reject());
+      return chai.assert.isRejected(investmentService.generateRecipeDetails(STRATEGY_TYPE));
+    });
+
+    it("shall throw if can't get find investment run with its investment amounts", () => {
+      if (InvestmentRun.findOne.restore)
+        InvestmentRun.findOne.restore();
+
+      sinon.stub(InvestmentRun, 'findOne').returns(Promise.resolve());
+
+      return chai.assert.isRejected(
+        investmentService.generateRecipeDetails(INVESTMENT_RUN_ID, STRATEGY_TYPE)
+      ).then(recipe => {
+        chai.assert.isTrue(InvestmentRun.findOne.called);
+      });
+    });
+
+    it("should calculate recipe run details singe USD deposit", () => {
+      if (InvestmentRun.findOne.restore)
+        InvestmentRun.findOne.restore();
+
+      sinon.stub(InvestmentRun, 'findOne').callsFake(arg => {
+        let investment_run = new InvestmentRun(INVESTMENT_RUN);
+        investment_run.InvestmentAmounts = [
+          { asset_id: DEPOSIT_ASSETS.USD.asset_id, amount: 1000000 }
+        ];
+
+        return Promise.resolve(investment_run);
+      });
+
+      return investmentService.generateRecipeDetails(INVESTMENT_RUN_ID, STRATEGY_TYPE)
+      .then(recipe_details => {
+        console.log(recipe_details);
+      });
+    });
+
+    it("should calculate recipe run details singe BTC deposit", () => {
+      if (InvestmentRun.findOne.restore)
+        InvestmentRun.findOne.restore();
+
+      sinon.stub(InvestmentRun, 'findOne').callsFake(arg => {
+        let investment_run = new InvestmentRun(INVESTMENT_RUN);
+        investment_run.InvestmentAmounts = [
+          { asset_id: DEPOSIT_ASSETS.BTC.asset_id, amount: 150 }
+        ];
+
+        return Promise.resolve(investment_run);
+      });
+
+      return investmentService.generateRecipeDetails(INVESTMENT_RUN_ID, STRATEGY_TYPE)
+      .then(recipe_details => {
+        console.log(recipe_details);
+      });
+    });
+
+    it("should calculate recipe run details singe ETH deposit", () => {
+      if (InvestmentRun.findOne.restore)
+        InvestmentRun.findOne.restore();
+
+      sinon.stub(InvestmentRun, 'findOne').callsFake(arg => {
+        let investment_run = new InvestmentRun(INVESTMENT_RUN);
+        investment_run.InvestmentAmounts = [
+          { asset_id: DEPOSIT_ASSETS.ETH.asset_id, amount: 5000 }
+        ];
+
+        return Promise.resolve(investment_run);
+      });
+
+      return investmentService.generateRecipeDetails(INVESTMENT_RUN_ID, STRATEGY_TYPE)
+      .then(recipe_details => {
+        console.log(recipe_details);
+      });
+    });
+
+    it("should calculate recipe run details with USD and BTC deposits", () => {
+      if (InvestmentRun.findOne.restore)
+        InvestmentRun.findOne.restore();
+
+      sinon.stub(InvestmentRun, 'findOne').callsFake(arg => {
+        let investment_run = new InvestmentRun(INVESTMENT_RUN);
+        investment_run.InvestmentAmounts = [
+          { asset_id: DEPOSIT_ASSETS.USD.asset_id, amount: 1000000 },
+          { asset_id: DEPOSIT_ASSETS.BTC.asset_id, amount: 150 }
+        ];
+
+        return Promise.resolve(investment_run);
+      });
+
+      return investmentService.generateRecipeDetails(INVESTMENT_RUN_ID, STRATEGY_TYPE)
+      .then(recipe_details => {
+        console.log(recipe_details);
+      });
+    });
+
+    it("should calculate recipe run details with USD and ETH deposits", () => {
+      if (InvestmentRun.findOne.restore)
+        InvestmentRun.findOne.restore();
+
+      sinon.stub(InvestmentRun, 'findOne').callsFake(arg => {
+        let investment_run = new InvestmentRun(INVESTMENT_RUN);
+        investment_run.InvestmentAmounts = [
+          { asset_id: DEPOSIT_ASSETS.USD.asset_id, amount: 1000000 },
+          { asset_id: DEPOSIT_ASSETS.ETH.asset_id, amount: 5000 }
+        ];
+
+        return Promise.resolve(investment_run);
+      });
+
+      return investmentService.generateRecipeDetails(INVESTMENT_RUN_ID, STRATEGY_TYPE)
+      .then(recipe_details => {
+        console.log(recipe_details);
+      });
+    });
+
+    it("should calculate recipe run details with USD and ETH deposits", () => {
+      if (InvestmentRun.findOne.restore)
+        InvestmentRun.findOne.restore();
+
+      sinon.stub(InvestmentRun, 'findOne').callsFake(arg => {
+        let investment_run = new InvestmentRun(INVESTMENT_RUN);
+        investment_run.InvestmentAmounts = [
+          { asset_id: DEPOSIT_ASSETS.BTC.asset_id, amount: 150 },
+          { asset_id: DEPOSIT_ASSETS.ETH.asset_id, amount: 5000 }
+        ];
+
+        return Promise.resolve(investment_run);
+      });
+
+      return investmentService.generateRecipeDetails(INVESTMENT_RUN_ID, STRATEGY_TYPE)
+      .then(recipe_details => {
+        console.log(recipe_details);
+      });
+    });
+
+    it("should calculate recipe run details with USD and ETH deposits", () => {
+      if (InvestmentRun.findOne.restore)
+        InvestmentRun.findOne.restore();
+
+      sinon.stub(InvestmentRun, 'findOne').callsFake(arg => {
+        let investment_run = new InvestmentRun(INVESTMENT_RUN);
+        investment_run.InvestmentAmounts = [
+          { asset_id: DEPOSIT_ASSETS.USD.asset_id, amount: 1200000 },
+          { asset_id: DEPOSIT_ASSETS.BTC.asset_id, amount: 150 },
+          { asset_id: DEPOSIT_ASSETS.ETH.asset_id, amount: 5000 }
+        ];
+
+        return Promise.resolve(investment_run);
+      });
+
+      return investmentService.generateRecipeDetails(INVESTMENT_RUN_ID, STRATEGY_TYPE)
+      .then(recipe_details => {
+        console.log(recipe_details);
+      });
+    });
+    /* it("shall call getAssetInstruments to get best way to acquire asset", () => {
       return investmentService.generateRecipeDetails(STRATEGY_TYPE)
         .then(recipe => {
           chai.assert.isTrue(assetService.getAssetInstruments.called);
@@ -575,20 +1117,22 @@ describe('InvestmentService testing:', () => {
             return data.every(a => a.suggested_action.transaction_asset_id == a.id);
           }, 'Asset to be acquired should be in transaction_asset_id');
         });
-    });
+    }); */
 
-    it("shall return investment percentage for an asset", () => {
+    /* it("shall return investment percentage for every recipe detail", () => {
       return investmentService.generateRecipeDetails(STRATEGY_TYPE)
-        .then(recipe => {
-          chai.expect(recipe).to.satisfy(data => {
-            return data.every(
-              a => typeof a.investment_percentage==="number" && a.investment_percentage <= 100
+        .then(recipe_details => {
+          chai.expect(recipe_details).to.satisfy(recipe_details => {
+
+            return recipe_details.every(
+              a => parseFloat(a.investment_percentage) <= 100 &&
+                parseFloat(a.investment_percentage) > 0
             );
           }, 'Investment percentage should be set and be a number');
         });
-    });
+    }); */
 
-    it("shall throw if no instrument found for an asset", () => {
+    /* it("shall throw if no instrument found for an asset", () => {
       if (assetService.getAssetInstruments.restore)
         assetService.getAssetInstruments.restore();
 
@@ -598,9 +1142,9 @@ describe('InvestmentService testing:', () => {
 
       return chai.expect(investmentService.generateRecipeDetails(STRATEGY_TYPE))
         .eventually.to.be.rejected;
-    });
+    }); */
 
-    it("shall throw if none of exchanges satisfy liquidity requirements of instrument", () => {
+    /* it("shall throw if none of exchanges satisfy liquidity requirements of instrument", () => {
       if (assetService.getAssetInstruments.restore)
         assetService.getAssetInstruments.restore();
 
@@ -651,7 +1195,7 @@ describe('InvestmentService testing:', () => {
       });
 
       return chai.assert.isRejected(investmentService.generateRecipeDetails(STRATEGY_TYPE));
-    });
+    }); */
   });
 
   describe('and method getInvestmentRunTimeline shall', () => {

@@ -203,7 +203,6 @@ const createRecipeRun = async function (user_id, investment_run_id) {
   [err, recipe_run_details] = await to(this.generateRecipeDetails(investment_run.id, investment_run.strategy_type), false);
   if (err) TE(err.message);
 
-  
   [err, recipe_run] = await to(sequelize.transaction(transaction => 
     RecipeRun.create({
       created_timestamp: new Date(),
@@ -233,8 +232,6 @@ module.exports.createRecipeRun = createRecipeRun;
 
 const generateRecipeDetails = async (investment_run_id, strategy_type) => {
 
-  let liquidity_levels = this.getLiquidityLevels();
-
   let [err, assets] = await to(AssetService.getAssetGroupWithData(investment_run_id));
   if (err) TE(err.message);
 
@@ -256,11 +253,8 @@ const generateRecipeDetails = async (investment_run_id, strategy_type) => {
 
   // find liquidity level for each asset.
   assets.map(asset => {
-    asset.liquidity_level = liquidity_levels.find(l => 
-      (l.from <= asset.volume_usd && l.to > asset.volume_usd) || 
-      (l.from <= asset.volume_usd && !l.to)
-    );
-  })
+    asset.liquidity_level = AssetService.getLiquidityLevel(asset.volume_usd);
+  });
 
   /* group and map assets to be in structure:
     [
@@ -304,11 +298,13 @@ const generateRecipeDetails = async (investment_run_id, strategy_type) => {
     total_investment_usd = Decimal(total_investment_usd).add(Decimal(size.value_usd));
     return size;
   });
+
   assets_grouped_by_id.map(asset => {
     let chosen = [];
     let total_spent = new Decimal(0);
     let should_spend = Decimal(total_investment_usd).mul(Decimal(asset.asset.investment_percentage).div(Decimal(100)));
 
+    // sort values by nvt, liquidity_level and price_usd properties
     asset.possible = _.orderBy(asset.possible, ['nvt', 'liquidity_level', 'price_usd'], ['desc', 'desc', 'asc']);
 
     for (let action of asset.possible) {
@@ -317,10 +313,11 @@ const generateRecipeDetails = async (investment_run_id, strategy_type) => {
 
        // if we have some amount of needed base asset left
       if (base.remaining_usd.gt(0)) {
-        let base_spent = new Decimal(0);
+        let base_spent = new Decimal(0),
+          base_needed = Decimal(should_spend).minus(total_spent);
 
-        if (base.remaining_usd.gte(Decimal(should_spend))) { // enough to buy whole amount
-          base_spent = Decimal(should_spend);
+        if (base.remaining_usd.gte(Decimal(base_needed))) { // enough to buy whole amount
+          base_spent = Decimal(base_needed);
         } else { // not enough to buy whole needed amount, buy with whats remaining 
           base_spent = Decimal(base.remaining_usd);
         }
@@ -335,9 +332,9 @@ const generateRecipeDetails = async (investment_run_id, strategy_type) => {
 
       // if we didn't yet allocate enough base asset to buy required amount
       if (total_spent.lt(should_spend) && usd.remaining_usd.gt(0)) {
-        let deposit_spent = 0;
+        let deposit_spent = 0,
+          usd_needed = Decimal(should_spend).minus(total_spent);
 
-        let usd_needed = should_spend.minus(total_spent);
         if (usd_needed.lte(Decimal(usd.remaining_usd))) { // enough to buy whole amount needed
           deposit_spent = Decimal(usd_needed);
         } else { // not enough to buy whole needed amount, buy whith whats remaining
@@ -354,6 +351,7 @@ const generateRecipeDetails = async (investment_run_id, strategy_type) => {
     }
 
     // if whole needed amount not allocated, then we fail to fully buy an asset
+    console.log("Total spent: ", total_spent.toString(), ", Should spend: ", should_spend.toString());
     if (total_spent.lt(Decimal(should_spend))) {
       TE("Couldn't fully buy asset ID " + asset.possible[0].id + " with remaining funds");
     } else {
@@ -883,24 +881,3 @@ const generateInvestmentAssetGroup = async function (user_id, strategy_type) {
   return group;
 };
 module.exports.generateInvestmentAssetGroup = generateInvestmentAssetGroup;
-
-/* Liquidity levels are defined in CryptX according to the following table, whereby
- * the USD amount denotes the trading volume over the last 24 hours on a connected exchange.
- */
-const getLiquidityLevels = () => {
-
-  const liquidity_levels = [
-    { level: 1, from: 0, to: 1000 },
-    { level: 2, from: 1000, to: 10000 },
-    { level: 3, from: 10000, to: 100000 },
-    { level: 4, from: 100000, to: 1000000 },
-    { level: 5, from: 1000000, to: 10000000 },
-    { level: 6, from: 10000000, to: 100000000 },
-    { level: 7, from: 100000000, to: 1000000000 },
-    { level: 8, from: 1000000000, to: 10000000000 },
-    { level: 9, from: 10000000000 }
-  ];
-
-  return liquidity_levels;
-};
-module.exports.getLiquidityLevels = getLiquidityLevels;

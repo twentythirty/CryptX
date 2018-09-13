@@ -40,6 +40,18 @@ DEFAULT_SETTINGS = {
  */
 SYSTEM_SETTINGS = {};
 
+LIQUIDITY_LEVELS = [
+    { level: 1, from: 0, to: 1000 },
+    { level: 2, from: 1000, to: 10000 },
+    { level: 3, from: 10000, to: 100000 },
+    { level: 4, from: 100000, to: 1000000 },
+    { level: 5, from: 1000000, to: 10000000 },
+    { level: 6, from: 10000000, to: 100000000 },
+    { level: 7, from: 100000000, to: 1000000000 },
+    { level: 8, from: 1000000000, to: 10000000000 },
+    { level: 9, from: 10000000000 }
+];
+
 //KEYS for various exchanges
 EXCHANGE_KEYS = {
     binance: {
