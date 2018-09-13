@@ -34,7 +34,7 @@ export interface TableDataSource {
     },
     _dirty?: boolean;
   }>;
-  body: Array<object>;
+  body: Array<any>;
   footer?: Array<{
     name: string
     value: string

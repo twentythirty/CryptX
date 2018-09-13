@@ -74,17 +74,17 @@ export class AssetListComponent extends DataTableCommonManagerComponent implemen
           new DataCellAction({
             label: 'De-greylist',
             isShown: (row: any) => this.checkPerm(['CHANGE_ASSET_STATUS']) && row.statusCode === 402,
-            exec: (row: any) => { this.deGreylist(<Asset>row); }
+            exec: (row: any) => this.deGreylist(<Asset>row)
           }),
           new DataCellAction({
             label: 'Blacklist',
             isShown: (row: any) => this.checkPerm(['CHANGE_ASSET_STATUS']) && row.statusCode === 400,
-            exec: (row: any) => { this.blacklist(<Asset>row); }
+            exec: (row: any) => this.blacklist(<Asset>row)
           }),
           new DataCellAction({
             label: 'Whitelist',
             isShown: (row: any) => this.checkPerm(['CHANGE_ASSET_STATUS']) && row.statusCode === 401,
-            exec: (row: any) => { this.whitelist(<Asset>row); }
+            exec: (row: any) => this.whitelist(<Asset>row)
           })
         ]
       }
@@ -157,15 +157,15 @@ export class AssetListComponent extends DataTableCommonManagerComponent implemen
    */
 
   public deGreylist(asset: Asset): void {
-    this.showRationaleModal(asset, data => data && this.doDeGreylist(data));
+    this.showRationaleModal(asset, data => data && this.changeAssetStatus(data, 400));
   }
 
   public blacklist(asset: Asset): void {
-    this.showRationaleModal(asset, data => data && this.doBlacklist(data));
+    this.showRationaleModal(asset, data => data && this.changeAssetStatus(data, 401));
   }
 
   public whitelist(asset: Asset): void {
-    this.showRationaleModal(asset, data => data && this.doWhitelist(data));
+    this.showRationaleModal(asset, data => data && this.changeAssetStatus(data, 400));
   }
 
 
@@ -173,48 +173,16 @@ export class AssetListComponent extends DataTableCommonManagerComponent implemen
    * Actions
    */
 
-  public doDeGreylist({ rationale, data }): void {
+  public changeAssetStatus({ rationale, data }, status): void {
     const asset: Asset = data;
 
     this.assetService.changeAssetStatus(
       asset.id,
-      new AssetStatus(this.modelConstantsService.getGroup(INSTRUMENT_STATUS_CHANGES)['Whitelisting'], rationale)
+      new AssetStatus(status, rationale)
     ).subscribe(
       res => {
-        asset.status = 'assets.status.400';
-        asset.statusCode = 400;
-
-        this.getAsset();
-      }
-    );
-  }
-
-  public doBlacklist({ rationale, data }): void {
-    const asset: Asset = data;
-
-    this.assetService.changeAssetStatus(
-      asset.id,
-      new AssetStatus(this.modelConstantsService.getGroup(INSTRUMENT_STATUS_CHANGES)['Blacklisting'], rationale)
-    ).subscribe(
-      res => {
-        asset.status = 'assets.status.401';
-        asset.statusCode = 401;
-
-        this.getAsset();
-      }
-    );
-  }
-
-  public doWhitelist({ rationale, data }): void {
-    const asset: Asset = data;
-
-    this.assetService.changeAssetStatus(
-      asset.id,
-      new AssetStatus(this.modelConstantsService.getGroup(INSTRUMENT_STATUS_CHANGES)['Whitelisting'], rationale)
-    ).subscribe(
-      res => {
-        asset.status = 'assets.status.400';
-        asset.statusCode = 400;
+        asset.status = `assets.status.${status}`;
+        asset.statusCode = status;
 
         this.getAsset();
       }

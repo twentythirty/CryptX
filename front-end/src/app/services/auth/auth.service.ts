@@ -59,7 +59,9 @@ export class AuthService {
   }
 
   hasPermissions(perm_keys: Array<string>): boolean {
-    if (perm_keys.length && !this.permissions.length) {
+    const permissions = this.getPermissions();
+
+    if (perm_keys.length && !permissions.length) {
       return false;
     }
 
@@ -69,15 +71,15 @@ export class AuthService {
     }
 
     return perm_keys.every(
-      perm_key => this.permissions.includes(PERMISSIONS[perm_key])
+      perm_key => permissions.includes(PERMISSIONS[perm_key])
     );
   }
 
-  setValidators (validators) {
+  setValidators(validators) {
     localStorage.setItem('validators', JSON.stringify(validators));
   }
 
-  getValidators (path: string, key: string) {
+  getValidators(path: string, key: string) {
     this.validation = JSON.parse(localStorage.getItem('validators'));
     const validate = this.validation[path];
 
@@ -92,16 +94,20 @@ export class AuthService {
     }
   }
 
-  setToken (token) {
+  setToken(token) {
     localStorage.setItem('token', token);
   }
 
-  setUser (user: User) {
+  setUser(user: User) {
     this.user = user;
   }
 
-  setPermissions (permissions: Array<string>) {
+  setPermissions(permissions: Array<string>) {
     this.permissions = permissions;
+  }
+
+  getPermissions() {
+    return this.permissions;
   }
 
   getToken() {
@@ -112,7 +118,7 @@ export class AuthService {
     return this.http.get<any>(this.baseUrl + '/logout');
   }
 
-  deauthorize () {
+  deauthorize() {
     console.log('Deleting token and validators');
     localStorage.removeItem('token');
     localStorage.removeItem('validators');
