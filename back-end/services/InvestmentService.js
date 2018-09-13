@@ -17,6 +17,8 @@ const GroupAsset = require('../models').GroupAsset;
 
 const AdminViewService = require('./AdminViewsService');
 
+const ActionLog = require('../utils/ActionLogUtil');
+
 const getInvestmentRunWithAssetMix = async (investment_run_id, seq_query = {}, sql_where = '') => {
   
   let [ err, investment_run ] = await to(AdminViewService.fetchInvestmentRunView(investment_run_id));
@@ -178,13 +180,17 @@ module.exports.changeInvestmentRunStatus = changeInvestmentRunStatus;
 const createRecipeRun = async function (user_id, investment_run_id) {
   let err, investment_run, recipe_run, recipe_run_detail;
 
+  /**
+   * It might be fine to keep this here, in most cases to prevent heavier actions being performed.
+   */
   recipe_run = await RecipeRun.findOne({
     where: {
       investment_run_id: investment_run_id,
       approval_status: {
         [Op.in]: [RECIPE_RUN_STATUSES.Pending, RECIPE_RUN_STATUSES.Approved]
       }
-    }
+    },
+    raw: true
   });
 
   if (recipe_run) {
@@ -201,34 +207,69 @@ const createRecipeRun = async function (user_id, investment_run_id) {
   [err, recipe_run_detail] = await to(this.generateRecipeDetails(investment_run.strategy_type), false);
   if (err) TE(err.message);
 
-  [err, recipe_run] = await to(RecipeRun.create({
-    created_timestamp: new Date(),
-    investment_run_id,
-    user_created_id: user_id,
-    approval_status: RECIPE_RUN_STATUSES.Pending,
-    approval_comment: '',
+  const failed_assets = [];
+
+  [ err ] = await to(sequelize.transaction(transaction => {
+
+    return RecipeRun.findOne({
+      where: {
+        investment_run_id: investment_run_id,
+        approval_status: {
+          [Op.in]: [RECIPE_RUN_STATUSES.Pending, RECIPE_RUN_STATUSES.Approved]
+        }
+      },
+      raw: true,
+      transaction
+    }).then(exisitng_recipe_run => {
+
+      if (exisitng_recipe_run) {
+        if (exisitng_recipe_run.approval_status === RECIPE_RUN_STATUSES.Pending) TE("There is already recipe run pending approval");
+        else TE("No more recipe runs can be generated after one was already approved.");
+      }
+
+      return RecipeRun.create({
+        created_timestamp: new Date(),
+        investment_run_id,
+        user_created_id: user_id,
+        approval_status: RECIPE_RUN_STATUSES.Pending,
+        approval_comment: '',
+      }, { transaction }).then(new_recipe_run => {
+        
+        recipe_run = new_recipe_run;
+
+        const new_recipe_run_details = recipe_run_detail.map(asset => {
+
+          if (!asset.suggested_action) {
+            logs.push(asset.symbol);
+            return;
+          };
+          let action = asset.suggested_action;
+
+          return {
+            recipe_run_id: new_recipe_run.id,
+            transaction_asset_id: action.transaction_asset_id,
+            quote_asset_id: action.quote_asset_id,
+            target_exchange_id: action.exchange_id,
+            investment_percentage: asset.investment_percentage
+          };
+
+        }).filter(asset => asset);
+
+        return RecipeRunDetail.bulkCreate(new_recipe_run_details, { transaction });
+
+      });
+
+    });
+
   }));
 
-  if (err) TE(err.message);
+  if(err) TE(err.message);
 
-  // fill recipe_run_details with results from generateRecipeDetails
-  [err, recipe_run_detail] = await to(Promise.all(
-    recipe_run_detail.map(asset => {
-      if (!asset.suggested_action)
-        return `No way found to invest into ${asset.symbol}`;
-      let action = asset.suggested_action;
-
-      return RecipeRunDetail.create({
-        recipe_run_id: recipe_run.id,
-        transaction_asset_id: action.transaction_asset_id,
-        quote_asset_id: action.quote_asset_id,
-        target_exchange_id: action.exchange_id,
-        investment_percentage: asset.investment_percentage
-      });
-    })
-  ));
-
-  if (err) TE(err.message);
+  for(let asset of failed_assets) ActionLog.logAction('recipe_run.failed_action', {
+    log_level: ACTIONLOG_LEVELS.Warning,
+    args: { asset },
+    relations: { recipe_run_id: recipe_run.id }
+  });
 
   return recipe_run;
 };

@@ -572,6 +572,10 @@
     "deposits": {
       "generate": "System generated {{amount}} Deposits for Recipe Run RR-{{recipe_id}}",
       "completed": "Deposit Completed"
+    },
+
+    "recipe_run": {
+      "failed_action": "No way found to invest into {{ asset }}"
     }
   },
 

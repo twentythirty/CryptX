@@ -118,6 +118,12 @@ describe('InvestmentService testing:', () => {
       return Promise.resolve(recipe_run);
     });
 
+    sinon.stub(RecipeRunDetail, 'bulkCreate').callsFake(recipe_runs => {
+      recipe_runs = recipe_runs.map(recipe_run => new RecipeRun(recipe_run)); 
+
+      return Promise.resolve(recipe_runs);
+    });
+
     sinon.stub(RecipeRunDetail, 'create').callsFake(details => {
       return Promise.resolve(details);
     });
@@ -142,9 +148,6 @@ describe('InvestmentService testing:', () => {
       return Promise.resolve(assets);
     });
 
-    sinon.stub(sequelize, 'transaction').callsFake(investment_create => {
-      return Promise.resolve(investment_create());
-    });
   });
 
   afterEach(() => {
@@ -157,10 +160,11 @@ describe('InvestmentService testing:', () => {
     RecipeRun.create.restore();
     RecipeRun.findById.restore();
     RecipeRunDetail.create.restore();
+    RecipeRunDetail.bulkCreate.restore();
     ordersService.generateApproveRecipeOrders.restore();
     depositSerive.generateRecipeRunDeposits.restore();
     assetService.getDepositAssets.restore();
-    sequelize.transaction.restore();
+    if(sequelize.transaction.restore) sequelize.transaction.restore();
   });
 
 
@@ -177,6 +181,10 @@ describe('InvestmentService testing:', () => {
     });
 
     it('shall call required DB model methods', () => {
+      sinon.stub(sequelize, 'transaction').callsFake(investment_create => {
+        return Promise.resolve(investment_create());
+      });
+
       return investmentService.createInvestmentRun(
         USER_ID, STRATEGY_TYPE, IS_SIMULATED, DEPOSIT_AMOUNTS, ASSET_GROUP_ID
       ).then(investment_run => {
@@ -227,6 +235,11 @@ describe('InvestmentService testing:', () => {
     });
 
     it('shall create new investment run and its investment amounts if everything is good', () => {
+      
+      sinon.stub(sequelize, 'transaction').callsFake(investment_create => {
+        return Promise.resolve(investment_create());
+      });
+
       return investmentService.createInvestmentRun(
         USER_ID, STRATEGY_TYPE, IS_SIMULATED, DEPOSIT_AMOUNTS, ASSET_GROUP_ID
       ).then(investment_run => {
@@ -424,12 +437,18 @@ describe('InvestmentService testing:', () => {
     });
 
     it('shall call required methods', () => {
+
+      sinon.stub(sequelize, 'transaction').callsFake(transaction => {
+        return Promise.resolve(transaction());
+      });
+
       return investmentService.createRecipeRun(USER_ID, INVESTMENT_RUN_ID)
         .then(recipe_run => {
           chai.assert.isTrue(RecipeRun.findOne.called);
           chai.assert.isTrue(investmentService.changeInvestmentRunStatus.called);
           chai.assert.isTrue(investmentService.generateRecipeDetails.called);
-          chai.assert.isTrue(RecipeRunDetail.create.called);
+          chai.assert.isTrue(RecipeRun.create.called);
+          chai.assert.isTrue(RecipeRunDetail.bulkCreate.called);
         });
     });
   });
