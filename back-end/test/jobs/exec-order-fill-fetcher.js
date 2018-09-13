@@ -637,7 +637,7 @@ describe('Execution Order Fills fetcher job', () => {
 
             const trade = _.find(MOCK_TRADES, { id: '2' });
             
-            chai.expect(placed_order.fee).to.equal(new_fill.fee);
+            chai.expect(parseFloat(placed_order.fee)).to.equal(new_fill.fee);
 
             chai.expect(new_fill).to.be.an('object', 'bulkCreate did not receive a trade object');
             chai.expect(new_fill.execution_order_id).to.equal(order.id);
@@ -727,7 +727,7 @@ describe('Execution Order Fills fetcher job', () => {
             chai.expect(new_fill.execution_order_id).to.equal(order.id);
             chai.expect(new_fill.timestamp).to.be.a('date');
             chai.expect(new_fill.external_identifier).to.be.undefined;
-            chai.expect(new_fill.quantity).to.equal(mocked_order.filled - sum_of_fills);
+            chai.expect(parseFloat(new_fill.quantity)).to.equal(mocked_order.filled - sum_of_fills);
             chai.expect(new_fill.price).to.equal(partially_filled_order.price);
         });
         

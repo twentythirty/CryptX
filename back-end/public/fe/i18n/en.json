@@ -558,7 +558,7 @@
     "execution_orders": {
       "placed": "Order was placed to {{exchange}}",
       "error": "Error: {{error}}",
-      "failed_attempts": "Execution order Failed after {{attempts}} attempts`}",
+      "failed_attempts": "Execution order Failed after {{attempts}} attempts",
       "failed": "Execution order Failed due to: {{reason}}",
       "generate_fill": "Retrieved a new fill with amount of {{amount}}",
       "fully_filled": "Execution order Fully Filled"
