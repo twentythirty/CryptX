@@ -215,6 +215,16 @@ Then(/the Investment Run status is (.*)/, function(status) {
 
 });
 
+Then(/^the Investment Run will have status (.*)$/, async function(status) {
+
+    const { InvestmentRun } = require('../../../models');
+
+    const investment_run = await InvestmentRun.findById(this.current_investment_run.id);
+
+    expect(investment_run.status).to.equal(INVESTMENT_RUN_STATUSES[status]);
+
+});
+
 Then('I am assigned as the user who created it', function() {
 
     expect(this.current_investment_run.user_created_id).to.equal(World.current_user.id);
