@@ -114,6 +114,7 @@ const getStrategyAssets = async function (strategy_type) {
       asset.is_base,
       asset.is_deposit,
       cap.capitalization_usd,
+      cap.market_share_percentage AS avg_share,
       CASE WHEN status.type IS NULL THEN 400 ELSE status.type END as status
     FROM asset
     JOIN LATERAL
@@ -142,13 +143,14 @@ const getStrategyAssets = async function (strategy_type) {
   assets.map(a => {
     Object.assign(a, {
       capitalization_usd: parseFloat(a.capitalization_usd),
+      avg_share: parseFloat(a.avg_share)
     });
   });
 
   let totalMarketShare = 0;
   // selects all assets before threshold MARKETCAP_LIMIT_PERCENT, total marketshare sum of assets
   let before_marketshare_limit = assets.reduce((acc, coin, currentIndex) => {
-    totalMarketShare += coin.avg_share;
+    totalMarketShare += coin.avg_share;    
     if(totalMarketShare <= SYSTEM_SETTINGS.MARKETCAP_LIMIT_PERCENT)
       acc.push(coin);
     return acc;

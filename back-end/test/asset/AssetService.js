@@ -32,7 +32,7 @@ describe('AssetService testing', () => {
         ...Array(500)
       ].map((value, index) => ({
       id: index,
-      avg_share: 1
+      avg_share: _.random(0.1, 4, true)
     }));
 
     beforeEach(() => {
@@ -58,8 +58,8 @@ describe('AssetService testing', () => {
         AssetService.getStrategyAssets(STRATEGY_TYPES.MCI)
       ]).should.eventually.satisfy((assets) => {
         let [lci, mci] = assets;
-
-        return lci.length == SYSTEM_SETTINGS.INDEX_LCI_CAP &&
+        
+        return lci.length <= SYSTEM_SETTINGS.INDEX_LCI_CAP &&
           mci.length == SYSTEM_SETTINGS.INDEX_MCI_CAP &&
           !lci.some(lci_asset => { // check if they don't contain same assets
             return mci.map(mci_asset => mci_asset.id).includes(lci_asset.id);

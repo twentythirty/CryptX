@@ -72,7 +72,7 @@ const createInvestmentRun = async function (user_id, strategy_type, is_simulated
   if (!Object.values(STRATEGY_TYPES).includes(parseInt(strategy_type, 10))) {
     TE(`Unknown strategy type ${strategy_type}!`);
   }
-  
+
   if (!deposit_amounts.length) TE('No investment amounts given!');
 
   let [err, deposit_assets] = await to(AssetService.getDepositAssets());
@@ -739,29 +739,31 @@ const generateInvestmentAssetGroup = async function (user_id, strategy_type) {
     };
   })]
 
-  let group;
-  [err, group] = await to(sequelize.transaction(transaction => 
-    InvestmentRunAssetGroup.create({
-      created_timestamp: new Date(),
-      user_id: user_id,
+  let group, group_assets;
+  [err, group_assets] = await to(sequelize.transaction(transaction => {
 
-      GroupAssets: [
-        ...strategy_assets.map(asset => {
-          
-          return {
-            asset_id: asset.id,
-            status: asset.status
-          };
-        })
-      ]
-    }, {
-      include: GroupAsset,
-      transaction
-    })
-  ));
+    return InvestmentRunAssetGroup.create({
+      created_timestamp: new Date(),
+      user_id: user_id
+    }, { transaction }).then(asset_group => {
+
+      group = asset_group;
+
+      return GroupAsset.bulkCreate(strategy_assets.map(asset => {
+
+        return {
+          asset_id: asset.id,
+          status: asset.status,
+          investment_run_asset_group_id: asset_group.id
+        };
+
+      }), { transaction, returning: true });
+
+    });
+  }));
 
   if (err) TE(err.message);
 
-  return group;
+  return [ group, group_assets ];
 };
 module.exports.generateInvestmentAssetGroup = generateInvestmentAssetGroup;

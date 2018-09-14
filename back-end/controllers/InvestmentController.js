@@ -17,11 +17,11 @@ const createInvestmentRun = async function (req, res) {
   let { strategy_type,
     is_simulated,
     deposit_amounts,
-    investment_asset_group_id
+    investment_group_asset_id
   } = req.body;
 
   [err, investment_run] = await to(
-    investmentService.createInvestmentRun(req.user.id, strategy_type, is_simulated, deposit_amounts, investment_asset_group_id)
+    investmentService.createInvestmentRun(req.user.id, strategy_type, is_simulated, deposit_amounts, investment_group_asset_id)
   );
   if (err) return ReE(res, err, 422);
 
@@ -594,8 +594,13 @@ const generateInvestmentAssetGroup = async function (req, res) {
   let strategy_type = req.body.strategy_type,
     user_id = req.user.id;
 
-  let [err, list] = await to(investmentService.generateInvestmentAssetGroup(user_id, strategy_type));
+  let [err, result] = await to(investmentService.generateInvestmentAssetGroup(user_id, strategy_type));
   if (err) TE(err.message);
+
+  let [ list, group_assets ] = result;
+  list = list.toJSON();
+
+  list.group_assets = group_assets.map(asset => asset.toJSON());
 
   return ReS(res, {
     list
