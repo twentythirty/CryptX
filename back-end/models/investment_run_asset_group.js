@@ -13,6 +13,10 @@ module.exports = (sequelize, DataTypes) => {
       created_timestamp: {
         type: DataTypes.DECIMAL,
         allowNull: false
+      },
+      strategy_type: {
+        type: DataTypes.INTEGER,
+        allowNull: false
       }
     },
     modelProps(

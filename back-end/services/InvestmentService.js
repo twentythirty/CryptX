@@ -110,6 +110,16 @@ const createInvestmentRun = async function (user_id, strategy_type, is_simulated
     let message = `Investment run cannot be initiated as other investment runs are still in progress`;
     TE(message);
   }
+
+  let asset_group;
+  [ err, asset_group ] = await to(InvestmentRunAssetGroup.findById(asset_group_id));
+
+  if (err) TE(err.message);
+  if (!asset_group) TE(`Asset Mix was not found with id "${asset_group_id}"`);
+
+  //check if strategy types match
+  if(asset_group.strategy_type !== strategy_type) TE(`Attempting to create a ${_.invert(STRATEGY_TYPES)[strategy_type]} Investment Run with a ${_.invert(STRATEGY_TYPES)[asset_group.strategy_type]} Asset Mix`);
+  
   let investment_run;
   [err, investment_run] = await to(sequelize.transaction(transaction => 
     InvestmentRun.create({
@@ -744,7 +754,8 @@ const generateInvestmentAssetGroup = async function (user_id, strategy_type) {
 
     return InvestmentRunAssetGroup.create({
       created_timestamp: new Date(),
-      user_id: user_id
+      user_id: user_id,
+      strategy_type
     }, { transaction }).then(asset_group => {
 
       group = asset_group;

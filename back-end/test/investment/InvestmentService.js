@@ -150,6 +150,12 @@ describe('InvestmentService testing:', () => {
       return Promise.resolve(assets);
     });
 
+    sinon.stub(InvestmentRunAssetGroup, 'findById').callsFake(id => {
+      return Promise.resolve({
+        id, user_id: USER_ID, strategy_type: STRATEGY_TYPE
+      });
+    });
+
     sinon.stub(InvestmentRunAssetGroup, 'create').callsFake(group => {
       return Promise.resolve(_.assign(group, { id: _.random(1, 10000) }));
     });
@@ -175,6 +181,7 @@ describe('InvestmentService testing:', () => {
     ordersService.generateApproveRecipeOrders.restore();
     depositSerive.generateRecipeRunDeposits.restore();
     assetService.getDepositAssets.restore();
+    InvestmentRunAssetGroup.findById.restore();
     InvestmentRunAssetGroup.create.restore();
     GroupAsset.bulkCreate.restore();
     if(sequelize.transaction.restore) sequelize.transaction.restore();
@@ -246,6 +253,14 @@ describe('InvestmentService testing:', () => {
           amount: -1
         }], ASSET_GROUP_ID
       ));
+    });
+
+    it('shall reject if the asset mix strategy type does not match the new investment run strategy type', () => {
+
+      return chai.assert.isRejected(investmentService.createInvestmentRun(
+        USER_ID, STRATEGY_TYPES.MCI, IS_SIMULATED, DEPOSIT_AMOUNTS, ASSET_GROUP_ID
+      ));
+
     });
 
     it('shall create new investment run and its investment amounts if everything is good', () => {
