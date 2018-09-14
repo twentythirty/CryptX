@@ -13,7 +13,8 @@ module.exports = (sequelize, DataTypes) => {
       nvt_ratio: DataTypes.DECIMAL,
       market_share: DataTypes.DECIMAL,
       capitalization_updated: DataTypes.DATE,
-      status: DataTypes.STRING
+      status: DataTypes.STRING,
+      comment: DataTypes.STRING
     },
     //common global model props
     modelProps('av_assets', 'Assets as seen by an Admin user')

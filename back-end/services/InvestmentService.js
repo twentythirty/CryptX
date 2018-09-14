@@ -18,6 +18,8 @@ const GroupAsset = require('../models').GroupAsset;
 
 const AdminViewService = require('./AdminViewsService');
 
+const ActionLog = require('../utils/ActionLogUtil');
+
 const getInvestmentRunWithAssetMix = async (investment_run_id, seq_query = {}, sql_where = '') => {
   
   let [ err, investment_run ] = await to(AdminViewService.fetchInvestmentRunView(investment_run_id));
@@ -37,7 +39,7 @@ const getInvestmentRunWithAssetMix = async (investment_run_id, seq_query = {}, s
 
   if(err) console.log(err);
 
-  const asset_ids = group_assets.map(asset => asset['InvestmentRunAssetGroup.GroupAssets.asset_id']);
+  const asset_ids = group_assets.map(asset => asset['InvestmentRunAssetGroup.GroupAssets.asset_id']).filter(id => id);
 
   //Allow only to filter out assets that belong to the investment run.
   seq_query.where = { 
@@ -48,16 +50,16 @@ const getInvestmentRunWithAssetMix = async (investment_run_id, seq_query = {}, s
   };
   
   const final_seq_query = _.assign({
-    attributes: ['id', 'symbol', 'long_name', 'capitalization', 'market_share'],
+    attributes: ['id', 'symbol', 'long_name', 'capitalization', 'nvt_ratio', 'market_share'],
     raw: true
   }, seq_query);
 
-  const final_sql_where = `id IN(${asset_ids.join(', ')}) ${ sql_where !== '' ? `AND ${sql_where}` : '' }`;
-  
+  if(asset_ids.length) sql_where = `id IN(${asset_ids.join(', ')}) ${ sql_where !== '' ? `AND ${sql_where}` : '' }`;
+
   let result = [];
   [ err, result ] = await to(Promise.all([
     AdminViewService.fetchAssetsViewDataWithCount(final_seq_query),
-    AdminViewService.fetchAssetsViewFooter(final_sql_where)
+    AdminViewService.fetchAssetsViewFooter(sql_where)
   ]));
 
   if(err) TE(err.message);
@@ -71,7 +73,7 @@ const createInvestmentRun = async function (user_id, strategy_type, is_simulated
   if (!Object.values(STRATEGY_TYPES).includes(parseInt(strategy_type, 10))) {
     TE(`Unknown strategy type ${strategy_type}!`);
   }
-  
+
   if (!deposit_amounts.length) TE('No investment amounts given!');
 
   let [err, deposit_assets] = await to(AssetService.getDepositAssets());
@@ -110,6 +112,15 @@ const createInvestmentRun = async function (user_id, strategy_type, is_simulated
     TE(message);
   }
 
+  let asset_group;
+  [ err, asset_group ] = await to(InvestmentRunAssetGroup.findById(asset_group_id));
+
+  if (err) TE(err.message);
+  if (!asset_group) TE(`Asset Mix was not found with id "${asset_group_id}"`);
+
+  //check if strategy types match
+  if(asset_group.strategy_type !== strategy_type) TE(`Attempting to create a ${_.invert(STRATEGY_TYPES)[strategy_type]} Investment Run with a ${_.invert(STRATEGY_TYPES)[asset_group.strategy_type]} Asset Mix`);
+  
   let investment_run;
   [err, investment_run] = await to(sequelize.transaction(transaction => 
     InvestmentRun.create({
@@ -180,13 +191,17 @@ module.exports.changeInvestmentRunStatus = changeInvestmentRunStatus;
 const createRecipeRun = async function (user_id, investment_run_id) {
   let err, investment_run, recipe_run, recipe_run_details;
 
+  /**
+   * It might be fine to keep this here, in most cases to prevent heavier actions being performed.
+   */
   recipe_run = await RecipeRun.findOne({
     where: {
       investment_run_id: investment_run_id,
       approval_status: {
         [Op.in]: [RECIPE_RUN_STATUSES.Pending, RECIPE_RUN_STATUSES.Approved]
       }
-    }
+    },
+    raw: true
   });
 
   if (recipe_run) {
@@ -224,7 +239,7 @@ const createRecipeRun = async function (user_id, investment_run_id) {
     })
   ));
 
-  if (err) TE(err.message);
+  if(err) TE(err.message);
 
   return recipe_run;
 };
@@ -860,29 +875,32 @@ const generateInvestmentAssetGroup = async function (user_id, strategy_type) {
     };
   })]
 
-  let group;
-  [err, group] = await to(sequelize.transaction(transaction => 
-    InvestmentRunAssetGroup.create({
+  let group, group_assets;
+  [err, group_assets] = await to(sequelize.transaction(transaction => {
+
+    return InvestmentRunAssetGroup.create({
       created_timestamp: new Date(),
       user_id: user_id,
+      strategy_type
+    }, { transaction }).then(asset_group => {
 
-      GroupAssets: [
-        ...strategy_assets.map(asset => {
-          
-          return {
-            asset_id: asset.id,
-            status: asset.status
-          };
-        })
-      ]
-    }, {
-      include: GroupAsset,
-      transaction
-    })
-  ));
+      group = asset_group;
+
+      return GroupAsset.bulkCreate(strategy_assets.map(asset => {
+
+        return {
+          asset_id: asset.id,
+          status: asset.status,
+          investment_run_asset_group_id: asset_group.id
+        };
+
+      }), { transaction, returning: true });
+
+    });
+  }));
 
   if (err) TE(err.message);
 
-  return group;
+  return [ group, group_assets ];
 };
 module.exports.generateInvestmentAssetGroup = generateInvestmentAssetGroup;

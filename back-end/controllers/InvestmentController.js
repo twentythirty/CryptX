@@ -17,11 +17,11 @@ const createInvestmentRun = async function (req, res) {
   let { strategy_type,
     is_simulated,
     deposit_amounts,
-    investment_asset_group_id
+    investment_group_asset_id
   } = req.body;
 
   [err, investment_run] = await to(
-    investmentService.createInvestmentRun(req.user.id, strategy_type, is_simulated, deposit_amounts, investment_asset_group_id)
+    investmentService.createInvestmentRun(req.user.id, strategy_type, is_simulated, deposit_amounts, investment_group_asset_id)
   );
   if (err) return ReE(res, err, 422);
 
@@ -90,105 +90,6 @@ const getInvestmentAmounts = async function (req, res) {
 module.exports.getInvestmentAmounts = getInvestmentAmounts;
 
 const getInvestmentRunWithAssetMix = async function (req, res) {
-
-    //MOCK DATA
-    const lazy_mock_response = {
-      "investment_run": {
-          "id": parseInt(req.params.investment_id),
-          "started_timestamp": 1533690306000,
-          "updated_timestamp": 1533690306000,
-          "completed_timestamp": null,
-          "strategy_type": "investment.strategy.101",
-          "is_simulated": "investment.is_simulated.yes",
-          "user_created": "Mocky Doky",
-          "user_created_id": 1,
-          "status": "investment.status.303",
-          "deposit_usd": "123"
-      },
-      "asset_mix": [
-          {
-              "id": 8,
-              "symbol": "FTC",
-              "long_name": "Feathercoin",
-              "capitalization": "11144771",
-              "market_share": "0.004947149171421054"
-          },
-          {
-              "id": 22,
-              "symbol": "XPM",
-              "long_name": "Primecoin",
-              "capitalization": "21191206",
-              "market_share": "0.009406748438735337"
-          },
-          {
-              "id": 54,
-              "symbol": "MOON",
-              "long_name": "Mooncoin",
-              "capitalization": "7704806",
-              "market_share": "0.0034201532376806993"
-          },
-          {
-              "id": 99,
-              "symbol": "MONA",
-              "long_name": "MonaCoin",
-              "capitalization": "96173454",
-              "market_share": "0.04269126958901182"
-          }
-      ],
-      "footer": [
-          {
-              "name": "is_base",
-              "value": "0",
-              "template": "assets.footer.is_base",
-              "args": {
-                  "is_base": "0"
-              }
-          },
-          {
-              "name": "is_deposit",
-              "value": "0",
-              "template": "assets.footer.is_deposit",
-              "args": {
-                  "is_deposit": "0"
-              }
-          },
-          {
-              "name": "status",
-              "value": "0",
-              "template": "assets.footer.status",
-              "args": {
-                  "status": "0"
-              }
-          },
-          {
-              "name": "symbol",
-              "value": "4",
-              "template": "assets.footer.symbol",
-              "args": {
-                  "symbol": "4"
-              }
-          },
-          {
-              "name": "is_cryptocurrency",
-              "value": "4",
-              "template": "assets.footer.is_cryptocurrency",
-              "args": {
-                  "is_cryptocurrency": "4"
-              }
-          },
-          {
-              "name": "capitalization",
-              "value": "136214237",
-              "template": "assets.footer.capitalization",
-              "args": {
-                  "capitalization": "136214237"
-              }
-          }
-      ],
-      "count": 4
-  };
-
-  return ReS(res, lazy_mock_response);
 
   const { seq_query, sql_where } = req;
 
@@ -693,11 +594,16 @@ const generateInvestmentAssetGroup = async function (req, res) {
   let strategy_type = req.body.strategy_type,
     user_id = req.user.id;
 
-  let [err, group] = await to(investmentService.generateInvestmentAssetGroup(user_id, strategy_type));
+  let [err, result] = await to(investmentService.generateInvestmentAssetGroup(user_id, strategy_type));
   if (err) TE(err.message);
 
+  let [ list, group_assets ] = result;
+  list = list.toJSON();
+
+  list.group_assets = group_assets.map(asset => asset.toJSON());
+
   return ReS(res, {
-    group
+    list
   })
 };
 module.exports.generateInvestmentAssetGroup = generateInvestmentAssetGroup;

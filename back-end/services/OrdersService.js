@@ -262,7 +262,7 @@ const generateApproveRecipeOrders = async (recipe_run_id) => {
         if (market_data && deposit_valid) {
             return true;
         } else {
-            TE(` Can't generate recipe order for detail: 
+            TE(`Can't generate recipe order for detail: 
             WARN: Skipping recipe run detail due to missing info/no deposit/bad deposit sum! 
             Recipe run detail id: ${recipe_run_detail.id}
             Detail exchange id: ${recipe_run_detail.target_exchange_id}

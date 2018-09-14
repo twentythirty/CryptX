@@ -2,17 +2,17 @@ import { Component, OnInit, Input } from '@angular/core';
 import { TableDataColumn } from '../../data-table/data-table.component';
 
 export class ConfirmCellDataColumn extends TableDataColumn {
-  component? = ConfirmCellComponent;
+  component ? = ConfirmCellComponent;
   inputs?: {
     value?: boolean,
     row?: any,
     show: (row: any) => void,
     execConfirm?: (row: any) => void,
     execDecline?: (row: any) => void
-  }
+  };
   outputs?: {
 
-  }
+  };
   constructor(val: ConfirmCellDataColumn) {
     super(val);
   }

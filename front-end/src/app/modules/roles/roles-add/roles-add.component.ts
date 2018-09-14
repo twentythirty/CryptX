@@ -22,11 +22,10 @@ export class RolesAddComponent implements OnInit {
   roleId: number;
   loading = false;
   showDeleteConfirm = false;
-  showError = false;
 
   roleForm: FormGroup = new FormGroup({
-    name: new FormControl('', [Validators.required]),
-    permissions: new FormControl([])
+    name: new FormControl('', Validators.required),
+    permissions: new FormControl([], Validators.required)
   });
 
   constructor(
@@ -83,8 +82,6 @@ export class RolesAddComponent implements OnInit {
     }
 
     this.roleForm.controls.permissions.setValue(perm);
-    // this.role.permissions = perm;
-    this.checkPermission();
   }
 
   generatePermissionsMaps() {
@@ -126,74 +123,45 @@ export class RolesAddComponent implements OnInit {
   }
 
   addRole() {
-    if (this.roleForm.valid && this.roleForm.value.permissions.length > 0) {
-      this.showError = false;
-      this.loading = true;
-
-      this.rolesService.createRole(this.roleForm.value).subscribe(
-        data => {
-          this.router.navigate(['/roles']);
-        }, error => {
-          console.log('Error', error);
-          this.loading = false;
-        }, () => {
-          this.loading = false;
-        });
-    } else {
-      this.markAsTouched(this.roleForm);
-      if (this.roleForm.value.permissions.length === 0) {
-        this.showError = true;
-      } else {
-        this.showError = false;
-      }
+    if (this.roleForm.invalid || this.roleForm.value.permissions.length === 0) {
+      return;
     }
+
+    this.loading = true;
+
+    this.rolesService.createRole(this.roleForm.value).subscribe(
+      data => {
+        this.router.navigate(['/roles']);
+      }, error => {
+        console.log('Error', error);
+        this.loading = false;
+      }, () => {
+        this.loading = false;
+      }
+    );
   }
 
   saveRole() {
-    if (this.roleForm.valid && this.roleForm.value.permissions.length > 0) {
-      this.showError = false;
-      this.loading = true;
-
-      const roleEditRequest = Object.assign(this.roleForm.value, {
-        id: this.roleId
-      });
-
-      this.rolesService.editRole(roleEditRequest).subscribe(
-        data => {
-          this.router.navigate(['/roles']);
-        }, error => {
-          console.log('Error', error);
-          this.loading = false;
-        }, () => {
-          this.loading = false;
-        });
-    } else {
-      this.markAsTouched(this.roleForm);
-      if (this.roleForm.value.permissions.length === 0) {
-        this.showError = true;
-      } else {
-        this.showError = false;
-      }
+    if (this.roleForm.invalid || this.roleForm.value.permissions.length === 0) {
+      return;
     }
-  }
 
-  markAsTouched(group) {
-    Object.keys(group.controls).map((field) => {
-      const control = group.get(field);
-      if (control instanceof FormControl) {
-        control.markAsTouched({ onlySelf: true });
-      } else if (control instanceof FormGroup) {
-        this.markAsTouched(control);
-      }
+    this.loading = true;
+
+    const roleEditRequest = Object.assign(this.roleForm.value, {
+      id: this.roleId
     });
-  }
 
-  checkPermission() {
-    if (this.roleForm.value.permissions.length === 0) {
-      this.showError = true;
-    } else {
-      this.showError = false;
-    }
+    this.rolesService.editRole(roleEditRequest).subscribe(
+      data => {
+        this.router.navigate(['/roles']);
+      }, error => {
+        console.log('Error', error);
+        this.loading = false;
+      }, () => {
+        this.loading = false;
+      }
+    );
   }
 
 }

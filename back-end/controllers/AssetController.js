@@ -93,6 +93,40 @@ const getAssetsDetailed = async function (req, res) {
 };
 module.exports.getAssetsDetailed = getAssetsDetailed;
 
+const getAssetsDetailedOfInvestmentRunAssetGroup = async (req, res) => {
+
+  let { sql_where, seq_query } = req;
+
+  const { investment_asset_group_id } = req.params;
+
+  let [ error, result ] = await to(assetService.getAssetFilteringBasedOnInvestmentAssetGroup(investment_asset_group_id, seq_query, sql_where));
+  
+  if(error) return ReE(res, error, 422);
+  if(!result) return ReE(res, `Asset group was not found with id "${investment_asset_group_id}"`, 404);
+  
+  [ seq_query, sql_where ] = result;
+
+  let assets_with_count = [];
+  [error, assets_with_count] = await to(adminViewsService.fetchAssetsViewDataWithCount(seq_query));
+  if (error)
+    return ReE(res, error, 422);
+
+  let footer;
+  [error, footer] = await to(adminViewsService.fetchAssetsViewFooter(sql_where));
+  if (error) 
+    return ReE(res, error, 422);
+  
+  const { data: assets, total: count } = assets_with_count;
+
+  return ReS(res, {
+    assets,
+    count,
+    footer
+  })
+
+};
+module.exports.getAssetsDetailedOfInvestmentRunAssetGroup = getAssetsDetailedOfInvestmentRunAssetGroup;
+
 const getAssetsColumnLOV = async (req, res) => {
 
   const field_name = req.params.field_name

@@ -76,9 +76,9 @@ module.exports.JOB_BODY = async (config, log) => {
         const placed_order_fills = current_fills.filter(fill => fill.execution_order_id === placed_order.id);
 
         placed_order.filled_amount = placed_order_fills.reduce((prev, current) => {
-            return prev = parseFloat(prev) + parseFloat(current.quantity);
-        }, 0);
-
+            return prev.plus(current.quantity || 0);
+        }, Decimal(0));
+        
         log(`2.(EXEC-${placed_order.id}) Checking if order is simulated.`);
         let [ err, is_simulated ] = await to(module.exports.isSimulated(placed_order.id, models.sequelize));
         if(err) {
@@ -263,7 +263,6 @@ module.exports.JOB_BODY = async (config, log) => {
             const fee = trade.fee ? trade.fee.cost : 0;
             const fee_symbol = trade.fee ? trade.fee.currency : placed_order.get('instrument_quote_asset');
             const fee_id = trade.fee ? (trade.fee.currency === placed_order.get('instrument_quote_asset') ? placed_order.get('instrument_quote_asset_id') : placed_order.get('instrument_transaction_asset_id')) : placed_order.get('instrument_quote_asset_id');
-            placed_order.filled_amount += trade.amount;
 
             console.log('\x1b[36m', `<<<<<<<<<<<<<<TRADE ${placed_order.id}/${placed_order.external_identifier}>>>>>>>>>>>>>>`, '\x1b[0m')
             console.log(JSON.stringify(trade, null, 3));
@@ -281,19 +280,23 @@ module.exports.JOB_BODY = async (config, log) => {
         });
 
         if(placed_order.fee == null) placed_order.fee = 0;
-        if(placed_order.price == null) placed_order.fee = 0;
+        if(placed_order.price == null) placed_order.price = 0;
 
-        placed_order.fee = fills.reduce((prev, current) => {
-            return prev = parseFloat(prev) + parseFloat(current.fee);
-        }, 0) + new_fills.reduce((prev, current) => {
-            return prev = parseFloat(prev) + parseFloat(current.fee);
-        }, 0);
+        const total_calculations = fills.concat(new_fills).reduce((prev, current) => {
+            return _.assign(prev, {
+                weighted_price: prev.weighted_price.plus(Decimal(current.price || 0).mul(current.quantity || 0)),
+                quantity: prev.quantity.plus(current.quantity || 0),
+                fee: prev.fee.plus(current.fee || 0)
+            });
+        }, {
+            weighted_price: Decimal(0),
+            quantity: Decimal(0),
+            fee: Decimal(0)
+        });
 
-        placed_order.price = (fills.reduce((prev, current) => {
-            return prev = parseFloat(prev) + parseFloat(current.price);
-        }, 0) + new_fills.reduce((prev, current) => {
-            return prev = parseFloat(prev) + parseFloat(current.price);
-        }, 0)) / (fills.length + new_fills.length);
+        placed_order.fee = total_calculations.fee.toString();
+        placed_order.price = total_calculations.weighted_price.div(total_calculations.quantity).toString();
+        placed_order.filled_amount = total_calculations.quantity;
 
         const new_logs = new_fills.map(fill => {
             return [actions.generate_fill, {
@@ -319,20 +322,22 @@ module.exports.JOB_BODY = async (config, log) => {
         if(external_order.fee) placed_order.fee = external_order.fee.cost;
         if(external_order.price) placed_order.price = external_order.average || external_order.price; //Take the average price if possible
 
-        const current_fill_sum = fills.reduce((prev, current) => {
-            return prev += current.quantity || 0;
-        }, 0);
+        const current_sums = fills.reduce((prev, current) => {
+            return _.assign(prev, {
+                fill: prev.fill.plus(current.quantity || 0),
+                fee: prev.fee.plus(current.fee || 0)
+            });
+        }, {
+            fill: Decimal(0),
+            fee: Decimal(0)
+        });
 
-        const current_fee_sum = fills.reduce((prev, current) => {
-            return prev += current.fee || 0;
-        }, 0);
-
-        if(external_order.filled <= current_fill_sum) {
+        if(current_sums.fill.gte(external_order.filled)) {
             log(`[WARN.5B](EXEC-${placed_order.id}) Filled amount does not exceed current sum of fills, skipping..`)
             return [[], []];
         };
 
-        placed_order.filled_amount += external_order.filled - current_fill_sum;
+        placed_order.filled_amount.plus(external_order.filled).minus(current_sums.fill);
 
         return [[
             {
@@ -341,9 +346,9 @@ module.exports.JOB_BODY = async (config, log) => {
                 args: [{
                     execution_order_id: placed_order.id,
                     timestamp: new Date(),
-                    quantity: external_order.filled - current_fill_sum,
+                    quantity: Decimal(external_order.filled).minus(current_sums.fill).toString(),
                     price: placed_order.price,
-                    fee: placed_order.fee ? placed_order.fee - current_fee_sum : 0,
+                    fee: placed_order.fee ? Decimal(placed_order.fee).minus(current_sums.fee).toString() : 0,
                     fee_asset_symbol: external_order.fee ? external_order.fee.currency : placed_order.get('instrument_quote_asset'),
                     fee_asset_id: external_order.fee ? (external_order.fee.curreny === placed_order.get('instrument_quote_asset') ? placed_order.get('instrument_quote_asset_id') : placed_order.get('instrument_transaction_asset_id')) : placed_order.get('instrument_quote_asset_id')
                 }],
@@ -351,7 +356,7 @@ module.exports.JOB_BODY = async (config, log) => {
             }
         ], [
             [actions.generate_fill, {
-                args: { amount: external_order.filled - current_fill_sum },
+                args: { amount: Decimal(external_order.filled).minus(current_sums.fill).toString() },
                 relations: { execution_order_id: placed_order.id }
             }]
         ]]
@@ -424,15 +429,17 @@ module.exports.JOB_BODY = async (config, log) => {
     const updateOrderStatus = async (placed_order, queries = [], logs = []) => {
 
         if(placed_order.failed_attempts >= SYSTEM_SETTINGS.EXEC_ORD_FAIL_TOLERANCE) {
-            placed_order.status = placed_order.filled_amount ? PartiallyFilled : NotFilled;
+            placed_order.status = placed_order.filled_amount.gt(0) ? PartiallyFilled : NotFilled;
             logs.push([actions.failed_attempts, {
                 relations: { execution_order_id: placed_order.id },
-                log_level: ACTIONLOG_LEVELS.Warning
+                log_level: ACTIONLOG_LEVELS.Warning,
+                args: { attempts: placed_order.failed_attempts }
             }]);
         }
 
         //In this case theexecution order was closed on the exchange after being placed there. We should change the status.
-        if(placed_order.status === Failed) placed_order.status = placed_order.filled_amount ? PartiallyFilled : NotFilled;
+
+        if(placed_order.status === Failed) placed_order.status = placed_order.filled_amount.gt(0) ? PartiallyFilled : NotFilled;
 
         if(placed_order.changed()) {
             queries.push({ model: placed_order, method: 'save', args: [], options: {} });

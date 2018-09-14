@@ -38,6 +38,13 @@ function CustomWorld() {
         username: process.env.ADMIN_EMAIL,
         password: process.env.ADMIN_PWD
     }
+
+    attachServices(this)
+}
+
+function attachServices(world) {
+
+    world.invitationService = require('../../../services/InvitationService');
 }
 
 Before(function(scenario) {

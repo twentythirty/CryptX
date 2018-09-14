@@ -49,10 +49,10 @@
               class="checkall"
               type="checkbox"
               formControlName="checkbox"
-              id="{{ control.controls.id.value }}"
+              [id]="control.controls.id.value"
               (click)="click()"
             >
-            <label [class.checked]="checked" attr.for={{control.controls.id.value}}>
+            <label [class.checked]="checked" [attr.for]="control.controls.id.value">
               <ng-container *ngIf="checked">
                 {{'users.select' | translate}}
               </ng-container>
@@ -75,10 +75,13 @@
 <app-form-action-bar>
   <div *ngIf="userId">
     <button
-      *ngIf="buttonName"
+      *ngIf="user"
       class="btn deactive"
       (click)="isValid()"
-    >{{ buttonName }}</button>
+    >
+     <ng-container *ngIf="user.is_active">Deactivate</ng-container>
+     <ng-container *ngIf="!user.is_active">Activate</ng-container>
+    </button>
     
     <button
       type="button"

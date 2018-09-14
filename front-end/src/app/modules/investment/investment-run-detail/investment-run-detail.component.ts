@@ -43,7 +43,7 @@ export class InvestmentRunDetailComponent extends TimelineDetailComponent implem
   public detailTableTitle = 'Recipe runs';
   public listTitle = 'Selected asset mix';
   public addTitle = 'Start new run';
-  public listTableEmptyText = 'investment.no_recipe_runs'; // custom data-table message on empty data set
+  //public listTableEmptyText = 'investment.no_recipe_runs'; // custom data-table message on empty data set
 
   /**
    * 2. Implement attributes to preset data structure

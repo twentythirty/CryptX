@@ -32,7 +32,6 @@ export class UsersInfoComponent implements OnInit {
   rolelist = [];
   rolesRequestData: RolesAllRequestData;
   loading = false;
-  loading2 = false;
   showDeactivateConfirm = false;
   buttonName: String;
   show = false;
@@ -190,8 +189,9 @@ export class UsersInfoComponent implements OnInit {
       }, error => {
         this.loading = true;
       }, () => {
-      this.loading = false;
-    });
+        this.loading = false;
+      }
+    );
   }
 
   isValid() {

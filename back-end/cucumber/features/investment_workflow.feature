@@ -16,6 +16,7 @@ Feature: Investment workflow
     
         Given there are no incomplete non simulated investment runs
         When I log onto CryptX as Investment Manager
+        And I generate a new MCI Asset Mix
         And I create a new real MCI Investment Run
         Then the Investment Run information is saved to the database
         And the Investment Run status is Initiated
@@ -34,6 +35,7 @@ Feature: Investment workflow
 
         Given there is a real MCI Investment Run created by an Investment Manager
         When I log onto CryptX as Investment Manager
+        And I generate a new MCI Asset Mix
         And I create a new simulated MCI Investment Run
         Then the Investment Run information is saved to the database
         And the Investment Run should be marked as simulated
@@ -42,7 +44,7 @@ Feature: Investment workflow
 
         Given there are no investment runs in the system
         When I log onto CryptX as <unauth_role>
-        And I create a new real MCI Investment Run
+        And I generate a new MCI Asset Mix
         Then I should be blocked by the system for not having the right permissions
 
     Examples:

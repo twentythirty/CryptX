@@ -20,11 +20,12 @@ export class DepositListComponent extends DataTableCommonManagerComponent implem
   public depositDataSource: TableDataSource = {
     header: [
       { column: 'id', nameKey: 'table.header.id', filter: { type: 'number', hasRange: false, inputSearch: true, sortable: true } },
-      { column: 'investment_run_id', nameKey: 'table.header.investment_run_id', filter: { type: 'text', sortable: true } },
-      { column: 'quote_asset', nameKey: 'table.header.quote_asset', filter: { type: 'text', sortable: true } },
+      { column: 'investment_currency', nameKey: 'table.header.investment_currency', filter: { type: 'text', sortable: true } },
+      { column: 'quote_asset', nameKey: 'table.header.deposit_currency', filter: { type: 'text', sortable: true } },
       { column: 'exchange', nameKey: 'table.header.exchange', filter: { type: 'text', sortable: true } },
       { column: 'account', nameKey: 'table.header.account', filter: { type: 'text', sortable: true }, column_class: 'word-wrap' },
-      { column: 'amount', nameKey: 'table.header.amount', filter: { type: 'number', sortable: true } },
+      { column: 'investment_amount', nameKey: 'table.header.investment_amount', filter: { type: 'number', sortable: true } },
+      { column: 'amount', nameKey: 'table.header.deposit_amount', filter: { type: 'number', sortable: true } },
       { column: 'investment_percentage', nameKey: 'table.header.investment_percentage', filter: { type: 'number', sortable: true } },
       { column: 'status', nameKey: 'table.header.status', filter: { type: 'text', sortable: true } },
     ],
@@ -33,10 +34,11 @@ export class DepositListComponent extends DataTableCommonManagerComponent implem
 
   public depositColumnsToShow: Array<TableDataColumn> = [
     new TableDataColumn({ column: 'id' }),
-    new TableDataColumn({ column: 'investment_run_id' }),
+    new TableDataColumn({ column: 'investment_currency' }),
     new TableDataColumn({ column: 'quote_asset' }),
     new TableDataColumn({ column: 'exchange' }),
     new TableDataColumn({ column: 'account' }),
+    new NumberCellDataColumn({ column: 'investment_amount'}),
     new NumberCellDataColumn({ column: 'amount'}),
     new PercentCellDataColumn({ column: 'investment_percentage' }),
     new StatusCellDataColumn({ column: 'status', inputs: { classMap: {

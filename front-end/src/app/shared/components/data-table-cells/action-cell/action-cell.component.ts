@@ -5,7 +5,7 @@ import { TableDataColumn } from '../../data-table/data-table.component';
 
 export class DataCellAction {
   label: string;
-  isShown?: (row: any) => boolean = (row) => true
+  isShown?: (row: any) => boolean = (row) => true;
   exec: (row: any) => void;
 
   constructor(val: DataCellAction) {
@@ -14,15 +14,15 @@ export class DataCellAction {
 }
 
 export class ActionCellDataColumn extends TableDataColumn {
-  component? = ActionCellComponent;
+  component ? = ActionCellComponent;
   inputs?: {
     value?: boolean;
     row?: any;
     actions?: Array<DataCellAction>
-  }
+  };
   outputs?: {
 
-  }
+  };
   constructor(val: ActionCellDataColumn) {
     super(val);
   }
@@ -47,7 +47,7 @@ export class ActionCellComponent implements OnInit {
   }
 
   public doAction(action: DataCellAction, ev?: MouseEvent): void {
-    if(ev) {
+    if (ev.stopPropagation) {
       ev.stopPropagation();
     }
     action.exec(this.row);

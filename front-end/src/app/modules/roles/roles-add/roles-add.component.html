@@ -27,7 +27,7 @@
   <app-content-block [heading]="'roles.permissions' | translate">
     <div class="no-padding-top-bottom">
       <app-input-item-error-message
-        *ngIf="showError"
+        *ngIf="roleForm.controls.permissions.invalid && (roleForm.controls.permissions.dirty || roleForm.controls.permissions.touched)"
         [errorMessage]="'Permission must be selected'"
       ></app-input-item-error-message>
 
@@ -71,6 +71,7 @@
       class="btn submit" 
       [disabled]="loading" 
       (click)="saveRole()"
+      [appMarkAsTouched]="roleForm"
     >{{ 'common.submit' | translate }}</button>
   </div>
 
@@ -79,6 +80,7 @@
       class="btn submit"
       [disabled]="loading"
       (click)="addRole()"
+      [appMarkAsTouched]="roleForm"
     >{{ 'common.submit' | translate }}</button>
   </div>
 </app-form-action-bar>

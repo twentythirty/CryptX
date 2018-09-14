@@ -3,6 +3,8 @@
 const Asset = require('../models').Asset;
 const AssetStatusChange = require('../models').AssetStatusChange;
 const AssetMarketCapitalization = require('../models').AssetMarketCapitalization;
+const GroupAsset = require('../models').GroupAsset;
+const InvestmentRunAssetGroup = require('../models').InvestmentRunAssetGroup;
 const Exchange = require('../models').Exchange;
 const InstrumentExchangeMapping = require('../models').InstrumentExchangeMapping;
 const User = require('../models').User;
@@ -112,6 +114,7 @@ const getStrategyAssets = async function (strategy_type) {
       asset.is_base,
       asset.is_deposit,
       cap.capitalization_usd,
+      cap.market_share_percentage AS avg_share,
       CASE WHEN status.type IS NULL THEN 400 ELSE status.type END as status
     FROM asset
     JOIN LATERAL
@@ -140,13 +143,14 @@ const getStrategyAssets = async function (strategy_type) {
   assets.map(a => {
     Object.assign(a, {
       capitalization_usd: parseFloat(a.capitalization_usd),
+      avg_share: parseFloat(a.avg_share)
     });
   });
 
   /* let totalMarketShare = 0;
   // selects all assets before threshold MARKETCAP_LIMIT_PERCENT, total marketshare sum of assets
   let before_marketshare_limit = assets.reduce((acc, coin, currentIndex) => {
-    totalMarketShare += coin.avg_share;
+    totalMarketShare += coin.avg_share;    
     if(totalMarketShare <= SYSTEM_SETTINGS.MARKETCAP_LIMIT_PERCENT)
       acc.push(coin);
     return acc;
@@ -480,3 +484,31 @@ const getLiquidityLevel = (volume_usd) => {
   return level;
 };
 module.exports.getLiquidityLevel = getLiquidityLevel;
+
+const getAssetFilteringBasedOnInvestmentAssetGroup = async (id, seq_query = {}, sql_where = '') => {
+
+  let [ err, asset_group ] = await to(InvestmentRunAssetGroup.findById(id, {
+    include: {
+      model: GroupAsset
+    }
+  }));
+
+  if(err) TE(err.message);
+  if(!asset_group) return null;
+
+  const asset_ids = _.map(asset_group.GroupAssets, group_asset => group_asset.asset_id).filter(id => id);
+
+  seq_query.where = { 
+    [Op.and]: [
+      { id: asset_ids },
+      seq_query.where
+    ] 
+  };
+  
+
+  if(asset_ids.length) sql_where = `id IN(${asset_ids.join(', ')}) ${ sql_where !== '' ? `AND ${sql_where}` : '' }`;
+
+  return [ seq_query, sql_where ];  
+
+};
+module.exports.getAssetFilteringBasedOnInvestmentAssetGroup = getAssetFilteringBasedOnInvestmentAssetGroup;

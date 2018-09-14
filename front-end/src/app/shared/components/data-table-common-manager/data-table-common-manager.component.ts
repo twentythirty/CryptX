@@ -27,7 +27,7 @@ export class DataTableCommonManagerComponent implements OnInit, OnDestroy {
   public requestData: RolesAllRequestData = {
     filter: {},
     order: [],
-    limit: this.pageSize,
+    limit: 0,
     offset: 0
   };
 
@@ -39,6 +39,7 @@ export class DataTableCommonManagerComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
+    this.requestData.limit = this.pageSize;
     this.queryParamsSubscription = this.route.queryParams.pipe(
       filter(params => !params.page || params.page != this.prevQueryParams.page )
     ).subscribe(params => {

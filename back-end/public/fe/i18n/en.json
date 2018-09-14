@@ -20,7 +20,8 @@
     "rationale": "Rationale",
     "add_new_user": "Add new user",
     "all": "All",
-    "add_custodian": "Add custodian"
+    "add_custodian": "Add custodian",
+    "discard": "Discard"
   },
   "table": {
     "header": {
@@ -109,7 +110,10 @@
       "investment_eth": "Investement ETH",
       "investment_btc": "Investment BTC",
       "investment_currency": "Investment currency",
-      "equivalent_in_usd": "Equivalent in usd"
+      "equivalent_in_usd": "Equivalent in usd",
+      "deposit_currency": "Deposit currency",
+      "deposit_amount": "Deposit amount",
+      "investment_amount": "Investment amount"
     },
     "filter": {
       "all": "All",
@@ -296,7 +300,8 @@
       "63": "FullyFilled",
       "64": "PartiallyFilled",
       "65": "Cancelled",
-      "66": "Failed"
+      "66": "Failed",
+      "67": "NotFilled"
     }
   },
 
@@ -553,7 +558,7 @@
     "execution_orders": {
       "placed": "Order was placed to {{exchange}}",
       "error": "Error: {{error}}",
-      "failed_attempts": "Execution order Failed after {{attempts}} attempts`}",
+      "failed_attempts": "Execution order Failed after {{attempts}} attempts",
       "failed": "Execution order Failed due to: {{reason}}",
       "generate_fill": "Retrieved a new fill with amount of {{amount}}",
       "fully_filled": "Execution order Fully Filled"
@@ -567,6 +572,10 @@
     "deposits": {
       "generate": "System generated {{amount}} Deposits for Recipe Run RR-{{recipe_id}}",
       "completed": "Deposit Completed"
+    },
+
+    "recipe_run": {
+      "failed_action": "No way found to invest into {{ asset }}"
     }
   },
 
