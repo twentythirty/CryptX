@@ -19,9 +19,9 @@ export class OrdersListComponent extends DataTableCommonManagerComponent impleme
   public ordersDataSource: TableDataSource = {
     header: [
       { column: 'id', nameKey: 'table.header.id', filter: { type: 'number', hasRange: false, inputSearch: true, sortable: true } },
-      { column: 'investment_id', nameKey: 'table.header.investment_run_id', filter: { type: 'text', sortable: true } },
+      { column: 'investment_id', nameKey: 'table.header.investment_run_id', filter: { type: 'number', hasRange: false, inputSearch: true, sortable: true } },
       { column: 'instrument', nameKey: 'table.header.instrument', filter: { type: 'text', sortable: true } },
-      { column: 'side', nameKey: 'table.header.side', filter: { type: 'text', sortable: true } },
+      { column: 'side', nameKey: 'table.header.side', filter: { type: 'text', sortable: true, inputSearch: false } },
       { column: 'exchange', nameKey: 'table.header.exchange', filter: { type: 'text', sortable: true } },
       { column: 'price', nameKey: 'table.header.price', filter: { type: 'number', sortable: true } },
       { column: 'quantity', nameKey: 'table.header.total_quantity', filter: { type: 'number', sortable: true } },
