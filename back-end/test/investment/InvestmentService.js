@@ -740,6 +740,30 @@ describe('InvestmentService testing:', () => {
   });
 
   describe('and method generateRecipeDetails shall', () => {
+    let recipe_detail_sum_used_assets = recipe_details => {
+      let used_investment_amounts = _.map(
+          _.groupBy(
+            _.flatten(recipe_details.map(d => d.detail_investment)),
+            d => d.asset_id
+          ),
+          grouped_by_base => {
+            let used = Decimal(0);
+            _.forEach(grouped_by_base, s => { used = used.add(Decimal(s.amount)); });
+            used = used.toNumber();
+            return ({
+              asset_id: grouped_by_base[0].asset_id,
+              amount: used
+            });
+          }
+        );
+      return used_investment_amounts;
+    };
+
+    let recipe_detail_calculate_total_percentage = (recipe_details) =>
+      recipe_details.map(d => d.investment_percentage)
+        .reduce((acc, val) => acc.add(Decimal(val)), Decimal(0))
+        .toNumber();
+
     beforeEach(() => {
       sinon.stub(assetService, 'getAssetGroupWithData').callsFake((recipe_run_id) => {
         let instruments = [
@@ -916,25 +940,9 @@ describe('InvestmentService testing:', () => {
         return Promise.resolve(instruments);
       });
 
-      /* sinon.stub(assetService, "getInstrumentLiquidityRequirements").callsFake((...params) => {
-        let requirement = [{
-          avg_vol: 30000,
-          instrument_id: params.instrument_id,
-          exchange_id: params.exchange_id,
-          minimum_volume: 10000,
-          periodicity_in_days: 7
-        }];
-
-        return requirement;
-      }); */
-
     });
     
     afterEach(() => {
-      // assetService.getStrategyAssets.restore();
-      // Asset.findAll.restore();
-      // assetService.getAssetInstruments.restore();
-      // assetService.getInstrumentLiquidityRequirements.restore()
       assetService.getAssetGroupWithData.restore();
     });
 
@@ -973,229 +981,370 @@ describe('InvestmentService testing:', () => {
     });
 
     it("should calculate recipe run details singe USD deposit", () => {
+      let investment_amounts = [
+        { asset_id: DEPOSIT_ASSETS.USD.asset_id, amount: 5664798.12312 }
+      ];
+
       if (InvestmentRun.findOne.restore)
         InvestmentRun.findOne.restore();
 
       sinon.stub(InvestmentRun, 'findOne').callsFake(arg => {
         let investment_run = new InvestmentRun(INVESTMENT_RUN);
-        investment_run.InvestmentAmounts = [
-          { asset_id: DEPOSIT_ASSETS.USD.asset_id, amount: 1000000 }
-        ];
+        investment_run.InvestmentAmounts = investment_amounts;
 
         return Promise.resolve(investment_run);
       });
 
       return investmentService.generateRecipeDetails(INVESTMENT_RUN_ID, STRATEGY_TYPE)
       .then(recipe_details => {
-        console.log(recipe_details);
+
+        chai.expect(recipe_detail_sum_used_assets(recipe_details)).to.eql(
+          investment_amounts.map(a => _.pick(a, ['asset_id', 'amount'])),
+          "Recipe details don't use all of investment deposit amounts"
+        );
+
+        chai.expect(recipe_detail_calculate_total_percentage(recipe_details)).to.be.equal(100);
       });
     });
 
     it("should calculate recipe run details singe BTC deposit", () => {
+      let investment_amounts = [
+        { asset_id: DEPOSIT_ASSETS.BTC.asset_id, amount: 6455.1332 }
+      ];
+
       if (InvestmentRun.findOne.restore)
         InvestmentRun.findOne.restore();
 
       sinon.stub(InvestmentRun, 'findOne').callsFake(arg => {
         let investment_run = new InvestmentRun(INVESTMENT_RUN);
-        investment_run.InvestmentAmounts = [
-          { asset_id: DEPOSIT_ASSETS.BTC.asset_id, amount: 150 }
-        ];
+        investment_run.InvestmentAmounts = investment_amounts;
 
         return Promise.resolve(investment_run);
       });
 
       return investmentService.generateRecipeDetails(INVESTMENT_RUN_ID, STRATEGY_TYPE)
       .then(recipe_details => {
-        console.log(recipe_details);
+
+        chai.expect(recipe_detail_sum_used_assets(recipe_details)).to.eql(
+          investment_amounts.map(a => _.pick(a, ['asset_id', 'amount'])),
+          "Recipe details don't use all of investment deposit amounts"
+        );
+
+        chai.expect(recipe_detail_calculate_total_percentage(recipe_details)).to.be.equal(100);
       });
     });
 
     it("should calculate recipe run details singe ETH deposit", () => {
+      let investment_amounts = [
+        { asset_id: DEPOSIT_ASSETS.ETH.asset_id, amount: 6654.313564 }
+      ];
+
       if (InvestmentRun.findOne.restore)
         InvestmentRun.findOne.restore();
 
       sinon.stub(InvestmentRun, 'findOne').callsFake(arg => {
         let investment_run = new InvestmentRun(INVESTMENT_RUN);
-        investment_run.InvestmentAmounts = [
-          { asset_id: DEPOSIT_ASSETS.ETH.asset_id, amount: 5000 }
-        ];
+        investment_run.InvestmentAmounts = investment_amounts;
 
         return Promise.resolve(investment_run);
       });
 
       return investmentService.generateRecipeDetails(INVESTMENT_RUN_ID, STRATEGY_TYPE)
       .then(recipe_details => {
-        console.log(recipe_details);
+        
+        chai.expect(recipe_detail_sum_used_assets(recipe_details)).to.eql(
+          investment_amounts.map(a => _.pick(a, ['asset_id', 'amount'])),
+          "Recipe details don't use all of investment deposit amounts"
+        );
+
+        chai.expect(recipe_detail_calculate_total_percentage(recipe_details)).to.be.equal(100);
       });
     });
 
     it("should calculate recipe run details with USD and BTC deposits", () => {
+      let investment_amounts = [
+        { asset_id: DEPOSIT_ASSETS.USD.asset_id, amount: 3218947 },
+        { asset_id: DEPOSIT_ASSETS.BTC.asset_id, amount: 311 }
+      ];
+
       if (InvestmentRun.findOne.restore)
         InvestmentRun.findOne.restore();
 
       sinon.stub(InvestmentRun, 'findOne').callsFake(arg => {
         let investment_run = new InvestmentRun(INVESTMENT_RUN);
-        investment_run.InvestmentAmounts = [
-          { asset_id: DEPOSIT_ASSETS.USD.asset_id, amount: 1000000 },
-          { asset_id: DEPOSIT_ASSETS.BTC.asset_id, amount: 150 }
-        ];
+        investment_run.InvestmentAmounts = investment_amounts;
 
         return Promise.resolve(investment_run);
       });
 
       return investmentService.generateRecipeDetails(INVESTMENT_RUN_ID, STRATEGY_TYPE)
       .then(recipe_details => {
-        console.log(recipe_details);
+        
+        chai.expect(recipe_detail_sum_used_assets(recipe_details)).to.eql(
+          investment_amounts.map(a => _.pick(a, ['asset_id', 'amount'])),
+          "Recipe details don't use all of investment deposit amounts"
+        );
+
+        chai.expect(recipe_detail_calculate_total_percentage(recipe_details)).to.be.equal(100);
       });
     });
 
     it("should calculate recipe run details with USD and ETH deposits", () => {
+      let investment_amounts = [
+        { asset_id: DEPOSIT_ASSETS.USD.asset_id, amount: 11321564 },
+        { asset_id: DEPOSIT_ASSETS.ETH.asset_id, amount: 88173.3151654 }
+      ];
+
       if (InvestmentRun.findOne.restore)
         InvestmentRun.findOne.restore();
 
       sinon.stub(InvestmentRun, 'findOne').callsFake(arg => {
         let investment_run = new InvestmentRun(INVESTMENT_RUN);
-        investment_run.InvestmentAmounts = [
-          { asset_id: DEPOSIT_ASSETS.USD.asset_id, amount: 1000000 },
-          { asset_id: DEPOSIT_ASSETS.ETH.asset_id, amount: 5000 }
-        ];
+        investment_run.InvestmentAmounts = investment_amounts;
 
         return Promise.resolve(investment_run);
       });
 
       return investmentService.generateRecipeDetails(INVESTMENT_RUN_ID, STRATEGY_TYPE)
       .then(recipe_details => {
-        console.log(recipe_details);
+        chai.expect(recipe_detail_sum_used_assets(recipe_details)).to.eql(
+          investment_amounts.map(a => _.pick(a, ['asset_id', 'amount'])),
+          "Recipe details don't use all of investment deposit amounts"
+        );
+
+        chai.expect(recipe_detail_calculate_total_percentage(recipe_details)).to.be.equal(100);
       });
     });
 
-    it("should calculate recipe run details with USD and ETH deposits", () => {
+    it("should calculate recipe run details with BTC and ETH deposits", () => {
+      let investment_amounts = [
+        { asset_id: DEPOSIT_ASSETS.BTC.asset_id, amount: 451.7764451931 },
+        { asset_id: DEPOSIT_ASSETS.ETH.asset_id, amount: 14456.1128797 }
+      ];
+
       if (InvestmentRun.findOne.restore)
         InvestmentRun.findOne.restore();
 
       sinon.stub(InvestmentRun, 'findOne').callsFake(arg => {
         let investment_run = new InvestmentRun(INVESTMENT_RUN);
-        investment_run.InvestmentAmounts = [
-          { asset_id: DEPOSIT_ASSETS.BTC.asset_id, amount: 150 },
-          { asset_id: DEPOSIT_ASSETS.ETH.asset_id, amount: 5000 }
-        ];
+        investment_run.InvestmentAmounts = investment_amounts;
 
         return Promise.resolve(investment_run);
       });
 
       return investmentService.generateRecipeDetails(INVESTMENT_RUN_ID, STRATEGY_TYPE)
       .then(recipe_details => {
-        console.log(recipe_details);
+        chai.expect(recipe_detail_sum_used_assets(recipe_details)).to.eql(
+          investment_amounts.map(a => _.pick(a, ['asset_id', 'amount'])),
+          "Recipe details don't use all of investment deposit amounts"
+        );
+
+        chai.expect(recipe_detail_calculate_total_percentage(recipe_details)).to.be.equal(100);
       });
     });
 
-    it("should calculate recipe run details with USD and ETH deposits", () => {
+    it("should calculate recipe run details with USD, BTC and ETH deposits", () => {
+      let investment_amounts = [
+        { asset_id: DEPOSIT_ASSETS.USD.asset_id, amount: 1297654.115679879811342313 },
+        { asset_id: DEPOSIT_ASSETS.BTC.asset_id, amount: 145.12333134623141234124 },
+        { asset_id: DEPOSIT_ASSETS.ETH.asset_id, amount: 5851.22133464861234123423 }
+      ];
+
       if (InvestmentRun.findOne.restore)
         InvestmentRun.findOne.restore();
 
       sinon.stub(InvestmentRun, 'findOne').callsFake(arg => {
         let investment_run = new InvestmentRun(INVESTMENT_RUN);
-        investment_run.InvestmentAmounts = [
-          { asset_id: DEPOSIT_ASSETS.USD.asset_id, amount: 1200000 },
-          { asset_id: DEPOSIT_ASSETS.BTC.asset_id, amount: 150 },
-          { asset_id: DEPOSIT_ASSETS.ETH.asset_id, amount: 5000 }
-        ];
+        investment_run.InvestmentAmounts = investment_amounts;
 
         return Promise.resolve(investment_run);
       });
 
       return investmentService.generateRecipeDetails(INVESTMENT_RUN_ID, STRATEGY_TYPE)
       .then(recipe_details => {
-        console.log(recipe_details);
+
+        chai.expect(recipe_detail_sum_used_assets(recipe_details)).to.eql(
+          investment_amounts.map(a => _.pick(a, ['asset_id', 'amount'])),
+          "Recipe details don't use all of investment deposit amounts"
+        );
+
+        chai.expect(recipe_detail_calculate_total_percentage(recipe_details)).to.be.equal(100);
       });
     });
-    /* it("shall call getAssetInstruments to get best way to acquire asset", () => {
-      return investmentService.generateRecipeDetails(STRATEGY_TYPE)
-        .then(recipe => {
-          chai.assert.isTrue(assetService.getAssetInstruments.called);
-          chai.expect(recipe).to.satisfy(data => {
-            return data.every(a => a.suggested_action.transaction_asset_id == a.id);
-          }, 'Asset to be acquired should be in transaction_asset_id');
-        });
-    }); */
+    
+    it("shall throw if it can't acquire all needed amount of some asset", () => {
+      let investment_amounts = [
+        { asset_id: DEPOSIT_ASSETS.BTC.asset_id, amount: 7 },
+        { asset_id: DEPOSIT_ASSETS.ETH.asset_id, amount: 5851.22133464861234123423 }
+      ];
 
-    /* it("shall return investment percentage for every recipe detail", () => {
-      return investmentService.generateRecipeDetails(STRATEGY_TYPE)
-        .then(recipe_details => {
-          chai.expect(recipe_details).to.satisfy(recipe_details => {
-
-            return recipe_details.every(
-              a => parseFloat(a.investment_percentage) <= 100 &&
-                parseFloat(a.investment_percentage) > 0
-            );
-          }, 'Investment percentage should be set and be a number');
-        });
-    }); */
-
-    /* it("shall throw if no instrument found for an asset", () => {
-      if (assetService.getAssetInstruments.restore)
-        assetService.getAssetInstruments.restore();
-
-      sinon.stub(assetService, 'getAssetInstruments').callsFake(() => {
-        return Promise.resolve([]);
-      });
-
-      return chai.expect(investmentService.generateRecipeDetails(STRATEGY_TYPE))
-        .eventually.to.be.rejected;
-    }); */
-
-    /* it("shall throw if none of exchanges satisfy liquidity requirements of instrument", () => {
-      if (assetService.getAssetInstruments.restore)
-        assetService.getAssetInstruments.restore();
-
-      sinon.stub(assetService, 'getAssetInstruments').callsFake((asset_id) => {
+      if (assetService.getAssetGroupWithData.restore)
+        assetService.getAssetGroupWithData.restore();
+        
+      sinon.stub(assetService, 'getAssetGroupWithData').callsFake((recipe_run_id) => {
         let instruments = [
-          { // doesn't satisfy liquidity requirement
-            instrument_id: 1,
-            quote_asset_id: asset_id,
-            transaction_asset_id: 2,
-            exchange_id: 1,
-            ask_price: 0.00008955,
-            bid_price: 0.00008744
+          {
+            "id": 553,
+            "symbol": "MKR",
+            "long_name": "Maker",
+            "quote_asset_id": 2,
+            "instrument_id": 3841,
+            "exchange_id": 5,
+            "nvt": 1423.5908183763754,
+            "volume": 111.46,
+            "volume_usd": 36747.347714,
+            "ask_price": 0.0517,
+            "bid_price": 0.0506,
+            "price_usd": 329.6909
           },
           {
-            instrument_id: 1,
-            quote_asset_id: asset_id,
-            transaction_asset_id: 2,
-            exchange_id: 2,
-            ask_price: 0.00009100,
-            bid_price: 0.00008700
+            "id": 553,
+            "symbol": "MKR",
+            "long_name": "Maker",
+            "quote_asset_id": 2,
+            "instrument_id": 3841,
+            "exchange_id": 2,
+            "nvt": 1423.5908183763754,
+            "volume": 2.5,
+            "volume_usd": 834.4145075,
+            "ask_price": 0.052339,
+            "bid_price": 0.050406,
+            "price_usd": 333.765803
           },
           {
-            instrument_id: 2,
-            quote_asset_id: 2,
-            transaction_asset_id: asset_id,
-            exchange_id: 3,
-            ask_price: 11363.636363636, // 1 / 0.00008800
-            bid_price: 11111.111111111, // 1 / 0.00009000 
+            "id": 367,
+            "symbol": "DCR",
+            "long_name": "Decred",
+            "quote_asset_id": 2,
+            "instrument_id": 3835,
+            "exchange_id": 7,
+            "nvt": 314.42052425060086,
+            "volume": 5294.828283448519,
+            "volume_usd": 186113.34123909424,
+            "ask_price": 0.005512,
+            "bid_price": 0.005445,
+            "price_usd": 35.150024
+          },
+          {
+            "id": 367,
+            "symbol": "DCR",
+            "long_name": "Decred",
+            "quote_asset_id": 312,
+            "instrument_id": 3836,
+            "exchange_id": 7,
+            "nvt": 314.42052425060086,
+            "volume": 2994.1674035304313,
+            "volume_usd": 104356.18121002715,
+            "ask_price": 0.18672,
+            "bid_price": 0.185593,
+            "price_usd": 34.8531552
+          },
+          {
+            "id": 149,
+            "symbol": "BCN",
+            "long_name": "Bytecoin",
+            "quote_asset_id": 2,
+            "instrument_id": 3825,
+            "exchange_id": 5,
+            "nvt": 110.70930975269502,
+            "volume": 699830900,
+            "volume_usd": 1317871.23303829,
+            "ask_price": 2.953e-7,
+            "bid_price": 2.952e-7,
+            "price_usd": 0.0018831281
+          },
+          {
+            "id": 149,
+            "symbol": "BCN",
+            "long_name": "Bytecoin",
+            "quote_asset_id": 2,
+            "instrument_id": 3825,
+            "exchange_id": 1,
+            "nvt": 110.70930975269502,
+            "volume": 414942331,
+            "volume_usd": 793826.1734361,
+            "ask_price": 3e-7,
+            "bid_price": 2.9e-7,
+            "price_usd": 0.0019131
+          },
+          {
+            "id": 149,
+            "symbol": "BCN",
+            "long_name": "Bytecoin",
+            "quote_asset_id": 312,
+            "instrument_id": 3826,
+            "exchange_id": 1,
+            "nvt": 110.70930975269502,
+            "volume": 75098860,
+            "volume_usd": 143263.481781672,
+            "ask_price": 0.00001022,
+            "bid_price": 0.00001013,
+            "price_usd": 0.0019076652
+          },
+          {
+            "id": 149,
+            "symbol": "BCN",
+            "long_name": "Bytecoin",
+            "quote_asset_id": 312,
+            "instrument_id": 3826,
+            "exchange_id": 5,
+            "nvt": 110.70930975269502,
+            "volume": 5205600,
+            "volume_usd": 9911.1084192,
+            "ask_price": 0.0000102,
+            "bid_price": 0.00001,
+            "price_usd": 0.001903932
+          },
+          {
+            "id": 60,
+            "symbol": "DGB",
+            "long_name": "DigiByte",
+            "quote_asset_id": 312,
+            "instrument_id": 3824,
+            "exchange_id": 7,
+            "nvt": 96.77459844752693,
+            "volume": 18434805.72,
+            "volume_usd": 468738.58263840014,
+            "ask_price": 0.00013622,
+            "bid_price": 0.00012802,
+            "price_usd": 0.0254268252
+          },
+          {
+            "id": 60,
+            "symbol": "DGB",
+            "long_name": "DigiByte",
+            "quote_asset_id": 2,
+            "instrument_id": 3824,
+            "exchange_id": 7,
+            "nvt": 96.77459844752693,
+            "volume": 18434805.72,
+            "volume_usd": 468738.58263840014,
+            "ask_price": 0.00013622,
+            "bid_price": 0.00012802,
+            "price_usd": 0.0254268252
           }
-        ];
+        ]
 
         return Promise.resolve(instruments);
       });
 
-      if (assetService.getInstrumentLiquidityRequirements.restore)
-        assetService.getInstrumentLiquidityRequirements.restore();
+      if (InvestmentRun.findOne.restore)
+        InvestmentRun.findOne.restore();
 
-      sinon.stub(assetService, "getInstrumentLiquidityRequirements").callsFake((...params) => {
-        let requirement = {
-          avg_vol: 30000,
-          instrument_id: params.instrument_id,
-          exchange_id: params.exchange_id,
-          minimum_volume: 50000,
-          periodicity_in_days: 7
-        };
+      sinon.stub(InvestmentRun, 'findOne').callsFake(arg => {
+        let investment_run = new InvestmentRun(INVESTMENT_RUN);
+        investment_run.InvestmentAmounts = investment_amounts;
 
-        return requirement;
+        return Promise.resolve(investment_run);
       });
 
-      return chai.assert.isRejected(investmentService.generateRecipeDetails(STRATEGY_TYPE));
-    }); */
+      return chai.assert.isRejected(
+        investmentService.generateRecipeDetails(INVESTMENT_RUN_ID, STRATEGY_TYPE)
+      ).then(recipe_details => {
+
+      });
+    });
+
   });
 
   describe('and method getInvestmentRunTimeline shall', () => {

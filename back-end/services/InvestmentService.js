@@ -309,10 +309,9 @@ const generateRecipeDetails = async (investment_run_id, strategy_type) => {
 
     for (let action of asset.possible) {
       let base = investment_size.find(deposit => deposit.asset_id==action.quote_asset_id);
-      if (!base) continue;
 
-       // if we have some amount of needed base asset left
-      if (base.remaining_usd.gt(0)) {
+       // if we have this base asset in deposits and enough to buy
+      if (base && base.remaining_usd.gt(0)) {
         let base_spent = new Decimal(0),
           base_needed = Decimal(should_spend).minus(total_spent);
 
@@ -322,16 +321,15 @@ const generateRecipeDetails = async (investment_run_id, strategy_type) => {
           base_spent = Decimal(base.remaining_usd);
         }
 
-        chosen.push({ asset_id: base.asset_id, from_asset_id: base.asset_id, exchange_id: action.exchange_id, amount_usd: base_spent });
+        chosen.push({ asset_id: action.quote_asset_id, from_asset_id: base.asset_id, exchange_id: action.exchange_id, amount_usd: base_spent });
         base.remaining_usd = Decimal(base.remaining_usd).minus(Decimal(base_spent));
         total_spent = total_spent.add(Decimal(base_spent));
       }
 
       let usd = investment_size.find(s => s.asset_id==1);
-      if (!usd) continue;
 
       // if we didn't yet allocate enough base asset to buy required amount
-      if (total_spent.lt(should_spend) && usd.remaining_usd.gt(0)) {
+      if (usd && total_spent.lt(should_spend) && usd.remaining_usd.gt(0)) {
         let deposit_spent = 0,
           usd_needed = Decimal(should_spend).minus(total_spent);
 
@@ -341,7 +339,7 @@ const generateRecipeDetails = async (investment_run_id, strategy_type) => {
           deposit_spent = Decimal(usd.remaining_usd);
         }
         
-        chosen.push({ asset_id: base.asset_id, from_asset_id: usd.asset_id, exchange_id: action.exchange_id, amount_usd: deposit_spent });
+        chosen.push({ asset_id: action.quote_asset_id, from_asset_id: usd.asset_id, exchange_id: action.exchange_id, amount_usd: deposit_spent });
         usd.remaining_usd = Decimal(usd.remaining_usd).minus(Decimal(deposit_spent));
         total_spent = total_spent.add(Decimal(deposit_spent));
       }
@@ -351,7 +349,6 @@ const generateRecipeDetails = async (investment_run_id, strategy_type) => {
     }
 
     // if whole needed amount not allocated, then we fail to fully buy an asset
-    console.log("Total spent: ", total_spent.toString(), ", Should spend: ", should_spend.toString());
     if (total_spent.lt(Decimal(should_spend))) {
       TE("Couldn't fully buy asset ID " + asset.possible[0].id + " with remaining funds");
     } else {
@@ -370,11 +367,19 @@ const generateRecipeDetails = async (investment_run_id, strategy_type) => {
     // form similar structure to recipe_run_detail and recipe_run_detail_investment
     let details = _.map(_.groupBy(asset.to_execute, (detail) => detail.asset_id), details => {
       let asset_info = details[0];
+      let investment_percentage = (
+        Decimal(
+          details.reduce((acc, val) => acc.add(Decimal(val.amount_usd)), Decimal(0)) // sum all the values
+        ).div(
+          Decimal(total_investment_usd)
+        ).mul(100)
+      ).toString();
+
       return {
         transaction_asset_id: asset.asset.id,
         quote_asset_id: asset_info.asset_id,
         exchange_id: asset_info.exchange_id,
-        investment_percentage: asset.asset.investment_percentage.toString(),
+        investment_percentage: investment_percentage,
         detail_investment: details.map(detail => ({
           asset_id: detail.from_asset_id,
           amount: detail.amount.toString(),
