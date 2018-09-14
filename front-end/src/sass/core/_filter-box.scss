@@ -42,10 +42,12 @@
 
         .search-in-filters {
             float: right;
+            width: 100%;
             .ico {
+                float: right;
                 width: 20px;
                 height: 20px;
-                display: inline-block;
+                //display: inline-block;
                 @include backgroundC("icons/search.svg");
                 cursor: pointer;
                 margin-top: 6px;

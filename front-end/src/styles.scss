@@ -1,5 +1,6 @@
 /* You can add global styles to this file, and also import other style files */
-@import "~@angular/material/prebuilt-themes/indigo-pink.css";
+//@import "~@angular/material/prebuilt-themes/indigo-pink.css";
+@import "sass/theme/custom-theme"; //custom angular material theme (green)
 @import '~normalize.css/normalize.css';
 
 @import './sass/variables';
@@ -30,6 +31,6 @@
   }
 }
 
-.mat-progress-spinner.mat-accent circle, .mat-spinner.mat-accent circle {
-  stroke: #00c858 !important;
-}
+// .mat-progress-spinner.mat-accent circle, .mat-spinner.mat-accent circle {
+//   stroke: #00c858 !important;
+// }
