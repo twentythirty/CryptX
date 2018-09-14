@@ -4,9 +4,9 @@
 >
   <div class="top-part">
     <div *ngIf="!_showSearch">
-      <div *ngIf="showInputSearch()" class="search-in-filters new1">
-        <span class="title new">{{ 'table.filter.all' | translate }}</span>
-        <span class="ico new2" (click)="_showSearch = !_showSearch"></span>
+      <div *ngIf="showInputSearch()" class="search-in-filters">
+        <span class="title">{{ 'table.filter.all' | translate }}</span>
+        <span class="ico" (click)="_showSearch = !_showSearch"></span>
       </div>
     </div>
     <div *ngIf="showInputSearch() && _showSearch" class="search-in-filters">
@@ -41,13 +41,13 @@
     </li>
   </ul>
 
-  <div class="calendar-filter new3" *ngIf="type === 'date'">
+  <div class="calendar-filter calendar" *ngIf="type === 'date'">
     <ng-container>
       <div>
         <label>{{ 'table.filter.from' | translate }}</label>
         <div>
-          <mat-form-field class="new3">
-            <input matInput [matDatepicker]="picker" [(ngModel)]="_filterData.values[0]" placeholder="Choose a date">
+          <mat-form-field color="accent">
+            <input matInput [matDatepicker]="picker" [(ngModel)]="_filterData.values[0]" placeholder="dd/mm/yyyy">
             <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
             <mat-datepicker #picker></mat-datepicker>
           </mat-form-field>
@@ -56,8 +56,8 @@
       <div>
         <label>{{ 'table.filter.to' | translate }}</label>
         <div>
-          <mat-form-field class="new3">
-            <input matInput [matDatepicker]="picker2" [(ngModel)]="_filterData.values[1]" placeholder="Choose a date">
+          <mat-form-field  color="accent">
+            <input matInput [matDatepicker]="picker2" [(ngModel)]="_filterData.values[1]" placeholder="dd/mm/yyyy">
             <mat-datepicker-toggle matSuffix [for]="picker2"></mat-datepicker-toggle>
             <mat-datepicker #picker2></mat-datepicker>
           </mat-form-field>        

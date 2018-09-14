@@ -110,3 +110,57 @@ body {
         }
     }
 }
+
+.calendar {
+    label {
+        color: black;
+        font-family: 'Open Sans', sans-serif;
+        font-weight: normal;
+        font-size: 12px;
+        text-transform: capitalize;
+    }
+    input {
+        padding-left: 7px;
+        color: black;
+    }
+    .mat-form-field {
+        width: 100%;
+    }
+    .mat-form-field-flex {
+        margin-top: 5px;
+        border-radius: 3px;
+        background-color: #F7F9FA;
+        border: 1px solid rgba(120, 144, 156, 0.2);
+    }
+    .mat-form-field-appearance-legacy .mat-form-field-underline {
+        background: none;
+    }
+    .mat-form-field-appearance-legacy .mat-form-field-label {
+        text-transform: lowercase;
+        padding-left: 10px;
+        font-size: 12px;
+    }
+    .mat-form-field-appearance-legacy .mat-form-field-prefix .mat-datepicker-toggle-default-icon, .mat-form-field-appearance-legacy .mat-form-field-suffix .mat-datepicker-toggle-default-icon {
+        width: 2em;
+        padding-right: 3px;
+    }
+    .mat-form-field-suffix {
+        width: 20%;
+    }
+    .mat-form-field-underline {
+        width: 120%;
+    }
+   .mat-icon-button{
+        margin-bottom: 3px;
+        width: 26px;
+        height: 26px;
+    }
+}
+
+// datepicker popup classes
+.mat-calendar-body-today:not(.mat-calendar-body-selected) {
+    border-color: $green;
+}
+.mat-calendar-body-cell-content:hover {
+    border-color: $green;
+}
