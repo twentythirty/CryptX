@@ -183,7 +183,7 @@ export class DepositDetailComponent extends TimelineDetailComponent implements O
 
   private getFilterLOV(): void {
     this.listDataSource.header.filter(
-      col => ['id',  'quote_asset', 'exchange', 'status'].includes(col.column)
+      col => ['id', 'investment_currency',  'quote_asset', 'exchange', 'status'].includes(col.column)
     ).map(
       col => {
         const filter = { filter : { recipe_run_id: this.routeParamId }};
