@@ -11,3 +11,11 @@ module.exports.successResponse = value => {
 module.exports.failureResponse = value => {
     return (value >= 300 && value <= 600)
 };
+
+module.exports.greaterThanOrEqual = match => {
+    return value => (value >= match);
+};
+
+module.exports.lessThanOrEqual = match => {
+    return value => (value <= match);
+};

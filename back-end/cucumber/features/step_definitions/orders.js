@@ -21,6 +21,112 @@ Given('the system does not have none rejected Orders', function() {
 
 });
 
+Given(/^the system has Recipe Order with status (.*) on (.*)$/g, async function(status, exchange_name) {
+
+    const { RecipeOrderGroup, RecipeOrder, Exchange, Instrument, InstrumentExchangeMapping, Asset, sequelize } = require('../../../models');
+    const CCXTUtil = require('../../../utils/CCXTUtils');
+
+    const [ exchange, base_assets ] = await Promise.all([
+        Exchange.findOne({
+            where: { name: exchange_name }
+        }),
+        Asset.findAll({
+            where: { is_base: true }
+        })
+    ])
+
+    const mapping = await InstrumentExchangeMapping.findOne({
+        where: { exchange_id: exchange.id },
+        include: {
+            model: Instrument,
+            required: true,
+            where: { quote_asset_id: base_assets.map(asset => asset.id) }
+        }
+    });
+    
+    const connector = await CCXTUtil.getConnector(exchange.api_id);
+
+    const amount_limits = _.get(connector, `markets.${mapping.external_instrument_id}.limits.amount`);
+
+    return sequelize.transaction(transaction => {
+
+        return RecipeOrderGroup.create({
+            created_timestamp: new Date(),
+            approval_status: RECIPE_ORDER_GROUP_STATUSES.Approved,
+            approval_comment: 'it\'s all good'
+        }, { transaction }).then(group => {
+
+            return RecipeOrder.create({
+                instrument_id: mapping.Instrument.id,
+                price: _.random(0.0001, 0.1, true),
+                quantity: amount_limits.max,
+                side: ORDER_SIDES.Buy,
+                status: RECIPE_ORDER_STATUSES[status],
+                target_exchange_id: exchange.id,
+                recipe_order_group_id: group.id
+            }, { transaction }).then(order => {
+
+                this.current_recipe_order = order;
+
+            });
+
+        });
+
+    });
+
+});
+
+Given('the Order is partially filled by a few FullyFilled ExecutionOrders', async function() {
+
+    const { ExecutionOrder, ExecutionOrderFill, sequelize } = require('../../../models');
+
+    const safe_amount = parseFloat(this.current_recipe_order.quantity) / 2;
+
+    const fill_count = _.random(5, 10, false);
+
+    return sequelize.transaction(transaction => {
+
+        return ExecutionOrder.create({
+            placed_timestamp: new Date(),
+            completed_timestamp: new Date(),
+            exchange_id: this.current_recipe_order.target_exchange_id,
+            external_identifier: 'jk4h5kj34h5k3h5j3hk',
+            failed_attempts: 0,
+            fee: (parseFloat(this.current_recipe_order.price) / _.random(98, 100, false)),
+            instrument_id: this.current_recipe_order.instrument_id,
+            price: this.current_recipe_order.price,
+            recipe_order_id: this.current_recipe_order.id,
+            side: this.current_recipe_order.side,
+            status: EXECUTION_ORDER_STATUSES.FullyFilled,
+            total_quantity: safe_amount,
+            type: EXECUTION_ORDER_TYPES.Market
+        }, { transaction }).then(execution_order => {
+
+            let fills = [];
+
+            for(let i = 0; i < fill_count; i++) {
+
+                const approximate_quantity = parseFloat(execution_order.total_quantity) / fill_count;
+                const approximate_fee = parseFloat(execution_order.fee) / fill_count;
+
+                fills.push({
+                    execution_order_id: execution_order.id,
+                    external_identifier: '4762387426478362',
+                    fee: approximate_fee,
+                    price: execution_order.price,
+                    quantity: approximate_quantity,
+                    timestamp: new Date()
+                });
+            }
+
+            return ExecutionOrderFill.bulkCreate(fills, { transaction });
+
+        });
+
+    });
+
+});
+
 When('I call the API to generate Orders for the Approved Recipe Run', function() {
 
     return chai
@@ -39,6 +145,16 @@ When('I call the API to generate Orders for the Approved Recipe Run', function()
             this.current_response = error;
 
         })
+
+});
+
+When('the system finished the task "generate execution orders"', function() {
+
+    const job = require('../../../jobs/exec-order-generator');
+    const models = require('../../../models');
+    const config = { models };
+
+    return job.JOB_BODY(config, console.log);
 
 });
 

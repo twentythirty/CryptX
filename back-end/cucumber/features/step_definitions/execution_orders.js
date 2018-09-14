@@ -2,7 +2,7 @@ const { Given, When, Then } = require('cucumber');
 const chai = require('chai');
 const { expect } = chai;
 
-const { nullOrNumber } = require('../support/assert');
+const { nullOrNumber, greaterThanOrEqual, lessThanOrEqual } = require('../support/assert');
 
 const chaiHttp = require("chai-http");
 chai.use(chaiHttp);
@@ -223,5 +223,67 @@ Then('The Execution Orders statuses become FullyFilled', async function () {
     const execution_orders = await ExecutionOrder.findAll();
 
     for(let order of execution_orders) expect(order.status).to.equal(EXECUTION_ORDER_STATUSES.FullyFilled);
+
+});
+
+Then('a new Execution Order is saved to the database', async function() {
+
+    const { ExecutionOrder, sequelize } = require('../../../models');
+    const { Op } = sequelize;
+
+    const execution_order = await ExecutionOrder.findOne({
+        where: { recipe_order_id: this.current_recipe_order.id, status: { [Op.ne]: EXECUTION_ORDER_STATUSES.FullyFilled } }
+    });
+
+    this.current_execution_order = execution_order;
+
+});
+
+Then('the Execution Order will have status Pending', function() {
+   
+    expect(this.current_execution_order.status).to.equal(EXECUTION_ORDER_STATUSES.Pending);
+
+});
+
+Then('the total quantity will be within exchange limits', async function() {
+
+    const { Instrument, InstrumentExchangeMapping } = require('../../../models');
+    const CCXTUtils = require('../../../utils/CCXTUtils');
+
+    const connector = await CCXTUtils.getConnector(this.current_execution_order.exchange_id);
+
+    const instrument = await Instrument.findById(this.current_execution_order.instrument_id, {
+        include: {
+            model: InstrumentExchangeMapping,
+            where: { exchange_id: this.current_execution_order.exchange_id },
+            limit: 1
+        }
+    });
+
+    const amount_limits = _.get(connector, `markets.${instrument.InstrumentExchangeMappings[0].external_instrument_id}.limits.amount`);
+    const calculated_quantity = parseFloat(this.current_execution_order.total_quantity);
+
+    expect(calculated_quantity).to.satisfy(greaterThanOrEqual(amount_limits.min));
+    expect(calculated_quantity).to.satisfy(lessThanOrEqual(amount_limits.max));
+
+});
+
+Then('the initial price will not be set', function() {
+    
+    /**
+     * Might as well asset everything else for the heck of it
+     */
+
+     const order = this.current_execution_order;
+
+     expect(order.price).to.be.null;
+     expect(order.fee).to.be.null;
+     expect(order.placed_timestamp).to.be.null;
+     expect(order.completed_timestamp).to.be.null;
+     expect(order.external_identifier).to.be.null;
+     expect(order.instrument_id).to.equal(this.current_recipe_order.instrument_id);
+     expect(order.type).to.equal(EXECUTION_ORDER_TYPES.Market);
+     expect(order.side).to.equal(this.current_recipe_order.side);
+     expect(order.exchange_id).to.equal(this.current_recipe_order.target_exchange_id);
 
 });
