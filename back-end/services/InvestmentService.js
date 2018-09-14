@@ -49,7 +49,7 @@ const getInvestmentRunWithAssetMix = async (investment_run_id, seq_query = {}, s
   };
   
   const final_seq_query = _.assign({
-    attributes: ['id', 'symbol', 'long_name', 'capitalization', 'market_share'],
+    attributes: ['id', 'symbol', 'long_name', 'capitalization', 'nvt_ratio', 'market_share'],
     raw: true
   }, seq_query);
 
