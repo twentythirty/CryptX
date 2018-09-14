@@ -1,4 +1,6 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { ActivatedRoute } from '@angular/router';
+import { of, throwError, Observable } from 'rxjs';
 import { extraTestingModules, fakeAsyncResponse } from '../../../testing/utils';
 
 import { AuthModule } from '../auth.module';
@@ -7,13 +9,13 @@ import { InviteService } from './invite.service';
 
 
 const InviteServiceStub = {
-  checkToken: (token: string) => {
+  checkToken: () => {
     return fakeAsyncResponse({
       success: true,
       invitation: {
         id: 45,
         was_used: false,
-        token: '2394a0ed-3ede-457e-ad60-324532a1ade0',
+        token: 'fake-token',
         token_expiry_timestamp: 1525424340810,
         email: 'test@domain.com',
         first_name: 'Test',
@@ -45,6 +47,7 @@ const InviteServiceStub = {
 describe('AcceptInviteComponent', () => {
   let component: AcceptInviteComponent;
   let fixture: ComponentFixture<AcceptInviteComponent>;
+  let inviteService: InviteService;
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
@@ -53,7 +56,12 @@ describe('AcceptInviteComponent', () => {
         ...extraTestingModules
       ],
       providers: [
-        { provide: InviteService, useValue: InviteServiceStub }
+        { provide: InviteService, useValue: InviteServiceStub },
+        {
+          provide: ActivatedRoute, useValue: {
+            queryParams: of({ token: 'fake-token' })
+          }
+        },
       ]
     })
     .compileComponents();
@@ -62,10 +70,37 @@ describe('AcceptInviteComponent', () => {
   beforeEach(() => {
     fixture = TestBed.createComponent(AcceptInviteComponent);
     component = fixture.componentInstance;
+    inviteService = TestBed.get(InviteService);
     fixture.detectChanges();
   });
 
   it('should create', () => {
     expect(component).toBeTruthy();
   });
+
+  fdescribe('if token is invalid', () => {
+    beforeEach(() => {
+      spyOn(inviteService, 'checkToken').and.returnValue(
+        throwError({
+          error: {
+            success: false,
+            error: 'error message'
+          }
+        })
+      );
+    });
+
+    it('should not show password set form if token is invalid', () => {
+      component.ngOnInit();
+      fixture.detectChanges();
+    });
+  });
+
+  it('should show password set form if token is valid', () => {
+
+  });
+
+  it('should get error message if passwords are not equal');
+  it('should be navigated to dashboard if passwords are equal');
+
 });

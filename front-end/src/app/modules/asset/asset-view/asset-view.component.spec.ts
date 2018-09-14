@@ -1,6 +1,5 @@
-import { async, ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core/testing';
+import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 import { ActivatedRoute } from '@angular/router';
-import { By } from '@angular/platform-browser';
 import { of } from 'rxjs/observable/of';
 import { extraTestingModules, fakeAsyncResponse, click } from '../../../testing/utils';
 
