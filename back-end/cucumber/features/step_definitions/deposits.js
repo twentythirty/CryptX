@@ -23,14 +23,14 @@ Given(/^the system has (.*) Deposits$/, async function(status) {
     return RecipeRunDeposit.bulkCreate(assets_to_deposit.map(asset => {
         
         return {
-            amount: _.random(10, 200, true),
+            amount: status === 'Faulty' ? -1 : _.random(10, 200, true),
             asset_id: asset.quote_asset_id,
             completion_timestamp: new Date(),
             creation_timestamp: new Date(),
             depositor_user_id: World.users.depositor.id,
             fee: _.random(0.1, 2, true),
             recipe_run_id: this.current_recipe_run.id,
-            status: RECIPE_RUN_DEPOSIT_STATUSES[status],
+            status: RECIPE_RUN_DEPOSIT_STATUSES[status] || RECIPE_RUN_DEPOSIT_STATUSES.Completed,
             target_exchange_account_id: this.current_exchange_accounts.find(account => {
                 return (account.asset_id === asset.quote_asset_id && account.exchange_id === asset.target_exchange_id)
             }).id

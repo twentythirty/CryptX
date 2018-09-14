@@ -2,7 +2,7 @@ Feature: Generating Orders
 
     Ability to generate new orders for recipe runs.
 
-    Background: 
+    Background:
 
         Given the system has a Investment Manager
         And the system has a Trader
@@ -36,7 +36,11 @@ Feature: Generating Orders
         Then the server return a failed response
         And I should see an error message describing that there are Pending Deposits
 
+    Scenario: Order generation with faulty Deposits
 
-
-
-        
+        Given the system has Faulty Deposits
+        And the system does not have none rejected Orders
+        When I log onto CryptX as Trader
+        And I call the API to generate Orders for the Approved Recipe Run
+        Then the server return a failed response
+        And I should see an error message describing that Deposits have invalid values

@@ -135,3 +135,11 @@ Then('I should see an error message describing that there are Pending Deposits',
     expect(error_message).to.match(/(.*) incomplete deposits found: (\d+)(,\s*\d+)*!/g);
 
 });
+
+Then('I should see an error message describing that Deposits have invalid values', function() {
+
+    const error_message = this.current_response.response.body.error;
+
+    expect(error_message).to.match(/Deposit info: {(.*)}/g);
+
+});
