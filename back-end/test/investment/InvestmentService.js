@@ -29,6 +29,8 @@ describe('InvestmentService testing:', () => {
   const RecipeRun = require('./../../models').RecipeRun;
   const RecipeRunDetail = require('./../../models').RecipeRunDetail;
   const Asset = require('./../../models').Asset;
+  const InvestmentRunAssetGroup = require('./../../models').InvestmentRunAssetGroup;
+  const GroupAsset = require('./../../models').GroupAsset;
   const sequelize = require('./../../models').sequelize
 
 
@@ -148,6 +150,15 @@ describe('InvestmentService testing:', () => {
       return Promise.resolve(assets);
     });
 
+    sinon.stub(InvestmentRunAssetGroup, 'create').callsFake(group => {
+      return Promise.resolve(_.assign(group, { id: _.random(1, 10000) }));
+    });
+
+    sinon.stub(GroupAsset, 'bulkCreate').callsFake(assets => {
+      let id = 1;
+      return Promise.resolve(assets.map(asset => _.assign(asset, { id: id++ }) ));
+    });
+
   });
 
   afterEach(() => {
@@ -164,7 +175,10 @@ describe('InvestmentService testing:', () => {
     ordersService.generateApproveRecipeOrders.restore();
     depositSerive.generateRecipeRunDeposits.restore();
     assetService.getDepositAssets.restore();
+    InvestmentRunAssetGroup.create.restore();
+    GroupAsset.bulkCreate.restore();
     if(sequelize.transaction.restore) sequelize.transaction.restore();
+    if(sequelize.query.restore) sequelize.query.restore();
   });
 
 
@@ -247,6 +261,7 @@ describe('InvestmentService testing:', () => {
         chai.expect(investment_run.is_simulated).to.be.eq(IS_SIMULATED);
         chai.expect(investment_run.user_created_id).to.be.eq(USER_ID);
         chai.expect(investment_run.status).to.be.eq(INVESTMENT_RUN_STATUSES.Initiated);
+        chai.expect(investment_run.investment_run_asset_group_id).to.be.eq(ASSET_GROUP_ID);
         chai.assert.isArray(investment_run.InvestmentAmounts);
       });
     });
@@ -957,5 +972,85 @@ describe('InvestmentService testing:', () => {
         chai.expect(result.execution_orders.status).to.be.equal('execution_orders_timeline.status.62');
       });
     });
+  });
+
+  describe('and method generateInvestmentAssetGroup shall', () => {
+
+    let cap_usd = _.random(10, 30, false);
+    let market_share = 0.01;
+
+    const ASSETS = [];
+
+    for(let i = 1 ; i <= 100 ; i++) {
+
+      const new_asset = {
+        id: i,
+        capitalization_usd: cap_usd * i,
+        avg_share: market_share * i,
+        status: _.random(400, 402, false)
+      };
+
+      ASSETS.push(new_asset);
+
+    }
+
+    const generateInvestmentAssetGroup = investmentService.generateInvestmentAssetGroup;
+
+    it('exist', () => {
+      
+      chai.expect(generateInvestmentAssetGroup).to.be.not.undefined;
+
+    });
+
+    it('reject if the an invalid strategy_type is passed', () => {
+
+      return chai.assert.isRejected(generateInvestmentAssetGroup(1, -1));
+
+    });
+
+    it('generate correct asset mixes for the appropriate strategy types', () => {
+
+      sinon.stub(sequelize, 'transaction').callsFake(transaction => Promise.resolve(transaction()));
+      sinon.stub(sequelize, 'query').callsFake(query => Promise.resolve(_.reverse(_.sortBy(ASSETS, 'capitalization_usd'))));
+
+      return Promise.all([
+        generateInvestmentAssetGroup(USER_ID, STRATEGY_TYPES.MCI),
+        generateInvestmentAssetGroup(USER_ID, STRATEGY_TYPES.LCI)
+      ]).then(promise_result => {
+
+        for(let i = 0; i < promise_result.length; i++) {
+
+          const result = promise_result[i];
+
+          chai.expect(result.length).to.equal(2);
+        
+          const [ group, assets ] = result;
+  
+          chai.expect(group.user_id).to.equal(USER_ID);
+          chai.expect(group.created_timestamp).to.be.a('date');
+  
+          for(let asset of assets) {
+  
+            const matching_asset = ASSETS.find(a => a.id === asset.asset_id);
+  
+            chai.expect(matching_asset).to.be.not.undefined;
+            
+            chai.expect(asset.investment_run_asset_group_id).to.equal(group.id);
+            chai.expect(asset.status).to.equal(matching_asset.status);
+  
+          }
+
+        }
+
+        const [ [ mci_group, mci_assets ], [ lci_group, lci_assets ] ] = promise_result;
+
+        const difference = _.differenceBy(lci_assets, mci_assets, 'asset_id');
+
+        chai.expect(difference.length).to.equal(SYSTEM_SETTINGS.INDEX_LCI_CAP);
+
+      });
+
+    });
+
   });
 });
