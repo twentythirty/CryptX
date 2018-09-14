@@ -127,3 +127,11 @@ Then('the system won\'t allow me to generate Recipe Orders while this group is n
         })
 
 });
+
+Then('I should see an error message describing that there are Pending Deposits', function() {
+
+    const error_message = this.current_response.response.body.error;
+
+    expect(error_message).to.match(/(.*) incomplete deposits found: (\d+)(,\s*\d+)*!/g);
+
+});
