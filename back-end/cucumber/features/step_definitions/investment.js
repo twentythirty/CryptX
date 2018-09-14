@@ -113,11 +113,33 @@ Given(/^the status of the Investment Run is (.*)$/, function(status) {
 
 });
 
+When(/^I generate a new (.*) Asset Mix$/, function(strategy) {
+
+    return chai
+        .request(this.app)
+        .post('/v1/investments/select_assets')
+        .set('Authorization', World.current_user.token)
+        .send({ strategy_type: STRATEGY_TYPES[strategy] })
+        .then(result => {   
+            
+            expect(result).to.have.status(200);
+            
+            this.current_asset_mix = result.body.list;
+
+        }).catch(error => {
+
+            this.error = error;
+        });
+
+
+});
+
 When(/^I create a new (.*) (.*) Investment Run$/, function(simulated, type) {
 
     const investment_run_details = {
         strategy_type: STRATEGY_TYPES[type],
         is_simulated: (simulated === 'simulated'),
+        investment_group_asset_id: this.current_asset_mix.id,
         deposit_amounts: [
             {
                 symbol: 'USD',
