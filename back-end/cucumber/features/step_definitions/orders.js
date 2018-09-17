@@ -95,7 +95,7 @@ Given(/^the Order is (.*) filled by a FullyFilled ExecutionOrder$/, async functi
 
     }
 
-    const fill_count = _.random(5, 10, false);
+    const fill_count = 10;
 
     return sequelize.transaction(transaction => {
 
@@ -162,7 +162,7 @@ Given('the Order remaining amount is not within exchange minimum amount limits',
     
     const total_quantity = Decimal(this.current_recipe_order.quantity).minus(Decimal(amount_limits.min).div(2)).toString();
 
-    const fill_count = _.random(5, 10, false);
+    const fill_count = 1;
 
     return sequelize.transaction(transaction => {
 
