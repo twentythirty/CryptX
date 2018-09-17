@@ -17,7 +17,8 @@ Feature: Generating Orders
     Scenario: Correct order generation when all of the conditions are met
 
         Given the system has Completed Deposits
-        And the system does not have none rejected Orders
+        And the recipe run does not have recipe order group with status Pending
+        And the recipe run does not have recipe order group with status Approved
         When I log onto CryptX as Trader
         And I call the API to generate Orders for the Approved Recipe Run
         Then the server return a successful response
@@ -30,7 +31,8 @@ Feature: Generating Orders
     Scenario: Order generation when Deposits are not completed
 
         Given the system has Pending Deposits
-        And the system does not have none rejected Orders
+        And the recipe run does not have recipe order group with status Pending
+        And the recipe run does not have recipe order group with status Approved
         When I log onto CryptX as Trader
         And I call the API to generate Orders for the Approved Recipe Run
         Then the server return a failed response
@@ -39,7 +41,8 @@ Feature: Generating Orders
     Scenario: Order generation with faulty Deposits
 
         Given the system has Faulty Deposits
-        And the system does not have none rejected Orders
+        And the recipe run does not have recipe order group with status Pending
+        And the recipe run does not have recipe order group with status Approved
         When I log onto CryptX as Trader
         And I call the API to generate Orders for the Approved Recipe Run
         Then the server return a failed response

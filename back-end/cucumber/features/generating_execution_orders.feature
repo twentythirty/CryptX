@@ -8,7 +8,7 @@ Feature: Generating execution orders
     Scenario: Execution order generation for a partially filled order
 
         Given the system has Recipe Order with status Executing on Kraken
-        And the Order is partially filled by a FullyFilled ExecutionOrder
+        And the Recipe Order has unfilled quantity above ccxt requirement
         When the system finished the task "generate execution orders"
         Then a new Execution Order is saved to the database
         And the Execution Order will have status Pending

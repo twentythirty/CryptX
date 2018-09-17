@@ -7,16 +7,13 @@ chai.use(chaiHttp);
 
 const World = require('../support/global_world');
 
-Given('the system does not have none rejected Orders', function() {
+Given(/^the recipe run does not have recipe order group with status (.*)$/, function(status) {
 
     const { RecipeOrderGroup, sequelize } = require('../../../models');
     const { Op } = sequelize;
 
     return RecipeOrderGroup.destroy({
-        where: {
-            approval_status: { [Op.ne]: RECIPE_ORDER_STATUSES.Rejected },
-            recipe_run_id: this.current_recipe_run.id
-        }
+        where: { approval_status: RECIPE_ORDER_GROUP_STATUSES[status] }
     });
 
 });
@@ -94,6 +91,61 @@ Given(/^the Order is (.*) filled by a FullyFilled ExecutionOrder$/, async functi
             break;
 
     }
+
+    const fill_count = 10;
+
+    return sequelize.transaction(transaction => {
+
+        return ExecutionOrder.create({
+            placed_timestamp: new Date(),
+            completed_timestamp: new Date(),
+            exchange_id: this.current_recipe_order.target_exchange_id,
+            external_identifier: 'jk4h5kj34h5k3h5j3hk',
+            failed_attempts: 0,
+            fee: (parseFloat(this.current_recipe_order.price) / _.random(98, 100, false)),
+            instrument_id: this.current_recipe_order.instrument_id,
+            price: this.current_recipe_order.price,
+            recipe_order_id: this.current_recipe_order.id,
+            side: this.current_recipe_order.side,
+            status: EXECUTION_ORDER_STATUSES.FullyFilled,
+            total_quantity: total_quantity,
+            type: EXECUTION_ORDER_TYPES.Market
+        }, { transaction }).then(execution_order => {
+
+            let fills = [];
+
+            for(let i = 0; i < fill_count; i++) {
+
+                const approximate_quantity = Decimal(execution_order.total_quantity).div(fill_count).toString();
+                const approximate_fee = Decimal(execution_order.fee).div(fill_count).toString();
+
+                fills.push({
+                    execution_order_id: execution_order.id,
+                    external_identifier: '4762387426478362',
+                    fee: approximate_fee,
+                    price: execution_order.price,
+                    quantity: approximate_quantity,
+                    timestamp: new Date()
+                });
+            }
+
+            return ExecutionOrderFill.bulkCreate(fills, { transaction });
+
+        });
+
+    });
+
+});
+
+Given('the Recipe Order has unfilled quantity above ccxt requirement', function() {
+
+    const { ExecutionOrder, ExecutionOrderFill, sequelize } = require('../../../models');
+
+    /**
+     * Considering the recipe order is created with exchange max limit, it should not be below min limit
+     * if we take half of it
+     */
+    let total_quantity = parseFloat(this.current_recipe_order.quantity) / 2;
 
     const fill_count = 10;
 
