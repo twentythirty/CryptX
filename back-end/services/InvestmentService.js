@@ -284,14 +284,14 @@ const generateRecipeDetails = async (investment_run_id, strategy_type) => {
   let assets_grouped_by_id = _.map(_.groupBy(assets, 'id'), (asset_group) => {
     let asset = asset_group[0];
     return {
-      asset: {
+      info: {
         id: asset.id,
       },
       possible: asset_group,
       to_execute: []
     }
   }).map((asset, index, array) => { // calculate investment percentage
-    asset.asset.investment_percentage = Decimal(100).div(Decimal(array.length));
+    asset.info.investment_percentage = Decimal(100).div(Decimal(array.length));
     return asset;
   });
 
@@ -317,10 +317,11 @@ const generateRecipeDetails = async (investment_run_id, strategy_type) => {
     return size;
   });
 
+  assets_grouped_by_id = _.orderBy(assets_grouped_by_id, a => a.possible[0].nvt, "desc");
   assets_grouped_by_id.map(asset => {
     let chosen = [];
     let total_spent = new Decimal(0);
-    let should_spend = Decimal(total_investment_usd).mul(Decimal(asset.asset.investment_percentage).div(Decimal(100)));
+    let should_spend = Decimal(total_investment_usd).mul(Decimal(asset.info.investment_percentage).div(Decimal(100)));
 
     // sort values by nvt, liquidity_level and price_usd properties
     asset.possible = _.orderBy(asset.possible, ['nvt', 'liquidity_level', 'price_usd'], ['desc', 'desc', 'asc']);
@@ -368,7 +369,7 @@ const generateRecipeDetails = async (investment_run_id, strategy_type) => {
 
     // if whole needed amount not allocated, then we fail to fully buy an asset
     if (total_spent.lt(Decimal(should_spend))) {
-      TE("Couldn't fully buy asset ID " + asset.possible[0].id + " with remaining funds");
+      TE("Couldn't fully buy asset ID " + asset.info.id + " with remaining funds");
     } else {
       asset.to_execute = chosen;
     }
@@ -394,7 +395,7 @@ const generateRecipeDetails = async (investment_run_id, strategy_type) => {
       ).toString();
 
       return {
-        transaction_asset_id: asset.asset.id,
+        transaction_asset_id: asset.info.id,
         quote_asset_id: asset_info.asset_id,
         target_exchange_id: asset_info.exchange_id,
         investment_percentage: investment_percentage,

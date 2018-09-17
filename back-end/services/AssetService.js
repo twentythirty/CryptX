@@ -401,7 +401,7 @@ const getAssetGroupWithData = async function (investment_run_id) {
         AND ( quote_asset.symbol='USD' OR quote_asset.symbol='USDT')
       GROUP BY a.id
     )
-    SELECT DISTINCT ON (asset.id) asset.id,
+    SELECT asset.id,
       asset.symbol,
       asset.long_name,
       i.quote_asset_id,
@@ -447,7 +447,7 @@ const getAssetGroupWithData = async function (investment_run_id) {
     ) as imd ON TRUE
     JOIN base_assets_with_prices as base_price ON base_price.id=i.quote_asset_id
     WHERE ir.id=:investment_run_id
-    ORDER BY asset.id, nvt DESC, volume_usd DESC, price_usd DESC
+    ORDER BY nvt DESC, volume_usd DESC, price_usd DESC
   `, {
     replacements: {
       investment_run_id
