@@ -228,16 +228,6 @@ When('I call the API to generate Orders for the Approved Recipe Run', function()
 
 });
 
-When('the system finished the task "generate execution orders"', async function() {
-
-    const job = require('../../../jobs/exec-order-generator');
-    const models = require('../../../models');
-    const config = { models };
-
-    this.current_job_result = await job.JOB_BODY(config, console.log);
-
-});
-
 Then('a new Recipe Group is created with the status Pending', async function() {
 
     const { RecipeOrderGroup, sequelize } = require('../../../models');

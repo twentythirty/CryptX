@@ -5,7 +5,7 @@ Feature: Synchronization of asset information
     Scenario: Asset synchronization job run
 
         Given the system has some missing Assets from CoinMarketCap, including ETH and BTC
-        When the SYNC_COINS job completes it`s run
+        When the system finished the special task "synchronize coins list"
         Then the missing Assets are saved to the database
         And BTC and ETH are marked as base and deposit Assets
 
