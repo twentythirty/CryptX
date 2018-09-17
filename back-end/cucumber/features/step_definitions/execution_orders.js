@@ -287,3 +287,15 @@ Then('the initial price will not be set', function() {
      expect(order.exchange_id).to.equal(this.current_recipe_order.target_exchange_id);
 
 });
+
+Then('no new Execution Order is saved to the database', async function() {
+
+    const { ExecutionOrder } = require('../../../models');
+
+    const execution_order_count = await ExecutionOrder.count({
+        where: { recipe_order_id: this.current_recipe_order.id }
+    });
+
+    expect(execution_order_count).to.equal(1);
+
+});

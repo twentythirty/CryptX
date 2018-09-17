@@ -173,11 +173,12 @@ describe('Execution Order generator job', () => {
 
             restoreSymbols(RecipeOrder.findAll);
 
-            const [failed_recipe, execution_orders] = processed_recipes;
+            const [failed_recipe] = processed_recipes;
 
-            chai.expect(failed_recipe).to.deep.equal(empty_order, "Order should not have changed!");
+            chai.expect(failed_recipe.instance).to.deep.equal(empty_order, "Order should not have changed!");
             //should not ahve generated any new execution orders!
-            chai.expect(execution_orders).to.be.undefined;
+            chai.expect(failed_recipe.status).to.equal(JOB_RESULT_STATUSES.Error);
+            chai.expect(failed_recipe.step).to.equal('2A');
         });
     });
 
@@ -211,15 +212,20 @@ describe('Execution Order generator job', () => {
             );
 
             const [failed_order, marked_order] = orders;
-
+ 
             chai.assert.isDefined(failed_order);
             chai.assert.isDefined(marked_order);
 
             chai.expect(failed_order).is.not.a('array');
             chai.expect(marked_order).is.not.a('array');
 
-            chai.expect(failed_order.status).to.eq(TEST_SYMBOL_PENDING_ORDER_BASE.status, `Status changed for ${failed_order.id}`);
-            chai.expect(marked_order.status).to.eq(TEST_PENDING_ORDER_BASE.status, `Status changed for ${marked_order.id}`);
+            chai.expect(failed_order.instance.status).to.eq(TEST_SYMBOL_PENDING_ORDER_BASE.status, `Status changed for ${failed_order.id}`);
+            chai.expect(failed_order.status).to.equal(JOB_RESULT_STATUSES.Skipped);
+            chai.expect(failed_order.step).to.equal('3A');
+            
+            chai.expect(marked_order.instance.status).to.eq(TEST_PENDING_ORDER_BASE.status, `Status changed for ${marked_order.id}`);
+            chai.expect(marked_order.status).to.equal(JOB_RESULT_STATUSES.Skipped);
+            chai.expect(marked_order.step).to.equal('3A');
         });
     });
 
@@ -256,7 +262,9 @@ describe('Execution Order generator job', () => {
 
             chai.expect(recipe_order).is.not.a('array');
 
-            chai.expect(recipe_order.status).to.eq(TEST_SYMBOL_PENDING_ORDER_BASE.status, `Status changed for ${recipe_order.id}`);
+            chai.expect(recipe_order.instance.status).to.eq(TEST_SYMBOL_PENDING_ORDER_BASE.status, `Status changed for ${recipe_order.id}`);
+            chai.expect(recipe_order.status).to.equal(JOB_RESULT_STATUSES.Error);
+            chai.expect(recipe_order.step).to.equal('3A');
         });
     });
 
@@ -298,7 +306,9 @@ describe('Execution Order generator job', () => {
 
             chai.expect(finished_order).to.not.be.a('array');
 
-            chai.expect(finished_order.status).to.eq(TEST_SYMBOL_PENDING_ORDER_BASE.status, "Order status chagned!");
+            chai.expect(finished_order.instance.status).to.eq(TEST_SYMBOL_PENDING_ORDER_BASE.status, "Order status chagned!");
+            chai.expect(finished_order.status).to.equal(JOB_RESULT_STATUSES.Skipped);
+            chai.expect(finished_order.step).to.equal('3B');
         });
     });
 
@@ -375,8 +385,10 @@ describe('Execution Order generator job', () => {
             );
 
             const [failed_recipe, execution_orders] = processed_recipes;
-
-            chai.expect(failed_recipe).to.deep.equal(not_completed_order, "Order should not have changed!");
+                console.log(JSON.stringify(processed_recipes, null, 4));
+            chai.expect(failed_recipe.instance).to.deep.equal(not_completed_order, "Order should not have changed!");
+            chai.expect(failed_recipe.status).to.equal(JOB_RESULT_STATUSES.Skipped);
+            chai.expect(failed_recipe.step).to.equal('4C');
 
             chai.expect(execution_orders).to.be.undefined;
         });

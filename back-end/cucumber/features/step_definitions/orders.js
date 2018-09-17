@@ -76,11 +76,24 @@ Given(/^the system has Recipe Order with status (.*) on (.*)$/g, async function(
 
 });
 
-Given('the Order is partially filled by a few FullyFilled ExecutionOrders', async function() {
+Given(/^the Order is (.*) filled by a FullyFilled ExecutionOrder$/, async function(amount) {
 
     const { ExecutionOrder, ExecutionOrderFill, sequelize } = require('../../../models');
 
-    const safe_amount = parseFloat(this.current_recipe_order.quantity) / 2;
+    let total_quantity = 0;
+
+    switch(amount) {
+        
+        case 'partially':
+            total_quantity = parseFloat(this.current_recipe_order.quantity) / 2;
+            break;
+
+        case 'fully':
+        default:
+            total_quantity = parseFloat(this.current_recipe_order.quantity);
+            break;
+
+    }
 
     const fill_count = _.random(5, 10, false);
 
@@ -98,7 +111,7 @@ Given('the Order is partially filled by a few FullyFilled ExecutionOrders', asyn
             recipe_order_id: this.current_recipe_order.id,
             side: this.current_recipe_order.side,
             status: EXECUTION_ORDER_STATUSES.FullyFilled,
-            total_quantity: safe_amount,
+            total_quantity: total_quantity,
             type: EXECUTION_ORDER_TYPES.Market
         }, { transaction }).then(execution_order => {
 
@@ -106,8 +119,75 @@ Given('the Order is partially filled by a few FullyFilled ExecutionOrders', asyn
 
             for(let i = 0; i < fill_count; i++) {
 
-                const approximate_quantity = parseFloat(execution_order.total_quantity) / fill_count;
-                const approximate_fee = parseFloat(execution_order.fee) / fill_count;
+                const approximate_quantity = Decimal(execution_order.total_quantity).div(fill_count).toString();
+                const approximate_fee = Decimal(execution_order.fee).div(fill_count).toString();
+
+                fills.push({
+                    execution_order_id: execution_order.id,
+                    external_identifier: '4762387426478362',
+                    fee: approximate_fee,
+                    price: execution_order.price,
+                    quantity: approximate_quantity,
+                    timestamp: new Date()
+                });
+            }
+
+            return ExecutionOrderFill.bulkCreate(fills, { transaction });
+
+        });
+
+    });
+
+});
+
+Given('the Order remaining amount is not within exchange minimum amount limits', async function() {
+
+    const { ExecutionOrder, ExecutionOrderFill, Exchange, InstrumentExchangeMapping, Instrument, sequelize } = require('../../../models');
+    const CCXTUtil = require('../../../utils/CCXTUtils');
+
+    const exchange = await Exchange.findById(this.current_recipe_order.target_exchange_id);
+
+    const mapping = await InstrumentExchangeMapping.findOne({
+        where: { exchange_id: exchange.id },
+        include: {
+            model: Instrument,
+            required: true,
+            where: { id: this.current_recipe_order.instrument_id }
+        }
+    });
+
+    const connector = await CCXTUtil.getConnector(exchange.api_id);
+
+    const amount_limits = _.get(connector, `markets.${mapping.external_instrument_id}.limits.amount`);
+    
+    const total_quantity = Decimal(this.current_recipe_order.quantity).minus(Decimal(amount_limits.min).div(2)).toString();
+
+    const fill_count = _.random(5, 10, false);
+
+    return sequelize.transaction(transaction => {
+
+        return ExecutionOrder.create({
+            placed_timestamp: new Date(),
+            completed_timestamp: new Date(),
+            exchange_id: this.current_recipe_order.target_exchange_id,
+            external_identifier: 'jk4h5kj34h5k3h5j3hk',
+            failed_attempts: 0,
+            fee: (parseFloat(this.current_recipe_order.price) / _.random(98, 100, false)),
+            instrument_id: this.current_recipe_order.instrument_id,
+            price: this.current_recipe_order.price,
+            recipe_order_id: this.current_recipe_order.id,
+            side: this.current_recipe_order.side,
+            status: EXECUTION_ORDER_STATUSES.FullyFilled,
+            total_quantity: total_quantity,
+            type: EXECUTION_ORDER_TYPES.Market
+        }, { transaction }).then(execution_order => {
+
+            let fills = [];
+
+            for(let i = 0; i < fill_count; i++) {
+
+                const approximate_quantity = Decimal(execution_order.total_quantity).div(fill_count).toString();
+                const approximate_fee = Decimal(execution_order.fee).div(fill_count).toString();
 
                 fills.push({
                     execution_order_id: execution_order.id,
@@ -148,13 +228,13 @@ When('I call the API to generate Orders for the Approved Recipe Run', function()
 
 });
 
-When('the system finished the task "generate execution orders"', function() {
+When('the system finished the task "generate execution orders"', async function() {
 
     const job = require('../../../jobs/exec-order-generator');
     const models = require('../../../models');
     const config = { models };
 
-    return job.JOB_BODY(config, console.log);
+    this.current_job_result = await job.JOB_BODY(config, console.log);
 
 });
 
@@ -257,5 +337,27 @@ Then('I should see an error message describing that Deposits have invalid values
     const error_message = this.current_response.response.body.error;
 
     expect(error_message).to.match(/Deposit info: {(.*)}/g);
+
+});
+
+Then(/^the task will skip the Recipe Order due to (.*)$/, function(reason) {
+
+    const reason_mapping = {
+        'Order was already filled': {
+            status: JOB_RESULT_STATUSES.Skipped,
+            step: '3B'
+        },
+        'next total being not within limits': {
+            status: JOB_RESULT_STATUSES.Skipped,
+            step: '4C'
+        }
+    };
+
+    const matching_result = this.current_job_result.find(res => res.instance.id === this.current_recipe_order.id);
+
+    expect(matching_result).to.be.not.undefined;
+
+    expect(matching_result.status).to.equal(reason_mapping[reason].status);
+    expect(matching_result.step).to.equal(reason_mapping[reason].step);
 
 });

@@ -118,6 +118,11 @@ MODEL_CONST = {
     String: 132,
     Boolean: 133
   },
+
+  JOB_RESULT_STATUSES: {
+    Error: 'error',
+    Skipped: 'skipped'
+  }
 };
 
 

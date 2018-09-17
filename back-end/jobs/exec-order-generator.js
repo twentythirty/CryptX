@@ -72,7 +72,7 @@ module.exports.JOB_BODY = async (config, log) => {
                 const base_trade_amount = trade_base[sold_symbol];
                 if (base_trade_amount == null) {
                     log(`[ERROR.2A]: no base trade recorded for currency symbol ${sold_symbol}! Skipping order ${pending_order.id}...`);
-                    return pending_order;
+                    return { instance: pending_order, status: JOB_RESULT_STATUSES.Error, step: '2A' };
                 }
 
                 log(`2. Fetching all execution orders of recipe order ${pending_order.id}...`)
@@ -95,7 +95,7 @@ module.exports.JOB_BODY = async (config, log) => {
                     if (unfilled_execution != null) {
                         //an active execution order was found, let system deal with it before attempting another one
                         log(`[WARN.3A]: Found execution order ${unfilled_execution.id} with status ${unfilled_execution.status} for pending recipe order ${pending_order.id}! Skipping recipe order...`);
-                        return pending_order;
+                        return { instance: pending_order, status: JOB_RESULT_STATUSES.Skipped, step: '3A' };
                     }
 
                     const inactive_execution_orders = _.filter(execution_orders, order => !order.isActive());
@@ -137,14 +137,14 @@ module.exports.JOB_BODY = async (config, log) => {
 
                         if (!exchange_connector) {
                             log(`[ERROR.4A]: Failed to retrieve exchange connector with id: ${pending_order.target_exchange_id}`);
-                            return pending_order;
+                            return { instance: pending_order, status: JOB_RESULT_STATUSES.Error, step: '4A' };
                         }
                         //Get market based on instrument symbol.
                         const exchange_market = exchange_connector.markets[pending_order.Instrument.symbol];
 
                         if (!exchange_market || !exchange_market.active) {
                             log(`[ERROR.4A]: Market for ${pending_order.Instrument.symbol} is not available or is not active`);
-                            return pending_order;
+                            return { instance: pending_order, status: JOB_RESULT_STATUSES.Error, step: '4A' };
                         }
 
                         const market_limits = exchange_market.limits;
@@ -156,7 +156,7 @@ module.exports.JOB_BODY = async (config, log) => {
                         //if there is no mapping we quit early
                         if (exchange_mapping == null || exchange_mapping.tick_size == null) {
                             log(`[ERROR.3A] Exchange ${pending_order.exchange_id} and instrument ${pending_order.instrument_id} in recipe order ${pending_order.id} have no associating exchange mapping tick size! Skipping order...`);
-                            return pending_order;
+                            return { instance: pending_order, status: JOB_RESULT_STATUSES.Error, step: '3A' };
                         }
 
 
@@ -176,7 +176,7 @@ module.exports.JOB_BODY = async (config, log) => {
 
                         if (realized_total.gte(order_total)) {
                             log(`[WARN.3B]: Current fulfilled execution order total ${realized_total.toString()} covers recipe order ${pending_order.id} quantity ${pending_order.quantity}. Skipping recipe order...`);
-                            return pending_order;
+                            return { instance: pending_order, status: JOB_RESULT_STATUSES.Skipped, step: '3B' };
                         }
 
                         const sold_symbol = get_order_sold_symbol(pending_order);
@@ -213,7 +213,7 @@ module.exports.JOB_BODY = async (config, log) => {
                                     next_total = Decimal(amount_limit.min)
                                 } else {
                                     log(`[WARN.4C]: Skipping order generation since total remaining quantity ${remain_quantity.toString()} is too low for required exchange minimum ${amount_limit.min}`);
-                                    return pending_order;
+                                    return { instance: pending_order, status: JOB_RESULT_STATUSES.Skipped, step: '4C' };;
                                 }
                             }
                         } else {
