@@ -46,7 +46,8 @@ Given('there are no incomplete non simulated investment runs', function() {
 });
 
 Given(/there is a (.*) (.*) Investment Run created by an Investment Manager/, async function(simulated, type) {
-    const { Asset, InvestmentRun, InvestmentAmount, sequelize } = require('../../../models');
+    
+    const { Asset, InvestmentRun, InvestmentAmount, InvestmentRunAssetGroup, GroupAsset, sequelize } = require('../../../models');
     const { Op } = sequelize;
 
     let investment_run = await InvestmentRun.findOne({
@@ -87,22 +88,65 @@ Given(/there is a (.*) (.*) Investment Run created by an Investment Manager/, as
         }
     });
 
+    const new_asset_group = {
+        created_timestamp: new Date(),
+        user_id: World.users.investment_manager.id,
+        strategy_type: STRATEGY_TYPES[type]
+    };
+
+    const [ top_assets ] = await sequelize.query(`
+        SELECT * FROM asset AS a
+        INNER JOIN LATERAL (
+            SELECT DISTINCT ON(cap.asset_id) cap.capitalization_usd, cap.asset_id FROm asset_market_capitalization AS cap
+            ORDER BY cap.asset_id, cap.timestamp DESC
+        ) AS cap ON a.id = cap.asset_id
+        ORDER BY cap.capitalization_usd DESC
+        LIMIT ${SYSTEM_SETTINGS.INDEX_LCI_CAP + SYSTEM_SETTINGS.INDEX_MCI_CAP}
+    `);
+
     return sequelize.transaction(transaction => {
 
-        return InvestmentRun.create(new_investment_run, { transaction }).then(investment_run => {
+        return InvestmentRunAssetGroup.create(new_asset_group, { transaction }).then(asset_group => {
 
-            this.current_investment_run = investment_run.toJSON();
+            let strategy_assets = [];
+            if(asset_group.strategy_type === STRATEGY_TYPES.LCI) strategy_assets = top_assets.slice(0, SYSTEM_SETTINGS.INDEX_LCI_CAP).map(asset => {
+                return {
+                    asset_id: asset.id,
+                    investment_run_asset_group_id: asset_group.id,
+                    status: INSTRUMENT_STATUS_CHANGES.Whitelisting
+                };
+            });
+            else strategy_assets = top_assets.slice(SYSTEM_SETTINGS.INDEX_LCI_CAP, SYSTEM_SETTINGS.INDEX_MCI_CAP).map(asset => {
+                return {
+                    asset_id: asset.id,
+                    investment_run_asset_group_id: asset_group.id,
+                    status: INSTRUMENT_STATUS_CHANGES.Whitelisting
+                };
+            });
 
-            return InvestmentAmount.bulkCreate(new_amounts.map(amount => {
+            new_investment_run.investment_run_asset_group_id = asset_group.id;
+            
+            return GroupAsset.bulkCreate(strategy_assets, { transaction }).then(group_assets => {
+                
+                return InvestmentRun.create(new_investment_run, { transaction }).then(investment_run => {
 
-                return Object.assign(amount, { investment_run_id: investment_run.id });
-
-            }), { transaction, returning: true }).then(amounts => {
-
-                this.current_investment_run.amounts = amounts.map(amount => amount.toJSON());
+                    this.current_investment_run = investment_run.toJSON();
+        
+                    return InvestmentAmount.bulkCreate(new_amounts.map(amount => {
+        
+                        return Object.assign(amount, { investment_run_id: investment_run.id });
+        
+                    }), { transaction, returning: true }).then(amounts => {
+        
+                        this.current_investment_run.amounts = amounts.map(amount => amount.toJSON());
+        
+                    });
+                });
 
             });
+
         });
+
     });
 });
 
