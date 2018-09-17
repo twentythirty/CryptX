@@ -831,7 +831,8 @@ describe('InvestmentService testing:', () => {
             "volume_usd": 36747.347714,
             "ask_price": 0.0517,
             "bid_price": 0.0506,
-            "price_usd": 329.6909
+            "price_usd": 329.6909,
+            "status": 400
           },
           {
             "id": 553,
@@ -845,7 +846,8 @@ describe('InvestmentService testing:', () => {
             "volume_usd": 15083.7071436,
             "ask_price": 1.759,
             "bid_price": 1.734,
-            "price_usd": 328.33494
+            "price_usd": 328.33494,
+            "status": 400
           },
           {
             "id": 553,
@@ -859,7 +861,8 @@ describe('InvestmentService testing:', () => {
             "volume_usd": 834.4145075,
             "ask_price": 0.052339,
             "bid_price": 0.050406,
-            "price_usd": 333.765803
+            "price_usd": 333.765803,
+            "status": 400
           },
           {
             "id": 553,
@@ -873,7 +876,8 @@ describe('InvestmentService testing:', () => {
             "volume_usd": 202.26631300734493,
             "ask_price": 1.7718,
             "bid_price": 1.7181,
-            "price_usd": 330.724188
+            "price_usd": 330.724188,
+            "status": 400
           },
           {
             "id": 367,
@@ -887,7 +891,8 @@ describe('InvestmentService testing:', () => {
             "volume_usd": 186113.34123909424,
             "ask_price": 0.005512,
             "bid_price": 0.005445,
-            "price_usd": 35.150024
+            "price_usd": 35.150024,
+            "status": 400
           },
           {
             "id": 367,
@@ -901,7 +906,8 @@ describe('InvestmentService testing:', () => {
             "volume_usd": 104356.18121002715,
             "ask_price": 0.18672,
             "bid_price": 0.185593,
-            "price_usd": 34.8531552
+            "price_usd": 34.8531552,
+            "status": 400
           },
           {
             "id": 149,
@@ -915,7 +921,8 @@ describe('InvestmentService testing:', () => {
             "volume_usd": 1317871.23303829,
             "ask_price": 2.953e-7,
             "bid_price": 2.952e-7,
-            "price_usd": 0.0018831281
+            "price_usd": 0.0018831281,
+            "status": 400
           },
           {
             "id": 149,
@@ -929,7 +936,8 @@ describe('InvestmentService testing:', () => {
             "volume_usd": 793826.1734361,
             "ask_price": 3e-7,
             "bid_price": 2.9e-7,
-            "price_usd": 0.0019131
+            "price_usd": 0.0019131,
+            "status": 400
           },
           {
             "id": 149,
@@ -943,7 +951,8 @@ describe('InvestmentService testing:', () => {
             "volume_usd": 143263.481781672,
             "ask_price": 0.00001022,
             "bid_price": 0.00001013,
-            "price_usd": 0.0019076652
+            "price_usd": 0.0019076652,
+            "status": 400
           },
           {
             "id": 149,
@@ -957,7 +966,8 @@ describe('InvestmentService testing:', () => {
             "volume_usd": 9911.1084192,
             "ask_price": 0.0000102,
             "bid_price": 0.00001,
-            "price_usd": 0.001903932
+            "price_usd": 0.001903932,
+            "status": 400
           },
           {
             "id": 60,
@@ -971,7 +981,8 @@ describe('InvestmentService testing:', () => {
             "volume_usd": 468738.58263840014,
             "ask_price": 0.00013622,
             "bid_price": 0.00012802,
-            "price_usd": 0.0254268252
+            "price_usd": 0.0254268252,
+            "status": 400
           },
           {
             "id": 60,
@@ -985,7 +996,8 @@ describe('InvestmentService testing:', () => {
             "volume_usd": 468738.58263840014,
             "ask_price": 0.00013622,
             "bid_price": 0.00012802,
-            "price_usd": 0.0254268252
+            "price_usd": 0.0254268252,
+            "status": 400
           }
         ]
 
@@ -1247,7 +1259,8 @@ describe('InvestmentService testing:', () => {
             "volume_usd": 36747.347714,
             "ask_price": 0.0517,
             "bid_price": 0.0506,
-            "price_usd": 329.6909
+            "price_usd": 329.6909,
+            "status": 400
           },
           {
             "id": 553,
@@ -1261,7 +1274,8 @@ describe('InvestmentService testing:', () => {
             "volume_usd": 834.4145075,
             "ask_price": 0.052339,
             "bid_price": 0.050406,
-            "price_usd": 333.765803
+            "price_usd": 333.765803,
+            "status": 400
           },
           {
             "id": 367,
@@ -1275,7 +1289,8 @@ describe('InvestmentService testing:', () => {
             "volume_usd": 186113.34123909424,
             "ask_price": 0.005512,
             "bid_price": 0.005445,
-            "price_usd": 35.150024
+            "price_usd": 35.150024,
+            "status": 400
           },
           {
             "id": 367,
@@ -1289,7 +1304,8 @@ describe('InvestmentService testing:', () => {
             "volume_usd": 104356.18121002715,
             "ask_price": 0.18672,
             "bid_price": 0.185593,
-            "price_usd": 34.8531552
+            "price_usd": 34.8531552,
+            "status": 400
           },
           {
             "id": 149,
@@ -1303,7 +1319,8 @@ describe('InvestmentService testing:', () => {
             "volume_usd": 1317871.23303829,
             "ask_price": 2.953e-7,
             "bid_price": 2.952e-7,
-            "price_usd": 0.0018831281
+            "price_usd": 0.0018831281,
+            "status": 400
           },
           {
             "id": 149,
@@ -1317,7 +1334,8 @@ describe('InvestmentService testing:', () => {
             "volume_usd": 793826.1734361,
             "ask_price": 3e-7,
             "bid_price": 2.9e-7,
-            "price_usd": 0.0019131
+            "price_usd": 0.0019131,
+            "status": 400
           },
           {
             "id": 149,
@@ -1331,7 +1349,8 @@ describe('InvestmentService testing:', () => {
             "volume_usd": 143263.481781672,
             "ask_price": 0.00001022,
             "bid_price": 0.00001013,
-            "price_usd": 0.0019076652
+            "price_usd": 0.0019076652,
+            "status": 400
           },
           {
             "id": 149,
@@ -1345,7 +1364,8 @@ describe('InvestmentService testing:', () => {
             "volume_usd": 9911.1084192,
             "ask_price": 0.0000102,
             "bid_price": 0.00001,
-            "price_usd": 0.001903932
+            "price_usd": 0.001903932,
+            "status": 400
           },
           {
             "id": 60,
@@ -1359,7 +1379,8 @@ describe('InvestmentService testing:', () => {
             "volume_usd": 468738.58263840014,
             "ask_price": 0.00013622,
             "bid_price": 0.00012802,
-            "price_usd": 0.0254268252
+            "price_usd": 0.0254268252,
+            "status": 400
           },
           {
             "id": 60,
@@ -1373,7 +1394,8 @@ describe('InvestmentService testing:', () => {
             "volume_usd": 468738.58263840014,
             "ask_price": 0.00013622,
             "bid_price": 0.00012802,
-            "price_usd": 0.0254268252
+            "price_usd": 0.0254268252,
+            "status": 400
           }
         ]
 

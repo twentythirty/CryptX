@@ -250,6 +250,9 @@ const generateRecipeDetails = async (investment_run_id, strategy_type) => {
   let [err, assets] = await to(AssetService.getAssetGroupWithData(investment_run_id));
   if (err) TE(err.message);
 
+  // leave only whitelisted assets
+  assets = assets.filter(a => a.status == MODEL_CONST.INSTRUMENT_STATUS_CHANGES.Whitelisting);
+
   let prices
   [err, prices] = await to(AssetService.getBaseAssetPrices(), false);
   if (err) TE(err.message);
@@ -873,7 +876,7 @@ const generateInvestmentAssetGroup = async function (user_id, strategy_type) {
       asset_id: asset.id,
       status: asset.status
     };
-  })]
+  })];
 
   let group, group_assets;
   [err, group_assets] = await to(sequelize.transaction(transaction => {
