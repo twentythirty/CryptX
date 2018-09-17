@@ -401,7 +401,7 @@ const getAssetGroupWithData = async function (investment_run_id) {
         AND ( quote_asset.symbol='USD' OR quote_asset.symbol='USDT')
       GROUP BY a.id
     )
-    SELECT asset.id,
+    SELECT DISTINCT ON (asset.id) asset.id,
       asset.symbol,
       asset.long_name,
       i.quote_asset_id,
@@ -412,14 +412,16 @@ const getAssetGroupWithData = async function (investment_run_id) {
       (lh.volume * ask_price * base_price.value_usd) as volume_usd,
       ask_price,
       bid_price,
-      (ask_price * base_price.value_usd) as price_usd
+      (ask_price * base_price.value_usd) as price_usd,
+      CASE WHEN ga.status IS NULL THEN 400 ELSE ga.status END as status
     FROM investment_run ir
     JOIN investment_run_asset_group irag ON irag.id=ir.investment_run_asset_group_id
     JOIN group_asset ga ON ga.investment_run_asset_group_id=irag.id
     JOIN asset ON asset.id=ga.asset_id
     JOIN instrument i ON i.transaction_asset_id=asset.id
     JOIN instrument_exchange_mapping iem ON instrument_id=i.id
-    JOIN LATERAL (
+    JOIN LATERAL
+    (
       SELECT value
       FROM market_history_calculation
       WHERE asset_id=asset.id AND type=0
@@ -445,7 +447,7 @@ const getAssetGroupWithData = async function (investment_run_id) {
     ) as imd ON TRUE
     JOIN base_assets_with_prices as base_price ON base_price.id=i.quote_asset_id
     WHERE ir.id=:investment_run_id
-    ORDER BY nvt DESC, volume_usd DESC, price_usd DESC
+    ORDER BY asset.id, nvt DESC, volume_usd DESC, price_usd DESC
   `, {
     replacements: {
       investment_run_id
