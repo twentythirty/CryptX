@@ -7,6 +7,7 @@ chai.use(chaiHttp);
 const { failureResponse, successResponse } = require('../support/assert');
 
 const World = require('../support/global_world');
+const utils = require('../support/step_helpers');
 
 Then(/^the server return a (.*) response$/, function(response_type) {
 
@@ -22,4 +23,9 @@ Then(/^the server return a (.*) response$/, function(response_type) {
 
     }
 
+});
+
+When(/^the system finished the task "(.*)"$/, async function(task_description) {
+
+    this.current_job_result = await utils.finishJobByDescription(task_description);
 });

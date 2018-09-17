@@ -10,6 +10,7 @@ chai.use(chaiHttp);
 const request_promise = require('request-promise');
 
 const World = require('../support/global_world');
+const utils = require('../support/step_helpers');
 
 const coin_market_cap_url = 'https://api.coinmarketcap.com/v2';
 
@@ -248,13 +249,9 @@ When('I select two different Assets', async function() {
 
 });
 
-When('the SYNC_COINS job completes it\`s run', {
+When(/^the system finished the special task "(.*)"$/, {
     timeout: 50000
-}, function() {
-
-    const job = require('../../../jobs/coins-list-sync');
-    const models = require('../../../models');
-    const config = { models };
+}, function(task_description) {
 
     return chai
         .request(coin_market_cap_url)
@@ -274,7 +271,7 @@ When('the SYNC_COINS job completes it\`s run', {
                 return Promise.resolve(result.body);
             });
 
-            await job.JOB_BODY(config, console.log);
+            await utils.finishJobByDescription(task_description);
 
             request_promise.get.restore();
             
