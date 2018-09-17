@@ -109,7 +109,7 @@ describe('AssetViewComponent', () => {
     fixture.whenStable().then(() => {
       fixture.detectChanges();
       const button = fixture.nativeElement.querySelector('table tbody tr app-action-cell label');
-      expect(button).toBeNull('action button visible');
+      expect(button).toBeFalsy('action button visible');
     });
   });
 
@@ -118,7 +118,7 @@ describe('AssetViewComponent', () => {
     fixture.whenStable().then(() => {
       fixture.detectChanges();
       const button = fixture.nativeElement.querySelector('table tbody tr app-action-cell label');
-      expect(button).not.toBeNull('action button invisible');
+      expect(button).toBeTruthy('action button invisible');
     });
   });
 
@@ -130,7 +130,7 @@ describe('AssetViewComponent', () => {
       click(button);
       fixture.detectChanges();
       const modal = fixture.nativeElement.querySelector('app-rationale-modal');
-      expect(modal).not.toBeNull('modal invisible');
+      expect(modal).toBeTruthy('modal invisible');
     });
   });
 });

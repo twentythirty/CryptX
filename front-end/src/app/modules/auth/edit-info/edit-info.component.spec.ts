@@ -9,26 +9,28 @@ import { AuthService } from '../../../services/auth/auth.service';
 const AuthServiceStub = {
   checkAuth: () => {
     return fakeAsyncResponse({
-      success: true,
-      permissions: [],
-      model_constants: {},
-      user: {
-        id: 1,
-        first_name: "Admin",
-        last_name: "",
-        email: "cryptx-admin@cryptx.io",
-        created_timestamp: 1526975256757,
-        reset_password_token_hash: null,
-        reset_password_token_expiry_timestamp: null,
-        is_active: true,
-        roles: {
-          '0': {
-            id: 4,
-            name: "Ultimate role",
-            user_role:{
-              role_id: 4,
-              user_id: 1
-            },
+      '0': {
+        success: true,
+        permissions: [],
+        model_constants: {},
+        user: {
+          id: 1,
+          first_name: 'Admin',
+          last_name: '',
+          email: 'cryptx-admin@cryptx.io',
+          created_timestamp: 1526975256757,
+          reset_password_token_hash: null,
+          reset_password_token_expiry_timestamp: null,
+          is_active: true,
+          roles: {
+            '0': {
+              id: 4,
+              name: 'Ultimate role',
+              user_role: {
+                role_id: 4,
+                user_id: 1
+              },
+            }
           }
         }
       }

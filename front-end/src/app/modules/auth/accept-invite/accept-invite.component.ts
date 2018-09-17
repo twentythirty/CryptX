@@ -45,27 +45,25 @@ export class AcceptInviteComponent implements OnInit {
     new_password: '',
     repeat_password: ''
   };
-  userInfoForm: FormGroup;
+  userInfoForm: FormGroup = new FormGroup({
+    password: new FormControl('', [
+      Validators.required
+    ]),
+    password_repeat: new FormControl('', [
+      Validators.required
+    ])
+  });
 
   imageLogo = require('Images/Logo.png');
 
   constructor(
-    private route: ActivatedRoute,
-    private router: Router,
-    private inviteService: InviteService,
-    private authService: AuthService,
+    public route: ActivatedRoute,
+    public router: Router,
+    public inviteService: InviteService,
+    public authService: AuthService,
   ) { }
 
   ngOnInit() {
-    this.userInfoForm = new FormGroup({
-      password: new FormControl('', [
-        Validators.required
-      ]),
-      password_repeat: new FormControl('', [
-        Validators.required
-      ])
-    });
-
     this.route.queryParams.subscribe((params: QueryParamsToken) => {
       this.token.value = params.token;
       this.checkTokenValidity();
@@ -125,7 +123,8 @@ export class AcceptInviteComponent implements OnInit {
 
   private autoLogin(userLoginData): void {
     this.authService.setAuthData(userLoginData);
-    this.router.navigate(['dashboard']);
+    this.router.navigate(['/dashboard']);
+    console.log('called');
   }
 
 }

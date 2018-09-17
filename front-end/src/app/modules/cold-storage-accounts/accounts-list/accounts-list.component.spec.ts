@@ -80,7 +80,7 @@ describe('AccountsListComponent', () => {
     fixture.whenStable().then(() => testHeaderLov(component.accountsDataSource, headerLovColumns));
   });
 
-  it('sould navigate to new account route on new account button press', fakeAsync(() => {
+  fit('sould navigate to new account route on new account button press', fakeAsync(() => {
     const navigateSpy = spyOn(component.router, 'navigate');
     component.addAccount();
     expect(navigateSpy).toHaveBeenCalledWith(['/cold_storage/accounts/add']);

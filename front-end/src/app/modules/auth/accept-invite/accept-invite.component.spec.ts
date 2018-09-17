@@ -1,11 +1,12 @@
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { async, ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core/testing';
 import { ActivatedRoute } from '@angular/router';
 import { of, throwError, Observable } from 'rxjs';
-import { extraTestingModules, fakeAsyncResponse } from '../../../testing/utils';
+import { extraTestingModules, fakeAsyncResponse, newEvent, click } from '../../../testing/utils';
 
 import { AuthModule } from '../auth.module';
 import { AcceptInviteComponent } from './accept-invite.component';
 import { InviteService } from './invite.service';
+import { AuthService } from '../../../services/auth/auth.service';
 
 
 const InviteServiceStub = {
@@ -43,6 +44,12 @@ const InviteServiceStub = {
   }
 };
 
+const AuthServiceStub = {
+  setAuthData: () => {
+
+  }
+};
+
 
 describe('AcceptInviteComponent', () => {
   let component: AcceptInviteComponent;
@@ -57,6 +64,7 @@ describe('AcceptInviteComponent', () => {
       ],
       providers: [
         { provide: InviteService, useValue: InviteServiceStub },
+        { provide: AuthService, useValue: AuthServiceStub },
         {
           provide: ActivatedRoute, useValue: {
             queryParams: of({ token: 'fake-token' })
@@ -78,7 +86,7 @@ describe('AcceptInviteComponent', () => {
     expect(component).toBeTruthy();
   });
 
-  fdescribe('if token is invalid', () => {
+  describe('if token is invalid', () => {
     beforeEach(() => {
       spyOn(inviteService, 'checkToken').and.returnValue(
         throwError({
@@ -93,14 +101,78 @@ describe('AcceptInviteComponent', () => {
     it('should not show password set form if token is invalid', () => {
       component.ngOnInit();
       fixture.detectChanges();
+      const form = fixture.nativeElement.querySelector('form');
+      expect(form).toBeFalsy('form element is defined');
     });
   });
 
   it('should show password set form if token is valid', () => {
-
+    fixture.whenStable().then(() => {
+      fixture.detectChanges();
+      const form = fixture.nativeElement.querySelector('form');
+      expect(form).toBeTruthy('form element not found');
+    });
   });
 
-  it('should get error message if passwords are not equal');
-  it('should be navigated to dashboard if passwords are equal');
+  it('should get error message if passwords are not equal', () => {
+    fillPasswordsAndSubmit('pass', 'pass2');
 
+    fixture.whenStable().then(() => {
+      fixture.detectChanges();
+      const errorCont = fixture.nativeElement.querySelector('form > p');
+      expect(errorCont.innerText).toBeTruthy('no error message found');
+    });
+  });
+
+  fit('should be navigated to dashboard if passwords are equal', fakeAsync(() => {
+    // fillPasswordsAndSubmit('pass', 'pass');
+    console.log('component', component);
+    console.log('component.router', component.router);
+
+    fixture.whenStable().then(() => {
+      fixture.detectChanges();
+      const inputs = fixture.nativeElement.querySelectorAll('form input[type=password]');
+      console.log('inputs', inputs);
+      inputs[0].value = 'pass';
+      inputs[0].dispatchEvent(newEvent('input'));
+      inputs[1].value = 'pass';
+      inputs[1].dispatchEvent(newEvent('input'));
+      fixture.detectChanges();
+
+      console.log('before ');
+      fixture.whenStable().then(() => {
+        const navigateSpy = spyOn(component.router, 'navigate');
+        // component.router.navigate(['dashboard']);
+        const submitButton = fixture.nativeElement.querySelector('form button[type=submit]');
+        console.log(submitButton);
+        click(submitButton);
+        // component.fulfillInvitation();
+
+        // fixture.detectChanges();
+        console.log('before expect');
+        expect(navigateSpy).toHaveBeenCalledWith(['asasasasa']);
+      });
+    });
+
+    // fixture.whenStable().then(() => {
+    //   fixture.detectChanges();
+    //   expect(navigateSpy).toHaveBeenCalled();
+    // });
+  }));
+
+
+  function fillPasswordsAndSubmit(pass1: string, pass2: string) {
+    fixture.whenStable().then(() => {
+      fixture.detectChanges();
+      const inputs = fixture.nativeElement.querySelectorAll('form input[type=password]');
+      inputs[0].value = pass1;
+      inputs[0].dispatchEvent(newEvent('input'));
+      inputs[1].value = pass2;
+      inputs[1].dispatchEvent(newEvent('input'));
+      fixture.detectChanges();
+
+      const submitButton = fixture.nativeElement.querySelector('form button[type=submit]');
+      click(submitButton);
+    });
+  }
 });
