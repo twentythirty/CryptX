@@ -393,7 +393,7 @@ const generateRecipeDetails = async (investment_run_id, strategy_type) => {
       return {
         transaction_asset_id: asset.asset.id,
         quote_asset_id: asset_info.asset_id,
-        exchange_id: asset_info.exchange_id,
+        target_exchange_id: asset_info.exchange_id,
         investment_percentage: investment_percentage,
         detail_investment: details.map(detail => ({
           asset_id: detail.from_asset_id,
