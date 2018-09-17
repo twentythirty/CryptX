@@ -124,7 +124,7 @@ describe('AcceptInviteComponent', () => {
     });
   });
 
-  fit('should be navigated to dashboard if passwords are equal', fakeAsync(() => {
+  it('should be navigated to dashboard if passwords are equal', fakeAsync(() => {
     // fillPasswordsAndSubmit('pass', 'pass');
     console.log('component', component);
     console.log('component.router', component.router);
