@@ -51,5 +51,6 @@ When(/^I log onto CryptX as (.*)$/, function(role_name){
 
             user.token = result.body.token;
             World.current_user = user;
+            this.current_user = user;
         })
 });

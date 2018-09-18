@@ -7,6 +7,13 @@ chai.use(chaiHttp);
 
 const World = require('../support/global_world');
 
+Given('there is a recipe order group with status Pending', {
+    timeout: 15000
+}, async function() {
+    const orderService = require('../../../services/OrdersService');
+    await orderService.generateApproveRecipeOrders(this.current_recipe_run.id);
+});
+
 Given(/^the recipe run does not have recipe order group with status (.*)$/, function(status) {
 
     const { RecipeOrderGroup, sequelize } = require('../../../models');
@@ -259,7 +266,9 @@ Given('the Order remaining amount is not within exchange minimum amount limits',
 
 });
 
-When('I call the API to generate Orders for the Approved Recipe Run', function() {
+When('I call the API to generate Orders for the Approved Recipe Run', {
+    timeout: 15000
+}, function() {
 
     return chai
         .request(this.app)
@@ -279,6 +288,28 @@ When('I call the API to generate Orders for the Approved Recipe Run', function()
         })
 
 });
+
+When('approve the order group with a rationale', {
+    timeout: 15000
+}, async function() {
+
+    const orderService = require('../../../services/OrdersService');
+
+    //perform approval
+    await orderService.changeRecipeOrderGroupStatus(
+        this.current_user.id,
+        this.current_recipe_order_group.id,
+        RECIPE_ORDER_GROUP_STATUSES.Approved,
+        'Testing approval'
+    )
+
+    //refetch relevant info into world after status change to check later
+    this.current_recipe_order_group = await require('../../../models').RecipeOrderGroup.findById(this.current_recipe_order_group.id);
+    //account for lack of relevant field name
+    this.current_recipe_order_group.status = this.current_recipe_order_group.approval_status;
+    this.current_investment_run = await require('../../../models').InvestmentRun.findById(this.current_investment_run.id);
+});
+
 
 Then('a new Recipe Group is created with the status Pending', async function() {
 
@@ -348,6 +379,20 @@ Then('the Recipe Orders have the status Pending', function() {
 
     }
 
+});
+
+Then(/^all orders in the group will have status (.*)$/, async function(status) {
+
+    chai.assert.isDefined(this.current_recipe_order_group, 'No group defined in context!');
+
+    const orders_of_group = await this.current_recipe_order_group.getRecipeOrders();
+    //expect osme orders in that group
+    chai.expect(orders_of_group.length).to.be.at.least(1, 'Recipe order group is empty!');
+    chai.assert.isDefined(RECIPE_ORDER_STATUSES[status], `No valid recipe order status for word ${status}`);
+    const needed_status = RECIPE_ORDER_STATUSES[status];
+    _.forEach(orders_of_group, order => {
+        chai.assert.equal(order.status, needed_status, `group order ${order.id} does not have status ${needed_status}`);
+    })
 });
 
 Then('the system won\'t allow me to generate Recipe Orders while this group is not Rejected', function() {

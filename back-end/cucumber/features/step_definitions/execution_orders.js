@@ -239,12 +239,6 @@ Then('a new Execution Order is saved to the database', async function() {
 
 });
 
-Then('the Execution Order will have status Pending', function() {
-   
-    expect(this.current_execution_order.status).to.equal(EXECUTION_ORDER_STATUSES.Pending);
-
-});
-
 Then('the total quantity will be within exchange limits', async function() {
 
     const { Instrument, InstrumentExchangeMapping } = require('../../../models');

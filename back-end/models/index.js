@@ -17,10 +17,10 @@ const sequelize = new Sequelize(db_url, {
   },
   //if cucumber we use different pool settings for weaker DB
   pool: (process.env.NODE_ENV === 'cucumber' ? {
-    max: 5,
-    min: 1,
-    idle: 10000,
-    acquire: 10000,
+    max: 17,
+    min: 6,
+    idle: 25000,
+    acquire: 25000,
     evict: 60000,
     handleDisconnects: true
   } : {}),

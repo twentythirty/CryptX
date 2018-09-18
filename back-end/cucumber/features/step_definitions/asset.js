@@ -1,9 +1,17 @@
-const { Given, When, Then } = require('cucumber');
+const {
+    Given,
+    When,
+    Then
+} = require('cucumber');
 const chai = require('chai');
-const { expect } = chai;
+const {
+    expect
+} = chai;
 const sinon = require('sinon');
 
-const { nullOrNumber } = require('../support/assert');
+const {
+    nullOrNumber
+} = require('../support/assert');
 
 const chaiHttp = require("chai-http");
 chai.use(chaiHttp);
@@ -14,17 +22,23 @@ const utils = require('../support/step_helpers');
 
 const coin_market_cap_url = 'https://api.coinmarketcap.com/v2';
 
-Given('the system has no Asset market history', function() {
+Given('the system has no Asset market history', function () {
 
-    const { AssetMarketCapitalization } = require('../../../models');
+    const {
+        AssetMarketCapitalization
+    } = require('../../../models');
 
-    return AssetMarketCapitalization.destroy({ where: {} });
+    return AssetMarketCapitalization.destroy({
+        where: {}
+    });
 
 });
 
-Given('the system has Assets', async function() {
+Given('the system has Assets', async function () {
 
-    const { Asset } = require('../../../models');
+    const {
+        Asset
+    } = require('../../../models');
 
     const asset_count = await Asset.count();
 
@@ -32,28 +46,38 @@ Given('the system has Assets', async function() {
 
 });
 
-Given('the system has only WhiteListed Assets', function() {
+Given('the system has only WhiteListed Assets', function () {
 
-    const { AssetStatusChange } = require('../../../models');
+    const {
+        AssetStatusChange
+    } = require('../../../models');
 
-    return AssetStatusChange.destroy({ where: { } });
+    return AssetStatusChange.destroy({
+        where: {}
+    });
 
 });
 
 Given(/^the system has Asset Market Capitalization for the last (.*) hours$/, {
     timeout: 15000
-}, async function(hours) {
+}, async function (hours) {
 
     hours = parseInt(hours);
 
     const now = new Date();
 
-    const { Asset, AssetMarketCapitalization, sequelize } = require('../../../models');
-    const { Op } = sequelize;
+    const {
+        Asset,
+        AssetMarketCapitalization,
+        sequelize
+    } = require('../../../models');
+    const {
+        Op
+    } = sequelize;
 
     const last_hours = [];
 
-    for(let hour = 0; hour <= hours; hour += 2) {
+    for (let hour = 0; hour <= hours; hour += 2) {
 
         const new_hour = new Date(now);
         new_hour.setHours(now.getHours() - hour);
@@ -68,13 +92,15 @@ Given(/^the system has Asset Market Capitalization for the last (.*) hours$/, {
 
     const current_capitalization = await AssetMarketCapitalization.count({
         where: {
-            timestamp: { [Op.gte]: new Date().setHours(now.getHours() - hours) }
+            timestamp: {
+                [Op.gte]: new Date().setHours(now.getHours() - hours)
+            }
         },
         distinct: true,
         col: 'asset_id'
     });
 
-    if(assets.length === current_capitalization) return;
+    if (assets.length === current_capitalization) return;
 
     let market_cap = _.concat(...last_hours.map(hour => {
         let total_cap = 0;
@@ -82,7 +108,7 @@ Given(/^the system has Asset Market Capitalization for the last (.*) hours$/, {
         let base_capitalization = assets.map(asset => {
             const capitalization = _.random(10000, 100000000, false);
             total_cap += capitalization;
-    
+
             return {
                 timestamp: hour,
                 capitalization_usd: capitalization,
@@ -91,7 +117,7 @@ Given(/^the system has Asset Market Capitalization for the last (.*) hours$/, {
         });
 
         base_capitalization.map(cap => {
-            
+
             cap.market_share_percentage = (cap.capitalization_usd * 100) / total_cap;
             cap.daily_volume_usd = ((cap.capitalization_usd * (cap.market_share_percentage)) / _.random(10, 100)).toFixed(2);
 
@@ -103,7 +129,9 @@ Given(/^the system has Asset Market Capitalization for the last (.*) hours$/, {
     return sequelize.transaction(transaction => {
         return AssetMarketCapitalization.destroy({
             where: {
-                timestamp: { [Op.lte]: new Date().setHours(now.getHours() - hours) }
+                timestamp: {
+                    [Op.lte]: new Date().setHours(now.getHours() - hours)
+                }
             },
             transaction
         }).then(() => {
@@ -113,12 +141,22 @@ Given(/^the system has Asset Market Capitalization for the last (.*) hours$/, {
 
 });
 
-Given('the system has some missing Assets from CoinMarketCap, including ETH and BTC', async function() {
+Given('the system has some missing Assets from CoinMarketCap, including ETH and BTC', async function () {
 
-    const { Asset, AssetBlockchain, sequelize } = require('../../../models');
-    const { Op } = sequelize;
+    const {
+        Asset,
+        AssetBlockchain,
+        sequelize
+    } = require('../../../models');
+    const {
+        Op
+    } = sequelize;
 
-    await Asset.destroy({ where: { symbol: ['ETH, BTC'] } });
+    await Asset.destroy({
+        where: {
+            symbol: ['ETH, BTC']
+        }
+    });
 
     const asset_count = await AssetBlockchain.count({});
 
@@ -138,15 +176,18 @@ Given('the system has some missing Assets from CoinMarketCap, including ETH and 
 
 });
 
-Given('the system is missing some of the top 100 coins', function() {
+Given('the system is missing some of the top 100 coins', function () {
 
-    const { AssetBlockchain, sequelize } = require('../../../models');
+    const {
+        AssetBlockchain,
+        sequelize
+    } = require('../../../models');
 
     return chai
         .request(coin_market_cap_url)
         .get('/ticker')
-        .then(async result => {   
-            
+        .then(async result => {
+
             expect(result).to.have.status(200);
             expect(result.body.data).to.be.an('object');
 
@@ -162,28 +203,28 @@ Given('the system is missing some of the top 100 coins', function() {
             `);
 
             this.current_asset_count = await AssetBlockchain.count();
-                
+
         });
 });
 
-When('retrieve a list of Assets', function() {
+When('retrieve a list of Assets', function () {
 
     return chai
         .request(this.app)
         .post('/v1/assets/detailed/all')
         .set('Authorization', World.current_user.token)
-        .then(result => {   
-            
+        .then(result => {
+
             expect(result).to.have.status(200);
             expect(result.body.assets.length).to.be.greaterThan(0);
 
             this.current_assets = result.body.assets;
-            
+
         });
 
 });
 
-When('I provide a rationale', function() {
+When('I provide a rationale', function () {
 
     const rationales = [
         'Random rational 1',
@@ -196,7 +237,7 @@ When('I provide a rationale', function() {
 
 });
 
-When(/^I (.*) an Asset$/, async function(action) {
+When(/^I (.*) an Asset$/, async function (action) {
 
     const action_map = {
         Blacklist: INSTRUMENT_STATUS_CHANGES.Blacklisting,
@@ -206,10 +247,15 @@ When(/^I (.*) an Asset$/, async function(action) {
 
     const status = action_map[action];
 
-    const { Asset } = require('../../../models');
+    const {
+        Asset
+    } = require('../../../models');
 
     let asset = await Asset.findOne({
-        where: { is_base: false, is_deposit: false },
+        where: {
+            is_base: false,
+            is_deposit: false
+        },
         raw: true
     });
 
@@ -221,27 +267,29 @@ When(/^I (.*) an Asset$/, async function(action) {
             comment: this.current_rationale,
             type: status
         })
-        .then(result => {   
-   
+        .then(result => {
+
             expect(result).to.have.status(200);
             expect(result.body.status).to.be.an('object');
 
             this.current_action = status;
             this.current_asset = asset;
-            
+
         });
 
 });
 
-When('I select two different Assets', async function() {
+When('I select two different Assets', async function () {
 
-    const { Asset } = require('../../../models');
+    const {
+        Asset
+    } = require('../../../models');
 
     const assets = await Asset.findAll({
         raw: true
     });
 
-    const divide = Math.round(assets.length/2);
+    const divide = Math.round(assets.length / 2);
 
     this.current_assets = [];
     this.current_assets.push(assets[_.random(0, divide)]);
@@ -250,14 +298,14 @@ When('I select two different Assets', async function() {
 });
 
 When(/^the system finished the special task "(.*)"$/, {
-    timeout: 50000
-}, function(task_description) {
+    timeout: 750000
+}, function (task_description) {
 
     return chai
         .request(coin_market_cap_url)
         .get(`/listings`)
-        .then(async result => {   
-   
+        .then(async result => {
+
             expect(result).to.have.status(200);
             expect(result.body.data.length).to.be.greaterThan(0);
 
@@ -274,7 +322,7 @@ When(/^the system finished the special task "(.*)"$/, {
             await utils.finishJobByDescription(task_description);
 
             request_promise.get.restore();
-            
+
         });
 
 
@@ -282,11 +330,13 @@ When(/^the system finished the special task "(.*)"$/, {
 
 When('the FETCH_MH job completes it`s run', {
     timeout: 50000
-}, async function() {
+}, async function () {
 
     const job = require('../../../jobs/market-history-fetcher');
     const models = require('../../../models');
-    const config = { models };
+    const config = {
+        models
+    };
 
     // Same retrieve and stub trick here
     const request_results = {
@@ -306,7 +356,7 @@ When('the FETCH_MH job completes it`s run', {
             .then(result => {
 
                 expect(result).to.have.status(200);
-                
+
                 request_results[endpoint] = result.body;
 
             });
@@ -327,11 +377,11 @@ When('the FETCH_MH job completes it`s run', {
 
 });
 
-Then('the list should have all of the Assets revelant information if it is available', function() {
+Then('the list should have all of the Assets revelant information if it is available', function () {
 
     const assets = this.current_assets;
 
-    for(let asset of assets) {
+    for (let asset of assets) {
 
         expect(asset.id).to.be.a('number');
         expect(asset.symbol).to.be.a('string');
@@ -348,11 +398,15 @@ Then('the list should have all of the Assets revelant information if it is avail
 
 });
 
-Then('a new Asset Status Change entry is save to the database with the correct type', async function() {
+Then('a new Asset Status Change entry is save to the database with the correct type', async function () {
 
-    const { AssetStatusChange } = require('../../../models');
+    const {
+        AssetStatusChange
+    } = require('../../../models');
     const asset_status_change = await AssetStatusChange.findOne({
-        where: { asset_id: this.current_asset.id },
+        where: {
+            asset_id: this.current_asset.id
+        },
         raw: true
     });
 
@@ -362,26 +416,26 @@ Then('a new Asset Status Change entry is save to the database with the correct t
 
 });
 
-Then('the rationale I provided is saved', function() {
+Then('the rationale I provided is saved', function () {
 
     expect(this.current_status_change.comment).to.equal(this.current_rationale);
 
 });
 
-Then('I am assigned to the Status Change', function() {
+Then('I am assigned to the Status Change', function () {
 
     expect(this.current_status_change.user_id).to.equal(World.current_user.id);
 
 });
 
-Then('I can see the new status and history by getting the Asset details', function() {
+Then('I can see the new status and history by getting the Asset details', function () {
 
     return chai
         .request(this.app)
         .get(`/v1/assets/detailed/${this.current_status_change.asset_id}`)
         .set('Authorization', World.current_user.token)
-        .then(result => {   
- 
+        .then(result => {
+
             expect(result).to.have.status(200);
             expect(result.body.asset).to.be.an('object');
             expect(result.body.history.length).to.be.greaterThan(0);
@@ -392,12 +446,12 @@ Then('I can see the new status and history by getting the Asset details', functi
 
             expect(asset.status).to.equal(`assets.status.${this.current_action}`);
             expect(status_change.type).to.equal(`assets.status.${this.current_action}`);
-            
+
         });
 
 });
 
-Then('I cannot Blacklist an Asset which is already Blacklisted', function() {
+Then('I cannot Blacklist an Asset which is already Blacklisted', function () {
 
     return chai
         .request(this.app)
@@ -407,17 +461,22 @@ Then('I cannot Blacklist an Asset which is already Blacklisted', function() {
             comment: this.current_rationale,
             type: this.current_action
         })
-        .catch(result => {   
+        .catch(result => {
 
             expect(result).to.have.status(422);
-            
+
         });
 
 });
 
-Then('the missing Assets are saved to the database', async function() {
+Then('the missing Assets are saved to the database', {
+    timeout: 15000
+}, async function () {
 
-    const { Asset, AssetBlockchain } = require('../../../models');
+    const {
+        Asset,
+        AssetBlockchain
+    } = require('../../../models');
 
     const assets = await AssetBlockchain.findAll({
         include: {
@@ -435,29 +494,33 @@ Then('the missing Assets are saved to the database', async function() {
      */
     expect(assets.length).to.be.greaterThan(coin_market_cap_assets.length - 1);
 
-    for(let market_asset of coin_market_cap_assets) {
-        const databaset_asset = assets.find(a => parseInt(a.coinmarketcap_identifier, 10)  === market_asset.id);
+    for (let market_asset of coin_market_cap_assets) {
+        const databaset_asset = assets.find(a => parseInt(a.coinmarketcap_identifier, 10) === market_asset.id);
 
         expect(databaset_asset).to.be.not.undefined;
 
         expect(databaset_asset['Asset.symbol']).to.equal(market_asset.symbol);
-        
+
         //expect(databaset_asset['Asset.long_name']).to.equal(market_asset.name);
     }
 
 });
 
-Then('BTC and ETH are marked as base and deposit Assets', async function() {
+Then('BTC and ETH are marked as base and deposit Assets', async function () {
 
-    const { Asset } = require('../../../models');
+    const {
+        Asset
+    } = require('../../../models');
 
     const base_assets = await Asset.findAll({
-        where: { symbol: ['BTC', 'ETH'] }
+        where: {
+            symbol: ['BTC', 'ETH']
+        }
     });
 
     expect(base_assets.length).to.equal(2);
-    
-    for(let asset of base_assets) {
+
+    for (let asset of base_assets) {
         expect(asset.is_base).to.be.true;
         expect(asset.is_deposit).to.be.true;
     }
@@ -469,9 +532,11 @@ Then('BTC and ETH are marked as base and deposit Assets', async function() {
  * Considering the asset numbers may not be so predictable (completely new assets appear, not just the ones that were deleted)
  * For now, let's check that that the blockchain asset count has increased
  */
-Then('missing Assets were saved to the database', async function() {
+Then('missing Assets were saved to the database', async function () {
 
-    const { AssetBlockchain } = require('../../../models');
+    const {
+        AssetBlockchain
+    } = require('../../../models');
 
     const asset_count = await AssetBlockchain.count();
 
@@ -479,24 +544,29 @@ Then('missing Assets were saved to the database', async function() {
 
 });
 
-Then('Asset market history is saved to the database', async function() {
+Then('Asset market history is saved to the database', async function () {
 
-    const { sequelize } = require('../../../models');
+    const {
+        sequelize
+    } = require('../../../models');
     const job = require('../../../jobs/market-history-fetcher');
 
     const joined_tickers = _.reduce(this.current_coin_market_cap_responses, (result, response, url) => {
 
-        if(url.startsWith('/ticker')) {
+        if (url.startsWith('/ticker')) {
             _.assign(result.data, response.data);
-            if(_.isEmpty(result.metadata)) _.assign(result.metadata, response.metadata);
+            if (_.isEmpty(result.metadata)) _.assign(result.metadata, response.metadata);
         }
         return result;
 
-    }, { data: {}, metadata: {} });
+    }, {
+        data: {},
+        metadata: {}
+    });
 
     const global_data = this.current_coin_market_cap_responses['/global/'];
 
-    const [ market_history ]= await sequelize.query(`
+    const [market_history] = await sequelize.query(`
         SELECT DISTINCT ON(ab.coinmarketcap_identifier) amc.*, ab.coinmarketcap_identifier 
         FROM asset_market_capitalization AS amc
         JOIN asset_blockchain AS ab ON ab.asset_id = amc.asset_id
@@ -504,7 +574,7 @@ Then('Asset market history is saved to the database', async function() {
 
     expect(market_history.length).to.equal(_.size(joined_tickers.data));
 
-    for(let coin_id in joined_tickers.data) {
+    for (let coin_id in joined_tickers.data) {
 
         const ticker = joined_tickers.data[coin_id];
         const matching_history = market_history.find(mh => mh.coinmarketcap_identifier === coin_id);
