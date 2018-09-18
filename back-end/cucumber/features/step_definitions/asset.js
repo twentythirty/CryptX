@@ -119,7 +119,7 @@ Given(/^the system has Asset Market Capitalization for the last (.*) hours$/, {
         base_capitalization.map(cap => {
 
             cap.market_share_percentage = (cap.capitalization_usd * 100) / total_cap;
-            cap.daily_volume_usd = ((cap.capitalization_usd * (cap.market_share_percentage)) / _.random(10, 100)).toFixed(2);
+            cap.daily_volume_usd = ((cap.capitalization_usd * (cap.market_share_percentage)) / _.random(10, 100));
 
         });
 
