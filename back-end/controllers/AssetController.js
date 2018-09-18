@@ -99,24 +99,21 @@ const getAssetsDetailedOfInvestmentRunAssetGroup = async (req, res) => {
 
   const { investment_asset_group_id } = req.params;
 
-  let [ error, result ] = await to(assetService.getAssetFilteringBasedOnInvestmentAssetGroup(investment_asset_group_id, seq_query, sql_where));
-  
-  if(error) return ReE(res, error, 422);
-  if(!result) return ReE(res, `Asset group was not found with id "${investment_asset_group_id}"`, 404);
-  
-  [ seq_query, sql_where ] = result;
+  if(!seq_query.where) seq_query.where = {};
+  seq_query.where.investment_run_asset_group_id = investment_asset_group_id;
 
-  let assets_with_count = [];
-  [error, assets_with_count] = await to(adminViewsService.fetchAssetsViewDataWithCount(seq_query));
-  if (error)
-    return ReE(res, error, 422);
+  if(sql_where !== '') sql_where += 'AND ';
+  sql_where += `investment_run_asset_group_id = ${investment_asset_group_id}`;
+  console.log(sql_where);
+  const [ err, result ] = await to(Promise.all([
+    adminViewsService.fetchGroupAssetsViewDataWithCount(seq_query),
+    adminViewsService.fetchGroupAssetViewFooter(sql_where)
+  ]));
 
-  let footer;
-  [error, footer] = await to(adminViewsService.fetchAssetsViewFooter(sql_where));
-  if (error) 
-    return ReE(res, error, 422);
-  
-  const { data: assets, total: count } = assets_with_count;
+  if(err) return ReE(res, err.message, 422);
+
+  const [ data_with_count, footer ] = result;
+  const { data: assets, total: count } = data_with_count;
 
   return ReS(res, {
     assets,

@@ -111,6 +111,7 @@ const getInvestmentRunWithAssetMix = async function (req, res) {
     footer,
     count
   });
+  
 };
 module.exports.getInvestmentRunWithAssetMix = getInvestmentRunWithAssetMix;
 
@@ -595,15 +596,37 @@ const generateInvestmentAssetGroup = async function (req, res) {
     user_id = req.user.id;
 
   let [err, result] = await to(investmentService.generateInvestmentAssetGroup(user_id, strategy_type));
-  if (err) TE(err.message);
+
+  if(err) return ReE(res, err.message, 422);
 
   let [ list, group_assets ] = result;
   list = list.toJSON();
 
-  list.group_assets = group_assets.map(asset => asset.toJSON());
+  const seq_query = {
+    where: { investment_run_asset_group_id: list.id, status: 'assets.status.400' },
+    order: [ [ 'capitalization', 'DESC' ] ],
+    raw: true
+  };
+
+  const sql_where = `investment_run_asset_group_id = ${list.id} AND status = 'assets.status.400'`;
+
+  [ err, result ] = await to(Promise.all([
+    adminViewsService.fetchGroupAssetsViewDataWithCount(seq_query),
+    adminViewsService.fetchGroupAssetViewFooter(sql_where)
+  ]));
+  
+  if(err) return ReE(res, err.messgae, 422);
+
+  const [ data_with_count, footer ] = result;
+  const { data: assets, total: count } = data_with_count;
+
+  list.group_assets = assets;
 
   return ReS(res, {
-    list
-  })
+    list,
+    count,
+    footer
+  });
+
 };
 module.exports.generateInvestmentAssetGroup = generateInvestmentAssetGroup;

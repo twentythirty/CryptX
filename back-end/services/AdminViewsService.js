@@ -4,6 +4,7 @@ const {
     sequelize,
     AVUser,
     AVAsset,
+    AVGroupAsset,
     AVInstrument,
     AVInvestmentRun,
     AVInvestmentAmount,
@@ -260,6 +261,12 @@ const fetchAssetsViewDataWithCount = async (seq_query = {}) => {
     return fetchViewDataWithCount(AVAsset, seq_query);
 }
 module.exports.fetchAssetsViewDataWithCount = fetchAssetsViewDataWithCount;
+
+const fetchGroupAssetsViewDataWithCount = async (seq_query = {}) => {
+
+    return fetchViewDataWithCount(AVGroupAsset, seq_query);
+}
+module.exports.fetchGroupAssetsViewDataWithCount = fetchGroupAssetsViewDataWithCount;
 
 const fetchInstrumentsViewDataWithCount = async (seq_query = {}) => {
 
@@ -522,6 +529,25 @@ FROM
         builder.queryReturnRowToFooterObj(footer_values), 'assets');
 }
 module.exports.fetchAssetsViewFooter = fetchAssetsViewFooter;
+
+const fetchGroupAssetViewFooter = async (where_clause = '') => {
+
+    const view = 'av_group_assets';
+
+    const query = builder.joinQueryParts([
+        builder.selectCountDistinct('id', 'symbol', view, where_clause),
+        builder.selectSum('capitalization', view, where_clause)
+    ], [
+        'symbol',
+        'capitalization'
+    ]);
+
+    const footer = (await sequelize.query(query))[0];
+
+    return builder.addFooterLabels(builder.queryReturnRowToFooterObj(footer), 'assets');
+
+};
+module.exports.fetchGroupAssetViewFooter = fetchGroupAssetViewFooter;
 
 const fetchInstrumentsViewFooter = async (where_clause = '') => {
 

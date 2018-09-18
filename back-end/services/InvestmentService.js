@@ -27,39 +27,27 @@ const getInvestmentRunWithAssetMix = async (investment_run_id, seq_query = {}, s
   if(err) TE(err.message);
   if(!investment_run) return null;
 
-  let group_assets = [];
-  [ err, group_assets ] = await to(InvestmentRun.findAll({
-    where: { id: investment_run_id },
-    include: {
-      model: InvestmentRunAssetGroup,
-      include: GroupAsset,
-    },
+  let asset_group = {};
+  [ err, asset_group ] = await to(InvestmentRun.findById(investment_run_id, {
+    include: InvestmentRunAssetGroup,
     raw: true
   }));
 
   if(err) console.log(err);
 
-  const asset_ids = group_assets.map(asset => asset['InvestmentRunAssetGroup.GroupAssets.asset_id']).filter(id => id);
+  const investment_run_asset_group_id = asset_group['InvestmentRunAssetGroup.id'];
 
-  //Allow only to filter out assets that belong to the investment run.
-  seq_query.where = { 
-    [Op.and]: [
-      { id: asset_ids },
-      seq_query.where
-    ] 
-  };
+  //Filter assets that belong to the investment run and show only whitelisted ones
+  seq_query.where = _.assign({ investment_run_asset_group_id, status: 'assets.status.400' }, seq_query.where);
   
-  const final_seq_query = _.assign({
-    attributes: ['id', 'symbol', 'long_name', 'capitalization', 'nvt_ratio', 'market_share'],
-    raw: true
-  }, seq_query);
+  sql_where = `investment_run_asset_group_id = ${investment_run_asset_group_id} AND status = 'assets.status.400' ${ sql_where !== '' ? `AND ${sql_where}` : '' }`;
 
-  if(asset_ids.length) sql_where = `id IN(${asset_ids.join(', ')}) ${ sql_where !== '' ? `AND ${sql_where}` : '' }`;
+  if(!seq_query.order) seq_query.order = [ [ 'capitalization', 'DESC' ] ];
 
   let result = [];
   [ err, result ] = await to(Promise.all([
-    AdminViewService.fetchAssetsViewDataWithCount(final_seq_query),
-    AdminViewService.fetchAssetsViewFooter(sql_where)
+    AdminViewService.fetchGroupAssetsViewDataWithCount(seq_query),
+    AdminViewService.fetchGroupAssetViewFooter(sql_where)
   ]));
 
   if(err) TE(err.message);
@@ -870,14 +858,6 @@ const generateInvestmentAssetGroup = async function (user_id, strategy_type) {
 
   let [err, strategy_assets] = await to(AssetService.getStrategyAssets(strategy_type));
   if (err) TE(err.message);
-
-  let arr = [...strategy_assets.map(asset => {
-          
-    return {
-      asset_id: asset.id,
-      status: asset.status
-    };
-  })];
 
   let group, group_assets;
   [err, group_assets] = await to(sequelize.transaction(transaction => {

@@ -507,11 +507,10 @@ const getAssetFilteringBasedOnInvestmentAssetGroup = async (id, seq_query = {}, 
       seq_query.where
     ] 
   };
-  
 
   if(asset_ids.length) sql_where = `id IN(${asset_ids.join(', ')}) ${ sql_where !== '' ? `AND ${sql_where}` : '' }`;
 
-  return [ seq_query, sql_where ];  
+  return [ seq_query, sql_where, asset_group.GroupAssets ];  
 
 };
 module.exports.getAssetFilteringBasedOnInvestmentAssetGroup = getAssetFilteringBasedOnInvestmentAssetGroup;

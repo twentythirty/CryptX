@@ -152,34 +152,15 @@ export class InvestmentNewComponent extends DataTableCommonManagerComponent impl
     };
    this.investmentService.createAssetMix(request).subscribe( data => {
       if (data.success) {
-        if (!this.requestData.filter.and) {
-          this.requestData.filter.and = [];
-        }
-        if (this.requestData.filter.and.length === 0) {
-          this.requestData.filter.and.push({
-            field: 'status',
-            value: [
-               'assets.status.400'
-            ],
-            expression: 'in',
-            type: 'string'
-         });
-        }
+
         this.assetGroup = data.list.id;
 
-        this.investmentService.getAssetMix(this.assetGroup, this.requestData).subscribe( res => {
-          if (res.success) {
-            this.count = res.count;
-            this.tableTitle = this.count + ' Selected asset mix';
-            this.assetDataSource.body = res.assets;
-            this.assetDataSource.footer = res.footer;
-            this.tableLoading = false;
-            this.loading = false;
-          }
-        }, error => {
-          console.log('Error', error);
-        }, () => {
-        });
+        this.count = data.count;
+        this.tableTitle = this.count + ' Selected asset mix';
+        this.assetDataSource.body = data.list.group_assets;
+        this.assetDataSource.footer = data.footer;
+        this.tableLoading = false;
+        this.loading = false;
       }
     }, error => {
       console.log('Error', error);
@@ -212,8 +193,9 @@ export class InvestmentNewComponent extends DataTableCommonManagerComponent impl
     }
 
     // Get table data
-    this.requestData.filter.and[0].value = ['assets.status.401', 'assets.status.402'];
-
+    _.set(this.requestData, 'filter.status', ['assets.status.401', 'assets.status.402']); 
+    _.set(this.requestData, 'order[0]', { by: 'capitalization', order: 'desc' });
+    
     this.investmentService.getAssetMix(this.assetGroup, this.requestData).subscribe (
       res => {
         if (res.success) {
