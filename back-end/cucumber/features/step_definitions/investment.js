@@ -81,9 +81,12 @@ Given(/there is a (.*) (.*) Investment Run created by an Investment Manager/, as
         updated_timestamp: new Date()
     };
 
+    /**
+     * Using unly USD for now, seems Recipe Run does not always allocate the cryptos well
+     */
     const new_amounts = assets.map(asset => {
         return {
-            amount: _.random(1000, 50000, false),
+            amount: asset.symbol === 'USD' ? _.random(1000, 50000, false) : 0,
             asset_id: asset.id
         }
     });
@@ -94,13 +97,20 @@ Given(/there is a (.*) (.*) Investment Run created by an Investment Manager/, as
         strategy_type: STRATEGY_TYPES[type]
     };
 
+    /**
+     * It's seems the recipe run needs assets to be included in an instrument which is
+     * also mapped to atleast one exchange.
+     */
     const [ top_assets ] = await sequelize.query(`
-        SELECT * FROM asset AS a
+        SELECT Distinct ON(a.id) a.id, cap.capitalization_usd, a.symbol FROM asset AS a
         INNER JOIN LATERAL (
             SELECT DISTINCT ON(cap.asset_id) cap.capitalization_usd, cap.asset_id FROm asset_market_capitalization AS cap
             ORDER BY cap.asset_id, cap.timestamp DESC
         ) AS cap ON a.id = cap.asset_id
-        ORDER BY cap.capitalization_usd DESC
+        INNER JOIN instrument AS i ON a.id = i.transaction_asset_id
+        INNER JOIN instrument_exchange_mapping AS iem ON i.id = iem.instrument_id
+        WHERE a.symbol != 'USD'
+        ORDER BY a.id, cap.capitalization_usd DESC
         LIMIT ${SYSTEM_SETTINGS.INDEX_LCI_CAP + SYSTEM_SETTINGS.INDEX_MCI_CAP}
     `);
 

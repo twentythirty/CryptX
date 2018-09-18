@@ -308,7 +308,9 @@ const getBaseAssetPrices = async function () {
     const existing_mappings = await InstrumentExchangeMapping.findAll({
       where: {
         external_instrument_id: {
-          [Op.iLike]: '%/USDT'
+          [Op.or]: [
+            { [Op.iLike]: '%/USDT' }, { [Op.iLike]: '%/USD' }
+          ]
         }
       }
     });
@@ -320,8 +322,7 @@ const getBaseAssetPrices = async function () {
       }
     });
     if (!_.isEmpty(missing_exchanges)) {
-      const missing_exchanges_message = `
-      Missing USDT instrument mappings for exchanges: ${_.join(_.map(missing_exchanges, 'name'), ', ')}. 
+      const missing_exchanges_message = `Missing USDT instrument mappings for exchanges: ${_.join(_.map(missing_exchanges, 'name'), ', ')}. 
       Please use/create an instrument with either 'Us Dollars' or 'Tether' as the Quote Asset and add the missing mappings`;
 
       TE(message_start + '\n' + missing_exchanges_message);
