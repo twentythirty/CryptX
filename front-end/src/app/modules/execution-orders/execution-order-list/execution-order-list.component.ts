@@ -42,7 +42,9 @@ export class ExecutionOrderListComponent extends DataTableCommonManagerComponent
     new StatusCellDataColumn({ column: 'side' }),
     new TableDataColumn({ column: 'exchange' }),
     new StatusCellDataColumn({ column: 'type' }),
-    new NumberCellDataColumn({ column: 'price' }),
+    new NumberCellDataColumn({ column: 'price', inputs: {
+      digitsInfo: '1.2-10'
+    } }),
     new NumberCellDataColumn({ column: 'total_quantity' }),
     new NumberCellDataColumn({ column: 'filled_quantity' }),
     new NumberCellDataColumn({ column: 'exchange_trading_fee' }),

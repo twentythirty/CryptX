@@ -26,7 +26,8 @@ const ExecutionOrdersServiceStub = {
           exchange_trading_fee: null,
           status: 'execution_orders.status.62',
           submission_time: 1535711110007,
-          completion_time: null
+          completion_time: null,
+          filled_quantity: 0.29
         },
       ],
       footer: [],
