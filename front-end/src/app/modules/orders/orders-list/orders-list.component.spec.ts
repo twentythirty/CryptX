@@ -1,12 +1,10 @@
 import { async, ComponentFixture, TestBed} from '@angular/core/testing';
-import { extraTestingModules, fakeAsyncResponse, click } from '../../../testing/utils';
+import { extraTestingModules, fakeAsyncResponse, click} from '../../../testing/utils';
 
 import { OrdersModule } from '../orders.module';
 import { OrdersListComponent } from './orders-list.component';
 import { OrdersService, OrdersAllResponse} from '../../../services/orders/orders.service';
 import { Order } from '../../../shared/models/order';
-import {async as _async} from 'rxjs/scheduler/async';
-import { RouterTestingModule } from '@angular/router/testing';
 import { testHeaderLov } from '../../../testing/commonTests';
 
 const allOrdersDetailedResponse: OrdersAllResponse = {
@@ -61,7 +59,6 @@ describe('OrdersListComponent', () => {
     TestBed.configureTestingModule({
       imports: [
         OrdersModule,
-       RouterTestingModule.withRoutes([]),
         ...extraTestingModules,
       ],
       providers: [
@@ -94,7 +91,8 @@ describe('OrdersListComponent', () => {
 
     fixture.whenStable().then(() => {
       fixture.detectChanges();
-      component.openRow(allOrdersDetailedResponse.recipe_orders[0]);
+      const tableRow = fixture.nativeElement.querySelector('table tbody tr');
+      click(tableRow);
       expect(navigateSpy).toHaveBeenCalledWith(['/run/execution-order', allOrdersDetailedResponse.recipe_orders[0].id]);
     });
   });
