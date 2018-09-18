@@ -12,6 +12,11 @@ export class MarkAsTouchedDirective {
   @HostListener('click', ['$event'])
   clickEvent(event) {
     this.markAsTouched(this.appMarkAsTouched);
+
+    // prevent form submiting if form is invalid
+    if (this.appMarkAsTouched.invalid) {
+      return false;
+    }
   }
 
   markAsTouched(group) {

@@ -98,8 +98,8 @@ export class AcceptInviteComponent implements OnInit {
         password: this.userInfoForm.value.password
       };
 
-      this.inviteService.fulfillInvitation(data).subscribe(data => {
-        this.autoLogin(data);
+      this.inviteService.fulfillInvitation(data).subscribe(res => {
+        this.autoLogin(res);
       }, error => {
         if (error.error) {
           this.message = error.error.error;
@@ -124,7 +124,6 @@ export class AcceptInviteComponent implements OnInit {
   private autoLogin(userLoginData): void {
     this.authService.setAuthData(userLoginData);
     this.router.navigate(['/dashboard']);
-    console.log('called');
   }
 
 }

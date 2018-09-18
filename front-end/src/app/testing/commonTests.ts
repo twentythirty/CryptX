@@ -14,6 +14,17 @@ export function testHeaderLov(dataSource, headerLovColumns) {
 }
 
 
+export function testFormErrorMessagesRendering(form: FormGroup, fixture) {
+  for (const field of Object.keys(form.controls)) {
+    if (form.controls[field].invalid) {
+      const error = fixture.nativeElement.querySelector(`[formControlName="${field}"] app-input-item-error-message`);
+      expect(error).toBeTruthy(`error message of "${field}" control not found`);
+    }
+  }
+}
+
+
+
 /**
  * Common tests for common form submiting and validating
  *

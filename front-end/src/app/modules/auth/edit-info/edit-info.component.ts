@@ -5,6 +5,7 @@ import { MatSnackBar } from '@angular/material';
 
 import { AuthService } from '../../../services/auth/auth.service';
 import { User } from '../../../shared/models/user';
+import { finalize } from 'rxjs/operators';
 
 
 class EditInfo extends User {
@@ -19,74 +20,54 @@ class EditInfo extends User {
   styleUrls: ['./edit-info.component.scss']
 })
 export class EditInfoComponent implements OnInit {
-  user_info: EditInfo;
-  doneLoading: boolean = false;
   message: string = '';
   status: boolean = false;
+  loading = false;
 
   userForm: FormGroup = new FormGroup({
-    OldPassword: new FormControl('', [ Validators.required ]),
-    NewPassword: new FormControl('', [ Validators.required ]),
-    RepeatPassword: new FormControl('', [ Validators.required ]),
+    old_password: new FormControl('', [ Validators.required ]),
+    new_password: new FormControl('', [ Validators.required ]),
+    repeat_password: new FormControl('', [ Validators.required ]),
   });
 
   constructor(
-    private authService: AuthService,
-    private router: Router,
+    public authService: AuthService,
+    public router: Router,
     public snackBar: MatSnackBar,
   ) { }
 
   ngOnInit() {
-    this.getMyInfo();
-  }
-
-  getMyInfo() {
-    this.authService.checkAuth().subscribe(response => {
-      const user = Object.assign({}, response[0].user);
-      this.user_info = user;
-      this.doneLoading = true;
-    });
   }
 
   updateInfo() {
-    if (this.userForm.valid) {
-      if (!this.passwordsMatch()) {
-        this.message = 'New password was not repeated correctly';
-        return false;
-      }
-
-      this.authService.changeInfo(this.user_info).subscribe(response => {
-        this.status = true;
-
-        const snackBar = this.snackBar.open('✓ SUCCESS!', '', {
-          panelClass: 'mat-snack-bar-success',
-          verticalPosition: 'bottom',
-          duration: 3000
-        });
-
-        this.router.navigate(['dashboard']);
-      }, error => {
-        if (error.error) {
-          this.message = error.error.error;
-        }
-      });
-    } else {
-      this.markAsTouched(this.userForm);
+    if (!this.passwordsMatch()) {
+      this.message = 'New password was not repeated correctly';
+      return;
     }
-  }
 
-  markAsTouched(group) {
-    Object.keys(group.controls).map((field) => {
-      const control = group.get(field);
-      if (control instanceof FormControl) {
-        control.markAsTouched({ onlySelf: true });
-      } else if (control instanceof FormGroup) {
-        this.markAsTouched(control);
+    this.loading = true;
+
+    this.authService.changeInfo(this.userForm.value).pipe(
+      finalize(() => this.loading = false)
+    )
+    .subscribe(response => {
+      this.status = true;
+
+      const snackBar = this.snackBar.open('✓ SUCCESS!', '', {
+        panelClass: 'mat-snack-bar-success',
+        verticalPosition: 'bottom',
+        duration: 3000
+      });
+
+      this.router.navigate(['dashboard']);
+    }, error => {
+      if (error.error) {
+        this.message = error.error.error;
       }
     });
   }
 
   passwordsMatch() {
-    return this.user_info.new_password === this.user_info.repeat_password;
+    return this.userForm.controls.new_password.value === this.userForm.controls.repeat_password.value;
   }
 }

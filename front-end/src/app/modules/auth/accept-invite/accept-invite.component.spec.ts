@@ -9,45 +9,47 @@ import { InviteService } from './invite.service';
 import { AuthService } from '../../../services/auth/auth.service';
 
 
+const checkTokenResponse = {
+  success: true,
+  invitation: {
+    id: 45,
+    was_used: false,
+    token: 'fake-token',
+    token_expiry_timestamp: 1525424340810,
+    email: 'test@domain.com',
+    first_name: 'Test',
+    last_name: 'User',
+    role_id: 25,
+    creator_id: 888
+  }
+};
+
+const fulfillInvitationResponse = {
+  success: true,
+  user: {
+    id: 45,
+    first_name: 'Test',
+    last_name: 'User',
+    email: 'test@domain.com',
+    created_timestamp: 1525424340810,
+    reset_password_token_hash: '79054025255fb1a26e4bc422aef54eb4',
+    reset_password_token_expiry_timestamp: 1525424340810,
+    is_active: true
+  }
+};
+
 const InviteServiceStub = {
   checkToken: () => {
-    return fakeAsyncResponse({
-      success: true,
-      invitation: {
-        id: 45,
-        was_used: false,
-        token: 'fake-token',
-        token_expiry_timestamp: 1525424340810,
-        email: 'test@domain.com',
-        first_name: 'Test',
-        last_name: 'User',
-        role_id: 25,
-        creator_id: 888
-      }
-    });
+    return fakeAsyncResponse(checkTokenResponse);
   },
 
   fulfillInvitation: () => {
-    return fakeAsyncResponse({
-      success: true,
-      user: {
-        id: 45,
-        first_name: 'Test',
-        last_name: 'User',
-        email: 'test@domain.com',
-        created_timestamp: 1525424340810,
-        reset_password_token_hash: '79054025255fb1a26e4bc422aef54eb4',
-        reset_password_token_expiry_timestamp: 1525424340810,
-        is_active: true
-      }
-    });
+    return fakeAsyncResponse(fulfillInvitationResponse);
   }
 };
 
 const AuthServiceStub = {
-  setAuthData: () => {
-
-  }
+  setAuthData: () => {}
 };
 
 
@@ -55,6 +57,9 @@ describe('AcceptInviteComponent', () => {
   let component: AcceptInviteComponent;
   let fixture: ComponentFixture<AcceptInviteComponent>;
   let inviteService: InviteService;
+  let checkTokenSpy;
+  let navigateSpy;
+  let fulfillInvitationSpy;
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
@@ -75,11 +80,20 @@ describe('AcceptInviteComponent', () => {
     .compileComponents();
   }));
 
-  beforeEach(() => {
+  beforeEach((done) => {
     fixture = TestBed.createComponent(AcceptInviteComponent);
     component = fixture.componentInstance;
     inviteService = TestBed.get(InviteService);
+
+    checkTokenSpy = spyOn(inviteService, 'checkToken').and.returnValue(fakeAsyncResponse(checkTokenResponse));
+    fulfillInvitationSpy = spyOn(inviteService, 'fulfillInvitation').and.returnValue(fakeAsyncResponse(fulfillInvitationResponse));
+    navigateSpy = spyOn(component.router, 'navigate');
     fixture.detectChanges();
+
+    checkTokenSpy.calls.mostRecent().returnValue.subscribe(() => {
+      fixture.detectChanges();
+      done();
+    });
   });
 
   it('should create', () => {
@@ -88,7 +102,7 @@ describe('AcceptInviteComponent', () => {
 
   describe('if token is invalid', () => {
     beforeEach(() => {
-      spyOn(inviteService, 'checkToken').and.returnValue(
+      checkTokenSpy.and.returnValue(
         throwError({
           error: {
             success: false,
@@ -99,7 +113,7 @@ describe('AcceptInviteComponent', () => {
     });
 
     it('should not show password set form if token is invalid', () => {
-      component.ngOnInit();
+      component.checkTokenValidity();
       fixture.detectChanges();
       const form = fixture.nativeElement.querySelector('form');
       expect(form).toBeFalsy('form element is defined');
@@ -107,72 +121,41 @@ describe('AcceptInviteComponent', () => {
   });
 
   it('should show password set form if token is valid', () => {
-    fixture.whenStable().then(() => {
-      fixture.detectChanges();
-      const form = fixture.nativeElement.querySelector('form');
-      expect(form).toBeTruthy('form element not found');
-    });
+    const form = fixture.nativeElement.querySelector('form');
+    expect(form).toBeTruthy('form element not found');
   });
 
   it('should get error message if passwords are not equal', () => {
     fillPasswordsAndSubmit('pass', 'pass2');
 
-    fixture.whenStable().then(() => {
-      fixture.detectChanges();
-      const errorCont = fixture.nativeElement.querySelector('form > p');
-      expect(errorCont.innerText).toBeTruthy('no error message found');
+    fixture.detectChanges();
+    const errorCont = fixture.nativeElement.querySelector('form > p');
+    expect(errorCont.innerText).toBeTruthy('no error message found');
+  });
+
+  it('should be navigated to dashboard if passwords are equal', () => {
+    fillPasswordsAndSubmit('pass', 'pass');
+
+    fulfillInvitationSpy.calls.mostRecent().returnValue.subscribe(() => {
+        fixture.detectChanges();
+        const submitButton = fixture.nativeElement.querySelector('form button[type=submit]');
+        click(submitButton);
+
+        expect(navigateSpy).toHaveBeenCalledWith(['/dashboard']);
     });
   });
 
-  it('should be navigated to dashboard if passwords are equal', fakeAsync(() => {
-    // fillPasswordsAndSubmit('pass', 'pass');
-    console.log('component', component);
-    console.log('component.router', component.router);
-
-    fixture.whenStable().then(() => {
-      fixture.detectChanges();
-      const inputs = fixture.nativeElement.querySelectorAll('form input[type=password]');
-      console.log('inputs', inputs);
-      inputs[0].value = 'pass';
-      inputs[0].dispatchEvent(newEvent('input'));
-      inputs[1].value = 'pass';
-      inputs[1].dispatchEvent(newEvent('input'));
-      fixture.detectChanges();
-
-      console.log('before ');
-      fixture.whenStable().then(() => {
-        const navigateSpy = spyOn(component.router, 'navigate');
-        // component.router.navigate(['dashboard']);
-        const submitButton = fixture.nativeElement.querySelector('form button[type=submit]');
-        console.log(submitButton);
-        click(submitButton);
-        // component.fulfillInvitation();
-
-        // fixture.detectChanges();
-        console.log('before expect');
-        expect(navigateSpy).toHaveBeenCalledWith(['asasasasa']);
-      });
-    });
-
-    // fixture.whenStable().then(() => {
-    //   fixture.detectChanges();
-    //   expect(navigateSpy).toHaveBeenCalled();
-    // });
-  }));
-
 
   function fillPasswordsAndSubmit(pass1: string, pass2: string) {
-    fixture.whenStable().then(() => {
-      fixture.detectChanges();
-      const inputs = fixture.nativeElement.querySelectorAll('form input[type=password]');
-      inputs[0].value = pass1;
-      inputs[0].dispatchEvent(newEvent('input'));
-      inputs[1].value = pass2;
-      inputs[1].dispatchEvent(newEvent('input'));
-      fixture.detectChanges();
+    const inputs = fixture.nativeElement.querySelectorAll('form input[type="password"]');
+    inputs[0].value = pass1;
+    inputs[0].dispatchEvent(newEvent('input'));
+    inputs[1].value = pass2;
+    inputs[1].dispatchEvent(newEvent('input'));
+    fixture.detectChanges();
 
-      const submitButton = fixture.nativeElement.querySelector('form button[type=submit]');
-      click(submitButton);
-    });
+    const submitButton = fixture.nativeElement.querySelector('form button[type="submit"]');
+    click(submitButton);
   }
+
 });
