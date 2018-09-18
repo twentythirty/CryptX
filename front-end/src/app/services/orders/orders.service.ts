@@ -11,7 +11,7 @@ import { OrderGroup } from '../../shared/models/orderGroup';
 export class OrdersAllResponse {
   success: boolean;
   count: number;
-  recipe_orders: Order;
+  recipe_orders: Array<Order>;
   footer: Array<any>;
 }
 

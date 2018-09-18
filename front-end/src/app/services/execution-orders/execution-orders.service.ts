@@ -5,11 +5,11 @@ import { map } from 'rxjs/operators';
 
 import { environment } from '../../../environments/environment';
 import { EntitiesFilter } from '../../shared/models/api/entitiesFilter';
-import { Order } from '../../shared/models/order';
+import { ExecutionOrder } from '../../shared/models/executionOrder';
 
 export class OrderAllResponse {
     success: boolean;
-    execution_orders: Array<Order>;
+    execution_orders: Array<ExecutionOrder>;
     footer: Array<any>;
     count: number;
   }

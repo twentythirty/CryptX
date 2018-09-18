@@ -786,6 +786,8 @@ const getInvestmentRunTimeline = async function (investment_run_id) {
 
   if (recipe_orders.every(order => order.status === RECIPE_ORDER_STATUSES.Pending)) {
     order_status = RECIPE_ORDER_STATUSES.Pending;
+  } else if (recipe_orders.some(order => order.status === RECIPE_ORDER_STATUSES.Rejected)) {
+    order_status = RECIPE_ORDER_STATUSES.Rejected;
   } else if (recipe_orders.some(order => order.status === RECIPE_ORDER_STATUSES.Failed)) {
     order_status = RECIPE_ORDER_STATUSES.Failed;
   } else if (recipe_orders.some(order => order.status === RECIPE_ORDER_STATUSES.Executing)) {

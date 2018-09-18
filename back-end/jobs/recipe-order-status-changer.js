@@ -50,6 +50,7 @@ module.exports.JOB_BODY = async (config, log) => {
         COALESCE(eo_stats.failed_execution, 0) AS failed_execution,
         COALESCE(eo_stats.current_execution, 0) AS current_execution
     FROM recipe_order ro
+    JOIN recipe_order_group rog ON rog.id=ro.recipe_order_group_id
     LEFT JOIN
     ( SELECT recipe_order_id,
             count(id) AS all_execution,
@@ -58,12 +59,13 @@ module.exports.JOB_BODY = async (config, log) => {
     FROM execution_order
     GROUP BY recipe_order_id ) AS eo_stats ON ro.id = eo_stats.recipe_order_id
     WHERE ro.status NOT IN (:statuses_recipe_order_done)
-
+        AND rog.approval_status <> :status_recipe_order_pending
     `, {
         replacements: {
             status_execution_order_failed: EXECUTION_ORDER_STATUSES.Failed,
             statuses_execution_order_active: EXECUTION_ORDER_ACTIVE_STATUSES,
-            statuses_recipe_order_done: RECIPE_ORDER_TERMINAL_STATUSES
+            statuses_recipe_order_done: RECIPE_ORDER_TERMINAL_STATUSES,
+            status_recipe_order_pending: RECIPE_ORDER_GROUP_STATUSES.Pending
         },
         type: sequelize.QueryTypes.SELECT
     }).then(exec_order_stats => {
