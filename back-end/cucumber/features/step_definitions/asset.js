@@ -113,6 +113,44 @@ Given(/^the system has Asset Market Capitalization for the last (.*) hours$/, {
 
 });
 
+Given('the system has updated the Market History Calculation', async function() {
+
+    const { Asset, MarketHistoryCalculation, sequelize } = require('../../../models');
+    const { Op } = sequelize;
+    
+
+    const one_day_ago = new Date();
+    one_day_ago.setDate(one_day_ago.getDate() - 1); 
+
+    const [ asset_count, calculation_count ] = await Promise.all([
+        Asset.count(),
+        MarketHistoryCalculation.count({
+            where: { timestamp: { [Op.gte]: one_day_ago } },
+            distinct: true,
+            col: 'MarketHistoryCalculation.asset_id'
+        })
+    ]);
+
+    if(asset_count === calculation_count) return;
+
+    const [ nvt ] = await sequelize.query(`
+        SELECT asset_id, avg(capitalization_usd / daily_volume_usd) AS nvt
+        FROM asset_market_capitalization
+        WHERE TIMESTAMP > NOW() - interval '1 day'
+        GROUP BY asset_id
+    `);
+
+    return MarketHistoryCalculation.bulkCreate(nvt.map(asset => {
+        return {
+            asset_id: asset.asset_id,
+            value: asset.nvt,
+            timestamp: new Date(),
+            type: MARKET_HISTORY_CALCULATION_TYPES.NVT
+        }
+    }));
+
+});
+
 Given('the system has some missing Assets from CoinMarketCap, including ETH and BTC', async function() {
 
     const { Asset, AssetBlockchain, sequelize } = require('../../../models');
@@ -164,6 +202,24 @@ Given('the system is missing some of the top 100 coins', function() {
             this.current_asset_count = await AssetBlockchain.count();
                 
         });
+});
+
+Given(/^the system does not have Asset Market Capitalization for the last (.*) minutes$/, async function(minutes) {
+
+    minutes = parseInt(minutes);
+
+    const start_time = new Date();
+    start_time.setMinutes(start_time.getMinutes() - minutes);
+
+    const { AssetMarketCapitalization, sequelize } = require('../../../models');
+    const { Op } = sequelize;
+
+    return AssetMarketCapitalization.destroy({
+        where: {
+            timestamp: { [Op.gte]: start_time }
+        }
+    });
+
 });
 
 When('retrieve a list of Assets', function() {

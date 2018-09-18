@@ -187,6 +187,67 @@ Given(/^the system has Instrument Liquidity History for the last (.*) days$/, as
 
 });
 
+Given(/^the system is missing base Asset prices in USD for the last (.*) (.*)$/, async function(amount, interval_type) {
+
+    amount = parseInt(amount);
+    const start_time = new Date();
+   
+    switch(true) {
+
+        case /^(minute|minutes)$/g.test(interval_type):
+            start_time.setMinutes(start_time.getMinutes() - amount);
+            break;
+
+    }
+
+    const { Asset, Instrument, InstrumentMarketData, sequelize } = require('../../../models');
+    const { Op } = sequelize;
+
+    const assets = await Asset.findAll({
+        where: {
+            [Op.or]: [
+                { is_base: true }, { symbol: 'USD' }
+            ]
+        }
+    });
+
+    const base_assets = assets.filter(asset => asset.is_base);
+    const usd = assets.find(asset => asset.symbol === 'USD');
+
+    const instruments = await Instrument.findAll({
+        where: {
+            quote_asset_id: usd.id,
+            transaction_asset_id: base_assets.map(asset => asset.id)
+        }
+    });
+
+    return InstrumentMarketData.destroy({
+        where: {
+            instrument_id: instruments.map(instrument => instrument.id),
+            timestamp: { [Op.gte]: start_time }
+        }
+    });
+
+});
+
+Given('the system is missing Instrument Exchange Mappings for base assets in USD or USDT', async function() {
+
+    const { Asset, Instrument, InstrumentExchangeMapping } = require('../../../models');
+
+    const assets = await Asset.findAll({
+        where: { symbol: ['USD', 'USDT'] }
+    });
+
+    const instruments = await Instrument.findAll({
+        where: { quote_asset_id: assets.map(asset => asset.id) }
+    });
+
+    return InstrumentExchangeMapping.destroy({
+        where: { instrument_id: instruments.map(i => i.id) }
+    });
+
+});
+
 When('I create a new Instrument with those Assets', function() {
 
     const new_instrument = {

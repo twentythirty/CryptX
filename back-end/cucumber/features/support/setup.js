@@ -1,4 +1,4 @@
-const { BeforeAll, Before, AfterAll, After } = require('cucumber');
+const { BeforeAll, Before, AfterAll, After, setDefaultTimeout } = require('cucumber');
 const app = require('../../../app');
 
 const sinon = require('sinon');
@@ -22,6 +22,8 @@ const exchanges = {
     huobipro: huobipro_base,
     kraken: kraken_base
 };
+
+setDefaultTimeout(20000);
 
 const { setWorldConstructor } = require('cucumber');
 
