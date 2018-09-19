@@ -349,4 +349,162 @@ describe('DepositService testing', () => {
             });
         });
     });
+
+    describe('and method generate generateAssetConversions shall', () => {
+
+        const generateAssetConversions = DepositService.generateAssetConversions;
+
+        const MOCK_ASSETS = [{
+            id: 1,
+            is_base: false,
+            is_deposit: true,
+            symbol: 'USD'
+        }, {
+            id: 2,
+            is_base: true,
+            is_deposit: true,
+            symbol: 'BTC'
+        }, {
+            id: 1,
+            is_base: true,
+            is_deposit: true,
+            symbol: 'ETH'
+        }];
+
+        const MOCK_RECIPE_RUN = {
+            id: 1
+        };
+
+        const MOCK_MATCHING_DETAILS = [
+            {
+                recipe_run_id: MOCK_RECIPE_RUN.id,
+                quote_asset_id: MOCK_ASSETS[1].id,
+                RecipeRunDetailInvestments: [{
+                    asset_id: MOCK_ASSETS[0].id,
+                    amount: 100
+                },{
+                    asset_id: MOCK_ASSETS[1].id,
+                    amount: 1
+                },{
+                    asset_id: MOCK_ASSETS[2].id,
+                    amount: 10
+                }]
+            },
+            {
+                recipe_run_id: MOCK_RECIPE_RUN.id,
+                quote_asset_id: MOCK_ASSETS[2].id,
+                RecipeRunDetailInvestments: [{
+                    asset_id: MOCK_ASSETS[0].id,
+                    amount: 200
+                },{
+                    asset_id: MOCK_ASSETS[1].id,
+                    amount: 0
+                },{
+                    asset_id: MOCK_ASSETS[2].id,
+                    amount: 5
+                }]
+            },
+            {
+                recipe_run_id: MOCK_RECIPE_RUN.id,
+                quote_asset_id: MOCK_ASSETS[2].id,
+                RecipeRunDetailInvestments: [{
+                    asset_id: MOCK_ASSETS[0].id,
+                    amount: 150
+                },{
+                    asset_id: MOCK_ASSETS[1].id,
+                    amount: 5
+                },{
+                    asset_id: MOCK_ASSETS[2].id,
+                    amount: 0
+                }]
+            }
+        ]
+
+        //Details that don't have USD in them, basically
+        const MOCK_MISMATCHING_DETAILS = MOCK_MATCHING_DETAILS.map(detail => {
+
+            const missing_investment_assets = detail.RecipeRunDetailInvestments.filter(inv => inv.asset_id !== MOCK_ASSETS[0].id);
+
+            return Object.assign({}, detail, { RecipeRunDetailInvestments: missing_investment_assets });
+
+        });
+
+        before(done => {
+
+            sinon.stub(Asset, 'findAll').callsFake(options => {
+                return Promise.resolve(MOCK_ASSETS);
+            });
+
+            done(); 
+        });
+
+        afterEach(done => {
+
+            if(RecipeRunDetail.findAll.restore) RecipeRunDetail.findAll.restore();
+
+            done();
+        });
+
+        after(done => {
+
+            Asset.findAll.restore();
+
+            done();
+        });
+
+        it('exist', () => {
+
+            chai.expect(generateAssetConversions).to.be.not.undefined;
+
+        });
+
+        it('reject if Recipe Run Detailswere not found', () => {
+
+            sinon.stub(RecipeRunDetail, 'findAll').callsFake(options => {
+                return Promise.resolve([]);
+            });
+
+            return chai.assert.isRejected(generateAssetConversions({}));
+            
+        });
+
+        it('return an empty list if none of the assets match', () => {
+
+            sinon.stub(RecipeRunDetail, 'findAll').callsFake(options => {
+                return Promise.resolve(MOCK_MISMATCHING_DETAILS);
+            });
+
+            return generateAssetConversions(MOCK_RECIPE_RUN).then(result => {
+
+                chai.expect(result.length).to.equal(0);
+
+            });
+            
+        });
+
+        it('return an list of conversion with matching assets', () => {
+
+            sinon.stub(RecipeRunDetail, 'findAll').callsFake(options => {
+                return Promise.resolve(MOCK_MATCHING_DETAILS);
+            });
+
+            return generateAssetConversions(MOCK_RECIPE_RUN).then(result => {
+
+                chai.expect(result.length).to.be.greaterThan(0);
+
+                for(let conversion of result) {
+
+                    chai.expect(conversion.investment_asset_id).to.equal(MOCK_ASSETS[0].id);
+                    chai.expect(conversion.recipe_run_id).to.equal(MOCK_RECIPE_RUN.id);
+                    chai.expect(conversion.target_asset_id).to.be.oneOf(
+                        MOCK_ASSETS.filter(asset => asset.is_base).map(asset => asset.id)
+                    );
+
+                }
+
+            });
+            
+        });
+
+    });
 });

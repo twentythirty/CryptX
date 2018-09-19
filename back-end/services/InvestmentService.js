@@ -15,6 +15,7 @@ const RecipeOrderGroup = require('../models').RecipeOrderGroup;
 const RecipeRunDeposit = require('../models').RecipeRunDeposit;
 const InvestmentRunAssetGroup = require('../models').InvestmentRunAssetGroup;
 const GroupAsset = require('../models').GroupAsset;
+const InvestmentAssetConversion = require('../models').InvestmentAssetConversion;
 
 const AdminViewService = require('./AdminViewsService');
 
@@ -589,29 +590,44 @@ const changeRecipeRunStatus = async function (user_id, recipe_run_id, status_con
     approval_comment: comment
   });
 
-  //approving recipe run that was not approved before, try generate empty deposits and set the investment run status to RecipedApproved
+  /**
+   * If a recipe run is Approved, generate initial asset conversion entries this is possible.
+   * Deposits are no longer needed here.
+   */
   if (status_constant == RECIPE_RUN_STATUSES.Approved && old_status !== status_constant) {
 
-    [err] = await to(depositService.generateRecipeRunDeposits(recipe_run));
+    let conversions;
+    [ err, conversions ] = await to(depositService.generateAssetConversions(recipe_run));
 
     if (err) TE(err.message);
 
-    let result = [];
-    [err, result] = await to(Promise.all([
-      recipe_run.save(),
-      InvestmentRun.update({
+    [ err ] = await to(sequelize.transaction(transaction => {
+
+      return InvestmentRun.update({
         status: INVESTMENT_RUN_STATUSES.RecipeApproved
       }, {
         where: {
           id: recipe_run.investment_run_id
         },
-        limit: 1
-      })
-    ]));
+        limit: 1,
+        transaction
+      }).then(() => {
+
+        return recipe_run.save({ transaction }).then(saved_recipe_run => {
+          recipe_run = saved_recipe_run;
+
+          if(!conversions.length) return;
+          else return InvestmentAssetConversion.bulkCreate(conversions, { transaction });
+          
+        });
+
+      });
+
+    }));
 
     if (err) TE(err.message);
 
-    return result[0];
+    return recipe_run;
   } else return recipe_run.save();
 };
 module.exports.changeRecipeRunStatus = changeRecipeRunStatus;

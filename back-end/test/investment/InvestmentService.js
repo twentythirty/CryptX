@@ -31,6 +31,7 @@ describe('InvestmentService testing:', () => {
   const Asset = require('./../../models').Asset;
   const InvestmentRunAssetGroup = require('./../../models').InvestmentRunAssetGroup;
   const GroupAsset = require('./../../models').GroupAsset;
+  const InvestmentAssetConversion = require('./../../models').InvestmentAssetConversion;
   const sequelize = require('./../../models').sequelize
 
 
@@ -213,6 +214,10 @@ describe('InvestmentService testing:', () => {
       return Promise.resolve(assets.map(asset => _.assign(asset, { id: id++ }) ));
     });
 
+    sinon.stub(InvestmentAssetConversion, 'bulkCreate').callsFake(conversions => {
+      return Promise.all(conversions);
+    });
+
   });
 
   afterEach(() => {
@@ -233,6 +238,7 @@ describe('InvestmentService testing:', () => {
     InvestmentRunAssetGroup.findById.restore();
     InvestmentRunAssetGroup.create.restore();
     GroupAsset.bulkCreate.restore();
+    InvestmentAssetConversion.bulkCreate.restore();
     if(sequelize.transaction.restore) sequelize.transaction.restore();
     if(sequelize.query.restore) sequelize.query.restore();
   });

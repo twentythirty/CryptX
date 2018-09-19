@@ -3,12 +3,13 @@
 const InvestmentService = require('../services/InvestmentService');
 const RecipeRunDeposit = require('../models').RecipeRunDeposit;
 const RecipeRunDetail = require('../models').RecipeRunDetail;
+const RecipeRunDetailInvestment = require('../models').RecipeRunDetailInvestment
 const Asset = require('../models').Asset;
 const Exchange = require('../models').Exchange;
 const ExchangeAccount = require('../models').ExchangeAccount;
 const Sequelize = require('../models').Sequelize;
 
-const { in: opIn, ne: opNe } = Sequelize.Op;
+const { in: opIn, ne: opNe, or: opOr } = Sequelize.Op;
 
 const { logAction } = require('../utils/ActionLogUtil'); 
 
@@ -176,3 +177,54 @@ const approveDeposit = async (deposit_id, user_id) => {
 
 };
 module.exports.approveDeposit = approveDeposit;
+
+const generateAssetConversions = async recipe_run => {
+
+  const [ err, result ] = await to(Promise.all([
+    RecipeRunDetail.findAll({
+      where: { recipe_run_id: recipe_run.id },
+      include: RecipeRunDetailInvestment
+    }),
+    Asset.findAll({
+      where: {
+        [opOr]: [
+          { is_deposit: true }, { is_base: true }
+        ]
+      }
+    })
+  ]));
+
+  const [ details, assets ] = result; 
+
+  if(err) TE(err.message);
+  if(!details.length) TE(`Could not locate recipe run details for recipe run with id "${recipe_run.id}"`);
+
+  const investment_assets = assets.filter(asset => asset.is_deposit && !asset.is_base);
+  const base_assets = assets.filter(asset => asset.is_base);
+
+  const conversaions = [];
+  for(let investment_asset of investment_assets) {
+    for(let base_asset of base_assets) {
+
+      const total_amount = details.filter(detail => detail.quote_asset_id === base_asset.id).reduce((total, detail) => {
+
+        const investment = detail.RecipeRunDetailInvestments.find(inv => inv.asset_id === investment_asset.id);
+        if(investment) total = total.plus(investment.amount);
+
+        return total;
+
+      }, Decimal(0));
+
+      if(total_amount.gt(0)) conversaions.push({
+        recipe_run_id: recipe_run.id,
+        investment_asset_id: investment_asset.id,
+        target_asset_id: base_asset.id
+      });
+
+    }
+  }
+
+  return conversaions;
+
+};
+module.exports.generateAssetConversions = generateAssetConversions;
