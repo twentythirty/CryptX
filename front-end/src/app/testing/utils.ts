@@ -2,9 +2,10 @@ import { RouterTestingModule } from '@angular/router/testing';
 import { DebugElement } from '@angular/core';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { TranslateLoader, TranslateModule } from '@ngx-translate/core';
+import { throwError, of, defer } from 'rxjs';
 import { Observable } from 'rxjs/Observable';
-import { of } from 'rxjs/observable/of';
-import { defer } from 'rxjs/observable/defer';
+import { routes } from '../config/routes/routes';
+import { FakeEmptyComponent } from '../shared/components/fake-empty/fake-empty.component';
 
 /**
  * Helper function for stubbing service data
@@ -30,7 +31,22 @@ export const testingTranslateModule = TranslateModule.forRoot({
 
 export const extraTestingModules = [
   BrowserAnimationsModule,
-  RouterTestingModule,
+  RouterTestingModule.withRoutes(
+    routes.map(route => {
+      if (route.children) {
+        route.children.map(child => {
+          child.component = FakeEmptyComponent;
+          return child;
+        });
+      }
+
+      return {
+        path: route.path,
+        component: FakeEmptyComponent,
+        children: route.children
+      };
+    })
+  ),
   testingTranslateModule,
 ];
 
@@ -65,3 +81,15 @@ export function click(el: DebugElement | HTMLElement, eventObj: any = ButtonClic
     el.triggerEventHandler('click', eventObj);
   }
 }
+
+/**
+ * error response for spy, when you need check whats going on if API return error
+ *
+ * serviceSpy.and.returnValue(errorResponse);
+ */
+export const errorResponse = throwError({
+  error: {
+    success: false,
+    error: 'error message'
+  }
+});
