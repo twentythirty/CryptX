@@ -171,6 +171,7 @@ investment_run_asset_group # List of assets used in investment run.
 id int PK
 created_timestamp timestamp # Timestamp when asset mix was created.
 user_id int FK >- user.id # User who created investment run asset group
+strategy_type enum # Large Cap Index (LCI), Mid Cap Index (MCI)
 
 group_asset # Asset
 -
@@ -187,10 +188,22 @@ recipe_run_id int FK >- recipe_run.id
 asset_id int FK >- asset.id # Currency in which the investment was denominated
 amount decimal # Amount deposited
 fee decimal # Deposit management fees deducted
-depositor_user_id int FK >- user.id # Depositor who made the deposit
+depositor_user_id int NULLABLE FK >- user.id # Depositor who made the deposit
 completion_timestamp timestamp NULLABLE # Time when deposit was completed
 target_exchange_account_id int FK >- exchange.id # Exchange account to which deposit will be made
 status enum # Status of the deposit. Possible values: PENDING, COMPLETED
+
+investment_asset_conversion
+-
+id PK int
+recipe_run_id int FK >- recipe_run.id # Recipe run according to which conversions should be done
+investment_asset_id int FK >- asset.id # Currency from which conversion will be performed
+target_asset_id int FK >- asset.id # Currency to which the amount should be converted
+depositor_user_id int NULLABLE FK >- user.id # User who made the conversion
+created_timestamp timestamp # Time when conversion was created
+completed_timestamp timestamp NULLABLE # Time when conversion was completed
+amount decimal NULLABLE # Amount of currency received after conversion
+status enum # Status of conversion. Possible value: PENDING, COMPLETED
 
 recipe_run
 -
