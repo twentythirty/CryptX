@@ -20,7 +20,8 @@ const {
     AVExecutionOrderFill,
     AVColdStorageTransfer,
     AVColdStorageAccount,
-    AVColdStorageAccountStorageFee
+    AVColdStorageAccountStorageFee,
+    AVInvestmentAssetConversion
 } = require('../models');
 
 const builder = require('../utils/AdminViewUtils');
@@ -351,6 +352,12 @@ const fetchColdStorageAccountStorageFeesViewDataWithCount = async (seq_query = {
     return fetchViewDataWithCount(AVColdStorageAccountStorageFee, seq_query);
 }
 module.exports.fetchColdStorageAccountStorageFeesViewDataWithCount = fetchColdStorageAccountStorageFeesViewDataWithCount;
+
+const fetchInvestmentAssetConversionsViewDataWithCount = async (seq_query = {}) => {
+
+    return fetchViewDataWithCount(AVInvestmentAssetConversion, seq_query);
+}
+module.exports.fetchInvestmentAssetConversionsViewDataWithCount = fetchInvestmentAssetConversionsViewDataWithCount;
 
 const fetchAssetView = async (asset_id) => {
 
@@ -998,4 +1005,26 @@ const fetchInvestmentAmountFooter = async (where_clause = '') => {
     )
 }
 module.exports.fetchInvestmentAmountFooter = fetchInvestmentAmountFooter;
+
+const fetchInvestmentAssetConversionViewFooter = async (where_clause = '') => {
+
+    const view = 'av_investment_asset_conversions';
+
+    const query = builder.joinQueryParts([
+        builder.selectCountDistinct('target_currency', 'target_currency', view, where_clause),
+        builder.selectSumTrim('investment_amount', view, where_clause),
+        builder.selectCount(view, 'status', builder.addToWhere(where_clause, `status = \'asset_conversions.status.${ASSET_CONVERSION_STATUSES.Pending}\'`))
+    ], [
+        'target_currency',
+        'investment_amount',
+        'status'
+    ]);
+
+    const footer = (await sequelize.query(query))[0];
+
+    return builder.addFooterLabels(
+        builder.queryReturnRowToFooterObj(footer), 'asset_conversions'
+    )
+}
+module.exports.fetchInvestmentAssetConversionViewFooter = fetchInvestmentAssetConversionViewFooter;
 

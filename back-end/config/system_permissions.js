@@ -403,6 +403,11 @@ ROUTES = {
     permissions_matcher: ROUTE_MATCHERS.ApproveRecipeRun,
     required_permissions: [PERMISSIONS.VIEW_INVESTMENT_RUN, PERMISSIONS.APPROVE_RECIPE_RUN]
   },
+  getRecipeRunAssetConversions: {
+    router_string: "/recipes/:recipe_id/conversions",
+    permissions_matcher: ROUTE_MATCHERS.getRecipeRunAssetConversions,
+    required_permissions: [PERMISSIONS.VIEW_INVESTMENT_RUN]
+  },
 
   // Recipe run details
   GetRecipeRunDetails: {

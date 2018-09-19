@@ -1302,6 +1302,45 @@
         ]
       }
     },
+    "/recipes/{recipe_id}/conversions": {
+      "post": {
+        "tags": [
+          "recipes"
+        ],
+        "summary": "Get a list of asset conversions related to the Recipe Run",
+        "description": "Get a list of asset conversions related to the Recipe Run",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/parameters/recipe_id"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "description": "The filter definition to perform on the data set. If absent will assume empty filter and return all data",
+            "required": false,
+            "schema": {
+              "$ref": "#/definitions/EntitiesFilter"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "$ref": "#/definitions/InvestmentAssetConverionListResponse"
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
     "/recipes/of_investment/{investment_id}": {
       "get": {
         "tags": [
@@ -6389,6 +6428,25 @@
         }
       ]
     },
+    "InvestmentAssetConverionListResponse": {
+      "description": "Recipe run Asset conversion response",
+      "type": "object",
+      "allOf": [
+        {
+          "$ref": "#/definitions/ListResponse"
+        },
+        {
+          "properties": {
+            "conversions": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/InvestmentAssetConversionView"
+              }
+            }
+          }
+        }
+      ]
+    },
     "RecipeRunWithStatsResponse": {
       "description": "Recipe run response",
       "type": "object",
@@ -6472,6 +6530,39 @@
           }
         }
       ]
+    },
+    "InvestmentAssetConversionView" :{
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "number",
+          "example": 6
+        },
+        "recipe_run_id": {
+          "type": "number",
+          "example": 9
+        },
+        "investment_currency": {
+          "type": "string",
+          "example": "USD"
+        },
+        "investment_amount": {
+          "type": "number",
+          "example": 19988989.655
+        },
+        "target_currency": {
+          "type": "string",
+          "example": "BTC"
+        },
+        "converted_amount": {
+          "type": "number",
+          "example": 69
+        },
+        "status": {
+          "type": "string",
+          "example": "asset_conversions.status.501"
+        }
+      }
     },
     "RecipeRun": {
       "description": "Recipe run",

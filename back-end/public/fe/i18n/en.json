@@ -620,5 +620,17 @@
       "currency_name": "{{currency_name}} Items",
       "value_usd": "{{value_usd}}"
     }
+  },
+
+  "asset_conversions": {
+    "status": {
+      "501": "Pending",
+      "502": "Completed"
+    },
+    "footer": {
+      "target_currency": "{{ target_currency }} Currencies",
+      "investment_amount": "{{ investment_amount }} Total",
+      "status": "{{ status }} Pending"
+    }
   }
 }
