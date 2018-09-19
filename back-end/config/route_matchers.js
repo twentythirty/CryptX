@@ -43,7 +43,6 @@ ROUTE_MATCHERS = {
     GetRecipeRunDetails: /\/recipe_details\/of_recipe\/\d+$/,
     GetRecipeRunDetailsColLOV: /\/recipe_details\/header_lov\/\w+/,
     ApproveRecipeRun: /\/recipes\/\d+\/approve$/,
-    getRecipeRunAssetConversions: /\/recipes\/d+\/conversions$/,
     GetRecipeOrdersOfRecipe: /\/orders\/of_recipe\/\d+$/,
     GetRecipeOrdersOfGroup: /\/orders\/of_group\/\d+$/,
     GetRecipeOrders: /\/orders\/all$/,
@@ -103,7 +102,9 @@ ROUTE_MATCHERS = {
     GetColdstorageAccounts: /\/cold_storage\/accounts\/all$/,
     GetColdstorageAccountsColLOV: /\/cold_storage\/accounts\/header_lov\/\w+$/,
     GetColdstorageAccountsFees: /\/cold_storage\/accounts\/fees/,
-    GetColdstorageAccountsFeesColLOV: /\/cold_storage\/accounts\/fees\/header_lov\/\w+$/
+    GetColdstorageAccountsFeesColLOV: /\/cold_storage\/accounts\/fees\/header_lov\/\w+$/,
+    GetRecipeRunAssetConversions: /\/conversions\/of_recipe\/d+$/,
+    CompleteAssetConversion: /\/conversions\/d+\/complete$/
 }
 
 //same as above map but with regex strings that can be converted into regex objects

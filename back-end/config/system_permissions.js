@@ -403,11 +403,6 @@ ROUTES = {
     permissions_matcher: ROUTE_MATCHERS.ApproveRecipeRun,
     required_permissions: [PERMISSIONS.VIEW_INVESTMENT_RUN, PERMISSIONS.APPROVE_RECIPE_RUN]
   },
-  getRecipeRunAssetConversions: {
-    router_string: "/recipes/:recipe_id/conversions",
-    permissions_matcher: ROUTE_MATCHERS.getRecipeRunAssetConversions,
-    required_permissions: [PERMISSIONS.VIEW_INVESTMENT_RUN]
-  },
 
   // Recipe run details
   GetRecipeRunDetails: {
@@ -690,6 +685,21 @@ ROUTES = {
     permissions_matcher: ROUTE_MATCHERS.GetColdstorageAccountsFeesColLOV,
     required_permissions: [PERMISSIONS.VIEW_COLS_STORAGE_ACCOUNT_FEES]
   },
+
+  //ASSET CONVERSION
+
+  GetRecipeRunAssetConversions: {
+    router_string: "/conversions/of_recipe/:recipe_id",
+    permissions_matcher: ROUTE_MATCHERS.GetRecipeRunAssetConversions,
+    required_permissions: [PERMISSIONS.VIEW_INVESTMENT_RUN]
+  },
+  CompleteAssetConversion: {
+    router_string: "/conversions/:conversion_id/complete",
+    permissions_matcher: ROUTE_MATCHERS.CompleteAssetConversion,
+    required_permissions: [PERMISSIONS.VIEW_INVESTMENT_RUN]
+  },
+
+
   // System settings
   ChangeSettingValues: {
     router_string: "/settings/:setting_id",

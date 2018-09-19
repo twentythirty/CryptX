@@ -228,3 +228,52 @@ const getRecipeDepositsColumnLOV = async (req, res) => {
 
 };
 module.exports.getRecipeDepositsColumnLOV = getRecipeDepositsColumnLOV;
+
+const getRecipeRunAssetConversions = async (req, res) => {
+
+  const { recipe_id } = req.params;
+  let { seq_query, sql_where } = req;
+
+  seq_query.where.recipe_run_id = recipe_id;
+
+  if(sql_where !== '') sql_where += ' AND ';
+  sql_where += `recipe_run_id = ${recipe_id}`;
+
+  const [ err, result ] = await to(Promise.all([
+    AdminViewService.fetchInvestmentAssetConversionsViewDataWithCount(seq_query),
+    AdminViewService.fetchInvestmentAssetConversionViewFooter(sql_where)
+  ]));
+
+  if(err) return ReE(res, err.message, 422);
+
+  const [ data_with_count, footer ] = result;
+  const { data: conversions, total: count } = data_with_count;
+
+  return ReS(res, {
+    conversions,
+    count,
+    footer
+  });
+
+};
+module.exports.getRecipeRunAssetConversions = getRecipeRunAssetConversions;
+
+const completeAssetConversion = async (req, res) => {
+
+  const { conversion_id } = req.params;
+  const { amount } = req.body;
+  const { user } = req;
+
+  let [ err, conversion ] = await to(DepositService.completeAssetConversion(conversion_id, amount, user));
+
+  if(err) return ReE(res, err.message, 422);
+  if(!conversion) return ReE(res, `Asset conversion with id "${conversion_id}" was not found`, 404);
+
+  [ err, conversion ] = await to(AdminViewService.fetchInvestmentAssetConversionView(conversion_id));
+
+  if(err) return ReE(res, err.message, 422);
+
+  return ReS(res, { conversion });
+
+};
+module.exports.completeAssetConversion = completeAssetConversion;

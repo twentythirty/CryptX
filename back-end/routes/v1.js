@@ -454,14 +454,6 @@ router.get(
   filter_reducer,
   InvestmentController.getRecipeRun
 );
-router.post(
-  ROUTES.getRecipeRunAssetConversions.router_string,
-  stateless_auth,
-  res_new_token,
-  check_permissions,
-  filter_reducer,
-  InvestmentController.getRecipeRunAssetConversions
-);
 
 
 // RECIPE ORDERS
@@ -1026,6 +1018,27 @@ router.post(
   check_permissions,
   ColdstorageController.getColdstorageAccountsFeeColumnLOV
 );
+
+//ASSET CONVERSION
+
+router.post(
+  ROUTES.GetRecipeRunAssetConversions.router_string,
+  stateless_auth,
+  res_new_token,
+  check_permissions,
+  filter_reducer,
+  DepositController.getRecipeRunAssetConversions
+);
+router.post(
+  ROUTES.CompleteAssetConversion.router_string,
+  stateless_auth,
+  res_new_token,
+  check_permissions,
+  filter_reducer,
+  DepositController.completeAssetConversion
+);
+
+
 //********* API DOCUMENTATION **********
 router.use(
   "/docs/api.json",

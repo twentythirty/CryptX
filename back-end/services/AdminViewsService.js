@@ -466,6 +466,12 @@ const fetchColdStorageAccountStorageFeeView = async (fee_id) => {
 }
 module.exports.fetchColdStorageAccountStorageFeeView = fetchColdStorageAccountStorageFeeView;
 
+const fetchInvestmentAssetConversionView = async (conversion_id) => {
+
+    return fetchSingleEntity(AVInvestmentAssetConversion, conversion_id);
+}
+module.exports.fetchInvestmentAssetConversionView = fetchInvestmentAssetConversionView;
+
 // ************************ FOOTERS ***************************//
 
 const fetchUsersViewFooter = async (where_clause = '') => {

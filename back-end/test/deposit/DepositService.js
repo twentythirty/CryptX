@@ -33,6 +33,7 @@ describe('DepositService testing', () => {
     const ExchangeAccount = require('./../../models').ExchangeAccount;
     const Exchange = require('./../../models').Exchange;
     const Asset = require('./../../models').Asset;
+    const InvestmentAssetConversion = require('./../../models').InvestmentAssetConversion;
 
     const ActionLogUtil = require('./../../utils/ActionLogUtil');
 
@@ -504,6 +505,102 @@ describe('DepositService testing', () => {
 
             });
             
+        });
+
+    });
+
+    describe('and the method completeAssetConversion shall', () => {
+
+        const completeAssetConversion = DepositService.completeAssetConversion;
+
+        const MOCK_DEPOSITOR = {
+            id: 1
+        };
+
+        const MOCK_PENDING_CONVERSION = {
+            id: 1,
+            amount: null,
+            created_timestamp: new Date(),
+            completed_timestamp: null,
+            depositor_user_id: null,
+            recipe_run_id: 1,
+            status: ASSET_CONVERSION_STATUSES.Pending,
+            investment_asset_id: 1,
+            target_asset_id: 2,
+            save: function() {
+                return Promise.resolve(this);
+            }
+        };
+
+        const MOCK_COMPLETED_CONVERSION = _.assign({}, MOCK_PENDING_CONVERSION, {
+            id: 2,
+            completed_timestamp: new Date(),
+            depositor_user_id: 2,
+            amount: 1000,
+            status: ASSET_CONVERSION_STATUSES.Completed
+        });
+
+        const MOCK_CONVERSIONS = [ MOCK_PENDING_CONVERSION, MOCK_COMPLETED_CONVERSION ];
+
+        const CONVERSION_AMOUNT = _.random(100, 1000);
+
+        before(done => {
+
+            sinon.stub(InvestmentAssetConversion, 'findById').callsFake(id => {
+
+                return Promise.resolve(_.find(MOCK_CONVERSIONS, c => c.id === id) || null);
+                
+            });
+
+            done();
+        });
+
+        after(done => {
+
+            InvestmentAssetConversion.findById.restore();
+
+            done()
+        });;
+
+        it('exist', () => {
+
+            chai.expect(completeAssetConversion).to.be.not.undefined;
+
+        });
+
+        it('reject if the amount is invalid', () => {
+
+            return chai.assert.isRejected(completeAssetConversion(MOCK_PENDING_CONVERSION.id, -1, MOCK_DEPOSITOR));
+
+        });
+
+        it('return null if the conversion was not found', () => {
+
+            return completeAssetConversion(0, CONVERSION_AMOUNT, MOCK_DEPOSITOR).then(conversion => {
+                chai.expect(conversion).to.be.null;
+            });
+
+        });
+
+        it('reject if the conversion was already Completed', () => {
+
+            return chai.assert.isRejected(completeAssetConversion(MOCK_COMPLETED_CONVERSION.id, CONVERSION_AMOUNT, MOCK_DEPOSITOR));
+
+        });
+
+        it('complete a conversion is the conditions are met', () => {
+
+            return completeAssetConversion(MOCK_PENDING_CONVERSION.id, CONVERSION_AMOUNT, MOCK_DEPOSITOR).then(conversion => {
+
+                chai.expect(conversion).to.be.not.null;
+
+                chai.expect(conversion.completed_timestamp).to.be.a('date');
+                chai.expect(conversion.depositor_user_id).to.equal(MOCK_DEPOSITOR.id);
+                chai.expect(conversion.status).to.equal(ASSET_CONVERSION_STATUSES.Completed);
+                chai.expect(conversion.amount).to.equal(CONVERSION_AMOUNT);
+
+            });
+
         });
 
     });

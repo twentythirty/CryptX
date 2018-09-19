@@ -46,6 +46,13 @@
       "description": "ID of recipe run",
       "required": true,
       "type": "integer"
+    },
+    "conversion_id": {
+      "name": "conversion_id",
+      "in": "path",
+      "description": "ID of asset conversion",
+      "required": true,
+      "type": "integer"
     }
   },
   "paths": {
@@ -1292,45 +1299,6 @@
             "description": "success",
             "schema": {
               "$ref": "#/definitions/RecipeRunWithStatsResponse"
-            }
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ]
-      }
-    },
-    "/recipes/{recipe_id}/conversions": {
-      "post": {
-        "tags": [
-          "recipes"
-        ],
-        "summary": "Get a list of asset conversions related to the Recipe Run",
-        "description": "Get a list of asset conversions related to the Recipe Run",
-        "produces": [
-          "application/json"
-        ],
-        "parameters": [
-          {
-            "$ref": "#/parameters/recipe_id"
-          },
-          {
-            "name": "body",
-            "in": "body",
-            "description": "The filter definition to perform on the data set. If absent will assume empty filter and return all data",
-            "required": false,
-            "schema": {
-              "$ref": "#/definitions/EntitiesFilter"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "success",
-            "schema": {
-              "$ref": "#/definitions/InvestmentAssetConverionListResponse"
             }
           }
         },
@@ -4670,6 +4638,93 @@
           }
         ]
       }
+    },
+    "/conversions/of_recipe/{recipe_id}": {
+      "post": {
+        "tags": [
+          "conversions", "recipes"
+        ],
+        "summary": "Get a list of asset conversions related to the Recipe Run",
+        "description": "Get a list of asset conversions related to the Recipe Run",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/parameters/recipe_id"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "description": "The filter definition to perform on the data set. If absent will assume empty filter and return all data",
+            "required": false,
+            "schema": {
+              "$ref": "#/definitions/EntitiesFilter"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "$ref": "#/definitions/InvestmentAssetConverionListResponse"
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/conversions/{conversion_id}/complete": {
+      "post": {
+        "tags": [
+          "conversions"
+        ],
+        "summary": "Completes an Asset conversion",
+        "description": "Sets the converted amount and marks the conversion as completed, returns an updated conversion",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/parameters/conversion_id"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "description": "Specify the amount that was converted",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/AssetConversionComplete"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "success": {
+                  "type": "boolean",
+                  "example": true
+                },
+                "conversion": {
+                  "$ref": "#/definitions/InvestmentAssetConversionView"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
     }
   },
   "securityDefinitions": {
@@ -5735,6 +5790,16 @@
         "quote_asset_id": {
           "type": "number",
           "example": 2
+        }
+      }
+    },
+    "AssetConversionComplete": {
+      "description": "Information needed to complete a conversion",
+      "type": "object",
+      "properties": {
+        "amount": {
+          "type": "number",
+          "example": 198154
         }
       }
     },

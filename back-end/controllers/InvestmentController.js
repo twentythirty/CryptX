@@ -9,7 +9,7 @@ const adminViewsService = require('../services/AdminViewsService');
 const adminViewUtils = require('../utils/AdminViewUtils');
 const investmentService = require('../services/InvestmentService');
 const OrdersService = require('../services/OrdersService');
-
+const DepositService = require('../services/DepositService');
 
 const createInvestmentRun = async function (req, res) {
   let err, investment_run = {};
@@ -630,32 +630,3 @@ const generateInvestmentAssetGroup = async function (req, res) {
 
 };
 module.exports.generateInvestmentAssetGroup = generateInvestmentAssetGroup;
-
-const getRecipeRunAssetConversions = async (req, res) => {
-
-  const { recipe_id } = req.params;
-  let { seq_query, sql_where } = req;
-
-  seq_query.where.recipe_run_id = recipe_id;
-
-  if(sql_where !== '') sql_where += ' AND ';
-  sql_where += `recipe_run_id = ${recipe_id}`;
-
-  const [ err, result ] = await to(Promise.all([
-    adminViewsService.fetchInvestmentAssetConversionsViewDataWithCount(seq_query),
-    adminViewsService.fetchInvestmentAssetConversionViewFooter(sql_where)
-  ]));
-
-  if(err) return ReE(res, err.message, 422);
-
-  const [ data_with_count, footer ] = result;
-  const { data: conversions, total: count } = data_with_count;
-
-  return ReS(res, {
-    conversions,
-    count,
-    footer
-  });
-
-};
-module.exports.getRecipeRunAssetConversions = getRecipeRunAssetConversions;

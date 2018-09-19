@@ -7,6 +7,7 @@ const RecipeRunDetailInvestment = require('../models').RecipeRunDetailInvestment
 const Asset = require('../models').Asset;
 const Exchange = require('../models').Exchange;
 const ExchangeAccount = require('../models').ExchangeAccount;
+const InvestmentAssetConversion = require('../models').InvestmentAssetConversion;
 const Sequelize = require('../models').Sequelize;
 
 const { in: opIn, ne: opNe, or: opOr } = Sequelize.Op;
@@ -228,3 +229,26 @@ const generateAssetConversions = async recipe_run => {
 
 };
 module.exports.generateAssetConversions = generateAssetConversions;
+
+const completeAssetConversion = async (conversion_id, amount, user) => {
+
+  if(!_.isNumber(amount) || amount <= 0) TE(`Converted amount must a positive number`);
+  
+  const [ err, conversion ] = await to(InvestmentAssetConversion.findById(conversion_id));
+
+  if(err) TE(err.message);
+  if(!conversion) return null;
+
+  if(conversion.status === ASSET_CONVERSION_STATUSES.Completed) {
+    TE(`Conversion with id "${conversion_id}" is already Completed`);
+  }
+
+  conversion.amount = amount;
+  conversion.completed_timestamp = new Date();
+  conversion.depositor_user_id = user.id;
+  conversion.status = ASSET_CONVERSION_STATUSES.Completed;
+
+  return conversion.save();
+
+};
+module.exports.completeAssetConversion = completeAssetConversion;
