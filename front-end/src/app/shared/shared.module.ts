@@ -1,4 +1,4 @@
-import { NgModule } from '@angular/core';
+import { NgModule, Component } from '@angular/core';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { HttpClientModule } from '@angular/common/http';
@@ -41,6 +41,7 @@ import { ActionLogComponent } from './components/action-log/action-log.component
 import { NguiAutoCompleteModule } from '@ngui/auto-complete/dist';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { MarkAsTouchedDirective } from './directives/mark-as-touched.directive';
+import { FakeEmptyComponent } from './components/fake-empty/fake-empty.component';
 
 @NgModule({
     imports: [
@@ -71,6 +72,7 @@ import { MarkAsTouchedDirective } from './directives/mark-as-touched.directive';
         NgSelectModule,
     ],
     declarations: [
+        FakeEmptyComponent,
         BtnComponent,
         DataTableComponent,
         ModalComponent,
@@ -105,6 +107,7 @@ import { MarkAsTouchedDirective } from './directives/mark-as-touched.directive';
 
     ],
     exports: [
+        FakeEmptyComponent,
         MatProgressSpinnerModule,
         TranslateModule,
         BtnComponent,

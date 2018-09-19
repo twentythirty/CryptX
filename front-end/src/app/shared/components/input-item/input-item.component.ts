@@ -29,7 +29,7 @@ export class InputItemComponent implements ControlValueAccessor, OnInit {
   @Input() bindValue: string; // input items object field to bind as a option value
   @Input() bindLabel: string; // input items object field to bind as a option label
   @Input() placeholder: string;
-  @Input() type: string;
+  @Input() type: string = 'text';
   @Input() clearable: boolean; // ability to clear selection
   @Input() readonly: boolean; // makes input readonly
   @Input() spinnerLoading: boolean; // shows spinner while loading input selection data

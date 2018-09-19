@@ -4,6 +4,8 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { TranslateLoader, TranslateModule } from '@ngx-translate/core';
 import { throwError, of, defer } from 'rxjs';
 import { Observable } from 'rxjs/Observable';
+import { routes } from '../config/routes/routes';
+import { FakeEmptyComponent } from '../shared/components/fake-empty/fake-empty.component';
 
 /**
  * Helper function for stubbing service data
@@ -29,7 +31,22 @@ export const testingTranslateModule = TranslateModule.forRoot({
 
 export const extraTestingModules = [
   BrowserAnimationsModule,
-  RouterTestingModule,
+  RouterTestingModule.withRoutes(
+    routes.map(route => {
+      if (route.children) {
+        route.children.map(child => {
+          child.component = FakeEmptyComponent;
+          return child;
+        });
+      }
+
+      return {
+        path: route.path,
+        component: FakeEmptyComponent,
+        children: route.children
+      };
+    })
+  ),
   testingTranslateModule,
 ];
 
