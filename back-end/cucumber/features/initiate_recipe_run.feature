@@ -46,7 +46,7 @@ Feature: Initiate a recipe run
 
     Examples:
     | amount | interval_type |
-    | 15  | minutes |
+    | 20  | minutes |
 
     Scenario: Instrument exchange mappings are missing for base assets.
   
