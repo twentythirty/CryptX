@@ -122,6 +122,11 @@ MODEL_CONST = {
   JOB_RESULT_STATUSES: {
     Error: 'error',
     Skipped: 'skipped'
+  },
+
+  ASSET_CONVERSION_STATUSES: {
+    Pending: 501,
+    Completed: 502
   }
 };
 
