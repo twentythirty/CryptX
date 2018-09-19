@@ -2,9 +2,8 @@ import { RouterTestingModule } from '@angular/router/testing';
 import { DebugElement } from '@angular/core';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { TranslateLoader, TranslateModule } from '@ngx-translate/core';
+import { throwError, of, defer } from 'rxjs';
 import { Observable } from 'rxjs/Observable';
-import { of } from 'rxjs/observable/of';
-import { defer } from 'rxjs/observable/defer';
 
 /**
  * Helper function for stubbing service data
@@ -65,3 +64,15 @@ export function click(el: DebugElement | HTMLElement, eventObj: any = ButtonClic
     el.triggerEventHandler('click', eventObj);
   }
 }
+
+/**
+ * error response for spy, when you need check whats going on if API return error
+ *
+ * serviceSpy.and.returnValue(errorResponse);
+ */
+export const errorResponse = throwError({
+  error: {
+    success: false,
+    error: 'error message'
+  }
+});

@@ -8,7 +8,9 @@ export function testHeaderLov(dataSource, headerLovColumns) {
     if (headerLovColumns.includes(item.column)) {
       expect(item.filter.rowData$).toBeDefined(`"${item.column}" column`);
     } else {
-      expect(item.filter.rowData$).toBeUndefined(`"${item.column}" column`);
+      if (item.filter) {
+        expect(item.filter.rowData$).toBeUndefined(`"${item.column}" column`);
+      }
     }
   }
 }
