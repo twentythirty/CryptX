@@ -73,6 +73,32 @@ describe('InvestmentService testing:', () => {
     investment_run_asset_group_id: 1
   };
 
+  let ASSETS = [{
+    id: 1,
+    is_base: false,
+    is_deposit: true,
+    symbol: 'USD'
+  },{
+    id: 2,
+    is_base: true,
+    is_deposit: true,
+    symbol: 'BTC'
+  },{
+    id: 3,
+    is_base: true,
+    is_deposit: true,
+    symbol: 'ETH'
+  }]
+
+  let RECIPE_RUN_DETAILS = [{
+    recipe_run_id: 1,
+    quote_asset_id: ASSETS[1].id,
+    RecipeRunDetailInvestments: [{
+      asset_id: ASSETS[0].id,
+      amount: 1
+    }]
+  }];
+
   beforeEach(() => {
     sinon.stub(InvestmentRun, 'create').callsFake((data) => {
       let investment_run = new InvestmentRun(data);
@@ -175,6 +201,10 @@ describe('InvestmentService testing:', () => {
       return Promise.resolve(details);
     });
 
+    sinon.stub(RecipeRunDetail, 'findAll').callsFake(options => {
+      return Promise.resolve(RECIPE_RUN_DETAILS);
+    });
+
     sinon.stub(ordersService, 'generateApproveRecipeOrders').callsFake((id) => {
       return Promise.resolve();
     });
@@ -218,6 +248,10 @@ describe('InvestmentService testing:', () => {
       return Promise.all(conversions);
     });
 
+    sinon.stub(Asset, 'findAll').callsFake(options => {
+      return Promise.resolve(ASSETS);
+    });
+
   });
 
   afterEach(() => {
@@ -231,6 +265,7 @@ describe('InvestmentService testing:', () => {
     RecipeRun.findById.restore();
     RecipeRunDetail.create.restore();
     RecipeRunDetail.bulkCreate.restore();
+    RecipeRunDetail.findAll.restore();
     ordersService.generateApproveRecipeOrders.restore();
     depositSerive.generateRecipeRunDeposits.restore();
     assetService.getDepositAssets.restore();
@@ -239,6 +274,7 @@ describe('InvestmentService testing:', () => {
     InvestmentRunAssetGroup.create.restore();
     GroupAsset.bulkCreate.restore();
     InvestmentAssetConversion.bulkCreate.restore();
+    Asset.findAll.restore();
     if(sequelize.transaction.restore) sequelize.transaction.restore();
     if(sequelize.query.restore) sequelize.query.restore();
   });
