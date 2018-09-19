@@ -2641,7 +2641,7 @@
           "200": {
             "description": "success",
             "schema": {
-              "$ref": "#/definitions/AssetDetailedListResponse"
+              "$ref": "#/definitions/GroupAssetDetailedListResponse"
             }
           }
         },
@@ -6548,6 +6548,29 @@
         }
       ]
     },
+    "GroupAssetDetailedListResponse": {
+      "description": "Server response with array of detailed asset information",
+      "type": "object",
+      "allOf": [
+        {
+          "$ref": "#/definitions/ListResponse"
+        },
+        {
+          "properties": {
+            "success": {
+              "type": "boolean",
+              "example": true
+            },
+            "assets": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/GroupAsset"
+              }
+            }
+          }
+        }
+      ]
+    },
     "AssetDetailedResponse": {
       "description": "Server response with detailed asset information",
       "type": "object",
@@ -6615,6 +6638,44 @@
           }
         }
       ]
+    },
+    "GroupAsset": {
+      "description": "Asset object belonging to the Asset mix.",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "number",
+          "example": 22
+        },
+        "symbol": {
+          "type": "string",
+          "example": "ETH"
+        },
+        "long_name": {
+          "type": "string",
+          "example": "Ethereum"
+        },
+        "capitalization": {
+          "type": "number",
+          "example": 130000000
+        },
+        "nvt_ratio": {
+          "type": "number",
+          "example": 22
+        },
+        "market_share": {
+          "type": "number",
+          "example": 37
+        },
+        "status": {
+          "type": "string",
+          "example": "assets.status.400"
+        },
+        "comment": {
+          "type": "string",
+          "example": "I request the return of this fine asset"
+        }
+      }
     },
     "AssetListResponse": {
       "description": "Example of a response where list of assets are returned",
@@ -6763,49 +6824,38 @@
     },
     "AssetGroupResponse": {
       "type": "object",
-      "properties": {
-        "group": {
-          "type": "object",
+      "allOf": [
+        {
+          "$ref": "#/definitions/ListResponse"
+        },
+        {
           "properties": {
-            "id": {
-              "type": "number",
-              "example": 10
-            },
-            "created_timestamp": {
-              "type": "number",
-              "example": 1532097313472
-            },
-            "user_id": {
-              "type": "number",
-              "example": 10
-            },
-            "GroupAssets": {
-              "type": "array",
-              "items": {
-                "type": "object",
-                "properties": {
-                  "id": {
-                    "type": "number",
-                    "example": 81
-                  },
-                  "asset_id": {
-                    "type": "number",
-                    "example": 2
-                  },
-                  "status": {
-                    "type": "number",
-                    "example": 400
-                  },
-                  "investment_run_asset_group_id": {
-                    "type": "number",
-                    "example": 13
+            "list": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "number",
+                  "example": 10
+                },
+                "created_timestamp": {
+                  "type": "number",
+                  "example": 1532097313472
+                },
+                "user_id": {
+                  "type": "number",
+                  "example": 10
+                },
+                "group_assets": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/definitions/GroupAsset"
                   }
                 }
               }
             }
           }
         }
-      }
+      ]
     },
     "InvestmentRunViewListResponse": {
       "description": "Single investment run information",
@@ -6905,54 +6955,28 @@
     "InvestmentRunAssetMixResponse": {
       "description": "Single investment run information with asset mix",
       "type": "object",
-      "properties": {
-        "success": {
-          "type": "boolean",
-          "example": true
+      "allOf": [
+        {
+          "$ref": "#/definitions/ListResponse"
         },
-        "investment_run": {
-          "$ref": "#/definitions/InvestmentRun"
-        },
-        "asset_mix": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/AssetMixItem"
-          }
-        },
-        "count": {
-          "type": "number",
-          "example": 1
-        },
-        "footer": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "properties": {
-              "name": {
-                "type": "string",
-                "example": "property_name"
-              },
-              "value": {
-                "type": "number",
-                "example": 10
-              },
-              "template": {
-                "type": "string",
-                "example": "translation.key.property_name"
-              },
-              "args": {
-                "type": "object",
-                "properties": {
-                  "property_name": {
-                    "type": "number",
-                    "example": 10
-                  }
-                }
+        {
+          "properties": {
+            "success": {
+              "type": "boolean",
+              "example": true
+            },
+            "investment_run": {
+              "$ref": "#/definitions/InvestmentRun"
+            },
+            "asset_mix": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/AssetMixItem"
               }
             }
           }
         }
-      }
+      ]
     },
     "InvestmentRunView": {
       "type": "object",
