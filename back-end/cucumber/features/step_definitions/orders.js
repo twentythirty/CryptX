@@ -266,7 +266,7 @@ Given('the Order remaining amount is not within exchange minimum amount limits',
 
 });
 
-When('I call the API to generate Orders for the Approved Recipe Run', {
+When('I generate new Orders for the Approved Recipe Run', {
     timeout: 15000
 }, function() {
 
@@ -413,6 +413,8 @@ Then('the system won\'t allow me to generate Recipe Orders while this group is n
 
 Then('I should see an error message describing that there are Pending Deposits', function() {
 
+    expect(this.current_response).to.have.status(422);
+
     const error_message = this.current_response.response.body.error;
 
     expect(error_message).to.match(/(.*) incomplete deposits found: (\d+)(,\s*\d+)*!/g);
@@ -420,6 +422,8 @@ Then('I should see an error message describing that there are Pending Deposits',
 });
 
 Then('I should see an error message describing that Deposits have invalid values', function() {
+
+    expect(this.current_response).to.have.status(422);
 
     const error_message = this.current_response.response.body.error;
 
@@ -446,5 +450,17 @@ Then(/^the task will skip the Recipe Order due to (.*)$/, function(reason) {
 
     expect(matching_result.status).to.equal(reason_mapping[reason].status);
     expect(matching_result.step).to.equal(reason_mapping[reason].step);
+
+});
+
+Then('no Orders were generated for the Recipe Run', async function() {
+
+    const { RecipeOrderGroup } = require('../../../models');
+
+    const order_group = await RecipeOrderGroup.findOne({
+        where: { recipe_run_id: this.current_recipe_run.id }
+    });
+
+    expect(order_group).to.be.null;
 
 });
