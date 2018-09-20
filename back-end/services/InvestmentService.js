@@ -267,7 +267,7 @@ const generateRecipeDetails = async (investment_run_id, strategy_type) => {
   let assets;
   [err, assets] = await to(AssetService.getAssetGroupWithData(investment_run_id));
   if (err) TE(err.message);
-  
+
   // leave only whitelisted assets
   assets = assets.filter(a => a.status == MODEL_CONST.INSTRUMENT_STATUS_CHANGES.Whitelisting);
   if (!assets.length) TE("Investment asset list is empty.");
@@ -385,7 +385,7 @@ const generateRecipeDetails = async (investment_run_id, strategy_type) => {
     // if whole needed amount not allocated, then we fail to fully buy an asset
     if (total_spent.lt(Decimal(should_spend))) {
       TE(`Could allocate ${total_spent.toFixed(3)} USD out of needed ${should_spend.toFixed(3)} USD to ${asset.info.long_name}(${asset.info.symbol})
-        because it can bought through:${asset.possible.map(p => ` ${investment_size.find(s => s.asset_id == p.quote_asset_id).symbol} in ${p.exchange_name} exchange`).join()}
+        because it can bought through:${asset.possible.map(p => ` ${p.symbol} in ${p.exchange_name} exchange`).join()}
         and investment amounts left are:${investment_size.map(s => ` ${s.symbol} - ${s.remaining_usd.toFixed(3)} USD`).join()}
       `);
     } else {
