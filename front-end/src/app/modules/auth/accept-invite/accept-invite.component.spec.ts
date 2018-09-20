@@ -1,7 +1,7 @@
 import { async, ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core/testing';
 import { ActivatedRoute } from '@angular/router';
-import { of, throwError, Observable } from 'rxjs';
-import { extraTestingModules, fakeAsyncResponse, newEvent, click } from '../../../testing/utils';
+import { of } from 'rxjs';
+import { extraTestingModules, fakeAsyncResponse, newEvent, click, errorResponse } from '../../../testing/utils';
 
 import { AuthModule } from '../auth.module';
 import { AcceptInviteComponent } from './accept-invite.component';
@@ -102,14 +102,7 @@ describe('AcceptInviteComponent', () => {
 
   describe('if token is invalid', () => {
     beforeEach(() => {
-      checkTokenSpy.and.returnValue(
-        throwError({
-          error: {
-            success: false,
-            error: 'error message'
-          }
-        })
-      );
+      checkTokenSpy.and.returnValue(errorResponse);
     });
 
     it('should not show password set form if token is invalid', () => {

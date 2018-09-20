@@ -1,12 +1,10 @@
-import { async, ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core/testing';
-import { extraTestingModules, fakeAsyncResponse, newEvent, click } from '../../../testing/utils';
+import { async, ComponentFixture, TestBed, } from '@angular/core/testing';
+import { extraTestingModules, fakeAsyncResponse, newEvent, click, errorResponse } from '../../../testing/utils';
 import { testFormControlForm, testFormErrorMessagesRendering } from '../../../testing/commonTests';
-import { throwError } from 'rxjs';
 
 import { AuthModule } from '../auth.module';
 import { EditInfoComponent } from './edit-info.component';
 import { AuthService } from '../../../services/auth/auth.service';
-import { FormGroup } from '@angular/forms';
 
 
 const checkAuthResponse = {
@@ -83,7 +81,7 @@ describe('EditInfoComponent', () => {
   // });
   // beforeEach((done) => {
   //   const spy = spyOn(authService, 'checkAuth').and.returnValue(fakeAsyncResponse(checkAuthResponse));
-  //   component.ngOnInit();
+  //   fixture.detectChanges();
   //   spy.calls.mostRecent().returnValue.subscribe(() => {
   //     fixture.detectChanges();
   //     done();
@@ -139,14 +137,7 @@ describe('EditInfoComponent', () => {
         fixture.detectChanges();
       },
       changeToUnsuccess: () => {
-        spyOn(authService, 'changeInfo').and.returnValue(
-          throwError({
-            error: {
-              success: false,
-              error: 'error message'
-            }
-          })
-        );
+        spyOn(authService, 'changeInfo').and.returnValue(errorResponse);
       }
     };
   });
