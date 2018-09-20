@@ -1,6 +1,6 @@
 import permissions from '../../config/permissions';
 
-export const postUserLoginResponse = {
+export const authenticateData = {
   success: true,
   user: {
     id: 1,
@@ -124,4 +124,32 @@ export const postUserLoginResponse = {
     }
   },
   permissions: Object.values(permissions)
+};
+
+export const requestPasswordResetData = {
+  success: true,
+  message: 'success message'
+};
+
+export const changeInfoData =  {
+  success: true,
+  user: {
+    id: 1,
+    first_name: 'Test',
+    last_name: 'User',
+    email: 'test@domain.com',
+    created_timestamp: 1536926502164,
+    reset_password_token_hash: null,
+    reset_password_token_expiry_timestamp: null,
+    is_active: true
+  }
+};
+
+export const checkResetTokenValidityData =  {
+  success: true,
+  message: 'success message'
+};
+
+export const resetPasswordData = {
+  new_password: 'some_new_secure_password'
 };

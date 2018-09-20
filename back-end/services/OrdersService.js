@@ -13,6 +13,7 @@ const Instrument = require('../models').Instrument;
 const Asset = require('../models').Asset;
 const InstrumentExchangeMapping = require('../models').InstrumentExchangeMapping;
 const InstrumentMarketData = require('../models').InstrumentMarketData;
+const InstrumentService = require('./InstrumentsService');
 const sequelize = require('../models').sequelize;
 const Op = require('../models').Sequelize.Op;
 const ccxtUtils = require('../utils/CCXTUtils');
@@ -218,23 +219,26 @@ const generateApproveRecipeOrders = async (recipe_run_id) => {
     //while having instrument objects in the keys would be more
     // convenient, JS doesnt support that
 
-    const grouped_market_data = _.groupBy(await InstrumentMarketData.findAll({
+    /* const grouped_market_data = _.groupBy(await InstrumentMarketData.findAll({
         where: {
             instrument_id: Object.keys(grouped_exchanges),
             //extract value lists from grouped association, flatten those lists and extract property from entries
             exchange_id: _.map(flat_exchange_mappings_list, 'exchange_id')
-            /* 
------------------------------------------------------------------------------------------------------------------
-            applied fix. Need to assure if this is fix works as intended.
-            before exchange_id was: _.flatMap(_.map(grouped_exchanges, 'exchange_id'));
-            map didn't find exchange_id as it was nested inside array element. */
         },
         order: [
             ['timestamp', 'DESC']
         ]
     }), market_data => {
         return [market_data.instrument_id, market_data.exchange_id]
-    });
+    });  */
+
+    const grouped_market_data = _.groupBy(
+        await InstrumentService.getInstrumentPrices(
+            Object.keys(grouped_exchanges),
+            _.map(flat_exchange_mappings_list, 'exchange_id')
+        ),
+        market_data => [market_data.instrument_id, market_data.exchange_id]
+    );
     const recipe_detail_exchange_ids = _.map(recipe_run_details, 'target_exchange_id');
     //fetch balance info from exchanges
     const exchange_deposits = await fetch_exchange_deposits(recipe_run_id, recipe_detail_exchange_ids);
