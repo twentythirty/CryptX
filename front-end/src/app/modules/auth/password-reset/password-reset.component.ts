@@ -3,7 +3,7 @@ declare function require(path: string);
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormGroup, FormControl, Validators } from '@angular/forms';
-import { tap } from 'rxjs/operators';
+import { tap, finalize } from 'rxjs/operators';
 
 import { AuthService } from '../../../services/auth/auth.service';
 import { TokenCheck } from '../models/tokenCheck';
@@ -22,21 +22,18 @@ export class PasswordResetComponent implements OnInit {
   imageLogo = require('Images/Logo.png');
 
   token: TokenCheck = new TokenCheck();
-  pass: Passwords = {
-    new_password: '',
-    repeat_repeat: ''
-  };
   status: string = '';
+  loading: boolean = false;
 
   resetForm = new FormGroup ({
-    New: new FormControl('', [Validators.required]),
-    Repeat: new FormControl('', [Validators.required]),
+    new_password: new FormControl('', [Validators.required]),
+    password_confirm: new FormControl('', [Validators.required]),
   });
 
   constructor(
-    private authService: AuthService,
+    public router: Router,
+    public authService: AuthService,
     private route: ActivatedRoute,
-    private router: Router,
   ) { }
 
   ngOnInit() {
@@ -63,41 +60,30 @@ export class PasswordResetComponent implements OnInit {
   }
 
   changePassword() {
-    if (this.resetForm.valid) {
-      if (!this.passwordsMatch()) {
-        this.status = 'Passwords doesn\'t match';
-        return false;
-      }
-
-      this.authService.resetPassword(this.token.value, this.pass.new_password).subscribe(
-        res => {
-          this.authService.setAuthData(res);
-          this.router.navigate(['dashboard']);
-        },
-        error => {
-          if (error.error) {
-            this.status = error.error.error;
-          }
-        }
-      );
-    } else {
-      this.markAsTouched(this.resetForm);
+    if (!this.passwordsMatch()) {
+      this.status = 'Passwords doesn\'t match';
+      return false;
     }
-  }
 
-  markAsTouched(group) {
-    Object.keys(group.controls).map(field => {
-      const control = group.get(field);
+    this.loading = true;
 
-      if (control instanceof FormControl) {
-        control.markAsTouched({ onlySelf: true });
-      } else if (control instanceof FormGroup) {
-        this.markAsTouched(control);
+    this.authService.resetPassword(this.token.value, this.resetForm.controls.new_password.value).pipe(
+      finalize(() => this.loading = false)
+    )
+    .subscribe(
+      res => {
+        this.authService.setAuthData(res);
+        this.router.navigate(['/dashboard']);
+      },
+      error => {
+        if (error.error) {
+          this.status = error.error.error;
+        }
       }
-    });
+    );
   }
 
   passwordsMatch() {
-    return this.pass.new_password === this.pass.repeat_repeat;
+    return this.resetForm.controls.new_password.value === this.resetForm.controls.password_confirm.value;
   }
 }

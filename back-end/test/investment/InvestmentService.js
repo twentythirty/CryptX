@@ -129,7 +129,14 @@ describe('InvestmentService testing:', () => {
           asset_id: DEPOSIT_ASSETS.ETH,
           amount: 1000
         }
-      ];
+      ].map(ia => {
+        ia.Asset  = {
+          symbol: "Symbol",
+          long_name: "Name"
+        }
+
+        return ia;
+      });
 
       return Promise.resolve(investment_run);
     });
@@ -150,6 +157,15 @@ describe('InvestmentService testing:', () => {
         started_timestamp: new Date,
         updated_timestamp: new Date,
         status: INVESTMENT_RUN_STATUSES.Initiated
+      });
+
+      investment_run.InvestmentAmounts = [
+        { asset_id: DEPOSIT_ASSETS.USD.asset_id, amount: 5664798.12312 }
+      ].map(ia => {
+        ia.Asset  = {
+          symbol: "Symbol",
+          long_name: "Name"
+        }
       });
 
       sinon.stub(investment_run, 'save').returns(
@@ -1056,21 +1072,12 @@ describe('InvestmentService testing:', () => {
       return chai.expect(investmentService.generateRecipeDetails).to.exist;
     });
 
-    it("shall throw if can't get investment asset group data", () => {
-      if(assetService.getAssetGroupWithData.restore)
-        assetService.getAssetGroupWithData.restore();
-
-      sinon.stub(assetService, 'getAssetGroupWithData').returns(Promise.reject());
-
-      return chai.assert.isRejected(investmentService.generateRecipeDetails(STRATEGY_TYPE));
-    });
-
-    it("shall stop if can't get investment asset group data", () => {
+    it("shall throw if can't get base asset prices", () => {
       if(assetService.getBaseAssetPrices.restore)
         assetService.getBaseAssetPrices.restore();
 
       sinon.stub(assetService, 'getBaseAssetPrices').returns(Promise.reject());
-      return chai.assert.isRejected(investmentService.generateRecipeDetails(STRATEGY_TYPE));
+      return chai.assert.isRejected(investmentService.generateRecipeDetails(INVESTMENT_RUN_ID, STRATEGY_TYPE));
     });
 
     it("shall throw if can't get find investment run with its investment amounts", () => {
@@ -1086,10 +1093,26 @@ describe('InvestmentService testing:', () => {
       });
     });
 
+    it("shall throw if can't get investment asset group data", () => {
+      if(assetService.getAssetGroupWithData.restore)
+        assetService.getAssetGroupWithData.restore();
+
+      sinon.stub(assetService, 'getAssetGroupWithData').returns(Promise.reject([]));
+
+      return chai.assert.isRejected(investmentService.generateRecipeDetails(INVESTMENT_RUN_ID, STRATEGY_TYPE));
+    });
+
     it("should calculate recipe run details singe USD deposit", () => {
       let investment_amounts = [
         { asset_id: DEPOSIT_ASSETS.USD.asset_id, amount: 5664798.12312 }
-      ];
+      ].map(ia => {
+        ia.Asset = {
+          symbol: "Symbol",
+          long_name: "Name"
+        };
+
+        return ia;
+      });
 
       if (InvestmentRun.findOne.restore)
         InvestmentRun.findOne.restore();
@@ -1116,7 +1139,14 @@ describe('InvestmentService testing:', () => {
     it("should calculate recipe run details singe BTC deposit", () => {
       let investment_amounts = [
         { asset_id: DEPOSIT_ASSETS.BTC.asset_id, amount: 6455.1332 }
-      ];
+      ].map(ia => {
+        ia.Asset  = {
+          symbol: "Symbol",
+          long_name: "Name"
+        };
+
+        return ia;
+      });
 
       if (InvestmentRun.findOne.restore)
         InvestmentRun.findOne.restore();
@@ -1143,7 +1173,14 @@ describe('InvestmentService testing:', () => {
     it("should calculate recipe run details singe ETH deposit", () => {
       let investment_amounts = [
         { asset_id: DEPOSIT_ASSETS.ETH.asset_id, amount: 6654.313564 }
-      ];
+      ].map(ia => {
+        ia.Asset  = {
+          symbol: "Symbol",
+          long_name: "Name"
+        };
+
+        return ia;
+      });
 
       if (InvestmentRun.findOne.restore)
         InvestmentRun.findOne.restore();
@@ -1171,7 +1208,14 @@ describe('InvestmentService testing:', () => {
       let investment_amounts = [
         { asset_id: DEPOSIT_ASSETS.USD.asset_id, amount: 3218947 },
         { asset_id: DEPOSIT_ASSETS.BTC.asset_id, amount: 311 }
-      ];
+      ].map(ia => {
+        ia.Asset  = {
+          symbol: "Symbol",
+          long_name: "Name"
+        };
+
+        return ia;
+      });
 
       if (InvestmentRun.findOne.restore)
         InvestmentRun.findOne.restore();
@@ -1199,7 +1243,14 @@ describe('InvestmentService testing:', () => {
       let investment_amounts = [
         { asset_id: DEPOSIT_ASSETS.USD.asset_id, amount: 11321564 },
         { asset_id: DEPOSIT_ASSETS.ETH.asset_id, amount: 88173.3151654 }
-      ];
+      ].map(ia => {
+        ia.Asset  = {
+          symbol: "Symbol",
+          long_name: "Name"
+        };
+
+        return ia;
+      });
 
       if (InvestmentRun.findOne.restore)
         InvestmentRun.findOne.restore();
@@ -1226,7 +1277,14 @@ describe('InvestmentService testing:', () => {
       let investment_amounts = [
         { asset_id: DEPOSIT_ASSETS.BTC.asset_id, amount: 451.7764451931 },
         { asset_id: DEPOSIT_ASSETS.ETH.asset_id, amount: 14456.1128797 }
-      ];
+      ].map(ia => {
+        ia.Asset  = {
+          symbol: "Symbol",
+          long_name: "Name"
+        };
+
+        return ia;
+      });
 
       if (InvestmentRun.findOne.restore)
         InvestmentRun.findOne.restore();
@@ -1254,7 +1312,14 @@ describe('InvestmentService testing:', () => {
         { asset_id: DEPOSIT_ASSETS.USD.asset_id, amount: 1297654.115679879811342313 },
         { asset_id: DEPOSIT_ASSETS.BTC.asset_id, amount: 145.12333134623141234124 },
         { asset_id: DEPOSIT_ASSETS.ETH.asset_id, amount: 5851.22133464861234123423 }
-      ];
+      ].map(ia => {
+        ia.Asset  = {
+          symbol: "Symbol",
+          long_name: "Name"
+        };
+
+        return ia;
+      });
 
       if (InvestmentRun.findOne.restore)
         InvestmentRun.findOne.restore();
@@ -1282,7 +1347,14 @@ describe('InvestmentService testing:', () => {
       let investment_amounts = [
         { asset_id: DEPOSIT_ASSETS.BTC.asset_id, amount: 7 },
         { asset_id: DEPOSIT_ASSETS.ETH.asset_id, amount: 5851.22133464861234123423 }
-      ];
+      ].map(ia => {
+        ia.Asset  = {
+          symbol: "Symbol",
+          long_name: "Name"
+        };
+
+        return ia;
+      });
 
       if (assetService.getAssetGroupWithData.restore)
         assetService.getAssetGroupWithData.restore();

@@ -20,6 +20,11 @@ export class LoginReponse {
   validators: Object;
 }
 
+export class UserLoginRequest {
+  username: string;
+  password: string;
+}
+
 @Injectable()
 export class AuthService {
   user: User;
@@ -33,11 +38,8 @@ export class AuthService {
     private modelConstants: ModelConstantsService,
   ) { }
 
-  authenticate(username: string, password: string) {
-    return this.http.post<LoginReponse>(this.baseUrl + 'users/login', {
-      username: username,
-      password: password
-    }).pipe(
+  authenticate(request: UserLoginRequest) {
+    return this.http.post<LoginReponse>(this.baseUrl + 'users/login', request).pipe(
       tap(data => {
         if (data.success) {
           this.setAuthData(data);

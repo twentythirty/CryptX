@@ -1,6 +1,6 @@
 import permissions from '../../config/permissions';
 
-export const UserLoginResponse = {
+export const postUserLoginResponse = {
   success: true,
   user: {
     id: 1,

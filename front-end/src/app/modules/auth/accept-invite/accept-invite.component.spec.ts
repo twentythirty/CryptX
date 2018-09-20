@@ -1,56 +1,13 @@
 import { async, ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core/testing';
 import { ActivatedRoute } from '@angular/router';
-import { of, throwError, Observable } from 'rxjs';
-import { extraTestingModules, fakeAsyncResponse, newEvent, click } from '../../../testing/utils';
+import { of } from 'rxjs';
+import { extraTestingModules, fakeAsyncResponse, newEvent, click, errorResponse } from '../../../testing/utils';
 
 import { AuthModule } from '../auth.module';
 import { AcceptInviteComponent } from './accept-invite.component';
 import { InviteService } from './invite.service';
-import { AuthService } from '../../../services/auth/auth.service';
-
-
-const checkTokenResponse = {
-  success: true,
-  invitation: {
-    id: 45,
-    was_used: false,
-    token: 'fake-token',
-    token_expiry_timestamp: 1525424340810,
-    email: 'test@domain.com',
-    first_name: 'Test',
-    last_name: 'User',
-    role_id: 25,
-    creator_id: 888
-  }
-};
-
-const fulfillInvitationResponse = {
-  success: true,
-  user: {
-    id: 45,
-    first_name: 'Test',
-    last_name: 'User',
-    email: 'test@domain.com',
-    created_timestamp: 1525424340810,
-    reset_password_token_hash: '79054025255fb1a26e4bc422aef54eb4',
-    reset_password_token_expiry_timestamp: 1525424340810,
-    is_active: true
-  }
-};
-
-const InviteServiceStub = {
-  checkToken: () => {
-    return fakeAsyncResponse(checkTokenResponse);
-  },
-
-  fulfillInvitation: () => {
-    return fakeAsyncResponse(fulfillInvitationResponse);
-  }
-};
-
-const AuthServiceStub = {
-  setAuthData: () => {}
-};
+import { postUsersInvitationResponse } from '../../../testing/api-response/postUsersInvitationResponse.mock';
+import { postUsersCreateInvitedResponse } from '../../../testing/api-response/postUsersCreateInvitedResponse.mock';
 
 
 describe('AcceptInviteComponent', () => {
@@ -68,8 +25,6 @@ describe('AcceptInviteComponent', () => {
         ...extraTestingModules
       ],
       providers: [
-        { provide: InviteService, useValue: InviteServiceStub },
-        { provide: AuthService, useValue: AuthServiceStub },
         {
           provide: ActivatedRoute, useValue: {
             queryParams: of({ token: 'fake-token' })
@@ -85,8 +40,8 @@ describe('AcceptInviteComponent', () => {
     component = fixture.componentInstance;
     inviteService = TestBed.get(InviteService);
 
-    checkTokenSpy = spyOn(inviteService, 'checkToken').and.returnValue(fakeAsyncResponse(checkTokenResponse));
-    fulfillInvitationSpy = spyOn(inviteService, 'fulfillInvitation').and.returnValue(fakeAsyncResponse(fulfillInvitationResponse));
+    checkTokenSpy = spyOn(inviteService, 'checkToken').and.returnValue(fakeAsyncResponse(postUsersInvitationResponse));
+    fulfillInvitationSpy = spyOn(inviteService, 'fulfillInvitation').and.returnValue(fakeAsyncResponse(postUsersCreateInvitedResponse));
     navigateSpy = spyOn(component.router, 'navigate');
     fixture.detectChanges();
 
@@ -102,14 +57,7 @@ describe('AcceptInviteComponent', () => {
 
   describe('if token is invalid', () => {
     beforeEach(() => {
-      checkTokenSpy.and.returnValue(
-        throwError({
-          error: {
-            success: false,
-            error: 'error message'
-          }
-        })
-      );
+      checkTokenSpy.and.returnValue(errorResponse);
     });
 
     it('should not show password set form if token is invalid', () => {

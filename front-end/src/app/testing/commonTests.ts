@@ -54,6 +54,11 @@ export function testFormControlForm(
 
     beforeEach(async(() => {
       ({ component, fixture, formControl, submitButton, fillForm, changeToUnsuccess } = additionalData());
+      try {
+        navigateSpy = spyOn(component.router, 'navigate');
+      } catch (error) {
+        navigateSpy = component.router.navigate;
+      }
     }));
 
     it('submit button should be enabled after component init', () => {
@@ -80,7 +85,6 @@ export function testFormControlForm(
 
       describe('after form is successfuly submited', () => {
         beforeEach(async(() => {
-          navigateSpy = spyOn(component.router, 'navigate');
           click(submitButton);
           fixture.detectChanges();
         }));
@@ -102,7 +106,6 @@ export function testFormControlForm(
       describe('after form is unsuccessfuly submited', () => {
         beforeEach(async(() => {
           changeToUnsuccess();
-          navigateSpy = spyOn(component.router, 'navigate');
           click(submitButton);
         }));
 

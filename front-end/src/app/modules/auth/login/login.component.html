@@ -3,21 +3,19 @@
     <img [src]="imageLogo" class="logo">
   </div>
 
-  <form (ngSubmit)="authenticate()" action class="the-form login-form" [formGroup]="loginForm">
+  <form (ngSubmit)="authenticate()" class="login-form" [formGroup]="loginForm">
     <app-input-item
       class="form-item with-icons icon-login"
       [placeholder]="'auth.login' | translate"
       [formGroup]="loginForm"
-      formControlName="Firstname"
-      [(ngModel)]="username"
+      formControlName="username"
     ></app-input-item>
     <app-input-item
+      type="password"
       class="form-item with-icons icon-password"
       [placeholder]="'auth.password' | translate"
-      type="password"
       [formGroup]="loginForm"
-      formControlName="Lastname"
-      [(ngModel)]="password"
+      formControlName="password"
     ></app-input-item>
 
     <a (click)="showPassReset()" class="forgot-pass">{{ 'auth.forgot_password' | translate }}</a>
@@ -26,7 +24,12 @@
     </p>
 
     <div class="btn-wrap btn-right">
-      <button type="submit" class="btn" [disabled]="loading">{{ 'common.login' | translate }}</button>
+      <button
+        type="submit"
+        class="btn"
+        [disabled]="loading"
+        [appMarkAsTouched]="loginForm"
+      >{{ 'common.login' | translate }}</button>
     </div>
   </form>
 </div>
@@ -36,31 +39,34 @@
   [heading]="'auth.please_enter_email' | translate"
   (close)="hidePassReset()"
 >
-  <div *ngIf="!password_reset_sent">
+  <ng-container *ngIf="!password_reset_sent">
     <form [formGroup]="resetForm" (ngSubmit)="requestPasswordReset()">
-      <span class="label label-after-title">{{'auth.contact_you_soon' | translate}}</span>
+      <span class="label label-after-title">{{ 'auth.contact_you_soon' | translate }}</span>
 
       <app-input-item
         class="form-item"
         [placeholder]="'users.enter_email' | translate"
-        type="text"
         [formGroup]="resetForm"
-        formControlName="Email"
-        [(ngModel)]="reset_email"
+        formControlName="email"
       ></app-input-item>
 
       <div class="btn-wrap btn-right">
         <br>
-        <button class="btn submit" [disabled]="loading2" type="submit">{{'common.submit' | translate}}</button>
+        <button
+          type="submit"
+          class="btn submit"
+          [disabled]="loading2"
+          [appMarkAsTouched]="resetForm"
+        >{{ 'common.submit' | translate }}</button>
       </div>
     </form>
-  </div>
+  </ng-container>
 
-  <div *ngIf="password_reset_sent">
-    <span class="label label-after-title">
-      {{'auth.password_reset_msg' | translate:{ reset_email: reset_email } }}
+  <ng-container *ngIf="password_reset_sent">
+    <span class="label label-after-title confirmation-message">
+      {{ 'auth.password_reset_msg' | translate:{ reset_email: resetForm.controls.email.value } }}
       <br><br>
-      {{'auth.check_your_inbox' | translate}}
+      {{ 'auth.check_your_inbox' | translate }}
     </span>
-  </div>
+  </ng-container>
 </app-modal>
