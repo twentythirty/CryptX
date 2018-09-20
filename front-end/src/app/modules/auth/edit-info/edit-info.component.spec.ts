@@ -5,7 +5,7 @@ import { testFormControlForm, testFormErrorMessagesRendering } from '../../../te
 import { AuthModule } from '../auth.module';
 import { EditInfoComponent } from './edit-info.component';
 import { AuthService } from '../../../services/auth/auth.service';
-import { postUsersMeChangePasswordResponse } from '../../../testing/api-response/postUsersMeChangePasswordResponse.mock';
+import { changeInfoData } from '../../../testing/service-mock/auth.service.mock';
 
 
 describe('EditInfoComponent', () => {
@@ -28,7 +28,7 @@ describe('EditInfoComponent', () => {
     fixture = TestBed.createComponent(EditInfoComponent);
     component = fixture.componentInstance;
     authService = fixture.debugElement.injector.get(AuthService);
-    changeInfoSpy = spyOn(authService, 'changeInfo').and.returnValue(fakeAsyncResponse(postUsersMeChangePasswordResponse));
+    changeInfoSpy = spyOn(authService, 'changeInfo').and.returnValue(fakeAsyncResponse(changeInfoData));
     fixture.detectChanges();
   });
 
