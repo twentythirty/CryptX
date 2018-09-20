@@ -373,7 +373,7 @@ describe('DepositService testing', () => {
             };
 
             sinon.stub(sequelize, 'query').callsFake(query => {
-                return Promise.resolve([[extra_detail, ...MOCK_DETAILS]]);
+                return Promise.resolve([extra_detail, ...MOCK_DETAILS]);
             });
 
             sinon.stub(Exchange, 'findAll').callsFake(options => {
@@ -404,7 +404,7 @@ describe('DepositService testing', () => {
             });
 
             sinon.stub(sequelize, 'query').callsFake(query => {
-                return Promise.resolve([MOCK_DETAILS]);
+                return Promise.resolve(MOCK_DETAILS);
             });
 
             return DepositService.generateRecipeRunDeposits(1).then(deposits => {
