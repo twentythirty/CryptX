@@ -239,7 +239,7 @@ Then('the system won\'t allow me to initiate another Recipe Run for this Investm
 
 });
 
-Then('the system will display an error about the Capitalization not bring up to date', function() {
+Then('the system will display an error about the Capitalization not being up to date', function() {
 
     expect(this.current_response).to.have.status(422);
 
