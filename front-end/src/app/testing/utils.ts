@@ -5,7 +5,7 @@ import { TranslateLoader, TranslateModule } from '@ngx-translate/core';
 import { throwError, of, defer } from 'rxjs';
 import { Observable } from 'rxjs/Observable';
 import { routes } from '../config/routes/routes';
-import { FakeEmptyComponent } from '../shared/components/fake-empty/fake-empty.component';
+import { FakeEmptyModule, FakeEmptyComponent } from './fake-empty.component';
 
 /**
  * Helper function for stubbing service data
@@ -48,6 +48,7 @@ export const extraTestingModules = [
     })
   ),
   testingTranslateModule,
+  FakeEmptyModule,
 ];
 
 

@@ -41,7 +41,6 @@ import { ActionLogComponent } from './components/action-log/action-log.component
 import { NguiAutoCompleteModule } from '@ngui/auto-complete/dist';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { MarkAsTouchedDirective } from './directives/mark-as-touched.directive';
-import { FakeEmptyComponent } from './components/fake-empty/fake-empty.component';
 
 @NgModule({
     imports: [
@@ -72,7 +71,6 @@ import { FakeEmptyComponent } from './components/fake-empty/fake-empty.component
         NgSelectModule,
     ],
     declarations: [
-        FakeEmptyComponent,
         BtnComponent,
         DataTableComponent,
         ModalComponent,
@@ -107,7 +105,6 @@ import { FakeEmptyComponent } from './components/fake-empty/fake-empty.component
 
     ],
     exports: [
-        FakeEmptyComponent,
         MatProgressSpinnerModule,
         TranslateModule,
         BtnComponent,
