@@ -236,13 +236,7 @@ module.exports.createRecipeRun = createRecipeRun;
 
 const generateRecipeDetails = async (investment_run_id, strategy_type) => {
 
-  let [err, assets] = await to(AssetService.getAssetGroupWithData(investment_run_id));
-  if (err) TE(err.message);
-  if (!assets.length) TE("Investment asset list is empty.");
-  // leave only whitelisted assets
-  assets = assets.filter(a => a.status == MODEL_CONST.INSTRUMENT_STATUS_CHANGES.Whitelisting);
-
-  let prices;
+  let err, prices;
   [err, prices] = await to(AssetService.getBaseAssetPrices(), false);
   if (err) TE(err.message);
 
@@ -266,10 +260,17 @@ const generateRecipeDetails = async (investment_run_id, strategy_type) => {
 
     return investment_run;
   }));
-  if (err) TE(err.message);
 
+  if (err) TE(err.message);
   if (!investment_run) TE('Investment run not found');
 
+  let assets;
+  [err, assets] = await to(AssetService.getAssetGroupWithData(investment_run_id));
+  if (err) TE(err.message);
+  
+  // leave only whitelisted assets
+  assets = assets.filter(a => a.status == MODEL_CONST.INSTRUMENT_STATUS_CHANGES.Whitelisting);
+  if (!assets.length) TE("Investment asset list is empty.");
   // find liquidity level for each asset.
   assets.map(asset => {
     asset.liquidity_level = AssetService.getLiquidityLevel(asset.volume_usd);

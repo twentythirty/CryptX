@@ -5,7 +5,7 @@ const InstrumentExchangeMapping = require('../models').InstrumentExchangeMapping
 const Asset = require('../models').Asset;
 const InstrumentLiquidityRequirement = require('../models').InstrumentLiquidityRequirement;
 const Exchange = require('../models').Exchange;
-const sequelie = require('../models').sequelize;
+const sequelize = require('../models').sequelize;
 
 const { or: opOr } = require('sequelize').Op;
 
@@ -146,7 +146,7 @@ const addInstrumentExchangeMappings = async (instrument_id, exchange_mappings, u
 
     let saved_models = [];
     [ err, saved_models ] = await to(
-        sequelie.transaction(transaction => {
+        sequelize.transaction(transaction => {
             return InstrumentExchangeMapping.destroy({
                 where: { instrument_id },
                 transaction
@@ -277,3 +277,42 @@ const createLiquidityRequirement = async (instrument_id, periodicity, minimum_ci
 
 };
 module.exports.createLiquidityRequirement = createLiquidityRequirement;
+
+const getInstrumentPrices = async (instrument_id, exchange_id) => {
+    
+    if (!_.isArray(instrument_id) || !_.isArray(exchange_id))
+        TE("Expectd array of ids");
+
+    let [err, instrument_prices] = await to(sequelize.query(`
+        SELECT *
+        FROM instrument_exchange_mapping iem
+        JOIN LATERAL
+        (
+            SELECT *
+            FROM instrument_market_data
+            WHERE iem.instrument_id = instrument_id
+                AND iem.exchange_id = exchange_id
+            ORDER BY instrument_id, exchange_id, timestamp DESC NULLS LAST
+            LIMIT 1
+        ) AS price ON TRUE
+        WHERE iem.instrument_id IN (:instrument_id)
+            AND iem.exchange_id IN (:exchange_id)
+    `, {
+        replacements: {
+            instrument_id,
+            //extract value lists from grouped association, flatten those lists and extract property from entries
+            exchange_id
+        },
+        type: sequelize.QueryTypes.SELECT
+    }));
+    if (err) TE(err.message);
+
+    instrument_prices = instrument_prices.map(price => Object.assign(price, {
+        ask_price: parseFloat(price.ask_price),
+        bid_price: parseFloat(price.bid_price),
+        ask_price: parseFloat(price.tick_size)
+    }));
+
+    return instrument_prices;
+};
+module.exports.getInstrumentPrices = getInstrumentPrices;
