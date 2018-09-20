@@ -19,6 +19,7 @@ const ExecutionOrder = require('../../models').ExecutionOrder;
 const Instrument = require('../../models').Instrument;
 const Asset = require('../../models').Asset;
 const InstrumentExchangeMapping = require('../../models').InstrumentExchangeMapping;
+const InstrumentService = require('../../services/InstrumentsService');
 const InstrumentMarketData = require('../../models').InstrumentMarketData;
 const ccxtUtils = require('../../utils/CCXTUtils');
 const Op = require('../../models').Sequelize.Op;
@@ -161,7 +162,7 @@ describe('OrdersService testing', () => {
 
                     return Promise.resolve(TEST_EXCHNAGE_MAPPINGS);
                 });
-                sinon.stub(InstrumentMarketData, 'findAll').callsFake(options => {
+                sinon.stub(InstrumentService, 'getInstrumentPrices').callsFake(options => {
 
                     return Promise.resolve(TEST_INSTRUMENT_MARKET_DATA);
                 });

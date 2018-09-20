@@ -5,9 +5,8 @@ import { extraTestingModules, fakeAsyncResponse, click, errorResponse, newEvent 
 import { AuthModule } from '../auth.module';
 import { PasswordResetComponent } from './password-reset.component';
 import { AuthService } from '../../../services/auth/auth.service';
-import { getPasswordResetResponse } from '../../../testing/api-response/getPasswordResetResponse.mock';
-import { postPasswordResetResponse } from '../../../testing/api-response/postPasswordResetResponse.mock';
 import { testFormControlForm } from '../../../testing/commonTests';
+import { checkResetTokenValidityData, resetPasswordData } from '../../../testing/service-mock/auth.service.mock';
 
 
 describe('PasswordResetComponent', () => {
@@ -32,8 +31,8 @@ describe('PasswordResetComponent', () => {
     fixture = TestBed.createComponent(PasswordResetComponent);
     component = fixture.componentInstance;
     authService = fixture.debugElement.injector.get(AuthService);
-    checkResetTokenValiditySpy = spyOn(authService, 'checkResetTokenValidity').and.returnValue(fakeAsyncResponse(getPasswordResetResponse));
-    resetPasswordSpy = spyOn(authService, 'resetPassword').and.returnValue(fakeAsyncResponse(postPasswordResetResponse));
+    checkResetTokenValiditySpy = spyOn(authService, 'checkResetTokenValidity').and.returnValue(fakeAsyncResponse(checkResetTokenValidityData));
+    resetPasswordSpy = spyOn(authService, 'resetPassword').and.returnValue(fakeAsyncResponse(resetPasswordData));
     navigateSpy = spyOn(fixture.debugElement.injector.get(Router), 'navigate');
     fixture.detectChanges();
 

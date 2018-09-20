@@ -1,16 +1,8 @@
 import { TestBed, async, ComponentFixture } from '@angular/core/testing';
-import { TranslateModule, TranslateLoader } from '@ngx-translate/core';
-import { Observable } from 'rxjs/Observable';
-import { of } from 'rxjs/observable/of';
 
 import { AppModule } from './app.module';
 import { AppComponent } from './app.component';
-
-class FakeLoader implements TranslateLoader {
-  getTranslation(lang: string): Observable<any> {
-    return of({}); // empty translation json
-  }
-}
+import { extraTestingModules } from './testing/utils';
 
 describe('AppComponent', () => {
   let fixture: ComponentFixture<AppComponent>;
@@ -19,9 +11,7 @@ describe('AppComponent', () => {
     TestBed.configureTestingModule({
       imports: [
         AppModule,
-        TranslateModule.forRoot({
-          loader: { provide: TranslateLoader, useClass: FakeLoader }
-        })
+        ...extraTestingModules
       ]
     }).compileComponents();
     fixture = TestBed.createComponent(AppComponent);

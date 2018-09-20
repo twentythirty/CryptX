@@ -17,7 +17,7 @@ Given('there are no investment runs in the system', function() {
     });
 });
 
-Given('there are no real Executing Investment Runs in the system', function() {
+Given('there are no Executing Investment Runs in the system', function() {
     const { InvestmentRun, sequelize } = require('../../../models');
     const { Op } = sequelize;
 
@@ -45,7 +45,7 @@ Given('there are no incomplete non simulated investment runs', function() {
     
 });
 
-Given(/there is a (.*) (.*) Investment Run created by an Investment Manager/, async function(simulated, type) {
+Given(/there is a (.*) Investment Run created by an Investment Manager/, async function(type) {
     
     const { Asset, InvestmentRun, InvestmentAmount, InvestmentRunAssetGroup, GroupAsset, sequelize } = require('../../../models');
     const { Op } = sequelize;
@@ -53,7 +53,7 @@ Given(/there is a (.*) (.*) Investment Run created by an Investment Manager/, as
     let investment_run = await InvestmentRun.findOne({
         where: { 
             user_created_id: World.users.investment_manager.id,
-            is_simulated: (simulated === 'simulated'),
+            is_simulated: false,
             strategy_type: STRATEGY_TYPES[type]
         },
         raw: true
@@ -74,7 +74,7 @@ Given(/there is a (.*) (.*) Investment Run created by an Investment Manager/, as
 
     const new_investment_run = {
         strategy_type: STRATEGY_TYPES[type],
-        is_simulated: (simulated === 'simulated'),
+        is_simulated: false,
         deposit_usd: _.random(1000, 50000, false),
         user_created_id: World.users.investment_manager.id,
         started_timestamp: new Date(),
@@ -225,11 +225,11 @@ When(/^I generate a new (.*) strategy Asset Mix$/, function(strategy) {
 
 });
 
-When(/^I select to create a new (.*) (.*) Investment Run$/, function(simulated, strategy_type) {
+When(/^I select to create a new (.*) Investment Run$/, function(strategy_type) {
 
     this.current_investment_run_details = {
         strategy_type: STRATEGY_TYPES[strategy_type],
-        is_simulated: (simulated === 'simulated')
+        is_simulated: false
     };
 
 });
@@ -372,7 +372,7 @@ Then('the entered investment amounts are saved along with it', async function() 
 
 });
 
-Then(/^the Asset Mix is assign to it with appropriate (.*) assets$/, function(strategy_type) {
+Then(/^the Asset Mix is assigned to it with appropriate (.*) assets$/, function(strategy_type) {
 
     const { InvestmentRunAssetGroup, GroupAsset } = require('../../../models');
 

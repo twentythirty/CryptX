@@ -4,9 +4,8 @@ import { extraTestingModules, click, errorResponse, newEvent, fakeAsyncResponse 
 import { AuthModule } from '../auth.module';
 import { LoginComponent } from './login.component';
 import { AuthService } from '../../../services/auth/auth.service';
-import { postUserLoginResponse } from '../../../testing/api-response/postUserLoginResponse.mock';
-import { postSendResetTokenResponse } from '../../../testing/api-response/postSendResetTokenResponse.mock';
 import { testFormControlForm } from '../../../testing/commonTests';
+import { authenticateData, requestPasswordResetData } from '../../../testing/service-mock/auth.service.mock';
 
 
 describe('LoginComponent', () => {
@@ -31,7 +30,7 @@ describe('LoginComponent', () => {
     fixture = TestBed.createComponent(LoginComponent);
     component = fixture.componentInstance;
     authService = fixture.debugElement.injector.get(AuthService);
-    authenticateSpy = spyOn(authService, 'authenticate').and.returnValue(fakeAsyncResponse(postUserLoginResponse));
+    authenticateSpy = spyOn(authService, 'authenticate').and.returnValue(fakeAsyncResponse(authenticateData));
     requestPasswordResetSpy = spyOn(authService, 'requestPasswordReset');
     navigateSpy = spyOn(component.router, 'navigate');
     fixture.detectChanges();
@@ -55,7 +54,7 @@ describe('LoginComponent', () => {
   });
 
   it('should navigate to dashboard on successful login', () => {
-    authenticateSpy.and.returnValue(fakeAsyncResponse(postUserLoginResponse));
+    authenticateSpy.and.returnValue(fakeAsyncResponse(authenticateData));
 
     fillLoginForm('test@domain.com', 'password');
 
@@ -78,7 +77,7 @@ describe('LoginComponent', () => {
   });
 
   it('should show confirmation message when forgot password form is submited', () => {
-    requestPasswordResetSpy.and.returnValue(fakeAsyncResponse(postSendResetTokenResponse));
+    requestPasswordResetSpy.and.returnValue(fakeAsyncResponse(requestPasswordResetData));
 
     component.showPassReset();
     fixture.detectChanges();

@@ -1,4 +1,4 @@
-import { async, ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core/testing';
+import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 import { ActivatedRoute } from '@angular/router';
 import { of } from 'rxjs';
 import { extraTestingModules, fakeAsyncResponse, newEvent, click, errorResponse } from '../../../testing/utils';
@@ -6,8 +6,7 @@ import { extraTestingModules, fakeAsyncResponse, newEvent, click, errorResponse 
 import { AuthModule } from '../auth.module';
 import { AcceptInviteComponent } from './accept-invite.component';
 import { InviteService } from './invite.service';
-import { postUsersInvitationResponse } from '../../../testing/api-response/postUsersInvitationResponse.mock';
-import { postUsersCreateInvitedResponse } from '../../../testing/api-response/postUsersCreateInvitedResponse.mock';
+import { fulfillInvitationData, checkTokenData } from '../../../testing/service-mock/invite.service.mock';
 
 
 describe('AcceptInviteComponent', () => {
@@ -40,8 +39,8 @@ describe('AcceptInviteComponent', () => {
     component = fixture.componentInstance;
     inviteService = TestBed.get(InviteService);
 
-    checkTokenSpy = spyOn(inviteService, 'checkToken').and.returnValue(fakeAsyncResponse(postUsersInvitationResponse));
-    fulfillInvitationSpy = spyOn(inviteService, 'fulfillInvitation').and.returnValue(fakeAsyncResponse(postUsersCreateInvitedResponse));
+    checkTokenSpy = spyOn(inviteService, 'checkToken').and.returnValue(fakeAsyncResponse(checkTokenData));
+    fulfillInvitationSpy = spyOn(inviteService, 'fulfillInvitation').and.returnValue(fakeAsyncResponse(fulfillInvitationData));
     navigateSpy = spyOn(component.router, 'navigate');
     fixture.detectChanges();
 
