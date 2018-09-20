@@ -238,11 +238,11 @@ const generateRecipeDetails = async (investment_run_id, strategy_type) => {
 
   let [err, assets] = await to(AssetService.getAssetGroupWithData(investment_run_id));
   if (err) TE(err.message);
-
+  if (!assets.length) TE("Investment asset list is empty.");
   // leave only whitelisted assets
   assets = assets.filter(a => a.status == MODEL_CONST.INSTRUMENT_STATUS_CHANGES.Whitelisting);
 
-  let prices
+  let prices;
   [err, prices] = await to(AssetService.getBaseAssetPrices(), false);
   if (err) TE(err.message);
 
@@ -252,7 +252,19 @@ const generateRecipeDetails = async (investment_run_id, strategy_type) => {
     where: {
       id: investment_run_id
     },
-    include: [InvestmentAmount]
+    include: [{
+      model: InvestmentAmount,
+      include: Asset
+    }]
+  }).then(investment_run => {
+    investment_run.InvestmentAmounts.map(a => {
+      Object.assign(a, {
+        symbol: a.Asset.symbol,
+        long_name: a.Asset.long_name
+      });
+    });
+
+    return investment_run;
   }));
   if (err) TE(err.message);
 
@@ -266,6 +278,7 @@ const generateRecipeDetails = async (investment_run_id, strategy_type) => {
   /* group and map assets to be in structure:
     [
       {
+        info: { id, symbol, long_name }
         possible: [], // possible ways to acquire an asset.
         to_execute: [] // details/conversions that will be saved and performed
       }
@@ -275,6 +288,8 @@ const generateRecipeDetails = async (investment_run_id, strategy_type) => {
     return {
       info: {
         id: asset.id,
+        symbol: asset.symbol,
+        long_name: asset.long_name
       },
       possible: asset_group,
       to_execute: []
@@ -285,10 +300,10 @@ const generateRecipeDetails = async (investment_run_id, strategy_type) => {
   });
 
   // calculate investment amounts in USD
-  let total_investment_usd = Decimal(0); 
+  let total_investment_usd = Decimal(0);
   let investment_size = investment_run.InvestmentAmounts;
   investment_size = investment_size.map(size => {
-    let base_price_usd = prices.find(price => price.id==size.asset_id);
+    let base_price_usd = prices.find(price => price.id == size.asset_id);
     let value_usd;
 
     if (!base_price_usd) { // not found if it's USD
@@ -329,7 +344,12 @@ const generateRecipeDetails = async (investment_run_id, strategy_type) => {
           base_spent = Decimal(base.remaining_usd);
         }
 
-        chosen.push({ asset_id: action.quote_asset_id, from_asset_id: base.asset_id, exchange_id: action.exchange_id, amount_usd: base_spent });
+        chosen.push({
+          asset_id: action.quote_asset_id,
+          from_asset_id: base.asset_id,
+          exchange_id: action.exchange_id,
+          amount_usd: base_spent
+        });
         base.remaining_usd = Decimal(base.remaining_usd).minus(Decimal(base_spent));
         total_spent = total_spent.add(Decimal(base_spent));
       }
@@ -346,8 +366,13 @@ const generateRecipeDetails = async (investment_run_id, strategy_type) => {
         } else { // not enough to buy whole needed amount, buy whith whats remaining
           deposit_spent = Decimal(usd.remaining_usd);
         }
-        
-        chosen.push({ asset_id: action.quote_asset_id, from_asset_id: usd.asset_id, exchange_id: action.exchange_id, amount_usd: deposit_spent });
+
+        chosen.push({
+          asset_id: action.quote_asset_id,
+          from_asset_id: usd.asset_id,
+          exchange_id: action.exchange_id,
+          amount_usd: deposit_spent
+        });
         usd.remaining_usd = Decimal(usd.remaining_usd).minus(Decimal(deposit_spent));
         total_spent = total_spent.add(Decimal(deposit_spent));
       }
@@ -358,7 +383,10 @@ const generateRecipeDetails = async (investment_run_id, strategy_type) => {
 
     // if whole needed amount not allocated, then we fail to fully buy an asset
     if (total_spent.lt(Decimal(should_spend))) {
-      TE("Couldn't fully buy asset ID " + asset.info.id + " with remaining funds");
+      TE(`Could allocate ${total_spent.toFixed(3)} USD out of needed ${should_spend.toFixed(3)} USD to ${asset.info.long_name}(${asset.info.symbol})
+        because it can bought through:${asset.possible.map(p => ` ${investment_size.find(s => s.asset_id == p.quote_asset_id).symbol} in ${p.exchange_name} exchange`).join()}
+        and investment amounts left are:${investment_size.map(s => ` ${s.symbol} - ${s.remaining_usd.toFixed(3)} USD`).join()}
+      `);
     } else {
       asset.to_execute = chosen;
     }
@@ -373,201 +401,43 @@ const generateRecipeDetails = async (investment_run_id, strategy_type) => {
     });
 
     // form similar structure to recipe_run_detail and recipe_run_detail_investment
-    let details = _.map(_.groupBy(asset.to_execute, (detail) => detail.asset_id), details => {
-      let asset_info = details[0];
-      let investment_percentage = (
-        Decimal(
-          details.reduce((acc, val) => acc.add(Decimal(val.amount_usd)), Decimal(0)) // sum all the values
-        ).div(
-          Decimal(total_investment_usd)
-        ).mul(100)
-      ).toString();
+    let details = _.map(
+      _.groupBy(asset.to_execute, detail => detail.asset_id),
+      details => {
+        let asset_info = details[0];
+        let investment_percentage = Decimal(
+          details.reduce(
+            (acc, val) => acc.add(Decimal(val.amount_usd)),
+            Decimal(0)
+          ) // sum all the values
+        )
+          .div(Decimal(total_investment_usd))
+          .mul(100)
+          .toString();
 
-      return {
-        transaction_asset_id: asset.info.id,
-        quote_asset_id: asset_info.asset_id,
-        target_exchange_id: asset_info.exchange_id,
-        investment_percentage: investment_percentage,
-        detail_investment: details.map(detail => ({
-          asset_id: detail.from_asset_id,
-          amount: detail.amount.toString(),
-          amount_usd: detail.amount_usd.toString(),
-        }))
-      };
-    });
+        return {
+          transaction_asset_id: asset.info.id,
+          quote_asset_id: asset_info.asset_id,
+          target_exchange_id: asset_info.exchange_id,
+          investment_percentage: investment_percentage,
+          detail_investment: details.map(detail => ({
+            asset_id: detail.from_asset_id,
+            amount: detail.amount.toString(),
+            amount_usd: detail.amount_usd.toString()
+          }))
+        };
+      }
+    );
     return details;
   });
 
   recipe_details = _.flatten(recipe_details);
 
+  if (!recipe_details.length) TE("No recipe details generated.");
+
   return recipe_details;
 };
 module.exports.generateRecipeDetails = generateRecipeDetails;
-
-const old_generateRecipeDetails = async function (strategy_type) {
-  // get assets for recipe
-  let err, assets, instruments;
-
-  [err, assets] = await to(AssetService.getStrategyAssets(strategy_type));
-  if (err) TE(err.message);
-
-  let base_assets = await Asset.findAll({
-    where: {
-      is_base: true
-    }
-  })
-  if (typeof base_assets === "undefined" || !base_assets || !base_assets.length)
-    TE("Couln't find base assets");
-  base_assets.map(asset => asset.toJSON());
-
-  let prices;
-  [err, prices] = await to(AssetService.getBaseAssetPrices(), false);
-  if (err) TE(err.message);
-
-  base_assets.map((a) => {
-    let price = prices.find(b => a.symbol == b.symbol).price;
-    a.USD = price;
-  });
-
-  // get all the ways to acquire assets
-  let possible_actions;
-  /**
-   * possible_actions action structure:
-   * 
-   * 
-   * instrument_id
-   * transaction_asset_id
-   * quote_asset_id
-   * exchange_id
-   * ask_price
-   * bid_price
-   */
-  [err, possible_actions] = await to(Promise.all(
-    assets.map((asset) => {
-      return AssetService.getAssetInstruments(asset.id);
-    })
-  ));
-  if (err) TE(err.message);
-
-  _.zipWith(assets, possible_actions, (a, b) => a.possible_actions = b);
-
-  let excluded_assets;
-  [assets, excluded_assets] = _.partition(assets, (asset) => !asset.is_base);
-
-  // find assets that have no instruments/possible ways to acquire them
-  let inaccessible = assets.filter(a => 
-    typeof a.possible_actions === 'undefined' || !a.possible_actions.length
-  );
-  if (inaccessible.length) {
-    TE(`Couldn't find a way to acquire these assets: ${inaccessible.map(a => a.symbol)}. `);
-  }
-
-  // fetch liquidity requirements for all possible_actions
-  let liquidity_requirements;
-  [err, liquidity_requirements] = await to(Promise.all(assets.map(asset => {
-    return Promise.all(
-      asset.possible_actions.map(action => {
-        console.log(action);
-        return AssetService.getInstrumentLiquidityRequirements(action.instrument_id, action.exchange_id)
-      })
-    )
-  })));
-  if (err) TE(err);
-  
-  // assign liquidity requirements to their possible_actions
-  _.zipWith(assets, liquidity_requirements, 
-    (asset, requirements) => {
-      _.zipWith(
-        asset.possible_actions,
-        requirements,
-        (a, b) => a.liquidity = b
-      )
-    }
-  );
-
-  assets.map((asset) => {
-/*  //if this is a base asset we find a buy action involving another base asset
-    if (asset.is_base) {
-      const base_asset_ids = _.map(base_assets, 'id');
-      asset.suggested_action = _.find(asset.possible_actions, action => {
-
-        return (
-          //this action includes buying this asset
-          action.transaction_asset_id == asset.id
-          //this asset is not the one being sold
-          &&
-          action.quote_asset_id != asset.id
-          //the asset being sold is a base asset
-          &&
-          base_asset_ids.includes(action.quote_asset_id)
-        )
-
-      })
-      return;
-    } */
-
-    // filter out actions that do not pass all requirements assigned to them
-    asset.possible_actions = asset.possible_actions.filter(possible_action =>
-      possible_action.liquidity.every(requirement => {
-        // if !isNaN(requirement.avg_vol) true that means we have liquidity history for that action
-        return !isNaN(requirement.avg_vol) && requirement.avg_vol >= requirement.minimum_volume;
-      })
-    );
-    /* Cancel recipe generation if asset doesn't meet minimum volume requirements */
-    if (!asset.possible_actions.length) TE('None of instruments for asset %s fulfill liquidity requirements', asset.symbol);
-
-    // calculate asset price in usd when buying through certain insturment/exchange
-    asset.possible_actions = asset.possible_actions.map((instrument) => {
-      let is_sell = instrument.quote_asset_id == asset.id;
-      // flip assets if it's a sell
-      if (is_sell) {
-        [instrument.transaction_asset_id, instrument.quote_asset_id] = [instrument.quote_asset_id, instrument.transaction_asset_id];
-      }
-      let base_asset_id = instrument.quote_asset_id;
-
-      // get base asset price in usd
-      let base_asset, base_asset_usd_price;
-      if (base_asset = base_assets.find(ba => ba.id == base_asset_id))
-        base_asset_usd_price = base_asset.USD;
-      else
-        TE("Didn't find base asset with id",
-          is_sell ? instrument.transaction_asset_id : instrument.quote_asset_id
-        );
-
-      /* To find cheapest way to purchase asset first find out the price of asset in USD
-       if it would be acquired this way. If it's a sell position, then invert price of
-       bid order. */
-      let cost_usd = base_asset_usd_price * (is_sell ?
-        Decimal(1).div(Decimal(instrument.bid_price)).toNumber() :
-        instrument.ask_price);
-
-      Object.assign(instrument, {
-        is_sell,
-        cost_usd
-      });
-      return instrument;
-    });
-
-    // find cheapest way to acquire asset
-    asset.suggested_action = _.minBy(asset.possible_actions, 'cost_usd');
-  });
-
-  // filter out assets that can't be acquired based on if they have suggested action or not
-  assets = _.filter(assets, a => a.suggested_action != null);
-
-  // calculate investment percentage
-  //const total_marketshare = _.sumBy(assets, 'avg_share');
-
-  assets.map(asset => {
-    asset.investment_percentage = 100 / assets.length;
-    /* // investment percentage proportional to asset marketshare
-    Decimal(100).div(Decimal(total_marketshare)).mul(Decimal(asset.avg_share)).toNumber(); */
-    return asset;
-  });
-
-  return assets;
-};
-module.exports.old_generateRecipeDetails = old_generateRecipeDetails;
 
 const changeRecipeRunStatus = async function (user_id, recipe_run_id, status_constant, comment) {
   // check for valid recipe run status

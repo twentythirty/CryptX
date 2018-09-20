@@ -389,8 +389,8 @@ const getAssetGroupWithData = async function (investment_run_id) {
       SELECT a.id, a.symbol, a.long_name, a.is_base, a.is_deposit, AVG (prices.ask_price) as value_usd
       FROM asset a
       JOIN instrument i ON i.transaction_asset_id=a.id
-      JOIN instrument_exchange_mapping iem ON iem.instrument_id=i.id
-      JOIN asset quote_asset ON quote_asset.id=i.quote_asset_id
+      LEFT JOIN instrument_exchange_mapping iem ON iem.instrument_id=i.id
+      LEFT JOIN asset quote_asset ON quote_asset.id=i.quote_asset_id
       LEFT JOIN LATERAL (
         SELECT imd.ask_price
         FROM instrument_market_data imd
@@ -408,6 +408,7 @@ const getAssetGroupWithData = async function (investment_run_id) {
       i.quote_asset_id,
       iem.instrument_id,
       iem.exchange_id,
+      exchange.name as exchange_name,
       nvt_calc.value as nvt,
       lh.volume,
       (lh.volume * ask_price * base_price.value_usd) as volume_usd,
@@ -421,7 +422,8 @@ const getAssetGroupWithData = async function (investment_run_id) {
     JOIN asset ON asset.id=ga.asset_id
     JOIN instrument i ON i.transaction_asset_id=asset.id
     JOIN instrument_exchange_mapping iem ON instrument_id=i.id
-    JOIN LATERAL
+    JOIN exchange ON exchange.id=iem.exchange_id
+    LEFT JOIN LATERAL
     (
       SELECT value
       FROM market_history_calculation
@@ -437,7 +439,7 @@ const getAssetGroupWithData = async function (investment_run_id) {
       ORDER BY ilh.instrument_id NULLS LAST, ilh.exchange_id NULLS LAST, ilh.timestamp_from DESC NULLS LAST
       LIMIT 1
     ) AS lh ON TRUE
-    JOIN LATERAL 
+    LEFT JOIN LATERAL 
     (
       SELECT ask_price, bid_price
       FROM instrument_market_data 
@@ -446,7 +448,7 @@ const getAssetGroupWithData = async function (investment_run_id) {
       ORDER BY instrument_id NULLS LAST, exchange_id NULLS LAST, timestamp DESC NULLS LAST
       LIMIT 1
     ) as imd ON TRUE
-    JOIN base_assets_with_prices as base_price ON base_price.id=i.quote_asset_id
+    LEFT JOIN base_assets_with_prices as base_price ON base_price.id=i.quote_asset_id
     WHERE ir.id=:investment_run_id
     ORDER BY nvt DESC, volume_usd DESC, price_usd DESC
   `, {
@@ -455,6 +457,21 @@ const getAssetGroupWithData = async function (investment_run_id) {
     },
     type: sequelize.QueryTypes.SELECT
   }));
+
+  let properties = ['nvt', 'volume_usd', 'price_usd']; // properties that shouldn't be null
+  let groups_missing_data = _(asset_group)
+    .groupBy(asset_group, 'id')
+    .values()
+    .filter(
+      group => group.every(
+        asset => roperties.some(prop => _.isNull(asset[prop]))
+      )
+    );
+
+  if (groups_missing_data.length) {
+    let missing = _.take(groups_missing_data, 1);
+    TE(`${missing.long_name} is missing ${properties.find(p => _.isNull(missing[p]))} data`);
+  }
 
   asset_group.map(ag => {
     Object.assign(ag, {
