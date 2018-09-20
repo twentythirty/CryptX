@@ -403,6 +403,11 @@ ROUTES = {
     permissions_matcher: ROUTE_MATCHERS.ApproveRecipeRun,
     required_permissions: [PERMISSIONS.VIEW_INVESTMENT_RUN, PERMISSIONS.APPROVE_RECIPE_RUN]
   },
+  CalculateRecipeRunDeposits: {
+    router_string: "/recipes/:recipe_id/calculate_deposits",
+    permissions_matcher: ROUTE_MATCHERS.ApproveRecipeRun,
+    required_permissions: [PERMISSIONS.VIEW_INVESTMENT_RUN, PERMISSIONS.APPROVE_RECIPE_RUN]
+  },
 
   // Recipe run details
   GetRecipeRunDetails: {

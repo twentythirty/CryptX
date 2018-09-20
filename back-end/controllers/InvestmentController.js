@@ -630,3 +630,19 @@ const generateInvestmentAssetGroup = async function (req, res) {
 
 };
 module.exports.generateInvestmentAssetGroup = generateInvestmentAssetGroup;
+
+const calculateRecipeRunDeposits = async (req, res) => {
+
+  const { recipe_id } = req.params;
+
+  let [ err, deposits ] = await to(DepositService.generateRecipeRunDeposits(recipe_id));
+
+  if(err) return ReE(res, err.message, 422);
+  if(!deposits) return ReE(res, `Recipe Run with id "${recipe_id}" was not found`);
+
+  return ReS(res, {
+    deposits
+  });
+
+};
+module.exports.calculateRecipeRunDeposits = calculateRecipeRunDeposits;

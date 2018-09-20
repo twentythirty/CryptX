@@ -454,6 +454,14 @@ router.get(
   filter_reducer,
   InvestmentController.getRecipeRun
 );
+router.post(
+  ROUTES.CalculateRecipeRunDeposits.router_string,
+  stateless_auth,
+  res_new_token,
+  check_permissions,
+  filter_reducer,
+  InvestmentController.calculateRecipeRunDeposits
+);
 
 
 // RECIPE ORDERS

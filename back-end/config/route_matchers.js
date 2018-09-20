@@ -43,6 +43,7 @@ ROUTE_MATCHERS = {
     GetRecipeRunDetails: /\/recipe_details\/of_recipe\/\d+$/,
     GetRecipeRunDetailsColLOV: /\/recipe_details\/header_lov\/\w+/,
     ApproveRecipeRun: /\/recipes\/\d+\/approve$/,
+    CalculateRecipeRunDeposits: /\/recipes\/d+\/calculate_deposits$/,
     GetRecipeOrdersOfRecipe: /\/orders\/of_recipe\/\d+$/,
     GetRecipeOrdersOfGroup: /\/orders\/of_group\/\d+$/,
     GetRecipeOrders: /\/orders\/all$/,

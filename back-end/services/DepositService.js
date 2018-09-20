@@ -1,6 +1,7 @@
 'use strict';
 
 const InvestmentService = require('../services/InvestmentService');
+const RecipeRun = require('../models').RecipeRun;
 const RecipeRunDeposit = require('../models').RecipeRunDeposit;
 const RecipeRunDetail = require('../models').RecipeRunDetail;
 const RecipeRunDetailInvestment = require('../models').RecipeRunDetailInvestment
@@ -9,28 +10,67 @@ const Exchange = require('../models').Exchange;
 const ExchangeAccount = require('../models').ExchangeAccount;
 const InvestmentAssetConversion = require('../models').InvestmentAssetConversion;
 const Sequelize = require('../models').Sequelize;
+const sequelize = require('../models').sequelize;
 
 const { in: opIn, ne: opNe, or: opOr } = Sequelize.Op;
 
 const { logAction } = require('../utils/ActionLogUtil'); 
 
-const generateRecipeRunDeposits = async function (approved_recipe_run) {
+const generateRecipeRunDeposits = async function (recipe_run_id) {
 
-  if (!approved_recipe_run
-    || approved_recipe_run.approval_status == null
-    || approved_recipe_run.approval_status !== RECIPE_RUN_STATUSES.Approved) {
+  let [ err, recipe_run ] = await to(RecipeRun.findById(recipe_run_id));
 
-    TE(`Bad input! submitted input must be a recipe run object with status ${RECIPE_RUN_STATUSES.Approved} (Approved)! GOt: ${approved_recipe_run}`)
+  if(err) TE(err.message);
+  if(!recipe_run) return null;
+
+  if (recipe_run.approval_status !== RECIPE_RUN_STATUSES.Approved) {
+    TE(`Deposit calculation is only allowed for Approved Recipe Runs`);
+  }
+
+  let deposit_count;
+  [ err, deposit_count ] = await to(RecipeRunDeposit.count({
+    where: { recipe_run_id: recipe_run.id }
+  }));
+
+  if(err) TE(err.message);
+  if(deposit_count) TE(`Recipe Run with id "${recipe_run.id}" already has Deposits`);
+
+  let conversions;
+  [ err, conversions ] = await to(InvestmentAssetConversion.findAll({
+    where: { recipe_run_id: recipe_run.id }
+  }));
+
+  if(err) TE(err.message);
+
+  for(let conversion of conversions) {
+    if(conversion.status === ASSET_CONVERSION_STATUSES.Pending) TE(`Cannot calculate deposits while there are Pending asset conversions`);
   }
 
   //Get unique combinations of quote assets and exchanges.
-  let [ err, details ] = await to(RecipeRunDetail.findAll({
-    where: { recipe_run_id: approved_recipe_run.id },
-    attributes: ['quote_asset_id', 'target_exchange_id', Sequelize.fn('sum', Sequelize.col('investment_percentage'))],
-    group: ['quote_asset_id', 'target_exchange_id']
-  }));
+  let details;
+  [ err, details ] = await to(sequelize.query(`
+    SELECT
+      rrd.quote_asset_id,
+      rrd.target_exchange_id,
+      SUM(rrd.investment_percentage) AS investment_percentage,
+      COALESCE(SUM(rrdi.amount), 0) AS deposit_amount
+    FROM recipe_run_detail AS rrd
+    LEFT JOIN recipe_run_detail_investment AS rrdi ON rrdi.recipe_run_detail_id = rrd.id AND rrdi.asset_id = rrd.quote_asset_id
+    LEFT JOIN investment_asset_conversion AS iac ON iac.recipe_run_id = rrd.recipe_run_id AND iac.target_asset_id = rrd.quote_asset_id
+    GROUP BY rrd.quote_asset_id, rrd.target_exchange_id, iac.amount
+  `));
   
   if(err) TE(err.message);
+
+  [ details ] = details;
+
+  //Calculate sum of percentages for each quote asset
+  const percentage_totals = {};
+  for(let detail of details) {
+    if(!percentage_totals[detail.quote_asset_id]) percentage_totals[detail.quote_asset_id] = Decimal(0);
+
+    percentage_totals[detail.quote_asset_id] = percentage_totals[detail.quote_asset_id].plus(detail.investment_percentage);
+  }
 
   const exchange_ids = details.map(d => d.target_exchange_id);
   let exchange_accounts = [];
@@ -46,13 +86,25 @@ const generateRecipeRunDeposits = async function (approved_recipe_run) {
   let missing_acounts = [];
   let deposits = details.map(detail => {
     const account = exchange_accounts.find(ex_account => detail.target_exchange_id === ex_account.exchange_id && detail.quote_asset_id === ex_account.asset_id);
-    if(account) return {
-      asset_id: account.asset_id,
-      creation_timestamp: new Date(),
-      recipe_run_id: approved_recipe_run.id,
-      target_exchange_account_id: account.id,
-      status: MODEL_CONST.RECIPE_RUN_DEPOSIT_STATUSES.Pending
-    };
+    if(account) {
+      let amount = Decimal(detail.deposit_amount);
+      let additional_amount = Decimal(0);
+      const conversion = conversions.find(c => c.target_asset_id === detail.quote_asset_id);
+
+      if(percentage_totals[detail.quote_asset_id] && conversion) {
+        additional_amount = Decimal(conversion.amount);
+        additional_amount = additional_amount.mul(detail.investment_percentage).div(percentage_totals[detail.quote_asset_id]);
+      }
+
+      return {
+        asset_id: account.asset_id,
+        creation_timestamp: new Date(),
+        recipe_run_id: recipe_run.id,
+        target_exchange_account_id: account.id,
+        status: MODEL_CONST.RECIPE_RUN_DEPOSIT_STATUSES.Pending,
+        amount: amount.plus(additional_amount).toString()
+      };
+    }
     else missing_acounts.push({
       exchange_id: detail.target_exchange_id,
       quote_asset_id: detail.quote_asset_id
@@ -80,17 +132,17 @@ const generateRecipeRunDeposits = async function (approved_recipe_run) {
     TE(`Could not generate deposits, because deposit accounts are missing for Exchange/Asset pairs: ${missing_pairs.join(', ')}`);
   }
 
-  //console.log(deposits)
-  [ err, deposits ] = await to(RecipeRunDeposit.bulkCreate(deposits));
+  //console.log(JSON.stringify(deposits, null, 4));
+  [ err, deposits ] = await to(RecipeRunDeposit.bulkCreate(deposits, { returning: true }));
   
   if(err) TE(err.message);
 
   logAction('deposits.generate', { 
     args: {
       amount: deposits.length,
-      recipe_id: approved_recipe_run.id
+      recipe_id: recipe_run.id
     },
-    relations: { recipe_run_id: approved_recipe_run.id }
+    relations: { recipe_run_id: recipe_run.id }
   });
 
   return deposits;

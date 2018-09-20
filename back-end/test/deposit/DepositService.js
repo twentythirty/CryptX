@@ -28,12 +28,14 @@ describe('DepositService testing', () => {
     });
 
     const DepositService = require('./../../services/DepositService');
+    const RecipeRun = require('./../../models').RecipeRun;
     const RecipeRunDeposit = require('./../../models').RecipeRunDeposit;
     const RecipeRunDetail = require('./../../models').RecipeRunDetail;
     const ExchangeAccount = require('./../../models').ExchangeAccount;
     const Exchange = require('./../../models').Exchange;
     const Asset = require('./../../models').Asset;
     const InvestmentAssetConversion = require('./../../models').InvestmentAssetConversion;
+    const sequelize = require('./../../models').sequelize;
 
     const ActionLogUtil = require('./../../utils/ActionLogUtil');
 
@@ -246,13 +248,19 @@ describe('DepositService testing', () => {
 
         const MOCK_DETAILS = [{
             quote_asset_id: 1,
-            target_exchange_id: 2
+            target_exchange_id: 2,
+            investment_percentage: 20,
+            deposit_amount: 10
         }, {
             quote_asset_id: 1,
-            target_exchange_id: 1
+            target_exchange_id: 1,
+            investment_percentage: 30,
+            deposit_amount: 0
         }, {
             quote_asset_id: 2,
-            target_exchange_id: 3
+            target_exchange_id: 3,
+            investment_percentage: 50,
+            deposit_amount: 20
         }];
 
         const MOCK_EXCHANGE_ACCOUNTS = [{
@@ -264,14 +272,39 @@ describe('DepositService testing', () => {
             exchange_id: 3,
             asset_id: 2
         }, {
-            id: 1,
+            id: 3,
             exchange_id: 2,
             asset_id: 1
         }];
 
-        const MOCK_RECIPE_RUN = {
+        const MOCK_RECIPE_RUNS = [{
             id: 1,
             approval_status: RECIPE_RUN_STATUSES.Approved
+        }, {
+            id: 2,
+            approval_status: RECIPE_RUN_STATUSES.Rejected
+        }];
+
+        const MOCK_COMPLETED_CONVERSIONS = [{
+            target_asset_id: 1,
+            amount: 100,
+            status: ASSET_CONVERSION_STATUSES.Completed
+        },{
+            target_asset_id: 2,
+            amount: 50,
+            status: ASSET_CONVERSION_STATUSES.Completed
+        }];
+
+        const MOCK_PARTIALY_COMPLETED_CONVERSIONS = [{
+            target_asset_id: 3,
+            amount: null,
+            status: ASSET_CONVERSION_STATUSES.Pending
+        }].concat(MOCK_COMPLETED_CONVERSIONS);
+
+        const EXPECTED_AMOUNTS = {
+            '1-3': 50,
+            '1-1': 60,
+            '2-2': 70
         };
 
         before(done => {
@@ -281,12 +314,18 @@ describe('DepositService testing', () => {
             sinon.stub(RecipeRunDeposit, 'bulkCreate').callsFake(deposits => {
                 return Promise.resolve(deposits);
             });
+            sinon.stub(RecipeRun, 'findById').callsFake(id => {
+                return Promise.resolve(
+                    MOCK_RECIPE_RUNS.find(r => r.id === id) || null
+                );
+            });
             done();
         });
 
         after(done => {
             ExchangeAccount.findAll.restore();
             RecipeRunDeposit.bulkCreate.restore();
+            RecipeRun.findById.restore();
             done();
         });
 
@@ -294,11 +333,37 @@ describe('DepositService testing', () => {
             if(RecipeRunDetail.findAll.restore) RecipeRunDetail.findAll.restore();
             if(Exchange.findAll.restore) Exchange.findAll.restore();
             if(Asset.findAll.restore) Asset.findAll.restore();
+            if(InvestmentAssetConversion.findAll.restore) InvestmentAssetConversion.findAll.restore();
+            if(sequelize.query.restore) sequelize.query.restore();
             done();
         });
 
         it('exist', () => {
             return chai.expect(DepositService.generateRecipeRunDeposits).to.be.not.undefined;
+        });
+
+        it('return null if the recipe run was not found', () => {
+
+            return DepositService.generateRecipeRunDeposits(-1).then(result => {
+                chai.expect(result).to.equal(null);
+            });
+
+        });
+
+        it('reject if the recipe run status is not Approved', () => {
+
+            return chai.assert.isRejected(DepositService.generateRecipeRunDeposits(2));
+
+        });
+
+        it('reject if there are incomplete asset conversion', () => {
+
+            sinon.stub(InvestmentAssetConversion, 'findAll').callsFake(options => {
+                return Promise.resolve(MOCK_PARTIALY_COMPLETED_CONVERSIONS);
+            });
+
+            return chai.assert.isRejected(DepositService.generateRecipeRunDeposits(1));
+
         });
 
         it('reject if the are missing exchange accounts', () => {
@@ -307,10 +372,9 @@ describe('DepositService testing', () => {
                 target_exchange_id: 12313213
             };
 
-            sinon.stub(RecipeRunDetail, 'findAll').callsFake(options => {
-                return Promise.resolve([].concat(MOCK_DETAILS, [extra_detail]));
+            sinon.stub(sequelize, 'query').callsFake(query => {
+                return Promise.resolve([[extra_detail, ...MOCK_DETAILS]]);
             });
-
 
             sinon.stub(Exchange, 'findAll').callsFake(options => {
                 return Promise.resolve([{
@@ -326,15 +390,24 @@ describe('DepositService testing', () => {
                 }]);
             });
 
-            return chai.assert.isRejected(DepositService.generateRecipeRunDeposits(MOCK_RECIPE_RUN));
+            sinon.stub(InvestmentAssetConversion, 'findAll').callsFake(options => {
+                return Promise.resolve(MOCK_COMPLETED_CONVERSIONS);
+            });
+
+            return chai.assert.isRejected(DepositService.generateRecipeRunDeposits(1));
         });
 
         it('generate new deposits by matching the details and exchange accounts', () => {
-            sinon.stub(RecipeRunDetail, 'findAll').callsFake(options => {
-                return Promise.resolve(MOCK_DETAILS);
+            
+            sinon.stub(InvestmentAssetConversion, 'findAll').callsFake(options => {
+                return Promise.resolve(MOCK_COMPLETED_CONVERSIONS);
             });
 
-            return DepositService.generateRecipeRunDeposits(MOCK_RECIPE_RUN).then(deposits => {
+            sinon.stub(sequelize, 'query').callsFake(query => {
+                return Promise.resolve([MOCK_DETAILS]);
+            });
+
+            return DepositService.generateRecipeRunDeposits(1).then(deposits => {
 
                 chai.expect(deposits.length).to.equal(MOCK_EXCHANGE_ACCOUNTS.length);
 
@@ -342,9 +415,13 @@ describe('DepositService testing', () => {
                     const exchange_account = MOCK_EXCHANGE_ACCOUNTS.find(ex => ex.id === deposit.target_exchange_account_id);
 
                     chai.expect(deposit.creation_timestamp).to.be.a('date');
-                    chai.expect(deposit.recipe_run_id).to.equal(MOCK_RECIPE_RUN.id);
+                    chai.expect(deposit.recipe_run_id).to.equal(MOCK_RECIPE_RUNS[0].id);
                     chai.expect(deposit.asset_id).to.equal(exchange_account.asset_id);
                     chai.expect(deposit.status).to.equal(RECIPE_RUN_DEPOSIT_STATUSES.Pending);
+
+                    chai.expect(parseInt(deposit.amount)).to.equal(
+                        EXPECTED_AMOUNTS[`${deposit.asset_id}-${deposit.target_exchange_account_id}`]
+                    );
                 }
 
             });

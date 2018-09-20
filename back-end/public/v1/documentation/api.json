@@ -1489,6 +1489,36 @@
         ]
       }
     },
+    "/recipes/{recipe_id}/calculate_deposits": {
+      "post": {
+        "tags": [
+          "recipes", "deposits"
+        ],
+        "summary": "Calculate deposists",
+        "description": "Calculates how much of eachbase asset needs to be depositet to the Exchanges base on the recipe run detail investment and converted assets.",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/parameters/recipe_id"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "$ref": "#/definitions/RecipeDepositCalculationResponse"
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
     "/recipe_details/{recipe_detail_id}": {
       "get": {
         "tags": [
@@ -6176,6 +6206,19 @@
         },
         "recipe_order_group": {
           "$ref": "#/definitions/RecipeOrderGroup"
+        }
+      }
+    },
+    "RecipeDepositCalculationResponse": {
+      "description": "Recipe run deposit calculation reponse",
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean",
+          "example": true
+        },
+        "deposits": {
+          "$ref": "#/definitions/RecipeDeposit"
         }
       }
     },
