@@ -58,11 +58,9 @@ const generateRecipeRunDeposits = async function (recipe_run_id) {
     LEFT JOIN recipe_run_detail_investment AS rrdi ON rrdi.recipe_run_detail_id = rrd.id AND rrdi.asset_id = rrd.quote_asset_id
     LEFT JOIN investment_asset_conversion AS iac ON iac.recipe_run_id = rrd.recipe_run_id AND iac.target_asset_id = rrd.quote_asset_id
     GROUP BY rrd.quote_asset_id, rrd.target_exchange_id, iac.amount
-  `));
+  `, { type: sequelize.QueryTypes.SELECT }));
   
   if(err) TE(err.message);
-
-  [ details ] = details;
 
   //Calculate sum of percentages for each quote asset
   const percentage_totals = {};
