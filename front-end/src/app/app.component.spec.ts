@@ -4,6 +4,8 @@ import { AppModule } from './app.module';
 import { AppComponent } from './app.component';
 import { extraTestingModules } from './testing/utils';
 
+jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+
 describe('AppComponent', () => {
   let fixture: ComponentFixture<AppComponent>;
 

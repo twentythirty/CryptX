@@ -61,7 +61,8 @@
 <app-form-action-bar>
   <button
     class="btn submit"
-    [disabled]="loading || !form.valid"
+    [disabled]="loading"
     (click)="saveLiquidityRequirement()"
+    [appMarkAsTouched]="form"
   >{{ 'liquidity.add_requirement' | translate }}</button>
 </app-form-action-bar>

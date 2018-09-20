@@ -6,4 +6,8 @@ export class Instrument {
 
     public exchanges_connected?: number | string;
     public exchanges_failed?: number | string;
+
+    constructor (data: Instrument) {
+        Object.assign(this, data);
+    }
 }

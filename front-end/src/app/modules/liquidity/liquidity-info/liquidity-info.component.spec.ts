@@ -5,42 +5,16 @@ import { of } from 'rxjs';
 
 import { LiquidityModule } from '../liquidity.module';
 import { LiquidityInfoComponent } from './liquidity-info.component';
-import { LiquidityService, LiquidityResponse, ExchangesResponse } from '../../../services/liquidity/liquidity.service';
-
-
-const LiquidityServiceStub = {
-  getLiquidity: () => {
-    return fakeAsyncResponse<LiquidityResponse>({
-      success: true,
-      liquidity_requirement: {
-        id: 20,
-        instrument_id: 3883,
-        instrument: 'BAT/BTC',
-        periodicity: 7,
-        quote_asset: 'BTC',
-        minimum_circulation: '100000',
-        exchange: 'common.all',
-        exchange_count: '3',
-        exchange_pass: '3',
-        exchange_not_pass: '0'
-      },
-    });
-  },
-
-  getExchanges: () => {
-    return fakeAsyncResponse<ExchangesResponse>({
-      success: true,
-      exchanges: [],
-      footer: [],
-      count: 0
-    });
-  }
-};
+import { LiquidityService} from '../../../services/liquidity/liquidity.service';
+import { getLiquidityData, getExchangesData } from '../../../testing/service-mock/liquidity.service.mock';
 
 
 describe('LiquidityInfoComponent', () => {
   let component: LiquidityInfoComponent;
   let fixture: ComponentFixture<LiquidityInfoComponent>;
+  let liquidityService: LiquidityService;
+  let getLiquidityRequirementSpy;
+  let getLiquidityExchangesSpy;
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
@@ -49,7 +23,7 @@ describe('LiquidityInfoComponent', () => {
         ...extraTestingModules
       ],
       providers: [
-        { provide: LiquidityService, useValue: LiquidityServiceStub },
+        LiquidityService,
         {
           provide: ActivatedRoute, useValue: {
             queryParams: of({ page: 1 }),
@@ -64,10 +38,30 @@ describe('LiquidityInfoComponent', () => {
   beforeEach(() => {
     fixture = TestBed.createComponent(LiquidityInfoComponent);
     component = fixture.componentInstance;
+    liquidityService = fixture.debugElement.injector.get(LiquidityService);
+    getLiquidityRequirementSpy = spyOn (liquidityService, 'getExchanges').and.returnValue(
+      fakeAsyncResponse(getLiquidityData));
+    getLiquidityExchangesSpy = spyOn (liquidityService, 'getLiquidity').and.returnValue(
+      fakeAsyncResponse(getExchangesData));
+
     fixture.detectChanges();
   });
 
   it('should create', () => {
     expect(component).toBeTruthy();
   });
+
+  it('should correctly load liquidity requirement on init', () => {
+    fixture.whenStable().then(() => {
+      expect(component.liquidityDataSource.body).toEqual([getLiquidityData.liquidity_requirement]);
+    });
+  });
+
+  it('should correctly load liquidity requirement exchanges on init', () => {
+    fixture.whenStable().then(() => {
+      expect(component.exchangesDataSource.body).toEqual(getExchangesData.exchanges);
+      expect(component.exchangesDataSource.footer).toEqual(getExchangesData.footer);
+    });
+  });
+
 });
