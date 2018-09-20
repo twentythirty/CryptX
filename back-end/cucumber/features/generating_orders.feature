@@ -9,7 +9,7 @@ Feature: Generating Orders
         And the system has a Depositor
         And the system has Instrument Mappings for Kraken
         And the system has updated the Instrument Market Data
-        And there is a real LCI Investment Run created by an Investment Manager
+        And there is a LCI Investment Run created by an Investment Manager
         And the system has Approved Recipe Run with Details
         And the system has Exchange Account for BTC on Kraken
         And the system has Exchange Account for ETH on Kraken

@@ -20,7 +20,7 @@ Feature: Initiate a recipe run
     
         Given the system has Asset Market Capitalization for the last 2 hours
         Given the system has updated the Market History Calculation
-        And there is a real LCI Investment Run created by an Investment Manager
+        And there is a LCI Investment Run created by an Investment Manager
         And the status of the Investment Run is Initiated
         And the Investment Run has no Recipe Runs
         When I log onto CryptX as Investment Manager
@@ -35,13 +35,13 @@ Feature: Initiate a recipe run
 
     Scenario Outline: The system does not have base asset prices in USD for the past <amount> <interval_type> 
   
-        And there is a real LCI Investment Run created by an Investment Manager
+        And there is a LCI Investment Run created by an Investment Manager
         And the status of the Investment Run is Initiated
         And the Investment Run has no Recipe Runs
         But the system is missing base Asset prices in USD for the last <amount> <interval_type>
         When I log onto CryptX as Investment Manager
         And I iniatiate a new Recipe Run
-        Then the system will display an error about the Capitalization not bring up to date
+        Then the system will display an error about the Capitalization not being up to date
         And a new Recipe Run is not created
 
     Examples:
@@ -50,7 +50,7 @@ Feature: Initiate a recipe run
 
     Scenario: Instrument exchange mappings are missing for base assets.
   
-        And there is a real LCI Investment Run created by an Investment Manager
+        And there is a LCI Investment Run created by an Investment Manager
         And the status of the Investment Run is Initiated
         And the Investment Run has no Recipe Runs
         But the system is missing Instrument Exchange Mappings for base assets in USD or USDT
