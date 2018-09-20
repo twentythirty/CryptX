@@ -5,49 +5,14 @@ import { testFormControlForm, testFormErrorMessagesRendering } from '../../../te
 import { AuthModule } from '../auth.module';
 import { EditInfoComponent } from './edit-info.component';
 import { AuthService } from '../../../services/auth/auth.service';
-
-
-const checkAuthResponse = {
-  '0': {
-    success: true,
-    permissions: [],
-    model_constants: {},
-    user: {
-      id: 1,
-      first_name: 'Test',
-      last_name: 'User',
-      email: 'test@domain.com',
-      created_timestamp: 1526975256757,
-      reset_password_token_hash: null,
-      reset_password_token_expiry_timestamp: null,
-      is_active: true,
-      roles: {
-        '0': {
-          id: 4,
-          name: 'Ultimate role',
-          user_role: {
-            role_id: 4,
-            user_id: 1
-          },
-        }
-      }
-    }
-  }
-};
-
-const AuthServiceStub = {
-  changeInfo: () => {
-    return fakeAsyncResponse({
-      success: true
-    });
-  }
-};
+import { postUsersMeChangePasswordResponse } from '../../../testing/api-response/postUsersMeChangePasswordResponse.mock';
 
 
 describe('EditInfoComponent', () => {
   let component: EditInfoComponent;
   let fixture: ComponentFixture<EditInfoComponent>;
   let authService: AuthService;
+  let changeInfoSpy;
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
@@ -55,9 +20,6 @@ describe('EditInfoComponent', () => {
         AuthModule,
         ...extraTestingModules
       ],
-      providers: [
-        { provide: AuthService, useValue: AuthServiceStub }
-      ]
     })
     .compileComponents();
   }));
@@ -65,7 +27,8 @@ describe('EditInfoComponent', () => {
   beforeEach(() => {
     fixture = TestBed.createComponent(EditInfoComponent);
     component = fixture.componentInstance;
-    authService = component.authService;
+    authService = fixture.debugElement.injector.get(AuthService);
+    changeInfoSpy = spyOn(authService, 'changeInfo').and.returnValue(fakeAsyncResponse(postUsersMeChangePasswordResponse));
     fixture.detectChanges();
   });
 
@@ -137,7 +100,7 @@ describe('EditInfoComponent', () => {
         fixture.detectChanges();
       },
       changeToUnsuccess: () => {
-        spyOn(authService, 'changeInfo').and.returnValue(errorResponse);
+        changeInfoSpy.and.returnValue(errorResponse);
       }
     };
   });
