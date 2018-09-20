@@ -14,6 +14,54 @@ Given('there is a recipe order group with status Pending', {
     await orderService.generateApproveRecipeOrders(this.current_recipe_run.id);
 });
 
+Given('one of the orders is missing their CCXT mapping', async function() {
+
+    const models = require('../../../models');
+    const RecipeOrder = models.RecipeOrder;
+    
+    const new_order = await RecipeOrder.findOne({
+        where: {
+            status: RECIPE_ORDER_STATUSES.Pending
+        },
+        include: {
+            model: Exchange,
+            as: 'target_exchange'
+        }
+    })
+    chai.assert.isNotNull(new_order, 'Did not find any Pending Recipe Orders to tamper with!');
+    
+    const InstrumentExchangeMapping = models.InstrumentExchangeMapping;
+    const mapped_instruments = await InstrumentExchangeMapping.findAll({
+        include: {
+            model: Instrument,
+            required: true
+        }
+    });
+    const Instrument = models.Instrument;
+    let empty_instrument = await Instrument.findOne({
+        where: {
+            id: {
+                [models.Sequelize.Op.notIn]: _.map(mapped_instruments, 'instrument_id')
+            }
+        }
+    });
+    if (empty_instrument == null) {
+        const instrument = mapped_instruments[_.random(0, mapped_instruments.length, false)].Instrument;
+        //no unmapped instruments, lets create one
+        empty_instrument = await Instrument.create({
+            symbol: 'TEST',
+            transaction_asset_id: instrument.transaction_asset_id,
+            quote_asset_id: instrument.quote_asset_id
+        })
+    }
+    //store params for later assert
+    this.current_bad_instrument = empty_instrument;
+    this.current_order_exchange = new_order.target_exchange;
+    //change order instrument
+    new_order.instrument_id = empty_instrument.id
+    await new_order.save()
+});
+
 Given(/^the recipe run does not have recipe order group with status (.*)$/, function(status) {
 
     const { RecipeOrderGroup, sequelize } = require('../../../models');
@@ -296,12 +344,17 @@ When('approve the order group with a rationale', {
     const orderService = require('../../../services/OrdersService');
 
     //perform approval
-    await orderService.changeRecipeOrderGroupStatus(
+    const [err, result] = to(await orderService.changeRecipeOrderGroupStatus(
         this.current_user.id,
         this.current_recipe_order_group.id,
         RECIPE_ORDER_GROUP_STATUSES.Approved,
         'Testing approval'
-    )
+    ))
+
+    //preserve error for future steps, if any
+    if (err != null) {
+        this.current_recipe_order_group_status_change_error = err;
+    }
 
     //refetch relevant info into world after status change to check later
     this.current_recipe_order_group = await require('../../../models').RecipeOrderGroup.findById(this.current_recipe_order_group.id);
@@ -386,13 +439,29 @@ Then(/^all orders in the group will have status (.*)$/, async function(status) {
     chai.assert.isDefined(this.current_recipe_order_group, 'No group defined in context!');
 
     const orders_of_group = await this.current_recipe_order_group.getRecipeOrders();
-    //expect osme orders in that group
+    //expect some orders in that group
     chai.expect(orders_of_group.length).to.be.at.least(1, 'Recipe order group is empty!');
     chai.assert.isDefined(RECIPE_ORDER_STATUSES[status], `No valid recipe order status for word ${status}`);
     const needed_status = RECIPE_ORDER_STATUSES[status];
     _.forEach(orders_of_group, order => {
         chai.assert.equal(order.status, needed_status, `group order ${order.id} does not have status ${needed_status}`);
     })
+});
+
+Then('the approval fails with an error message including mapping and exchange', function() {
+
+    //there should have been an error saved
+    chai.assert.isDefined(this.current_recipe_order_group_status_change_error, 'No error saved after recipe order group status changed!');
+
+    const message = _.toLower(this.current_recipe_order_group_status_change_error.message);
+    chai.assert.include(message, 'no mapping found', 'Error did not mention its about missing a mapping!');
+    chai.assert.isDefined(this.current_bad_instrument, 'No instrument saved as bad for recipe!');
+
+    const instrument = this.current_bad_instrument;
+    chai.assert.include(message, _.toLower(instrument.symbol), `Bad instrument symbol ${instrument.symbol} wasnt mentioned in the error!`);
+    chai.assert.isDefined(this.current_order_exchange, 'No exchange persisted for recipe orders!');
+    chai.assert.include(message, _.toLower(this.current_order_exchange.name), `Exchange name ${this,current_order_exchange.name} not mnetioned in error!`)
+    
 });
 
 Then('the system won\'t allow me to generate Recipe Orders while this group is not Rejected', function() {

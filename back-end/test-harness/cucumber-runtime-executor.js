@@ -54,7 +54,9 @@ const setup_event_hooks = (eventEmitter) => {
             const source = data.sourceLocation
             failed_tests.push({
                 title: `${source.uri}:${source.line}`,
-                error: data.result.exception.message
+                //account for status of a recipe being 'undefied' and therefore no error message
+                //but still a failure
+                error: data.result.exception ? data.result.exception.message : data.result.status
             })
         }
     });
