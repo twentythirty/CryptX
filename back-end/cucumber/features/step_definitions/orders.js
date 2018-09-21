@@ -409,14 +409,14 @@ When(/^(.*) the order group with a rationale/, {
 
     const orderService = require('../../../services/OrdersService');
 
-    let new_status = action == 'approve' ? RECIPE_ORDER_GROUP_STATUSES.Approved : RECIPE_ORDER_GROUP_STATUSES.Rejected;
+    let new_status = _.toLower(action) == 'approve' ? RECIPE_ORDER_GROUP_STATUSES.Approved : RECIPE_ORDER_GROUP_STATUSES.Rejected;
 
     //perform approval
     const [err, result] = await to(orderService.changeRecipeOrderGroupStatus(
         this.current_user.id,
         this.current_recipe_order_group.id,
         new_status,
-        'Testing approval'
+        `Testing ${action}`
     ));
 
     //preserve error for future steps, if any
@@ -428,6 +428,8 @@ When(/^(.*) the order group with a rationale/, {
     this.current_recipe_order_group = await require('../../../models').RecipeOrderGroup.findById(this.current_recipe_order_group.id);
     //account for lack of relevant field name
     this.current_recipe_order_group.status = this.current_recipe_order_group.approval_status;
+    //move investment run to also provide history
+    this.prev_investment_run = this.current_investment_run;
     this.current_investment_run = await require('../../../models').InvestmentRun.findById(this.current_investment_run.id);
 });
 

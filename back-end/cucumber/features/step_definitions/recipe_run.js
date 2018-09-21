@@ -1,20 +1,45 @@
-const { Given, When, Then } = require('cucumber');
+const {
+    Given,
+    When,
+    Then
+} = require('cucumber');
 const chai = require('chai');
-const { expect } = chai;
+const {
+    expect
+} = chai;
 
 const chaiHttp = require("chai-http");
 chai.use(chaiHttp);
 
 const World = require('../support/global_world');
 
-Given('the Investment Run has no Recipe Runs', function(){
+Given('the Investment Run has no Recipe Runs', function () {
 
-    const { RecipeRun } = require('../../../models');
+    const {
+        RecipeRun
+    } = require('../../../models');
 
     return RecipeRun.destroy({
-        where: { investment_run_id: this.current_investment_run.id }
+        where: {
+            investment_run_id: this.current_investment_run.id
+        }
     });
 
+});
+
+Given('there is a recipe run with status Pending', async function () {
+
+    const investmentService = require('../../../services/InvestmentService');
+    const new_run = await investmentService.createRecipeRun(
+        this.current_investment_run.user_created_id,
+        this.current_investment_run.id
+    )
+
+    chai.assert.equal(new_run.approval_status, RECIPE_RUN_STATUSES.Pending, 'New run did not have status pending!');
+
+    //update investment run in world
+    this.prev_investment_run = this.current_investment_run;
+    this.current_investment_run = await require('../../../models').InvestmentRun.findById(this.current_investment_run.id);
 });
 
 /**
@@ -22,14 +47,28 @@ Given('the Investment Run has no Recipe Runs', function(){
  * As it is more important that the order generation correctly uses the recipe details
  * Rather than the recipe run details are accurate.
  */
-Given('the system has Approved Recipe Run with Details', async function() {
+Given('the system has Approved Recipe Run with Details', async function () {
 
-    const { RecipeRun, RecipeRunDetail, Asset, Instrument, InstrumentExchangeMapping, Exchange, sequelize } = require('../../../models');
+    const {
+        RecipeRun,
+        RecipeRunDetail,
+        Asset,
+        Instrument,
+        InstrumentExchangeMapping,
+        Exchange,
+        sequelize
+    } = require('../../../models');
 
-    const exchange = await Exchange.findOne({ where: { name: 'Kraken' } });
+    const exchange = await Exchange.findOne({
+        where: {
+            name: 'Kraken'
+        }
+    });
 
     const base_assets = await Asset.findAll({
-        where: { is_base: true },
+        where: {
+            is_base: true
+        },
         raw: true
     });
 
@@ -59,7 +98,9 @@ Given('the system has Approved Recipe Run with Details', async function() {
             created_timestamp: new Date(),
             investment_run_id: this.current_investment_run.id,
             user_created_id: World.users.investment_manager.id
-        }, { transaction }).then(recipe_run => {
+        }, {
+            transaction
+        }).then(recipe_run => {
 
             this.current_recipe_run = recipe_run;
 
@@ -73,7 +114,10 @@ Given('the system has Approved Recipe Run with Details', async function() {
                     target_exchange_id: exchange.id
                 };
 
-            }), { transaction, returning: true }).then(details => {
+            }), {
+                transaction,
+                returning: true
+            }).then(details => {
 
                 this.current_recipe_run_details = details;
 
@@ -85,17 +129,17 @@ Given('the system has Approved Recipe Run with Details', async function() {
 
 });
 
-When('I iniatiate a new Recipe Run', function(){
+When('I iniatiate a new Recipe Run', function () {
 
     return chai
         .request(this.app)
         .post(`/v1/investments/${this.current_investment_run.id}/start_recipe_run`)
         .set('Authorization', World.current_user.token)
-        .then(result => {   
-            
+        .then(result => {
+
             expect(result).to.have.status(200);
             expect(result.body.recipe_run).to.an('object');
-            
+
             this.current_recipe_run = result.body.recipe_run;
 
             this.current_response = result;
@@ -108,16 +152,51 @@ When('I iniatiate a new Recipe Run', function(){
 
 });
 
-Then(/^the system creates a new Recipe Run with status (.*)$/, async function(expected_status) {
+When(/^(.*) recipe run with provided rationale$/, async function (action) {
 
-    const { RecipeRun, sequelize } = require('../../../models');
-    const { Op } = sequelize;
+    const action_status = _.toLower(action) == 'approve' ? RECIPE_RUN_STATUSES.Approved : RECIPE_RUN_STATUSES.Rejected;
+
+    const investmentService = require('../../../services/InvestmentService');
+
+    chai.assert.isObject(this.current_recipe_run, `No current recipe run in context!`)
+
+    const [err, result] = await to(investmentService.changeRecipeRunStatus(
+        this.current_user.id,
+        this.current_recipe_run.id,
+        action_status,
+        `Testing ${action}`
+    ))
+
+    //preserve error for future steps, if any
+    if (err != null) {
+        this.current_recipe_run_status_change_error = err;
+    }
+    //refetch relevant info into world after status change to check later
+    this.current_recipe_run = await require('../../../models').RecipeRun.findById(this.current_recipe_run.id);
+    this.current_recipe_run.status = this.current_recipe_run.approval_status;
+    //move investment run to also provide history
+    this.prev_investment_run = this.current_investment_run;
+    this.current_investment_run = await require('../../../models').InvestmentRun.findById(this.current_investment_run.id);
+})
+
+Then(/^the system creates a new Recipe Run with status (.*)$/, async function (expected_status) {
+
+    const {
+        RecipeRun,
+        sequelize
+    } = require('../../../models');
+    const {
+        Op
+    } = sequelize;
 
     const recipe_run = await RecipeRun.findOne({
         where: {
-            [Op.or]: [
-                { investment_run_id: _.get(this, 'current_investment_run.id') },
-                { id: _.get(this, 'current_recipe_run.id') }
+            [Op.or]: [{
+                    investment_run_id: _.get(this, 'current_investment_run.id')
+                },
+                {
+                    id: _.get(this, 'current_recipe_run.id')
+                }
             ]
         }
     });
@@ -129,19 +208,43 @@ Then(/^the system creates a new Recipe Run with status (.*)$/, async function(ex
 
 });
 
-Then('I am assigned to the Recipe Run as the creator', function() {
+Then('I am assigned to the Recipe Run as the creator', function () {
 
     expect(this.current_recipe_run.user_created_id).to.equal(World.current_user.id);
 
 });
 
-Then('a Recipe Run Detail is created for each Whitelisted Asset in Asset Mix', async function() {
+Then('the recipe run will have no conversions', async function () {
 
-    const { RecipeRunDetail, RecipeRunDetailInvestment, InvestmentRunAssetGroup, GroupAsset } = require('../../../models');
+    chai.assert.isObject(this.current_recipe_run, 'Context has no recipe run!');
 
-    const [ details, asset_mix ] = await Promise.all([
+    const conversions = await require('../../../models').InvestmentAssetConversion.findAll({
+        where: {
+            recipe_run_id: this.current_recipe_run.id
+        }
+    })
+
+    if (conversions != null) {
+        //using 2 separate asserts since this version of chai deosnt have an isEmpty method
+        chai.assert.isArray(conversions);
+        chai.assert.equal(conversions.length, 0, `Expected recipe run ${this.current_recipe_run.id} not to generate any conversions, got ${conversions.length}!`);
+    }
+});
+
+Then('a Recipe Run Detail is created for each Whitelisted Asset in Asset Mix', async function () {
+
+    const {
+        RecipeRunDetail,
+        RecipeRunDetailInvestment,
+        InvestmentRunAssetGroup,
+        GroupAsset
+    } = require('../../../models');
+
+    const [details, asset_mix] = await Promise.all([
         RecipeRunDetail.findAll({
-            where: { recipe_run_id: this.current_recipe_run.id },
+            where: {
+                recipe_run_id: this.current_recipe_run.id
+            },
             include: RecipeRunDetailInvestment
         }),
         InvestmentRunAssetGroup.findById(this.current_investment_run.investment_run_asset_group_id, {
@@ -151,7 +254,7 @@ Then('a Recipe Run Detail is created for each Whitelisted Asset in Asset Mix', a
 
     const assets = asset_mix.GroupAssets;
 
-    for(let detail of details) {
+    for (let detail of details) {
 
         const matching_asset = assets.find(a => a.asset_id === detail.transaction_asset_id);
 
@@ -163,23 +266,25 @@ Then('a Recipe Run Detail is created for each Whitelisted Asset in Asset Mix', a
 
 });
 
-Then('the investment is spread accordingly between each Recipe Detail', function() {
-    
+Then('the investment is spread accordingly between each Recipe Detail', function () {
+
     const investment_amounts = this.current_investment_run.amounts.reduce((acc, amount) => {
-        return _.assign(acc, { [amount.asset_id]: Decimal(amount.amount) })
+        return _.assign(acc, {
+            [amount.asset_id]: Decimal(amount.amount)
+        })
     }, {});
 
-    for(let detail of this.current_recipe_run_details) {
+    for (let detail of this.current_recipe_run_details) {
 
-        for(let detail_investment of detail.RecipeRunDetailInvestments) {
-            
+        for (let detail_investment of detail.RecipeRunDetailInvestments) {
+
             investment_amounts[detail_investment.asset_id] = investment_amounts[detail_investment.asset_id].minus(detail_investment.amount);
 
         }
 
     }
 
-    for(let asset in investment_amounts) {
+    for (let asset in investment_amounts) {
 
         expect(investment_amounts[asset].eq(0)).to.be.true;
 
@@ -187,11 +292,11 @@ Then('the investment is spread accordingly between each Recipe Detail', function
 
 });
 
-Then('the investment percentage is divided equally between Recipe Details', function() {
+Then('the investment percentage is divided equally between Recipe Details', function () {
 
     const expected_percentage = Decimal(100).div(this.current_recipe_run_details.length);
 
-    for(let detail of this.current_recipe_run_details) {
+    for (let detail of this.current_recipe_run_details) {
 
         expect(expected_percentage.eq(detail.investment_percentage)).to.be.true;
 
@@ -199,20 +304,25 @@ Then('the investment percentage is divided equally between Recipe Details', func
 
 });
 
-Then('the correct Exchange is assigned to each Detail', async function() {
+Then('the correct Exchange is assigned to each Detail', async function () {
 
-    const { InstrumentExchangeMapping, Instrument } = require('../../../models');
+    const {
+        InstrumentExchangeMapping,
+        Instrument
+    } = require('../../../models');
 
-    for(let detail of this.current_recipe_run_details) {
+    for (let detail of this.current_recipe_run_details) {
 
         const match = await Instrument.findOne({
-            where: { 
+            where: {
                 quote_asset_id: detail.quote_asset_id,
                 transaction_asset_id: detail.transaction_asset_id
             },
             include: {
                 model: InstrumentExchangeMapping,
-                on: { exchange_id: detail.target_exchange_id },
+                on: {
+                    exchange_id: detail.target_exchange_id
+                },
                 required: true
             }
         });
@@ -223,23 +333,23 @@ Then('the correct Exchange is assigned to each Detail', async function() {
 
 });
 
-Then('the system won\'t allow me to initiate another Recipe Run for this Investment', function() {
+Then('the system won\'t allow me to initiate another Recipe Run for this Investment', function () {
 
     return chai
-    .request(this.app)
-    .post(`/v1/investments/${this.current_investment_run.id}/start_recipe_run`)
-    .set('Authorization', World.current_user.token)
-    .catch(result => {   
-        
-        expect(result).to.have.status(422);
-        
-        expect(result.response.body.error).to.equal('There is already recipe run pending approval');
+        .request(this.app)
+        .post(`/v1/investments/${this.current_investment_run.id}/start_recipe_run`)
+        .set('Authorization', World.current_user.token)
+        .catch(result => {
 
-    });
+            expect(result).to.have.status(422);
+
+            expect(result.response.body.error).to.equal('There is already recipe run pending approval');
+
+        });
 
 });
 
-Then('the system will display an error about the Capitalization not being up to date', function() {
+Then('the system will display an error about the Capitalization not being up to date', function () {
 
     expect(this.current_response).to.have.status(422);
 
@@ -255,7 +365,7 @@ Then('the system will display an error about the Capitalization not being up to 
 
 });
 
-Then('the system will display an error about missing Instrument Mappings', function() {
+Then('the system will display an error about missing Instrument Mappings', function () {
 
     expect(this.current_response).to.have.status(422);
 
@@ -264,19 +374,23 @@ Then('the system will display an error about missing Instrument Mappings', funct
     expect(error.startsWith(
         'No base asset prices in USD for past 15 minutes found!'
     )).to.be.true;
-    
+
     expect(error.split('\n')[1].startsWith(
         'Missing USDT instrument mappings for exchanges:'
     )).to.be.true;
 
 });
 
-Then('a new Recipe Run is not created', async function() {
+Then('a new Recipe Run is not created', async function () {
 
-    const { RecipeRun } = require('../../../models');
+    const {
+        RecipeRun
+    } = require('../../../models');
 
     const new_recipe = await RecipeRun.findOne({
-        where: { investment_run_id: this.current_investment_run.id }
+        where: {
+            investment_run_id: this.current_investment_run.id
+        }
     });
 
     expect(new_recipe).to.be.null;

@@ -35,6 +35,7 @@ const constModelMapping = {
     'RecipeOrderGroup': require('../../../config/model_constants').RECIPE_ORDER_GROUP_STATUSES,
     'InvestmentRun': require('../../../config/model_constants').INVESTMENT_RUN_STATUSES,
     'ExecutionOrder': require('../../../config/model_constants').EXECUTION_ORDER_STATUSES,
+    'RecipeRun': require('../../../config/model_constants').RECIPE_RUN_STATUSES,
 }
 
 const get_model_status_value_for = (model_name, status_val) => {
@@ -65,7 +66,11 @@ When(/^navigate to (\w*) (.*)$/, async function(status_val, object_type) {
     const instance = await model.findOne({
         where: {
             [status_field_name]: status_value
-        }
+        },
+        //make sure to grab the newest one
+        order: [
+            ['id', 'DESC']
+        ]
     })
     chai.assert.isNotNull(instance, `Could not find instance of model ${model_name} with status ${status_value}!`);
     //put model instance into the world, we have navigated to it.
@@ -95,7 +100,7 @@ Then(/^the (.*) status will remain unchanged/, async function(current_obj_type) 
     chai.assert.isNotNull(fresh_instance, `Model ${model_name} has no instance with id ${ctx_instance.id}!`);
     const status_field_name = get_model_status_field_name(model);
 
-    chai.assert.equal(fresh_instance[status_field_name], ctx_instance[status_field_name], `New fetched instnace ${status_field_name} was different!`)
+    chai.assert.equal(fresh_instance[status_field_name], ctx_instance[status_field_name], `New fetched instance ${status_field_name} was different!`)
 });
 
 Then(/^the (.*) will have status (\w*)/, async function(current_obj_type, status_val) {
