@@ -383,7 +383,7 @@ const generateRecipeDetails = async (investment_run_id, strategy_type) => {
     }
 
     // if whole needed amount not allocated, then we fail to fully buy an asset
-    if (total_spent.lt(Decimal(should_spend))) {
+    if (Decimal(total_spent.toFixed(7)).lt(should_spend.toFixed(7))) {
       TE(`Could allocate ${total_spent.toFixed(3)} USD out of needed ${should_spend.toFixed(3)} USD to ${asset.info.long_name}(${asset.info.symbol})
         because it can bought through:${asset.possible.map(p => ` ${p.symbol} in ${p.exchange_name} exchange`).join()}
         and investment amounts left are:${investment_size.map(s => ` ${s.symbol} - ${s.remaining_usd.toFixed(3)} USD`).join()}

@@ -472,17 +472,6 @@ const getAssetGroupWithData = async function (investment_run_id) {
     let missing = _.take(groups_missing_data, 1);
     TE(`${missing.long_name} is missing ${properties.find(p => _.isNull(missing[p]))} data`);
   }
-
-  asset_group.map(ag => {
-    Object.assign(ag, {
-      nvt: parseFloat(ag.nvt),
-      volume: parseFloat(ag.volume),
-      volume_usd: parseFloat(ag.volume_usd),
-      ask_price: parseFloat(ag.ask_price),
-      bid_price: parseFloat(ag.bid_price),
-      price_usd: parseFloat(ag.price_usd)
-    });
-  });
   
   if (err) TE(err.message);
 

@@ -5,7 +5,9 @@ const util = require('util');
 _ = require("lodash");
 //globally load decimals
 Decimal = require('decimal.js');
-
+Decimal.set({
+  precision: 25
+});
 
 //redefine the console with logging levels
 ((delegate) => {

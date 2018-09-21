@@ -23,7 +23,7 @@ export class ExchangesResponse {
 export class LiquidityRequirementsCreateResponse {
   success: boolean;
   liquidity_requirement: any;
-  error: string;
+  error?: string;
 }
 
 export class LiquiditiesAllResponse {
