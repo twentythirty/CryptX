@@ -37,3 +37,12 @@ Feature: Approving Orders
         And the recipe order group status will remain unchanged
         And all orders in the group statuses will remain unchanged
 
+    Scenario: reject generated orders
+  
+        Given there is a recipe order group with status Pending
+        When I log onto CryptX as Investment Manager
+        And navigate to Pending recipe order group
+        And reject the order group with a rationale
+        Then the recipe order group will have status Rejected
+        And all orders in the group will have status Rejected
+        And I can generate another order group

@@ -403,18 +403,19 @@ When('I generate new Orders for the Approved Recipe Run', {
 
 });
 
-When('approve the order group with a rationale', {
+When(/^(.*) the order group with a rationale/, {
     timeout: 15000
-}, async function () {
+}, async function (action) {
 
     const orderService = require('../../../services/OrdersService');
 
+    let new_status = action == 'approve' ? RECIPE_ORDER_GROUP_STATUSES.Approved : RECIPE_ORDER_GROUP_STATUSES.Rejected;
+
     //perform approval
-    console.log('World user: ', this.current_user);
     const [err, result] = await to(orderService.changeRecipeOrderGroupStatus(
         this.current_user.id,
         this.current_recipe_order_group.id,
-        RECIPE_ORDER_GROUP_STATUSES.Approved,
+        new_status,
         'Testing approval'
     ));
 
@@ -578,6 +579,16 @@ Then('the system won\'t allow me to generate Recipe Orders while this group is n
 
         })
 
+});
+
+Then('I can generate another order group', {
+    timeout: 15000
+}, async function() {
+
+    const orderService = require('../../../services/OrdersService');
+    const [err, generated_orders] = await to(orderService.generateApproveRecipeOrders(this.current_recipe_run.id));
+
+    chai.assert.isNull(err, 'There wasnt supposed ot be an error trying to generate anohter recpe order group!');
 });
 
 Then('I should see an error message describing that there are Pending Deposits', function () {
