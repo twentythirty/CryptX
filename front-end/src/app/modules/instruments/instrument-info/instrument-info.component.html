@@ -10,7 +10,8 @@
 <ng-container *ngIf="mappingDataSource && mappingColumnsToShow">
   <div class="top-controls">
     <span class="headline-title">{{ 'exchanges.mapping' | translate }}</span>
-    <a class="btn start"
+    <a
+      class="btn start"
       [class.deactive]="!canAddNewMapping()"
       (click)="addNewMapping()"
     >

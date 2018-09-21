@@ -88,7 +88,7 @@ describe('AssetListComponent', () => {
     AssetServiceStub.getAllAssetsDetailed().subscribe(res => {
       expect(component.assetsDataSource.body).toEqual(res.assets);
       expect(component.assetsDataSource.footer).toEqual(res.footer);
-      expect(component.count).toEqual(component.count);
+      expect(component.count).toEqual(res.count);
     });
   });
 

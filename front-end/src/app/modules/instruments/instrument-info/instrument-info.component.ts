@@ -58,10 +58,10 @@ export class InstrumentInfoComponent extends DataTableCommonManagerComponent imp
 
 
   constructor(
+    public router: Router,
     public route: ActivatedRoute,
     private instrumentsService: InstrumentsService,
     private exchangesService: ExchangesService,
-    public router: Router,
   ) {
     super(route, router);
   }
@@ -72,7 +72,7 @@ export class InstrumentInfoComponent extends DataTableCommonManagerComponent imp
     this.getInstrumentData();
   }
 
-  private declareMappingTable() {
+  public declareMappingTable() {
     this.mappingDataSource.header = [
       { column: 'exchange_id', nameKey: 'table.header.exchange', filter: { type: 'number', hasRange: false, inputSearch: true, sortable: true } },
       { column: 'external_instrument', nameKey: 'table.header.identifier', filter: { type: 'text', sortable: true } },
@@ -115,7 +115,7 @@ export class InstrumentInfoComponent extends DataTableCommonManagerComponent imp
             this.exchangesService.getExchangeInstrumentIdentifiers(row.exchange_id)
             .subscribe(res => {
               row.external_instrument_list = _.sortBy(res.identifiers);
-              this.declareMappingTable();
+              // this.declareMappingTable();
               this.loading = false;
             });
 
@@ -250,16 +250,20 @@ export class InstrumentInfoComponent extends DataTableCommonManagerComponent imp
 
   public getIdentifiers(row): void {
     this.exchangesService.getExchangeInstrumentIdentifiers(row.exchange_id)
-      .subscribe(
-        res => {
-          if (res.success) {
-          }
+    .subscribe(
+      res => {
+        if (res.success) {
         }
-      );
+      }
+    );
   }
 
   public deleteExchangeMapping(mapping) {
-    if (mapping.isNew) { _.remove(this.mappingDataSource.body, item => _.isEqual(item, mapping) ); } else { mapping.isDeleted = true; }
+    if (mapping.isNew) {
+      _.remove(this.mappingDataSource.body, item => _.isEqual(item, mapping) );
+    } else {
+      mapping.isDeleted = true;
+    }
 
     this.canSave();
     // this.exchangeMappingTemp = null;
