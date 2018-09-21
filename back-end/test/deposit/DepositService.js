@@ -250,17 +250,17 @@ describe('DepositService testing', () => {
             quote_asset_id: 1,
             target_exchange_id: 2,
             investment_percentage: 20,
-            deposit_amount: 10
+            amount: 10
         }, {
             quote_asset_id: 1,
             target_exchange_id: 1,
             investment_percentage: 30,
-            deposit_amount: 0
+            amount: 0
         }, {
             quote_asset_id: 2,
             target_exchange_id: 3,
             investment_percentage: 50,
-            deposit_amount: 20
+            amount: 20
         }];
 
         const MOCK_EXCHANGE_ACCOUNTS = [{
@@ -302,8 +302,8 @@ describe('DepositService testing', () => {
         }].concat(MOCK_COMPLETED_CONVERSIONS);
 
         const EXPECTED_AMOUNTS = {
-            '1-3': 50,
-            '1-1': 60,
+            '1-3': 44,
+            '1-1': 66,
             '2-2': 70
         };
 

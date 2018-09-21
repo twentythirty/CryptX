@@ -53,7 +53,7 @@ const generateRecipeRunDeposits = async function (recipe_run_id) {
       rrd.quote_asset_id,
       rrd.target_exchange_id,
       SUM(rrd.investment_percentage) AS investment_percentage,
-      COALESCE(SUM(rrdi.amount), 0) AS deposit_amount
+      COALESCE(SUM(rrdi.amount), 0) AS amount
     FROM recipe_run_detail AS rrd
     LEFT JOIN recipe_run_detail_investment AS rrdi ON rrdi.recipe_run_detail_id = rrd.id AND rrdi.asset_id = rrd.quote_asset_id
     LEFT JOIN investment_asset_conversion AS iac ON iac.recipe_run_id = rrd.recipe_run_id AND iac.target_asset_id = rrd.quote_asset_id
@@ -62,12 +62,13 @@ const generateRecipeRunDeposits = async function (recipe_run_id) {
   
   if(err) TE(err.message);
 
-  //Calculate sum of percentages for each quote asset
-  const percentage_totals = {};
+  //Calculate sum of base assets after the conversion
+  const investment_totals = {};
   for(let detail of details) {
-    if(!percentage_totals[detail.quote_asset_id]) percentage_totals[detail.quote_asset_id] = Decimal(0);
+    if(!investment_totals[detail.quote_asset_id]) investment_totals[detail.quote_asset_id] = { amount: Decimal(0), percentage: Decimal(0) };
 
-    percentage_totals[detail.quote_asset_id] = percentage_totals[detail.quote_asset_id].plus(detail.investment_percentage);
+    investment_totals[detail.quote_asset_id].amount = investment_totals[detail.quote_asset_id].amount.plus(detail.amount);
+    investment_totals[detail.quote_asset_id].percentage = investment_totals[detail.quote_asset_id].percentage.plus(detail.investment_percentage);
   }
 
   const exchange_ids = details.map(d => d.target_exchange_id);
@@ -85,14 +86,14 @@ const generateRecipeRunDeposits = async function (recipe_run_id) {
   let deposits = details.map(detail => {
     const account = exchange_accounts.find(ex_account => detail.target_exchange_id === ex_account.exchange_id && detail.quote_asset_id === ex_account.asset_id);
     if(account) {
-      let amount = Decimal(detail.deposit_amount);
-      let additional_amount = Decimal(0);
+      let quote_totals = investment_totals[detail.quote_asset_id];
+      let amount = Decimal(quote_totals.amount);
+
       const conversion = conversions.find(c => c.target_asset_id === detail.quote_asset_id);
 
-      if(percentage_totals[detail.quote_asset_id] && conversion) {
-        additional_amount = Decimal(conversion.amount);
-        additional_amount = additional_amount.mul(detail.investment_percentage).div(percentage_totals[detail.quote_asset_id]);
-      }
+      if(quote_totals && conversion) amount = amount.plus(conversion.amount);
+
+      amount = amount.mul(detail.investment_percentage).div(quote_totals.percentage);
 
       return {
         asset_id: account.asset_id,
@@ -100,7 +101,7 @@ const generateRecipeRunDeposits = async function (recipe_run_id) {
         recipe_run_id: recipe_run.id,
         target_exchange_account_id: account.id,
         status: MODEL_CONST.RECIPE_RUN_DEPOSIT_STATUSES.Pending,
-        amount: amount.plus(additional_amount).toString()
+        amount: amount.toString()
       };
     }
     else missing_acounts.push({
