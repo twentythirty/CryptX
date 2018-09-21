@@ -335,7 +335,7 @@ When(/^I (.*) an Asset$/, async function (action) {
 
 });
 
-When('I select two different Assets', async function () {
+When(/^I select two (.*) Assets$/, async function (kind) {
 
     const {
         Asset
@@ -345,11 +345,24 @@ When('I select two different Assets', async function () {
         raw: true
     });
 
-    const divide = Math.round(assets.length / 2);
-
     this.current_assets = [];
-    this.current_assets.push(assets[_.random(0, divide)]);
-    this.current_assets.push(assets[_.random(divide + 1, assets.length - 1)]);
+
+    switch(kind) {
+
+        case 'same':
+            const random_asset = assets[_.random(0, assets.length - 1)];
+            this.current_assets.push(random_asset);
+            this.current_assets.push(random_asset);
+            break;
+
+        case 'different':
+        default:
+            const divide = Math.round(assets.length / 2);
+            this.current_assets.push(assets[_.random(0, divide)]);
+            this.current_assets.push(assets[_.random(divide + 1, assets.length - 1)]);
+            break;
+
+    }
 
 });
 

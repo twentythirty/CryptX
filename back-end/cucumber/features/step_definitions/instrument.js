@@ -267,7 +267,12 @@ When('I create a new Instrument with those Assets', function() {
 
             this.current_instrument = result.body.instrument;
             
-        });
+        })
+        .catch(error => {
+
+            this.current_response = error;
+
+        })
 
 });
 
@@ -541,5 +546,15 @@ Then('the Instrument Exchange Mappings their current price, last day and week vo
         expect(parseInt(mapping.last_week_vol)).to.equal(last_week_volume);
 
     }));
+
+});
+
+Then('the system will display an error about not using two different assets', function() {
+
+    expect(this.current_response).to.has.status(422);
+
+    const error = this.current_response.response.body.error;
+
+    expect(error).to.equal('Instruments can only be created using two different assets');
 
 });
