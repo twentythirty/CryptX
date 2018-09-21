@@ -19,6 +19,10 @@ const createInstrument = async (transaction_asset_id, quote_asset_id) => {
         TE(`Provided null transaction or quote asset ids!`);
     }
 
+    if (parseInt(transaction_asset_id) === parseInt(quote_asset_id)) {
+        TE(`Instruments can only be created using two different assets`);
+    }
+
     const instrument_assets = await Asset.findAll({
         where: {
             id: [transaction_asset_id, quote_asset_id]
