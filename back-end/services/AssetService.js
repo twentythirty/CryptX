@@ -18,8 +18,9 @@ const changeStatus = async function (asset_id, new_status, user) {
   if (!_.valuesIn(INSTRUMENT_STATUS_CHANGES).includes(new_status.type))
     TE("Provided bad asset status");
 
-  if(!_.isString(new_status.comment)) TE(`Must provide a vlid comment/reason`);
-  
+  if(!_.isString(new_status.comment) || /^\s*$/.test(new_status.comment)) TE(`Must provide a valid comment/reason`);
+  new_status.comment = new_status.comment.trim(); //Might as well as trim the comment;
+
   let [err, asset] = await to(Asset.findById(asset_id));
   if(err) TE(err.message);
   if (!asset) TE("Asset not found");

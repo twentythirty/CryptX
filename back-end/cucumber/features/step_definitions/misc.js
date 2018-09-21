@@ -82,6 +82,25 @@ When(/^navigate to (\w*) (.*)$/, async function(status_val, object_type) {
     }
 });
 
+When('I provide a rationale', function () {
+
+    const rationales = [
+        'Random rational 1',
+        'Random rational 2',
+        'Random rational 3',
+        'Random rational 4'
+    ];
+
+    this.current_rationale = rationales[_.random(0, rationales.length - 1, false)];
+
+});
+
+When('I provide an empty rationale', function () {
+
+    this.current_rationale = '         ';
+
+});
+
 Then(/^the (.*) status will remain unchanged/, async function(current_obj_type) {
 
     const context_name = to_context_name(current_obj_type, 'prev');
