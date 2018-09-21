@@ -1,6 +1,12 @@
-const { Given, When, Then } = require('cucumber');
+const {
+    Given,
+    When,
+    Then
+} = require('cucumber');
 const chai = require('chai');
-const { expect } = chai;
+const {
+    expect
+} = chai;
 
 const chaiHttp = require("chai-http");
 chai.use(chaiHttp);
@@ -9,27 +15,23 @@ const World = require('../support/global_world');
 
 Given('there is a recipe order group with status Pending', {
     timeout: 15000
-}, async function() {
+}, async function () {
     const orderService = require('../../../services/OrdersService');
-    await orderService.generateApproveRecipeOrders(this.current_recipe_run.id);
+    const generated_orders = await orderService.generateApproveRecipeOrders(this.current_recipe_run.id);
+    this.current_generated_orders = generated_orders;
 });
 
-Given('one of the orders is missing their CCXT mapping', async function() {
+Given('one of the orders is missing their CCXT mapping', async function () {
 
     const models = require('../../../models');
-    const RecipeOrder = models.RecipeOrder;
     
-    const new_order = await RecipeOrder.findOne({
-        where: {
-            status: RECIPE_ORDER_STATUSES.Pending
-        },
-        include: {
-            model: Exchange,
-            as: 'target_exchange'
-        }
-    })
-    chai.assert.isNotNull(new_order, 'Did not find any Pending Recipe Orders to tamper with!');
-    
+    chai.assert.isArray(this.current_generated_orders, 'Generated orders array not present in World!');
+
+    const random_idx = _.random(0, this.current_generated_orders.length, false);
+    const new_order = this.current_generated_orders[random_idx];
+    chai.assert.isObject(new_order, 'Did not find any Pending Recipe Orders to tamper with!');
+
+    const Instrument = models.Instrument;
     const InstrumentExchangeMapping = models.InstrumentExchangeMapping;
     const mapped_instruments = await InstrumentExchangeMapping.findAll({
         include: {
@@ -37,7 +39,7 @@ Given('one of the orders is missing their CCXT mapping', async function() {
             required: true
         }
     });
-    const Instrument = models.Instrument;
+
     let empty_instrument = await Instrument.findOne({
         where: {
             id: {
@@ -48,54 +50,83 @@ Given('one of the orders is missing their CCXT mapping', async function() {
     if (empty_instrument == null) {
         const instrument = mapped_instruments[_.random(0, mapped_instruments.length, false)].Instrument;
         //no unmapped instruments, lets create one
-        empty_instrument = await Instrument.create({
-            symbol: 'TEST',
-            transaction_asset_id: instrument.transaction_asset_id,
-            quote_asset_id: instrument.quote_asset_id
+        let created = false;
+        [empty_instrument, created] = await Instrument.findCreateFind({
+            defaults: {
+                symbol: 'TEST',
+                transaction_asset_id: instrument.transaction_asset_id,
+                quote_asset_id: instrument.quote_asset_id
+            },
+            where: {
+                symbol: 'TEST'
+            }
         })
     }
     //store params for later assert
     this.current_bad_instrument = empty_instrument;
-    this.current_order_exchange = new_order.target_exchange;
+    this.current_order_exchange = await new_order.getTarget_exchange();
     //change order instrument
     new_order.instrument_id = empty_instrument.id
     await new_order.save()
 });
 
-Given(/^the recipe run does not have recipe order group with status (.*)$/, function(status) {
+Given(/^the recipe run does not have recipe order group with status (.*)$/, function (status) {
 
-    const { RecipeOrderGroup, sequelize } = require('../../../models');
-    const { Op } = sequelize;
+    const {
+        RecipeOrderGroup,
+        sequelize
+    } = require('../../../models');
+    const {
+        Op
+    } = sequelize;
 
     return RecipeOrderGroup.destroy({
-        where: { approval_status: RECIPE_ORDER_GROUP_STATUSES[status] }
+        where: {
+            approval_status: RECIPE_ORDER_GROUP_STATUSES[status]
+        }
     });
 
 });
 
-Given(/^the system has Recipe Order with status (.*) on (.*)$/g, async function(status, exchange_name) {
+Given(/^the system has Recipe Order with status (.*) on (.*)$/g, async function (status, exchange_name) {
 
-    const { RecipeOrderGroup, RecipeOrder, Exchange, Instrument, InstrumentExchangeMapping, Asset, sequelize } = require('../../../models');
+    const {
+        RecipeOrderGroup,
+        RecipeOrder,
+        Exchange,
+        Instrument,
+        InstrumentExchangeMapping,
+        Asset,
+        sequelize
+    } = require('../../../models');
     const CCXTUtil = require('../../../utils/CCXTUtils');
 
-    const [ exchange, base_assets ] = await Promise.all([
+    const [exchange, base_assets] = await Promise.all([
         Exchange.findOne({
-            where: { name: exchange_name }
+            where: {
+                name: exchange_name
+            }
         }),
         Asset.findAll({
-            where: { is_base: true }
+            where: {
+                is_base: true
+            }
         })
     ])
 
     const mapping = await InstrumentExchangeMapping.findOne({
-        where: { exchange_id: exchange.id },
+        where: {
+            exchange_id: exchange.id
+        },
         include: {
             model: Instrument,
             required: true,
-            where: { quote_asset_id: base_assets.map(asset => asset.id) }
+            where: {
+                quote_asset_id: base_assets.map(asset => asset.id)
+            }
         }
     });
-    
+
     const connector = await CCXTUtil.getConnector(exchange.api_id);
 
     const amount_limits = _.get(connector, `markets.${mapping.external_instrument_id}.limits.amount`);
@@ -106,7 +137,9 @@ Given(/^the system has Recipe Order with status (.*) on (.*)$/g, async function(
             created_timestamp: new Date(),
             approval_status: RECIPE_ORDER_GROUP_STATUSES.Approved,
             approval_comment: 'it\'s all good'
-        }, { transaction }).then(group => {
+        }, {
+            transaction
+        }).then(group => {
 
             return RecipeOrder.create({
                 instrument_id: mapping.Instrument.id,
@@ -116,7 +149,9 @@ Given(/^the system has Recipe Order with status (.*) on (.*)$/g, async function(
                 status: RECIPE_ORDER_STATUSES[status],
                 target_exchange_id: exchange.id,
                 recipe_order_group_id: group.id
-            }, { transaction }).then(order => {
+            }, {
+                transaction
+            }).then(order => {
 
                 this.current_recipe_order = order;
 
@@ -128,14 +163,18 @@ Given(/^the system has Recipe Order with status (.*) on (.*)$/g, async function(
 
 });
 
-Given(/^the Order is (.*) filled by a FullyFilled ExecutionOrder$/, async function(amount) {
+Given(/^the Order is (.*) filled by a FullyFilled ExecutionOrder$/, async function (amount) {
 
-    const { ExecutionOrder, ExecutionOrderFill, sequelize } = require('../../../models');
+    const {
+        ExecutionOrder,
+        ExecutionOrderFill,
+        sequelize
+    } = require('../../../models');
 
     let total_quantity = 0;
 
-    switch(amount) {
-        
+    switch (amount) {
+
         case 'partially':
             total_quantity = parseFloat(this.current_recipe_order.quantity) / 2;
             break;
@@ -165,11 +204,13 @@ Given(/^the Order is (.*) filled by a FullyFilled ExecutionOrder$/, async functi
             status: EXECUTION_ORDER_STATUSES.FullyFilled,
             total_quantity: total_quantity,
             type: EXECUTION_ORDER_TYPES.Market
-        }, { transaction }).then(execution_order => {
+        }, {
+            transaction
+        }).then(execution_order => {
 
             let fills = [];
 
-            for(let i = 0; i < fill_count; i++) {
+            for (let i = 0; i < fill_count; i++) {
 
                 const approximate_quantity = Decimal(execution_order.total_quantity).div(fill_count).toString();
                 const approximate_fee = Decimal(execution_order.fee).div(fill_count).toString();
@@ -184,7 +225,9 @@ Given(/^the Order is (.*) filled by a FullyFilled ExecutionOrder$/, async functi
                 });
             }
 
-            return ExecutionOrderFill.bulkCreate(fills, { transaction });
+            return ExecutionOrderFill.bulkCreate(fills, {
+                transaction
+            });
 
         });
 
@@ -192,9 +235,13 @@ Given(/^the Order is (.*) filled by a FullyFilled ExecutionOrder$/, async functi
 
 });
 
-Given('the Recipe Order has unfilled quantity above ccxt requirement', function() {
+Given('the Recipe Order has unfilled quantity above ccxt requirement', function () {
 
-    const { ExecutionOrder, ExecutionOrderFill, sequelize } = require('../../../models');
+    const {
+        ExecutionOrder,
+        ExecutionOrderFill,
+        sequelize
+    } = require('../../../models');
 
     /**
      * Considering the recipe order is created with exchange max limit, it should not be below min limit
@@ -220,11 +267,13 @@ Given('the Recipe Order has unfilled quantity above ccxt requirement', function(
             status: EXECUTION_ORDER_STATUSES.FullyFilled,
             total_quantity: total_quantity,
             type: EXECUTION_ORDER_TYPES.Market
-        }, { transaction }).then(execution_order => {
+        }, {
+            transaction
+        }).then(execution_order => {
 
             let fills = [];
 
-            for(let i = 0; i < fill_count; i++) {
+            for (let i = 0; i < fill_count; i++) {
 
                 const approximate_quantity = Decimal(execution_order.total_quantity).div(fill_count).toString();
                 const approximate_fee = Decimal(execution_order.fee).div(fill_count).toString();
@@ -239,7 +288,9 @@ Given('the Recipe Order has unfilled quantity above ccxt requirement', function(
                 });
             }
 
-            return ExecutionOrderFill.bulkCreate(fills, { transaction });
+            return ExecutionOrderFill.bulkCreate(fills, {
+                transaction
+            });
 
         });
 
@@ -247,26 +298,37 @@ Given('the Recipe Order has unfilled quantity above ccxt requirement', function(
 
 });
 
-Given('the Order remaining amount is not within exchange minimum amount limits', async function() {
+Given('the Order remaining amount is not within exchange minimum amount limits', async function () {
 
-    const { ExecutionOrder, ExecutionOrderFill, Exchange, InstrumentExchangeMapping, Instrument, sequelize } = require('../../../models');
+    const {
+        ExecutionOrder,
+        ExecutionOrderFill,
+        Exchange,
+        InstrumentExchangeMapping,
+        Instrument,
+        sequelize
+    } = require('../../../models');
     const CCXTUtil = require('../../../utils/CCXTUtils');
 
     const exchange = await Exchange.findById(this.current_recipe_order.target_exchange_id);
 
     const mapping = await InstrumentExchangeMapping.findOne({
-        where: { exchange_id: exchange.id },
+        where: {
+            exchange_id: exchange.id
+        },
         include: {
             model: Instrument,
             required: true,
-            where: { id: this.current_recipe_order.instrument_id }
+            where: {
+                id: this.current_recipe_order.instrument_id
+            }
         }
     });
 
     const connector = await CCXTUtil.getConnector(exchange.api_id);
 
     const amount_limits = _.get(connector, `markets.${mapping.external_instrument_id}.limits.amount`);
-    
+
     const total_quantity = Decimal(this.current_recipe_order.quantity).minus(Decimal(amount_limits.min).div(2)).toString();
 
     const fill_count = 1;
@@ -287,11 +349,13 @@ Given('the Order remaining amount is not within exchange minimum amount limits',
             status: EXECUTION_ORDER_STATUSES.FullyFilled,
             total_quantity: total_quantity,
             type: EXECUTION_ORDER_TYPES.Market
-        }, { transaction }).then(execution_order => {
+        }, {
+            transaction
+        }).then(execution_order => {
 
             let fills = [];
 
-            for(let i = 0; i < fill_count; i++) {
+            for (let i = 0; i < fill_count; i++) {
 
                 const approximate_quantity = Decimal(execution_order.total_quantity).div(fill_count).toString();
                 const approximate_fee = Decimal(execution_order.fee).div(fill_count).toString();
@@ -306,7 +370,9 @@ Given('the Order remaining amount is not within exchange minimum amount limits',
                 });
             }
 
-            return ExecutionOrderFill.bulkCreate(fills, { transaction });
+            return ExecutionOrderFill.bulkCreate(fills, {
+                transaction
+            });
 
         });
 
@@ -316,21 +382,21 @@ Given('the Order remaining amount is not within exchange minimum amount limits',
 
 When('I generate new Orders for the Approved Recipe Run', {
     timeout: 15000
-}, function() {
+}, function () {
 
     return chai
         .request(this.app)
         .post(`/v1/recipes/${this.current_recipe_run.id}/generate_orders`)
         .set('Authorization', World.current_user.token)
-        .then(result => {   
-            
+        .then(result => {
+
             this.current_response = result;
 
             this.current_recipe_orders = result.body;
 
         })
         .catch(error => {
-            
+
             this.current_response = error;
 
         })
@@ -339,17 +405,18 @@ When('I generate new Orders for the Approved Recipe Run', {
 
 When('approve the order group with a rationale', {
     timeout: 15000
-}, async function() {
+}, async function () {
 
     const orderService = require('../../../services/OrdersService');
 
     //perform approval
-    const [err, result] = to(await orderService.changeRecipeOrderGroupStatus(
+    console.log('World user: ', this.current_user);
+    const [err, result] = await to(orderService.changeRecipeOrderGroupStatus(
         this.current_user.id,
         this.current_recipe_order_group.id,
         RECIPE_ORDER_GROUP_STATUSES.Approved,
         'Testing approval'
-    ))
+    ));
 
     //preserve error for future steps, if any
     if (err != null) {
@@ -364,12 +431,17 @@ When('approve the order group with a rationale', {
 });
 
 
-Then('a new Recipe Group is created with the status Pending', async function() {
+Then('a new Recipe Group is created with the status Pending', async function () {
 
-    const { RecipeOrderGroup, sequelize } = require('../../../models');
+    const {
+        RecipeOrderGroup,
+        sequelize
+    } = require('../../../models');
 
     const group = await RecipeOrderGroup.findOne({
-        where: { recipe_run_id: this.current_recipe_run.id }
+        where: {
+            recipe_run_id: this.current_recipe_run.id
+        }
     });
 
     expect(group).to.be.not.null;
@@ -381,20 +453,31 @@ Then('a new Recipe Group is created with the status Pending', async function() {
 
 });
 
-Then('a Recipe Order is created for each Recipe Run Detail', async function() {
-    
-    const { RecipeOrder, RecipeRunDetail, Instrument, Asset } = require('../../../models'); 
+Then('a Recipe Order is created for each Recipe Run Detail', async function () {
 
-    const [ orders, details, base_assets ] = await Promise.all([
+    const {
+        RecipeOrder,
+        RecipeRunDetail,
+        Instrument,
+        Asset
+    } = require('../../../models');
+
+    const [orders, details, base_assets] = await Promise.all([
         RecipeOrder.findAll({
-            where: { recipe_order_group_id: this.current_recipe_order_group.id },
+            where: {
+                recipe_order_group_id: this.current_recipe_order_group.id
+            },
             include: Instrument
         }),
         RecipeRunDetail.findAll({
-            where: { recipe_run_id: this.current_recipe_run.id }
+            where: {
+                recipe_run_id: this.current_recipe_run.id
+            }
         }),
         Asset.findAll({
-            where: { is_base: true },
+            where: {
+                is_base: true
+            },
             raw: true
         })
     ]);
@@ -403,7 +486,7 @@ Then('a Recipe Order is created for each Recipe Run Detail', async function() {
 
     const base_asset_ids = base_assets.map(asset => asset.id);
 
-    for(let order of orders) {
+    for (let order of orders) {
 
         const matching_detail = details.find(detail => {
             return (
@@ -415,7 +498,7 @@ Then('a Recipe Order is created for each Recipe Run Detail', async function() {
 
         expect(matching_detail).to.be.not.undefined;
 
-        if(base_asset_ids.includes(order.Instrument.quote_asset_id)) expect(order.side).to.equal(ORDER_SIDES.Buy);
+        if (base_asset_ids.includes(order.Instrument.quote_asset_id)) expect(order.side).to.equal(ORDER_SIDES.Buy);
         else expect(order.side).to.equal(ORDER_SIDES.Sell);
 
     }
@@ -424,9 +507,9 @@ Then('a Recipe Order is created for each Recipe Run Detail', async function() {
 
 });
 
-Then('the Recipe Orders have the status Pending', function() {
+Then('the Recipe Orders have the status Pending', function () {
 
-    for(let order of this.current_recipe_orders) {
+    for (let order of this.current_recipe_orders) {
 
         expect(order.status).to.equal(RECIPE_ORDER_STATUSES.Pending);
 
@@ -434,7 +517,7 @@ Then('the Recipe Orders have the status Pending', function() {
 
 });
 
-Then(/^all orders in the group will have status (.*)$/, async function(status) {
+Then(/^all orders in the group will have status (.*)$/, async function (status) {
 
     chai.assert.isDefined(this.current_recipe_order_group, 'No group defined in context!');
 
@@ -448,30 +531,47 @@ Then(/^all orders in the group will have status (.*)$/, async function(status) {
     })
 });
 
-Then('the approval fails with an error message including mapping and exchange', function() {
+Then('all orders in the group statuses will remain unchanged', async function() {
+    
+    chai.assert.isArray(this.current_generated_orders, 'No generated orders defined in context!');
+
+    const fresh_orders_lookup = _.keyBy(await require('../../../models').RecipeOrder.findAll({
+        where: {
+            id: _.map(this.current_generated_orders, 'id')
+        }
+    }), recipe_order => recipe_order.id);
+
+    for (let ctx_order_idx in this.current_generated_orders) {
+        const ctx_order = this.current_generated_orders[ctx_order_idx];
+        chai.assert.isObject(fresh_orders_lookup[ctx_order.id], `Recipe order for id ${ctx_order.id} not found in DB!`)
+        chai.assert.equal(ctx_order.status, fresh_orders_lookup[ctx_order.id].status, `Order ${ctx_order.id} status changed!`)
+    }
+});
+
+Then('the approval fails with an error message including mapping and exchange', function () {
 
     //there should have been an error saved
     chai.assert.isDefined(this.current_recipe_order_group_status_change_error, 'No error saved after recipe order group status changed!');
 
     const message = _.toLower(this.current_recipe_order_group_status_change_error.message);
     chai.assert.include(message, 'no mapping found', 'Error did not mention its about missing a mapping!');
-    chai.assert.isDefined(this.current_bad_instrument, 'No instrument saved as bad for recipe!');
+    chai.assert.isObject(this.current_bad_instrument, 'No instrument saved as bad for recipe!');
 
     const instrument = this.current_bad_instrument;
     chai.assert.include(message, _.toLower(instrument.symbol), `Bad instrument symbol ${instrument.symbol} wasnt mentioned in the error!`);
-    chai.assert.isDefined(this.current_order_exchange, 'No exchange persisted for recipe orders!');
-    chai.assert.include(message, _.toLower(this.current_order_exchange.name), `Exchange name ${this,current_order_exchange.name} not mnetioned in error!`)
-    
+    chai.assert.isObject(this.current_order_exchange, 'No exchange persisted for recipe orders!');
+    chai.assert.include(message, _.toLower(this.current_order_exchange.name), `Exchange name ${this.current_order_exchange.name} not mnetioned in error!`)
+
 });
 
-Then('the system won\'t allow me to generate Recipe Orders while this group is not Rejected', function() {
+Then('the system won\'t allow me to generate Recipe Orders while this group is not Rejected', function () {
 
     return chai
         .request(this.app)
         .post(`/v1/recipes/${this.current_recipe_run.id}/generate_orders`)
         .set('Authorization', World.current_user.token)
         .catch(result => {
-            
+
             expect(result).to.have.status(422);
 
             expect(result.response.body.error).to.match(/^Recipe run (.*) already has a non-rejected orders group (.*) with status (.*), wont generate more!$/);
@@ -480,7 +580,7 @@ Then('the system won\'t allow me to generate Recipe Orders while this group is n
 
 });
 
-Then('I should see an error message describing that there are Pending Deposits', function() {
+Then('I should see an error message describing that there are Pending Deposits', function () {
 
     expect(this.current_response).to.have.status(422);
 
@@ -490,7 +590,7 @@ Then('I should see an error message describing that there are Pending Deposits',
 
 });
 
-Then('I should see an error message describing that Deposits have invalid values', function() {
+Then('I should see an error message describing that Deposits have invalid values', function () {
 
     expect(this.current_response).to.have.status(422);
 
@@ -500,7 +600,7 @@ Then('I should see an error message describing that Deposits have invalid values
 
 });
 
-Then(/^the task will skip the Recipe Order due to (.*)$/, function(reason) {
+Then(/^the task will skip the Recipe Order due to (.*)$/, function (reason) {
 
     const reason_mapping = {
         'Order was already filled': {
@@ -522,12 +622,16 @@ Then(/^the task will skip the Recipe Order due to (.*)$/, function(reason) {
 
 });
 
-Then('no Orders were generated for the Recipe Run', async function() {
+Then('no Orders were generated for the Recipe Run', async function () {
 
-    const { RecipeOrderGroup } = require('../../../models');
+    const {
+        RecipeOrderGroup
+    } = require('../../../models');
 
     const order_group = await RecipeOrderGroup.findOne({
-        where: { recipe_run_id: this.current_recipe_run.id }
+        where: {
+            recipe_run_id: this.current_recipe_run.id
+        }
     });
 
     expect(order_group).to.be.null;

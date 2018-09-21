@@ -36,6 +36,7 @@ When(/^I log onto CryptX as (.*)$/, function(role_name){
     //no need for additional logins.
     if(user.token) {
         World.current_user = user;
+        this.current_user = user;
         return;
     };
 

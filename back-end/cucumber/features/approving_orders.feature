@@ -34,6 +34,6 @@ Feature: Approving Orders
         And navigate to Pending recipe order group
         And approve the order group with a rationale
         Then the approval fails with an error message including mapping and exchange
-        And the recipe order group will have status unchanged
-        And all orders in the group will have status unchanged
+        And the recipe order group status will remain unchanged
+        And all orders in the group statuses will remain unchanged
 

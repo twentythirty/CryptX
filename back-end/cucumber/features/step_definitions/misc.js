@@ -48,7 +48,7 @@ const get_model_status_value_for = (model_name, status_val) => {
 }
 
 const to_model_name = (field) => _.upperFirst(_.camelCase(field));
-const to_context_name = (field) => `current_${_.snakeCase(_.lowerCase(field))}`;
+const to_context_name = (field, ctx_type = 'current') => `${ctx_type}_${_.snakeCase(_.lowerCase(field))}`;
 const get_model_status_field_name = (model) => _.find(Object.keys(model.attributes), field_name => field_name.includes('status'));
 
 When(/^navigate to (\w*) (.*)$/, async function(status_val, object_type) {
@@ -68,13 +68,34 @@ When(/^navigate to (\w*) (.*)$/, async function(status_val, object_type) {
         }
     })
     chai.assert.isNotNull(instance, `Could not find instance of model ${model_name} with status ${status_value}!`);
-    //put model instance into the world, we have navigated to it
-    const context_field_name = to_context_name(model_name);
-    this[context_field_name] = instance;
-    //duplicat status in standard field to simplify future universal lookups
-    if (status_field_name != 'status') {
-        this[context_field_name].status = this[context_field_name][status_field_name];
+    //put model instance into the world, we have navigated to it.
+    // put in both contexts in case we will compare history
+    const ctx_prefixes = ['current', 'prev'];
+    
+    for (let ctx_prefix_idx in ctx_prefixes) {
+        const context_field_name = to_context_name(model_name, ctx_prefixes[ctx_prefix_idx]);
+        this[context_field_name] = instance;
+        //duplicat status in standard field to simplify future universal lookups
+        if (status_field_name != 'status') {
+            this[context_field_name].status = this[context_field_name][status_field_name];
+        }
     }
+});
+
+Then(/^the (.*) status will remain unchanged/, async function(current_obj_type) {
+
+    const context_name = to_context_name(current_obj_type, 'prev');
+    const ctx_instance = this[context_name];
+    chai.assert.isObject(ctx_instance, `Context did not have an object at field ${context_name}!`);
+
+    //lookup the new status value of the instance
+    const model_name = to_model_name(current_obj_type);
+    const model = require('../../../models')[model_name];
+    const fresh_instance = await model.findById(ctx_instance.id);
+    chai.assert.isNotNull(fresh_instance, `Model ${model_name} has no instance with id ${ctx_instance.id}!`);
+    const status_field_name = get_model_status_field_name(model);
+
+    chai.assert.equal(fresh_instance[status_field_name], ctx_instance[status_field_name], `New fetched instnace ${status_field_name} was different!`)
 });
 
 Then(/^the (.*) will have status (\w*)/, async function(current_obj_type, status_val) {
