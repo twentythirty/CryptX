@@ -13,3 +13,13 @@ export const getAllInstrumentsData: InstrumentsAllResponse = {
     footer: [],
     count: 1
 };
+
+export const createInstrumentData = {
+  success: true,
+  instrument: {
+    id: 3927,
+    transaction_asset_id: 4,
+    quote_asset_id: 6,
+    symbol: 'NMC/PPC'
+  }
+};

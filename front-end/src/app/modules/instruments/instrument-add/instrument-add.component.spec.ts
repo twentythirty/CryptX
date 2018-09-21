@@ -1,68 +1,28 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
-import { extraTestingModules, fakeAsyncResponse } from '../../../testing/utils';
+import { extraTestingModules, fakeAsyncResponse, errorResponse } from '../../../testing/utils';
 
 import { InstrumentsModule } from '../instruments.module';
 import { InstrumentAddComponent } from './instrument-add.component';
-import { AssetService, AssetsAllResponse } from '../../../services/asset/asset.service';
+import { AssetService } from '../../../services/asset/asset.service';
 import { InstrumentsService } from '../../../services/instruments/instruments.service';
 import { testFormControlForm } from '../../../testing/commonTests';
-
-
-const AssetServiceStub = {
-  getAllAssets: () => {
-    return fakeAsyncResponse<AssetsAllResponse>({
-      success: true,
-      assets: [
-        {
-          id: 1,
-          symbol: 'USD',
-          long_name: 'US Dollars',
-          is_base: false,
-          is_deposit: true
-        },
-        {
-          id: 2,
-          symbol: 'BTC',
-          long_name: 'Bitcoin',
-          is_base: true,
-          is_deposit: false
-        },
-      ],
-      count: 2
-    });
-  }
-};
-
-const InstrumentsServiceStub = {
-  successCreateInstrument: true,
-
-  createInstrument: () => {
-    return fakeAsyncResponse({
-      success: InstrumentsServiceStub.successCreateInstrument,
-      instrument: {
-        id: 3927,
-        transaction_asset_id: 4,
-        quote_asset_id: 6,
-        symbol: 'NMC/PPC'
-      }
-    });
-  }
-};
+import { getAllAssetsData } from '../../../testing/service-mock/asset.service.mock';
+import { createInstrumentData } from '../../../testing/service-mock/instruments.service.mock';
 
 
 describe('InstrumentAddComponent', () => {
   let component: InstrumentAddComponent;
   let fixture: ComponentFixture<InstrumentAddComponent>;
+  let assetService: AssetService;
+  let instrumentsService: InstrumentsService;
+  let getAllAssetsSpy;
+  let createInstrumentSpy;
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
       imports: [
         InstrumentsModule,
         ...extraTestingModules
-      ],
-      providers: [
-        { provide: AssetService, useValue: AssetServiceStub },
-        { provide: InstrumentsService, useValue: InstrumentsServiceStub },
       ]
     })
     .compileComponents();
@@ -71,12 +31,38 @@ describe('InstrumentAddComponent', () => {
   beforeEach(() => {
     fixture = TestBed.createComponent(InstrumentAddComponent);
     component = fixture.componentInstance;
+    assetService = fixture.debugElement.injector.get(AssetService);
+    instrumentsService = fixture.debugElement.injector.get(InstrumentsService);
+    getAllAssetsSpy = spyOn(assetService, 'getAllAssets').and.returnValue(fakeAsyncResponse(getAllAssetsData));
+    createInstrumentSpy = spyOn(instrumentsService, 'createInstrument').and.returnValue(fakeAsyncResponse(createInstrumentData));
     fixture.detectChanges();
   });
 
   it('should create', () => {
     expect(component).toBeTruthy();
   });
+
+  it('should have assetsLoading=true before init', () => {
+    expect(component.assetsLoading).toBeTruthy();
+  });
+
+  describe('after assets should be loaded', () => {
+    beforeEach((done) => {
+      getAllAssetsSpy.calls.mostRecent().returnValue.subscribe(() => {
+        done();
+      });
+    });
+
+    it('should load assets on init', async(() => {
+      expect(component.assets.length).toBe(getAllAssetsData.count);
+    }));
+
+    it('should get assetsLoading=false', () => {
+      expect(component.assetsLoading).toBeFalsy();
+    });
+
+  });
+
 
   testFormControlForm(() => {
     return {
@@ -90,7 +76,7 @@ describe('InstrumentAddComponent', () => {
         fixture.detectChanges();
       },
       changeToUnsuccess: () => {
-        InstrumentsServiceStub.successCreateInstrument = false;
+        createInstrumentSpy.and.returnValue(errorResponse);
       }
     };
   });

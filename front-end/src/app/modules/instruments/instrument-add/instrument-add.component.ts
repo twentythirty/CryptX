@@ -25,7 +25,7 @@ export class InstrumentAddComponent implements OnInit {
   constructor(
     private assetService: AssetService,
     private instrumentsService: InstrumentsService,
-    private router: Router,
+    public router: Router,
   ) { }
 
   ngOnInit() {
@@ -57,13 +57,14 @@ export class InstrumentAddComponent implements OnInit {
     this.instrumentsService.createInstrument(this.form.value).pipe(
       finalize(() => this.loading = false)
     ).subscribe(
-      data => {
-        if (data.success) {
-          this.router.navigate(['/instrument/', data.instrument.id]);
+      res => {
+        if (res.success) {
+          this.router.navigate(['/instrument/', res.instrument.id]);
         } else {
-          console.log(data.error);
+          console.log(res.error);
         }
-      }
+      },
+      err => {}
     );
   }
 
