@@ -280,19 +280,6 @@ When('retrieve a list of Assets', function() {
 
 });
 
-When('I provide a rationale', function () {
-
-    const rationales = [
-        'Random rational 1',
-        'Random rational 2',
-        'Random rational 3',
-        'Random rational 4'
-    ];
-
-    this.current_rationale = rationales[_.random(0, rationales.length - 1, false)];
-
-});
-
 When(/^I (.*) an Asset$/, async function (action) {
 
     const action_map = {
@@ -315,6 +302,8 @@ When(/^I (.*) an Asset$/, async function (action) {
         raw: true
     });
 
+    this.current_asset = asset;
+
     return chai
         .request(this.app)
         .post(`/v1/assets/${asset.id}/change_status`)
@@ -329,7 +318,13 @@ When(/^I (.*) an Asset$/, async function (action) {
             expect(result.body.status).to.be.an('object');
 
             this.current_action = status;
-            this.current_asset = asset;
+
+            this.current_response = result;
+
+        })
+        .catch(error => {
+
+            this.current_response = error;
 
         });
 
@@ -467,7 +462,7 @@ Then('the list should have all of the Assets revelant information if it is avail
 
 });
 
-Then('a new Asset Status Change entry is save to the database with the correct type', async function () {
+Then('a new Asset Status Change entry is saved to the database with the correct type', async function () {
 
     const {
         AssetStatusChange
@@ -501,7 +496,7 @@ Then('I can see the new status and history by getting the Asset details', functi
 
     return chai
         .request(this.app)
-        .get(`/v1/assets/detailed/${this.current_status_change.asset_id}`)
+        .get(`/v1/assets/detailed/${this.current_asset.id}`)
         .set('Authorization', World.current_user.token)
         .then(result => {
 
@@ -657,5 +652,30 @@ Then('Asset market history is saved to the database', async function () {
         expect(new Date(matching_history.timestamp).getTime()).to.equal(joined_tickers.metadata.timestamp * 1000);
 
     }
+
+});
+
+Then('the system displays an error about not providing a valid rationale', function() {
+
+    expect(this.current_response).to.have.status(422);
+
+    const error = this.current_response.response.body.error;
+
+    expect(error.type).to.equal('validator_errors');
+
+});
+
+Then('a new Asset Status Change entry is not created', async function() {
+
+    const { AssetStatusChange } = require('../../../models');
+
+    const status_change = await AssetStatusChange.findOne({
+        where: {
+            asset_id: this.current_asset.id,
+            type: INSTRUMENT_STATUS_CHANGES.Blacklisting
+        }
+    });
+
+    expect(status_change).to.be.null;
 
 });
