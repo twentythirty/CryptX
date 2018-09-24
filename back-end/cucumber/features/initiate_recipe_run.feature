@@ -13,6 +13,7 @@ Feature: Initiate a recipe run
         And the system has Instrument Mappings for Bittrex
         And the system has Instrument Mappings for HitBTC
         And the system has Instrument Mappings for Huobi
+        And the system has Instrument Mappings for OKEx
         And the system has updated the Instrument Market Data
         And the system has Instrument Liquidity History for the last 2 days
         
