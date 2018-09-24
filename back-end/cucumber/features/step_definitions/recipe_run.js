@@ -221,7 +221,7 @@ When(/^(.*) recipe run with provided rationale$/, async function (action) {
 
     //preserve error for future steps, if any
     if (err != null) {
-        this.current_recipe_run_status_change_error = err;
+        this.current_recipe_run_status_change_error = err.message;
     }
     //refetch relevant info into world after status change to check later
     this.prev_recipe_run = this.current_recipe_run;
@@ -441,7 +441,7 @@ Then('the system will show a detailed error including missing mappings', functio
 
     const mapping = this.recipe_run_detail_missing_mapping;
     const error = this.current_recipe_run_status_change_error;
-    chai.assert.include(error, mappping.instrument.symbol, `Missing mapping symbol ${mapping.instrument.symbol} not included in error!`);
+    chai.assert.include(error, mapping.instrument.symbol, `Missing mapping symbol ${mapping.instrument.symbol} not included in error!`);
     chai.assert.include(error, mapping.exchange.name, `Exchange with missing mapping ${mapping.exchange.name} not included in error!`);
 })
 
