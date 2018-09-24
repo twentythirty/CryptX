@@ -5,24 +5,7 @@ const sinon = require('sinon');
 const ccxtUtils = require('../../../utils/CCXTUtils');
 const fake_ccxt_methods = require('./stubs/ccxt_methods');
 
-const binance_base = require('./stubs/binance.json');
-const bitfinex_base = require('./stubs/bitfinex.json');
-const bitstamp_base = require('./stubs/bitstamp.json');
-const bittrex_base = require('./stubs/bittrex.json');
-const hitbtc2_base = require('./stubs/hitbtc2.json');
-const huobipro_base = require('./stubs/huobipro.json');
-const kraken_base = require('./stubs/kraken.json');
-
-const exchanges = {
-    binance: binance_base,
-    bitfinex: bitfinex_base,
-    bitstamp: bitstamp_base,
-    bittrex: bittrex_base,
-    hitbtc2: hitbtc2_base,
-    huobipro: huobipro_base,
-    kraken: kraken_base
-};
-
+const exchanges = require('./stubs/exchanges');
 setDefaultTimeout(20000);
 
 const { setWorldConstructor } = require('cucumber');
