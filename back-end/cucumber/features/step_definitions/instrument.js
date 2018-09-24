@@ -259,10 +259,10 @@ Given('the system does not have Instrument Liquidity History', function() {
 When('I create a new Instrument with those Assets', function() {
 
     const new_instrument = {
-        transaction_asset_id: this.current_assets[0].id,
-        quote_asset_id: this.current_assets[1].id
+        transaction_asset_id: this.current_transaction_asset.id,
+        quote_asset_id: this.current_quote_asset.id
     };
-    
+
     return chai
         .request(this.app)
         .post(`/v1/instruments/create`)
@@ -402,8 +402,8 @@ Then('the new Instrument is saved to the database', async function() {
 
     const instrument = await Instrument.findOne({
         where: {
-            transaction_asset_id: this.current_assets[0].id,
-            quote_asset_id: this.current_assets[1].id
+            transaction_asset_id: this.current_transaction_asset.id,
+            quote_asset_id: this.current_quote_asset.id
         },
         raw: true
     });
@@ -416,17 +416,15 @@ Then('the new Instrument is saved to the database', async function() {
 
 Then('a symbol is created from the selected Assets', function() {
 
-    const [ transaction_asset, quote_asset ] = this.current_assets;
-
-    expect(this.current_instrument.symbol).to.equal(`${transaction_asset.symbol}/${quote_asset.symbol}`);
+    expect(this.current_instrument.symbol).to.equal(`${this.current_transaction_asset.symbol}/${this.current_quote_asset.symbol}`);
 
 });
 
 Then('I cannot create a new Instrument with the same Assets by switching them around', function() {
 
     const new_instrument = {
-        transaction_asset_id: this.current_assets[1].id,
-        quote_asset_id: this.current_assets[0].id
+        transaction_asset_id: this.current_quote_asset.id,
+        quote_asset_id: this.current_transaction_asset.id
     };
     
     return chai
@@ -598,6 +596,12 @@ Then('the system creates a new entry for each ticker it fetched with a valid vol
     tickers = _.flatten(tickers).filter(ticker => ticker.baseVolume);
 
     expect(history.length).to.equal(tickers.length);
+
+    for(let h of history) {
+
+        expect(parseFloat(h.volume)).to.be.a('number');
+
+    }
 
     this.current_instrument_liquidity_history = history;
 
