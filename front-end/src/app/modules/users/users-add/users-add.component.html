@@ -2,16 +2,18 @@
   [heading]="'users.add_new_user' | translate"
 ></app-page-heading>
 
-<div class="split-content">
-  <form [formGroup]="userForm">
-    <app-content-block heading="User information">
+<form [formGroup]="userForm">
+  <div class="split-content">
+    <app-content-block 
+      heading="User information" 
+      class="part boxShadow">
+
       <app-input-item 
         class="form-item"
         [label]="'users.name' | translate"
         [placeholder]="'users.enter_name' | translate"
         [formGroup]="userForm"
-        formControlName="Name"
-        [(ngModel)]="UserName"
+        formControlName="first_name"
       ></app-input-item>
 
       <app-input-item
@@ -19,8 +21,7 @@
         [label]="'users.surname' | translate"
         [placeholder]="'users.enter_surname' | translate"
         [formGroup]="userForm"
-        formControlName="Surname"
-        [(ngModel)]="UserSurname"
+        formControlName="last_name"
       ></app-input-item>
 
       <app-input-item
@@ -28,56 +29,40 @@
         [label]="'users.email' | translate"
         [placeholder]="'users.enter_email' | translate"
         [formGroup]="userForm"
-        formControlName="Email"
-        [(ngModel)]="UserEmail"
+        formControlName="email"
       ></app-input-item>
     </app-content-block>
-  </form>
 
-  <form *ngIf="form" [formGroup]="form">
-    <app-content-block [heading]="'users.user_roles' | translate">
-      <div
-        class="check-list"
-        [formArrayName]="'items'"
-        [class.invalid]="!form.controls.selectedItems.valid"
-      >
-        <div class="checkboxes-item" *ngFor="let control of form.controls.items.controls; let i = index;" [formGroup]="control">
-          <label class="label-name">{{ control.controls.text.value }}</label>
-          <div class="checkboxes-modal">
-            <input
-              class="checkall"
-              type="checkbox"
-              formControlName="checkbox"
-              [id]="control.controls.id.value"
-              (click)="click()"
-            >
-            <label [class.checked]="checked" [attr.for]="control.controls.id.value">
-              <ng-container *ngIf="checked">
-                {{'users.select' | translate}}
-              </ng-container>
-              <ng-container *ngIf="!checked">
-                {{'users.select' | translate}}
-              </ng-container>
-            </label>
-          </div>
-        </div>
-      </div>
-
+    <app-content-block 
+      [heading]="'users.user_roles' | translate" 
+      *ngIf="rolelist"
+      class="part boxShadow">
       <app-input-item-error-message
-        *ngIf="show"
-        [errors]="form.controls.selectedItems.errors"
+      *ngIf="userForm.controls.role_id.invalid && (userForm.controls.role_id.dirty || userForm.controls.role_id.touched)"
+      [errorMessage]="'Role must be selected'"
       ></app-input-item-error-message>
+      <div class="check-list" *ngIf="rolelist">
+        <div class="checkboxes-item" *ngFor="let role of rolelist">
+          <label class="label-name">{{ role.name }}</label>
+          <app-button-checkbox 
+          class="checkboxes-modal"
+          [value]="role.id"
+          labelTrue="Select"
+          labelFalse="Select"
+          (onToggle)="addRole(role)"
+        ></app-button-checkbox>
+      </div>
+    </div>
     </app-content-block>
-  </form>
-</div>
-
+  </div>
+</form>
 <div class="sticky-controls-bar">
   <div class="wrapper">
     <button
-      type="submit"
       class="btn submit"
       [disabled]="loading"
       (click)="saveUser()"
+      [appMarkAsTouched]="userForm"
     >{{'common.submit' | translate}}</button>
   </div>
 </div>

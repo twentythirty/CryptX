@@ -13,6 +13,7 @@ import { environment } from '../../../environments/environment';
 export class RolesAllResponse {
   success: boolean;
   roles: Array<Role>;
+  count: number;
 }
 
 export class RolesCreateResponse {
