@@ -252,9 +252,27 @@ async function fetchOrderBook(symbol) {
 
     if(order_book) return order_book;
 
+    const data = [];
+
+    //A 5 % chance of not having the data
+    if(_.random(0, 100, false) < 95) {
+        for(let i = 0; i < _.random(1, 3, false); i++) data.push([_.random(1, 1000, true), _.random(1, 1000, true)]);
+    }
+
+    order_book = {
+        bids: data,
+        asks: data,
+        timestanp: Date.now(),
+        datetime: new Date()
+    };
+
+    this._order_book[symbol] = order_book;
+
+    return order_book;
+
 }
 module.exports.fetchOrderBook = fetchOrderBook;
-module.exports.fetch_order_book = fetchOrder;
+module.exports.fetch_order_book = fetchOrderBook;
 
 function _init() {
 

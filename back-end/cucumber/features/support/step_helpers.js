@@ -6,7 +6,8 @@ const chai = require('chai');
 const descriptionToJobFile = {
     'synchronize coins list': 'coins-list-sync',
     'generate execution orders': 'exec-order-generator',
-    'fetch instrument volumes': 'exchange-volume-fetcher'
+    'fetch instrument volumes': 'exchange-volume-fetcher',
+    'fetch instruments ask/bid prices': 'exchange-ask-bid-fetcher'
 }
 
 /**

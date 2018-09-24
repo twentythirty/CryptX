@@ -5,6 +5,8 @@ const { expect } = chai;
 const chaiHttp = require("chai-http");
 chai.use(chaiHttp);
 
+const { lessThanOrEqual } = require('../support/assert');
+
 const World = require('../support/global_world');
 
 Given('there are no Instruments in the system', function() {
@@ -253,6 +255,19 @@ Given('the system does not have Instrument Liquidity History', function() {
     const { InstrumentLiquidityHistory } = require('../../../models');
 
     return InstrumentLiquidityHistory.destroy({ where: {} });
+
+});
+
+Given('the system does not have Instrument Market Data', function() {
+
+    const { InstrumentMarketData, ActionLog } = require('../../../models');
+
+    return Promise.all([
+        InstrumentMarketData.destroy({ where: {} }),
+        ActionLog.destroy({
+            where: { translation_key: 'logs.ask_bid_fetcher.instrument_without_data' }
+        })
+    ]);
 
 });
 
@@ -616,5 +631,44 @@ Then('the timestamp difference should be 24 hours', function() {
         expect(difference).to.equal(24 * 60 * 60 * 1000, 'Expected the history entry timestamp difference to be 24 hours');
 
     }
+
+});
+
+Then('the system creates a new entry for each Instrument that has a valid mapping', async function() {
+
+    const { InstrumentMarketData, InstrumentExchangeMapping } = require('../../../models');
+
+    const [ market_data, instrument_mappings ] = await Promise.all([
+        InstrumentMarketData.findAll({ raw: true }),
+        InstrumentExchangeMapping.findAll({ raw: true })
+    ]);
+
+    expect(market_data.length).to.satisfy(lessThanOrEqual(instrument_mappings.length), 'Expected the market data to equal or to be less then the maount of instrument mappings');
+
+    for(let data of market_data) {
+
+        const matching_mapping = instrument_mappings.find(im => im.instrument_id === data.instrument_id && im.exchange_id === data.exchange_id);
+
+        expect(matching_mapping, 'Expected to find a matching instrument mapping for the instrument market data').to.be.not.null;
+
+        expect(parseFloat(data.ask_price)).to.be.a('number', 'Expected the market data ask price to be a number');
+        expect(parseFloat(data.bid_price)).to.be.a('number', 'Expected the market data bid price to be a number');
+        expect(data.timestamp).to.be.a('date', 'Expected the timestamp of the market data to be a date');
+
+    }
+
+    this.current_market_data_mapping_difference = instrument_mappings.length - market_data.length;
+
+});
+
+Then('a log entry is created for each Instrument which did not have a price on the exchange', async function() {
+
+    const { ActionLog } = require('../../../models');
+
+    const log_count = await ActionLog.count({
+        where: { translation_key: 'logs.ask_bid_fetcher.instrument_without_data' }
+    });
+
+    expect(log_count).to.equal(this.current_market_data_mapping_difference, 'Expected the log count to equal to the number of instruments without market data');
 
 });
