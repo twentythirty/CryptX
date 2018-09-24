@@ -79,6 +79,12 @@ Given('at least one recipe run detail is missing an exchange instrument mapping'
         })
     }
     const models = require('../../../models');
+    //insert instrument into run detail
+    a_detail.transaction_asset_id = empty_instrument.transaction_asset_id;
+    a_detail.quote_asset_id = empty_instrument.quote_asset_id;
+    await a_detail.save();
+    
+    //fetch the detail anew to create the mapping
     a_detail = await models.RecipeRunDetail.findById(a_detail.id, {
         include: [
             {
@@ -100,11 +106,6 @@ Given('at least one recipe run detail is missing an exchange instrument mapping'
         instrument_symbol: `${a_detail.transaction_asset.symbol}/${a_detail.quote_asset.symbol}`,
         exchange_name: a_detail.target_exchange.name
     }
-    //insert instrument into run detail
-    a_detail.transaction_asset_id = empty_instrument.transaction_asset_id;
-    a_detail.quote_asset_id = empty_instrument.quote_asset_id;
-
-    await a_detail.save();
 });
 
 /**
