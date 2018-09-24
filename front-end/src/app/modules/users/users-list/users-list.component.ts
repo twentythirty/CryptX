@@ -65,7 +65,7 @@ export class UsersListComponent extends DataTableCommonManagerComponent implemen
 
   getFilterLOV(): void {
     this.usersDataSource.header.filter(
-      col => col.filter && (col.filter.type === 'text' || col.filter.type === 'boolean')
+      col => ['first_name', 'last_name', 'email', 'is_active'].includes(col.column)
     ).map(
       col => {
         col.filter.rowData$ = this.userService.getHeaderLOV(col.column);
