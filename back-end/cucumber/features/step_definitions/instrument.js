@@ -248,6 +248,14 @@ Given('the system is missing Instrument Exchange Mappings for base assets in USD
 
 });
 
+Given('the system does not have Instrument Liquidity History', function() {
+
+    const { InstrumentLiquidityHistory } = require('../../../models');
+
+    return InstrumentLiquidityHistory.destroy({ where: {} });
+
+});
+
 When('I create a new Instrument with those Assets', function() {
 
     const new_instrument = {
@@ -556,5 +564,53 @@ Then('the system will display an error about not using two different assets', fu
     const error = this.current_response.response.body.error;
 
     expect(error).to.equal('Instruments can only be created using two different assets');
+
+});
+
+Then('the system creates a new entry for each ticker it fetched with a valid volume', async function() {
+
+    const { InstrumentLiquidityHistory, Exchange, sequelize } = require('../../../models');
+    const { Op } = sequelize;
+    const CCXTUtils = require('../../../utils/CCXTUtils');
+
+    const exchnages = await Exchange.findAll({
+        where: {
+            name: ['Binance', 'Bitfinex']
+        },
+        raw: true
+    });
+
+    const connectors = await Promise.all(exchnages.map(e => {
+        return CCXTUtils.getConnector(e.api_id);
+    }));
+
+    const history = await InstrumentLiquidityHistory.findAll({
+        where: { 
+            exchange_id: exchnages.map(e => e.id)
+        },
+        raw: true 
+    });
+
+    let tickers = await Promise.all(connectors.map(connector => {
+        return connector.fetchTickers();
+    }));
+
+    tickers = _.flatten(tickers).filter(ticker => ticker.baseVolume);
+
+    expect(history.length).to.equal(tickers.length);
+
+    this.current_instrument_liquidity_history = history;
+
+});
+
+Then('the timestamp difference should be 24 hours', function() {
+
+    for(let history of this.current_instrument_liquidity_history) {
+
+        const difference = history.timestamp_to.getTime() - history.timestamp_from.getTime();
+
+        expect(difference).to.equal(24 * 60 * 60 * 1000);
+
+    }
 
 });

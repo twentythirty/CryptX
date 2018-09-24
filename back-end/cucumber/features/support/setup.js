@@ -75,6 +75,32 @@ BeforeAll({ timeout: 15000000 }, async function(){
         return Promise.resolve(exchange);
     });
 
+    sinon.stub(ccxtUtils, 'getThrottle').callsFake(async id => {
+        
+        let api_id = id;
+        if(_.isNumber(id)) {
+            const exchange = await Exchange.findById(id);
+
+            api_id = exchange.api_id;
+        }
+
+        const exchange = exchanges[api_id];
+        if(!exchange._init) {
+            Object.assign(exchange, fake_ccxt_methods);
+            exchange._init();
+        }
+        
+        exchange.throttled = async function(default_return, fn, ...args) {
+
+            const bound_fn = fn.bind(exchange);
+
+            return bound_fn(...args);
+
+        };
+ 
+        return Promise.resolve(exchange);
+    });
+
     return app.dbPromise.then(() => {
         setWorldConstructor(CustomWorld);
     });
@@ -84,7 +110,8 @@ BeforeAll({ timeout: 15000000 }, async function(){
 AfterAll(function() {
     
     [
-        ccxtUtils.getConnector
+        ccxtUtils.getConnector,
+        ccxtUtils.getThrottle
     ].map(method => {
         if(method.restore) method.restore();
     });

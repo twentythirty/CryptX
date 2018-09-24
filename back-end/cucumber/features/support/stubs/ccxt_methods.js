@@ -22,6 +22,7 @@ async function fetchOrder(external_id, symbol) {
 };
 
 module.exports.fetchOrder = fetchOrder;
+module.exports.fetch_order = fetchOrder;
 
 async function fetchOrders(symbol, since) {
 
@@ -35,6 +36,7 @@ async function fetchOrders(symbol, since) {
 
 };
 module.exports.fetchOrders = fetchOrders;
+module.exports.fetch_orders = fetchOrders;
 
 async function fetchMyTrades(symbol, since) {
 
@@ -49,6 +51,7 @@ async function fetchMyTrades(symbol, since) {
 }
 
 module.exports.fetchMyTrades = fetchMyTrades;
+module.exports.fetch_my_trades = fetchMyTrades;
 
 /**
  * Method will mimmick the creation of orders on exchanges,
@@ -96,6 +99,7 @@ async function createMarketOrder(instrument, side, order) {
 };
 
 module.exports.createMarketOrder = createMarketOrder;
+module.exports.create_market_order = createMarketOrder;
 
 /**
  * Clears orders from memory if the scenario desires so.
@@ -202,6 +206,55 @@ const _calculateNextFill = (current_fill_amount, amount_to_reach, market_price, 
     };
 
 };
+
+async function fetchTicker(symbol) {
+
+    if(!this._tickers) this._tickers = {};
+
+    let ticker = this._tickers[symbol];
+
+    if(ticker) return ticker;
+
+    ticker = {
+        symbol: symbol,
+        timestamp: Date.now(),
+        datetime: new Date(),
+        baseVolume: _.random(0, 100, false) > 90 ? null : _.random(0, 100000000) //small chance it might be null
+    };
+
+    this._tickers[symbol] = ticker;
+
+    return ticker;
+
+}
+module.exports.fetchTicker = fetchTicker;
+module.exports.fetch_ticker = fetchTicker;
+
+async function fetchTickers(limit) {
+
+    if(!this._tickers) return [];   //This will be replaced by ticker generation later if need be.
+
+    let tickers = Object.values(this._tickers);
+
+    if(limit) tickers = tickers.slice(0, limit);
+
+    return tickers;
+
+};
+module.exports.fetchTickers = fetchTickers;
+module.exports.fetch_tickers = fetchTickers;
+
+async function fetchOrderBook(symbol) {
+
+    if(!this._order_book) this._order_book = {};
+
+    let order_book = this._order_book[symbol];
+
+    if(order_book) return order_book;
+
+}
+module.exports.fetchOrderBook = fetchOrderBook;
+module.exports.fetch_order_book = fetchOrder;
 
 function _init() {
 

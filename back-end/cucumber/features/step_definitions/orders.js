@@ -26,8 +26,8 @@ Given('one of the orders is missing their CCXT mapping', async function () {
     const models = require('../../../models');
     
     chai.assert.isArray(this.current_generated_orders, 'Generated orders array not present in World!');
-
-    const random_idx = _.random(0, this.current_generated_orders.length, false);
+    //Sometimes it would select an array object out of bounds as length is greater than last index by 1
+    const random_idx = _.random(0, this.current_generated_orders.length - 1, false);
     const new_order = this.current_generated_orders[random_idx];
     chai.assert.isObject(new_order, 'Did not find any Pending Recipe Orders to tamper with!');
 
@@ -48,7 +48,7 @@ Given('one of the orders is missing their CCXT mapping', async function () {
         }
     });
     if (empty_instrument == null) {
-        const instrument = mapped_instruments[_.random(0, mapped_instruments.length, false)].Instrument;
+        const instrument = mapped_instruments[_.random(0, mapped_instruments.length - 1, false)].Instrument;
         //no unmapped instruments, lets create one
         let created = false;
         [empty_instrument, created] = await Instrument.findCreateFind({
