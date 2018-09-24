@@ -139,10 +139,14 @@ export class InstrumentInfoComponent extends DataTableCommonManagerComponent imp
             return !row.isNew;
           },
           items: (row) => {
-            return [
-              // { id:'', name: 'Select' },
-              ...(row.external_instrument_list || []).map(item => ({ id: item, name: item }))
-            ];
+            if(!row.isNew) {
+              return [{ id: row.external_instrument, name: row.external_instrument }];
+            }
+            else {
+              return [
+                ...(row.external_instrument_list || []).map(item => ({ id: item, name: item }))
+              ];
+            }
           },
         },
         outputs: {
