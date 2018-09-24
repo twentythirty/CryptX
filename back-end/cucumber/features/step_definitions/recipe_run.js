@@ -78,10 +78,27 @@ Given('at least one recipe run detail is missing an exchange instrument mapping'
             symbol: 'TEST/NOMAP'
         })
     }
-    const detail_exchange = await a_detail.getTarget_exchange();
+    const models = require('../../../models');
+    a_detail = await models.RecipeRunDetail.findById(a_detail.id, {
+        include: [
+            {
+                model: models.Exchange,
+                as: 'target_exchange'
+            },
+            {
+                model: models.Asset,
+                as: 'transaction_asset'
+            },
+            {
+                model: models.Asset,
+                as: 'quote_asset'
+            }
+        ]
+    })
+    
     this.recipe_run_detail_missing_mapping = {
-        instrument: empty_instrument,
-        exchange: detail_exchange
+        instrument_symbol: `${a_detail.transaction_asset.symbol}/${a_detail.quote_asset.symbol}`,
+        exchange_name: a_detail.target_exchange.name
     }
     //insert instrument into run detail
     a_detail.transaction_asset_id = empty_instrument.transaction_asset_id;
@@ -441,8 +458,8 @@ Then('the system will show a detailed error including missing mappings', functio
 
     const mapping = this.recipe_run_detail_missing_mapping;
     const error = this.current_recipe_run_status_change_error;
-    chai.assert.include(error, mapping.instrument.symbol, `Missing mapping symbol ${mapping.instrument.symbol} not included in error!`);
-    chai.assert.include(error, mapping.exchange.name, `Exchange with missing mapping ${mapping.exchange.name} not included in error!`);
+    chai.assert.include(error, mapping.instrument_symbol, `Missing mapping symbol ${mapping.instrument_symbol} not included in error!`);
+    chai.assert.include(error, mapping.exchange_name, `Exchange with missing mapping ${mapping.exchange_name} not included in error!`);
 })
 
 Then('a new Recipe Run is not created', async function () {

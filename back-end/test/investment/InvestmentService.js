@@ -89,9 +89,20 @@ describe('InvestmentService testing:', () => {
     is_deposit: true,
     symbol: 'ETH'
   }]
+  let EXCHANGE = {
+    name: "TestEx",
+    id: 544,
+    api_id: 'testex'
+  };
+
 
   let RECIPE_RUN_DETAILS = [{
     recipe_run_id: 1,
+    transaction_asset_id: ASSETS[0].id,
+    transaction_asset: ASSETS[0],
+    quote_asset: ASSETS[1],
+    target_exchange_id: EXCHANGE.id,
+    target_exchange: EXCHANGE,
     quote_asset_id: ASSETS[1].id,
     RecipeRunDetailInvestments: [{
       asset_id: ASSETS[0].id,
@@ -491,9 +502,24 @@ describe('InvestmentService testing:', () => {
     });
 
     it('shall change required values', () => {
+
+      sinon.stub(sequelize, 'query').callsFake(query => {
+
+          return Promise.resolve([
+            {
+              tx_asset_id: ASSETS[0].id,
+              quote_asset_id: ASSETS[1].id,
+              symbol: '?',
+              exchange_id: RECIPE_RUN_DETAILS[0].target_exchange_id
+            }
+          ])
+
+      });
+
       return investmentService.changeRecipeRunStatus(
         USER_ID, RECIPE_RUN_ID, RECIPE_STATUS_CHANGE, RECIPE_APPROVAL_COMMENT
       ).then(recipe_run => {
+        sequelize.query.restore();
         // check if values changed correctly
         chai.expect(recipe_run.approval_status).to.be.eq(RECIPE_STATUS_CHANGE);
         chai.expect(recipe_run.approval_user_id).to.be.eq(USER_ID);
