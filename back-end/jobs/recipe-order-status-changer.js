@@ -1,5 +1,6 @@
 'use strict';
 const ccxtUtils = require('../utils/CCXTUtils');
+const Decimal = require('decimal.js');
 
 //everyday, every 5 seconds
 module.exports.SCHEDULE = '*/5 * * * *';
@@ -141,7 +142,7 @@ module.exports.JOB_BODY = async (config, log) => {
                 fills_quantity
             } = record;
 
-            if (order_quantity <= fills_quantity) {
+            if (Decimal(order_quantity).lte(Decimal(fills_quantity))) {
                 if (order_status_from_to(order_id, order_status, RECIPE_ORDER_STATUSES.Completed)) {
                     to_completed++;
                 }
