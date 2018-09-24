@@ -54,8 +54,8 @@ Given('one of the orders is missing their CCXT mapping', async function () {
         [empty_instrument, created] = await Instrument.findCreateFind({
             defaults: {
                 symbol: 'TEST',
-                transaction_asset_id: instrument.transaction_asset_id,
-                quote_asset_id: instrument.quote_asset_id
+                transaction_asset_id: instrument.quote_asset_id,
+                quote_asset_id: instrument.transaction_asset_id
             },
             where: {
                 symbol: 'TEST'
