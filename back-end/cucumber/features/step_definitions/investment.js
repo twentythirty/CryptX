@@ -394,7 +394,7 @@ Then(/^the Asset Mix is assigned to it with appropriate (.*) assets$/, function(
 
 });
 
-Then('the system will not allow me to create another real Investment Run', function() {
+Then('the system will not allow me to create another Investment Run', function() {
 
     return chai
         .request(this.app)
