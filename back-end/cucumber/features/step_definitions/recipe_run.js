@@ -205,8 +205,8 @@ Then(/^the system creates a new Recipe Run with status (.*)$/, async function (e
         }
     });
 
-    expect(recipe_run).to.be.not.null;
-    expect(recipe_run.approval_status).to.equal(RECIPE_RUN_STATUSES[expected_status]);
+    expect(recipe_run, 'Expected to find a new recipe run in the database').to.be.not.null;
+    expect(recipe_run.approval_status).to.equal(RECIPE_RUN_STATUSES[expected_status], `Expected the status of the recipe run to be ${expected_status}`);
 
     this.current_recipe_run = recipe_run;
 
@@ -214,7 +214,7 @@ Then(/^the system creates a new Recipe Run with status (.*)$/, async function (e
 
 Then('I am assigned to the Recipe Run as the creator', function () {
 
-    expect(this.current_recipe_run.user_created_id).to.equal(World.current_user.id);
+    expect(this.current_recipe_run.user_created_id).to.equal(World.current_user.id, 'Expected the reciep run to have user created as the currently logged in user');
 
 });
 
@@ -262,7 +262,7 @@ Then('a Recipe Run Detail is created for each Whitelisted Asset in Asset Mix', a
 
         const matching_asset = assets.find(a => a.asset_id === detail.transaction_asset_id);
 
-        expect(matching_asset).to.be.not.undefined;
+        expect(matching_asset, 'Expected to find matching asset in the asset mix for the recipe run detail').to.be.not.undefined;
 
     }
 
@@ -290,7 +290,7 @@ Then('the investment is spread accordingly between each Recipe Detail', function
 
     for (let asset in investment_amounts) {
 
-        expect(investment_amounts[asset].eq(0)).to.be.true;
+        expect(investment_amounts[asset].eq(0), 'Expected the investment amounts to be spread correctly across each detail').to.be.true;
 
     }
 
@@ -302,7 +302,7 @@ Then('the investment percentage is divided equally between Recipe Details', func
 
     for (let detail of this.current_recipe_run_details) {
 
-        expect(expected_percentage.eq(detail.investment_percentage)).to.be.true;
+        expect(expected_percentage.eq(detail.investment_percentage), 'Expected details to have equaly divided investment percentage').to.be.true;
 
     }
 
@@ -365,7 +365,7 @@ Then('the system will display an error about the Capitalization not being up to 
 
     expect(error.split('\n')[1].startsWith(
         'Missing recent prices. Please wait for new prices to be fetched'
-    )).to.be.true;
+    ), 'Expected to receive an error about missing prices').to.be.true;
 
 });
 
@@ -381,7 +381,7 @@ Then('the system will display an error about missing Instrument Mappings', funct
 
     expect(error.split('\n')[1].startsWith(
         'Missing USDT instrument mappings for exchanges:'
-    )).to.be.true;
+    ), 'Expected to receive an error about missing instruments for base assets in USD and USDT').to.be.true;
 
 });
 

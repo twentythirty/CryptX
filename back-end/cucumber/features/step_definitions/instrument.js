@@ -356,7 +356,7 @@ When('I find an Instrument that has Mappings', async function(){
         }
     });
 
-    expect(instrument).to.not.null;
+    expect(instrument, 'Expected to find a mappable instrument, but failed').to.not.null;
 
     this.current_instrument = instrument;
 
@@ -371,7 +371,7 @@ When('I retrieve the Instrument information', function(){
         .then(result => {   
 
             expect(result).to.have.status(200);
-            expect(result.body.instrument).to.be.an('object');
+            expect(result.body.instrument).to.be.an('object', 'Expected the response body to contain an instrument object');
 
             this.current_instrument = result.body.instrument;
 
@@ -388,7 +388,7 @@ When('I retrieve the Instrument Exchange Mappings related to it', function(){
         .then(result => {   
 
             expect(result).to.have.status(200);
-            expect(result.body.mapping_data.length).to.be.greaterThan(0);
+            expect(result.body.mapping_data.length).to.be.greaterThan(0, 'Expected to have at least one mapping for the Instrument');
 
             this.current_instrument_mappings = result.body.mapping_data;
 
@@ -408,7 +408,7 @@ Then('the new Instrument is saved to the database', async function() {
         raw: true
     });
 
-    expect(instrument).to.be.not.null;
+    expect(instrument, 'Expect the instrument to be saved and found fro mthe database').to.be.not.null;
 
     this.current_instrument = instrument;
 
@@ -416,7 +416,7 @@ Then('the new Instrument is saved to the database', async function() {
 
 Then('a symbol is created from the selected Assets', function() {
 
-    expect(this.current_instrument.symbol).to.equal(`${this.current_transaction_asset.symbol}/${this.current_quote_asset.symbol}`);
+    expect(this.current_instrument.symbol).to.equal(`${this.current_transaction_asset.symbol}/${this.current_quote_asset.symbol}`, 'Expected the instrument to be a combination of symbols of the assets');
 
 });
 
@@ -448,9 +448,9 @@ Then('the new Mapping is saved to the database', async function() {
         where: { instrument_id: this.current_instrument.id }
     });
 
-    expect(mapping).to.be.not.null;
+    expect(mapping, 'Expected a new mapping in the database').to.be.not.null;
 
-    expect(mapping.external_instrument_id).to.equal(this.current_external_instrument);
+    expect(mapping.external_instrument_id).to.equal(this.current_external_instrument, 'Expected external instruments to match');
 
 });
 
@@ -499,10 +499,10 @@ Then('the Instrument information should indidicate the amount of Exchanges conne
     });
 
     //Given that the Market Data was just created, the failed exchanges count should alwas be 0 in this situation
-    expect(parseInt(instrument.exchanges_connected)).to.be.a('number');
-    expect(parseInt(instrument.exchanges_connected)).to.equal(exchange_count);
-    expect(parseInt(instrument.exchanges_failed)).to.be.a('number');
-    expect(parseInt(instrument.exchanges_failed)).to.equal(0);
+    expect(parseInt(instrument.exchanges_connected)).to.be.a('number', 'Expected to have a number of exchanges connected');
+    expect(parseInt(instrument.exchanges_connected)).to.equal(exchange_count, 'Expected the number of connected exchanges to equal to number of exchanges that have data for the last 15 minutes');
+    expect(parseInt(instrument.exchanges_failed)).to.be.a('number', 'Expected the failed exchanges to be a number');
+    expect(parseInt(instrument.exchanges_failed)).to.equal(0, 'Expected to have no failed exchanges');
 
 });
 
@@ -542,14 +542,14 @@ Then('the Instrument Exchange Mappings their current price, last day and week vo
             })
         ]);
 
-        expect(parseFloat(mapping.current_price)).to.be.a('number');
-        expect(parseFloat(mapping.current_price)).to.equal(parseFloat(market_data.ask_price));
+        expect(parseFloat(mapping.current_price)).to.be.a('number', 'Expected the instrument mapping price to be a number');
+        expect(parseFloat(mapping.current_price)).to.equal(parseFloat(market_data.ask_price), 'Expected the instrument mapping price to equal the newest ask price');
 
-        expect(parseInt(mapping.last_day_vol)).to.be.a('number');
-        expect(parseInt(mapping.last_day_vol)).to.equal(parseInt(last_day_history.volume));
+        expect(parseInt(mapping.last_day_vol)).to.be.a('number', 'Expected the instrument mapping last day volume to be a number');
+        expect(parseInt(mapping.last_day_vol)).to.equal(parseInt(last_day_history.volume), 'Expected the instrument mapping last day volume to equal the newest volume');
 
-        expect(parseInt(mapping.last_week_vol)).to.be.a('number');
-        expect(parseInt(mapping.last_week_vol)).to.equal(last_week_volume);
+        expect(parseInt(mapping.last_week_vol)).to.be.a('number', 'Expected the instrument mapping last week volume to be a number');
+        expect(parseInt(mapping.last_week_vol)).to.equal(last_week_volume, 'Expected the instrument mapping last week volume to equal the sum of volumes for the last week');
 
     }));
 
@@ -595,11 +595,11 @@ Then('the system creates a new entry for each ticker it fetched with a valid vol
 
     tickers = _.flatten(tickers).filter(ticker => ticker.baseVolume);
 
-    expect(history.length).to.equal(tickers.length);
+    expect(history.length).to.equal(tickers.length, 'Expected the created history entry count to equal to the count of tickers that have a baseVolume');
 
     for(let h of history) {
 
-        expect(parseFloat(h.volume)).to.be.a('number');
+        expect(parseFloat(h.volume)).to.be.a('number', 'Expected the history volume to be a number');
 
     }
 
@@ -613,7 +613,7 @@ Then('the timestamp difference should be 24 hours', function() {
 
         const difference = history.timestamp_to.getTime() - history.timestamp_from.getTime();
 
-        expect(difference).to.equal(24 * 60 * 60 * 1000);
+        expect(difference).to.equal(24 * 60 * 60 * 1000, 'Expected the history entry timestamp difference to be 24 hours');
 
     }
 

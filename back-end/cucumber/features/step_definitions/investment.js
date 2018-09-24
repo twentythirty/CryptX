@@ -314,16 +314,16 @@ Then('a new Investment Run is created with the status Initiated', async function
 
     return InvestmentRun.findById(this.current_investment_run.id).then(investment_run => {
 
-        expect(investment_run).to.be.not.null;
+        expect(investment_run, 'Expected to find a new investment run in the database').to.be.not.null;
 
         //Compare the object from the database with one sent to the API
-        expect(investment_run.strategy_type).to.equal(this.current_investment_run_details.strategy_type);
+        expect(investment_run.strategy_type).to.equal(this.current_investment_run_details.strategy_type, 'Expected the investment run strategy type to match the provided one');
 
-        expect(investment_run.is_simulated).to.equal(this.current_investment_run_details.is_simulated);
+        expect(investment_run.is_simulated).to.equal(this.current_investment_run_details.is_simulated, 'Expected the investment run is simulated flag to match the provided one');
         
-        expect(investment_run.started_timestamp).to.be.a('date');
-        expect(investment_run.updated_timestamp).to.be.a('date');
-        expect(investment_run.completed_timestamp).to.be.null;
+        expect(investment_run.started_timestamp).to.be.a('date', 'Expected the investment run strategy started timestamp to be a date');
+        expect(investment_run.updated_timestamp).to.be.a('date', 'Expected the investment run strategy updated timestamp to be a date');
+        expect(investment_run.completed_timestamp, 'Expected the investment run strategy completed timestamp to be  not set').to.be.null;
 
         this.current_investment_run = investment_run;
 
@@ -333,13 +333,13 @@ Then('a new Investment Run is created with the status Initiated', async function
 
 Then(/the Investment Run status is (.*)/, function(status) {
 
-    expect(this.current_investment_run.status).to.equal(INVESTMENT_RUN_STATUSES[status]);
+    expect(this.current_investment_run.status).to.equal(INVESTMENT_RUN_STATUSES[status], 'Expected a certain investment run status');
 
 });
 
 Then('I am assigned to it as the creator', function() {
 
-    expect(this.current_investment_run.user_created_id).to.equal(World.current_user.id);
+    expect(this.current_investment_run.user_created_id).to.equal(World.current_user.id, 'Expected the user created on the investment run to equal the currently logged in user');
 
 });
 
@@ -363,8 +363,8 @@ Then('the entered investment amounts are saved along with it', async function() 
                 return asset_by_symbol.id === amount.asset_id;
             });
 
-            expect(found_amount).to.be.not.undefined;
-            expect(parseFloat(amount.amount)).to.equal(parseFloat(found_amount.amount));
+            expect(found_amount, 'Expected to find a matching investment amount').to.be.not.undefined;
+            expect(parseFloat(amount.amount)).to.equal(parseFloat(found_amount.amount), 'Expected the investment amount to match with the provided one');
 
         };
 
@@ -382,13 +382,13 @@ Then(/^the Asset Mix is assigned to it with appropriate (.*) assets$/, function(
         include: GroupAsset
     }).then(asset_mix => {
 
-        expect(asset_mix).to.be.not.null;
+        expect(asset_mix, 'Expected to find an Asset mix').to.be.not.null;
 
-        expect(asset_mix.strategy_type).to.equal(STRATEGY_TYPES[strategy_type]);
+        expect(asset_mix.strategy_type).to.equal(STRATEGY_TYPES[strategy_type], 'Expected the investment run and asset mix strategy type to match');
         expect(this.current_investment_run.strategy_type).to.equal(asset_mix.strategy_type);
 
-        if(strategy_type === 'LCI') expect(asset_mix.GroupAssets.length).to.satisfy(lessThanOrEqual(SYSTEM_SETTINGS.INDEX_LCI_CAP));
-        else expect(asset_mix.GroupAssets.length).to.equal(SYSTEM_SETTINGS.INDEX_MCI_CAP);
+        if(strategy_type === 'LCI') expect(asset_mix.GroupAssets.length).to.satisfy(lessThanOrEqual(SYSTEM_SETTINGS.INDEX_LCI_CAP, `Expected the asset mix size to be less or equal the LCI index of ${SYSTEM_SETTINGS.INDEX_LCI_CAP}`));
+        else expect(asset_mix.GroupAssets.length).to.equal(SYSTEM_SETTINGS.INDEX_MCI_CAP, `Expected the asset mix size to be less or equal the MCI index of ${SYSTEM_SETTINGS.INDEX_MCI_CAP}`);
 
     });
 
@@ -404,7 +404,7 @@ Then('the system will not allow me to create another Investment Run', function()
         .catch(result => {   
             
             expect(result).to.have.status(422);
-            expect(result.response.body.error).to.equal('Investment run cannot be initiated as other investment runs are still in progress');
+            expect(result.response.body.error).to.equal('Investment run cannot be initiated as other investment runs are still in progress', 'Expected an error associated to not be able to initiate another investement run');
 
         });
 
@@ -416,7 +416,7 @@ Then('I should see the Investment Run information', function() {
 
     ['id', 'started_timestamp', 'updated_timestamp', 'completed_timestamp', 'strategy_type', 'is_simulated', 'status', 'deposit_usd', 'user_created']
         .map(field => {
-            expect(this.current_investment_run[field]).to.be.not.undefined;
+            expect(this.current_investment_run[field], `Was not able to get the field "${field}" in the investment run object`).to.be.not.undefined;
         });
 });
 
@@ -424,7 +424,7 @@ Then('the creators full name should match', function() {
 
     const full_name = `${World.users.investment_manager.first_name} ${World.users.investment_manager.last_name}`;
 
-    expect(this.current_investment_run.user_created).to.equal(full_name);
+    expect(this.current_investment_run.user_created).to.equal(full_name, 'Expected the full names to match');
 
 });
 
@@ -444,7 +444,7 @@ Then('the system will display Investment Run validation error', function() {
 
     const error = this.current_response.response.body.error;
 
-    if(error.type) expect(error.type).to.equal('validator_errors');
+    if(error.type) expect(error.type).to.equal('validator_errors', 'Expected to get a validation error');
     else expect(error).to.be.a('string');
 
 });
@@ -457,6 +457,6 @@ Then('the system does not create a new Investment Run', async function() {
         where: { status: INVESTMENT_RUN_STATUSES.Initiated, is_simulated: false }
     });
 
-    expect(new_initiated_investment_runs).to.equal(0);
+    expect(new_initiated_investment_runs).to.equal(0, 'Expected not to find new Investment runs');
 
 });

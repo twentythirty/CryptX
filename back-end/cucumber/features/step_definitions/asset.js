@@ -42,7 +42,7 @@ Given('the system has Assets', async function () {
 
     const asset_count = await Asset.count();
 
-    expect(asset_count).to.be.greaterThan(0);
+    expect(asset_count).to.be.greaterThan(0, 'Expected to have assets in the database');
 
 });
 
@@ -315,7 +315,7 @@ When(/^I (.*) an Asset$/, async function (action) {
         .then(result => {
 
             expect(result).to.have.status(200);
-            expect(result.body.status).to.be.an('object');
+            expect(result.body.status).to.be.an('object', 'Expected to have a status change object inside the body response');
 
             this.current_action = status;
 
@@ -458,16 +458,16 @@ Then('the list should have all of the Assets revelant information if it is avail
 
     for (let asset of assets) {
 
-        expect(asset.id).to.be.a('number');
-        expect(asset.symbol).to.be.a('string');
-        expect(asset.long_name).to.be.a('string');
-        expect(asset.is_base).oneOf(['assets.is_base.yes', 'assets.is_base.no']);
-        expect(asset.is_deposit).oneOf(['assets.is_deposit.no', 'assets.is_deposit.yes']);
-        expect(asset.is_cryptocurrency).oneOf(['assets.is_cryptocurrency.no', 'assets.is_cryptocurrency.yes']);
-        expect(asset.capitalization).satisfy(nullOrNumber);
-        expect(asset.nvt_ratio).satisfy(nullOrNumber);
-        expect(asset.market_share).satisfy(nullOrNumber);
-        expect(asset.status).oneOf(['assets.status.400', 'assets.status.401', 'assets.status.402']);
+        expect(asset.id).to.be.a('number', 'Expected asset id to be a number');
+        expect(asset.symbol).to.be.a('string', 'Expected asset symbol to be a string');
+        expect(asset.long_name).to.be.a('string', 'Expected asset long name to be a string');
+        expect(asset.is_base).oneOf(['assets.is_base.yes', 'assets.is_base.no'], 'Expected asset is_base to be a "yes" or "no"');
+        expect(asset.is_deposit).oneOf(['assets.is_deposit.no', 'assets.is_deposit.yes'], 'Expected asset is_deposit to be a "yes" or "no"');
+        expect(asset.is_cryptocurrency).oneOf(['assets.is_cryptocurrency.no', 'assets.is_cryptocurrency.yes'], 'Expected asset is_cryptocurrency to be a "yes" or "no"');
+        expect(asset.capitalization).satisfy(nullOrNumber, 'Expected asset capitalization to be a number or a null');
+        expect(asset.nvt_ratio).satisfy(nullOrNumber, 'Expected asset NVT ratio to be a number or a null');
+        expect(asset.market_share).satisfy(nullOrNumber, 'Expected asset market share to be a number or a null');
+        expect(asset.status).oneOf(['assets.status.400', 'assets.status.401', 'assets.status.402'], 'Expected status to be between 400 and 402 with a translation key');
 
     }
 
@@ -485,7 +485,7 @@ Then('a new Asset Status Change entry is saved to the database with the correct 
         raw: true
     });
 
-    expect(asset_status_change.type).to.equal(this.current_action);
+    expect(asset_status_change.type).to.equal(this.current_action, 'Expected asset status change type to equal the one that was previously selected');
 
     this.current_status_change = asset_status_change;
 
@@ -493,13 +493,13 @@ Then('a new Asset Status Change entry is saved to the database with the correct 
 
 Then('the rationale I provided is saved', function () {
 
-    expect(this.current_status_change.comment).to.equal(this.current_rationale);
+    expect(this.current_status_change.comment).to.equal(this.current_rationale, 'Expected status change comment to equal the provided rationale');
 
 });
 
 Then('I am assigned to the Status Change', function () {
 
-    expect(this.current_status_change.user_id).to.equal(World.current_user.id);
+    expect(this.current_status_change.user_id).to.equal(World.current_user.id, 'Expected the status change user id to equal to id of the user curretly logged in');
 
 });
 
@@ -512,15 +512,15 @@ Then('I can see the new status and history by getting the Asset details', functi
         .then(result => {
 
             expect(result).to.have.status(200);
-            expect(result.body.asset).to.be.an('object');
-            expect(result.body.history.length).to.be.greaterThan(0);
+            expect(result.body.asset).to.be.an('object', 'Expected body to contain an asset object');
+            expect(result.body.history.length).to.be.greaterThan(0, 'Expected the asset history to have atleast 1 entry');
 
             const asset = result.body.asset;
             //Get newest status change, who knows how other tests will affect this
             const status_change = result.body.history.sort((a, b) => new Date(a.timestamp).getTime() <= new Date(b.timestamp).getTime())[0];
 
-            expect(asset.status).to.equal(`assets.status.${this.current_action}`);
-            expect(status_change.type).to.equal(`assets.status.${this.current_action}`);
+            expect(asset.status).to.equal(`assets.status.${this.current_action}`, 'Expected asset status to equal the previously used one');
+            expect(status_change.type).to.equal(`assets.status.${this.current_action}`, 'Expected the newest status change to have type equal to the previosuly used one');
 
         });
 
@@ -570,11 +570,11 @@ Then('the missing Assets are saved to the database', {
     expect(assets.length).to.be.greaterThan(coin_market_cap_assets.length - 1);
 
     for (let market_asset of coin_market_cap_assets) {
-        const databaset_asset = assets.find(a => parseInt(a.coinmarketcap_identifier, 10) === market_asset.id);
+        const database_asset = assets.find(a => parseInt(a.coinmarketcap_identifier, 10) === market_asset.id);
 
-        expect(databaset_asset).to.be.not.undefined;
+        expect(database_asset, `Failed to find asset with identifier "${market_asset.id}"`).to.be.not.undefined;
 
-        expect(databaset_asset['Asset.symbol']).to.equal(market_asset.symbol);
+        expect(database_asset['Asset.symbol']).to.equal(market_asset.symbol, 'Expected the asset symbols to match');
 
         //expect(databaset_asset['Asset.long_name']).to.equal(market_asset.name);
     }
@@ -596,8 +596,8 @@ Then('BTC and ETH are marked as base and deposit Assets', async function () {
     expect(base_assets.length).to.equal(2);
 
     for (let asset of base_assets) {
-        expect(asset.is_base).to.be.true;
-        expect(asset.is_deposit).to.be.true;
+        expect(asset.is_base, `Expected asset ${asset.symbol} to be base`).to.be.true;
+        expect(asset.is_deposit, `Expected asset ${asset.symbol} to be deposit`).to.be.true;
     }
 
 });
@@ -615,7 +615,7 @@ Then('missing Assets were saved to the database', async function () {
 
     const asset_count = await AssetBlockchain.count();
 
-    expect(asset_count).to.be.greaterThan(this.current_asset_count);
+    expect(asset_count).to.be.greaterThan(this.current_asset_count, 'Expected to have new assets in the database');
 
 });
 
@@ -657,10 +657,10 @@ Then('Asset market history is saved to the database', async function () {
         const usd_details = _.get(ticker, 'quotes.USD');
         const usd_total = _.get(global_data, 'data.quotes.USD');
 
-        expect(parseInt(matching_history.capitalization_usd)).to.equal(usd_details.market_cap);
-        expect(_.round(parseFloat(matching_history.market_share_percentage), 6)).to.equal(_.round((usd_details.market_cap / usd_total.total_market_cap) * 100, 6));
-        expect(parseFloat(matching_history.daily_volume_usd)).to.equal(usd_details.volume_24h);
-        expect(new Date(matching_history.timestamp).getTime()).to.equal(joined_tickers.metadata.timestamp * 1000);
+        expect(parseInt(matching_history.capitalization_usd)).to.equal(usd_details.market_cap, 'Expected the history capitalization to match');
+        expect(_.round(parseFloat(matching_history.market_share_percentage), 6)).to.equal(_.round((usd_details.market_cap / usd_total.total_market_cap) * 100, 6), 'Expected the history market share to match');
+        expect(parseFloat(matching_history.daily_volume_usd)).to.equal(usd_details.volume_24h, 'Expected the history daily volume to match');
+        expect(new Date(matching_history.timestamp).getTime()).to.equal(joined_tickers.metadata.timestamp * 1000, 'Expected the history timestamp to match the metada timestamp');
 
     }
 
@@ -672,7 +672,7 @@ Then('the system displays an error about not providing a valid rationale', funct
 
     const error = this.current_response.response.body.error;
 
-    expect(error.type).to.equal('validator_errors');
+    expect(error.type).to.equal('validator_errors', 'Expected the error to be a validation error');
 
 });
 
@@ -687,6 +687,6 @@ Then('a new Asset Status Change entry is not created', async function() {
         }
     });
 
-    expect(status_change).to.be.null;
+    expect(status_change, 'Expected a new status change in the database').to.be.null;
 
 });
