@@ -447,10 +447,10 @@ Then('a new Recipe Group is created with the status Pending', async function () 
         }
     });
 
-    expect(group).to.be.not.null;
+    expect(group, 'Expected to find the new Recipe order group').to.be.not.null;
 
-    expect(group.created_timestamp).to.be.a('date');
-    expect(group.approval_status).to.equal(RECIPE_ORDER_GROUP_STATUSES.Pending);
+    expect(group.created_timestamp).to.be.a('date', 'Expected the orer group to have a created timestamp as a date');
+    expect(group.approval_status).to.equal(RECIPE_ORDER_GROUP_STATUSES.Pending, 'Expected the order group to have status "Pending"');
 
     this.current_recipe_order_group = group;
 
@@ -485,7 +485,7 @@ Then('a Recipe Order is created for each Recipe Run Detail', async function () {
         })
     ]);
 
-    expect(orders.length).to.equal(details.length);
+    expect(orders.length).to.equal(details.length, 'Expected the number of orders to equal the number of recipe run details');
 
     const base_asset_ids = base_assets.map(asset => asset.id);
 
@@ -499,10 +499,10 @@ Then('a Recipe Order is created for each Recipe Run Detail', async function () {
             );
         });
 
-        expect(matching_detail).to.be.not.undefined;
+        expect(matching_detail, 'Expected to find a matching recipe run detail forthe order').to.be.not.undefined;
 
-        if (base_asset_ids.includes(order.Instrument.quote_asset_id)) expect(order.side).to.equal(ORDER_SIDES.Buy);
-        else expect(order.side).to.equal(ORDER_SIDES.Sell);
+        if (base_asset_ids.includes(order.Instrument.quote_asset_id)) expect(order.side).to.equal(ORDER_SIDES.Buy, 'Expected the order to be a "BUY" type');
+        else expect(order.side).to.equal(ORDER_SIDES.Sell, 'Expected the order to be a "SELL" type');
 
     }
 
@@ -514,7 +514,7 @@ Then('the Recipe Orders have the status Pending', function () {
 
     for (let order of this.current_recipe_orders) {
 
-        expect(order.status).to.equal(RECIPE_ORDER_STATUSES.Pending);
+        expect(order.status).to.equal(RECIPE_ORDER_STATUSES.Pending, 'Expected the orders to have status Pending');
 
     }
 
@@ -599,7 +599,7 @@ Then('I should see an error message describing that there are Pending Deposits',
 
     const error_message = this.current_response.response.body.error;
 
-    expect(error_message).to.match(/(.*) incomplete deposits found: (\d+)(,\s*\d+)*!/g);
+    expect(error_message).to.match(/(.*) incomplete deposits found: (\d+)(,\s*\d+)*!/g, 'Expected the error message to contain a list of incomplete deposits');
 
 });
 
@@ -609,7 +609,7 @@ Then('I should see an error message describing that Deposits have invalid values
 
     const error_message = this.current_response.response.body.error;
 
-    expect(error_message).to.match(/Deposit info: {(.*)}/g);
+    expect(error_message).to.match(/Deposit info: {(.*)}/g, 'Expected to receive a deposit info report which had faulty values');
 
 });
 
@@ -628,10 +628,10 @@ Then(/^the task will skip the Recipe Order due to (.*)$/, function (reason) {
 
     const matching_result = this.current_job_result.find(res => res.instance.id === this.current_recipe_order.id);
 
-    expect(matching_result).to.be.not.undefined;
+    expect(matching_result, 'Expected to find a matching result of the for the order').to.be.not.undefined;
 
-    expect(matching_result.status).to.equal(reason_mapping[reason].status);
-    expect(matching_result.step).to.equal(reason_mapping[reason].step);
+    expect(matching_result.status).to.equal(reason_mapping[reason].status, 'Expected the status of the job cycle to match');
+    expect(matching_result.step).to.equal(reason_mapping[reason].step, 'Expected the job to stop at a certain step');
 
 });
 
@@ -647,6 +647,6 @@ Then('no Orders were generated for the Recipe Run', async function () {
         }
     });
 
-    expect(order_group).to.be.null;
+    expect(order_group, 'Expected not to find any new orders in the database').to.be.null;
 
 });

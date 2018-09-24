@@ -177,19 +177,19 @@ Then('Execution Order Fills are saved to the database', async function() {
         }, 0);
 
         //For now lets round up the numbers, as js float may not be exactly accurate
-        expect(parseFloat(_.round(order.total_quantity, 12))).to.equal(_.round(expected_total_quantity, 12));
+        expect(parseFloat(_.round(order.total_quantity, 12))).to.equal(_.round(expected_total_quantity, 12), 'Expected fills total sum to equal to execution roder total quantity');
 
         const expected_fee = order_fills.reduce((prev, current) => {
             return prev = prev + parseFloat(current.fee)
         }, 0);
 
-        expect(parseFloat(_.round(order.fee, 12))).to.equal(_.round(expected_fee, 12));
+        expect(parseFloat(_.round(order.fee, 12))).to.equal(_.round(expected_fee, 12), 'Expected the execution order fee to equal sum of fill fees');
 
         const expected_order_price = order_fills.reduce((prev, current) => {
             return prev = prev + parseFloat(current.price)
         }, 0) / (order_fills.length);
 
-        expect(parseFloat(_.round(order.price, 12))).to.equal(_.round(expected_order_price, 12));
+        expect(parseFloat(_.round(order.price, 12))).to.equal(_.round(expected_order_price, 12), 'Expected the price to equalthe average price of fills');
     }
 
 });
@@ -204,13 +204,13 @@ Then('the Execution Order Fills have matching fee Asset ids and symbols', async 
         where: { id: fills.map(fill => fill.fee_asset_id) }
     });
 
-    if(!assets.length) TE('No assets found'); 
+    expect(asset.length).to.be.greaterThan(0, 'Expected to find matching fee assets for fills');
     
     for(let fill of fills) {
 
         const asset = assets.find(a => a.id === fill.fee_asset_id);
 
-        expect(fill.fee_asset_symbol).to.equal(asset.symbol);
+        expect(fill.fee_asset_symbol).to.equal(asset.symbol, 'Expected to have matching fee asset symbols for fills');
 
     }
 
@@ -222,7 +222,7 @@ Then('The Execution Orders statuses become FullyFilled', async function () {
 
     const execution_orders = await ExecutionOrder.findAll();
 
-    for(let order of execution_orders) expect(order.status).to.equal(EXECUTION_ORDER_STATUSES.FullyFilled);
+    for(let order of execution_orders) expect(order.status).to.equal(EXECUTION_ORDER_STATUSES.FullyFilled, 'Expected the Execution order to be FullyFilled');
 
 });
 
@@ -257,8 +257,8 @@ Then('the total quantity will be within exchange limits', async function() {
     const amount_limits = _.get(connector, `markets.${instrument.InstrumentExchangeMappings[0].external_instrument_id}.limits.amount`);
     const calculated_quantity = parseFloat(this.current_execution_order.total_quantity);
 
-    expect(calculated_quantity).to.satisfy(greaterThanOrEqual(amount_limits.min));
-    expect(calculated_quantity).to.satisfy(lessThanOrEqual(amount_limits.max));
+    expect(calculated_quantity).to.satisfy(greaterThanOrEqual(amount_limits.min), 'Expected the calculated total quantity of the execution order to be greater than the min amount limit of exchange');
+    expect(calculated_quantity).to.satisfy(lessThanOrEqual(amount_limits.max), 'Expected the calculated total quantity of the execution order to be less than the max amount limit of exchange');
 
 });
 
@@ -270,15 +270,15 @@ Then('the initial price will not be set', function() {
 
      const order = this.current_execution_order;
 
-     expect(order.price).to.be.null;
-     expect(order.fee).to.be.null;
-     expect(order.placed_timestamp).to.be.null;
-     expect(order.completed_timestamp).to.be.null;
-     expect(order.external_identifier).to.be.null;
-     expect(order.instrument_id).to.equal(this.current_recipe_order.instrument_id);
-     expect(order.type).to.equal(EXECUTION_ORDER_TYPES.Market);
-     expect(order.side).to.equal(this.current_recipe_order.side);
-     expect(order.exchange_id).to.equal(this.current_recipe_order.target_exchange_id);
+     expect(order.price, 'Expected execution order price to be a null').to.be.null;
+     expect(order.fee, 'Expected execution order fee to be a null').to.be.null;
+     expect(order.placed_timestamp, 'Expected execution order placed timestamp to be a null').to.be.null;
+     expect(order.completed_timestamp, 'Expected execution order completed timestamp to be a null').to.be.null;
+     expect(order.external_identifier, 'Expected execution order external identifier to be a null').to.be.null;
+     expect(order.instrument_id).to.equal(this.current_recipe_order.instrument_id, 'Expected execution order instrument to match the recipe orders instrument');
+     expect(order.type).to.equal(EXECUTION_ORDER_TYPES.Market, 'Expected the execution order to be a Market Order');
+     expect(order.side).to.equal(this.current_recipe_order.side, 'Expected the side of execution order to equal the side of the recipe order');
+     expect(order.exchange_id).to.equal(this.current_recipe_order.target_exchange_id, 'Expected the execution order to have the same exchange identifier as the recipe order');
 
 });
 
@@ -290,6 +290,6 @@ Then('no new Execution Order is saved to the database', async function() {
         where: { recipe_order_id: this.current_recipe_order.id }
     });
 
-    expect(execution_order_count).to.equal(1);
+    expect(execution_order_count).to.equal(1, 'Expected the amount of execution orders to be 1 as it was previously');
 
 });
