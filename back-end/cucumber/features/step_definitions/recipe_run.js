@@ -40,6 +40,54 @@ Given('there is a recipe run with status Pending', async function () {
     //update investment run in world
     this.prev_investment_run = this.current_investment_run;
     this.current_investment_run = await require('../../../models').InvestmentRun.findById(this.current_investment_run.id);
+
+    this.current_recipe_run = new_run;
+});
+
+Given('at least one recipe run detail is missing an exchange instrument mapping', async function() {
+
+    const recipe_run = this.current_recipe_run;
+    const run_details = await recipe_run.getRecipeRunDetails();
+
+    chai.assert.isArray(run_details, `Recipe run ${recipe_run.id} did not have details array!`);
+    chai.assert.isAbove(run_details.length, 0, `Recipe run ${recipe_run.id} generated 0 recipe run details!`);
+
+    let a_detail = run_details[_.random(0, run_details.length, false)];
+    const sequelize = require('../../../models').sequelize;
+    const Instrument = require('../../../models').Instrument;
+
+    const no_mapping_instruments = await sequelize.query(`
+    SELECT i.*
+    FROM instrument i
+    LEFT JOIN instrument_exchange_mapping iem ON i.id = iem.instrument_id
+    WHERE iem.external_instrument_id IS NULL
+`, { 
+        type: sequelize.Sequelize.QueryTypes.SELECT, 
+        model: Instrument
+    })
+
+    //take one of the instrumetns without mappings
+    let empty_instrument;
+    if (no_mapping_instruments.length > 0) {
+        empty_instrument = no_mapping_instruments[no_mapping_instruments.length == 1? 0 : _.random(0, no_mapping_instruments.length, false)];
+    } else {
+        //create new one if they dont exist
+        empty_instrument = await Instrument.create({
+            transaction_asset_id: a_detail.quote_asset_id,
+            quote_asset_id: a_detail.transaction_asset_id,
+            symbol: 'TEST/NOMAP'
+        })
+    }
+    const detail_exchange = await a_detail.getTarget_exchange();
+    this.recipe_run_detail_missing_mapping = {
+        instrument: empty_instrument,
+        exchange: detail_exchange
+    }
+    //insert instrument into run detail
+    a_detail.transaction_asset_id = empty_instrument.transaction_asset_id;
+    a_detail.quote_asset_id = empty_instrument.quote_asset_id;
+
+    await a_detail.save();
 });
 
 /**
@@ -172,6 +220,7 @@ When(/^(.*) recipe run with provided rationale$/, async function (action) {
         this.current_recipe_run_status_change_error = err;
     }
     //refetch relevant info into world after status change to check later
+    this.prev_recipe_run = this.current_recipe_run;
     this.current_recipe_run = await require('../../../models').RecipeRun.findById(this.current_recipe_run.id);
     this.current_recipe_run.status = this.current_recipe_run.approval_status;
     //move investment run to also provide history
@@ -380,6 +429,17 @@ Then('the system will display an error about missing Instrument Mappings', funct
     )).to.be.true;
 
 });
+
+Then('the system will show a detailed error including missing mappings', function() {
+
+    chai.assert.isObject(this.recipe_run_detail_missing_mapping, 'No missing mapping saved in context!');
+    chai.assert.isString(this.current_recipe_run_status_change_error, 'No error saved when recipe run status changed!');
+
+    const mapping = this.recipe_run_detail_missing_mapping;
+    const error = this.current_recipe_run_status_change_error;
+    chai.assert.include(error, mappping.instrument.symbol, `Missing mapping symbol ${mapping.instrument.symbol} not included in error!`);
+    chai.assert.include(error, mapping.exchange.name, `Exchange with missing mapping ${mapping.exchange.name} not included in error!`);
+})
 
 Then('a new Recipe Run is not created', async function () {
 
