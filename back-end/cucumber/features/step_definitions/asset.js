@@ -330,7 +330,7 @@ When(/^I (.*) an Asset$/, async function (action) {
 
 });
 
-When(/^I select two (.*) Assets$/, async function (kind) {
+When('I select different Assets as quote and transaction assets', async function () {
 
     const {
         Asset
@@ -342,22 +342,33 @@ When(/^I select two (.*) Assets$/, async function (kind) {
 
     this.current_assets = [];
 
-    switch(kind) {
+    const divide = Math.round(assets.length / 2);
+    this.current_assets.push(assets[_.random(0, divide)]);
+    this.current_assets.push(assets[_.random(divide + 1, assets.length - 1)]);
 
-        case 'same':
-            const random_asset = assets[_.random(0, assets.length - 1)];
-            this.current_assets.push(random_asset);
-            this.current_assets.push(random_asset);
-            break;
+    this.current_quote_asset = this.current_assets[0];
+    this.current_transaction_asset = this.current_assets[1];
 
-        case 'different':
-        default:
-            const divide = Math.round(assets.length / 2);
-            this.current_assets.push(assets[_.random(0, divide)]);
-            this.current_assets.push(assets[_.random(divide + 1, assets.length - 1)]);
-            break;
+});
 
-    }
+When('I select the same Asset as quote and transaction asset', async function() {
+
+    const {
+        Asset
+    } = require('../../../models');
+
+    const assets = await Asset.findAll({
+        raw: true
+    });
+
+    this.current_assets = [];
+
+    const random_id = _.random(0, assets.length - 1);
+    this.current_assets.push(assets[random_id]);
+    this.current_assets.push(assets[random_id]);
+
+    this.current_quote_asset = this.current_assets[0];
+    this.current_transaction_asset = this.current_assets[1];
 
 });
 
