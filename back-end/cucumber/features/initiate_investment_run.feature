@@ -20,14 +20,14 @@ Feature: Initiate an investment run
         And I am assigned to it as the creator
         And the entered investment amounts are saved along with it
         And the Asset Mix is assigned to it with appropriate <strategy_type> assets
-        But the system will not allow me to create another real Investment Run
+        But the system will not allow me to create another Investment Run
 
     Examples:
         | strategy_type |
         | LCI  |
         | MCI    |
 
-    Scenario Outline: new Investment Run with invalid values
+    Scenario Outline: Investment run cannot be initiated with invalid values
   
         Given there are no Executing Investment Runs in the system
         When I log onto CryptX as Investment Manager

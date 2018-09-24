@@ -66,7 +66,7 @@ Given('the system has Approved Recipe Run with Details', async function () {
             id: this.current_exchange_accounts[0].exchange_id
         }
     }
-    World.print(JSON.stringify(this.current_exchange_accounts, null ,4));
+
     const exchange = await Exchange.findOne({ where });
 
     const base_assets = await Asset.findAll({
@@ -133,7 +133,7 @@ Given('the system has Approved Recipe Run with Details', async function () {
 
 });
 
-When('I iniatiate a new Recipe Run', function () {
+When('I initiate a new Recipe Run', function () {
 
     return chai
         .request(this.app)

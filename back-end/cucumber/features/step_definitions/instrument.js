@@ -230,7 +230,7 @@ Given(/^the system is missing base Asset prices in USD for the last (.*) (.*)$/,
 
 });
 
-Given('the system is missing Instrument Exchange Mappings for base assets in USD or USDT', async function() {
+Given('the system is missing Instrument Exchange Mappings from quote asset USD or USDT into base assets', async function() {
 
     const { Asset, Instrument, InstrumentExchangeMapping } = require('../../../models');
 

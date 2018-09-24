@@ -24,7 +24,7 @@ Feature: Initiate a recipe run
         And the status of the Investment Run is Initiated
         And the Investment Run has no Recipe Runs
         When I log onto CryptX as Investment Manager
-        And I iniatiate a new Recipe Run
+        And I initiate a new Recipe Run
         Then the system creates a new Recipe Run with status Pending
         And I am assigned to the Recipe Run as the creator
         And a Recipe Run Detail is created for each Whitelisted Asset in Asset Mix
@@ -40,7 +40,7 @@ Feature: Initiate a recipe run
         And the Investment Run has no Recipe Runs
         But the system is missing base Asset prices in USD for the last <amount> <interval_type>
         When I log onto CryptX as Investment Manager
-        And I iniatiate a new Recipe Run
+        And I initiate a new Recipe Run
         Then the system will display an error about the Capitalization not being up to date
         And a new Recipe Run is not created
 
@@ -53,8 +53,8 @@ Feature: Initiate a recipe run
         And there is a LCI Investment Run created by an Investment Manager
         And the status of the Investment Run is Initiated
         And the Investment Run has no Recipe Runs
-        But the system is missing Instrument Exchange Mappings for base assets in USD or USDT
+        But the system is missing Instrument Exchange Mappings from quote asset USD or USDT into base assets
         When I log onto CryptX as Investment Manager
-        And I iniatiate a new Recipe Run
+        And I initiate a new Recipe Run
         Then the system will display an error about missing Instrument Mappings
         And a new Recipe Run is not created
