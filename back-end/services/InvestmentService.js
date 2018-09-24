@@ -7,6 +7,7 @@ const RecipeRun = require('../models').RecipeRun;
 const RecipeRunDetail = require('../models').RecipeRunDetail;
 const RecipeRunDetailInvestment = require('../models').RecipeRunDetailInvestment;
 const Asset = require('../models').Asset;
+const Exchange = require('../models').Exchange;
 const AssetService = require('./AssetService');
 const Op = require('sequelize').Op;
 const sequelize = require('../models').sequelize;
@@ -22,38 +23,43 @@ const AdminViewService = require('./AdminViewsService');
 const ActionLog = require('../utils/ActionLogUtil');
 
 const getInvestmentRunWithAssetMix = async (investment_run_id, seq_query = {}, sql_where = '') => {
-  
-  let [ err, investment_run ] = await to(AdminViewService.fetchInvestmentRunView(investment_run_id));
 
-  if(err) TE(err.message);
-  if(!investment_run) return null;
+  let [err, investment_run] = await to(AdminViewService.fetchInvestmentRunView(investment_run_id));
+
+  if (err) TE(err.message);
+  if (!investment_run) return null;
 
   let asset_group = {};
-  [ err, asset_group ] = await to(InvestmentRun.findById(investment_run_id, {
+  [err, asset_group] = await to(InvestmentRun.findById(investment_run_id, {
     include: InvestmentRunAssetGroup,
     raw: true
   }));
 
-  if(err) console.log(err);
+  if (err) console.log(err);
 
   const investment_run_asset_group_id = asset_group['InvestmentRunAssetGroup.id'];
 
   //Filter assets that belong to the investment run and show only whitelisted ones
-  seq_query.where = _.assign({ investment_run_asset_group_id, status: 'assets.status.400' }, seq_query.where);
-  
+  seq_query.where = _.assign({
+    investment_run_asset_group_id,
+    status: 'assets.status.400'
+  }, seq_query.where);
+
   sql_where = `investment_run_asset_group_id = ${investment_run_asset_group_id} AND status = 'assets.status.400' ${ sql_where !== '' ? `AND ${sql_where}` : '' }`;
 
-  if(!seq_query.order) seq_query.order = [ [ 'capitalization', 'DESC' ] ];
+  if (!seq_query.order) seq_query.order = [
+    ['capitalization', 'DESC']
+  ];
 
   let result = [];
-  [ err, result ] = await to(Promise.all([
+  [err, result] = await to(Promise.all([
     AdminViewService.fetchGroupAssetsViewDataWithCount(seq_query),
     AdminViewService.fetchGroupAssetViewFooter(sql_where)
   ]));
 
-  if(err) TE(err.message);
+  if (err) TE(err.message);
 
-  return [ investment_run, ...result ];
+  return [investment_run, ...result];
 };
 module.exports.getInvestmentRunWithAssetMix = getInvestmentRunWithAssetMix;
 
@@ -71,11 +77,11 @@ const createInvestmentRun = async function (user_id, strategy_type, is_simulated
   let deposit_asset_symbols = deposit_assets.map(asset => asset.symbol);
 
   // if some of deposit info has an asset that is not for deposits
-  if(deposit_amounts.some(
-    amount => !deposit_asset_symbols.includes(amount.symbol)
-  )) TE('Unacceptable deposit asset given!');
+  if (deposit_amounts.some(
+      amount => !deposit_asset_symbols.includes(amount.symbol)
+    )) TE('Unacceptable deposit asset given!');
 
-  if(deposit_amounts.some(a => a.amount < 0))
+  if (deposit_amounts.some(a => a.amount < 0))
     TE(`Investment amount into any of assets can't be less than 0`);
 
   // leave only positive investment asset amounts
@@ -102,16 +108,16 @@ const createInvestmentRun = async function (user_id, strategy_type, is_simulated
   }
 
   let asset_group;
-  [ err, asset_group ] = await to(InvestmentRunAssetGroup.findById(asset_group_id));
+  [err, asset_group] = await to(InvestmentRunAssetGroup.findById(asset_group_id));
 
   if (err) TE(err.message);
   if (!asset_group) TE(`Asset Mix was not found with id "${asset_group_id}"`);
 
   //check if strategy types match
-  if(asset_group.strategy_type !== strategy_type) TE(`Attempting to create a ${_.invert(STRATEGY_TYPES)[strategy_type]} Investment Run with a ${_.invert(STRATEGY_TYPES)[asset_group.strategy_type]} Asset Mix`);
-  
+  if (asset_group.strategy_type !== strategy_type) TE(`Attempting to create a ${_.invert(STRATEGY_TYPES)[strategy_type]} Investment Run with a ${_.invert(STRATEGY_TYPES)[asset_group.strategy_type]} Asset Mix`);
+
   let investment_run;
-  [err, investment_run] = await to(sequelize.transaction(transaction => 
+  [err, investment_run] = await to(sequelize.transaction(transaction =>
     InvestmentRun.create({
       strategy_type: strategy_type,
       is_simulated: is_simulated,
@@ -123,18 +129,18 @@ const createInvestmentRun = async function (user_id, strategy_type, is_simulated
       investment_run_asset_group_id: asset_group_id,
 
       InvestmentAmounts: [ // also create InvestmentAmount for every deposit
-          ...deposit_amounts.map(deposit => {
-            let asset = deposit_assets.find(asset => asset.symbol == deposit.symbol);
-            return {
-              asset_id: asset.id,
-              amount: deposit.amount
-            };
-          })
-        ]
-      }, {
-        include: InvestmentAmount, // include to create investment amounts with investment run
-        transaction
-      })
+        ...deposit_amounts.map(deposit => {
+          let asset = deposit_assets.find(asset => asset.symbol == deposit.symbol);
+          return {
+            asset_id: asset.id,
+            amount: deposit.amount
+          };
+        })
+      ]
+    }, {
+      include: InvestmentAmount, // include to create investment amounts with investment run
+      transaction
+    })
   ));
 
   if (err) TE(err.message);
@@ -156,11 +162,11 @@ const changeInvestmentRunStatus = async function (identifying_value, status_numb
     TE(`Unknown investment run status ${status_number}!`);
 
   let err, investment_run;
-  if(_.isNumber(identifying_value) || _.isString(identifying_value)) 
+  if (_.isNumber(identifying_value) || _.isString(identifying_value))
     [err, investment_run] = await to(InvestmentRun.findById(identifying_value));
-  else 
+  else
     [err, investment_run] = await to(this.findInvestmentRunFromAssociations(identifying_value));
-  
+
   if (err) TE(err.message);
 
   if (!investment_run) TE("Investment run not found");
@@ -207,7 +213,7 @@ const createRecipeRun = async function (user_id, investment_run_id) {
   [err, recipe_run_details] = await to(this.generateRecipeDetails(investment_run.id, investment_run.strategy_type), false);
   if (err) TE(err.message);
 
-  [err, recipe_run] = await to(sequelize.transaction(transaction => 
+  [err, recipe_run] = await to(sequelize.transaction(transaction =>
     RecipeRun.create({
       created_timestamp: new Date(),
       investment_run_id,
@@ -228,7 +234,7 @@ const createRecipeRun = async function (user_id, investment_run_id) {
     })
   ));
 
-  if(err) TE(err.message);
+  if (err) TE(err.message);
 
   return recipe_run;
 };
@@ -283,7 +289,7 @@ const generateRecipeDetails = async (investment_run_id, strategy_type) => {
         possible: [], // possible ways to acquire an asset.
         to_execute: [] // details/conversions that will be saved and performed
       }
-    ] */ 
+    ] */
   let assets_grouped_by_id = _.map(_.groupBy(assets, 'id'), (asset_group) => {
     let asset = asset_group[0];
     return {
@@ -332,9 +338,9 @@ const generateRecipeDetails = async (investment_run_id, strategy_type) => {
     asset.possible = _.orderBy(asset.possible, ['nvt', 'liquidity_level', 'price_usd'], ['desc', 'desc', 'asc']);
 
     for (let action of asset.possible) {
-      let base = investment_size.find(deposit => deposit.asset_id==action.quote_asset_id);
+      let base = investment_size.find(deposit => deposit.asset_id == action.quote_asset_id);
 
-       // if we have this base asset in deposits and enough to buy
+      // if we have this base asset in deposits and enough to buy
       if (base && base.remaining_usd.gt(0)) {
         let base_spent = new Decimal(0),
           base_needed = Decimal(should_spend).minus(total_spent);
@@ -355,7 +361,7 @@ const generateRecipeDetails = async (investment_run_id, strategy_type) => {
         total_spent = total_spent.add(Decimal(base_spent));
       }
 
-      let usd = investment_size.find(s => s.asset_id==1);
+      let usd = investment_size.find(s => s.asset_id == 1);
 
       // if we didn't yet allocate enough base asset to buy required amount
       if (usd && total_spent.lt(should_spend) && usd.remaining_usd.gt(0)) {
@@ -407,11 +413,11 @@ const generateRecipeDetails = async (investment_run_id, strategy_type) => {
       details => {
         let asset_info = details[0];
         let investment_percentage = Decimal(
-          details.reduce(
-            (acc, val) => acc.add(Decimal(val.amount_usd)),
-            Decimal(0)
-          ) // sum all the values
-        )
+            details.reduce(
+              (acc, val) => acc.add(Decimal(val.amount_usd)),
+              Decimal(0)
+            ) // sum all the values
+          )
           .div(Decimal(total_investment_usd))
           .mul(100)
           .toString();
@@ -467,12 +473,69 @@ const changeRecipeRunStatus = async function (user_id, recipe_run_id, status_con
    */
   if (status_constant == RECIPE_RUN_STATUSES.Approved && old_status !== status_constant) {
 
+    //perform check of recipe run details
+    const run_details = await RecipeRunDetail.findAll({
+      where: {
+        recipe_run_id: recipe_run.id
+      },
+      include: [{
+          model: Exchange,
+          as: 'target_exchange'
+        }, {
+          model: Asset,
+          as: 'transaction_asset'
+        },
+        {
+          model: Asset,
+          as: 'quote_asset'
+        }
+      ]
+    });
+    const potential_instruments = await sequelize.query(`
+    SELECT i.transaction_asset_id AS tx_asset_id,
+       i.quote_asset_id AS quote_asset_id,
+       i.symbol AS symbol,
+       iem.exchange_id as exchange_id
+    FROM instrument i
+    JOIN instrument_exchange_mapping iem ON i.id = iem.instrument_id
+`, {
+      type: sequelize.Sequelize.QueryTypes.SELECT
+    })
+
+    const error_message_maker = (run_detail_id, tx_symbol, quote_symbol, exchange_name) => {
+      //error formatting intentional to avoid parse-error cutting it
+      return `error info: \n
+      Can't approve Recipe Run ${recipe_run.id}! Problem with detail ${run_detail_id}: Missing mapping for ${tx_symbol}/${quote_symbol} on ${exchange_name}, please create it.`
+    }
+
+    _.forEach(run_details, run_detail => {
+
+      const potential_error = error_message_maker(
+        run_detail.id,
+        run_detail.transaction_asset.symbol,
+        run_detail.quote_asset.symbol,
+        run_detail.target_exchange.name);
+
+      const matching_mappings = _.filter(potential_instruments, instrument => {
+        return (instrument.tx_asset_id == run_detail.transaction_asset_id && 
+            instrument.quote_asset_id == run_detail.quote_asset_id)
+      });
+
+      if (_.isEmpty(matching_mappings)) TE(potential_error);
+
+      const matching_mapping = _.find(matching_mappings, mapping => {
+        return mapping.exchange_id == run_detail.target_exchange_id
+      });
+
+      if (matching_mapping == null) TE(potential_error);
+    });
+
     let conversions;
-    [ err, conversions ] = await to(depositService.generateAssetConversions(recipe_run));
+    [err, conversions] = await to(depositService.generateAssetConversions(recipe_run));
 
     if (err) TE(err.message);
 
-    [ err ] = await to(sequelize.transaction(transaction => {
+    [err] = await to(sequelize.transaction(transaction => {
 
       return InvestmentRun.update({
         status: INVESTMENT_RUN_STATUSES.RecipeApproved
@@ -484,12 +547,16 @@ const changeRecipeRunStatus = async function (user_id, recipe_run_id, status_con
         transaction
       }).then(() => {
 
-        return recipe_run.save({ transaction }).then(saved_recipe_run => {
+        return recipe_run.save({
+          transaction
+        }).then(saved_recipe_run => {
           recipe_run = saved_recipe_run;
 
-          if(!conversions.length) return;
-          else return InvestmentAssetConversion.bulkCreate(conversions, { transaction });
-          
+          if (!conversions.length) return;
+          else return InvestmentAssetConversion.bulkCreate(conversions, {
+            transaction
+          });
+
         });
 
       });
@@ -681,7 +748,7 @@ const getInvestmentRunTimeline = async function (investment_run_id) {
     order_status = RECIPE_ORDER_STATUSES.Executing;
   } else if (recipe_orders.every(order => order.status === RECIPE_ORDER_STATUSES.Completed)) {
     order_status = RECIPE_ORDER_STATUSES.Completed;
-  }else { //just take status of last created order if all else fails
+  } else { //just take status of last created order if all else fails
     order_status = _.maxBy(recipe_orders, 'id').status
   }
 
@@ -755,7 +822,9 @@ const generateInvestmentAssetGroup = async function (user_id, strategy_type) {
       created_timestamp: new Date(),
       user_id: user_id,
       strategy_type
-    }, { transaction }).then(asset_group => {
+    }, {
+      transaction
+    }).then(asset_group => {
 
       group = asset_group;
 
@@ -767,13 +836,16 @@ const generateInvestmentAssetGroup = async function (user_id, strategy_type) {
           investment_run_asset_group_id: asset_group.id
         };
 
-      }), { transaction, returning: true });
+      }), {
+        transaction,
+        returning: true
+      });
 
     });
   }));
 
   if (err) TE(err.message);
 
-  return [ group, group_assets ];
+  return [group, group_assets];
 };
 module.exports.generateInvestmentAssetGroup = generateInvestmentAssetGroup;
