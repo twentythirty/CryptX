@@ -6,8 +6,12 @@ export class User {
   public created_timestamp: string;
   public reset_password_token_hash: string;
   public reset_password_token_expiry_timestamp: string;
-  public is_active: boolean;
-  public roles: number[];
+  public is_active: string | boolean;
+  public roles?: number[];
+
+  constructor (data: User) {
+    Object.assign(this, data);
+  }
 
   /* public getFullName () {
     return this.first_name + ' ' + this.last_name;
