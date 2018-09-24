@@ -52,7 +52,7 @@ Given('at least one recipe run detail is missing an exchange instrument mapping'
     chai.assert.isArray(run_details, `Recipe run ${recipe_run.id} did not have details array!`);
     chai.assert.isAbove(run_details.length, 0, `Recipe run ${recipe_run.id} generated 0 recipe run details!`);
 
-    let a_detail = run_details[_.random(0, run_details.length, false)];
+    let a_detail = run_details[run_details.length == 1? 0 : _.random(0, run_details.length, false)];
     const sequelize = require('../../../models').sequelize;
     const Instrument = require('../../../models').Instrument;
 
@@ -293,13 +293,50 @@ Then('the recipe run will have no conversions', async function () {
         where: {
             recipe_run_id: this.current_recipe_run.id
         }
-    })
+    });
 
     if (conversions != null) {
         //using 2 separate asserts since this version of chai deosnt have an isEmpty method
         chai.assert.isArray(conversions);
         chai.assert.equal(conversions.length, 0, `Expected recipe run ${this.current_recipe_run.id} not to generate any conversions, got ${conversions.length}!`);
     }
+});
+
+Then('the recipe run will have conversions generated', async function() {
+
+    chai.assert.isObject(this.current_recipe_run, 'Context has no recipe run!');
+
+    const conversions = await require('../../../models').InvestmentAssetConversion.findAll({
+        where: {
+            recipe_run_id: this.current_recipe_run.id
+        }
+    });
+
+    //using 2 separate asserts since this version of chai deosnt have an isEmpty method
+    chai.assert.isArray(conversions);
+    chai.assert.isAbove(conversions.length, 0, `Expected recipe run ${this.current_recipe_run.id} to generate some conversions, got ${conversions.length}!`);
+})
+
+Then(/^all the recipe run conversions will have status (.*)/, async function(status) {
+
+    chai.assert.isObject(this.current_recipe_run, 'Context has no recipe run!');
+
+    const conversions = await require('../../../models').InvestmentAssetConversion.findAll({
+        where: {
+            recipe_run_id: this.current_recipe_run.id
+        }
+    });
+
+    //using 2 separate asserts since this version of chai deosnt have an isEmpty method
+    chai.assert.isArray(conversions);
+    chai.assert.isAbove(conversions.length, 0, `Expected recipe run ${this.current_recipe_run.id} to generate some conversions, got ${conversions.length}!`);
+
+    const required_status = require('../../../config/model_constants').ASSET_CONVERSION_STATUSES[status];
+    chai.assert.isDefined(required_status, `No valid conversion status found for word ${status}`);
+
+    conversions.forEach(conversion => {
+        chai.assert.equal(conversion.status, required_status, `Conversion had bad status!`);
+    });
 });
 
 Then('a Recipe Run Detail is created for each Whitelisted Asset in Asset Mix', async function () {

@@ -32,3 +32,14 @@ Feature: Approving Recipe Run
         Then the recipe run status will remain unchanged
         And the recipe run will have no conversions
         And the system will show a detailed error including missing mappings
+
+    Scenario: confirm a pending recipe run
+  
+        Given there is a recipe run with status Pending
+        When I log onto CryptX as Investment Manager
+        And navigate to Pending recipe run
+        And approve recipe run with provided rationale
+        Then the recipe run will have status Approved
+        And the recipe run will have conversions generated
+        And all the recipe run conversions will have status Pending
+        And the investment run will have status RecipeApproved
