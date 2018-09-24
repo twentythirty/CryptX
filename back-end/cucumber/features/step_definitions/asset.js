@@ -361,9 +361,9 @@ When(/^I select two (.*) Assets$/, async function (kind) {
 
 });
 
-When(/^the system finished the special task "(.*)"$/, {
+When('the system completes the task "synchronize coins list"', {
     timeout: 750000
-}, function (task_description) {
+}, function () {
 
     return chai
         .request(coin_market_cap_url)
@@ -383,7 +383,7 @@ When(/^the system finished the special task "(.*)"$/, {
                 return Promise.resolve(result.body);
             });
 
-            await utils.finishJobByDescription(task_description);
+            await utils.finishJobByDescription('synchronize coins list');
 
             request_promise.get.restore();
 
@@ -392,7 +392,7 @@ When(/^the system finished the special task "(.*)"$/, {
 
 });
 
-When('the FETCH_MH job completes it`s run', {
+When('the system completes the task "fetch asset market capitalization"', {
     timeout: 50000
 }, async function () {
 

@@ -7,12 +7,12 @@ Feature: Generating Orders
         Given the system has a Investment Manager
         And the system has a Trader
         And the system has a Depositor
-        And the system has Instrument Mappings for Kraken
+        And the system has Instrument Mappings for Binance
         And the system has updated the Instrument Market Data
+        And the system has Exchange Account for BTC on Binance
+        And the system has Exchange Account for ETH on Binance
         And there is a LCI Investment Run created by an Investment Manager
         And the system has Approved Recipe Run with Details
-        And the system has Exchange Account for BTC on Kraken
-        And the system has Exchange Account for ETH on Kraken
 
     Scenario: Correct order generation when all of the conditions are met
 
