@@ -59,11 +59,15 @@ Given('the system has Approved Recipe Run with Details', async function () {
         sequelize
     } = require('../../../models');
 
-    const exchange = await Exchange.findOne({
-        where: {
-            name: 'Kraken'
+    let where = {};
+
+    if(this.current_exchange_accounts) {
+        where = {
+            id: this.current_exchange_accounts[0].exchange_id
         }
-    });
+    }
+    World.print(JSON.stringify(this.current_exchange_accounts, null ,4));
+    const exchange = await Exchange.findOne({ where });
 
     const base_assets = await Asset.findAll({
         where: {
