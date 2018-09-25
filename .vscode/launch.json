@@ -79,6 +79,15 @@
       "args": [
         "EXCH_VOL24"
       ]
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Launch EXCH_ASK_BID job",
+      "program": "${workspaceFolder}/back-end/jobs/jobs-runner.js",
+      "args": [
+        "EXCH_ASK_BID"
+      ]
     }
   ]
 }
