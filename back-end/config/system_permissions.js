@@ -34,7 +34,8 @@ PERMISSIONS = {
   VIEW_COLS_STORAGE_ACCOUNT_FEES: "perm_view_cold_storage_account_fees",
   CREATE_LIQUIDITY_REQUIREMENTS: "perm_create_liquidity_requirements",
   VIEW_LIQUIDITY_REQUIREMENTS: "perm_view_liquidity_requirements",
-  ADD_EXCHANGE_ACCOUNTS: "perm_add_exchange_account"
+  ADD_EXCHANGE_ACCOUNTS: "perm_add_exchange_account",
+  RECEIVE_NOTIFICATION_ABOUT_NEW_ASSETS: "perm_receive_notifications_about_new_assets"
 };
 //list of permissions that dotn apply to users
 //as long as they are altering themselves
@@ -48,6 +49,7 @@ PERMISSIONS_CATEGORIES = {
   COLD_STORAGE: "Cold storage",
   LIQUIDITY: "Liquidity",
   EXCHANGES: "Exchanges",
+  ASSETS: "Assets",
   OTHER: "Other groups"
 };
 
@@ -85,6 +87,9 @@ CATEGORY_TO_PERM_ASSOC = {
   [PERMISSIONS_CATEGORIES.LIQUIDITY]: [
     PERMISSIONS.CREATE_LIQUIDITY_REQUIREMENTS,
     PERMISSIONS.VIEW_LIQUIDITY_REQUIREMENTS
+  ],
+  [PERMISSIONS_CATEGORIES.ASSETS]: [
+    PERMISSIONS.RECEIVE_NOTIFICATION_ABOUT_NEW_ASSETS
   ]
 }
 //fill other category with remaining permissions
@@ -167,6 +172,8 @@ all_permissions[PERMISSIONS.VIEW_LIQUIDITY_REQUIREMENTS] =
 "Permission to view liquidity requirements";
 all_permissions[PERMISSIONS.ADD_EXCHANGE_ACCOUNTS] =
 "Permission to add exchange accounts";
+all_permissions[PERMISSIONS.RECEIVE_NOTIFICATION_ABOUT_NEW_ASSETS] =
+"Permission to receive email notifications about new assets";
 
 all_roles = Object.values(ROLES);
 

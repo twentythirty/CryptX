@@ -1,5 +1,7 @@
 'use strict';
 
+const EmailUtil = require('../utils/EmailUtil');
+
 module.exports = (sequelize, DataTypes) => {
 
     var Asset = sequelize.define(
@@ -30,6 +32,10 @@ module.exports = (sequelize, DataTypes) => {
         });
         Asset.hasMany(models.AssetStatusChange);
     }
+
+    Asset.hook('afterCreate', function(asset, options) {
+        EmailUtil.prepareNewAssetNotification(asset.toJSON());
+    });
 
     return Asset;
 };
