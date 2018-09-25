@@ -374,7 +374,7 @@ Then('a Recipe Run Detail is created for each Whitelisted Asset in Asset Mix', a
 
 });
 
-Then('the investment is spread accordingly between each Recipe Detail', function () {
+Then('the investment amounts are divided accordingly between each Recipe Detail', function () {
 
     const investment_amounts = this.current_investment_run.amounts.reduce((acc, amount) => {
         return _.assign(acc, {
@@ -457,7 +457,7 @@ Then('the system won\'t allow me to initiate another Recipe Run for this Investm
 
 });
 
-Then('the system will display an error about the Capitalization not being up to date', function () {
+Then('the system will display an error about the Market Data not being up to date', function () {
 
     expect(this.current_response).to.have.status(422);
 
