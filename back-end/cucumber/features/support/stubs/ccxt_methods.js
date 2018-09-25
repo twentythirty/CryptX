@@ -209,30 +209,16 @@ const _calculateNextFill = (current_fill_amount, amount_to_reach, market_price, 
 
 async function fetchTicker(symbol) {
 
-    if(!this._tickers) this._tickers = {};
+    if(!this._tickers) this._createTickers();
 
-    let ticker = this._tickers[symbol];
-
-    if(ticker) return ticker;
-
-    ticker = {
-        symbol: symbol,
-        timestamp: Date.now(),
-        datetime: new Date(),
-        baseVolume: _.random(0, 100, false) > 90 ? null : _.random(0, 100000000) //small chance it might be null
-    };
-
-    this._tickers[symbol] = ticker;
-
-    return ticker;
-
+    return this._tickers[symbol] || null;
 }
 module.exports.fetchTicker = fetchTicker;
 module.exports.fetch_ticker = fetchTicker;
 
 async function fetchTickers(limit) {
 
-    if(!this._tickers) return [];   //This will be replaced by ticker generation later if need be.
+    if(!this._tickers) this._createTickers();
 
     let tickers = Object.values(this._tickers);
 
@@ -244,31 +230,55 @@ async function fetchTickers(limit) {
 module.exports.fetchTickers = fetchTickers;
 module.exports.fetch_tickers = fetchTickers;
 
-async function fetchOrderBook(symbol) {
+const _createTickers = function() {
 
-    if(!this._order_book) this._order_book = {};
+    const instruments = _.uniq(Object.keys(this.markets));
+    const base_chance = 95;
 
-    let order_book = this._order_book[symbol];
+    this._tickers = {};
+    this._order_book = {};
 
-    if(order_book) return order_book;
+    for(let instrument of instruments) {
 
-    const data = [];
+        const is_missing_values = _.random(0, 100, false) > base_chance ? true : false;
+        const price = _.random(1, 1000, true);
+        const volume = _.random(0, 100000000);
 
-    //A 5 % chance of not having the data
-    if(_.random(0, 100, false) < 95) {
-        for(let i = 0; i < _.random(1, 3, false); i++) data.push([_.random(1, 1000, true), _.random(1, 1000, true)]);
+
+        this._tickers[instrument] = {
+            symbol: instrument,
+            timestamp: Date.now(),
+            datetime: new Date(),
+            baseVolume: is_missing_values ? null : volume,
+            ask: is_missing_values ? null : getFuzzy(price),
+            bid: is_missing_values ? null : getFuzzy(price)
+        };
+
+        const asks = [];
+        const bids = [];
+        if(!is_missing_values) {
+            for(let i = 0; i < _.random(1, 3, false); i++) {
+                asks.push([getFuzzy(price), getFuzzy(volume)]);
+                bids.push([getFuzzy(price), getFuzzy(volume)]);
+            }
+        }
+
+        this._order_book[instrument] = {
+            timestanp: Date.now(),
+            datetime: new Date(),
+            asks, bids
+        };
+
     }
 
-    order_book = {
-        bids: data,
-        asks: data,
-        timestanp: Date.now(),
-        datetime: new Date()
-    };
+};
+module.exports._createTickers = _createTickers;
 
-    this._order_book[symbol] = order_book;
+async function fetchOrderBook(symbol) {
 
-    return order_book;
+    if(!this._order_book) this._createTickers();
+
+    return this._order_book[symbol] || null;
 
 }
 module.exports.fetchOrderBook = fetchOrderBook;
@@ -285,3 +295,11 @@ function _init() {
 }
 
 module.exports._init = _init;
+
+const getFuzzy = number => {
+
+    const fuzzyness = number / 1000;
+
+    return (number + _.random(-fuzzyness, fuzzyness, true));
+
+};

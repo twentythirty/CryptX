@@ -582,7 +582,7 @@ Then('the system will display an error about not using two different assets', fu
 
 Then('the system creates a new entry for each ticker it fetched with a valid volume', async function() {
 
-    const { InstrumentLiquidityHistory, Exchange, sequelize } = require('../../../models');
+    const { InstrumentLiquidityHistory, Instrument, Exchange, sequelize } = require('../../../models');
     const { Op } = sequelize;
     const CCXTUtils = require('../../../utils/CCXTUtils');
 
@@ -590,6 +590,7 @@ Then('the system creates a new entry for each ticker it fetched with a valid vol
         where: {
             name: ['Binance', 'Bitfinex']
         },
+        include: Instrument,
         raw: true
     });
 
@@ -610,10 +611,11 @@ Then('the system creates a new entry for each ticker it fetched with a valid vol
 
     tickers = _.flatten(tickers).filter(ticker => ticker.baseVolume);
 
-    expect(history.length).to.equal(tickers.length, 'Expected the created history entry count to equal to the count of tickers that have a baseVolume');
-
     for(let h of history) {
 
+        const matching_ticker = tickers.find(tick => tick.symbol === h['Instrument.symbol']);
+
+        expect(matching_ticker, 'Expected to find a matching ticker wich has a baseVolume').to.be.not.null;
         expect(parseFloat(h.volume)).to.be.a('number', 'Expected the history volume to be a number');
 
     }
