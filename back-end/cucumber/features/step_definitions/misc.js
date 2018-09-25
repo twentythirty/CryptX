@@ -27,7 +27,10 @@ Then(/^the server return a (.*) response$/, function(response_type) {
 
 When(/^the system finished the task "(.*)"$/, async function(task_description) {
 
-    this.current_job_result = await utils.finishJobByDescription(task_description);
+    this.current_job_result = await utils.finishJobByDescription(
+        task_description,
+        //supply custom extra configuration if present
+        _.isObject(this.job_config)? this.job_config : {});
 });
 
 const constModelMapping = {
@@ -140,5 +143,40 @@ Then(/^the (.*) will have status (\w*)/, async function(current_obj_type, status
         chai.assert.equal(fresh_instance[status_field_name], status_value, `${model_name} instance was supposed to have a '${status_field_name}' equal to ${status_val}(${status_value})!`)
     } else {
         chai.assert.equal(instance.status, status_value, `${context_name} instance was supposed to have a 'status' equal to ${status_val}(${status_value})!`)
+    }
+});
+
+Then(/^this action was logged with (.*)/, async function(logged_property_expression) {
+
+    const logged_property = _.snakeCase(_.lowerCase(logged_property_expression));
+    const ActionLog = require('../../../models').ActionLog;
+    chai.assert.isNotNull(this.check_log_id, `Context did not have check_log_id field! Fill that in during a step before action log gets checked!`);
+
+    if (_.isArray(this.check_log_id) && this.check_log_id.length > 1) {
+        const new_log_entries = await ActionLog.findAll({
+            where: {
+                [logged_property]: this.check_log_id
+            },
+            order: [
+                ['timestamp', 'DESC']
+            ],
+            limit: this.check_log_id.length
+        });
+
+        chai.assert.isArray(new_log_entries, `Actions should have generated ${this.check_log_id.length} log entries with ${logged_property} of set ${this.check_log_id}!`);
+        chai.assert.isAtLeast(new_log_entries.length, this.check_log_id.length, `Should have generated a log entry for every check id!`);
+    } else {
+
+    //find newest that satisfies
+    const new_log_entry = await ActionLog.findOne({
+        where: {
+            [logged_property]: this.check_log_id
+        },
+        order: [
+            ['timestamp', 'DESC']
+        ]
+    });
+
+    chai.assert.isNotNull(new_log_entry, `Actions should have generated a log entry with ${logged_property} equal ${this.check_log_id}!`);
     }
 });

@@ -134,4 +134,13 @@ After(async function (scenario) {
         && _.isFunction(this.current_investment_run.destroy)) {
         await this.current_investment_run.destroy();
     }
+    //remove created execution orders
+    if (this.current_execution_orders && 
+        _.isArray(this.current_execution_orders)) {
+            await require('../../../models').ExecutionOrder.destroy({
+                where: {
+                    id: _.map(this.current_execution_orders, 'id')
+                }
+            });
+        }
 });
