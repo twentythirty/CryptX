@@ -125,30 +125,36 @@ module.exports.purgeOrders = purgeOrders;
  * Simulates trading in the exchange based on given options.
  * @param {Object} options Options for the simulation.
  * @param {Number} [options.rate=0] Rate at which the orders are simulated. The higher the number, the slower the eneration will be. By default, rate is 0 and will require 1 cycle to fill the orders.
+ * @param {Number} [options.chance_of_new_trade=100] Base chance of the order having a new trade. Default: 100%
  * @param {Number} [options.multiple_trade_chance=0] Chance that more than one trade will be created if the order does not get filled. The chance only affects trades after the minimum amount was created.
  * @param {Number} [options.minimum_amount_of_trades=1] Minimum amount of trades to generate.
- * @param {Boolean} [options.force_failure=false] Set to `true` to force close the orders that were not filled.
+ * @param {Boolean} [options.force_to_close=false] Set to `true` to force close the orders that were not filled.
  */
 function simulateTrades(options = {}) {
 
     const rate = options.rate || 0;
+    const chance_of_new_trade = options.chance_of_new_trade || 100;
     const multiple_trade_chance = _.clamp(options.multiple_trade_chance || 0, 0, 100);
     const minimum_amount_of_trades = options.minimum_amount_of_trades || 1;
-    const force_failure = options.force_failure || false;
+    const force_to_close = options.force_to_close || false;
 
     const active_orders = this._orders.filter(order => order.status === 'open');
 
     for(let order of active_orders) {
 
-        if(force_failure) {
+        if(force_to_close) {
             order.status = 'closed';
-            continue;
+            //continue;
         }
 
+        let dice_roll;
         let generated_trades = 0;
         let tolerance = 0;  //Safety tolerance, because while loops are SCARY.
         while(tolerance < 50) {
             tolerance++;
+
+            dice_roll = _.random(1, 100, false);
+            if(chance_of_new_trade <= dice_roll) break;
 
             const new_price_and_amount = _calculateNextFill(order.filled, order.amount, order.price, rate);
             
@@ -182,7 +188,7 @@ function simulateTrades(options = {}) {
                 break;
             }
 
-            const dice_roll = _.random(1, 100, false);
+            dice_roll = _.random(1, 100, false);
 
             if(multiple_trade_chance < dice_roll && generated_trades >= minimum_amount_of_trades) break;
 
