@@ -1,12 +1,12 @@
 const { ExecutionOrder, ExecutionOrderFill, Instrument, InstrumentMarketData } = require('../../../../models');
 
-async function fetchOrder(external_id, symbol) {
+async function fetchOrder(external_id, symbol, params = {}) {
 
     /**
      * Some exchanges require you to pass the instrument symbol.
      * Not sure what's the purpose, but it should throw an error in case it is not valid, just like the actual exchange.
      */
-    if(!this.markets[symbol]) TE(`Error: ${this.name} does not support instrument "${symbol}" when fetching orders`);
+    if(!this.markets[symbol] && !params.ignore_symbol) TE(`Error: ${this.name} does not support instrument "${symbol}" when fetching orders`);
 
     const order = this._orders.find(order => order.id === external_id);
 
@@ -15,7 +15,7 @@ async function fetchOrder(external_id, symbol) {
     /**
      * Sometimes they match the symbol to the order. Not sure why again.
      */
-    if(order.symbol !== symbol) TE(`Error: passed symbol ${symbol} does not match the order with id "${order.id}" instrument symbol`);
+    if(order.symbol !== symbol && !params.ignore_symbol) TE(`Error: passed symbol ${symbol} does not match the order with id "${order.id}" instrument symbol`);
     
     return order;
 
@@ -89,6 +89,10 @@ async function createMarketOrder(instrument, side, order) {
         filled: 0,
         remaining: parseFloat(order.total_quantity),
         cost: 0,
+        fee: {
+            cost: 0,
+            currency: side === 'buy' ? instrument.split('/')[1] : instrument.split('/')[0]
+        },
         info: {}
     };
 
@@ -182,6 +186,7 @@ function simulateTrades(options = {}) {
             order.filled += new_price_and_amount.amount;
             order.remaining = order.amount - order.filled;
             order.lastTradeTimestamp = new_trade.timestamp;
+            order.fee.cost += new_fee;
 
             if(order.filled == order.amount) {
                 order.status = 'closed';

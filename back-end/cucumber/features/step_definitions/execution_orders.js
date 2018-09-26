@@ -76,13 +76,17 @@ async function generateExecutionOrders(amount, order_status, for_exchange) {
 
     for (let i = 0; i < amount; i++) {
 
+        const instrument = instruments[i];
+
+        const limits = _.get(connector, `markets.${instrument.symbol}.limits.amount`);
+
         new_execution_orders.push({
             exchange_id: for_exchange.id,
-            instrument_id: instruments[i].id,
+            instrument_id: instrument.id,
             side: ORDER_SIDES.Buy,
             status: order_status,
             type: EXECUTION_ORDER_TYPES.Market,
-            total_quantity: _.random(1, 20, true),
+            total_quantity: _.random(limits.min, limits.max, true),
             failed_attempts: 0
         });
 
@@ -237,6 +241,23 @@ Given('the Exchange is unable to find the Execution Orders', async function() {
 
 });
 
+Given('the Exchange does not support Trade fetching', async function() {
+
+    const { Exchange } = require('../../../models');
+    const CCXTUtils = require('../../../utils/CCXTUtils');
+    
+    const exchanges = await Exchange.findAll({ raw: true });
+
+    for(let exchange of exchanges) {
+
+        const connector = await CCXTUtils.getConnector(exchange.api_id);
+
+        connector.has['fetchTrades'] = false;
+
+    }
+
+});
+
 When('the system does the task "fetch execution order information" until the Execution Orders are no longer in progress', async function () {
 
     const models = require('../../../models');
@@ -286,6 +307,8 @@ When('the system does the task "fetch execution order information" until the Exe
     }
 
     expect(tolerance).to.be.lessThan(50, 'Execution orders failed to fill up after 50 job cucles');
+
+    for(let connector of connectors) connector.has['fetchTrades'] = true;
 
 });
 
@@ -626,7 +649,7 @@ Then(/^Execution Orders with status (.*) will have (.*)$/, async function(status
 
 });
 
-Then('the Execution Order failed attempts will equal to the threshold specified in the system settings', function() {
+Then('the Execution Orders failed attempts will equal to the threshold specified in the system settings', function() {
 
     for(let order of this.current_execution_orders) {
 
@@ -634,4 +657,83 @@ Then('the Execution Order failed attempts will equal to the threshold specified 
 
     }
 
+});
+
+Then('the Execution Orders errors are logged', async function() {
+
+    const { ActionLog } = require('../../../models');
+
+    const logs = await ActionLog.count({
+        where: {
+            execution_order_id: this.current_execution_orders.map(ex => ex.id),
+            translation_key: 'logs.execution_orders.error'
+        }
+    });
+
+    expect(logs).to.be.greaterThan(0, 'Expected to have at least one error log');
+
+});
+
+Then('the Execution Order price and fee will be taken from the Order received from the Exchange', async function() {
+
+    const CCXTUtils = require('../../../utils/CCXTUtils');
+
+    for(let order of this.current_execution_orders) {
+
+        const connector = await CCXTUtils.getConnector(order.exchange_id);
+
+        const external_order = await connector.fetchOrder(order.external_identifier, null, { ignore_symbol: true });
+
+        expect(Decimal(order.price).toPrecision(10)).to.equal(Decimal(external_order.price).toPrecision(10), 'Expected Execution Order price to match with External Order price');
+        expect(Decimal(order.fee).toPrecision(10)).to.equal(Decimal(external_order.fee.cost).toPrecision(10), 'Expected Execution Order fee to match with External Order fee');
+
+    };
+
+});
+
+Then('sums of fees and quantity of Fills will equal to Execution Order ones', async function() {
+
+    const { ExecutionOrderFill } = require('../../../models');
+
+    const fills = await ExecutionOrderFill.findAll({
+        where: { execution_order_id: this.current_execution_orders.map(ex => ex.id) },
+        raw: true
+    });
+
+    for(let order of this.current_execution_orders) {
+
+        const order_fills = fills.filter(fill => fill.execution_order_id === order.id);
+
+        expect(order_fills.length).to.be.greaterThan(0, 'Expected the Execution Order to have at least one Fill entry');
+
+        const expected_values = order_fills.reduce((acc, fill) => {
+            return acc = Object.assign(acc, {
+                fee: acc.fee.plus(fill.fee),
+                quantity: acc.quantity.plus(fill.quantity)
+            });
+        }, { price: Decimal(0), fee: Decimal(0), quantity: Decimal(0) });
+
+        expect(Decimal(order.fee).toPrecision(10)).to.equal(expected_values.fee.toPrecision(10), 'Expected the Execution Order fee to equal to the sum in Fills');
+        expect(Decimal(order.total_quantity).toPrecision(10)).to.equal(expected_values.quantity.toPrecision(10), 'Expected the Execution Order total quantity to equal to the sum in Fills');
+
+    }
+
+    this.current_execution_order_fills = fills;
+    
+});
+
+Then('the price of Fills will equal to the price of the Execution Order', async function() {
+
+    for(let order of this.current_execution_orders) {
+
+        const order_fills = this.current_execution_order_fills.filter(fill => fill.execution_order_id === order.id);
+
+        for(let fill of order_fills) {
+
+            expect(Decimal(fill.price).toPrecision(10)).to.equal(Decimal(order.price).toPrecision(10), 'Expected the Fill price to equal to the price of the Execution Order');
+
+        }
+
+    }
+    
 });
