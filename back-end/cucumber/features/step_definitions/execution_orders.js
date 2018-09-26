@@ -39,7 +39,8 @@ async function generateExecutionOrders(amount, order_status, for_exchange) {
 
     const {
         ExecutionOrder,
-        Instrument
+        Instrument,
+        InstrumentExchangeMapping
     } = require('../../../models');
     const ccxtUtil = require('../../../utils/CCXTUtils');
 
@@ -61,7 +62,14 @@ async function generateExecutionOrders(amount, order_status, for_exchange) {
             symbol: markets.splice(_.random(0, amount - 1, false), markets.length - amount - 1)
         },
         raw: true,
-        limit: amount
+        limit: amount,
+        include: {
+            model: InstrumentExchangeMapping,
+            required: true,
+            where: {
+                exchange_id: for_exchange.id
+            }
+        }
     });
 
     let new_execution_orders = [];
