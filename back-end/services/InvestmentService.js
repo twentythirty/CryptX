@@ -246,6 +246,11 @@ const generateRecipeDetails = async (investment_run_id, strategy_type) => {
   [err, prices] = await to(AssetService.getBaseAssetPrices(), false);
   if (err) TE(err.message);
 
+  let deposit_assets;
+  [err, deposit_assets] = await to(AssetService.getDepositAssets());
+  if (err) TE(err.message);
+  let usd_deposit_asset = deposit_assets.find(a => a.is_deposit && !a.is_base);
+
   // find investment run with its investment deposit amounts.
   let investment_run;
   [err, investment_run] = await to(InvestmentRun.findOne({
@@ -310,13 +315,13 @@ const generateRecipeDetails = async (investment_run_id, strategy_type) => {
   let total_investment_usd = Decimal(0);
   let investment_size = investment_run.InvestmentAmounts;
   investment_size = investment_size.map(size => {
-    let base_price_usd = prices.find(price => price.id == size.asset_id);
     let value_usd;
 
-    if (!base_price_usd) { // not found if it's USD
+    if (size.asset_id === usd_deposit_asset.id) { // not found if it's USD
       value_usd = Decimal(parseFloat(size.amount));
       size.price_per_asset_usd = 1;
     } else {
+      let base_price_usd = prices.find(price => price.id == size.asset_id);
       value_usd = Decimal(parseFloat(size.amount)).mul(Decimal(parseFloat(base_price_usd.price)));
       size.price_per_asset_usd = parseFloat(base_price_usd.price);
     }
@@ -361,7 +366,7 @@ const generateRecipeDetails = async (investment_run_id, strategy_type) => {
         total_spent = total_spent.add(Decimal(base_spent));
       }
 
-      let usd = investment_size.find(s => s.asset_id == 1);
+      let usd = investment_size.find(s => s.asset_id == usd_deposit_asset.id);
 
       // if we didn't yet allocate enough base asset to buy required amount
       if (usd && total_spent.lt(should_spend) && usd.remaining_usd.gt(0)) {

@@ -134,7 +134,7 @@ module.exports.JOB_BODY = async (config, log) => {
         })
         .value();
 
-        log(`4. Saving ${market_data.length} fetched results...`);
+        log(`5. Saving ${market_data.length} fetched results...`);
 
         if (market_data.length > 0)
             return config.models.sequelize.queryInterface.bulkInsert('instrument_market_data', market_data);
