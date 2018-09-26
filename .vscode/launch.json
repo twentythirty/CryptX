@@ -19,6 +19,9 @@
       "request": "launch",
       "name": "Cucumber Tests",
       "program": "${workspaceFolder}/node_modules/cucumber/bin/cucumber-js",
+      "env": {
+        "NODE_ENV": "cucumber"
+      },
       "args": [
         "${workspaceFolder}/back-end/cucumber/features",
         "--exit"
