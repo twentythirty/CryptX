@@ -201,19 +201,15 @@ Given(/^the execution orders failed attempts count is (.*) system failure cap$/,
     this.job_config.fail_ids = _.map(this.current_execution_orders, 'id');
 });
 
-When('the FETCH_EXEC_OR_FILLS job runs until all of the orders are filled', async function () {
+When('the system does the task "fetch execution order information" until the Execution Orders are no longer InProgress', async function () {
 
     const models = require('../../../models');
     const job = require('../../../jobs/exec-order-fill-fetcher');
     const ccxtUtil = require('../../../utils/CCXTUtils');
 
-    const {
-        ExecutionOrder
-    } = models;
+    const { ExecutionOrder } = models;
 
-    const config = {
-        models
-    };
+    const config = { models };
 
     let execution_orders = this.current_execution_orders;
 
@@ -249,20 +245,33 @@ When('the FETCH_EXEC_OR_FILLS job runs until all of the orders are filled', asyn
 
     }
 
+    expect(tolerance).to.be.lessThan(50, 'Execution orders failed to fill up after 50 job cucles');
+
 });
 
-Then('Execution Order Fills are saved to the database', async function () {
+Then('an Execution Order Fill is created for each Trade fetched from the exchange', async function () {
 
     const {
         ExecutionOrder,
-        ExecutionOrderFill
+        Instrument,
+        ExecutionOrderFill,
+        Asset
     } = require('../../../models');
+
+    const CCXTUtils = require('../../../utils/CCXTUtils');
 
     const [execution_orders, fills] = await Promise.all([
         ExecutionOrder.findAll({
+            where: {
+                id: this.current_execution_orders.map(ex => ex.id)
+            },
+            include: Instrument,
             raw: true
         }),
         ExecutionOrderFill.findAll({
+            where: {
+                execution_order_id: this.current_execution_orders.map(ex => ex.id)
+            },
             raw: true
         })
     ]);
@@ -271,46 +280,23 @@ Then('Execution Order Fills are saved to the database', async function () {
 
         const order_fills = fills.filter(fill => fill.execution_order_id === order.id);
 
-        const expected_total_quantity = order_fills.reduce((prev, current) => {
-            return prev = prev + parseFloat(current.quantity)
-        }, 0);
+        const connector = await CCXTUtils.getConnector(order.exchange_id);
 
-        //For now lets round up the numbers, as js float may not be exactly accurate
-        expect(parseFloat(_.round(order.total_quantity, 12))).to.equal(_.round(expected_total_quantity, 12), 'Expected fills total sum to equal to execution roder total quantity');
+        let trades = await connector.fetchMyTrades(order['Instrument.symbol'], Date.now() - 1000000);
+        trades = trades.filter(trade => trade.order === order.external_identifier);
 
-        const expected_fee = order_fills.reduce((prev, current) => {
-            return prev = prev + parseFloat(current.fee)
-        }, 0);
+        expect(order_fills.length).to.equal(trades.length, 'Expected the number of order fill entries to equal to the number of trades on the exchange');
 
-        expect(parseFloat(_.round(order.fee, 12))).to.equal(_.round(expected_fee, 12), 'Expected the execution order fee to equal sum of fill fees');
-
-        const expected_order_price = order_fills.reduce((prev, current) => {
-            return prev = prev + parseFloat(current.price)
-        }, 0) / (order_fills.length);
-
-        expect(parseFloat(_.round(order.price, 12))).to.equal(_.round(expected_order_price, 12), 'Expected the price to equalthe average price of fills');
     }
-
-});
-
-Then('the Execution Order Fills have matching fee Asset ids and symbols', async function () {
-
-    const {
-        Asset,
-        ExecutionOrderFill
-    } = require('../../../models');
-
-    const fills = await ExecutionOrderFill.findAll({
-        raw: true
-    });
 
     const assets = await Asset.findAll({
         where: {
             id: fills.map(fill => fill.fee_asset_id)
-        }
+        },
+        raw: true
     });
 
-    expect(asset.length).to.be.greaterThan(0, 'Expected to find matching fee assets for fills');
+    expect(assets.length).to.be.greaterThan(0, 'Expected to find matching fee assets for fills');
 
     for (let fill of fills) {
 
@@ -320,17 +306,114 @@ Then('the Execution Order Fills have matching fee Asset ids and symbols', async 
 
     }
 
+    this.current_execution_orders = execution_orders;
+    this.current_execution_order_fills = fills;
+
 });
 
-Then('The Execution Orders statuses become FullyFilled', async function () {
+Then('the Execution Order fee and total quantity will equal the sum of fees and quantities of Execution Order Fills', function() {
+
+    for(let order of this.current_execution_orders) {
+
+        const order_fills = this.current_execution_order_fills.filter(fill => fill.execution_order_id === order.id);
+
+        const expected_values = order_fills.reduce((acc, fill) => {
+            return acc = Object.assign(acc, {
+                fee: acc.fee.plus(fill.fee),
+                total_quantity: acc.total_quantity.plus(fill.quantity)
+            });
+        }, { fee: Decimal(0), total_quantity: Decimal(0) });
+
+        expect(Decimal(order.fee).toPrecision(10)).to.equal(expected_values.fee.toPrecision(10), 'Expected the Execution Order fee to equal to sum of Fill fees');
+        expect(Decimal(order.total_quantity).toPrecision(10)).to.equal(expected_values.total_quantity.toPrecision(10), 'Expected the Execution Order total quantity to equal to sum of Fill quantities');
+
+    };
+
+});
+
+Then('the Execution Order price will equal to the weighted average of Fill prices', function() {
+
+    for(let order of this.current_execution_orders) {
+
+        const order_fills = this.current_execution_order_fills.filter(fill => fill.execution_order_id === order.id);
+
+        let expected_price = order_fills.reduce((acc, fill) => {
+            return acc = Object.assign(acc, {
+                price_sum: acc.price_sum.plus(Decimal(fill.price).mul(fill.quantity)),
+                quantity: acc.quantity.plus(fill.quantity)
+            });
+        }, { price_sum: Decimal(0), quantity: Decimal(0) });
+
+        expected_price = expected_price.price_sum.div(expected_price.quantity);
+
+        expect(Decimal(order.price).toPrecision(10)).to.equal(expected_price.toPrecision(10), 'Expectedt he Execution Order price to equal to the weighted average prices of Fills');
+        
+    };
+
+});
+
+Then('an Action Log is created for each new Execution Order Fill', async function() {
+
+    const { ActionLog } = require('../../../models');
+
+    let logs = await ActionLog.findAll({
+        where: {
+            execution_order_id: this.current_execution_orders.map(ex => ex.id),
+            translation_key: 'logs.execution_orders.generate_fill'
+        },
+        raw: true
+    });
+
+    expect(logs.length).to.equal(this.current_execution_order_fills.length, 'Expected the amount of logs related to Fill creation to equal the actual amount of Fills');
+
+    logs = logs.map(log => {
+        log.translation_args = JSON.parse(log.translation_args);
+        return log;
+    });
+
+    //Since logs don't store actual fill ids, lets just check that the amounts match
+    const log_quantity_sum = logs.reduce((acc, log) => {
+        return acc = acc.plus(log.translation_args.amount);
+    }, Decimal(0));
+
+
+    const expected_amount = this.current_execution_order_fills.reduce((acc, fill) => {
+        return acc = acc.plus(fill.quantity);
+    }, Decimal(0));
+
+    expect(log_quantity_sum.toPrecision(10)).to.equal(expected_amount.toPrecision(10), 'Expected the logged fill amount to equal the actuall fills amount');
+
+});
+
+Then('an Action Log is created for each FullyFilled Order', async function() {
+
+    const { ActionLog } = require('../../../models');
+
+    let logs = await ActionLog.findAll({
+        where: {
+            execution_order_id: this.current_execution_orders.map(ex => ex.id),
+            translation_key: 'logs.execution_orders.fully_filled'
+        },
+        raw: true
+    });
+
+    expect(logs.length).to.equal(this.current_execution_orders.length, 'Expected the amount of logs of fully filled order to equal the amount of FullyFilled Execution Orders');
+
+});
+
+Then(/^the Execution Orders status will be (.*)$/, async function (status) {
 
     const {
         ExecutionOrder
     } = require('../../../models');
 
-    const execution_orders = await ExecutionOrder.findAll();
+    const execution_orders = await ExecutionOrder.findAll({
+        where: { id: this.current_execution_orders.map(ex => ex.id) }
+    });
 
-    for (let order of execution_orders) expect(order.status).to.equal(EXECUTION_ORDER_STATUSES.FullyFilled, 'Expected the Execution order to be FullyFilled');
+    expect(execution_orders.length).to.be.greaterThan(0, 'Failed to find previously placed execution orders');
+
+    for (let order of execution_orders) expect(order.status).to.equal(EXECUTION_ORDER_STATUSES[status], `Expected the Execution order status to be ${status}`);
 
 });
 
