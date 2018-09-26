@@ -212,6 +212,23 @@ Given('the Execution Orders expire on the exchange before getting filled', funct
 
 });
 
+Given('the Exchange is unable to find the Execution Orders', async function() {
+
+    const { Exchange } = require('../../../models');
+    const CCXTUtils = require('../../../utils/CCXTUtils');
+    
+    const exchanges = await Exchange.findAll({ raw: true });
+
+    return Promise.all(exchanges.map(async exchange => {
+
+        const connector = await CCXTUtils.getConnector(exchange.api_id);
+
+        return connector.purgeOrders();
+
+    }));
+
+});
+
 When('the system does the task "fetch execution order information" until the Execution Orders are no longer in progress', async function () {
 
     const models = require('../../../models');
@@ -596,6 +613,16 @@ Then(/^Execution Orders with status (.*) will have (.*)$/, async function(status
                 break;
 
         }
+
+    }
+
+});
+
+Then('the Execution Order failed attempts will equal to the threshold specified in the system settings', function() {
+
+    for(let order of this.current_execution_orders) {
+
+        expect(order.failed_attempts).to.satisfy(greaterThanOrEqual(SYSTEM_SETTINGS.EXEC_ORD_FAIL_TOLERANCE));
 
     }
 

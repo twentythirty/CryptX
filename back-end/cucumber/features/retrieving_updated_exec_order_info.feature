@@ -26,3 +26,11 @@ Feature: Retrieving updated execution order information from exchanges
         Then the Execution Orders status will be NotFilled or PartiallyFilled
         And Execution Orders with status PartiallyFilled will have at least 1 Fill
         But Execution Orders with status NotFilled will have 0 Fills
+        
+    Scenario: execution orders fail after exceeding the the failed attempts threshold
+
+        Given the Pending Execution Orders are placed on the exchanges
+        But the Exchange is unable to find the Execution Orders
+        When the system does the task "fetch execution order information" until the Execution Orders are no longer in progress
+        Then the Execution Orders status will be NotFilled
+        And the Execution Order failed attempts will equal to the threshold specified in the system settings
