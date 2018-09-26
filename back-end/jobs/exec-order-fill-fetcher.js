@@ -562,7 +562,7 @@ module.exports.isSimulated = async (execuiton_id, sequelize) => {
 };
 
 const logError = async (log, placed_order, tag = '[ERROR]', when = '', error) => {
-    console.error(error);
+    console.error(JSON.stringify(error));
     const error_message = _.isObject(error) ? error.message : error;
 
     log(`${tag} Error occured during ${when}: ${error_message}`);
