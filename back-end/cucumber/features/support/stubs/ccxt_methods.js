@@ -219,13 +219,8 @@ module.exports.fetch_ticker = fetchTicker;
 async function fetchTickers(limit) {
 
     if(!this._tickers) this._createTickers();
-
-    let tickers = Object.values(this._tickers);
-
-    if(limit) tickers = tickers.slice(0, limit);
-
-    return tickers;
-
+    
+    return this._tickers;
 };
 module.exports.fetchTickers = fetchTickers;
 module.exports.fetch_tickers = fetchTickers;
