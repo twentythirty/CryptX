@@ -31,8 +31,6 @@ export class InstrumentInfoComponent extends DataTableCommonManagerComponent imp
   private cryptoSuffix: string;
 
   public exchanges: Array<any>;
-  public showDeleteExchangeMappingConfirm = false;
-  public exchangeMappingTemp: InstrumentExchangeMap;
   public loading: boolean;
   public noChanges = true;
 
@@ -100,10 +98,7 @@ export class InstrumentInfoComponent extends DataTableCommonManagerComponent imp
             return !row.isNew;
           },
           items: (row) => {
-            return [
-              // { id: '', name: 'Select' },
-              ...this.exchanges
-            ];
+            return this.exchanges;
           }
         },
         outputs: {
@@ -115,11 +110,8 @@ export class InstrumentInfoComponent extends DataTableCommonManagerComponent imp
             this.exchangesService.getExchangeInstrumentIdentifiers(row.exchange_id)
             .subscribe(res => {
               row.external_instrument_list = _.sortBy(res.identifiers);
-              // this.declareMappingTable();
               this.loading = false;
             });
-
-            this.checkMapping(row);
           }
         },
       }),
@@ -139,10 +131,9 @@ export class InstrumentInfoComponent extends DataTableCommonManagerComponent imp
             return !row.isNew;
           },
           items: (row) => {
-            if(!row.isNew) {
+            if (!row.isNew) {
               return [{ id: row.external_instrument, name: row.external_instrument }];
-            }
-            else {
+            } else {
               return [
                 ...(row.external_instrument_list || []).map(item => ({ id: item, name: item }))
               ];
@@ -252,16 +243,6 @@ export class InstrumentInfoComponent extends DataTableCommonManagerComponent imp
     );
   }
 
-  public getIdentifiers(row): void {
-    this.exchangesService.getExchangeInstrumentIdentifiers(row.exchange_id)
-    .subscribe(
-      res => {
-        if (res.success) {
-        }
-      }
-    );
-  }
-
   public deleteExchangeMapping(mapping) {
     if (mapping.isNew) {
       _.remove(this.mappingDataSource.body, item => _.isEqual(item, mapping) );
@@ -270,20 +251,12 @@ export class InstrumentInfoComponent extends DataTableCommonManagerComponent imp
     }
 
     this.canSave();
-    // this.exchangeMappingTemp = null;
-
-    // this.closeDeleteConfirm();
-
   }
 
   public undoExchangeMappingDeletion(mapping) {
     mapping.isDeleted = false;
 
     this.canSave();
-  }
-
-  public closeDeleteConfirm(): void {
-    this.showDeleteExchangeMappingConfirm = false;
   }
 
   public addNewMapping(): void {
@@ -320,14 +293,19 @@ export class InstrumentInfoComponent extends DataTableCommonManagerComponent imp
 
     this.instrumentsService.checkMapping(request).subscribe(
       res => {
-        if (res.success) {
-          Object.assign(row, res.mapping_data, { valid: true });
+        if (res.mapping_status) {
+          Object.assign(row, { valid: true });
         } else {
+          this.deleteObjectProps(row);
           Object.assign(row, new InstrumentExchangeMap() );
         }
         this.canSave();
       }
     );
+  }
+
+  private deleteObjectProps(obj) {
+    Object.keys(obj).map(key => { delete obj[key]; });
   }
 
   public saveMapping(ignoreDeleted: boolean = false): void {
@@ -347,6 +325,7 @@ export class InstrumentInfoComponent extends DataTableCommonManagerComponent imp
 
     this.loading = true;
 
+    console.log('save mapping');
     this.route.params.pipe(
       mergeMap(
         params => this.instrumentsService.addMapping(params['id'], request).pipe(

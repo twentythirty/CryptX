@@ -64,10 +64,12 @@ export function testFormControlForm(
     it('submit button should be enabled after component init', () => {
       expect(submitButton.hasAttribute('disabled')).toBe(false);
     });
+
     it('submit button should be enabled if form is invalid', () => {
       expect(formControl.invalid).toBe(true, 'form isint invalid');
       expect(submitButton.hasAttribute('disabled')).toBe(false, 'button isint enabled');
     });
+
     it('should mark all form controls as touched on submit button press', () => {
       click(submitButton);
 

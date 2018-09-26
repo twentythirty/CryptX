@@ -6,6 +6,8 @@ import { throwError, of, defer } from 'rxjs';
 import { Observable } from 'rxjs/Observable';
 import { routes } from '../config/routes/routes';
 import { FakeEmptyModule, FakeEmptyComponent } from './fake-empty.component';
+import { ComponentFixture } from '@angular/core/testing';
+import { By } from '@angular/platform-browser';
 
 /**
  * Helper function for stubbing service data
@@ -94,3 +96,45 @@ export const errorResponse = throwError({
     error: 'error message'
   }
 });
+
+
+
+
+/**
+ * function for ng-select option selecting in tests
+ */
+export function selectOption(fixture, key: KeyCode, index: number) {
+
+  triggerKeyDownEvent(getNgSelectElement(fixture), KeyCode.Space); // open
+  for (let i = 0; i < index; i++) {
+    triggerKeyDownEvent(getNgSelectElement(fixture), key);
+  }
+  triggerKeyDownEvent(getNgSelectElement(fixture), KeyCode.Enter); // select
+}
+
+export enum KeyCode {
+  Tab = 9,
+  Enter = 13,
+  Esc = 27,
+  Space = 32,
+  ArrowUp = 38,
+  ArrowDown = 40,
+  Backspace = 8
+}
+
+export function getNgSelectElement(fixture): DebugElement {
+  if (fixture.debugElement) {
+    return fixture.debugElement.query(By.css('ng-select'));
+  } else {
+    return fixture.query(By.css('ng-select'));
+  }
+}
+
+export function triggerKeyDownEvent(element: DebugElement, which: number, key = ''): void {
+  element.triggerEventHandler('keydown', {
+    which: which,
+    key: key,
+    preventDefault: () => { },
+    stopPropagation: () => { }
+  });
+}

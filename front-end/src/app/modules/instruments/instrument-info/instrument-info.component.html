@@ -33,11 +33,3 @@
     (click)="saveMapping()"
   >{{ 'common.save_changes' | translate }}</button>
 </app-form-action-bar>
-
-
-<app-confirm
-  *ngIf="showDeleteExchangeMappingConfirm"
-  [heading]="'exchanges.exchange_delete_confirm_msg' | translate" 
-  (onReject)="closeDeleteConfirm()"
-  (onConfirm)="deleteExchangeMapping($event)"
-></app-confirm>

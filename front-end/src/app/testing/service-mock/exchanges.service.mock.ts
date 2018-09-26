@@ -10,7 +10,20 @@ export const getAllExchangesData: ExchangesAllResponse = {
     {
       id: 2,
       name: 'Bitfinex'
+    },
+    {
+      id: 3,
+      name: 'Test value3'
+    },
+    {
+      id: 4,
+      name: 'Test value4'
     }
   ],
-  count: 2
+  count: 4
+};
+
+export const getExchangeInstrumentIdentifiersData = {
+  success: true,
+  identifiers: ['ADA/BNB', 'ADA/BTC', 'ADA/ETH', 'ADA/USDT']
 };

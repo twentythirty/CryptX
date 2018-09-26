@@ -31,7 +31,7 @@ export class InstrumentsGetResponse {
 
 export class CheckMappingResponse {
   success: boolean;
-  mapping_data: InstrumentExchangeMap;
+  mapping_status: boolean;
 }
 
 export class AddMappingResponse {

@@ -102,7 +102,6 @@ import { MarkAsTouchedDirective } from './directives/mark-as-touched.directive';
         ButtonRadioComponent,
         ActionLogComponent,
         MarkAsTouchedDirective,
-
     ],
     exports: [
         MatProgressSpinnerModule,
