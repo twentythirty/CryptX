@@ -256,7 +256,7 @@ module.exports.getInstrumentLiquidityRequirements = getInstrumentLiquidityRequir
 
 const getBaseAssetPrices = async function () {
   const ttl_threshold = SYSTEM_SETTINGS.BASE_ASSET_PRICE_TTL_THRESHOLD;
-
+  
   let [err, prices] = await to(sequelize.query(`
   SELECT id, prices.symbol as symbol, AVG(prices.price) as price
   FROM
