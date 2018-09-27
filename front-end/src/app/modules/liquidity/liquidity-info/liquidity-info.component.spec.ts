@@ -40,9 +40,9 @@ describe('LiquidityInfoComponent', () => {
     component = fixture.componentInstance;
     liquidityService = fixture.debugElement.injector.get(LiquidityService);
     getLiquidityRequirementSpy = spyOn (liquidityService, 'getExchanges').and.returnValue(
-      fakeAsyncResponse(getLiquidityData));
-    getLiquidityExchangesSpy = spyOn (liquidityService, 'getLiquidity').and.returnValue(
       fakeAsyncResponse(getExchangesData));
+    getLiquidityExchangesSpy = spyOn (liquidityService, 'getLiquidity').and.returnValue(
+      fakeAsyncResponse(getLiquidityData));
 
     fixture.detectChanges();
   });

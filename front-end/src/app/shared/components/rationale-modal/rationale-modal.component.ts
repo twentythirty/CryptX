@@ -25,7 +25,7 @@ export class RationaleModalComponent implements OnInit {
   }
 
   public submit(): void {
-    if (this.form.valid) {
+    if (this.form.valid && this.form.controls.rationale.value.trim().length > 0 ) {
       this.screen = 'SUCCESS';
       this.finish();
     } else {
