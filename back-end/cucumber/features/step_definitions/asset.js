@@ -58,6 +58,42 @@ Given('the system has only WhiteListed Assets', function () {
 
 });
 
+Given(/^the system has some (.*) Assets$/, async function(type) {
+
+    const type_map = {
+        Blacklisted: INSTRUMENT_STATUS_CHANGES.Blacklisting,
+        Whitelisted: INSTRUMENT_STATUS_CHANGES.Whitelisting,
+        Greylisted: INSTRUMENT_STATUS_CHANGES.Graylisting
+    };
+
+    const { Asset, AssetStatusChange, sequelize } = require('../../../models');
+
+    const amount = _.random(2, 5, false);
+
+    let assets = await sequelize.query(queryAssetByType(type_map[type], amount), { model: Asset });
+
+    if(assets.length === amount) return;
+ 
+    assets = await Asset.findAll({
+        where: {
+            is_base: false, is_deposit: false
+        },
+        raw: true,
+        limit: amount
+    });
+
+    return AssetStatusChange.bulkCreate(assets.map(asset => {
+        return {
+            asset_id: asset.id,
+            comment: type,
+            user_id: World.users.compliance_manager.id,
+            timestamp: Date.now(),
+            type: type_map[type]
+        };
+    }));
+
+});
+
 Given(/^the system has Asset Market Capitalization for the last (.*) hours$/, {
     timeout: 15000
 }, async function (hours) {
@@ -280,12 +316,31 @@ When('retrieve a list of Assets', function() {
 
 });
 
-When(/^I (.*) an Asset$/, async function (action) {
+When(/^I select a (.*) Asset$/, async function(type) {
+
+    const type_map = {
+        Blacklisted: INSTRUMENT_STATUS_CHANGES.Blacklisting,
+        Whitelisted: INSTRUMENT_STATUS_CHANGES.Whitelisting,
+        Greylisted: INSTRUMENT_STATUS_CHANGES.Graylisting
+    };
+
+    const { Asset, AssetStatusChange, sequelize } = require('../../../models');
+
+    const [ asset ] = await sequelize.query(queryAssetByType(type_map[type], 1), { model: Asset })
+
+    expect(asset, 'Expected to find a Greylisted asset').to.be.not.null;
+
+    this.current_asset = asset;
+
+});
+
+When(/^I (.*) (the|an|any) Asset$/, async function (action, pointer) {
 
     const action_map = {
         Blacklist: INSTRUMENT_STATUS_CHANGES.Blacklisting,
         Whitelist: INSTRUMENT_STATUS_CHANGES.Whitelisting,
-        Greylist: INSTRUMENT_STATUS_CHANGES.Greylist
+        Greylist: INSTRUMENT_STATUS_CHANGES.Graylisting,
+        Degreylist: INSTRUMENT_STATUS_CHANGES.Whitelisting
     };
 
     const status = action_map[action];
@@ -294,13 +349,27 @@ When(/^I (.*) an Asset$/, async function (action) {
         Asset
     } = require('../../../models');
 
-    let asset = await Asset.findOne({
-        where: {
-            is_base: false,
-            is_deposit: false
-        },
-        raw: true
-    });
+    let asset;
+
+    switch(pointer) {
+
+        case 'the':
+            asset = this.current_asset;
+            break;
+
+        case 'an':
+        case 'any':
+        default: 
+            asset = await Asset.findOne({
+                where: {
+                    is_base: false,
+                    is_deposit: false
+                },
+                raw: true
+            });
+            break;
+
+    }
 
     this.current_asset = asset;
 
@@ -482,7 +551,8 @@ Then('a new Asset Status Change entry is saved to the database with the correct 
         where: {
             asset_id: this.current_asset.id
         },
-        raw: true
+        raw: true,
+        order: [ [ 'timestamp', 'DESC' ] ]
     });
 
     expect(asset_status_change.type).to.equal(this.current_action, 'Expected asset status change type to equal the one that was previously selected');
@@ -526,15 +596,33 @@ Then('I can see the new status and history by getting the Asset details', functi
 
 });
 
-Then('I cannot Blacklist an Asset which is already Blacklisted', function () {
+Then(/^I cannot (.*) an Asset which is already (.*)$/, async function (action, type) {
+
+    const type_map = {
+        Blacklisted: INSTRUMENT_STATUS_CHANGES.Blacklisting,
+        Whitelisted: INSTRUMENT_STATUS_CHANGES.Whitelisting,
+        Greylisted: INSTRUMENT_STATUS_CHANGES.Graylisting,
+        Degreylisted: INSTRUMENT_STATUS_CHANGES.Whitelisting
+    };
+
+    const action_map = {
+        Blacklist: INSTRUMENT_STATUS_CHANGES.Blacklisting,
+        Whitelist: INSTRUMENT_STATUS_CHANGES.Whitelisting,
+        Greylist: INSTRUMENT_STATUS_CHANGES.Graylisting,
+        Degreylist: INSTRUMENT_STATUS_CHANGES.Whitelisting
+    };
+
+    const { Asset, AssetStatusChange, sequelize } = require('../../../models');
+
+    const [ asset ] = await sequelize.query(queryAssetByType(type_map[type], 1), { model: Asset });
 
     return chai
         .request(this.app)
-        .post(`/v1/assets/${this.current_status_change.asset_id}/change_status`)
+        .post(`/v1/assets/${asset.id}/change_status`)
         .set('Authorization', World.current_user.token)
         .send({
             comment: this.current_rationale,
-            type: this.current_action
+            type: action_map[action]
         })
         .catch(result => {
 
@@ -690,3 +778,16 @@ Then('a new Asset Status Change entry is not created', async function() {
     expect(status_change, 'Expected a new status change in the database').to.be.null;
 
 });
+
+const queryAssetByType = (type, limit = 1) => {
+    return `
+        WITH newest_statuses AS (
+            SELECT DISTINCT ON(asset_id) asset_id, "timestamp", "type" FROm asset_status_change
+            ORDER BY asset_id, "timestamp" DESC
+        )
+        SELECT * FROM asset AS a
+        JOIN newest_statuses AS n ON n.asset_id = a.id
+        WHERE "type" = ${type}
+        LIMIT ${limit}
+    `
+};
