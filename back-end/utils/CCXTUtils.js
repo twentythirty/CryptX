@@ -82,7 +82,7 @@ const cache_init_promise = async () => {
 }
 
 
-const from_exchange_data = async (map_id, map_api, exchange_data) => {
+const from_exchange_data = async (map_id, map_api, exchange_data, resolve_markets = true) => {
 
     //ensure cache loaded
     if (_.isEmpty(map_id) || _.isEmpty(map_api)) {
@@ -112,7 +112,7 @@ const from_exchange_data = async (map_id, map_api, exchange_data) => {
         }
     }
 
-    if (connector != null) {
+    if (connector != null && resolve_markets) {
 
         if (connector.markets_loaded) {
             return connector;
@@ -147,7 +147,7 @@ const from_exchange_data = async (map_id, map_api, exchange_data) => {
 
         return connector;
     } else {
-        return null;
+        return connector;
     }
 }
 
@@ -180,7 +180,7 @@ module.exports.getConnector = getConnector;
   * @param { String | Number | Object } exchange_data - An identifying piece of exchange data, such as exchange id, exchange api_id or full exchange object  
  */
 const getThrottle = async (exchange_data) => {
-    return await from_exchange_data(lim_by_id, lim_by_api, exchange_data);
+    return await from_exchange_data(lim_by_id, lim_by_api, exchange_data, false);
 }
 module.exports.getThrottle = getThrottle;
 
