@@ -56,6 +56,12 @@ app.use(bodyParser.urlencoded({
 //Passport
 app.use(passport.initialize());
 
+app.use(async (req, res, next) => { 
+    await dbPromise; // postpone requests until promise is resolved
+
+    next();
+});
+
 // CORS
 app.use(function (req, res, next) {
     // Website you wish to allow to connect
