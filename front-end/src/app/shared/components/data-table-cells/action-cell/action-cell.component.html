@@ -1,8 +1,13 @@
 <ng-container *ngFor="let action of actions">
-  <div *ngIf="action.label">
-    <label class="rationale-status" *ngIf="action.isShown(row)" (click)="doAction(action, $event)">{{ action.label }}</label>
-  </div>
-  <div *ngIf="!action.label">
-    <label class="action-button" *ngIf="action.isShown(row)" (click)="doAction(action, $event)"><img [src]="image"></label>
-  </div>
+  <ng-container *ngIf="action.label">
+    <label *ngIf="action.isShown(row)" class="rationale-status" (click)="doAction(action, $event)">{{ action.label }}</label>
+  </ng-container>
+  <ng-container *ngIf="!action.label">
+    <label
+      *ngIf="action.isShown(row)"
+      class="action-button"
+      [ngClass]="action.className"
+      (click)="doAction(action, $event)"
+    ></label>
+  </ng-container>
 </ng-container>

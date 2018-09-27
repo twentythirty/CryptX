@@ -8,11 +8,24 @@ import { environment } from '../../../environments/environment';
 import { EntitiesFilter } from '../../shared/models/api/entitiesFilter';
 import { TranslateService } from '@ngx-translate/core';
 import { ActionLog } from '../../shared/models/actionLog';
+import { Conversion } from '../../shared/models/conversion';
 
 export class ExecutionOrderFillResultData {
   success: boolean;
   execution_order: any;
   action_logs: Array<ActionLog>;
+}
+
+export class ConversionsAllResponse {
+  success: boolean;
+  conversions: Array<Conversion>;
+  footer: Array<any>;
+  count: number;
+}
+
+export class ConversionCompleteResponse {
+  success: boolean;
+  conversion: Conversion;
 }
 
 
@@ -321,6 +334,14 @@ export class InvestmentService {
     });
 
     return data;
+  }
+
+  getAllConversions(recipeId: number, requestData?: EntitiesFilter): Observable<ConversionsAllResponse> {
+    return this.http.post<ConversionsAllResponse>(this.baseUrl + `conversions/of_recipe/${recipeId}`, requestData);
+  }
+
+  completeAssetConversion(conversionId: number, amount: number): Observable<ConversionCompleteResponse> {
+    return this.http.post<ConversionCompleteResponse>(this.baseUrl + `/conversions/${conversionId}/complete`, { amount: amount});
   }
 
 }

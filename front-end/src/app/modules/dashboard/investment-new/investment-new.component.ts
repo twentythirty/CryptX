@@ -193,9 +193,9 @@ export class InvestmentNewComponent extends DataTableCommonManagerComponent impl
     }
 
     // Get table data
-    _.set(this.requestData, 'filter.status', ['assets.status.401', 'assets.status.402']); 
+    _.set(this.requestData, 'filter.status', ['assets.status.401', 'assets.status.402']);
     _.set(this.requestData, 'order[0]', { by: 'capitalization', order: 'desc' });
-    
+
     this.investmentService.getAssetMix(this.assetGroup, this.requestData).subscribe (
       res => {
         if (res.success) {

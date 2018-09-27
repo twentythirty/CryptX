@@ -111,6 +111,7 @@ export class DepositInfoComponent implements OnInit {
               actions: [
                 new DataCellAction({
                   label: '',
+                  className: 'highlighted ico-check-mark',
                   isShown: (row: any) => true,
                   exec: (row: any) => {
                     this.showModal = true;

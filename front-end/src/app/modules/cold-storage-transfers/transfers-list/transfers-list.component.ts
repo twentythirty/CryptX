@@ -1,13 +1,13 @@
 import { Component, OnInit } from '@angular/core';
-import { ActivatedRoute, Router } from "@angular/router";
+import { ActivatedRoute, Router } from '@angular/router';
 import { finalize } from 'rxjs/operators';
 
-import { DataTableCommonManagerComponent } from "../../../shared/components/data-table-common-manager/data-table-common-manager.component";
-import { TableDataSource, TableDataColumn } from "../../../shared/components/data-table/data-table.component";
-import { NumberCellDataColumn, StatusCellDataColumn, DateCellDataColumn, ActionCellDataColumn, DataCellAction } from "../../../shared/components/data-table-cells/index";
-import { StatusClass } from "../../../shared/models/common";
-import { ColdStorageService } from "../../../services/cold-storage/cold-storage.service";
-import { Transfer } from "../../../shared/models/transfer";
+import { DataTableCommonManagerComponent } from '../../../shared/components/data-table-common-manager/data-table-common-manager.component';
+import { TableDataSource, TableDataColumn } from '../../../shared/components/data-table/data-table.component';
+import { NumberCellDataColumn, StatusCellDataColumn, DateCellDataColumn, ActionCellDataColumn, DataCellAction } from '../../../shared/components/data-table-cells/index';
+import { StatusClass } from '../../../shared/models/common';
+import { ColdStorageService } from '../../../services/cold-storage/cold-storage.service';
+import { Transfer } from '../../../shared/models/transfer';
 
 @Component({
   selector: 'app-transfers-list',
@@ -69,9 +69,10 @@ export class TransfersListComponent extends DataTableCommonManagerComponent impl
       actions: [
         new DataCellAction({
           label: '',
+          className: 'highlighted ico-check-mark',
           isShown: row => row.status === 'cold_storage_transfers.status.91',
           exec: (row: any) => {
-            this.modalShow= true;
+            this.modalShow = true;
             this.selectedTransfer = row;
           }
         })
@@ -103,35 +104,35 @@ export class TransfersListComponent extends DataTableCommonManagerComponent impl
         this.count = res.count;
         this.getFilterLOV();
       }
-    )
+    );
   }
 
   getFilterLOV(): void {
     this.transfersDataSource.header.filter(
-      col => ['asset', 'status', 'source_account', 'source_exchange', 'strategy_type', 'custodian','cold_storage_account_id' ].includes(col.column)
+      col => ['asset', 'status', 'source_account', 'source_exchange', 'strategy_type', 'custodian', 'cold_storage_account_id'].includes(col.column);
     ).map(
       col => {
         col.filter.rowData$ = this.coldStorageService.getAllTransfersHeaderLOV(col.column);
       }
-    )
+    );
   }
 
-  confirm(){
+  confirm() {
     this.isTableLoading = true;
     this.coldStorageService.confirmTransfer(this.selectedTransfer).subscribe(
       res => {
-        if (res.success){
+        if (res.success) {
           this.getAllData();
         }
       }, error => {
           console.log('Error', error);
         }
-    )
+    );
     this.modalShow = false;
   }
 
-  hideConfirm(){
-    this.modalShow=false;
+  hideConfirm() {
+    this.modalShow = false;
   }
 
   openRow(transfer: Transfer): void {

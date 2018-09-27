@@ -7,13 +7,11 @@ import { StatusClass } from '../../../shared/models/common';
 import {
   TimelineDetailComponent,
   SingleTableDataSource,
-  TagLineItem,
   ITimelineDetailComponent
 } from '../timeline-detail/timeline-detail.component';
 import { TimelineEvent } from '../../../shared/components/timeline/timeline.component';
 import { TableDataSource, TableDataColumn } from '../../../shared/components/data-table/data-table.component';
 import {
-  DateCellDataColumn,
   StatusCellDataColumn,
   DataCellAction,
   ActionCellDataColumn,
@@ -32,7 +30,7 @@ export class DepositDetailComponent extends TimelineDetailComponent implements O
    * 1. Implement attributes to display titles
    */
   public pageTitle = 'Recipe run';
-  public singleTitle = 'Recipe run';
+  public singleTitle = 'Currency conversion';
   public listTitle = 'Deposits';
 
   /**
@@ -42,41 +40,44 @@ export class DepositDetailComponent extends TimelineDetailComponent implements O
 
   public singleDataSource: SingleTableDataSource = {
     header: [
-      { column: 'id', nameKey: 'table.header.id' },
-      { column: 'created_timestamp', nameKey: 'table.header.creation_time' },
-      { column: 'user_created', nameKey: 'table.header.creator' },
-      { column: 'approval_status', nameKey: 'table.header.status' },
-      { column: 'approval_user', nameKey: 'table.header.decision_by' },
-      { column: 'approval_timestamp', nameKey: 'table.header.decision_time' },
-      { column: 'approval_comment', nameKey: 'table.header.rationale' },
+      { column: 'investment_currency', nameKey: 'table.header.investment_currency' },
+      { column: 'investment_amount', nameKey: 'table.header.investment_amount' },
+      { column: 'target_currency', nameKey: 'table.header.target_currency' },
+      { column: 'converted_amount', nameKey: 'table.header.converted_amount' },
+      { column: 'status', nameKey: 'table.header.status' },
+      { column: '', nameKey: 'table.header.actions' },
     ],
     body: null
   };
 
   public singleColumnsToShow: Array<TableDataColumn> = [
-    new TableDataColumn({ column: 'id' }),
-    new DateCellDataColumn({ column: 'created_timestamp' }),
-    new TableDataColumn({ column: 'user_created' }),
-    new StatusCellDataColumn({ column: 'approval_status', inputs: { classMap: {
-      'recipes.status.41' : StatusClass.PENDING,
-      'recipes.status.42': StatusClass.REJECTED,
-      'recipes.status.43': StatusClass.APPROVED,
+    new TableDataColumn({ column: 'investment_currency' }),
+    new NumberCellDataColumn({ column: 'investment_amount' }),
+    new TableDataColumn({ column: 'target_currency' }),
+    new NumberCellDataColumn({ column: 'converted_amount' }),
+    new StatusCellDataColumn({ column: 'status', inputs: { classMap: {
+      'asset_conversions.status.501' : StatusClass.PENDING,
+      'asset_conversions.status.502': StatusClass.APPROVED,
     }}}),
-    new TableDataColumn({ column: 'approval_user' }),
-    new DateCellDataColumn({ column: 'approval_timestamp' }),
-    new ActionCellDataColumn({ column: 'approval_comment', inputs: {
-      actions: [
-        new DataCellAction({
-          label: 'READ',
-          exec: (row: any) => {
-            this.showReadModal({
-              title: 'Rationale',
-              content: row.approval_comment
-            });
-          }
-        })
-      ]
-    }}),
+    new ActionCellDataColumn({
+      column: null,
+      inputs: {
+        actions: [
+          new DataCellAction({
+            label: '',
+            className: 'ico-pencil',
+            isShown: (row: any) => true,
+            exec: (row: any) => {}
+          }),
+          new DataCellAction({
+            label: '',
+            className: 'highlighted ico-check-mark',
+            isShown: (row: any) => true,
+            exec: (row: any) => this.completeConversion(row.id, row.converted_amount)
+          }),
+        ]
+      }
+    }),
   ];
 
 
@@ -134,18 +135,14 @@ export class DepositDetailComponent extends TimelineDetailComponent implements O
   public getSingleData(): void {
     this.route.params.pipe(
       mergeMap(
-        params => this.investmentService.getSingleRecipe(params['id'])
+        params => this.investmentService.getAllConversions(params['id'])
       )
     ).subscribe(
       res => {
-        if (res.recipe_run) {
-          this.singleDataSource.body = [ res.recipe_run ];
-        }
-        if (res.recipe_stats) {
-          this.setTagLine(
-            res.recipe_stats.map(o => new TagLineItem(`${o.count} ${o.name}`))
-          );
-        }
+        Object.assign(this.singleDataSource, {
+          body: res.conversions,
+          footer: res.footer
+        });
       },
       err => this.singleDataSource.body = []
     );
@@ -194,6 +191,15 @@ export class DepositDetailComponent extends TimelineDetailComponent implements O
 
   public openListRow(row: any): void {
     this.router.navigate(['/deposits/view', row.id]);
+  }
+
+  completeConversion(conversionId: number, amount: number) {
+    this.investmentService.completeAssetConversion(conversionId, amount)
+    .subscribe(
+      res => {
+
+      }
+    );
   }
 
 

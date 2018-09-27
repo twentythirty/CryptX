@@ -1,12 +1,11 @@
-declare function require(path: string);
-
 import { Component, OnInit, Input, Output, EventEmitter } from '@angular/core';
 import { TableDataColumn } from '../../data-table/data-table.component';
 
 export class DataCellAction {
   label: string;
-  isShown?: (row: any) => boolean = (row) => true;
+  className?: string;
   exec: (row: any) => void;
+  isShown?: (row: any) => boolean = (row) => true;
 
   constructor(val: DataCellAction) {
     Object.assign(this, val);
@@ -34,8 +33,6 @@ export class ActionCellDataColumn extends TableDataColumn {
   styleUrls: ['./action-cell.component.scss']
 })
 export class ActionCellComponent implements OnInit {
-  image = require('Images/action-true.svg');
-
   @Input() value: any;
   @Input() row: any;
 

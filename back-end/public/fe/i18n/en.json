@@ -113,7 +113,9 @@
       "equivalent_in_usd": "Equivalent in usd",
       "deposit_currency": "Deposit currency",
       "deposit_amount": "Deposit amount",
-      "investment_amount": "Investment amount"
+      "investment_amount": "Investment amount",
+      "target_currency": "Target currency",
+      "converted_amount": "Converted amount"
     },
     "filter": {
       "all": "All",
