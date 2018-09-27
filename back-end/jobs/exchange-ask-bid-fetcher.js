@@ -41,11 +41,18 @@ module.exports.JOB_BODY = async (config, log) => {
         return Promise.all(
             _.map(exchanges_with_mappings, async (exchange) => {
 
-                const fetcher = await ccxtUtils.getConnector(exchange.api_id);
-                const throttle = await ccxtUtils.getThrottle(exchange.api_id);
+                let [err, con_result] = await to(Promise.all([
+                    ccxtUtils.getConnector(exchange.api_id),
+                    ccxtUtils.getThrottle(exchange.api_id)
+                ]));
+                if (err) {
+                    log(`Failed to get exchange connector for ${exchange.api_id}. Error: ${err.message}`);
+                    return [];
+                }
+                let [fetcher, throttle] = con_result;
 
                 let mappings = associatedMappings[exchange.id];
-                let needed_ticker_data;
+                let needed_ticker_data = [];
                 
                 if (fetcher.has.fetchTickers) { 
                     // fetch instrument market data all at once
@@ -53,12 +60,11 @@ module.exports.JOB_BODY = async (config, log) => {
                     
                     let [err, all_ticker_data] = await to(fetcher.fetchTickers()); // fetch all instrument data
 
-                    if (err) {
-                        log(`Failed to fetch market data from ${exchange.name}`);
-
-                        needed_ticker_data = _.map(mappings, mapping => [null, mapping]);
+                    if (err || _.isUndefined(all_ticker_data)) {
+                        if (err) log(`Failed to fetch market data from ${exchange.name}, error: `, err.message);
+                        else log(`Market data fetching request completed but response was empty for ${exchange.name}`);
                     }
-
+                    
                     needed_ticker_data = _.map(mappings, mapping => { // check if received all data and return it
                         if (!all_ticker_data.hasOwnProperty(mapping.external_instrument_id)) { // no instrument found in data
                             log(`Market data from ${exchange.name} didn't include data for ${mapping.external_instrument_id}`);
@@ -100,8 +106,11 @@ module.exports.JOB_BODY = async (config, log) => {
                         let [ticker, mapping] = failed_instrument;
 
                         let failed_prices = [];
-                        if (!_.isNumber(ticker.ask)) failed_prices.push('ask');
-                        if (!_.isNumber(ticker.bid)) failed_prices.push('bid');
+                        if (!ticker) failed_prices.push('ask', 'bid'); 
+                        else {
+                            if (!_.isNumber(ticker.ask)) failed_prices.push('ask');
+                            if (!_.isNumber(ticker.bid)) failed_prices.push('bid');
+                        }
 
                         return logAction(actions.instrument_without_data, { 
                             args: {
