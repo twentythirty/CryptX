@@ -136,7 +136,7 @@ const generateRecipeRunDeposits = async function (recipe_run_id) {
   
   if(err) TE(err.message);
 
-  logAction('deposits.generate', { 
+  await logAction('deposits.generate', { 
     args: {
       amount: deposits.length,
       recipe_id: recipe_run.id
@@ -204,7 +204,7 @@ const approveDeposit = async (deposit_id, user_id) => {
   [ err, deposit ] = await to(deposit.save());
   if(err) TE(err.message);
 
-  logAction('deposits.completed', { relations: { recipe_run_deposit_id: deposit.id } });
+  await logAction('deposits.completed', { relations: { recipe_run_deposit_id: deposit.id } });
 
   let left_deposits;
   [err, left_deposits] = await to(RecipeRunDeposit.findAll({

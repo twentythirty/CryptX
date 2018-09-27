@@ -165,7 +165,7 @@ const removeInstrumentExchangeMapping = async (req, res) => {
   if(err) return ReE(res, err.message, 422);
   if(!mapping) return ReE(res, `Instrument exchange mappign with instrument id "${instrument_id}" and exchange id "${exchange_id}" was not found.`, 404);
 
-  user.logAction('instruments.mapping_removed', { 
+  await user.logAction('instruments.mapping_removed', { 
     args: {
       identifier: mapping.external_instrument_id,
       exchange: mapping.Exchange.name,

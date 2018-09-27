@@ -142,7 +142,7 @@ module.exports.JOB_BODY = async (config, log) => {
         log(`5. Placing order to ${exchange.api_id}. Instrument symbol: ${instrument_exchange_map.external_instrument_id}, type: ${order_type}, side: ${order_execution_side}, amount: ${order.total_quantity}`);
         /*  later on when we'll introduce other order types this can be changed to just function for placing orders */
         return exchange.createMarketOrder(instrument_exchange_map.external_instrument_id, order_execution_side, order)
-        .then(order_response => {
+        .then(async order_response => {
           log(`5a. Successfully received order placement response from exchange`);
           order.external_identifier = order_response.id;
           /* as actual timestamps in exchanges might be lower than ones we get with response, we make our timestamp smaller. 
@@ -151,17 +151,17 @@ module.exports.JOB_BODY = async (config, log) => {
           order.placed_timestamp = timestamp;
           order.status = EXECUTION_ORDER_STATUSES.InProgress;
 
-          order.save().then(o => {
-            logAction(actions.placed, {
-              args: { exchange: exchange.name },
-              relations: { execution_order_id: order.id }
-            });
+          await order.save();
+
+          await logAction(actions.placed, {
+            args: { exchange: exchange.name },
+            relations: { execution_order_id: order.id }
           });
           
           return order_with_data;
-        }).catch((err) => { // order placing failed. Perform actions below.
+        }).catch(async (err) => { // order placing failed. Perform actions below.
           log(err_message = `[WARN.5b]. Order placement to exchange failed. Error message: ${err}`);
-          logAction(actions.error, {
+          await logAction(actions.error, {
             args: { error: err },
             relations: { execution_order_id: order.id }
           });

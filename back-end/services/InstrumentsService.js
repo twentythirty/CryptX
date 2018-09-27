@@ -185,8 +185,8 @@ const addInstrumentExchangeMappings = async (instrument_id, exchange_mappings, u
             instrument_id
         }
     };
-    if (user) user.logAction('instrument_exchange_mappings.add_and_remove', log_options);
-    else logAction('instrument_exchange_mappings.add_and_remove', log_options);
+    if(user) await user.logAction('instrument_exchange_mappings.add_and_remove', log_options);
+    else await logAction('instrument_exchange_mappings.add_and_remove', log_options);
 
     return saved_models;
 };

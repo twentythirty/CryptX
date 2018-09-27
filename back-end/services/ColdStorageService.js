@@ -127,8 +127,8 @@ const changeTransferStatus = async (transfer_id, status, user = null) => {
         }
     };
 
-    if(user) user.logAction('modified', log_options);
-    else logAction('modified', log_options);
+    if(user) await user.logAction('modified', log_options);
+    else await logAction('modified', log_options);
     
     return transfer;
 

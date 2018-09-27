@@ -26,7 +26,7 @@ module.exports.JOB_BODY = async (config, log) => {
 
         if(err) {
             log(`[ERROR.2A]: ${err.message}`);
-            logAction(actions.error, {
+            await logAction(actions.error, {
                 args: { error: err.message },
                 log_level: ACTIONLOG_LEVELS.Error
             });
@@ -71,7 +71,7 @@ module.exports.JOB_BODY = async (config, log) => {
 
         if(err) {
             log(`[ERROR.3A]: ${err.message}`);
-            logAction(actions.error, {
+            await logAction(actions.error, {
                 args: { error: err.message },
                 log_level: ACTIONLOG_LEVELS.Error
             });
@@ -104,7 +104,7 @@ module.exports.JOB_BODY = async (config, log) => {
         
         if(!records.length) {
             log(`[WARN.4A]: Job received 0 records.`);
-            logAction(actions.warning, {
+            await logAction(actions.warning, {
                 args: { warning: 'Job received 0 records' },
                 log_level: ACTIONLOG_LEVELS.Warning
             });
@@ -116,7 +116,7 @@ module.exports.JOB_BODY = async (config, log) => {
 
         if(err) {
             log(`[ERROR.4A]: ${err.message}`);
-            logAction(actions.error, {
+            await logAction(actions.error, {
                 args: { error: err.message },
                 log_level: ACTIONLOG_LEVELS.Error
             });
