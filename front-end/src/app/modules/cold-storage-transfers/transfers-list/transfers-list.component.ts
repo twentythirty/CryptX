@@ -109,7 +109,7 @@ export class TransfersListComponent extends DataTableCommonManagerComponent impl
 
   getFilterLOV(): void {
     this.transfersDataSource.header.filter(
-      col => ['asset', 'status', 'source_account', 'source_exchange', 'strategy_type', 'custodian', 'cold_storage_account_id'].includes(col.column);
+      col => ['asset', 'status', 'source_account', 'source_exchange', 'strategy_type', 'custodian', 'cold_storage_account_id'].includes(col.column)
     ).map(
       col => {
         col.filter.rowData$ = this.coldStorageService.getAllTransfersHeaderLOV(col.column);
