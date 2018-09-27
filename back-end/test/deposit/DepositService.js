@@ -28,6 +28,7 @@ describe('DepositService testing', () => {
     });
 
     const DepositService = require('./../../services/DepositService');
+    const User = require('./../../models').User;
     const RecipeRun = require('./../../models').RecipeRun;
     const RecipeRunDeposit = require('./../../models').RecipeRunDeposit;
     const RecipeRunDetail = require('./../../models').RecipeRunDetail;
@@ -586,12 +587,15 @@ describe('DepositService testing', () => {
 
     });
 
-    describe('and the method completeAssetConversion shall', () => {
+    describe('and the method submitAssetConversion shall', () => {
 
-        const completeAssetConversion = DepositService.completeAssetConversion;
+        const submitAssetConversion = DepositService.submitAssetConversion;
 
         const MOCK_DEPOSITOR = {
-            id: 1
+            id: 1,
+            first_name: 'Depositor',
+            last_name: 'Jeremy',
+            logAction: User.prototype.logAction
         };
 
         const MOCK_PENDING_CONVERSION = {
@@ -619,13 +623,21 @@ describe('DepositService testing', () => {
 
         const MOCK_CONVERSIONS = [ MOCK_PENDING_CONVERSION, MOCK_COMPLETED_CONVERSION ];
 
+        let MOCK_FORCED_CONVERSION = {};
+
         const CONVERSION_AMOUNT = _.random(100, 1000);
 
         before(done => {
 
             sinon.stub(InvestmentAssetConversion, 'findById').callsFake(id => {
 
-                return Promise.resolve(_.find(MOCK_CONVERSIONS, c => c.id === id) || null);
+                if(MOCK_FORCED_CONVERSION.id === id) return Promise.resolve(MOCK_FORCED_CONVERSION);
+
+                const conversion = _.find(MOCK_CONVERSIONS, c => c.id === id) || null;
+
+                if(!conversion) return Promise.resolve(null);
+
+                return Promise.resolve(_.assign({}, conversion));
                 
             });
 
@@ -641,19 +653,19 @@ describe('DepositService testing', () => {
 
         it('exist', () => {
 
-            chai.expect(completeAssetConversion).to.be.not.undefined;
+            chai.expect(submitAssetConversion).to.be.not.undefined;
 
         });
 
         it('reject if the amount is invalid', () => {
 
-            return chai.assert.isRejected(completeAssetConversion(MOCK_PENDING_CONVERSION.id, -1, MOCK_DEPOSITOR));
+            return chai.assert.isRejected(submitAssetConversion(MOCK_PENDING_CONVERSION.id, -1, MOCK_DEPOSITOR));
 
         });
 
         it('return null if the conversion was not found', () => {
 
-            return completeAssetConversion(0, CONVERSION_AMOUNT, MOCK_DEPOSITOR).then(conversion => {
+            return submitAssetConversion(0, CONVERSION_AMOUNT, MOCK_DEPOSITOR).then(conversion => {
                 chai.expect(conversion).to.be.null;
             });
 
@@ -661,13 +673,34 @@ describe('DepositService testing', () => {
 
         it('reject if the conversion was already Completed', () => {
 
-            return chai.assert.isRejected(completeAssetConversion(MOCK_COMPLETED_CONVERSION.id, CONVERSION_AMOUNT, MOCK_DEPOSITOR));
+            return chai.assert.isRejected(submitAssetConversion(MOCK_COMPLETED_CONVERSION.id, CONVERSION_AMOUNT, MOCK_DEPOSITOR));
+
+        });
+
+        it('reject if the conversion amount is not set when attempting to complete it', () => {
+
+            return chai.assert.isRejected(submitAssetConversion(MOCK_PENDING_CONVERSION.id, null, MOCK_DEPOSITOR, true));
+
+        });
+
+        it('submit the conversion amount but complete the conversion', () => {
+
+            return submitAssetConversion(MOCK_PENDING_CONVERSION.id, CONVERSION_AMOUNT, MOCK_DEPOSITOR).then(conversion => {
+
+                chai.expect(conversion).to.be.not.null;
+
+                chai.expect(conversion.completed_timestamp).to.be.null
+                chai.expect(conversion.depositor_user_id).to.be.null;
+                chai.expect(conversion.status).to.equal(ASSET_CONVERSION_STATUSES.Pending);
+                chai.expect(conversion.amount).to.equal(CONVERSION_AMOUNT);
+
+            });
 
         });
 
         it('complete a conversion is the conditions are met', () => {
 
-            return completeAssetConversion(MOCK_PENDING_CONVERSION.id, CONVERSION_AMOUNT, MOCK_DEPOSITOR).then(conversion => {
+            return submitAssetConversion(MOCK_PENDING_CONVERSION.id, CONVERSION_AMOUNT, MOCK_DEPOSITOR, true).then(conversion => {
 
                 chai.expect(conversion).to.be.not.null;
 
@@ -675,6 +708,31 @@ describe('DepositService testing', () => {
                 chai.expect(conversion.depositor_user_id).to.equal(MOCK_DEPOSITOR.id);
                 chai.expect(conversion.status).to.equal(ASSET_CONVERSION_STATUSES.Completed);
                 chai.expect(conversion.amount).to.equal(CONVERSION_AMOUNT);
+
+            });
+
+        });
+
+        it('complete a conversion without the amount if it was submitted before', () => {
+
+            return submitAssetConversion(MOCK_PENDING_CONVERSION.id, CONVERSION_AMOUNT, MOCK_DEPOSITOR, false).then(conversion => {
+
+                chai.expect(conversion).to.be.not.null;
+
+                MOCK_FORCED_CONVERSION = conversion;
+
+                return submitAssetConversion(MOCK_FORCED_CONVERSION.id, null, MOCK_DEPOSITOR, true).then(conversion => {
+
+                    chai.expect(conversion).to.be.not.null;
+
+                    chai.expect(conversion.completed_timestamp).to.be.a('date');
+                    chai.expect(conversion.depositor_user_id).to.equal(MOCK_DEPOSITOR.id);
+                    chai.expect(conversion.status).to.equal(ASSET_CONVERSION_STATUSES.Completed);
+                    chai.expect(conversion.amount).to.equal(CONVERSION_AMOUNT);
+
+                    MOCK_FORCED_CONVERSION = {};
+
+                });
 
             });
 

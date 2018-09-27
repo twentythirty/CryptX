@@ -258,13 +258,27 @@ const getRecipeRunAssetConversions = async (req, res) => {
 };
 module.exports.getRecipeRunAssetConversions = getRecipeRunAssetConversions;
 
+const submitAssetConversion = async (req, res) => {
+
+  updateAssetConversion(req, res, false);
+
+};
+module.exports.submitAssetConversion = submitAssetConversion;
+
 const completeAssetConversion = async (req, res) => {
+
+  updateAssetConversion(req, res, true);
+
+};
+module.exports.completeAssetConversion = completeAssetConversion;
+
+const updateAssetConversion = async (req, res, complete = false) => {
 
   const { conversion_id } = req.params;
   const { amount } = req.body;
   const { user } = req;
 
-  let [ err, conversion ] = await to(DepositService.completeAssetConversion(conversion_id, amount, user));
+  let [ err, conversion ] = await to(DepositService.submitAssetConversion(conversion_id, amount, user, complete));
 
   if(err) return ReE(res, err.message, 422);
   if(!conversion) return ReE(res, `Asset conversion with id "${conversion_id}" was not found`, 404);
@@ -275,5 +289,4 @@ const completeAssetConversion = async (req, res) => {
 
   return ReS(res, { conversion });
 
-};
-module.exports.completeAssetConversion = completeAssetConversion;
+}

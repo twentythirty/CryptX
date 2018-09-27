@@ -281,11 +281,13 @@ const generateAssetConversions = async recipe_run => {
 };
 module.exports.generateAssetConversions = generateAssetConversions;
 
-const completeAssetConversion = async (conversion_id, amount, user) => {
+const submitAssetConversion = async (conversion_id, amount, user, complete = false) => {
 
-  if(!_.isNumber(amount) || amount <= 0) TE(`Converted amount must a positive number`);
+  if((complete && amount) || !complete) {
+    if(!_.isNumber(amount) || amount <= 0) TE(`Converted amount must a positive number`);
+  }
   
-  const [ err, conversion ] = await to(InvestmentAssetConversion.findById(conversion_id));
+  let [ err, conversion ] = await to(InvestmentAssetConversion.findById(conversion_id));
 
   if(err) TE(err.message);
   if(!conversion) return null;
@@ -294,12 +296,41 @@ const completeAssetConversion = async (conversion_id, amount, user) => {
     TE(`Conversion with id "${conversion_id}" is already Completed`);
   }
 
-  conversion.amount = amount;
-  conversion.completed_timestamp = new Date();
-  conversion.depositor_user_id = user.id;
-  conversion.status = ASSET_CONVERSION_STATUSES.Completed;
+  if(amount) conversion.amount = amount;
 
-  return conversion.save();
+  if(!conversion.amount) TE('Amount must be set before completing a Conversion');
+
+  if(complete) {
+    conversion.completed_timestamp = new Date();
+    conversion.depositor_user_id = user.id;
+    conversion.status = ASSET_CONVERSION_STATUSES.Completed;
+  }
+
+  /*
+  const log_options = {
+    previous_instance: Object.assign({}, conversion._previousDataValues),
+    updated_instance: conversion,
+    ignore: ['completed_timestamp', 'depositor_user_id'],
+    replace: {
+      status: {
+        [ASSET_CONVERSION_STATUSES.Pending]: `{asset_conversions.status.${ASSET_CONVERSION_STATUSES.Pending}}`,
+        [ASSET_CONVERSION_STATUSES.Completed]: `{asset_conversions.status.${ASSET_CONVERSION_STATUSES.Completed}}`
+      }
+    },
+    relations: { recipe_run_id: conversion.recipe_run_id }
+  };
+  */
+
+  [ err, conversion ] = await to(conversion.save());
+
+  if(err) TE(err.message);
+
+  /*
+  if(user) await user.logAction('modified', log_options);
+  else await logAction('modified', log_options);
+  */
+
+  return conversion;
 
 };
-module.exports.completeAssetConversion = completeAssetConversion;
+module.exports.submitAssetConversion = submitAssetConversion;

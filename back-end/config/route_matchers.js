@@ -105,6 +105,7 @@ ROUTE_MATCHERS = {
     GetColdstorageAccountsFees: /\/cold_storage\/accounts\/fees/,
     GetColdstorageAccountsFeesColLOV: /\/cold_storage\/accounts\/fees\/header_lov\/\w+$/,
     GetRecipeRunAssetConversions: /\/conversions\/of_recipe\/d+$/,
+    SubmitAssetConversion: /\/conversions\/d+\/submit$/,
     CompleteAssetConversion: /\/conversions\/d+\/complete$/
 }
 

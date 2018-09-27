@@ -4708,13 +4708,61 @@
         ]
       }
     },
+    "/conversions/{conversion_id}/submit": {
+      "post": {
+        "tags": [
+          "conversions"
+        ],
+        "summary": "Submits an Asset conversion amount",
+        "description": "Sets the converted amount, returns an updated conversion",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/parameters/conversion_id"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "description": "Specify the amount that was converted",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/AssetConversionComplete"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "success": {
+                  "type": "boolean",
+                  "example": true
+                },
+                "conversion": {
+                  "$ref": "#/definitions/InvestmentAssetConversionView"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
     "/conversions/{conversion_id}/complete": {
       "post": {
         "tags": [
           "conversions"
         ],
         "summary": "Completes an Asset conversion",
-        "description": "Sets the converted amount and marks the conversion as completed, returns an updated conversion",
+        "description": "Sets the converted amount and marks the conversion as completed, returns an updated conversion. If the amount was submited before, it can be omitted in the body",
         "produces": [
           "application/json"
         ],

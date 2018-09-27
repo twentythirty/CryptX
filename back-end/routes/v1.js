@@ -1038,6 +1038,14 @@ router.post(
   DepositController.getRecipeRunAssetConversions
 );
 router.post(
+  ROUTES.SubmitAssetConversion.router_string,
+  stateless_auth,
+  res_new_token,
+  check_permissions,
+  filter_reducer,
+  DepositController.submitAssetConversion
+);
+router.post(
   ROUTES.CompleteAssetConversion.router_string,
   stateless_auth,
   res_new_token,

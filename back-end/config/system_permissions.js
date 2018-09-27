@@ -705,6 +705,11 @@ ROUTES = {
     permissions_matcher: ROUTE_MATCHERS.GetRecipeRunAssetConversions,
     required_permissions: [PERMISSIONS.VIEW_INVESTMENT_RUN]
   },
+  SubmitAssetConversion: {
+    router_string: "/conversions/:conversion_id/submit",
+    permissions_matcher: ROUTE_MATCHERS.SubmitAssetConversion,
+    required_permissions: [PERMISSIONS.VIEW_INVESTMENT_RUN]
+  },
   CompleteAssetConversion: {
     router_string: "/conversions/:conversion_id/complete",
     permissions_matcher: ROUTE_MATCHERS.CompleteAssetConversion,
