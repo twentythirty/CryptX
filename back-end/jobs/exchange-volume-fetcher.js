@@ -44,7 +44,13 @@ module.exports.JOB_BODY = async (config, log) => {
             const mappings = associatedMappings[exchange.id];
             log(`Building volume fetcher for ${exchange.name} with ${mappings.length} mappings...`);
 
-            const fetcher = await ccxtUtils.getConnector(exchange.api_id);
+            const fetcher = await ccxtUtils.getConnector(exchange.id);
+
+            if (!fetcher || fetcher.loading_failed) {
+                //throw error to break enclosing promise
+                TE(`Failed to find connector for exchange ${exchange.name} or failed to load exchange markets!`);
+            }
+
             const throttle = await ccxtUtils.getThrottle(exchange.api_id);
 
             //promise pairs made of arrays where [exchange, [mapping, fetched-data]]

@@ -1,17 +1,23 @@
-<app-page-heading
+<app-page-heading *ngIf="userId"
   [heading]="userName"
 ></app-page-heading>
 
-<div class="split-content">
-  <form [formGroup]="userForm">
-    <app-content-block *ngIf="user" [heading]="'users.user_information' | translate">
-      <app-input-item
+<app-page-heading *ngIf="!userId"
+  [heading]="'users.add_new_user' | translate"
+></app-page-heading>
+
+<form [formGroup]="userForm">
+  <div class="split-content">
+    <app-content-block 
+      heading="User information" 
+      class="part boxShadow">
+
+      <app-input-item 
         class="form-item"
         [label]="'users.name' | translate"
         [placeholder]="'users.enter_name' | translate"
         [formGroup]="userForm"
-        formControlName="Firstname"
-        [(ngModel)]="user.first_name"
+        formControlName="firstName"
       ></app-input-item>
 
       <app-input-item
@@ -19,81 +25,69 @@
         [label]="'users.surname' | translate"
         [placeholder]="'users.enter_surname' | translate"
         [formGroup]="userForm"
-        formControlName="Lastname"
-        [(ngModel)]="user.last_name"
+        formControlName="lastName"
       ></app-input-item>
 
       <app-input-item
         class="form-item"
-        [readonly]="true"
         [label]="'users.email' | translate"
         [placeholder]="'users.enter_email' | translate"
         [formGroup]="userForm"
-        formControlName="Email"
-        [(ngModel)]="user.email"
+        formControlName="email"
+        [readonly] = true
       ></app-input-item>
     </app-content-block>
-  </form>
 
-  <form *ngIf="form" [formGroup]="form">
-    <app-content-block [heading]="'users.user_roles' | translate">
-      <div
-        class="check-list"
-        [formArrayName]="'items'"
-        [class.invalid]="!form.controls.selectedItems.valid"
-      >
-        <div class="checkboxes-item" *ngFor="let control of form.controls.items.controls; let i = index;" [formGroup]="control">
-          <label class="label-name">{{ control.controls.text.value }}</label>
-          <div class="checkboxes-modal">
-            <input
-              class="checkall"
-              type="checkbox"
-              formControlName="checkbox"
-              [id]="control.controls.id.value"
-              (click)="click()"
-            >
-            <label [class.checked]="checked" [attr.for]="control.controls.id.value">
-              <ng-container *ngIf="checked">
-                {{'users.select' | translate}}
-              </ng-container>
-              <ng-container *ngIf="!checked">
-                {{'users.select' | translate }}
-              </ng-container>
-            </label>
-          </div>
-        </div>
-      </div>
-
+    <app-content-block 
+      [heading]="'users.user_roles' | translate" 
+      *ngIf="rolelist"
+      class="part boxShadow">
       <app-input-item-error-message
-        *ngIf="show"
-        [errors]="form.controls.selectedItems.errors"
+      *ngIf="userForm.controls.roleId.invalid && (userForm.controls.roleId.dirty || userForm.controls.roleId.touched)"
+      [errorMessage]="'Role must be selected'"
       ></app-input-item-error-message>
+      <div class="check-list" *ngIf="rolelist">
+        <div class="checkboxes-item" *ngFor="let role of rolelist">
+          <label class="label-name">{{ role.name }}</label>
+          <app-button-checkbox 
+          class="checkboxes-modal"
+          [checked]="role.isActive"
+          [value]="role.id"
+          labelTrue="Select"
+          labelFalse="Select"
+          (onToggle)="addRole(role)"
+        ></app-button-checkbox>
+      </div>
+    </div>
     </app-content-block>
-  </form>
-</div>
-
-<app-form-action-bar>
-  <div *ngIf="userId">
-    <button
-      *ngIf="user"
-      class="btn deactive"
-      (click)="isValid()"
-    >
-     <ng-container *ngIf="user.is_active">Deactivate</ng-container>
-     <ng-container *ngIf="!user.is_active">Activate</ng-container>
-    </button>
-    
-    <button
-      type="button"
-      class="btn submit" 
-      (click)="saveUser()"
-    >{{ 'common.submit' | translate }}</button>
   </div>
-</app-form-action-bar>
-
-<app-confirm
-  *ngIf="showDeactivateConfirm" 
-  [heading]="'users.user_deactivate_confirm_msg' | translate: {buttonName: buttonName}" 
-  (onReject)="closeDeactivateConfirm()"
-  (onConfirm)="deactivateUser()"
-></app-confirm>
+</form>
+<div class="sticky-controls-bar">
+  <div class="wrapper">
+     <app-form-action-bar>
+        <button
+          *ngIf="userId"
+          [disabled]="loading"
+          class="btn deactive"
+          (click)="showModal()"
+          [appMarkAsTouched]="userForm"
+        >
+         <ng-container *ngIf="buttonName">{{ buttonName }}</ng-container>
+        </button>
+        
+        <button
+        class="btn submit"
+        [disabled]="loading"
+        (click)="saveUser()"
+        [appMarkAsTouched]="userForm"
+        >{{ 'common.submit' | translate }}</button>
+    </app-form-action-bar>
+    
+    <app-confirm
+      *ngIf="showDeactivateConfirm" 
+      [heading]="'users.user_deactivate_confirm_msg' | translate: {buttonName: buttonName}" 
+      (onReject)="closeDeactivateConfirm()"
+      (onConfirm)="deactivateUser()"
+    ></app-confirm>
+  </div>
+</div>

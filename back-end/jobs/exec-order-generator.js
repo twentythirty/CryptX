@@ -139,6 +139,10 @@ module.exports.JOB_BODY = async (config, log) => {
                             log(`[ERROR.4A]: Failed to retrieve exchange connector with id: ${pending_order.target_exchange_id}`);
                             return { instance: pending_order, status: JOB_RESULT_STATUSES.Error, step: '4A' };
                         }
+                        if (exchange_connector.loading_failed) {
+                            log(`[ERROR.4A]: Failed to load connector markets with id: ${pending_order.target_exchange_id}`);
+                            return { instance: pending_order, status: JOB_RESULT_STATUSES.Error, step: '4A' };
+                        }
                         //Get market based on instrument symbol.
                         const exchange_market = exchange_connector.markets[pending_order.Instrument.symbol];
 

@@ -42,7 +42,7 @@ module.exports.JOB_BODY = async (config, log) => {
             _.map(exchanges_with_mappings, async (exchange) => {
 
                 let [err, con_result] = await to(Promise.all([
-                    ccxtUtils.getConnector(exchange.api_id),
+                    ccxtUtils.getConnector(exchange.id),
                     ccxtUtils.getThrottle(exchange.api_id)
                 ]));
                 if (err) {
@@ -50,6 +50,11 @@ module.exports.JOB_BODY = async (config, log) => {
                     return [];
                 }
                 let [fetcher, throttle] = con_result;
+                if (!fetcher || fetcher.loading_failed) {
+                    
+                    log(`[ERROR.3A]: Failed to find connector for exchange ${exchange.name} or failed to load exchange markets!`);
+                    return "No healthy connector to fetch tickers with!";
+                }
 
                 let mappings = associatedMappings[exchange.id];
                 let needed_ticker_data = [];
