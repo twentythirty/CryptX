@@ -373,6 +373,8 @@ When(/^I (.*) (the|an|any) Asset$/, async function (action, pointer) {
 
     this.current_asset = asset;
 
+    this.current_action = status;
+
     return chai
         .request(this.app)
         .post(`/v1/assets/${asset.id}/change_status`)
@@ -386,10 +388,7 @@ When(/^I (.*) (the|an|any) Asset$/, async function (action, pointer) {
             expect(result).to.have.status(200);
             expect(result.body.status).to.be.an('object', 'Expected to have a status change object inside the body response');
 
-            this.current_action = status;
-
             this.current_response = result;
-
         })
         .catch(error => {
 
@@ -586,11 +585,8 @@ Then('I can see the new status and history by getting the Asset details', functi
             expect(result.body.history.length).to.be.greaterThan(0, 'Expected the asset history to have atleast 1 entry');
 
             const asset = result.body.asset;
-            //Get newest status change, who knows how other tests will affect this
-            const status_change = result.body.history.sort((a, b) => new Date(a.timestamp).getTime() <= new Date(b.timestamp).getTime())[0];
 
             expect(asset.status).to.equal(`assets.status.${this.current_action}`, 'Expected asset status to equal the previously used one');
-            expect(status_change.type).to.equal(`assets.status.${this.current_action}`, 'Expected the newest status change to have type equal to the previosuly used one');
 
         });
 
@@ -627,6 +623,12 @@ Then(/^I cannot (.*) an Asset which is already (.*)$/, async function (action, t
         .catch(result => {
 
             expect(result).to.have.status(422);
+
+            const error = result.response.body.error;
+
+            expect(error.startsWith('Cannot set the same status as the current status of the asset'), 
+                'Expected the error to talk about setting the same status as the current status of the Asset'
+            ).to.be.true;
 
         });
 
@@ -766,28 +768,23 @@ Then('the system displays an error about not providing a valid rationale', funct
 
 Then('a new Asset Status Change entry is not created', async function() {
 
-    const { AssetStatusChange } = require('../../../models');
+    const { Asset, sequelize } = require('../../../models');
+    
+    const [ asset ] = await sequelize.query(queryAssetByType(this.current_action, 1, this.current_asset.id), { model: Asset });
 
-    const status_change = await AssetStatusChange.findOne({
-        where: {
-            asset_id: this.current_asset.id,
-            type: INSTRUMENT_STATUS_CHANGES.Blacklisting
-        }
-    });
-
-    expect(status_change, 'Expected a new status change in the database').to.be.null;
+    expect(asset, 'Expected not to find an asset with the new status').to.be.undefined;
 
 });
 
-const queryAssetByType = (type, limit = 1) => {
+const queryAssetByType = (type, limit = 1, id = null) => {
     return `
         WITH newest_statuses AS (
             SELECT DISTINCT ON(asset_id) asset_id, "timestamp", "type" FROm asset_status_change
             ORDER BY asset_id, "timestamp" DESC
         )
         SELECT * FROM asset AS a
-        JOIN newest_statuses AS n ON n.asset_id = a.id
-        WHERE "type" = ${type}
+        LEFT JOIN newest_statuses AS n ON n.asset_id = a.id
+        WHERE ("type" = ${type} ${type === INSTRUMENT_STATUS_CHANGES.Whitelisting ? `OR "type" IS NULL` : ''}) ${id ? `AND id = ${id}` : ''}
         LIMIT ${limit}
     `
 };

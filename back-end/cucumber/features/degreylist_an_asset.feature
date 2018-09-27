@@ -19,3 +19,13 @@ Feature: Degreylist an asset
         And I am assigned to the Status Change
         And I can see the new status and history by getting the Asset details
         But I cannot Degreylist an Asset which is already Degreylisted
+
+    Scenario: degreylisting an asset without providing a rationale
+
+        Given the system has some Greylisted Assets
+        When I log onto CryptX as Compliance Manager
+        And I select a Greylisted Asset
+        But I provide an empty rationale
+        And I Degreylist an Asset
+        Then the system displays an error about not providing a valid rationale
+        And a new Asset Status Change entry is not created
