@@ -4,7 +4,7 @@ import { finalize } from 'rxjs/operators';
 
 import { DataTableCommonManagerComponent } from '../../../shared/components/data-table-common-manager/data-table-common-manager.component';
 import { TableDataSource, TableDataColumn } from '../../../shared/components/data-table/data-table.component';
-import { StatusCellDataColumn, PercentCellDataColumn, NumberCellDataColumn } from '../../../shared/components/data-table-cells';
+import { StatusCellDataColumn, NumberCellDataColumn } from '../../../shared/components/data-table-cells';
 import { StatusClass } from '../../../shared/models/common';
 import { Deposit } from '../../../shared/models/deposit';
 
@@ -20,13 +20,11 @@ export class DepositListComponent extends DataTableCommonManagerComponent implem
   public depositDataSource: TableDataSource = {
     header: [
       { column: 'id', nameKey: 'table.header.id', filter: { type: 'number', hasRange: false, inputSearch: true, sortable: true } },
-      { column: 'investment_currency', nameKey: 'table.header.investment_currency', filter: { type: 'text', sortable: true } },
       { column: 'quote_asset', nameKey: 'table.header.deposit_currency', filter: { type: 'text', sortable: true } },
       { column: 'exchange', nameKey: 'table.header.exchange', filter: { type: 'text', sortable: true } },
       { column: 'account', nameKey: 'table.header.account', filter: { type: 'text', sortable: true }, column_class: 'word-wrap' },
-      { column: 'investment_amount', nameKey: 'table.header.investment_amount', filter: { type: 'number', sortable: true } },
       { column: 'amount', nameKey: 'table.header.deposit_amount', filter: { type: 'number', sortable: true } },
-      { column: 'investment_percentage', nameKey: 'table.header.investment_percentage', filter: { type: 'number', sortable: true } },
+      { column: 'deposit_management_fee', nameKey: 'table.header.deposit_management_fee', filter: { type: 'number', sortable: true } },
       { column: 'status', nameKey: 'table.header.status', filter: { type: 'text', sortable: true } },
     ],
     body: null
@@ -34,13 +32,11 @@ export class DepositListComponent extends DataTableCommonManagerComponent implem
 
   public depositColumnsToShow: Array<TableDataColumn> = [
     new TableDataColumn({ column: 'id' }),
-    new TableDataColumn({ column: 'investment_currency' }),
     new TableDataColumn({ column: 'quote_asset' }),
     new TableDataColumn({ column: 'exchange' }),
     new TableDataColumn({ column: 'account' }),
-    new NumberCellDataColumn({ column: 'investment_amount'}),
     new NumberCellDataColumn({ column: 'amount'}),
-    new PercentCellDataColumn({ column: 'investment_percentage' }),
+    new NumberCellDataColumn({ column: 'deposit_management_fee' }),
     new StatusCellDataColumn({ column: 'status', inputs: { classMap: {
       'deposits.status.150' : StatusClass.PENDING,
       'deposits.status.151': StatusClass.APPROVED,

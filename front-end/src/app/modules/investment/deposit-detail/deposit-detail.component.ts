@@ -15,9 +15,9 @@ import { TableDataSource, TableDataColumn } from '../../../shared/components/dat
 import {
   DateCellDataColumn,
   StatusCellDataColumn,
-  PercentCellDataColumn,
   DataCellAction,
-  ActionCellDataColumn
+  ActionCellDataColumn,
+  NumberCellDataColumn
 } from '../../../shared/components/data-table-cells';
 
 import { InvestmentService } from '../../../services/investment/investment.service';
@@ -83,13 +83,11 @@ export class DepositDetailComponent extends TimelineDetailComponent implements O
   public listDataSource: TableDataSource = {
     header: [
       { column: 'id', nameKey: 'table.header.id', filter: { type: 'number', hasRange: false, inputSearch: true, sortable: true }},
-      { column: 'investment_currency', nameKey: 'table.header.investment_currency', filter: { type: 'text', sortable: true }},
       { column: 'quote_asset', nameKey: 'table.header.deposit_currency', filter: { type: 'text', sortable: true }},
       { column: 'exchange', nameKey: 'table.header.exchange', filter: { type: 'text', sortable: true }},
       { column: 'account', nameKey: 'table.header.account', filter: { type: 'text', sortable: true }, column_class: 'column-source-account' },
-      { column: 'investment_amount', nameKey: 'table.header.investment_amount', filter: { type: 'number', sortable: true }},
       { column: 'amount', nameKey: 'table.header.deposit_amount', filter: { type: 'number', sortable: true }},
-      { column: 'investment_percentage', nameKey: 'table.header.investment_percentage', filter: { type: 'number', sortable: true }},
+      { column: 'deposit_management_fee', nameKey: 'table.header.deposit_management_fee', filter: { type: 'number', sortable: true }},
       { column: 'status', nameKey: 'table.header.status', filter: { type: 'text', sortable: true, inputSearch: false } },
     ],
     body: null
@@ -97,13 +95,11 @@ export class DepositDetailComponent extends TimelineDetailComponent implements O
 
   public listColumnsToShow: Array<TableDataColumn> = [
     new TableDataColumn({ column: 'id' }),
-    new TableDataColumn({ column: 'investment_currency' }),
     new TableDataColumn({ column: 'quote_asset' }),
     new TableDataColumn({ column: 'exchange' }),
     new TableDataColumn({ column: 'account' }),
-    new TableDataColumn({ column: 'investment_amount' }),
     new TableDataColumn({ column: 'amount' }),
-    new PercentCellDataColumn({ column: 'investment_percentage' }),
+    new NumberCellDataColumn({ column: 'deposit_management_fee' }),
     new StatusCellDataColumn({ column: 'status', inputs: { classMap: {
       'deposits.status.150': StatusClass.PENDING,
       'deposits.status.151': StatusClass.APPROVED,
@@ -183,7 +179,7 @@ export class DepositDetailComponent extends TimelineDetailComponent implements O
 
   private getFilterLOV(): void {
     this.listDataSource.header.filter(
-      col => ['id', 'investment_currency',  'quote_asset', 'exchange', 'status'].includes(col.column)
+      col => ['id', 'quote_asset', 'exchange', 'status'].includes(col.column)
     ).map(
       col => {
         const filter = { filter : { recipe_run_id: this.routeParamId }};
@@ -197,7 +193,7 @@ export class DepositDetailComponent extends TimelineDetailComponent implements O
    */
 
   public openListRow(row: any): void {
-    this.router.navigate([`/deposits/view/${row.id}`]);
+    this.router.navigate(['/deposits/view', row.id]);
   }
 
 

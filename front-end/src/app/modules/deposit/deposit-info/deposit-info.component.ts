@@ -11,7 +11,6 @@ import {
   ActionCellDataColumn,
   DataCellAction,
   StatusCellDataColumn,
-  PercentCellDataColumn,
   NumberCellDataColumn
 } from '../../../shared/components/data-table-cells';
 import { TableDataSource, TableDataColumn } from '../../../shared/components/data-table/data-table.component';
@@ -39,15 +38,11 @@ export class DepositInfoComponent implements OnInit {
   public depositDataSource: TableDataSource = {
     header: [
       { column: 'id', nameKey: 'table.header.id' },
-      { column: 'investment_currency', nameKey: 'table.header.investment_currency' },
       { column: 'quote_asset', nameKey: 'table.header.deposit_currency' },
       { column: 'exchange', nameKey: 'table.header.exchange' },
       { column: 'account', nameKey: 'table.header.account', column_class: 'column-source-account' },
-      { column: 'investment_amount', nameKey: 'table.header.investment_amount' },
       { column: 'amount', nameKey: 'table.header.deposit_amount' },
-      { column: 'investment_percentage', nameKey: 'table.header.investment_percentage' },
       { column: 'deposit_management_fee', nameKey: 'table.header.deposit_management_fee' },
-      { column: 'depositor_user', nameKey: 'table.header.depositary' },
       { column: 'status', nameKey: 'table.header.status' },
     ],
     body: null
@@ -55,15 +50,11 @@ export class DepositInfoComponent implements OnInit {
 
   public depositColumnsToShow: Array<TableDataColumn> = [
     new TableDataColumn({ column: 'id' }),
-    new TableDataColumn({ column: 'investment_currency' }),
     new TableDataColumn({ column: 'quote_asset' }),
     new TableDataColumn({ column: 'exchange' }),
     new TableDataColumn({ column: 'account' }),
-    new NumberCellDataColumn({ column: 'investment_amount'}),
     new NumberCellDataColumn({ column: 'amount'}),
-    new PercentCellDataColumn({ column: 'investment_percentage' }),
     new NumberCellDataColumn({ column: 'deposit_management_fee' }),
-    new TableDataColumn({ column: 'depositor_user' }),
     new StatusCellDataColumn({ column: 'status', inputs: { classMap: {
       'deposits.status.150' : StatusClass.PENDING,
       'deposits.status.151': StatusClass.APPROVED,
