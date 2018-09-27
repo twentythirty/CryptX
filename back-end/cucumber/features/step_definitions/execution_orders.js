@@ -428,7 +428,7 @@ Then('an Action Log is created for each new Execution Order Fill', async functio
     });
 
     //Using lessthan or equal, since logs may not have been created at the time of step. Not much we can do.
-    expect(logs.length).satisfy(lessThanOrEqual(this.current_execution_order_fills.length), 'Expected the amount of logs related to Fill creation to equal the actual amount of Fills');
+    expect(logs.length).to.equal(this.current_execution_order_fills.length, 'Expected the amount of logs related to Fill creation to equal the actual amount of Fills');
 
     logs = logs.map(log => {
         log.translation_args = JSON.parse(log.translation_args);
@@ -445,8 +445,7 @@ Then('an Action Log is created for each new Execution Order Fill', async functio
         return acc = acc.plus(fill.quantity);
     }, Decimal(0));
 
-    //Not a good idea if the logs may not be created on time
-    //expect(log_quantity_sum.toPrecision(10)).to.equal(expected_amount.toPrecision(10), 'Expected the logged fill amount to equal the actuall fills amount');
+    expect(log_quantity_sum.toPrecision(10)).to.equal(expected_amount.toPrecision(10), 'Expected the logged fill amount to equal the actuall fills amount');
 
 });
 
@@ -462,7 +461,7 @@ Then('an Action Log is created for each FullyFilled Order', async function() {
         raw: true
     });
 
-    expect(logs.length).satisfies(lessThanOrEqual(this.current_execution_orders.length), 'Expected the amount of logs of fully filled order to equal the amount of FullyFilled Execution Orders');
+    expect(logs.length).to.equal(this.current_execution_orders.length, 'Expected the amount of logs of fully filled order to equal the amount of FullyFilled Execution Orders');
 
 });
 
@@ -670,7 +669,9 @@ Then('the Execution Orders errors are logged', async function() {
         }
     });
 
-    expect(logs).to.be.greaterThan(0, 'Expected to have at least one error log');
+    const expected_log_amount = this.current_execution_orders.length * SYSTEM_SETTINGS.EXEC_ORD_FAIL_TOLERANCE;
+
+    expect(logs).to.equal(expected_log_amount, 'Expected the error log amount to equal the amount of execution orders time the max tolerance');
 
 });
 

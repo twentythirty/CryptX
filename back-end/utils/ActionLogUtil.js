@@ -168,7 +168,25 @@ const _defaultHandler = async function(options = {}) {
     return this;
 }
 
+/**
+ * If the Enviroment will be a cucumber test, the function will return the creation chain
+ * Otherwise it calls the log function and instantly resolves and lets the original function to move on.
+ * This might make some tests slower, but it will ensure that the logs are saved before the
+ * cucumber fires the step which checks for Action Logs.
+ */
 module.exports.logAction = async (action_path_or_template, options = {}) => {
+    
+    if(process.env.NODE_ENV === 'cucumber' || options.force_promise) {
+        return _logAction(action_path_or_template, options);
+    }
+    else {
+        _logAction(action_path_or_template, options);
+        return;
+    }
+
+};
+
+const _logAction = async (action_path_or_template, options = {}) => {
     try {
         let action = _.get(loggers, action_path_or_template);
         if(!action) action = { template: `logs.${action_path_or_template}`, level: options.log_level || ACTIONLOG_LEVELS.Info };
@@ -180,22 +198,30 @@ module.exports.logAction = async (action_path_or_template, options = {}) => {
             action_logs = await action.handler(options);
         }
     
-        if(!action_logs) module.exports.log(`Handler failed to return module.exports.log string for action path "${action_path}" and params: ${JSON.stringify(params)}`);
+        if(!action_logs) return this.log(`Handler failed to return module.exports.log string for action path "${action_path}" and params: ${JSON.stringify(params)}`);
     
         if(!_.isArray(action_logs)) action_logs = [action_logs];
         
         //Set log level, can be overriden.
         if(!options.log_level) options.log_level = action.level || ACTIONLOG_LEVELS.Info;
 
-        for(let action_log of action_logs) {
-            module.exports.log(action_log.details, action_log.template, action_log.options || {});
+        if(process.env.NODE_ENV === 'cucumber'){
+            return Promise.all(action_logs.map(action_log => {
+                return this.log(action_log.details, action_log.template, action_log.options || {});
+            }));
         }
+        else {
+            for(let action_log of action_logs) {
+                this.log(action_log.details, action_log.template, action_log.options || {});
+            }
+        }
+
     }
     catch(e) {
         console.error(e);
-        module.exports.log(e.message);
+        return this.log(e.message);
     }
-};
+}
 
 /**
  * Logs an action. Can be used as a base function.
@@ -239,14 +265,14 @@ module.exports.log = async (details, translation_key = null, options = {}) => {
 
     }
 
-    _saveToDatabase(base_log);
+    return _saveToDatabase(base_log);
 };
 //const module.exports.log = module.exports.module.exports.log;
 
 const _saveToDatabase = async (action_log) => {
 
     if(action_log.failed_attempts > failed_attempts_limit) {
-        return console.module.exports.log(`Failed to module.exports.log "${action_log.details}" after ${action_log.failed_attempts} failed attempts`);
+        return this.log(`Failed to module.exports.log "${action_log.details}" after ${action_log.failed_attempts} failed attempts`);
     }
 
     //This is required here due the fact that the model is not created when it is used in the User model.
@@ -259,7 +285,7 @@ const _saveToDatabase = async (action_log) => {
      * 2. On different connection errors, it will delay the module.exports.log in hopes that the connection will be restored by that time.
      * 3. During unknown error simply module.exports.log the error. More error handling may be added later,
      */
-    ActionLog.create(action_log)
+    return ActionLog.create(action_log)
         .catch(ForeignKeyConstraintError, message => {
             action_log.failed_attempts++;
             //Later on, specific keys may be stripped using string match, this iwll depend how often this error occurs durring module.exports.log.

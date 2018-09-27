@@ -476,7 +476,7 @@ const changeExecutionOrderStatus = async (req, res) => {
 
   const { original_execution_order, updated_execution_order } = execution_order_data;
 
-  user.logAction('modified', {
+  await user.logAction('modified', {
     previous_instance: original_execution_order,
     updated_instance: updated_execution_order,
     replace: {

@@ -72,7 +72,7 @@ const submitDeposit = async function (req, res) {
 
   let { original_deposit, updated_deposit: deposit } = deposit_result;
 
-  user.logAction('modified', { 
+  await user.logAction('modified', { 
     previous_instance: original_deposit, 
     updated_instance: deposit,
     ignore: ['completion_timestamp'],
@@ -104,7 +104,7 @@ const approveDeposit = async function (req, res) {
 
   let { original_deposit, updated_deposit: deposit } = deposit_result;
 
-  user.logAction('modified', { 
+  await user.logAction('modified', { 
     previous_instance: original_deposit, 
     updated_instance: deposit,
     ignore: ['completion_timestamp', 'depositor_user_id'],

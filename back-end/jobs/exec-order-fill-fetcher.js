@@ -45,7 +45,7 @@ module.exports.JOB_BODY = async (config, log) => {
     `, { model: ExecutionOrder }))
 
     if(err) {
-        logError(log, null, '[ERROR.1A]', 'placed orders retrieval from database', err);
+        await logError(log, null, '[ERROR.1A]', 'placed orders retrieval from database', err);
         return;
     }
 
@@ -64,7 +64,7 @@ module.exports.JOB_BODY = async (config, log) => {
     }));
 
     if(err) {
-        logError(log, null, '[ERROR.1B]', 'placed order fills retrieval from database', err);
+        await logError(log, null, '[ERROR.1B]', 'placed order fills retrieval from database', err);
         return;
     }
 
@@ -82,7 +82,7 @@ module.exports.JOB_BODY = async (config, log) => {
         log(`2.(EXEC-${placed_order.id}) Checking if order is simulated.`);
         let [ err, is_simulated ] = await to(module.exports.isSimulated(placed_order.id, models.sequelize));
         if(err) {
-            logError(log, placed_order, `[ERROR.2A](EXEC-${placed_order.id})`, 'simulation checking', err);
+            await logError(log, placed_order, `[ERROR.2A](EXEC-${placed_order.id})`, 'simulation checking', err);
             placed_order.failed_attempts++;
             return updateOrderStatus(placed_order, queries, logs);
         }
@@ -99,7 +99,7 @@ module.exports.JOB_BODY = async (config, log) => {
                 placed_order.completed_timestamp = placed_order.previous('completed_timestamp');;
                 placed_order.failed_attempts++;
 
-                logError(log, placed_order, `[ERROR.2B](EXEC-${placed_order.id})`, 'simulation of fills', err);
+                await logError(log, placed_order, `[ERROR.2B](EXEC-${placed_order.id})`, 'simulation of fills', err);
                 return updateOrderStatus(placed_order, queries, logs);
             }
 
@@ -116,14 +116,14 @@ module.exports.JOB_BODY = async (config, log) => {
         let exchange = null;
         [ err, exchange ] = await to(ccxtUtils.getConnector(placed_order.exchange_id));
         if(err) {
-            logError(log, placed_order, `[ERROR.3A](EXEC-${placed_order.id})`, 'exchange connection fetching', err);
+            await logError(log, placed_order, `[ERROR.3A](EXEC-${placed_order.id})`, 'exchange connection fetching', err);
             placed_order.failed_attempts++;
             return updateOrderStatus(placed_order, actions, logs);
         }
         
 
         if(!exchange) {
-            logError(log, placed_order, `[ERROR.3B](EXEC-${placed_order.id})`, 'exchange connection fetching', 'Unable to find exchange connection');
+            await logError(log, placed_order, `[ERROR.3B](EXEC-${placed_order.id})`, 'exchange connection fetching', 'Unable to find exchange connection');
             placed_order.failed_attempts++;
             return updateOrderStatus(placed_order, queries, logs);
         }
@@ -134,13 +134,13 @@ module.exports.JOB_BODY = async (config, log) => {
         [ err, external_order ] = await to(fetchOrderFromExchange(placed_order, exchange, log));
         
         if(err){
-            logError(log, placed_order, `[ERROR.3C](EXEC-${placed_order.id})`, `order fetching from exchange ${exchange.name}`, err);
+            await logError(log, placed_order, `[ERROR.3C](EXEC-${placed_order.id})`, `order fetching from exchange ${exchange.name}`, err);
             placed_order.failed_attempts++; 
             return updateOrderStatus(placed_order, queries, logs);
         }
 
         if(!external_order) {
-            logError(log, placed_order, `[ERROR.3D](EXEC-${placed_order.id})`, `order fetching from exchange ${exchange.name}`, `Could not find order with external id ${placed_order.external_identifier}`);
+            await logError(log, placed_order, `[ERROR.3D](EXEC-${placed_order.id})`, `order fetching from exchange ${exchange.name}`, `Could not find order with external id ${placed_order.external_identifier}`);
             placed_order.failed_attempts++; //Not marked as Failed, in case it's only a connection issue.
             return updateOrderStatus(placed_order, queries, logs);
         }
@@ -195,7 +195,7 @@ module.exports.JOB_BODY = async (config, log) => {
             [ err, result ] = await to(handleFillsWithTrades(placed_order, external_order, exchange, placed_order_fills));
   
             if(err) {
-                logError(log, placed_order, `[ERROR.5A](EXEC-${placed_order.id})`, 'fetching trades from exchange', err);
+                await logError(log, placed_order, `[ERROR.5A](EXEC-${placed_order.id})`, 'fetching trades from exchange', err);
                 placed_order.failed_attempts++;
                 return updateOrderStatus(placed_order, queries, logs);
             }
@@ -438,7 +438,7 @@ module.exports.JOB_BODY = async (config, log) => {
         }
 
         //In this case theexecution order was closed on the exchange after being placed there. We should change the status.
-
+        
         if(placed_order.status === Failed) placed_order.status = placed_order.filled_amount.gt(0) ? PartiallyFilled : NotFilled;
 
         if(placed_order.changed()) {
@@ -479,7 +479,7 @@ module.exports.JOB_BODY = async (config, log) => {
 
          if(err) return logError(log, placed_order, '[ERROR.6A]', 'changes being saved to the database', err);
 
-         logs.map(l => logAction(...l));
+         await Promise.all(logs.map(l => logAction(...l)));
 
          return queries;
 
@@ -566,7 +566,7 @@ const logError = async (log, placed_order, tag = '[ERROR]', when = '', error) =>
     const error_message = _.isObject(error) ? error.message : error;
 
     log(`${tag} Error occured during ${when}: ${error_message}`);
-    logAction(actions.error, {
+    await logAction(actions.error, {
         args: { error: `Error occured during ${when}: ${error_message}` },
         relations: { execution_order_id: placed_order ? placed_order.id : null },
         log_level: ACTIONLOG_LEVELS.Error

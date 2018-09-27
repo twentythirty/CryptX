@@ -58,10 +58,10 @@ const changeStatus = async function (asset_id, new_status, user) {
     relations: { asset_id }
   }
   if(user) {
-    user.logAction('assets.status', log_options);
+    await user.logAction('assets.status', log_options);
   }
   else {
-    logAction('assets.status', log_options);
+    await logAction('assets.status', log_options);
   }
 
   return status;

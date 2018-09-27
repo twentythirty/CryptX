@@ -95,15 +95,15 @@ module.exports.JOB_BODY = async (config, log) => {
                     return !ticker || !_.isNumber(ticker.ask) || !_.isNumber(ticker.bid);
                 });
 
-                if (failed_instruments.length) // check if the are failed to fetch instruments
-                    _.map(failed_instruments, (failed_instrument) => {
+                if (failed_instruments.length) {
+                    await Promise.all(_.map(failed_instruments, (failed_instrument) => {
                         let [ticker, mapping] = failed_instrument;
 
                         let failed_prices = [];
                         if (!_.isNumber(ticker.ask)) failed_prices.push('ask');
                         if (!_.isNumber(ticker.bid)) failed_prices.push('bid');
 
-                        logAction(actions.instrument_without_data, { 
+                        return logAction(actions.instrument_without_data, { 
                             args: {
                                 types: failed_prices,
                                 instruments: mapping.external_instrument_id,
@@ -111,7 +111,8 @@ module.exports.JOB_BODY = async (config, log) => {
                             },
                             relations: { exchange_id: exchange.id }
                         });
-                    });
+                    }));
+                } // check if the are failed to fetch instruments
                 
                 return fetched_market_data;
             })
@@ -140,8 +141,8 @@ module.exports.JOB_BODY = async (config, log) => {
             return config.models.sequelize.queryInterface.bulkInsert('instrument_market_data', market_data);
         else
             return "No records inserted!";
-    }).catch(err => {
-        logAction(actions.job_error, {
+    }).catch(async err => {
+        await logAction(actions.job_error, {
             args: {
                 error: err.message
             },
