@@ -1,11 +1,12 @@
 import { Injectable , Injector} from '@angular/core';
 import { HttpInterceptor, HttpRequest, HttpHandler, HttpEvent, HttpResponse, HttpErrorResponse } from '@angular/common/http';
 import { MatSnackBar } from '@angular/material';
-import {throwError as observableThrowError,  Observable } from 'rxjs';
+import { throwError as observableThrowError,  Observable } from 'rxjs';
 import { tap, catchError } from 'rxjs/operators';
 import * as _ from 'lodash';
 
 import { AuthService } from '../../services/auth/auth.service';
+import { Router } from '@angular/router';
 
 
 @Injectable()
@@ -29,7 +30,7 @@ export class PreRequestAuthInterceptor implements HttpInterceptor {
 @Injectable()
 export class PostRequestAuthInterceptor implements HttpInterceptor {
 
-  constructor(public authService: AuthService) {}
+  constructor(public authService: AuthService, private router: Router) {}
 
   intercept(request: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
 
@@ -49,10 +50,10 @@ export class PostRequestAuthInterceptor implements HttpInterceptor {
           if (err instanceof HttpErrorResponse) {
             if (err.status === 401) { // if returns error code unauthorized
               this.authService.deauthorize();
+              this.router.navigate(['login']);
             }
 
             if (err.status === 403) {
-              // console.log('User didn\'t have permissions needed');
               this.authService.refreshPermissions().subscribe(data => {
                 // do something with permission renewed permission data
               });
