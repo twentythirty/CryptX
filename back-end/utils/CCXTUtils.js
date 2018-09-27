@@ -71,7 +71,13 @@ const cache_init_promise = async () => {
             con_by_api[exchange.api_id] = connector;
         });
 
-        return Promise.all(_.map(con_by_id, (connector, id) => connector.load_markets()))
+        _.forEach(con_by_id, (connector, id) => {
+            //did the connector fail to load its markets and become unuseable
+            connector.loading_failed = false
+
+            //did the connector try loading its markets yet
+            connector.markets_loaded = false
+        })
     })
 }
 
@@ -83,30 +89,67 @@ const from_exchange_data = async (map_id, map_api, exchange_data) => {
         await cache_init_promise();
     }
 
+    let connector = null;
+
     //fetch data by parameter type
 
     //is numeric? JS has no good check, 
     //source: https://stackoverflow.com/a/16655847
     if (Number(parseFloat(exchange_data)) === exchange_data) {
-        return map_id[exchange_data];
+        connector = map_id[exchange_data];
     }
 
     //is api_id string
-    if (typeof exchange_data === 'string') {
-        return map_api[exchange_data];
+    if (connector == null && typeof exchange_data === 'string') {
+        connector = map_api[exchange_data];
     }
 
     //is full object, try either cache
-    if (typeof exchange_data === 'object') {
-        let result = map_id[exchange_data.id];
-        if (result == null) {
-            result = map_api[exchange_data.api_id];
+    if (connector == null && typeof exchange_data === 'object') {
+        connector = map_id[exchange_data.id];
+        if (connector == null) {
+            connector = map_api[exchange_data.api_id];
         }
-
-        return result;
     }
 
-    return null;
+    if (connector != null) {
+
+        if (connector.markets_loaded) {
+            return connector;
+        }
+        return connector.loadMarkets().then(markets => {
+            connector.markets_loaded = true;
+            connector.loading_failed = true;
+
+            return connector;
+        }).catch(ex => {
+            connector.markets_loaded = true;
+            connector.loading_failed = true;
+
+            //performing logging with relations
+            const message = ex? ex.message : 'N\\A';
+            let logOpts = {
+                args: {
+                    error: `[${connector.id}-${load_markets}]: ${message}`
+                },
+                log_level: ACTIONLOG_LEVELS.Error
+            };
+            //we can try get exchange id for relation if whats passed wasnt an api_id string
+            if (typeof exchange_data !== 'string') {
+                logOpts = Object.assign(logOpts, {
+                    relations: {
+                        exchange_id: (typeof exchange_data === 'object'? exchange_data.id : exchange_data)
+                    }
+                })
+            }
+            console.error(`\x1b[41m[CONNECTOR ${connector.id}]\x1b[0m ERROR: ${message}`);
+            logAction('universal.error', logOpts);
+
+            return connector;
+        })
+    } else {
+        return null;
+    }
 }
 
 /**
@@ -115,7 +158,10 @@ const from_exchange_data = async (map_id, map_api, exchange_data) => {
  * 
  * async to prevent race conditions while the connectors cache loads.
  * 
- * `exchange_data` - An identifying piece of exchange data, such as exchange id, exchange api_id or full exchange object 
+ * @param { String | Number | Object } exchange_data - An identifying piece of exchange data, such as exchange id, exchange api_id or full exchange object 
+ * 
+ * @returns { Object | null } the exchange connector or `null` if not found for this data. The connector migth FAIL to load data,
+ * check the `loading_failed` boolean property before use
  */
 const getConnector = async (exchange_data) => {
     return await from_exchange_data(con_by_id, con_by_api, exchange_data);
@@ -132,7 +178,7 @@ module.exports.getConnector = getConnector;
  * 
  * async to prevent race conditions while the connectors cache loads.
  * 
- * `exchange_data` - An identifying piece of exchange data, such as exchange id, exchange api_id or full exchange object 
+  * @param { String | Number | Object } exchange_data - An identifying piece of exchange data, such as exchange id, exchange api_id or full exchange object  
  */
 const getThrottle = async (exchange_data) => {
     return await from_exchange_data(lim_by_id, lim_by_api, exchange_data);
@@ -154,12 +200,18 @@ const allConnectors = async (exchange_ids = []) => {
         await cache_init_promise();
     }
 
+    let connectors = {};
     //return all connectors if no filter
     if (_.isNull(exchange_ids) || _.isEmpty(exchange_ids)) {
-        return con_by_id
+        connectors = con_by_id
     } else {
-        return _.pickBy(con_by_id, (con, id) => exchange_ids.includes(Number(id)))
+        connectors = _.pickBy(con_by_id, (con, id) => exchange_ids.includes(Number(id)))
     }
+
+    //make sure the connectors markets are loaded or attempted to
+    return _.mapValues(connectors, async (con, id) => {
+        return await from_exchange_data(con_by_id, con_by_api, id)
+    });
 };
 module.exports.allConnectors = allConnectors;
 
