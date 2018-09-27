@@ -117,11 +117,10 @@ const from_exchange_data = async (map_id, map_api, exchange_data) => {
         if (connector.markets_loaded) {
             return connector;
         }
-        return connector.loadMarkets().then(markets => {
+        await connector.loadMarkets().then(markets => {
             connector.markets_loaded = true;
-            connector.loading_failed = true;
+            connector.loading_failed = false;
 
-            return connector;
         }).catch(ex => {
             connector.markets_loaded = true;
             connector.loading_failed = true;
@@ -144,9 +143,9 @@ const from_exchange_data = async (map_id, map_api, exchange_data) => {
             }
             console.error(`\x1b[41m[CONNECTOR ${connector.id}]\x1b[0m ERROR: ${message}`);
             logAction('universal.error', logOpts);
+        });
 
-            return connector;
-        })
+        return connector;
     } else {
         return null;
     }
@@ -191,7 +190,10 @@ module.exports.getThrottle = getThrottle;
  * 
  * Optionally filtered to list of exchange ids provided
  * 
- * async to ensure loaded markets
+ * async to ensure loaded markets. If a list of exchange ids is provided, 
+ * only the requested id markets get loaded
+ * 
+ * @param {Number[]} exchange_ids ids of exchanges to get connectors for
  */
 const allConnectors = async (exchange_ids = []) => {
 
@@ -209,9 +211,12 @@ const allConnectors = async (exchange_ids = []) => {
     }
 
     //make sure the connectors markets are loaded or attempted to
-    return _.mapValues(connectors, async (con, id) => {
-        return await from_exchange_data(con_by_id, con_by_api, id)
-    });
+    for(let exchange_id of Object.keys(connectors)) {
+
+        connectors[exchange_id] = await from_exchange_data(con_by_id, con_by_api, Number(exchange_id));
+    }
+
+    return connectors;
 };
 module.exports.allConnectors = allConnectors;
 

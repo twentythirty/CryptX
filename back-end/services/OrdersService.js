@@ -493,6 +493,9 @@ const changeRecipeOrderGroupStatus = async (user_id, order_group_id, status, com
                     if (connector == null) {
                         TE(`Can't approve recipe order ${recipe_order.id}: No connector found for exchange ${exchange.name}!`)
                     }
+                    if (connector.loading_failed) {
+                        TE(`Can't approve recipe order ${recipe_order.id}: Connector for ${exchange.name} faield to load markets!`);
+                    }
 
                     const mapping = _.find(exchange_mappings, mapping => mapping.instrument_id == recipe_order.instrument_id && recipe_order.target_exchange_id == mapping.exchange_id);
                     if (mapping == null) {
