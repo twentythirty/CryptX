@@ -433,30 +433,41 @@ When(/^I select an Instrument which is (not mapped|mapped) to (.*)$/, async func
 
     is_mapped = (is_mapped === 'mapped');
 
+    let exchange_names = exchange_name.split(/and|\,/g).map(name => name.trim());
+
     const { Exchange, Instrument, InstrumentExchangeMapping, sequelize } = require('../../../models');
     const { Op } = sequelize;
 
-    const exchange = await Exchange.findOne({
-        where: { name: exchange_name }
+    const exchanges = await Exchange.findAll({
+        where: { name: exchange_names }
     });
 
-    expect(exchange, `Expected to find an exchange with the name ${exchange_name}`).to.be.not.null;
+    expect(exchanges.length, `Expected to find an exchange with the name/names ${exchange_name}`).to.be.greaterThan(0);
 
-    this.current_exchange = exchange;
+    this.current_exchanges = exchanges;
+    if(exchange_names) this.current_exchange = exchanges.find(e => e.name === exchange_names[0]);
 
-    let include_where = { exchange_id: exchange.id };
+    let mapping_where = { exchange_id: exchanges.map(e => e.id) };
 
-    if(!is_mapped) include_where = {
-        exchange_id: { [Op.ne]: exchange.id }
+    if(!is_mapped) mapping_where = {
+        exchange_id: { [Op.notIn]: exchanges.map(e => e.id) }
     };
 
-    const instrument = await Instrument.findOne({
-        include: {
-            model: InstrumentExchangeMapping,
-            required: true,
-            where: include_where
-        }
+    const mappings = await InstrumentExchangeMapping.findAll({
+        attributes: [
+            'instrument_id',
+            [ sequelize.fn('count', 'instrument_id'), 'mapped_exchanges' ]
+        ],
+        group: ['instrument_id'],
+        where: mapping_where,
+        raw: true
     });
+
+    const matching_mapping = mappings.find(m => parseInt(m.mapped_exchanges) >= exchange_names.length);
+
+    expect(matching_mapping, `Expect to find an instrument which is mapped to ${exchange_name}`).to.be.not.undefined;
+
+    const instrument = await Instrument.findById(matching_mapping.instrument_id);
 
     expect(instrument, `Expected to find an instrument which was mapped to ${exchange_name}`).to.be.not.null;
 
