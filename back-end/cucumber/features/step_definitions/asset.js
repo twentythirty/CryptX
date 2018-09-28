@@ -94,11 +94,11 @@ Given(/^the system has some (.*) Assets$/, async function(type) {
 
 });
 
-Given(/^the system has Asset Market Capitalization for the last (.*) hours$/, {
+Given(/^the system has Asset Market Capitalization for the last (.*) (hours|days)$/, {
     timeout: 15000
-}, async function (hours) {
+}, async function (interval, interval_type) {
 
-    hours = parseInt(hours);
+    interval = parseInt(interval);
 
     const now = new Date();
 
@@ -111,13 +111,26 @@ Given(/^the system has Asset Market Capitalization for the last (.*) hours$/, {
         Op
     } = sequelize;
 
-    const last_hours = [];
+    const intervals = [];
 
-    for (let hour = 0; hour <= hours; hour += 2) {
+    for (let i = 0; i <= interval; i++) {
 
-        const new_hour = new Date(now);
-        new_hour.setHours(now.getHours() - hour);
-        last_hours.unshift(new_hour);
+        const new_time = new Date(now);
+
+        switch(interval_type) {
+
+            case 'days':
+                new_time.setDate(now.getDate() - i);
+                break;
+
+            case 'hours':
+            default:
+                new_time.setHours(now.getHours() - i);
+                break;
+
+        };
+        
+        intervals.unshift(new_time);
 
     }
 
@@ -129,7 +142,7 @@ Given(/^the system has Asset Market Capitalization for the last (.*) hours$/, {
     const current_capitalization = await AssetMarketCapitalization.count({
         where: {
             timestamp: {
-                [Op.gte]: new Date().setHours(now.getHours() - hours)
+                [Op.gte]: intervals[0].getTime() - 60000 //Add a safety minute
             }
         },
         distinct: true,
@@ -138,7 +151,7 @@ Given(/^the system has Asset Market Capitalization for the last (.*) hours$/, {
 
     if (assets.length === current_capitalization) return;
 
-    let market_cap = _.concat(...last_hours.map(hour => {
+    let market_cap = _.concat(...intervals.map(int => {
         let total_cap = 0;
 
         let base_capitalization = assets.map(asset => {
@@ -146,7 +159,7 @@ Given(/^the system has Asset Market Capitalization for the last (.*) hours$/, {
             total_cap += capitalization;
 
             return {
-                timestamp: hour,
+                timestamp: int,
                 capitalization_usd: capitalization,
                 asset_id: asset.id
             };
@@ -166,13 +179,55 @@ Given(/^the system has Asset Market Capitalization for the last (.*) hours$/, {
         return AssetMarketCapitalization.destroy({
             where: {
                 timestamp: {
-                    [Op.lte]: new Date().setHours(now.getHours() - hours)
+                    [Op.lte]: intervals[0].getTime() - 60000
                 }
             },
             transaction
         }).then(() => {
-            return AssetMarketCapitalization.bulkCreate(market_cap);
+            return AssetMarketCapitalization.bulkCreate(market_cap, { transaction });
         });
+    });
+
+});
+
+Given(/^some Assets only have Market Capitalization for the last (.*) (hours|days)$/, async function(interval, interval_type) {
+
+    interval = parseInt(interval);
+
+    const since = new Date();
+
+    const { Asset, AssetMarketCapitalization, sequelize } = require('../../../models');
+    const { Op } = sequelize;
+
+    switch(interval_type) {
+
+        case 'days':
+            since.setDate(since.getDate() - interval);
+            break;
+
+        case 'hours':
+        default:
+            since.setHours(since.getHours() - interval);
+            break;
+
+    };
+
+    const assets = await Asset.findAll({
+        where: {},
+        raw: true,
+        limit: _.random(10, 50, false),
+        order: sequelize.literal('random()')
+    });
+
+    this.current_assets = assets;
+
+    return AssetMarketCapitalization.destroy({
+        where: {
+            asset_id: assets.map(a => a.id),
+            timestamp: {
+                [Op.lte]: since
+            }
+        }
     });
 
 });
@@ -212,6 +267,14 @@ Given('the system has updated the Market History Calculation', async function() 
             type: MARKET_HISTORY_CALCULATION_TYPES.NVT
         }
     }));
+
+});
+
+Given('the system does not have Market History Calculations', function() {
+
+    const { MarketHistoryCalculation } = require('../../../models');
+
+    return MarketHistoryCalculation.destroy({ where: { } });
 
 });
 
@@ -774,6 +837,55 @@ Then('a new Asset Status Change entry is not created', async function() {
 
     expect(asset, 'Expected not to find an asset with the new status').to.be.undefined;
     
+});
+
+Then('the system will save the NVT calculations of the Assets', async function() {
+
+    const { MarketHistoryCalculation, sequelize } = require('../../../models');
+    const { NVT_MA_DAYS } = require('../../../jobs/market-history-calc');
+
+    const calculations = await MarketHistoryCalculation.findAll({
+        where: { type: MARKET_HISTORY_CALCULATION_TYPES.NVT },
+        raw: true 
+    });
+
+    expect(calculations.length).to.be.greaterThan(0, 'Expected find Market Calculations');
+
+    for(let calc of calculations) {
+
+        expect(calc.type).to.equal(MARKET_HISTORY_CALCULATION_TYPES.NVT, 'Expected the calculation type to be NVT');
+        expect(calc.timestamp).to.be.a('date', 'Expected the calculation timestamp to be a date');
+        expect(parseFloat(calc.value)).to.be.a('number', 'Expected the calculation value to be a number');
+
+        const [ expected_nvt ] = await sequelize.query(`
+            SELECT avg(nvt) AS nvt, asset_id
+            FROM (
+                SELECT asset_id, avg(capitalization_usd / daily_volume_usd) AS nvt
+                FROM asset_market_capitalization
+                WHERE asset_id = ${calc.asset_id} AND "timestamp" > NOW() - INTERVAL '${NVT_MA_DAYS} days'
+                GROUP BY asset_id
+            ) As daily_nvt
+            GROUP BY asset_id
+        `, { type: sequelize.QueryTypes.SELECT });
+
+        expect(calc.value).to.equal(expected_nvt.nvt, 'Expected the NVT calculation to match');
+
+    };
+
+});
+
+Then('Assets that don\'t have Market Capitalization data for the last 7 days will be ignored', async function() {
+
+    const { MarketHistoryCalculation, sequelize } = require('../../../models');
+
+    const calculations = await MarketHistoryCalculation.count({
+        where: {
+            asset_id: this.current_assets.map(asset => asset.id)
+        }
+    });
+
+    expect(calculations).to.equal(0, 'Expected not to find calculation for Assets that don\'t have market data for the last 7 days');
+
 });
 
 const queryAssetByType = (type, limit = 1, id = null) => {

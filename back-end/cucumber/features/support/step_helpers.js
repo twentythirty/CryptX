@@ -8,7 +8,8 @@ const descriptionToJobFile = {
     'generate execution orders': 'exec-order-generator',
     'fetch instrument volumes': 'exchange-volume-fetcher',
     'fetch instruments ask/bid prices': 'exchange-ask-bid-fetcher',
-    'place execution orders on exchanges': 'cucumber-exchange-order-placer'
+    'place execution orders on exchanges': 'cucumber-exchange-order-placer',
+    'calculate market history': 'market-history-calc'
 }
 
 /**

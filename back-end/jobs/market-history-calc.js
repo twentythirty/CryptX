@@ -6,6 +6,7 @@ module.exports.SCHEDULE = '0 0 1 * * *';
 module.exports.NAME = 'CALC_MH';
 
 const NVT_MA_DAYS = 7;
+module.exports.NVT_MA_DAYS = NVT_MA_DAYS;
 
 const dailyNVTTemplate = (dayFrom, asset_ids_string) => { 
     return `
@@ -87,7 +88,7 @@ module.exports.JOB_BODY = async (config, log) => {
                 }
                 
                 //insert all in one query
-                sequelize.queryInterface.bulkInsert('market_history_calculation',
+                return sequelize.queryInterface.bulkInsert('market_history_calculation',
                     _.map(results, obj => {
 
                         return {
