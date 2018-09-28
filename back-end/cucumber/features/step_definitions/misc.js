@@ -99,7 +99,9 @@ When('I provide a rationale', function () {
         'Random rational 4'
     ];
 
-    this.current_rationale = rationales[_.random(0, rationales.length - 1, false)];
+    this.current_rationale = _.get(World, '_current_scenario.pickle.name');
+
+    if(!this.current_rationale) this.current_rationale = this.current_rationale = rationales[_.random(0, rationales.length - 1, false)];
 
 });
 

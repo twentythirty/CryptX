@@ -40,7 +40,8 @@ async function generateExecutionOrders(amount, order_status, for_exchange) {
     const {
         ExecutionOrder,
         Instrument,
-        InstrumentExchangeMapping
+        InstrumentExchangeMapping,
+        ActionLog
     } = require('../../../models');
     const ccxtUtil = require('../../../utils/CCXTUtils');
 
@@ -258,6 +259,40 @@ Given('the Exchange does not support Trade fetching', async function() {
 
 });
 
+Given('the Pending Execution Orders Failed to be placed on the Exchanges', async function(){
+
+    const models = require('../../../models');
+    const { ExecutionOrder } = models;
+    const job = require('../../../jobs/cucumber-exchange-order-placer');
+    const config = { models };
+
+    //make broken execution orders
+    await ExecutionOrder.update({ total_quantity: -1 }, {
+        where: { status: EXECUTION_ORDER_STATUSES.Pending }
+    });
+
+    config.execution_orders = await ExecutionOrder.findAll({
+        where: { status: EXECUTION_ORDER_STATUSES.Pending }
+    });
+
+    let tolerance = 0;
+    while(tolerance < 50) {
+        tolerance++;
+
+        await job.JOB_BODY(config, console.log);
+
+        const remaining_orders = await ExecutionOrder.count({
+            where: { status: EXECUTION_ORDER_STATUSES.Pending }
+        });
+
+        if(remaining_orders === 0) break;
+
+    }
+
+    expect(tolerance).to.be.lessThan(50, 'Execution Orders failed to fail after 50 cycles');
+
+});
+
 When('the system does the task "fetch execution order information" until the Execution Orders are no longer in progress', async function () {
 
     const models = require('../../../models');
@@ -309,6 +344,66 @@ When('the system does the task "fetch execution order information" until the Exe
     expect(tolerance).to.be.lessThan(50, 'Execution orders failed to fill up after 50 job cucles');
 
     for(let connector of connectors) connector.has['fetchTrades'] = true;
+
+});
+
+When(/^I select a (.*) Execution Order$/, async function(status) {
+
+    const { ExecutionOrder } = require('../../../models');
+
+    const order = await ExecutionOrder.findOne({
+        where: { status: EXECUTION_ORDER_STATUSES[status] }
+    });
+
+    expect(order, `Expected to find an Execution Order with status ${status}`).to.not.be.null;
+
+    this.current_execution_order = order;
+
+});
+
+When('I see logs related to the the failure from the Execution Order details', async function() {
+
+    return chai
+        .request(this.app)
+        .get(`/v1/execution_orders/${this.current_execution_order.id}`)
+        .set('Authorization', World.current_user.token)
+        .then(result => {
+
+            expect(result).to.have.status(200);
+            expect(result.body.execution_order).to.be.an('object', 'Expected to have a execution order object inside the body response');
+
+            this.current_response = result;
+
+            const logs = result.body.action_logs;
+
+            expect(logs.length).to.be.greaterThan(0, 'Expected the logs to be not an empty array');
+
+            const error_logs = logs.filter(l => l.translationKey === 'logs.execution_orders.error');
+            
+            const failure_logs = logs.filter(l => l.translationKey === 'logs.execution_orders.failed_attempts');
+
+            expect(error_logs.length).to.equal(SYSTEM_SETTINGS.EXEC_ORD_FAIL_TOLERANCE, 'Expected the amount of error logs to be same as the max allowed number');
+            expect(failure_logs.length).to.equal(1, 'Expected only to have log stating that the order failed');
+
+        });
+
+});
+
+When('I retry the Execution Order', async function() {
+
+    return chai
+        .request(this.app)
+        .post(`/v1/execution_orders/${this.current_execution_order.id}/change_status`)
+        .set('Authorization', World.current_user.token)
+        .send({ status: EXECUTION_ORDER_STATUSES.Pending })
+        .then(result => {
+
+            expect(result).to.have.status(200);
+            expect(result.body.status).to.equal(`execution_orders.status.${EXECUTION_ORDER_STATUSES.Pending}`, 'Expected to received a translated Pending status');
+            
+            this.current_response = result;
+
+        });
 
 });
 
@@ -737,4 +832,58 @@ Then('the price of Fills will equal to the price of the Execution Order', async 
 
     }
     
+});
+
+Then(/^the Execution Order status will be (.*)$/, async function(status) {
+
+    const { ExecutionOrder } = require('../../../models');
+
+    const order = await ExecutionOrder.findById(this.current_execution_order.id);
+
+    expect(order, 'Expected to find the current Execution Order').to.be.not.null;
+
+    expect(order.status).to.equal(EXECUTION_ORDER_STATUSES[status], `Expected the Execution Order to have status ${status}`);
+
+    this.current_execution_order = order;
+
+});
+
+Then('the number of failed attempts on the Executon Order will reset back to 0', function() {
+
+    expect(this.current_execution_order.failed_attempts).to.equal(0, 'Expected the failed attempts of the Execution Order to be back to 0');
+
+});
+
+Then('the system won\'t allow me to retry Execution Orders with status other than Failed', async function() {
+
+    const { ExecutionOrder, sequelize } = require('../../../models');
+    const { Op } = sequelize;
+
+    const not_failed_order = await ExecutionOrder.findOne({
+        where: {
+            status: { [Op.ne]: EXECUTION_ORDER_STATUSES.Failed }
+        }
+    });
+
+    expect(not_failed_order, 'Expected to find a non Failed Execution Order').to.be.not.null;
+
+    return chai
+        .request(this.app)
+        .post(`/v1/execution_orders/${this.current_execution_order.id}/change_status`)
+        .set('Authorization', World.current_user.token)
+        .send({ status: EXECUTION_ORDER_STATUSES.Pending })
+        .catch(result => {
+
+            expect(result).to.have.status(422);
+            
+            const error = result.response.body.error;
+
+            expect(error).to.equal('Only Execution orders with the status Failed can be reinitiated',
+                'Expected the error to contain information about not being allowed to reinitiate an Execution Order whose status is not Failed'
+            );
+
+            this.current_response = result;
+
+        });
+
 });

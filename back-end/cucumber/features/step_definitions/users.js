@@ -116,7 +116,7 @@ Given(/^the system has (a|an) (.*)$/, async function(a, role_name) {
     const permisisons_categoriy_mapping = {
         investment_manager: [PERMISSIONS_CATEGORIES.INVESTMENT_RUN, PERMISSIONS_CATEGORIES.RECIPE_RUN, PERMISSIONS_CATEGORIES.OTHER],
         depositor: [PERMISSIONS_CATEGORIES.INSTRUMENTS],
-        trader: [PERMISSIONS_CATEGORIES.ORDERS],
+        trader: [PERMISSIONS_CATEGORIES.INVESTMENT_RUN, PERMISSIONS_CATEGORIES.ORDERS],
         compliance_manager: [PERMISSIONS_CATEGORIES.OTHER, PERMISSIONS_CATEGORIES.INSTRUMENTS]
     };
 

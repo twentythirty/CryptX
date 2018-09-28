@@ -374,7 +374,7 @@ When(/^I (.*) (the|an|any) Asset$/, async function (action, pointer) {
     this.current_asset = asset;
 
     this.current_action = status;
-
+    
     return chai
         .request(this.app)
         .post(`/v1/assets/${asset.id}/change_status`)
@@ -773,7 +773,7 @@ Then('a new Asset Status Change entry is not created', async function() {
     const [ asset ] = await sequelize.query(queryAssetByType(this.current_action, 1, this.current_asset.id), { model: Asset });
 
     expect(asset, 'Expected not to find an asset with the new status').to.be.undefined;
-
+    
 });
 
 const queryAssetByType = (type, limit = 1, id = null) => {

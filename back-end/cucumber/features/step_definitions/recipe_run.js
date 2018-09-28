@@ -69,7 +69,7 @@ Given('at least one recipe run detail is missing an exchange instrument mapping'
     //take one of the instrumetns without mappings
     let empty_instrument;
     if (no_mapping_instruments.length > 0) {
-        empty_instrument = no_mapping_instruments[no_mapping_instruments.length == 1? 0 : _.random(0, no_mapping_instruments.length, false)];
+        empty_instrument = no_mapping_instruments[no_mapping_instruments.length == 1? 0 : _.random(0, no_mapping_instruments.length - 1, false)];
     } else {
         //create new one if they dont exist
         empty_instrument = await Instrument.create({

@@ -3,6 +3,7 @@ const app = require('../../../app');
 
 const sinon = require('sinon');
 const ccxtUtils = require('../../../utils/CCXTUtils');
+const ccxtUnified = require('../../../utils/ccxtUnified');
 const fake_ccxt_methods = require('./stubs/ccxt_methods');
 
 const exchanges = require('./stubs/exchanges');

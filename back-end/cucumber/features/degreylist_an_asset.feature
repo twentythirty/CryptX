@@ -26,6 +26,6 @@ Feature: Degreylist an asset
         When I log onto CryptX as Compliance Manager
         And I select a Greylisted Asset
         But I provide an empty rationale
-        And I Degreylist an Asset
+        And I Degreylist the Asset
         Then the system displays an error about not providing a valid rationale
         And a new Asset Status Change entry is not created
