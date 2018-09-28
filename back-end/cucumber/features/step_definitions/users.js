@@ -117,7 +117,7 @@ Given(/^the system has (a|an) (.*)$/, async function(a, role_name) {
         investment_manager: [PERMISSIONS_CATEGORIES.INVESTMENT_RUN, PERMISSIONS_CATEGORIES.RECIPE_RUN, PERMISSIONS_CATEGORIES.OTHER],
         depositor: [PERMISSIONS_CATEGORIES.INSTRUMENTS],
         trader: [PERMISSIONS_CATEGORIES.INVESTMENT_RUN, PERMISSIONS_CATEGORIES.ORDERS],
-        compliance_manager: [PERMISSIONS_CATEGORIES.OTHER, PERMISSIONS_CATEGORIES.INSTRUMENTS]
+        compliance_manager: [PERMISSIONS_CATEGORIES.OTHER, PERMISSIONS_CATEGORIES.INSTRUMENTS, PERMISSIONS_CATEGORIES.LIQUIDITY]
     };
 
     const { User, Role, Permission, PermissionsCategory, sequelize } = require('../../../models');

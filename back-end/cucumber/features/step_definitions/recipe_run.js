@@ -52,7 +52,7 @@ Given('at least one recipe run detail is missing an exchange instrument mapping'
     chai.assert.isArray(run_details, `Recipe run ${recipe_run.id} did not have details array!`);
     chai.assert.isAbove(run_details.length, 0, `Recipe run ${recipe_run.id} generated 0 recipe run details!`);
 
-    let a_detail = run_details[run_details.length == 1? 0 : _.random(0, run_details.length, false)];
+    let a_detail = run_details[run_details.length == 1? 0 : _.random(0, run_details.length - 1, false)];
     const sequelize = require('../../../models').sequelize;
     const Instrument = require('../../../models').Instrument;
 

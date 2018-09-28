@@ -411,6 +411,32 @@ When('I retrieve the Instrument Exchange Mappings related to it', function(){
     
 });
 
+When(/^I select an Instrument which is mapped to (.*)$/, async function(exchange_name) {
+
+    const { Exchange, Instrument, InstrumentExchangeMapping } = require('../../../models');
+
+    const exchange = await Exchange.findOne({
+        where: { name: exchange_name }
+    });
+
+    expect(exchange, `Expected to find an exchange with the name ${exchange_name}`).to.be.not.null;
+
+    this.current_exchange = exchange;
+
+    const instrument = await Instrument.findOne({
+        include: {
+            model: InstrumentExchangeMapping,
+            required: true,
+            where: { exchange_id: exchange.id }
+        }
+    });
+
+    expect(instrument, `Expected to find an instrument which was mapped to ${exchange_name}`).to.be.not.null;
+
+    this.current_instrument = instrument;
+
+});
+
 Then('the new Instrument is saved to the database', async function() {
 
     const { Instrument } = require('../../../models');
