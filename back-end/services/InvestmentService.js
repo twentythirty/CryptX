@@ -156,7 +156,7 @@ module.exports.createInvestmentRun = createInvestmentRun;
  * "recipe_deposit_id", "recipe_order_group_id", "recipe_order_id", "execution_order_id"
  * @param {*} status_number 
  */
-const changeInvestmentRunStatus = async function (identifying_value, status_number) {
+const changeInvestmentRunStatus = async function (identifying_value, status_number, transaction = null) {
   // check for valid recipe run status
   if (!Object.values(INVESTMENT_RUN_STATUSES).includes(parseInt(status_number, 10)))
     TE(`Unknown investment run status ${status_number}!`);
@@ -176,10 +176,11 @@ const changeInvestmentRunStatus = async function (identifying_value, status_numb
     updated_timestamp: new Date()
   });
 
-  [err, investment_run] = await to(investment_run.save());
-  if (err) TE(err.message);
+  const save_options = {};
+  if(transaction) save_options.transaction = transaction;
 
-  return investment_run;
+  return investment_run.save(save_options);
+
 };
 module.exports.changeInvestmentRunStatus = changeInvestmentRunStatus;
 
@@ -204,34 +205,54 @@ const createRecipeRun = async function (user_id, investment_run_id) {
     else TE("No more recipe runs can be generated after one was already approved.");
   }
 
-  [err, investment_run] = await to(this.changeInvestmentRunStatus(
-    investment_run_id,
-    INVESTMENT_RUN_STATUSES.RecipeRun
-  ));
-  if (err) TE(err.message);
+  [err, investment_run] = await to(InvestmentRun.findById(investment_run_id));
+
+  if(err) TE(er.message);
+  if(!investment_run) return null;
 
   [err, recipe_run_details] = await to(this.generateRecipeDetails(investment_run.id, investment_run.strategy_type), false);
   if (err) TE(err.message);
 
-  [err, recipe_run] = await to(sequelize.transaction(transaction =>
-    RecipeRun.create({
-      created_timestamp: new Date(),
-      investment_run_id,
-      user_created_id: user_id,
-      approval_status: RECIPE_RUN_STATUSES.Pending,
-      approval_comment: '',
-
-      RecipeRunDetails: recipe_run_details.map(detail => {
-        detail.RecipeRunDetailInvestments = detail.detail_investment;
-        return detail;
-      })
-    }, {
-      include: [{
-        model: RecipeRunDetail,
-        include: RecipeRunDetailInvestment
-      }], // include to create investment amounts with investment run
+  [err] = await to(sequelize.transaction(transaction => {
+    return RecipeRun.findOne({
+      where: {
+        investment_run_id: investment_run.id,
+        approval_status: {
+          [Op.in]: [RECIPE_RUN_STATUSES.Pending, RECIPE_RUN_STATUSES.Approved]
+        }
+      },
       transaction
-    })
+    }).then(recipe_count => {
+
+      if(recipe_count) {
+        if (recipe_run.approval_status === RECIPE_RUN_STATUSES.Pending) TE("There is already recipe run pending approval");
+        else TE("No more recipe runs can be generated after one was already approved.");
+      }
+
+      return RecipeRun.create({
+        created_timestamp: new Date(),
+        investment_run_id,
+        user_created_id: user_id,
+        approval_status: RECIPE_RUN_STATUSES.Pending,
+        approval_comment: '',
+  
+        RecipeRunDetails: recipe_run_details.map(detail => {
+          detail.RecipeRunDetailInvestments = detail.detail_investment;
+          return detail;
+        })
+      }, {
+        include: [{
+          model: RecipeRunDetail,
+          include: RecipeRunDetailInvestment
+        }], // include to create investment amounts with investment run
+        transaction
+      }).then(new_recipe_run => {
+        recipe_run = new_recipe_run;
+
+        return this.changeInvestmentRunStatus(investment_run_id, INVESTMENT_RUN_STATUSES.RecipeRun, transaction);
+      });
+    });
+  }
   ));
 
   if (err) TE(err.message);
