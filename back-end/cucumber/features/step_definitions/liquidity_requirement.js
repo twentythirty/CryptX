@@ -148,3 +148,29 @@ Then('I can add another Requirement to the same Instrument by choosing a differe
         });
 
 });
+
+Then(/^the system will display an error about my selected instrument not having mappings for (.*)$/, async function(exchange_name) {
+
+    const { Exchange } = require('../../../models');
+
+    let exchange = this.current_exchange;
+
+    if(!exchange || exchange.name !== exchange_name) {
+
+        exchange = await Exchange.findOne({
+            where: { name: exchange_name }
+        });
+
+        expect(exchange, `Expected to find Exchange with name ${exchange_name}`).to.be.not.null;
+
+        this.current_exchange = exchange;
+
+    }
+
+    expect(this.current_response).to.have.status(422);
+
+    const error = this.current_response.response.body.error;
+
+    expect(error).to.equal(`Exchange with id "${exchange.id}" is not mapped to instrument with id "${this.current_instrument.id}"`);
+
+});

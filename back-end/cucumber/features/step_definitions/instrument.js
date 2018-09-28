@@ -75,6 +75,24 @@ Given(/^the system has Instrument Mappings for (.*)$/, async function (exchange_
     
 });
 
+Given(/^the system is missing Instrument Mappings for (.*)$/, async function(exchange_name) {
+
+    const { Exchange, InstrumentExchangeMapping } = require('../../../models');
+
+    const exchange = await Exchange.findOne({
+        where: { name: exchange_name }
+    });
+
+    expect(exchange, `Expected to find Exchange with the name ${exchange_name}`).to.not.be.null;
+
+    this.current_exchange = exchange;
+
+    return InstrumentExchangeMapping.destroy({
+        where: { exchange_id: exchange.id }
+    });
+
+});
+
 Given(/^there is an Instrument that can be Mapped to (.*)$/, async function(exchange_name) {
     
     const { Exchange, Asset, Instrument, InstrumentExchangeMapping, sequelize } = require('../../../models');
@@ -411,9 +429,12 @@ When('I retrieve the Instrument Exchange Mappings related to it', function(){
     
 });
 
-When(/^I select an Instrument which is mapped to (.*)$/, async function(exchange_name) {
+When(/^I select an Instrument which is (not mapped|mapped) to (.*)$/, async function(is_mapped, exchange_name) {
 
-    const { Exchange, Instrument, InstrumentExchangeMapping } = require('../../../models');
+    is_mapped = (is_mapped === 'mapped');
+
+    const { Exchange, Instrument, InstrumentExchangeMapping, sequelize } = require('../../../models');
+    const { Op } = sequelize;
 
     const exchange = await Exchange.findOne({
         where: { name: exchange_name }
@@ -423,11 +444,17 @@ When(/^I select an Instrument which is mapped to (.*)$/, async function(exchange
 
     this.current_exchange = exchange;
 
+    let include_where = { exchange_id: exchange.id };
+
+    if(!is_mapped) include_where = {
+        exchange_id: { [Op.ne]: exchange.id }
+    };
+
     const instrument = await Instrument.findOne({
         include: {
             model: InstrumentExchangeMapping,
             required: true,
-            where: { exchange_id: exchange.id }
+            where: include_where
         }
     });
 
