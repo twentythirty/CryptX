@@ -14,7 +14,7 @@ export class ExecutionOrder {
   public status: string;
   public submission_time: number;
   public completion_time: number;
-  public filled_quantity: number;
+  public filled_quantity: string;
 
   constructor(data: ExecutionOrder) {
     Object.assign(this, data);

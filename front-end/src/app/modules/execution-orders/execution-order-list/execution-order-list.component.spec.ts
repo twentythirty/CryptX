@@ -1,53 +1,20 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
-import { extraTestingModules, fakeAsyncResponse } from '../../../testing/utils';
+import { extraTestingModules, fakeAsyncResponse, click } from '../../../testing/utils';
 
 import { ExecutionOrdersModule } from '../execution-orders.module';
 import { ExecutionOrderListComponent } from './execution-order-list.component';
-import { ExecutionOrdersService, OrderAllResponse } from '../../../services/execution-orders/execution-orders.service';
-
-
-const ExecutionOrdersServiceStub = {
-  getAllExecutionOrders: () => {
-    return fakeAsyncResponse<OrderAllResponse>({
-      success: true,
-      execution_orders: [
-        {
-          id: 50117,
-          investment_run_id: 28,
-          recipe_order_id: 189,
-          instrument_id: 3872,
-          instrument: 'XEM/BTC',
-          side: 'execution_orders.side.999',
-          exchange_id: 1,
-          exchange: 'Binance',
-          type: 'execution_orders.type.71',
-          price: null,
-          total_quantity: '335',
-          exchange_trading_fee: null,
-          status: 'execution_orders.status.62',
-          submission_time: 1535711110007,
-          completion_time: null,
-          filled_quantity: 0.29
-        },
-      ],
-      footer: [],
-      count: 1
-    });
-  },
-
-  getHeaderLOV: () => {
-    return fakeAsyncResponse([
-      { value: 'value 1' },
-      { value: 'value 2' },
-      { value: 'value 3' },
-    ]);
-  }
-};
+import { ExecutionOrdersService } from '../../../services/execution-orders/execution-orders.service';
+import { getAllExecutionOrdersData } from '../../../testing/service-mock/executionOrders.service.mock';
+import { testHeaderLov } from '../../../testing/commonTests';
 
 
 describe('ExecutionOrderListComponent', () => {
   let component: ExecutionOrderListComponent;
   let fixture: ComponentFixture<ExecutionOrderListComponent>;
+  let executionOrdersService: ExecutionOrdersService;
+  let navigateSpy;
+  let getExecutionOrdersDataSpy;
+  let headerLovColumns: Array<string>;
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
@@ -56,7 +23,7 @@ describe('ExecutionOrderListComponent', () => {
         ...extraTestingModules
       ],
       providers: [
-        { provide: ExecutionOrdersService, useValue: ExecutionOrdersServiceStub }
+        ExecutionOrdersService,
       ]
     })
     .compileComponents();
@@ -65,6 +32,12 @@ describe('ExecutionOrderListComponent', () => {
   beforeEach(() => {
     fixture = TestBed.createComponent(ExecutionOrderListComponent);
     component = fixture.componentInstance;
+    headerLovColumns = ['instrument', 'side', 'exchange', 'type', 'status' ];
+    executionOrdersService = fixture.debugElement.injector.get(ExecutionOrdersService);
+    getExecutionOrdersDataSpy = spyOn (executionOrdersService, 'getAllExecutionOrders').and.returnValue(
+      fakeAsyncResponse(getAllExecutionOrdersData));
+    navigateSpy = spyOn(component.router, 'navigate');
+
     fixture.detectChanges();
   });
 
@@ -73,11 +46,24 @@ describe('ExecutionOrderListComponent', () => {
     expect(component).toBeTruthy();
   });
 
-  it('should correctly load deposits on init', () => {
-    ExecutionOrdersServiceStub.getAllExecutionOrders().subscribe(res => {
-      expect(component.orderDataSource.body).toEqual(res.execution_orders);
-      expect(component.orderDataSource.footer).toEqual(res.footer);
-      expect(component.count).toEqual(component.count);
+  it('should correctly load execution orders table data on init', () => {
+    fixture.whenStable().then(() => {
+      expect(component.orderDataSource.body).toEqual(getAllExecutionOrdersData.execution_orders);
+      expect(component.orderDataSource.footer).toEqual(getAllExecutionOrdersData.footer);
+      expect(component.count).toEqual(getAllExecutionOrdersData.count);
+    });
+  });
+
+  it('should set header LOV observables for specified columns', () => {
+    fixture.whenStable().then(() => testHeaderLov(component.orderDataSource, headerLovColumns));
+  });
+
+  it('should be navigated to investment run execution orders step on table row click', () => {
+    fixture.whenStable().then(() => {
+      fixture.detectChanges();
+      const tableRow = fixture.nativeElement.querySelector('table tbody tr');
+      click(tableRow);
+      expect(navigateSpy).toHaveBeenCalledWith(['/run/execution-order-fill/', getAllExecutionOrdersData.execution_orders[0].id]);
     });
   });
 
