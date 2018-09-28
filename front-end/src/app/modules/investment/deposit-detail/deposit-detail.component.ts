@@ -248,4 +248,12 @@ export class DepositDetailComponent extends TimelineDetailComponent implements O
   closeConversionAmountModal() {
     this.showConversionAmountModal = false;
   }
+
+  showCalculateDeposits(): boolean {
+    return this.listDataSource.body && this.listDataSource.body.every(item => item.status === AssetConversionStatus.Completed);
+  }
+
+  calculateDeposits() {
+
+  }
 }

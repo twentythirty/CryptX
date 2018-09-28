@@ -77,7 +77,7 @@ export class TimelineComponent implements OnInit {
         return !events.recipe_run;
 
       case 'recipe_deposits':
-        return !events.recipe_deposits;
+        return !events.recipe_run || events.recipe_run.approval_status !== 'recipes.status.43';
 
       case 'recipe_orders':
         if (this.authService.hasPermissions(['VIEW_ORDERS'])) {

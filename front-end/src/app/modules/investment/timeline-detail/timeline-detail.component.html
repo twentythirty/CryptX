@@ -39,6 +39,13 @@
   
   <div class="top-controls" *ngIf="listTitle">
     <span class="headline-title">{{ listTitle }}</span>
+    <a
+      *ngIf="showCalculateDeposits()"
+      class="btn start"
+      (click)="calculateDeposits()"
+    >
+      <span>{{ 'deposits.calculate_deposits' | translate }}</span>
+    </a>
   </div>
 
   <app-data-table
