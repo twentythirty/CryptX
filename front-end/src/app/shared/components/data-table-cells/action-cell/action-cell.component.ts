@@ -5,6 +5,7 @@ export class DataCellAction {
   label: string;
   className?: string;
   exec: (row: any) => void;
+  loading?: () => boolean = () => false;
   isShown?: (row: any) => boolean = (row) => true;
 
   constructor(val: DataCellAction) {

@@ -112,7 +112,14 @@
         right: 9px;
         bottom: 10px;
     }
+
+    p {
+        &.error {
+            color: #F74F61;
+        }
+    }
 }
+
 
 .form-item-caledar {
     width: 100%;

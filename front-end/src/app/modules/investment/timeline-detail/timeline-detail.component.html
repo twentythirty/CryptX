@@ -101,3 +101,31 @@
     <app-btn class="right" (onClick)="hideReadModal()">{{ 'common.done' | translate }}</app-btn>
   </div>
 </app-modal>
+
+
+<app-modal
+  *ngIf="showConversionAmountModal"
+  [heading]="'conversion.converted_amount' | translate"
+  (close)="closeConversionAmountModal()"
+>
+  <form [formGroup]="conversionAmountForm">
+    <app-input-item
+      type="number"
+      class="form-item"
+      [label]="'conversion.please_specify_converted_amount' | translate"
+      [placeholder]="'conversion.enter_converted_amount' | translate"
+      [formGroup]="conversionAmountForm"
+      formControlName="amount"
+    ></app-input-item>
+
+    <p *ngIf="conversionAmountModalError" class="error">
+      {{ conversionAmountModalError }}
+    </p>
+
+    <app-btn
+      class="right"
+      (onClick)="updateConversionAmount()"
+      [disabled]="conversionAmountForm.invalid || conversionAmountFormLoading"
+    >{{ 'common.confirm' | translate }}</app-btn>
+  </form>
+</app-modal>

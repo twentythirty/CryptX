@@ -31,4 +31,18 @@
     &.ico-check-mark {
         background-image: url($imagePath + "icons/action-true.svg");
     }
+
+    &.remove-icon {
+        background-image: none;
+    }
+
+
+    .mat-progress-spinner {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        margin: auto;
+    }
  }

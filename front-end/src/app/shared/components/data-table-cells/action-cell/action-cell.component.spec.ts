@@ -1,4 +1,5 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { MatProgressSpinnerModule } from '@angular/material';
 
 import { ActionCellComponent } from './action-cell.component';
 
@@ -8,7 +9,12 @@ describe('ActionCellComponent', () => {
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ ActionCellComponent ]
+      declarations: [
+        ActionCellComponent,
+      ],
+      imports: [
+        MatProgressSpinnerModule,
+      ]
     })
     .compileComponents();
   }));

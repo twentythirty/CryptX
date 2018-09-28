@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
+import { FormGroup, FormControl, Validators } from '@angular/forms';
 import { mergeMap, finalize } from 'rxjs/operators';
 
 import { StatusClass } from '../../../shared/models/common';
@@ -18,7 +19,8 @@ import {
   NumberCellDataColumn
 } from '../../../shared/components/data-table-cells';
 
-import { InvestmentService } from '../../../services/investment/investment.service';
+import { InvestmentService, AssetConversionStatus } from '../../../services/investment/investment.service';
+
 
 @Component({
   selector: 'app-deposit-detail',
@@ -32,6 +34,15 @@ export class DepositDetailComponent extends TimelineDetailComponent implements O
   public pageTitle = 'Recipe run';
   public singleTitle = 'Currency conversion';
   public listTitle = 'Deposits';
+
+  showConversionAmountModal: boolean = false;
+  conversionAmountFormLoading: boolean = false;
+  conversionAmountModalError: string;
+  conversionAmountForm = new FormGroup({
+    amount: new FormControl('', Validators.required)
+  });
+  updateConversionAmount: Function;
+  completeConversionLoading = false;
 
   /**
    * 2. Implement attributes to preset data structure
@@ -56,8 +67,8 @@ export class DepositDetailComponent extends TimelineDetailComponent implements O
     new TableDataColumn({ column: 'target_currency' }),
     new NumberCellDataColumn({ column: 'converted_amount' }),
     new StatusCellDataColumn({ column: 'status', inputs: { classMap: {
-      'asset_conversions.status.501' : StatusClass.PENDING,
-      'asset_conversions.status.502': StatusClass.APPROVED,
+      [AssetConversionStatus.Pending]: StatusClass.PENDING,
+      [AssetConversionStatus.Completed]: StatusClass.APPROVED,
     }}}),
     new ActionCellDataColumn({
       column: null,
@@ -66,14 +77,15 @@ export class DepositDetailComponent extends TimelineDetailComponent implements O
           new DataCellAction({
             label: '',
             className: 'ico-pencil',
-            isShown: (row: any) => true,
-            exec: (row: any) => {}
+            isShown: (row: any) => row.status !== AssetConversionStatus.Completed,
+            exec: (row: any) => this.openConversionAmountModal(row)
           }),
           new DataCellAction({
             label: '',
+            loading: () => this.completeConversionLoading,
             className: 'highlighted ico-check-mark',
-            isShown: (row: any) => true,
-            exec: (row: any) => this.completeConversion(row.id, row.converted_amount)
+            isShown: (row: any) => row.status !== AssetConversionStatus.Completed && row.converted_amount !== null,
+            exec: (row: any) => this.completeConversion(row)
           }),
         ]
       }
@@ -193,14 +205,47 @@ export class DepositDetailComponent extends TimelineDetailComponent implements O
     this.router.navigate(['/deposits/view', row.id]);
   }
 
-  completeConversion(conversionId: number, amount: number) {
-    this.investmentService.completeAssetConversion(conversionId, amount)
+
+  completeConversion(row: any) {
+    this.completeConversionLoading = true;
+
+    this.investmentService.completeAssetConversion(row.id, +row.converted_amount).pipe(
+      finalize(() => this.completeConversionLoading = false)
+    )
     .subscribe(
       res => {
-
+        Object.assign(row, res.conversion);
       }
     );
   }
 
+  openConversionAmountModal(row: any) {
+    this.showConversionAmountModal = true;
+    this.conversionAmountForm.controls.amount.setValue(row.converted_amount);
+    this.updateConversionAmount = this.updateConversionAmount_attr.bind(this, row);
+  }
 
+  private updateConversionAmount_attr(row) {
+    const amount = +this.conversionAmountForm.controls.amount.value;
+
+    this.conversionAmountFormLoading = true;
+
+    this.investmentService.submitAssetConversion(row.id, amount).pipe(
+      finalize(() => this.conversionAmountFormLoading = false)
+    )
+    .subscribe(
+      res => {
+        if (res.success) {
+          Object.assign(row, res.conversion);
+          this.closeConversionAmountModal();
+        } else {
+          this.conversionAmountModalError = res.error;
+        }
+      }
+    );
+  }
+
+  closeConversionAmountModal() {
+    this.showConversionAmountModal = false;
+  }
 }

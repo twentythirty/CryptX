@@ -600,6 +600,12 @@
     }
   },
 
+  "conversion": {
+    "converted_amount": "Converted amount",
+    "enter_converted_amount": "Enter converted amount",
+    "please_specify_converted_amount": "Please specify converted amount"
+  },
+
   "cold_storage_accounts": {
     "header": "Cold storage accounts",
     "new_account": "New account",

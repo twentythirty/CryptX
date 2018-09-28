@@ -1,6 +1,10 @@
-<button class="btn"
+<button
+  [type]="type"
+  class="btn"
   (click)="emitClick()"
   [class.thinner]="thinner"
   [class.grey]="grey"
-><ng-content></ng-content>
+  [disabled]="disabled"
+>
+  <ng-content></ng-content>
 </button>

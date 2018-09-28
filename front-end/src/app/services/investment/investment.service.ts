@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
-import { map, tap } from 'rxjs/operators';
+import { Observable, of } from 'rxjs';
+import { map, tap, catchError } from 'rxjs/operators';
 import * as _ from 'lodash';
 
 import { environment } from '../../../environments/environment';
@@ -23,9 +23,21 @@ export class ConversionsAllResponse {
   count: number;
 }
 
+export class ConversionSubmitResponse {
+  success: boolean;
+  conversion?: Conversion;
+  error?: string;
+}
+
 export class ConversionCompleteResponse {
   success: boolean;
   conversion: Conversion;
+}
+
+
+export enum AssetConversionStatus {
+  Pending = 'asset_conversions.status.501',
+  Completed = 'asset_conversions.status.502'
 }
 
 
@@ -340,8 +352,12 @@ export class InvestmentService {
     return this.http.post<ConversionsAllResponse>(this.baseUrl + `conversions/of_recipe/${recipeId}`, requestData);
   }
 
+  submitAssetConversion(conversionId: number, amount: number): Observable<ConversionSubmitResponse> {
+    return this.http.post<ConversionSubmitResponse>(this.baseUrl + `conversions/${conversionId}/submit`, { amount: amount });
+  }
+
   completeAssetConversion(conversionId: number, amount: number): Observable<ConversionCompleteResponse> {
-    return this.http.post<ConversionCompleteResponse>(this.baseUrl + `/conversions/${conversionId}/complete`, { amount: amount});
+    return this.http.post<ConversionCompleteResponse>(this.baseUrl + `conversions/${conversionId}/complete`, { amount: amount });
   }
 
 }

@@ -7,7 +7,16 @@
       *ngIf="action.isShown(row)"
       class="action-button"
       [ngClass]="action.className"
+      [class.remove-icon]="action.loading()"
       (click)="doAction(action, $event)"
-    ></label>
+    >
+      <mat-progress-spinner
+        *ngIf="action.loading()"
+        mode="indeterminate"
+        color="accent"
+        strokeWidth="1"
+        diameter="17"
+      ></mat-progress-spinner>
+    </label>
   </ng-container>
 </ng-container>

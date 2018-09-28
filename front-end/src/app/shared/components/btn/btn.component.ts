@@ -6,6 +6,8 @@ import { Component, Input, Output, EventEmitter } from '@angular/core';
   styleUrls: ['./btn.component.scss']
 })
 export class BtnComponent {
+  @Input() type: string = 'button';
+  @Input() disabled: boolean;
   @Input('thinner') thinner: boolean;
   @Input('grey') grey: boolean;
 
