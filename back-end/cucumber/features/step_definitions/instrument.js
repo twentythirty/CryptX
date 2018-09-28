@@ -434,6 +434,7 @@ When(/^I select an Instrument which is (not mapped|mapped) to (.*)$/, async func
     is_mapped = (is_mapped === 'mapped');
 
     let exchange_names = exchange_name.split(/and|\,/g).map(name => name.trim());
+    if(exchange_name === 'all Exchanges') exchange_names = ['Binance', 'Bitfinex', 'OKEx']; //Only MVP
 
     const { Exchange, Instrument, InstrumentExchangeMapping, sequelize } = require('../../../models');
     const { Op } = sequelize;
@@ -463,7 +464,7 @@ When(/^I select an Instrument which is (not mapped|mapped) to (.*)$/, async func
         raw: true
     });
 
-    const matching_mapping = mappings.find(m => parseInt(m.mapped_exchanges) >= exchange_names.length);
+    const matching_mapping = mappings.find(m => parseInt(m.mapped_exchanges) >= exchanges.length);
 
     expect(matching_mapping, `Expect to find an instrument which is mapped to ${exchange_name}`).to.be.not.undefined;
 

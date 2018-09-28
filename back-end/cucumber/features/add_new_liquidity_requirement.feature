@@ -28,5 +28,13 @@ Feature: Add a new liquidity requiremen
         And I add a Liquidity Requirement for OKEx
         Then the system will display an error about my selected instrument not having mappings for OKEx
 
+    Scenario: new valid liquidity requirement for all exchanges
 
+        Given there are no Liquidity Requirements in the system
+        When I log onto CryptX as Compliance Manager
+        And I select an Instrument which is mapped to all Exchanges
+        And I add a Liquidity Requirement for all Exchanges
+        Then the new Liquidity Requirement is saved to the database
+        And no specific Exchange is assigned to the Liquidity Requirement
+        And I cannot add any more Liquidity Requirements for this Instrument
 

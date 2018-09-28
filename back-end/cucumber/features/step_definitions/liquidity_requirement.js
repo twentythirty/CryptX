@@ -46,7 +46,7 @@ When(/^I add a Liquidity Requirement for (.*)$/, async function(exchange_name) {
         minimum_circulation: _.random(1000, 10000, false)
     };
 
-    this.current_requiremnt = requirement;
+    this.current_request_body = requirement;
 
     return chai
         .request(this.app)
@@ -73,23 +73,25 @@ Then('the new Liquidity Requirement is saved to the database', async function() 
 
     const requirement = await InstrumentLiquidityRequirement.findOne({
         where: {
-            exchange: this.current_exchange.id,
-            instrument_id: this.current_instrument.id
+            exchange: this.current_request_body.exchange_id,
+            instrument_id: this.current_request_body.instrument_id
         }
     });
 
     expect(requirement, 'Expected to find the newely created liquidity Requirement').to.not.be.null;
 
-    expect(requirement.exchange).to.equal(this.current_requiremnt.exchange_id, 'Expected the Exchange Ids to match');
-    expect(requirement.instrument_id).to.equal(this.current_requiremnt.instrument_id, 'Expected the Instrument Ids to match');
-    expect(parseFloat(requirement.minimum_volume)).to.equal(this.current_requiremnt.minimum_circulation, 'Expected minimum volumes to match');
-    expect(requirement.periodicity_in_days).to.equal(this.current_requiremnt.periodicity, 'Expected the periodicity to match');
+    expect(requirement.exchange).to.equal(this.current_request_body.exchange_id, 'Expected the Exchange Ids to match');
+    expect(requirement.instrument_id).to.equal(this.current_request_body.instrument_id, 'Expected the Instrument Ids to match');
+    expect(parseFloat(requirement.minimum_volume)).to.equal(this.current_request_body.minimum_circulation, 'Expected minimum volumes to match');
+    expect(requirement.periodicity_in_days).to.equal(this.current_request_body.periodicity, 'Expected the periodicity to match');
+
+    this.current_liqudity_requirement = requirement;
 
 });
 
 Then('I cannot add another Requirement for the same Instrument and Exchange', function() {
 
-    let requirement = this.current_requiremnt;
+    let requirement = this.current_request_body;
 
     if(!requirement) requirement = {
         instrument_id: this.current_instrument.id,
@@ -172,5 +174,47 @@ Then(/^the system will display an error about my selected instrument not having 
     const error = this.current_response.response.body.error;
 
     expect(error).to.equal(`Exchange with id "${exchange.id}" is not mapped to instrument with id "${this.current_instrument.id}"`);
+
+});
+
+Then('no specific Exchange is assigned to the Liquidity Requirement', function() {
+
+    expect(this.current_liqudity_requirement.exchange, 'Expected the field "exchange" to be null').to.be.null;
+
+});
+
+Then('I cannot add any more Liquidity Requirements for this Instrument', async function() {
+
+    const { Exchange } = require('../../../models');
+
+    const exchanges = await Exchange.findAll();
+
+    const exchange_ids = [null, ...exchanges.map(e => e.id)];
+
+    for(let exchange_id of exchange_ids) {
+
+        const requirement = {
+            instrument_id: this.current_instrument.id,
+            exchange_id: exchange_id,
+            minimum_circulation: _.random(1000, 10000, false),
+            periodicity: _.random(2, 5, false)
+        };
+
+        await chai
+            .request(this.app)
+            .post(`/v1/liquidity_requirements/create`)
+            .set('Authorization', World.current_user.token)
+            .send(requirement)
+            .catch(result => {
+                
+                expect(result).to.have.status(422);
+                
+                const error = result.response.body.error;
+
+                expect(error).to.equal(`A requirement for instrument with id ${this.current_instrument.id} already exists for all exchanges`);
+
+            });
+
+    }
 
 });

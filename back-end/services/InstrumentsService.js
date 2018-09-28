@@ -286,6 +286,14 @@ const createLiquidityRequirement = async (instrument_id, periodicity, minimum_ci
         }
     });
 
+    for (let requirement of existingRequirements) {
+        const exchange = requirement.exchange;
+
+        if (!exchange) TE(`A requirement for instrument with id ${instrument_id} already exists for all exchanges`);
+
+        if (exchange === exchange_id) TE(`A requirement for instrument with id ${instrument_id} and exchange with id ${exchange_id} already exists`);
+    }
+
     //if exchange id is provided, it should check if the instrument is mapped for that exchange.
     if (exchange_id) {
 
@@ -298,14 +306,6 @@ const createLiquidityRequirement = async (instrument_id, periodicity, minimum_ci
 
         if (err) TE(err.message);
         if (!found_mapping) TE(`Exchange with id "${exchange_id}" is not mapped to instrument with id "${instrument_id}"`);
-    }
-
-    for (let requirement of existingRequirements) {
-        const exchange = requirement.exchange;
-
-        if (!exchange) TE(`A requirement for instrument with id ${instrument_id} already exists for all exchanges`);
-
-        if (exchange === exchange_id) TE(`A requirement for instrument with id ${instrument_id} and exchange with id ${exchange_id} already exists`);
     }
 
     const [err, liquidity_requirement] = await to(InstrumentLiquidityRequirement.create({
