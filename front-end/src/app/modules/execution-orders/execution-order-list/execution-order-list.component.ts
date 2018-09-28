@@ -75,7 +75,7 @@ export class ExecutionOrderListComponent extends DataTableCommonManagerComponent
 
   getFilterLOV(): void {
     this.orderDataSource.header.filter(
-      col => ['id', 'investment_run_id', 'instrument', 'side', 'exchange', 'type', 'status'].includes(col.column)
+      col => ['instrument', 'side', 'exchange', 'type', 'status'].includes(col.column)
     ).map(
       col => {
         col.filter.rowData$ = this.orderService.getHeaderLOV(col.column);
