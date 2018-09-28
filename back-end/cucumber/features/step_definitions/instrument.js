@@ -689,7 +689,7 @@ Then('the system creates a new entry for each ticker it fetched with a valid vol
 
 });
 
-Then('the timestamp difference should be 24 hours', function() {
+Then('the differenece in timestamps should be 24 hours', function() {
 
     for(let history of this.current_instrument_liquidity_history) {
 
@@ -728,7 +728,7 @@ Then('the system creates a new entry for each Instrument that has a valid mappin
 
 });
 
-Then('a log entry is created for each Instrument which did not have a price on the exchange', async function() {
+Then('a warning log entry is created for each Instrument which did not have a price on the exchange', async function() {
 
     const { ActionLog } = require('../../../models');
 

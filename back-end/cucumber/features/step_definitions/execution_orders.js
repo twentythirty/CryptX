@@ -469,7 +469,7 @@ Then('an Execution Order Fill is created for each Trade fetched from the exchang
 
 });
 
-Then('the Execution Order fee and total quantity will equal the sum of fees and quantities of Execution Order Fills', function() {
+Then('the Execution Order fee and total quantity will equal the sums of fees and quantities of Execution Order Fills', function() {
 
     for(let order of this.current_execution_orders) {
 

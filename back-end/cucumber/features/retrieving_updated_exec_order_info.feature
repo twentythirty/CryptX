@@ -15,7 +15,7 @@ Feature: Retrieving updated execution order information from exchanges
         When the system does the task "fetch execution order information" until the Execution Orders are no longer in progress
         Then the Execution Orders status will be FullyFilled
         And an Execution Order Fill is created for each Trade fetched from the exchange
-        And the Execution Order fee and total quantity will equal the sum of fees and quantities of Execution Order Fills
+        And the Execution Order fee and total quantity will equal the sums of fees and quantities of Execution Order Fills
         And the Execution Order price will equal to the weighted average of Fill prices
         And an Action Log is created for each new Execution Order Fill
         And an Action Log is created for each FullyFilled Order
@@ -30,7 +30,7 @@ Feature: Retrieving updated execution order information from exchanges
         And sums of fees and quantity of Fills will equal to Execution Order ones
         And the price of Fills will equal to the price of the Execution Order
 
-    Scenario: execution orders are closed before being filled
+    Scenario: execution orders are closed on the exchange before getting filled
 
         Given the Pending Execution Orders are placed on the exchanges
         But the Execution Orders expire on the exchange before getting filled

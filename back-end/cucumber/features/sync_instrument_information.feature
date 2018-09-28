@@ -14,14 +14,14 @@ Feature: Synchronization of Instrument information
         Given the system does not have Instrument Liquidity History
         When the system finished the task "fetch instrument volumes"
         Then the system creates a new entry for each ticker it fetched with a valid volume
-        And the timestamp difference should be 24 hours
+        And the differenece in timestamps should be 24 hours
 
     Scenario: fetch newest instruments ask and bid prices from exchanges
   
         Given the system does not have Instrument Market Data
         When the system finished the task "fetch instruments ask/bid prices"
         Then the system creates a new entry for each Instrument that has a valid mapping
-        And a log entry is created for each Instrument which did not have a price on the exchange
+        And a warning log entry is created for each Instrument which did not have a price on the exchange
 
 
     
