@@ -485,7 +485,7 @@
     "deposits_not_created": "Deposits are not created yet",
     "footer": {
       "id": "{{ id }} items",
-      "investment_run_id": "{{ investment_run_id }} ids",
+      "investment_run_id": "{{ investment_run_id }} items",
       "exchange_id": "{{ assets }} assets",
       "quote_asset": "{{ quote_asset }} assets",
       "exchange": "{{ exchange }} exchanges",

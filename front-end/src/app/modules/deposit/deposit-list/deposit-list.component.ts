@@ -19,6 +19,7 @@ export class DepositListComponent extends DataTableCommonManagerComponent implem
 
   public depositDataSource: TableDataSource = {
     header: [
+      { column: 'investment_run_id', nameKey: 'table.header.investment_run_id', filter: { type: 'number', hasRange: false, inputSearch: true, sortable: true } },
       { column: 'id', nameKey: 'table.header.id', filter: { type: 'number', hasRange: false, inputSearch: true, sortable: true } },
       { column: 'quote_asset', nameKey: 'table.header.deposit_currency', filter: { type: 'text', sortable: true } },
       { column: 'exchange', nameKey: 'table.header.exchange', filter: { type: 'text', sortable: true } },
@@ -31,6 +32,7 @@ export class DepositListComponent extends DataTableCommonManagerComponent implem
   };
 
   public depositColumnsToShow: Array<TableDataColumn> = [
+    new TableDataColumn({ column: 'investment_run_id' }),
     new TableDataColumn({ column: 'id' }),
     new TableDataColumn({ column: 'quote_asset' }),
     new TableDataColumn({ column: 'exchange' }),
