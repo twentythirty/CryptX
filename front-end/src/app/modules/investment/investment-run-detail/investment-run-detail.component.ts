@@ -186,7 +186,7 @@ export class InvestmentRunDetailComponent extends TimelineDetailComponent implem
   public getAllData(): void {
     this.route.params.pipe(
       mergeMap(
-        params => this.investmentService.getSingleInvestment(params['id']).pipe(
+        params => this.investmentService.getSingleInvestment(params['id'], this.requestData).pipe(
           finalize(() => this.stopTableLoading())
         )
       )

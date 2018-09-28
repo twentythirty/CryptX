@@ -178,8 +178,8 @@ export class InvestmentService {
    * Get single entities
    */
 
-  getSingleInvestment(investment_id: number): Observable<any> {
-    return this.http.post<any>(this.baseUrl + `investments/${investment_id}`, {});
+  getSingleInvestment(investment_id: number, requestData: EntitiesFilter): Observable<any> {
+    return this.http.post<any>(this.baseUrl + `investments/${investment_id}`, requestData);
   }
 
   getSingleRecipe(recipe_id: number): Observable<any> {
