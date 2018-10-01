@@ -116,15 +116,16 @@
 }
 
 .user-dropdown {
-  text-align: left;
-  background-color: white!important;
+    text-align: left;
+    background-color: white !important;
+
     .row{
-      border-bottom: 1px solid #DFE4E6;
-      padding-top: 15px;
-      padding-bottom: 15px;
-      color: #78909C;
-      font-size: small;
-  }
+        border-bottom: 1px solid #DFE4E6;
+        padding-top: 15px;
+        padding-bottom: 15px;
+        color: #78909C;
+        font-size: small;
+    }
 }
 
 .modal-table {
@@ -134,5 +135,16 @@
             padding-bottom: 10px;
             width: 100%;
         }
+    }
+}
+
+
+.conversion-amount-modal {
+    .modal-title {
+        margin-bottom: 30px;
+    }
+
+    .btn-cont {
+        text-align: right;
     }
 }

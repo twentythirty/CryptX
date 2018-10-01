@@ -28,6 +28,7 @@ export interface ITimelineDetailComponent {
   addTitle?: string;  // Optional
   singleTableEmptyText?: string; // Optional
   listTableEmptyText?: string; // Optional
+  depositApproveId?: number; // Optional
 
   showGenerateOrders?: boolean; // Optional
   showConversionAmountModal?: boolean; // Optional
@@ -48,6 +49,7 @@ export interface ITimelineDetailComponent {
   addAction?: () => void; // optional
 
   generateOrders?: () => void; // optional
+  showCalculateDeposits?: () => boolean; // optional
 
   openSingleRow: (row: any) => void; // optional
   openListRow: (row: any) => void; // optional
@@ -67,6 +69,7 @@ export interface ITimelineDetailComponent {
   readModalIsShown?: boolean;
   readData?: { title: string, content: string };
 
+  depositApproveUpdateData?: () => void;
 }
 
 export interface SingleTableDataSource extends TableDataSource {
@@ -75,7 +78,7 @@ export interface SingleTableDataSource extends TableDataSource {
     nameKey: string
     // Does not have a filter
   }>;
-  body: Array<object>;
+  body: Array<any>;
   footer?: undefined;
 }
 
@@ -109,7 +112,7 @@ export class TimelineDetailComponent extends DataTableCommonManagerComponent imp
   public addTitle: string;  // Optional
   public singleTableEmptyText: string; // Optional
   public listTableEmptyText: string; // Optional
-
+  public depositApproveId: number = null;
 
   public showGenerateOrders = false; // Optional
   public showConversionAmountModal = false; // Optional
@@ -179,6 +182,10 @@ export class TimelineDetailComponent extends DataTableCommonManagerComponent imp
     // Do nothing by default
   }
 
+  public showCalculateDeposits(): boolean {
+    return false;
+  }
+
   public openSingleRow(row: any): void {}
   public openListRow(row: any): void {}
 
@@ -239,5 +246,7 @@ export class TimelineDetailComponent extends DataTableCommonManagerComponent imp
     this.readModalIsShown = false;
     this.readData = null;
   }
+
+  depositApproveUpdateData(): void {}
 
 }

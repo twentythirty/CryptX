@@ -28,5 +28,6 @@ export default {
   ALTER_COLD_STORAGE_ACCOUNTS: 'perm_alter_cold_storage_accounts',
   CREATE_LIQUIDITY_REQUIREMENTS: 'perm_create_liquidity_requirements',
   VIEW_LIQUIDITY_REQUIREMENTS: 'perm_view_liquidity_requirements',
-  ADD_EXCHANGE_ACCOUNT: 'perm_add_exchange_account'
+  ADD_EXCHANGE_ACCOUNT: 'perm_add_exchange_account',
+  ALTER_ASSET_CONVERSIONS: 'perm_submit_conversions',
 };

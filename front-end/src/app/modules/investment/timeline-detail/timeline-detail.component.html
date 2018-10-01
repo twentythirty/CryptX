@@ -112,6 +112,7 @@
 
 <app-modal
   *ngIf="showConversionAmountModal"
+  class="conversion-amount-modal"
   [heading]="'conversion.converted_amount' | translate"
   (close)="closeConversionAmountModal()"
 >
@@ -129,10 +130,19 @@
       {{ conversionAmountModalError }}
     </p>
 
-    <app-btn
-      class="right"
-      (onClick)="updateConversionAmount()"
-      [disabled]="conversionAmountForm.invalid || conversionAmountFormLoading"
-    >{{ 'common.confirm' | translate }}</app-btn>
+    <div class="btn-cont">
+      <app-btn
+        class="right"
+        (onClick)="updateConversionAmount()"
+        [disabled]="conversionAmountForm.invalid || conversionAmountFormLoading"
+      >{{ 'common.confirm' | translate }}</app-btn>
+    </div>
   </form>
 </app-modal>
+
+
+<app-deposit-approve
+  #depositApprove
+  [depositId]="depositApproveId"
+  (updateData)="depositApproveUpdateData()"
+></app-deposit-approve>

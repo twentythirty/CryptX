@@ -13,8 +13,10 @@ import { DepositDetailComponent } from './deposit-detail/deposit-detail.componen
 import { ExecutionOrdersComponent } from './execution-orders/execution-orders.component';
 import { OrderGroupComponent } from './order-group/order-group.component';
 import { TimelineDetailComponent } from './timeline-detail/timeline-detail.component';
+
 import { AuthService } from '../../services/auth/auth.service';
 import { ModelConstantsService } from '../../services/model-constants/model-constants.service';
+import { DepositModule } from '../deposit/deposit.module';
 
 @NgModule({
   imports: [
@@ -22,6 +24,7 @@ import { ModelConstantsService } from '../../services/model-constants/model-cons
     BrowserModule,
     RouterModule, // TODO: Remove this when moving to lazy loaded modules
     SharedModule,
+    DepositModule,
   ],
   declarations: [
     InvestmentRunDetailComponent,

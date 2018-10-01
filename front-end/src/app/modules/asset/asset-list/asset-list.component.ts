@@ -20,8 +20,8 @@ import { AuthService } from '../../../services/auth/auth.service';
 import { ModelConstantsService } from '../../../services/model-constants/model-constants.service';
 import { Asset, AssetStatus } from '../../../shared/models/asset';
 import { StatusClass } from '../../../shared/models/common';
+import permissions from '../../../config/permissions';
 
-const INSTRUMENT_STATUS_CHANGES = 'INSTRUMENT_STATUS_CHANGES';
 
 @Component({
   selector: 'app-asset-list',
@@ -73,17 +73,17 @@ export class AssetListComponent extends DataTableCommonManagerComponent implemen
         actions: [
           new DataCellAction({
             label: 'De-greylist',
-            isShown: (row: any) => this.checkPerm(['CHANGE_ASSET_STATUS']) && row.statusCode === 402,
+            isShown: (row: any) => this.checkPerm([permissions.CHANGE_ASSET_STATUS]) && row.statusCode === 402,
             exec: (row: any) => this.deGreylist(<Asset>row)
           }),
           new DataCellAction({
             label: 'Blacklist',
-            isShown: (row: any) => this.checkPerm(['CHANGE_ASSET_STATUS']) && row.statusCode === 400,
+            isShown: (row: any) => this.checkPerm([permissions.CHANGE_ASSET_STATUS]) && row.statusCode === 400,
             exec: (row: any) => this.blacklist(<Asset>row)
           }),
           new DataCellAction({
             label: 'Whitelist',
-            isShown: (row: any) => this.checkPerm(['CHANGE_ASSET_STATUS']) && row.statusCode === 401,
+            isShown: (row: any) => this.checkPerm([permissions.CHANGE_ASSET_STATUS]) && row.statusCode === 401,
             exec: (row: any) => this.whitelist(<Asset>row)
           })
         ]

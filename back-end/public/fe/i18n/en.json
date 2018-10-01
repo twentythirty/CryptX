@@ -481,6 +481,7 @@
     "deposit": "Deposit",
     "deposit_management_activity_log": "Deposit management activity log",
     "deposits_not_created": "Deposits are not created yet",
+    "calculate_deposits" : "Calculate deposits",
     "footer": {
       "id": "{{ id }} items",
       "investment_run_id": "{{ investment_run_id }} items",

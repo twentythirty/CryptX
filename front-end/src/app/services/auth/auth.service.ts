@@ -67,13 +67,8 @@ export class AuthService {
       return false;
     }
 
-    if (perm_keys.some(perm_key => !PERMISSIONS.hasOwnProperty(perm_key))) {
-      console.error('Inexistant permission code supplied');
-      return false;
-    }
-
     return perm_keys.every(
-      perm_key => permissions.includes(PERMISSIONS[perm_key])
+      perm_key => permissions.includes(perm_key)
     );
   }
 

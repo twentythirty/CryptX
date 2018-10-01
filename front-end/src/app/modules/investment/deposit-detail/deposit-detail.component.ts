@@ -1,9 +1,11 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormGroup, FormControl, Validators } from '@angular/forms';
 import { mergeMap, finalize } from 'rxjs/operators';
+import * as _ from 'lodash';
 
 import { StatusClass } from '../../../shared/models/common';
+import permissions from '../../../config/permissions';
 
 import {
   TimelineDetailComponent,
@@ -18,8 +20,10 @@ import {
   ActionCellDataColumn,
   NumberCellDataColumn
 } from '../../../shared/components/data-table-cells';
+import { DepositApproveComponent } from '../../deposit/deposit-approve/deposit-approve.component';
 
 import { InvestmentService, AssetConversionStatus } from '../../../services/investment/investment.service';
+import { AuthService } from '../../../services/auth/auth.service';
 
 
 @Component({
@@ -44,6 +48,8 @@ export class DepositDetailComponent extends TimelineDetailComponent implements O
   updateConversionAmount: Function;
   completeConversionLoading = false;
 
+  depositApproveId: number;
+
   /**
    * 2. Implement attributes to preset data structure
    */
@@ -56,7 +62,6 @@ export class DepositDetailComponent extends TimelineDetailComponent implements O
       { column: 'target_currency', nameKey: 'table.header.target_currency' },
       { column: 'converted_amount', nameKey: 'table.header.converted_amount' },
       { column: 'status', nameKey: 'table.header.status' },
-      { column: '', nameKey: 'table.header.actions' },
     ],
     body: null
   };
@@ -70,26 +75,6 @@ export class DepositDetailComponent extends TimelineDetailComponent implements O
       [AssetConversionStatus.Pending]: StatusClass.PENDING,
       [AssetConversionStatus.Completed]: StatusClass.APPROVED,
     }}}),
-    new ActionCellDataColumn({
-      column: null,
-      inputs: {
-        actions: [
-          new DataCellAction({
-            label: '',
-            className: 'ico-pencil',
-            isShown: (row: any) => row.status !== AssetConversionStatus.Completed,
-            exec: (row: any) => this.openConversionAmountModal(row)
-          }),
-          new DataCellAction({
-            label: '',
-            loading: () => this.completeConversionLoading,
-            className: 'highlighted ico-check-mark',
-            isShown: (row: any) => row.status !== AssetConversionStatus.Completed && row.converted_amount !== null,
-            exec: (row: any) => this.completeConversion(row)
-          }),
-        ]
-      }
-    }),
   ];
 
 
@@ -119,6 +104,8 @@ export class DepositDetailComponent extends TimelineDetailComponent implements O
     }}}),
   ];
 
+  @ViewChild(DepositApproveComponent) depositApproveComponent: DepositApproveComponent;
+
   /**
    * 3. Call super() with ActivatedRoute
    * @param route - ActivatedRoute, used in DataTableCommonManagerComponent
@@ -126,6 +113,7 @@ export class DepositDetailComponent extends TimelineDetailComponent implements O
   constructor(
     public route: ActivatedRoute,
     public router: Router,
+    private authService: AuthService,
     private investmentService: InvestmentService,
   ) {
     super(route, router);
@@ -138,6 +126,11 @@ export class DepositDetailComponent extends TimelineDetailComponent implements O
 
   ngOnInit() {
     super.ngOnInit();
+
+    if (this.authService.hasPermissions([permissions.ALTER_ASSET_CONVERSIONS])) {
+      this.appendActionColumnForConversions();
+      this.appendActionColumnForDeposits();
+    }
   }
 
 
@@ -206,6 +199,37 @@ export class DepositDetailComponent extends TimelineDetailComponent implements O
   }
 
 
+  private appendActionColumnForConversions(): void {
+    _.remove(this.singleDataSource.header, ['column', 'action']);
+    _.remove(this.singleColumnsToShow, ['column', 'action']);
+
+    if (this.singleDataSource.body.some(row => row.status !== AssetConversionStatus.Completed)) {
+      this.singleDataSource.header.push({ column: 'action', nameKey: 'table.header.actions' });
+      this.singleColumnsToShow.push(
+        new ActionCellDataColumn({
+          column: 'action',
+          inputs: {
+            actions: [
+              new DataCellAction({
+                label: '',
+                className: 'ico-pencil',
+                isShown: (row: any) => row.status !== AssetConversionStatus.Completed,
+                exec: (row: any) => this.openConversionAmountModal(row)
+              }),
+              new DataCellAction({
+                label: '',
+                loading: () => this.completeConversionLoading,
+                className: 'highlighted ico-check-mark',
+                isShown: (row: any) => row.status !== AssetConversionStatus.Completed && row.converted_amount !== null,
+                exec: (row: any) => this.completeConversion(row)
+              }),
+            ]
+          }
+        })
+      );
+    }
+  }
+
   completeConversion(row: any) {
     this.completeConversionLoading = true;
 
@@ -247,13 +271,48 @@ export class DepositDetailComponent extends TimelineDetailComponent implements O
 
   closeConversionAmountModal() {
     this.showConversionAmountModal = false;
+    this.conversionAmountForm.reset();
   }
 
   showCalculateDeposits(): boolean {
-    return this.listDataSource.body && this.listDataSource.body.every(item => item.status === AssetConversionStatus.Completed);
+    return this.singleDataSource.body && this.singleDataSource.body.every(item => item.status === AssetConversionStatus.Completed);
   }
 
   calculateDeposits() {
 
   }
+
+
+  private appendActionColumnForDeposits(): void {
+    _.remove(this.listDataSource.header, ['column', 'action']);
+    _.remove(this.listColumnsToShow, ['column', 'action']);
+
+    if (this.listDataSource.body.some(row => row.status !== 'deposits.status.151')) {
+      this.listDataSource.header.push({ column: 'action', nameKey: 'table.header.action' });
+      this.listColumnsToShow.push(
+        new ActionCellDataColumn({
+          column: 'action',
+          inputs: {
+            actions: [
+              new DataCellAction({
+                label: '',
+                className: 'ico-pencil',
+                isShown: (row: any) => row.status !== 'deposits.status.151',
+                exec: (row: any) => {
+                  this.depositApproveId = row.id;
+                  this.depositApproveComponent.openModal();
+                }
+              }),
+            ]
+          }
+        })
+      );
+    }
+  }
+
+  depositApproveUpdateData() {
+    this.getAllData();
+    this.getTimelineData();
+  }
+
 }

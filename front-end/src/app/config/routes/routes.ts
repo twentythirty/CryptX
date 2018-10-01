@@ -4,6 +4,7 @@ import { RouterModule, Routes, CanActivate } from '@angular/router';
 import { AuthGuard } from './route-auth.guard';
 import { PermissionGuard } from './route-permission.guard';
 import { PendingChangesGuard } from './route-pending-changes.guard';
+import permissions from '../permissions';
 
 import { LoginComponent } from '../../modules/auth/login/login.component';
 import { PasswordResetComponent } from '../../modules/auth/password-reset/password-reset.component';
@@ -95,13 +96,13 @@ export const routes: Routes = [
     path: 'assets',
     component: AssetListComponent,
     canActivate: [AuthGuard, PermissionGuard],
-    data: { requiredPermission: ['VIEW_ASSETS']}
+    data: { requiredPermission: [permissions.VIEW_ASSETS]}
   },
   {
     path: 'assets/view/:assetId',
     component: AssetViewComponent,
     canActivate: [AuthGuard, PermissionGuard],
-    data: { requiredPermission: ['VIEW_ASSETS']}
+    data: { requiredPermission: [permissions.VIEW_ASSETS]}
   },
 
   {
@@ -123,7 +124,7 @@ export const routes: Routes = [
       { path: 'execution-orders/:id', component: ExecutionOrdersComponent},
     ],
     canActivate: [AuthGuard, PermissionGuard],
-    data: { requiredPermission: ['VIEW_INVESTMENT_RUN']}
+    data: { requiredPermission: [permissions.VIEW_INVESTMENT_RUN]}
   },
 
   {

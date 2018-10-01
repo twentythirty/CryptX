@@ -1,11 +1,10 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild } from '@angular/core';
 import { ActivatedRoute, Router, Params } from '@angular/router';
-import { FormGroup, FormControl, Validators } from '@angular/forms';
 import { Observable } from 'rxjs';
 import { filter } from 'rxjs/operators';
 import * as _ from 'lodash';
 
-import { DepositService, DepositResultData, DepositResponseData } from '../../../services/deposit/deposit.service';
+import { DepositService, DepositResultData } from '../../../services/deposit/deposit.service';
 import { InvestmentService } from '../../../services/investment/investment.service';
 import {
   ActionCellDataColumn,
@@ -16,6 +15,7 @@ import {
 import { TableDataSource, TableDataColumn } from '../../../shared/components/data-table/data-table.component';
 import { StatusClass } from '../../../shared/models/common';
 import { DepositStatus } from '../../../shared/models/deposit';
+import { DepositApproveComponent } from '../deposit-approve/deposit-approve.component';
 
 
 @Component({
@@ -26,13 +26,7 @@ import { DepositStatus } from '../../../shared/models/deposit';
 export class DepositInfoComponent implements OnInit {
 
   public depositId: number;
-  public depositStatus;
   public activityLog: Array<DepositStatus>;
-  public showConfirm = false;
-  public showModal = false;
-  public amount = '';
-  public management_fee = '';
-
   public timeline$: Observable<object>;
 
   public depositDataSource: TableDataSource = {
@@ -61,15 +55,12 @@ export class DepositInfoComponent implements OnInit {
     }}}),
   ];
 
-  depositForm = new FormGroup({
-    Amount: new FormControl('', [Validators.required]),
-    Management_fee: new FormControl('', [Validators.required]),
-  });
+  @ViewChild(DepositApproveComponent) depositApproveComponent: DepositApproveComponent;
 
   constructor(
     public route: ActivatedRoute,
-    protected depositService: DepositService,
     protected router: Router,
+    protected depositService: DepositService,
     protected investmentService: InvestmentService,
   ) {}
 
@@ -77,7 +68,7 @@ export class DepositInfoComponent implements OnInit {
     this.getDeposit();
   }
 
-  private getDeposit(): void {
+  getDeposit(): void {
     this.route.params.pipe(
       filter((params: Params) => params.depositId)
     ).subscribe(
@@ -89,7 +80,6 @@ export class DepositInfoComponent implements OnInit {
         this.depositService.getDeposit(this.depositId).subscribe(
           (res: DepositResultData) => {
             this.depositDataSource.body = [res.recipe_deposit];
-            this.depositStatus = [res.recipe_deposit];
             this.activityLog = res.action_logs;
             this.appendActionColumn();
           }
@@ -98,104 +88,36 @@ export class DepositInfoComponent implements OnInit {
     );
   }
 
-  onSetFilter(filterData): void {}
-
   appendActionColumn() {
-    if (!_.find(this.depositDataSource.header, col => col.column == 'action')) {
-      if (this.depositStatus[0].status === 'deposits.status.150') {
-        this.depositDataSource.header.push({ column: 'action', nameKey: 'table.header.action' });
-        this.depositColumnsToShow.push(
-          new ActionCellDataColumn({
-            column: null,
-            inputs: {
-              actions: [
-                new DataCellAction({
-                  label: '',
-                  className: 'highlighted ico-check-mark',
-                  isShown: (row: any) => true,
-                  exec: (row: any) => {
-                    this.showModal = true;
-                  }
-                }),
-              ]
-            }
-          })
-        );
-      }
-    }
-  }
+    _.remove(this.depositDataSource.header, ['column', 'action']);
+    _.remove(this.depositColumnsToShow, ['column', 'action']);
 
-  hideConfirm() {
-    this.showConfirm = false;
-    this.getDeposit();
-  }
-
-  hideModal() {
-    this.showModal = false;
-    this.depositForm.reset();
-  }
-
-  confirm() {
-    const obj = {
-      amount: parseFloat(this.amount),
-      deposit_management_fee: parseFloat(this.management_fee)
-    };
-
-    if (this.depositForm.valid) {
-      this.depositService.Submit(this.depositId, obj).subscribe(
-        (res: DepositResponseData) => {
-          if (res.success) {
-            this.hideModal();
-            this.showConfirm = true;
-          } else {
-            console.log(res.deposit);
+    if (this.depositDataSource.body[0].status === 'deposits.status.150') {
+      this.depositDataSource.header.push({ column: 'action', nameKey: 'table.header.action' });
+      this.depositColumnsToShow.push(
+        new ActionCellDataColumn({
+          column: 'action',
+          inputs: {
+            actions: [
+              new DataCellAction({
+                label: '',
+                className: 'highlighted ico-check-mark',
+                isShown: (row: any) => true,
+                exec: (row: any) => {
+                  this.depositApproveComponent.openModal();
+                }
+              }),
+            ]
           }
-        },
-        error => {
-          console.log('Error', error);
-        }, () => {
-        }
+        })
       );
-    } else {
-      this.markAsTouched(this.depositForm);
     }
-  }
-
-  markAsTouched(group) {
-    Object.keys(group.controls).map((field) => {
-      const control = group.get(field);
-
-      if (control instanceof FormControl) {
-        control.markAsTouched({ onlySelf: true });
-      } else if (control instanceof FormGroup) {
-        this.markAsTouched(control);
-      }
-    });
   }
 
   private getTimelineData(id: number): void {
     this.timeline$ = this.investmentService.getAllTimelineData({ recipe_deposit_id: id });
   }
 
-  send() {
-    const obj = {
-      amount: parseFloat(this.amount),
-      deposit_management_fee: parseFloat(this.management_fee)
-    };
-
-    this.depositService.Approve(this.depositId, obj).subscribe(
-      (data: DepositResponseData) => {
-        if (data.success) {
-          this.showConfirm = false;
-          this.getDeposit();
-        } else {
-          console.log(data.deposit);
-        }
-      },
-      error => {
-        console.log('Error', error);
-      }, () => {
-    });
-  }
+  onSetFilter(filterData): void {}
 
 }

@@ -2,6 +2,7 @@ import { Component, HostListener, ElementRef, OnInit, Input } from '@angular/cor
 import { Router } from '@angular/router';
 
 import { AuthService } from '../../../services/auth/auth.service';
+import permissions from '../../../config/permissions';
 
 @Component({
   selector: 'app-navigation',
@@ -25,27 +26,27 @@ export class NavigationComponent implements OnInit {
   }];
   selectedItem;
   public nav = [
-    {link: '/dashboard', permission: ['VIEW_INVESTMENT_RUN'], name: 'Dashboard', show: false },
+    {link: '/dashboard', permission: [permissions.VIEW_INVESTMENT_RUN], name: 'Dashboard', show: false },
     {name: 'Crypto Asset Management', show: false, items: [
-      {link: '/instruments', permission: ['VIEW_ROLES'], name: 'Instruments'},
-      {link: '/assets', permission: ['VIEW_ASSETS'], name: 'Assets'},
-      {link: '/liquidity_requirements', permission: ['VIEW_ROLES'], name: 'Liquidity requirements'},
+      {link: '/instruments', permission: [permissions.VIEW_ROLES], name: 'Instruments'},
+      {link: '/assets', permission: [permissions.VIEW_ASSETS], name: 'Assets'},
+      {link: '/liquidity_requirements', permission: [permissions.VIEW_ROLES], name: 'Liquidity requirements'},
     ]},
     {name: 'Investment', show: false, items: [
-      {link: '/recipe_runs', permission: ['ALTER_PERMS'], name: 'Recipe Runs'},
-      {link: '/orders', permission: ['ALTER_PERMS'], name: 'Orders'},
-      {link: '/deposits', permission: ['ALTER_PERMS'], name: 'Deposits'},
-      {link: '/execution_orders', permission: ['ALTER_PERMS'], name: 'Execution Orders'},
+      {link: '/recipe_runs', permission: [permissions.ALTER_PERMS], name: 'Recipe Runs'},
+      {link: '/orders', permission: [permissions.ALTER_PERMS], name: 'Orders'},
+      {link: '/deposits', permission: [permissions.ALTER_PERMS], name: 'Deposits'},
+      {link: '/execution_orders', permission: [permissions.ALTER_PERMS], name: 'Execution Orders'},
     ]},
     {name: 'User management', show: false, items: [
-      {link: '/users', permission: ['EDIT_USERS'], name: 'Users'},
-      {link: '/roles', permission: ['VIEW_ROLES'], name: 'Roles'},
+      {link: '/users', permission: [permissions.EDIT_USERS], name: 'Users'},
+      {link: '/roles', permission: [permissions.VIEW_ROLES], name: 'Roles'},
     ]},
     {name: 'Cold Storage', show: false, items: [
-      {link: '/cold_storage/custodians', permission: ['VIEW_INVESTMENT_RUN'], name: 'Custodians'},
-      {link: '/cold_storage/accounts', permission: ['VIEW_INVESTMENT_RUN'], name: 'Accounts'},
-      {link: '/cold_storage/transfers', permission: ['VIEW_INVESTMENT_RUN'], name: 'Transfer'},
-      {link: '/cold_storage/account_storage_fee', permission: ['VIEW_INVESTMENT_RUN'], name: 'Fees'},
+      {link: '/cold_storage/custodians', permission: [permissions.VIEW_INVESTMENT_RUN], name: 'Custodians'},
+      {link: '/cold_storage/accounts', permission: [permissions.VIEW_INVESTMENT_RUN], name: 'Accounts'},
+      {link: '/cold_storage/transfers', permission: [permissions.VIEW_INVESTMENT_RUN], name: 'Transfer'},
+      {link: '/cold_storage/account_storage_fee', permission: [permissions.VIEW_INVESTMENT_RUN], name: 'Fees'},
     ]}
   ];
 

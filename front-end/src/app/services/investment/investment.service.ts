@@ -34,6 +34,11 @@ export class ConversionCompleteResponse {
   conversion: Conversion;
 }
 
+export class CalculateDepositsResponse {
+  success: boolean;
+
+}
+
 
 export enum AssetConversionStatus {
   Pending = 'asset_conversions.status.501',
@@ -358,6 +363,10 @@ export class InvestmentService {
 
   completeAssetConversion(conversionId: number, amount: number): Observable<ConversionCompleteResponse> {
     return this.http.post<ConversionCompleteResponse>(this.baseUrl + `conversions/${conversionId}/complete`, { amount: amount });
+  }
+
+  calculateDeposits(recipeId: number): Observable<CalculateDepositsResponse> {
+    return this.http.post<CalculateDepositsResponse>(this.baseUrl + `recipes/${recipeId}/calculate_deposits`, {});
   }
 
 }

@@ -2,6 +2,8 @@ import { Component, OnInit, Input } from '@angular/core';
 import { Router } from '@angular/router';
 
 import { StatusClass } from '../../models/common';
+import permissions from '../../../config/permissions';
+
 import { AuthService } from '../../../services/auth/auth.service';
 
 export class TimelineEvent {
@@ -80,7 +82,7 @@ export class TimelineComponent implements OnInit {
         return !events.recipe_run || events.recipe_run.approval_status !== 'recipes.status.43';
 
       case 'recipe_orders':
-        if (this.authService.hasPermissions(['VIEW_ORDERS'])) {
+        if (this.authService.hasPermissions([permissions.VIEW_ORDERS])) {
           return false; // can view even empty page
         }
         return !events.recipe_orders;
@@ -107,7 +109,7 @@ export class TimelineComponent implements OnInit {
         break;
 
       case 'recipe_orders':
-        if (this.authService.hasPermissions(['VIEW_ORDERS'])) {
+        if (this.authService.hasPermissions([permissions.VIEW_ORDERS])) {
           this.router.navigate([`/run/order-group/${events.recipe_run.id}`]);
         } else {
           this.router.navigate([`/run/order/${events.recipe_run.id}`]);
