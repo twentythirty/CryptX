@@ -17,6 +17,49 @@ Given('there are no Liquidity Requirements in the system', function() {
 
 });
 
+Given(/^the system has Liquidity Requirement for (\w+\/\w+) for (.*) and periodicity of (.*) days$/, async function(instrument_symbol, exchange_name, periodicity) {
+
+    const { Exchange, Instrument, InstrumentLiquidityRequirement, InstrumentLiquidityHistory, sequelize } = require('../../../models');
+
+    let exchange_id = null;
+
+    if(exchange_name.toLowerCase() !== 'all exchanges') {
+
+        const exchange = await Exchange.findOne({
+            where: { name: exchange_name }
+        });
+
+        expect(exchange, `Expected to find exchnage with name ${exchange_name}`).to.be.not.null;
+
+        exchange_id = exchange.id;
+
+    }
+
+    const instrument = await  Instrument.findOne({ where: { symbol: instrument_symbol } });
+
+    expect(instrument, `Expected to find an instrument with the symbol ${instrument_symbol}`).to.be.not.null;
+    this.current_instrument = instrument;
+
+    const [ history ] = await InstrumentLiquidityHistory.findAll({
+        where: { instrument_id: instrument.id },
+        attributes: [
+            [ sequelize.fn('avg', sequelize.col('volume')), 'average_volume' ]
+        ],
+        group: ['instrument_id'],
+        raw: true
+    });
+
+    const requiremnt = await InstrumentLiquidityRequirement.create({
+        exchange: exchange_id,
+        instrument_id: instrument.id,
+        minimum_volume: history.average_volume,
+        periodicity_in_days: periodicity
+    });
+
+    this.current_liqudity_requirement = requiremnt;
+
+});
+
 When(/^I add a Liquidity Requirement for (.*)$/, async function(exchange_name) {
 
     const { Exchange } = require('../../../models');
@@ -64,6 +107,54 @@ When(/^I add a Liquidity Requirement for (.*)$/, async function(exchange_name) {
             this.current_response = error;
 
         });
+
+});
+
+When(/^I retrieve the Liquidity Requirement details for (.*) instrument$/, async function(instrument_symbol) {
+
+    const { InstrumentLiquidityRequirement, Instrument } = require('../../../models');
+
+    let requirement = this.current_liqudity_requirement;
+
+    const instrument = await Instrument.findOne({
+        where: { symbol: instrument_symbol }
+    });
+
+    if(!requirement || requirement.instrument_id !== instrument.id) {
+
+        expect(instrument, `Expected to find instrument with symbol ${instrument_symbol}`).to.be.not.null;
+        this.current_instrument = instrument;
+
+        requirement = await InstrumentLiquidityRequirement.findOne({
+            where: { instrument_id: instrument.id }
+        });
+
+        expect(requirement, `Expected to find a Liquidity Requiremnt for instrument ${instrument_symbol}`).to.be.not.null;
+        this.current_liqudity_requirement = requirement;
+
+    }
+
+    const [ requirement_details, requirement_exchanges ] = await Promise.all([
+        chai
+            .request(this.app)
+            .get(`/v1/liquidity_requirements/${requirement.id}`)
+            .set('Authorization', World.current_user.token),
+        chai
+            .request(this.app)
+            .get(`/v1/liquidity_requirements/${requirement.id}/exchanges`)
+            .set('Authorization', World.current_user.token)
+    ]);
+
+    expect(requirement_details).to.have.status(200);
+    expect(requirement_exchanges).to.have.status(200);
+
+    expect(requirement_details.body.liquidity_requirement).to.be.an('object', 'Expected to find a Liquidity Requirement object in the response');
+    expect(requirement_exchanges.body.exchanges).to.be.an('array', 'Expected to find an array of Exchange objects in the response');
+
+    this.current_responses = [ requirement_details, requirement_exchanges ];
+
+    this.current_liqudity_requirement_details = requirement_details.body.liquidity_requirement;
+    this.current_liqudity_requirement_exchanges = requirement_exchanges.body.exchanges
 
 });
 
@@ -216,5 +307,108 @@ Then('I cannot add any more Liquidity Requirements for this Instrument', async f
             });
 
     }
+
+});
+
+Then('I will see the details of the Liquidity Requirement', async function() {
+
+    const { Asset } = require('../../../models');
+
+    const requirement_details = this.current_liqudity_requirement_details;
+    const requirement = this.current_liqudity_requirement;
+
+    expect(requirement_details.id).to.be.a('number', 'Expected the id to be present and be a number');
+    expect(requirement_details.periodicity).to.equal(requirement.periodicity_in_days, 'Expected the periodicity to match the one in the database');
+
+    const quote_asset = await Asset.findById(this.current_instrument.quote_asset_id);
+
+    expect(requirement_details.quote_asset).to.equal(quote_asset.symbol, 'Expected the quote asset symbol to match with instrument one');
+    expect(requirement_details.minimum_circulation).to.equal(requirement.minimum_volume, 'Expected the minimum circulation to match the volum in the database');
+
+    expect(parseInt(requirement_details.exchange_count)).to.be.a('number', 'Expected the exchange count to a propper number');
+    expect(parseInt(requirement_details.exchange_pass)).to.be.a('number', 'Expected the exchange pass to a propper number');
+
+});
+
+Then(/^the number of Exchanges for the Liquidity Requirement will be (.*)$/, function(exchnage_count) {
+
+    exchnage_count = parseInt(exchnage_count);
+
+    const requirement_details = this.current_liqudity_requirement_details;
+    const requirement_exchanges = this.current_liqudity_requirement_exchanges;
+
+    expect(parseInt(requirement_details.exchange_count)).to.equal(exchnage_count, `Expected the exchange count to be ${exchnage_count}`);
+    expect(requirement_exchanges.length).to.equal(exchnage_count, `Expected the number of exchanges in the list to be ${exchnage_count}`);
+
+});
+
+Then('the Exchange list will contain the Instrument current price, last day volume and average volume for the past week', async function() {
+
+    const { InstrumentLiquidityHistory, InstrumentMarketData, sequelize } = require('../../../models');
+    const { Op } = sequelize;
+
+    const requirement_exchanges = this.current_liqudity_requirement_exchanges;
+
+    for(let exchange of requirement_exchanges) {
+
+        const [ market_data, last_day_liqudity, [ last_week_liquidity ] ] = await Promise.all([
+            InstrumentMarketData.findOne({
+                where: {
+                    instrument_id: this.current_instrument.id,
+                    exchange_id: exchange.exchange_id
+                },
+                order: [ [ 'timestamp', 'DESC' ] ]
+            }),
+            InstrumentLiquidityHistory.findOne({
+                where: {
+                    instrument_id: this.current_instrument.id,
+                    exchange_id: exchange.exchange_id
+                },
+                order: [ [ 'timestamp_to', 'DESC' ] ]
+            }),
+            InstrumentLiquidityHistory.findAll({
+                where: {
+                    instrument_id: this.current_instrument.id,
+                    exchange_id: exchange.exchange_id,
+                    timestamp_to: {
+                        [Op.gte]: Date.now() - 7 * 24 * 60 * 60 * 1000
+                    }
+                },
+                attributes: [
+                    [ sequelize.fn('avg', sequelize.col('volume')), 'volume' ]
+                ],
+                group: [ 'instrument_id', 'exchange_id' ]
+            })
+        ]);
+
+        expect(exchange.current_price).to.equal(market_data.ask_price, 'Expected the current price to equal the newest ask price');
+        expect(exchange.last_day_vol).to.equal(last_day_liqudity.volume, 'Expected the last day volume to equal the newest one');
+        expect(exchange.last_week_vol).to.equal(last_week_liquidity.volume, 'Expected the lastweek volume to be the average volume for the past week');
+        
+    }
+    
+});
+
+Then('Exchanges that pass the requirement are marked accordinally', function() {
+
+    const requirement_details = this.current_liqudity_requirement_details;
+    const requirement_exchanges = this.current_liqudity_requirement_exchanges;
+
+    for(let exchange of requirement_exchanges) {
+
+        if(Decimal(exchange.last_week_vol).gte(requirement_details.minimum_circulation)){
+            expect(exchange.passes).to.equal('liquidity_exchanges.status.meets_liquidity_requirements');
+        }
+        else {
+            expect(exchange.passes).to.equal('liquidity_exchnages.status.lacking');
+        }
+
+    }
+
+    const non_lacking_exchanges = requirement_exchanges.filter(e => e.passes === 'liquidity_exchanges.status.meets_liquidity_requirements');
+    const lacking_exchanges = requirement_exchanges.filter(e => e.passes === 'liquidity_exchanges.status.lacking');
+
+    expect(parseInt(requirement_details.exchange_pass)).to.equal(non_lacking_exchanges.length, 'Expected the pass count to equal the actual number of passed exchanges');
+    expect(parseInt(requirement_details.exchange_not_pass)).to.equal(lacking_exchanges.length, 'Expected the not pass count to equal the actual number of lacking exchanges');
 
 });

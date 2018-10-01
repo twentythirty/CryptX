@@ -184,11 +184,20 @@ Given(/^the system has Instrument Liquidity History for the last (.*) days$/, as
 
     }
 
-    const { InstrumentLiquidityHistory, InstrumentExchangeMapping } = require('../../../models');
+    const { InstrumentLiquidityHistory, InstrumentExchangeMapping, sequelize } = require('../../../models');
+    const { Op } = sequelize;
 
     const mappings = await InstrumentExchangeMapping.findAll({
         raw: true
     });
+
+    const current_history = await InstrumentLiquidityHistory.count({
+        where: {
+            timestamp_to: { [Op.gte]: Date.now() - days * 25 * 60 * 60 * 1000 } //Give an extra hour, otherwise the dat will always be considered outdated
+        } 
+    });
+
+    if(current_history / days >= mappings.length) return;
 
     const history = _.concat(...last_days.map(day => {
         return mappings.map(m => {
