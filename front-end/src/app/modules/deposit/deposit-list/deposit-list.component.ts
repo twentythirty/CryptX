@@ -1,14 +1,23 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { finalize } from 'rxjs/operators';
+import * as _ from 'lodash';
 
 import { DataTableCommonManagerComponent } from '../../../shared/components/data-table-common-manager/data-table-common-manager.component';
 import { TableDataSource, TableDataColumn } from '../../../shared/components/data-table/data-table.component';
-import { StatusCellDataColumn, NumberCellDataColumn } from '../../../shared/components/data-table-cells';
+import {
+  StatusCellDataColumn,
+  NumberCellDataColumn,
+  ActionCellDataColumn,
+  DataCellAction
+} from '../../../shared/components/data-table-cells';
 import { StatusClass } from '../../../shared/models/common';
 import { Deposit } from '../../../shared/models/deposit';
 
 import { DepositService } from '../../../services/deposit/deposit.service';
+import { DepositApproveComponent } from '../deposit-approve/deposit-approve.component';
+import permissions from '../../../config/permissions';
+import { AuthService } from '../../../services/auth/auth.service';
 
 @Component({
   selector: 'app-deposit-list',
@@ -17,13 +26,15 @@ import { DepositService } from '../../../services/deposit/deposit.service';
 })
 export class DepositListComponent extends DataTableCommonManagerComponent implements OnInit {
 
+  depositId: number;
+
   public depositDataSource: TableDataSource = {
     header: [
       { column: 'investment_run_id', nameKey: 'table.header.investment_run_id', filter: { type: 'number', hasRange: false, inputSearch: true, sortable: true } },
       { column: 'id', nameKey: 'table.header.id', filter: { type: 'number', hasRange: false, inputSearch: true, sortable: true } },
       { column: 'quote_asset', nameKey: 'table.header.deposit_currency', filter: { type: 'text', sortable: true } },
       { column: 'exchange', nameKey: 'table.header.exchange', filter: { type: 'text', sortable: true } },
-      { column: 'account', nameKey: 'table.header.account', filter: { type: 'text', sortable: true }, column_class: 'word-wrap' },
+      { column: 'account', nameKey: 'table.header.account', filter: { type: 'text', sortable: true }, column_class: 'column-source-account' },
       { column: 'amount', nameKey: 'table.header.deposit_amount', filter: { type: 'number', sortable: true } },
       { column: 'deposit_management_fee', nameKey: 'table.header.deposit_management_fee', filter: { type: 'number', sortable: true } },
       { column: 'status', nameKey: 'table.header.status', filter: { type: 'text', sortable: true } },
@@ -45,10 +56,13 @@ export class DepositListComponent extends DataTableCommonManagerComponent implem
     }}}),
   ];
 
+  @ViewChild(DepositApproveComponent) depositApproveComponent: DepositApproveComponent;
+
   constructor(
     public route: ActivatedRoute,
-    protected depositService: DepositService,
     public router: Router,
+    protected depositService: DepositService,
+    private authService: AuthService,
   ) {
     super(route, router);
   }
@@ -68,6 +82,10 @@ export class DepositListComponent extends DataTableCommonManagerComponent implem
         });
         this.count = res.count || res.recipe_deposits.length;
         this.getFilterLOV();
+
+        if (this.authService.hasPermissions([permissions.APPROVE_DEPOSITS])) {
+          this.appendActionColumnForDeposits();
+        }
       }
     );
   }
@@ -82,8 +100,35 @@ export class DepositListComponent extends DataTableCommonManagerComponent implem
     );
   }
 
-  public openRow(deposit: Deposit): void {
+  openRow(deposit: Deposit): void {
     this.router.navigate(['/deposits/view', deposit.id]);
+  }
+
+  private appendActionColumnForDeposits(): void {
+    _.remove(this.depositDataSource.header, ['column', 'action']);
+    _.remove(this.depositColumnsToShow, ['column', 'action']);
+
+    if (this.depositDataSource.body.some(row => row.status !== 'deposits.status.151')) {
+      this.depositDataSource.header.push({ column: 'action', nameKey: 'table.header.action' });
+      this.depositColumnsToShow.push(
+        new ActionCellDataColumn({
+          column: 'action',
+          inputs: {
+            actions: [
+              new DataCellAction({
+                label: '',
+                className: 'ico-pencil',
+                isShown: (row: any) => row.status !== 'deposits.status.151',
+                exec: (row: any) => {
+                  this.depositId = row.id;
+                  this.depositApproveComponent.openModal();
+                }
+              }),
+            ]
+          }
+        })
+      );
+    }
   }
 
 }

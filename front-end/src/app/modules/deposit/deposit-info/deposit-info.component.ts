@@ -79,9 +79,9 @@ export class DepositInfoComponent implements OnInit {
 
         this.depositService.getDeposit(this.depositId).subscribe(
           (res: DepositResultData) => {
+            this.appendActionColumn();
             this.depositDataSource.body = [res.recipe_deposit];
             this.activityLog = res.action_logs;
-            this.appendActionColumn();
           }
         );
       }
@@ -92,7 +92,7 @@ export class DepositInfoComponent implements OnInit {
     _.remove(this.depositDataSource.header, ['column', 'action']);
     _.remove(this.depositColumnsToShow, ['column', 'action']);
 
-    if (this.depositDataSource.body[0].status === 'deposits.status.150') {
+    if (this.depositDataSource.body && this.depositDataSource.body[0].status === 'deposits.status.150') {
       this.depositDataSource.header.push({ column: 'action', nameKey: 'table.header.action' });
       this.depositColumnsToShow.push(
         new ActionCellDataColumn({

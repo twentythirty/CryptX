@@ -16,3 +16,9 @@
   [page]="page"
   [loading]="isTableLoading"
 ></app-pagination>
+
+<app-deposit-approve
+  #depositApprove
+  [depositId]="depositId"
+  (updateData)="getAllData()"
+></app-deposit-approve>

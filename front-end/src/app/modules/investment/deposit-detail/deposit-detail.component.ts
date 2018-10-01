@@ -126,11 +126,6 @@ export class DepositDetailComponent extends TimelineDetailComponent implements O
 
   ngOnInit() {
     super.ngOnInit();
-
-    if (this.authService.hasPermissions([permissions.ALTER_ASSET_CONVERSIONS])) {
-      this.appendActionColumnForConversions();
-      this.appendActionColumnForDeposits();
-    }
   }
 
 
@@ -148,6 +143,10 @@ export class DepositDetailComponent extends TimelineDetailComponent implements O
           body: res.conversions,
           footer: res.footer
         });
+
+        if (this.authService.hasPermissions([permissions.ALTER_ASSET_CONVERSIONS])) {
+          this.appendActionColumnForConversions();
+        }
       },
       err => this.singleDataSource.body = []
     );
@@ -162,10 +161,14 @@ export class DepositDetailComponent extends TimelineDetailComponent implements O
       )
     ).subscribe(
       res => {
-        this.count = res.count;
         this.listDataSource.body = res.recipe_deposits;
         this.listDataSource.footer = res.footer;
+        this.count = res.count;
         this.getFilterLOV();
+
+        if (this.authService.hasPermissions([permissions.APPROVE_DEPOSITS])) {
+          this.appendActionColumnForDeposits();
+        }
       },
       err => this.listDataSource.body = []
     );
@@ -275,6 +278,17 @@ export class DepositDetailComponent extends TimelineDetailComponent implements O
   }
 
   showCalculateDeposits(): boolean {
+    // if dont have permissions
+    if (!this.authService.hasPermissions([permissions.ALTER_ASSET_CONVERSIONS])) {
+      return false;
+    }
+
+    // if already calculated
+    if (this.listDataSource.body && this.listDataSource.body.length > 0) {
+      return false;
+    }
+
+    // if all conversions are completed
     return this.singleDataSource.body && this.singleDataSource.body.every(item => item.status === AssetConversionStatus.Completed);
   }
 
