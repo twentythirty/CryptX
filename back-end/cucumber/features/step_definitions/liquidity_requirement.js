@@ -110,7 +110,7 @@ When(/^I add a Liquidity Requirement for (.*)$/, async function(exchange_name) {
 
 });
 
-When(/^I retrieve the Liquidity Requirement details for (.*) instrument$/, async function(instrument_symbol) {
+When(/^I retrieve the Liquidity Requirement details for (\w+\/\w+) instrument$/, async function(instrument_symbol) {
 
     const { InstrumentLiquidityRequirement, Instrument } = require('../../../models');
 
@@ -343,7 +343,7 @@ Then(/^the number of Exchanges for the Liquidity Requirement will be (.*)$/, fun
 
 });
 
-Then(/^the number of Exchanges will be the number of Exchanges that have mappings for (.*)$/, async function(instrument_symbol) {
+Then(/^the number of Exchanges will be the number of Exchanges that have mappings for (\w+\/\w+)$/, async function(instrument_symbol) {
 
     const { Instrument, InstrumentExchangeMapping } = require('../../../models');
 
@@ -388,8 +388,8 @@ Then('the Exchange list will contain the Instrument current price, last day volu
                     exchange_id: exchange.exchange_id
                 },
                 order: [ [ 'timestamp_to', 'DESC' ] ]
-            }),
-            InstrumentLiquidityHistory.findAll({
+            }), Promise.resolve([])
+            /*InstrumentLiquidityHistory.findAll({
                 where: {
                     instrument_id: this.current_instrument.id,
                     exchange_id: exchange.exchange_id,
@@ -401,7 +401,7 @@ Then('the Exchange list will contain the Instrument current price, last day volu
                     [ sequelize.fn('avg', sequelize.col('volume')), 'volume' ]
                 ],
                 group: [ 'instrument_id', 'exchange_id' ]
-            })
+            })*/
         ]);
 
         expect(exchange.current_price).to.equal(market_data.ask_price, 'Expected the current price to equal the newest ask price');
