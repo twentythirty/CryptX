@@ -15,7 +15,7 @@ Feature: Approving Orders
         And the system has Approved Recipe Run with Details
         And the system has Completed Deposits
         
-    
+    @investment_run_cache_cleanup
     Scenario: approve generated orders
 
         Given there is a recipe order group with status Pending
@@ -26,6 +26,7 @@ Feature: Approving Orders
         And all orders in the group will have status Executing
         And the investment run will have status OrdersExecuting
 
+    @investment_run_cache_cleanup
     Scenario: fail to approve generated orders
   
         Given there is a recipe order group with status Pending
@@ -37,6 +38,7 @@ Feature: Approving Orders
         And the recipe order group status will remain unchanged
         And all orders in the group statuses will remain unchanged
 
+    @investment_run_cache_cleanup
     Scenario: reject generated orders
   
         Given there is a recipe order group with status Pending

@@ -1,4 +1,4 @@
-const { Given, When, Then } = require('cucumber');
+const { Given, When, Then, After } = require('cucumber');
 const chai = require('chai');
 const { expect } = chai;
 
@@ -181,4 +181,30 @@ Then(/^this action was logged with (.*)/, async function(logged_property_express
 
     chai.assert.isNotNull(new_log_entry, `Actions should have generated a log entry with ${logged_property} equal ${this.check_log_id}!`);
     }
+});
+
+
+//called after scenarios where this tag is placed
+//cleans out cached investmetn run if present
+After('@investment_run_cache_cleanup', async function() {
+
+    //delete investment run if present
+    if (this.current_investment_run != null
+        && _.isFunction(this.current_investment_run.destroy)) {
+        await this.current_investment_run.destroy();
+    }
+});
+
+//called after scenarios where this tag is placed
+//cleans out cached execution orders if present
+After('@execution_orders_cache_cleanup', async function() {
+    //remove created execution orders
+    if (this.current_execution_orders && 
+        _.isArray(this.current_execution_orders)) {
+            await require('../../../models').ExecutionOrder.destroy({
+                where: {
+                    id: _.map(this.current_execution_orders, 'id')
+                }
+            });
+        }
 });

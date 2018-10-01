@@ -11,7 +11,7 @@ Feature: Approving Recipe Run
         And the system has updated the Instrument Market Data
         And there is a LCI Investment Run created by an Investment Manager
 
-
+    @investment_run_cache_cleanup
     Scenario: reject a pending recipe run
     
         Given there is a recipe run with status Pending
@@ -22,6 +22,7 @@ Feature: Approving Recipe Run
         And the recipe run will have no conversions
         And the investment run status will remain unchanged
 
+    @investment_run_cache_cleanup
     Scenario: confirm a pending recipe run with errors
   
         Given there is a recipe run with status Pending

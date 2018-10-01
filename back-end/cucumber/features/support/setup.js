@@ -129,19 +129,4 @@ After(async function (scenario) {
     for(let step of scenario.pickle.steps) {
         console.log(`\t    \x1b[1m\x1b[34m>  \x1b[0m\x1b[2m${step.text}\x1b[0m`);
     }
-
-    //delete investment run if present
-    if (this.current_investment_run != null
-        && _.isFunction(this.current_investment_run.destroy)) {
-        await this.current_investment_run.destroy();
-    }
-    //remove created execution orders
-    if (this.current_execution_orders && 
-        _.isArray(this.current_execution_orders)) {
-            await require('../../../models').ExecutionOrder.destroy({
-                where: {
-                    id: _.map(this.current_execution_orders, 'id')
-                }
-            });
-        }
 });
