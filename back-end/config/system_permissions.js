@@ -32,7 +32,7 @@ PERMISSIONS = {
   ALTER_COLD_STORAGE_CUSTODIANS: "perm_alter_cold_storag_custodians",
   VIEW_COLD_STORAGE_ACCOUNTS: "perm_view_cold_storage_accounts",
   ALTER_COLD_STORAGE_ACCOUNTS: "perm_alter_cold_storage_accounts",
-  VIEW_COLS_STORAGE_ACCOUNT_FEES: "perm_view_cold_storage_account_fees",
+  VIEW_COLD_STORAGE_ACCOUNT_FEES: "perm_view_cold_storage_account_fees",
   CREATE_LIQUIDITY_REQUIREMENTS: "perm_create_liquidity_requirements",
   VIEW_LIQUIDITY_REQUIREMENTS: "perm_view_liquidity_requirements",
   ADD_EXCHANGE_ACCOUNTS: "perm_add_exchange_account",
@@ -80,7 +80,7 @@ CATEGORY_TO_PERM_ASSOC = {
     PERMISSIONS.ALTER_COLD_STORAGE_CUSTODIANS,
     PERMISSIONS.VIEW_COLD_STORAGE_ACCOUNTS,
     PERMISSIONS.ALTER_COLD_STORAGE_ACCOUNTS,
-    PERMISSIONS.VIEW_COLS_STORAGE_ACCOUNT_FEES,
+    PERMISSIONS.VIEW_COLD_STORAGE_ACCOUNT_FEES,
   ],
   [PERMISSIONS_CATEGORIES.EXCHANGES]: [
     PERMISSIONS.ADD_EXCHANGE_ACCOUNTS
@@ -693,12 +693,12 @@ ROUTES = {
   GetColdstorageAccountsFees: {
     router_string: "/cold_storage/accounts/fees",
     permissions_matcher: ROUTE_MATCHERS.GetColdStorageTransfers,
-    required_permissions: [PERMISSIONS.VIEW_COLS_STORAGE_ACCOUNT_FEES]
+    required_permissions: [PERMISSIONS.VIEW_COLD_STORAGE_ACCOUNT_FEES]
   },
   GetColdstorageAccountsFeesColLOV: {
     router_string: "/cold_storage/accounts/fees/header_lov/:field_name",
     permissions_matcher: ROUTE_MATCHERS.GetColdstorageAccountsFeesColLOV,
-    required_permissions: [PERMISSIONS.VIEW_COLS_STORAGE_ACCOUNT_FEES]
+    required_permissions: [PERMISSIONS.VIEW_COLD_STORAGE_ACCOUNT_FEES]
   },
 
   //ASSET CONVERSION
