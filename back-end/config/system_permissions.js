@@ -17,6 +17,7 @@ PERMISSIONS = {
   APPROVE_RECIPE_RUN: "perm_approve_recipe_run",
   VIEW_DEPOSITS: "perm_view_recipe_deposits",
   APPROVE_DEPOSITS: "perm_approve_deposits",
+  ALTER_ASSET_CONVERSIONS: "perm_submit_conversions",
   VIEW_ORDERS: "perm_view_orders",
   GENERATE_ORDERS: "perm_generate_orders",
   ALTER_ORDERS: "perm_alter_orders",
@@ -136,6 +137,8 @@ all_permissions[PERMISSIONS.VIEW_DEPOSITS] =
   "Permission to view deposits";
 all_permissions[PERMISSIONS.APPROVE_DEPOSITS] =
   "Permission to approve deposits";
+  all_permissions[PERMISSIONS.ALTER_ASSET_CONVERSIONS] =
+  "Permission to add asset conversion results";
 all_permissions[PERMISSIONS.VIEW_ORDERS] = 
   "Permission to view orders of recipe runs in groups";
 all_permissions[PERMISSIONS.ALTER_ORDERS] = 
@@ -713,7 +716,7 @@ ROUTES = {
   CompleteAssetConversion: {
     router_string: "/conversions/:conversion_id/complete",
     permissions_matcher: ROUTE_MATCHERS.CompleteAssetConversion,
-    required_permissions: [PERMISSIONS.VIEW_INVESTMENT_RUN]
+    required_permissions: [PERMISSIONS.ALTER_ASSET_CONVERSIONS]
   },
 
 
