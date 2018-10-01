@@ -363,7 +363,7 @@ module.exports.JOB_BODY = async (config, log) => {
     }
 
     const simulateFill = async (placed_order) => {
-    
+        /*
         let [ err, market_data ] = await to(InstrumentMarketData.findOne({
             where: {
                 instrument_id: placed_order.instrument_id,
@@ -375,9 +375,8 @@ module.exports.JOB_BODY = async (config, log) => {
         if(err) TE(err.message);
     
         if(!market_data) TE(`No market data was available.`)
-        
-        let price = 0;
-        switch(placed_order.side) {
+        */
+        /*switch(placed_order.side) {
     
             case ORDER_SIDES.Sell:
                 price = market_data.bid_price;
@@ -387,7 +386,8 @@ module.exports.JOB_BODY = async (config, log) => {
             default:
                 price = market_data.ask_price;
     
-        }
+        }*/
+        const price = _.random(0.0001, 100, true);
         const fee = price/_.random(98, 100, false); //Make fee around 1-3% of the price.
         
         placed_order.price = price;
