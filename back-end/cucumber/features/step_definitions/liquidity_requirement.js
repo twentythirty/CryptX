@@ -134,6 +134,7 @@ When(/^I retrieve the Liquidity Requirement details for (.*) instrument$/, async
 
     }
 
+    this.current_request_time = new Date();
     const [ requirement_details, requirement_exchanges ] = await Promise.all([
         chai
             .request(this.app)
@@ -330,15 +331,37 @@ Then('I will see the details of the Liquidity Requirement', async function() {
 
 });
 
-Then(/^the number of Exchanges for the Liquidity Requirement will be (.*)$/, function(exchnage_count) {
+Then(/^the number of Exchanges for the Liquidity Requirement will be (.*)$/, function(exchange_count) {
 
-    exchnage_count = parseInt(exchnage_count);
+    exchange_count = parseInt(exchange_count);
 
     const requirement_details = this.current_liqudity_requirement_details;
     const requirement_exchanges = this.current_liqudity_requirement_exchanges;
 
-    expect(parseInt(requirement_details.exchange_count)).to.equal(exchnage_count, `Expected the exchange count to be ${exchnage_count}`);
-    expect(requirement_exchanges.length).to.equal(exchnage_count, `Expected the number of exchanges in the list to be ${exchnage_count}`);
+    expect(parseInt(requirement_details.exchange_count)).to.equal(exchange_count, `Expected the exchange count to be ${exchange_count}`);
+    expect(requirement_exchanges.length).to.equal(exchange_count, `Expected the number of exchanges in the list to be ${exchange_count}`);
+
+});
+
+Then(/^the number of Exchanges will be the number of Exchanges that have mappings for (.*)$/, async function(instrument_symbol) {
+
+    const { Instrument, InstrumentExchangeMapping } = require('../../../models');
+
+    const requirement_details = this.current_liqudity_requirement_details;
+    const requirement_exchanges = this.current_liqudity_requirement_exchanges;
+
+    const instrument = await Instrument.findOne({
+        where: { symbol: instrument_symbol }
+    });
+
+    expect(instrument, `Expected to find instrument with symbol ${instrument_symbol}`).to.be.not.null;
+
+    const mapping_count = await InstrumentExchangeMapping.count({
+        where: { instrument_id: instrument.id }
+    });
+
+    expect(parseInt(requirement_details.exchange_count)).to.equal(mapping_count, `Expected the exchange count to be ${mapping_count}`);
+    expect(requirement_exchanges.length).to.equal(mapping_count, `Expected the number of exchanges in the list to be ${mapping_count}`);
 
 });
 
@@ -371,7 +394,7 @@ Then('the Exchange list will contain the Instrument current price, last day volu
                     instrument_id: this.current_instrument.id,
                     exchange_id: exchange.exchange_id,
                     timestamp_to: {
-                        [Op.gte]: Date.now() - 7 * 24 * 60 * 60 * 1000
+                        [Op.gte]: this.current_request_time.getTime() - 7 * 24 * 60 * 60 * 1000
                     }
                 },
                 attributes: [
@@ -383,7 +406,7 @@ Then('the Exchange list will contain the Instrument current price, last day volu
 
         expect(exchange.current_price).to.equal(market_data.ask_price, 'Expected the current price to equal the newest ask price');
         expect(exchange.last_day_vol).to.equal(last_day_liqudity.volume, 'Expected the last day volume to equal the newest one');
-        //expect(exchange.last_week_vol).to.equal(last_week_liquidity.volume, 'Expected the last week volume to be the average volume for the past week');
+        expect(exchange.last_week_vol).to.equal(last_week_liquidity.volume, 'Expected the last week volume to be the average volume for the past week');
         
     }
     
