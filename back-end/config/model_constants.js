@@ -84,7 +84,6 @@ MODEL_CONST = {
     InProgress: 62, // an order that is on the exchange already, but has not been fully filled. It might be not filled at all yet, or filled partially
     FullyFilled: 63, // order that has been successfully filled (fully)
     PartiallyFilled: 64, // terminal state for orders that have been ended before they could be filled fully, but part of them was filled
-    /* Cancelled: 65, // not used*/
     Failed: 66, // terminal state for orders that was placed on the exchange, but could not get a fill at all and was terminated/expired
     NotFilled: 67 // order for which sending to the exchange has failed
   },
