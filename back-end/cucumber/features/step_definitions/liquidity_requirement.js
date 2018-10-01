@@ -383,7 +383,7 @@ Then('the Exchange list will contain the Instrument current price, last day volu
 
         expect(exchange.current_price).to.equal(market_data.ask_price, 'Expected the current price to equal the newest ask price');
         expect(exchange.last_day_vol).to.equal(last_day_liqudity.volume, 'Expected the last day volume to equal the newest one');
-        expect(exchange.last_week_vol).to.equal(last_week_liquidity.volume, 'Expected the lastweek volume to be the average volume for the past week');
+        expect(exchange.last_week_vol).to.equal(last_week_liquidity.volume, 'Expected the last week volume to be the average volume for the past week');
         
     }
     
@@ -400,7 +400,7 @@ Then('Exchanges that pass the requirement are marked accordinally', function() {
             expect(exchange.passes).to.equal('liquidity_exchanges.status.meets_liquidity_requirements');
         }
         else {
-            expect(exchange.passes).to.equal('liquidity_exchnages.status.lacking');
+            expect(exchange.passes).to.equal('liquidity_exchanges.status.lacking');
         }
 
     }

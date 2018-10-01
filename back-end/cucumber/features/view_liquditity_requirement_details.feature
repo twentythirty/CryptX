@@ -6,10 +6,11 @@ Feature: View liquidity requirement details
     Background:
 
         Given the system has a Compliance Manager
-        And the system has Instrument Liquidity History for the last 7 days
         And the system has Instrument Mappings for Binance
         And the system has Instrument Mappings for Bitfinex
         And the system has Instrument Mappings for OKEx
+        And the system has Instrument Liquidity History for the last 7 days
+        And the system has updated the Instrument Market Data
 
     Scenario: view liquidity requirement for a single exchange
 
