@@ -1,47 +1,23 @@
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
-import { extraTestingModules, fakeAsyncResponse } from '../../../testing/utils';
+import { async, ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core/testing';
+import { extraTestingModules, fakeAsyncResponse, click } from '../../../testing/utils';
 
 import { DashboardComponent } from './dashboard.component';
 import { DashboardModule } from '../dashboard.module';
 import { InvestmentService } from '../../../services/investment/investment.service';
-
-
-const InvestmentServiceStub = {
-  getAllInvestments: () => {
-    return fakeAsyncResponse({
-      success: true,
-      investment_runs: [
-        {
-          id: 39,
-          started_timestamp: 1535550316458,
-          updated_timestamp: 1535605305957,
-          completed_timestamp: null,
-          strategy_type: "investment.strategy.101",
-          is_simulated: "investment.is_simulated.yes",
-          user_created: "Tautvydas Petkunas",
-          user_created_id: 3,
-          status: "investment.status.302",
-          deposit_usd: "100000000"
-        }
-      ],
-      footer: [],
-      count: 1
-    });
-  },
-
-  getAllInvestmentsHeaderLOV: () => {
-    return fakeAsyncResponse([
-      { value: 'value 1' },
-      { value: 'value 2' },
-      { value: 'value 3' },
-    ]);
-  }
-};
+import { getAllInvestmentsData } from '../../../testing/service-mock/investment.service.mock';
+import { testHeaderLov } from '../../../testing/commonTests';
+import { ModelConstantsService } from '../../../services/model-constants/model-constants.service';
+import { getStrategiesData } from '../../../testing/service-mock/modelConstants.service';
 
 
 describe('DashboardComponent', () => {
   let component: DashboardComponent;
   let fixture: ComponentFixture<DashboardComponent>;
+  let investmentService: InvestmentService;
+  let modelConstantsService: ModelConstantsService;
+  let headerLovColumns: Array<string>;
+  let getAllInvestmentsDataSpy;
+  let getModelConstantsDataSpy;
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
@@ -50,7 +26,8 @@ describe('DashboardComponent', () => {
         ...extraTestingModules
       ],
       providers: [
-        { provide: InvestmentService, useValue: InvestmentServiceStub }
+        InvestmentService,
+        ModelConstantsService
       ]
     })
     .compileComponents();
@@ -59,6 +36,11 @@ describe('DashboardComponent', () => {
   beforeEach(() => {
     fixture = TestBed.createComponent(DashboardComponent);
     component = fixture.componentInstance;
+    investmentService = fixture.debugElement.injector.get(InvestmentService);
+    modelConstantsService = fixture.debugElement.injector.get(ModelConstantsService);
+    headerLovColumns = ['strategy_type', 'is_simulated', 'status'];
+    getAllInvestmentsDataSpy = spyOn (investmentService, 'getAllInvestments').and.returnValue(fakeAsyncResponse(getAllInvestmentsData));
+    getModelConstantsDataSpy = spyOn (modelConstantsService, 'getGroup').and. returnValue(fakeAsyncResponse(getStrategiesData));
     fixture.detectChanges();
   });
 
@@ -67,12 +49,50 @@ describe('DashboardComponent', () => {
     expect(component).toBeTruthy();
   });
 
-  it('should correctly load transfers on init', () => {
-    InvestmentServiceStub.getAllInvestments().subscribe(res => {
-      expect(component.investmentsDataSource.body).toEqual(res.investment_runs);
-      expect(component.investmentsDataSource.footer).toEqual(res.footer);
-      expect(component.count).toEqual(component.count);
+  it('should correctly load investment runs table data on init', () => {
+    fixture.whenStable().then(() => {
+      expect(component.investmentsDataSource.body).toEqual(getAllInvestmentsData.investment_runs);
+      expect(component.investmentsDataSource.footer).toEqual(getAllInvestmentsData.footer);
+      expect(component.count).toEqual(getAllInvestmentsData.count);
     });
   });
 
+  it('should set header LOV observables for specified columns', () => {
+    fixture.whenStable().then(() => testHeaderLov(component.investmentsDataSource, headerLovColumns));
+  });
+
+  describe('after start new run button pressed ', () => {
+    let modal: HTMLElement;
+    let closeModalSpy;
+
+    beforeEach(() => {
+      closeModalSpy = spyOn(component, 'closeNewInvestmentModal');
+      fixture.whenStable().then(() => {
+        const button = fixture.nativeElement.querySelector('a.start');
+        click(button);
+        fixture.detectChanges();
+      });
+    });
+
+    it('should open investment run modal', () => {
+      fixture.whenStable().then(() => {
+        modal = fixture.nativeElement.querySelector('app-investment-new');
+        expect(component.showNewInvestmentModal).toBeTruthy();
+        expect(modal).not.toBeNull();
+      });
+    });
+
+    it('should close modal on cross button press', fakeAsync(() => {
+      fixture.whenStable().then(() => {
+        const closeButton = fixture.nativeElement.querySelector('a.close-modal');
+        click(closeButton);
+        expect(closeModalSpy).toHaveBeenCalled();
+      });
+      tick();
+      modal = fixture.nativeElement.querySelector('app-investment-new');
+      expect(component.showNewInvestmentModal).toBeFalsy();
+      expect(modal).toBeNull();
+    }));
+
+  });
 });
