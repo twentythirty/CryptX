@@ -31,6 +31,7 @@ function CustomWorld() {
 function attachServices(world) {
 
     world.invitationService = require('../../../services/InvitationService');
+    world.depositService = require('../../../services/DepositService');
 }
 
 Before(function(scenario) {

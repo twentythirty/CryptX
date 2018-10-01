@@ -39,6 +39,7 @@ const constModelMapping = {
     'InvestmentRun': require('../../../config/model_constants').INVESTMENT_RUN_STATUSES,
     'ExecutionOrder': require('../../../config/model_constants').EXECUTION_ORDER_STATUSES,
     'RecipeRun': require('../../../config/model_constants').RECIPE_RUN_STATUSES,
+    'RecipeRunDeposit': require('../../../config/model_constants').RECIPE_RUN_DEPOSIT_STATUSES,
 }
 
 const get_model_status_value_for = (model_name, status_val) => {
