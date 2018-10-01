@@ -147,10 +147,6 @@ describe('Execution Order generator job', () => {
         id: EXECUTION_ORDER_IDS[2],
         status: EXECUTION_ORDER_STATUSES.FullyFilled
     }
-    const TEST_CANCELLED_EXECUTION_ORDER = {
-        id: EXECUTION_ORDER_IDS[3],
-        status: EXECUTION_ORDER_STATUSES.Cancelled
-    }
 
 
     it("job body shall exist", () => {
@@ -499,9 +495,6 @@ describe('Execution Order generator job', () => {
                     const half_qnty = (PENDING_ORDER_QNTY / 2);
 
                     //check that cancelled order be ignored
-                    const cancelled_order = new ExecutionOrder(Object.assign({}, TEST_CANCELLED_EXECUTION_ORDER, {
-                        total_quantity: half_qnty
-                    }));
                     return Promise.resolve(
                         _.concat(
                             _.map(Array(fills_num).fill(half_qnty / fills_num), (qnty, idx) => {
@@ -509,8 +502,7 @@ describe('Execution Order generator job', () => {
                                     id: TEST_FILLED_EXECUTION_ORDER.id + (idx * 7),
                                     total_quantity: qnty
                                 }));
-                            }),
-                            cancelled_order
+                            })
                         )
                     );
                 default:

@@ -53,14 +53,6 @@ describe("Investment run status changer job should", () => {
     status: INVESTMENT_RUN_STATUSES.OrdersExecuting,
     deposit_usd: "399",
   }
-/*   INVESTMENT_RUN_STATUSES: {
-    Initiated: 301,
-    RecipeRun: 302,
-    RecipeApproved: 303,
-    DepositsCompleted: 304,
-    OrdersGenerated: 305,
-    OrdersApproved: 306,
-    OrdersExecuting: 307, */
 
   let RECIPE_RUN = {
     id: 1,
@@ -79,14 +71,6 @@ describe("Investment run status changer job should", () => {
     status: RECIPE_ORDER_STATUSES.Completed
   };
 
-  /*   RECIPE_ORDER_STATUSES: {
-    Pending: 51,
-    Executing: 52,
-    Completed: 53,
-    Rejected: 54, // (by the user)
-    Cancelled: 55, // (manual intervention by user)
-    Failed: 56 // (due to technical issue which does not allow to continue)
-  }, */
   beforeEach(() => {
     sinon.stub(InvestmentRun, "findAll").callsFake(() => {
       let investment_runs = [new InvestmentRun(INVESTMENT_RUN)];

@@ -86,7 +86,6 @@ export const authenticateData = {
       InProgress: 62,
       FullyFilled: 63,
       PartiallyFilled: 64,
-      Cancelled: 65,
       Failed: 66,
       NotFilled: 67
     },

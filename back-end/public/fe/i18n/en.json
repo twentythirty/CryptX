@@ -283,7 +283,6 @@
       "62": "InProgress",
       "63": "FullyFilled",
       "64": "PartiallyFilled",
-      "65": "Cancelled",
       "66": "Failed",
       "67": "NotFilled"
     },
@@ -301,7 +300,6 @@
       "62": "InProgress",
       "63": "FullyFilled",
       "64": "PartiallyFilled",
-      "65": "Cancelled",
       "66": "Failed",
       "67": "NotFilled"
     }

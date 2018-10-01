@@ -105,7 +105,6 @@ export class ExecutionOrderDetailComponent extends TimelineDetailComponent imple
       'execution_orders.status.62': StatusClass.INPROGRESS,
       'execution_orders.status.63': StatusClass.FULLYFILLED,
       'execution_orders.status.64': StatusClass.PARTIALLYFILLED,
-      'execution_orders.status.65': StatusClass.CANCELED,
       'execution_orders.status.66': StatusClass.FAILED,
       'execution_orders.status.67': StatusClass.NOTFILLED
     }}}),
