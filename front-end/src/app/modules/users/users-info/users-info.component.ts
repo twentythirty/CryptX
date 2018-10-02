@@ -98,6 +98,8 @@ export class UsersInfoComponent implements OnInit {
       return;
     }
     this.loading = true;
+    this.user.first_name = this.userForm.controls.firstName.value;
+    this.user.last_name = this.userForm.controls.lastName.value;
     this.user.roles = this.userForm.controls.roleId.value;
     this.usersService.saveUser(this.user).pipe(
       finalize(() => this.loading = false)

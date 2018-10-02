@@ -40,7 +40,7 @@ export class StorageFeesAllResponse {
 export class AddAccountResponse {
   success: boolean;
   account: any;
-  error: string;
+  error?: string;
 }
 
 export class AddCustodianResponse {

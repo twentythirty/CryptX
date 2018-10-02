@@ -67,7 +67,7 @@ Given(/^the system has (.*) Deposits$/, async function (status) {
 });
 
 
-Given('the system has only one recipe run deposit with status Pending', async function () {
+Given('the system has one recipe run deposit with status Pending', async function () {
 
     chai.assert.isNotNull(this.current_recipe_run, 'Cant create deposits without context recipe run!');
 
@@ -96,6 +96,23 @@ Given('the system has only one recipe run deposit with status Pending', async fu
 });
 
 
+Given(/^the recipe run deposit has amount (.*) and fee (.*)$/, async function(amount, fee) {
+
+    chai.assert.isNotNull(this.depositService, 'Context needs to have deposit service for this step!');
+    chai.assert.isNotNull(this.current_recipe_run_deposits, 'Deposits should have been generated before this step!');
+
+    const amountNum = parseFloat(amount);
+    const feeNum = parseFloat(fee);
+    //pick instance directly to save values into it, otherwise might test submit for deposit, not approve
+    let pending_deposit = _.find(this.current_recipe_run_deposits, deposit => deposit.status == RECIPE_RUN_DEPOSIT_STATUSES.Pending);
+
+    pending_deposit.amount = amountNum;
+    pending_deposit.fee = feeNum;
+
+    await pending_deposit.save();
+});
+
+
 When('confirm recipe run deposit with provided amount and fee', async function() {
 
     chai.assert.isNotNull(this.depositService, 'Context needs to have deposit service for this step!');
@@ -121,11 +138,35 @@ When('approve recipe run deposit', async function() {
     chai.assert.isNotNull(this.depositService, 'Context needs to have deposit service for this step!');
     chai.assert.isNotNull(this.current_recipe_run_deposit, 'Context should contain pending recipe run deposit by now!');
 
-    await this.depositService.approveDeposit(
+    const [err, result] = await to(this.depositService.approveDeposit(
         this.current_recipe_run_deposit.id,
         World.users.depositor.id
-    );
+    ));
+
+    if (err) {
+        this.current_recipe_run_deposit_approve_error = err;
+    }
 
     //fill check log id for future step
     this.check_log_id = this.current_recipe_run_deposit.id;
+
+});
+
+Then('the system will report error with bad values', async function() {
+
+    chai.assert.isNotNull(this.current_recipe_run_deposit, 'Context should contain pending recipe run deposit by now!');
+    chai.assert.isNotNull(this.current_recipe_run_deposit_approve_error, 'Approve action did not generate deposit error!');
+
+    const message = this.current_recipe_run_deposit_approve_error.message;
+
+    chai.assert.include(message, `Can't confirm deposit ${this.current_recipe_run_deposit.id} with bad`, 'message not indicative of deposit confirmation failure!');
+
+    //error should concern deposit
+    if (this.current_recipe_run_deposit.amount <= 0.0) {
+
+        chai.assert.include(message, `amount ${this.current_recipe_run_deposit.amount}`);
+    } else if (this.current_recipe_run_deposit.fee < 0.0) {
+
+        chai.assert.include(message, `fee ${this.current_recipe_run_deposit.fee}`);
+    }
 });
