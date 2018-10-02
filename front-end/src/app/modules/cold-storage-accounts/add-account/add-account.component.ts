@@ -22,7 +22,6 @@ export class AddAccountComponent implements OnInit {
 
   buttonLoading: boolean = false;
 
-  strategiesLoading: boolean = true;
   assetsLoading: boolean = true;
   custodiansLoading: boolean = true;
 
@@ -55,7 +54,6 @@ export class AddAccountComponent implements OnInit {
         value: item[0]
       };
     });
-    this.strategiesLoading = false;
   }
 
 

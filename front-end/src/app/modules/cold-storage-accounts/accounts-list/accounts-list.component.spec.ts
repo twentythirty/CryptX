@@ -9,7 +9,7 @@ import { testHeaderLov } from '../../../testing/commonTests';
 import { getAllAccountsData } from '../../../testing/service-mock/coldStorage.service.mock';
 
 
-describe('AccountsListComponent', () => {
+fdescribe('AccountsListComponent', () => {
   let component: AccountsListComponent;
   let fixture: ComponentFixture<AccountsListComponent>;
   let coldStorageService: ColdStorageService;

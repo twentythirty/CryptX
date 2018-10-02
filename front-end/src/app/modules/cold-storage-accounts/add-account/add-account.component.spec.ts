@@ -13,6 +13,7 @@ import { testFormControlForm } from '../../../testing/commonTests';
 
 
 describe('AddAccountComponent', () => {
+
   let component: AddAccountComponent;
   let fixture: ComponentFixture<AddAccountComponent>;
   let assetService: AssetService;
@@ -50,7 +51,6 @@ describe('AddAccountComponent', () => {
     getAllAssetsSpy = spyOn(assetService, 'getAllAssetsDetailed').and.returnValue(fakeAsyncResponse(getAllAssetsData));
     getAllStrategiesSpy = spyOn(modelConstantsService, 'getGroup').and.returnValue(fakeAsyncResponse(getStrategiesData));
     navigateSpy = spyOn(component.router, 'navigate');
-    fixture.detectChanges();
   });
 
   it('should create', () => {
@@ -65,76 +65,73 @@ describe('AddAccountComponent', () => {
     expect(component.custodiansLoading).toBeTruthy();
   });
 
-  it('should have strategiesLoading=true before init', () => {
-    expect(component.strategiesLoading).toBeTruthy();
-  });
+  describe('after init', () => {
+    beforeEach(() => {
+      fixture.detectChanges();
+    });
+    describe('after assets should be loaded', () => {
+      beforeEach((done) => {
+        getAllAssetsSpy.calls.mostRecent().returnValue.subscribe(() => {
+          done();
+        });
+      });
 
-  describe('after assets should be loaded', () => {
-    beforeEach((done) => {
-      getAllAssetsSpy.calls.mostRecent().returnValue.subscribe(() => {
-        done();
+      it('should load assets on init', async(() => {
+        expect(component.assets.length).toBe(getAllAssetsData.count);
+      }));
+
+      it('should get assetsLoading=false', () => {
+        expect(component.assetsLoading).toBeFalsy();
       });
     });
 
-    it('should load assets on init', async(() => {
-      expect(component.assets.length).toBe(getAllAssetsData.count);
-    }));
+    describe('after custodians should be loaded', () => {
+      beforeEach((done) => {
+        getAllCustodiansSpy.calls.mostRecent().returnValue.subscribe(() => {
+          done();
+        });
+      });
 
-    it('should get assetsLoading=false', () => {
-      expect(component.assetsLoading).toBeFalsy();
-    });
-  });
+      it('should load custodians on init', async(() => {
+        expect(component.custodians.length).toBe(getAllCustodiansData.count);
+      }));
 
-  describe('after custodians should be loaded', () => {
-    beforeEach((done) => {
-      getAllCustodiansSpy.calls.mostRecent().returnValue.subscribe(() => {
-        done();
+      it('should get custodiansLoading=false', () => {
+        expect(component.custodiansLoading).toBeFalsy();
       });
     });
 
-    it('should load custodians on init', async(() => {
-      expect(component.custodians.length).toBe(getAllCustodiansData.count);
-    }));
-
-    it('should get custodiansLoading=false', () => {
-      expect(component.custodiansLoading).toBeFalsy();
-    });
-  });
-
-  describe('after strategies should be loaded', () => {
-    beforeEach((done) => {
-      getAllStrategiesSpy.calls.mostRecent().returnValue.subscribe(() => {
-        done();
+    describe('after strategies should be loaded', () => {
+      beforeEach((done) => {
+        getAllStrategiesSpy.calls.mostRecent().returnValue.subscribe(() => {
+          done();
+        });
       });
+
+      it('should load strategies on init', async(() => {
+        expect(component.strategies.length).toBe(getStrategiesData.length);
+      }));
     });
 
-    it('should load strategies on init', async(() => {
-      expect(component.strategies.length).toBe(getStrategiesData.length);
-    }));
-
-    it('should get strategiesLoading=false', () => {
-      expect(component.strategiesLoading).toBeFalsy();
+    testFormControlForm(() => {
+      return {
+        component: component,
+        fixture: fixture,
+        formControl: component.form,
+        submitButton: fixture.nativeElement.querySelector('button.submit'),
+        fillForm: () => {
+          component.form.controls.strategy_type.setValue(1);
+          component.form.controls.asset_id.setValue(2);
+          component.form.controls.custodian_id.setValue(2);
+          component.form.controls.address.setValue('address');
+          component.form.controls.tag.setValue('tag');
+          fixture.detectChanges();
+        },
+        changeToUnsuccess: () => {
+          createAccountSpy.and.returnValue(fakeAsyncResponse(errorResponse));
+        }
+      };
     });
-  });
-
-  testFormControlForm(() => {
-    return {
-      component: component,
-      fixture: fixture,
-      formControl: component.form,
-      submitButton: fixture.nativeElement.querySelector('button.submit'),
-      fillForm: () => {
-        component.form.controls.strategy_type.setValue(1);
-        component.form.controls.asset_id.setValue(2);
-        component.form.controls.custodian_id.setValue(2);
-        component.form.controls.address.setValue('address');
-        component.form.controls.tag.setValue('tag');
-        fixture.detectChanges();
-      },
-      changeToUnsuccess: () => {
-        createAccountSpy.and.returnValue(fakeAsyncResponse(errorResponse));
-      }
-    };
   });
 });
 
