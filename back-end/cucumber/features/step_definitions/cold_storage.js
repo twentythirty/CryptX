@@ -78,33 +78,51 @@ Given(/^the system has (.*) Cold Storage Account for (.*)$/, async function(stra
 
 });
 
-Given(/^the system has (.*) (.*) Cold Storage (Transfers|Transfer)$/, async function(amount, status, plural) {
+Given(/^the system has (\d*) (.*) Cold Storage (Transfers|Transfer)$/, async function(amount, status, plural) {
 
     amount = parseInt(amount);
 
-    const { ColdStorageTransfer, ColdStorageAccount } = require('../../../models');
+    const { ColdStorageTransfer, ColdStorageAccount, sequelize } = require('../../../models');
+    const { Op } = sequelize;
+
+    const placed_timestamp_statuses = [
+        COLD_STORAGE_ORDER_STATUSES.Sent,
+        COLD_STORAGE_ORDER_STATUSES.Completed,
+        COLD_STORAGE_ORDER_STATUSES.Failed
+    ];
+
+    const completed_timestamp_statuses = [
+        COLD_STORAGE_ORDER_STATUSES.Completed
+    ];
 
     const exisitng_transfers = await ColdStorageTransfer.findAll({
-        where: { status: COLD_STORAGE_ORDER_STATUSES[status] }
+        where: {
+            status: COLD_STORAGE_ORDER_STATUSES[status],
+            cold_storage_account_id: { [Op.ne]: null },
+            asset_id: { [Op.ne]: null }
+        }
     });
     let new_transfers = [];
 
     if(exisitng_transfers.length < amount) {
 
         const accounts = await ColdStorageAccount.findAll();
-
+   
         expect(accounts.length).to.be.greaterThan(0, `Expected to find at least one Cold Storage Account to create trasnfers`);
 
         for(let i = 0; i < amount; i++) {
 
             const account = accounts[_.random(0, accounts.length - 1)];
-
+ 
             new_transfers.push({
                 amount: _.random(1, 100, true),
+                fee: completed_timestamp_statuses.includes(COLD_STORAGE_ORDER_STATUSES[status]) ? _.random(0.01, 1, true) : 0,
                 asset_id: account.asset_id,
                 cold_storage_account_id: account.id,
                 status: COLD_STORAGE_ORDER_STATUSES[status],
-                recipe_run_order_id: this.current_recipe_order ? this.current_recipe_order.id : null
+                recipe_run_order_id: this.current_recipe_order ? this.current_recipe_order.id : null,
+                placed_timestamp: placed_timestamp_statuses.includes(COLD_STORAGE_ORDER_STATUSES[status]) ? Date.now() : null,
+                completed_timestamp: completed_timestamp_statuses.includes(COLD_STORAGE_ORDER_STATUSES[status]) ? Date.now() : null
             });
 
         }
@@ -224,6 +242,30 @@ When(/^I create a new (LCI|MCI) Cold Storage Account$/, function(strategy) {
 
 });
 
+When('I retrieve the Cold Storage Transfer list', async function() {
+
+
+
+    return chai
+        .request(this.app)
+        .post(`/v1/cold_storage/all`)
+        .set('Authorization', World.current_user.token)
+        .then(result => {   
+
+            expect(result).to.have.status(200);
+
+            expect(result.body.transfers).to.be.an('array', 'Expected to find a Cold Storage Transfer list in the response body');
+            expect(result.body.footer).to.be.an('array', 'Expected to find a footer in the response');
+
+            expect(result.body.transfers.length).to.be.greaterThan(0, 'Expected the list of Transfers to be not empty');
+
+            this.current_cold_storage_transfer_list = result.body.transfers;
+            this.current_cold_storage_transfer_footer = result.body.footer;
+
+        });
+
+});
+
 Then(/^I can only (.*) Cold Storage Transfers with status (.*)$/, async function(action, status) {
 
     const { ColdStorageTransfer, sequelize } = require('../../../models');
@@ -327,4 +369,127 @@ Then('a new Cold Storage Account is not created', async function() {
 
     expect(account, `Expected not find a Cold Storage Account with adddress ${this.current_cold_storage_account_address}`).to.be.null;
  
-})
+});
+
+Then(/^(.*) Transfers (won't|will) have timestamps and fee$/, function(statuses, will) {
+
+    will = (will === 'will');
+
+    const transfer_statuses = World.parseStatuses(statuses, COLD_STORAGE_ORDER_STATUSES, 'cold_storage_transfers.status');
+    
+    const matching_transfers = this.current_cold_storage_transfer_list.filter(t => transfer_statuses.includes(t.status));
+    expect(matching_transfers.length).to.be.greaterThan(0, `Expected at least one ${statuses} Transfer`);
+
+    if(will) {
+        for(let transfer of matching_transfers) {
+
+            expect(new Date(transfer.placed_timestamp).getTime(), 'Expected a propper placed timestamp').to.be.not.NaN;
+            expect(new Date(transfer.completed_timestamp).getTime(), 'Expected a propper completed timestamp').to.be.not.NaN;
+            expect(parseFloat(transfer.exchange_withdrawal_fee), 'Expected the Transfer fee to a be a number').to.be.not.NaN;
+    
+        }
+    }
+    else {
+        for(let transfer of matching_transfers) {
+
+            expect(transfer.placed_timestamp, 'Expected the Cold Storage Transfer placed timestamp to be not set').to.be.null;
+            expect(transfer.completed_timestamp, 'Expected the Cold Storage Transfer completed timestamp to be not set').to.be.null;
+            expect(parseFloat(transfer.exchange_withdrawal_fee)).to.equal(0, 'Expected the Cold Storage Transfer fee to be not set');
+    
+        }
+    }
+
+});
+
+Then('the net amount will be calculated by subtracting the fee from the gross amount', function() {
+
+    for(let transfer of this.current_cold_storage_transfer_list) {
+
+        expect(Decimal(transfer.net_amount).eq(Decimal(transfer.gross_amount).minus(transfer.exchange_withdrawal_fee)), 
+        'Expected the Transfet net amount to equal = gross amount - fee').to.be.true
+
+    }
+
+});
+
+Then('the Exchange, Address and Asset of the source account will match the Transfer', async function() {
+
+    const { ExchangeAccount, Exchange, Asset } = require('../../../models');
+
+    for(let transfer of this.current_cold_storage_transfer_list) {
+
+        const [ asset, exchange ] = await Promise.all([
+            Asset.findOne({
+                where: { symbol: transfer.asset }
+            }),
+            Exchange.findOne({
+                where: { name: transfer.source_exchange }
+            })
+        ]);
+
+        expect(asset, `Expected to find Asset with symbol ${transfer.asset}`).to.be.not.null;
+        expect(exchange, `Expected to find Exchange with the name ${transfer.exchange}`).to.be.not.null;
+
+        const exchange_account = await ExchangeAccount.findOne({
+            where: { exchange_id: exchange.id, asset_id: asset.id }
+        });
+
+        expect(exchange_account, 'Expected to find a matching exchange acccount').to.be.not.null;
+        expect(transfer.source_account).to.equal(exchange_account.address, 'Expected the Exchange account addresses to match');
+
+    }
+
+});
+
+Then('I will see the Custodian name based on the Cold Storage Account it is being transfered to', async function() {
+
+    const { ColdStorageAccount, ColdStorageCustodian, ColdStorageTransfer } = require('../../../models');
+
+    const transfers = await ColdStorageTransfer.findAll({
+        where: {
+            id: this.current_cold_storage_transfer_list.map(t => t.id)
+        },
+        include: {
+            model: ColdStorageAccount,
+            include: ColdStorageCustodian
+        }
+    });
+
+    for(let transfer of this.current_cold_storage_transfer_list) {
+
+        const matching_transfer = transfers.find(t => t.id = transfer.id);
+
+        expect(transfer.custodian).to.equal(_.get(matching_transfer, 'ColdStorageAccount.ColdStorageCustodian.name'), 'Expected the custodian names to match');
+
+    };
+
+});
+
+Then('the Transfers footer will show a number of distinct Assets and Exchanges', function() {
+
+    const transfers = this.current_cold_storage_transfer_list;
+    const footer = this.current_cold_storage_transfer_footer;
+
+    const asset_column = footer.find(f => f.name === 'asset');
+    const exchange_column = footer.find(f => f.name === 'source_exchange');
+
+    const unique_by_asset = _.uniqBy(transfers, 'asset');
+    const unique_by_exchange = _.uniqBy(transfers, 'source_exchange');
+
+    expect(parseInt(asset_column.value)).to.equal(unique_by_asset.length, 'Expected the number of unique Assets to equal the number in the footer');
+    expect(parseInt(exchange_column.value)).to.equal(unique_by_exchange.length, 'Expected the number of unique Exchanges to equal the number in the footer');
+
+});
+
+Then('the Transfers footer will show a number of Pending Transfers', function() {
+
+    const transfers = this.current_cold_storage_transfer_list;
+    const footer = this.current_cold_storage_transfer_footer;
+
+    const footer_column = footer.find(f => f.name === 'status');
+
+    const pending_transfers = transfers.filter(t => t.status === `cold_storage_transfers.status.${COLD_STORAGE_ORDER_STATUSES.Pending}`)
+
+    expect(parseInt(footer_column.value)).to.equal(pending_transfers.length, 'Expected the number of pending Transfers to equal the number in the footer');
+
+});
