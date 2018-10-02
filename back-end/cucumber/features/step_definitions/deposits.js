@@ -66,6 +66,38 @@ Given(/^the system has (.*) Deposits$/, async function (status) {
     });
 });
 
+Given('the system has one recipe run deposit with valid amount and fee', async function() {
+
+    const records = await generateDeposits.bind(this)('Completed');
+    const RecipeRunDeposit = require('../../../models').RecipeRunDeposit;
+
+    //all these depoits will have valid amount/fee, so it fits this stepp
+    return RecipeRunDeposit.bulkCreate(records, {
+        returning: true
+    }).then(deposits => {
+
+        this.current_recipe_run_deposits = deposits;
+    });
+});
+
+Given('the recipe run deposit has status Completed', async function() {
+
+    //ensure status in this step is completed
+    chai.assert.isNotNull(this.depositService, 'Context needs to have deposit service for this step!');
+    chai.assert.isNotNull(this.current_recipe_run_deposits, 'Deposits should have been generated before this step!');
+
+    const completed_deposit = _.find(this.current_recipe_run_deposits, deposit => deposit.status == RECIPE_RUN_DEPOSIT_STATUSES.Completed);
+
+    //none of the deposits are completed
+    if (completed_deposit == null) {
+        let first_deposit = _.first(this.current_recipe_run_deposits);
+
+        first_deposit.status = RECIPE_RUN_DEPOSIT_STATUSES.Completed;
+        await first_deposit.save()
+    }
+});
+
+
 
 Given('the system has one recipe run deposit with status Pending', async function () {
 
@@ -169,4 +201,14 @@ Then('the system will report error with bad values', async function() {
 
         chai.assert.include(message, `fee ${this.current_recipe_run_deposit.fee}`);
     }
+});
+
+Then('the system will report error related to status', async function() {
+
+    chai.assert.isNotNull(this.current_recipe_run_deposit, 'Context should contain pending recipe run deposit by now!');
+    chai.assert.isNotNull(this.current_recipe_run_deposit_approve_error, 'Approve action did not generate deposit error!');
+
+    const message = this.current_recipe_run_deposit_approve_error.message;
+
+    chai.assert.include(message, `confirmation is only allowed for Pending`, 'message not indicative of deposit confirmation failure due to status!');
 });

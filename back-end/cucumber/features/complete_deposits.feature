@@ -42,3 +42,14 @@ Feature: Complete Deposits
 		| -1000 | 0 |
 		| 0 | 5 |
 		| 34 | -5 |
+  
+	@investment_run_cache_cleanup
+	Scenario: fail to confirm deposit with status completed
+	
+		Given the system has one recipe run deposit with valid amount and fee
+		But the recipe run deposit has status Completed
+		When I log onto CryptX as Depositor
+		And navigate to Completed recipe run deposit
+		And approve recipe run deposit
+		Then the recipe run deposit status will remain unchanged
+		And the system will report error related to status
