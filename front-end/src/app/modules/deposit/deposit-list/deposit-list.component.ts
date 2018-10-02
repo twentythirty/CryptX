@@ -61,8 +61,8 @@ export class DepositListComponent extends DataTableCommonManagerComponent implem
   constructor(
     public route: ActivatedRoute,
     public router: Router,
-    protected depositService: DepositService,
     private authService: AuthService,
+    protected depositService: DepositService,
   ) {
     super(route, router);
   }

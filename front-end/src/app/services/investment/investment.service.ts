@@ -36,7 +36,15 @@ export class ConversionCompleteResponse {
 
 export class CalculateDepositsResponse {
   success: boolean;
-
+  deposits: Array<{
+    id: number;
+    amount: string;
+    creation_timestamp: string;
+    status: number;
+    recipe_run_id: number;
+    asset_id: number;
+    target_exchange_account_id: number;
+  }>;
 }
 
 

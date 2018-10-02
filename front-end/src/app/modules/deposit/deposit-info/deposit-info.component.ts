@@ -4,8 +4,10 @@ import { Observable } from 'rxjs';
 import { filter } from 'rxjs/operators';
 import * as _ from 'lodash';
 
+import { AuthService } from '../../../services/auth/auth.service';
 import { DepositService, DepositResultData } from '../../../services/deposit/deposit.service';
 import { InvestmentService } from '../../../services/investment/investment.service';
+import permissions from '../../../config/permissions';
 import {
   ActionCellDataColumn,
   DataCellAction,
@@ -60,6 +62,7 @@ export class DepositInfoComponent implements OnInit {
   constructor(
     public route: ActivatedRoute,
     protected router: Router,
+    protected authService: AuthService,
     protected depositService: DepositService,
     protected investmentService: InvestmentService,
   ) {}
@@ -79,9 +82,12 @@ export class DepositInfoComponent implements OnInit {
 
         this.depositService.getDeposit(this.depositId).subscribe(
           (res: DepositResultData) => {
-            this.appendActionColumn();
             this.depositDataSource.body = [res.recipe_deposit];
             this.activityLog = res.action_logs;
+
+            if (this.authService.hasPermissions([permissions.APPROVE_DEPOSITS])) {
+              this.appendActionColumn();
+            }
           }
         );
       }

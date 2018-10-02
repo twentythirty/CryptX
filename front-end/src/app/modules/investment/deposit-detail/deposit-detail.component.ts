@@ -47,6 +47,7 @@ export class DepositDetailComponent extends TimelineDetailComponent implements O
   });
   updateConversionAmount: Function;
   completeConversionLoading = false;
+  calculateDepositsLoading = false;
 
   depositApproveId: number;
 
@@ -293,7 +294,20 @@ export class DepositDetailComponent extends TimelineDetailComponent implements O
   }
 
   calculateDeposits() {
+    this.calculateDepositsLoading = true;
 
+    this.route.params.pipe(
+      mergeMap(
+        params => this.investmentService.calculateDeposits(params.id).pipe(
+          finalize(() => this.calculateDepositsLoading = false)
+        )
+      )
+    ).subscribe(
+      res => {
+        this.getAllData();
+        this.getTimelineData();
+      }
+    );
   }
 
 
