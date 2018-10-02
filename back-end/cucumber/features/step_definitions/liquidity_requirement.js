@@ -155,7 +155,7 @@ When(/^I retrieve the Liquidity Requirement details for (\w+\/\w+) instrument$/,
     this.current_responses = [ requirement_details, requirement_exchanges ];
 
     this.current_liqudity_requirement_details = requirement_details.body.liquidity_requirement;
-    this.current_liqudity_requirement_exchanges = requirement_exchanges.body.exchanges
+    this.current_liqudity_requirement_exchange_list = requirement_exchanges.body.exchanges
 
 });
 
@@ -336,7 +336,7 @@ Then(/^the number of Exchanges for the Liquidity Requirement will be (.*)$/, fun
     exchange_count = parseInt(exchange_count);
 
     const requirement_details = this.current_liqudity_requirement_details;
-    const requirement_exchanges = this.current_liqudity_requirement_exchanges;
+    const requirement_exchanges = this.current_liqudity_requirement_exchange_list;
 
     expect(parseInt(requirement_details.exchange_count)).to.equal(exchange_count, `Expected the exchange count to be ${exchange_count}`);
     expect(requirement_exchanges.length).to.equal(exchange_count, `Expected the number of exchanges in the list to be ${exchange_count}`);
@@ -348,7 +348,7 @@ Then(/^the number of Exchanges will be the number of Exchanges that have mapping
     const { Instrument, InstrumentExchangeMapping } = require('../../../models');
 
     const requirement_details = this.current_liqudity_requirement_details;
-    const requirement_exchanges = this.current_liqudity_requirement_exchanges;
+    const requirement_exchanges = this.current_liqudity_requirement_exchange_list;
 
     const instrument = await Instrument.findOne({
         where: { symbol: instrument_symbol }
@@ -370,7 +370,7 @@ Then('the Exchange list will contain the Instrument current price, last day volu
     const { InstrumentLiquidityHistory, InstrumentMarketData, sequelize } = require('../../../models');
     const { Op } = sequelize;
 
-    const requirement_exchanges = this.current_liqudity_requirement_exchanges;
+    const requirement_exchanges = this.current_liqudity_requirement_exchange_list;
 
     for(let exchange of requirement_exchanges) {
 
@@ -415,7 +415,7 @@ Then('the Exchange list will contain the Instrument current price, last day volu
 Then('Exchanges that pass the requirement are marked accordinally', function() {
 
     const requirement_details = this.current_liqudity_requirement_details;
-    const requirement_exchanges = this.current_liqudity_requirement_exchanges;
+    const requirement_exchanges = this.current_liqudity_requirement_exchange_list;
 
     for(let exchange of requirement_exchanges) {
 
@@ -433,5 +433,22 @@ Then('Exchanges that pass the requirement are marked accordinally', function() {
 
     expect(parseInt(requirement_details.exchange_pass)).to.equal(non_lacking_exchanges.length, 'Expected the pass count to equal the actual number of passed exchanges');
     expect(parseInt(requirement_details.exchange_not_pass)).to.equal(lacking_exchanges.length, 'Expected the not pass count to equal the actual number of lacking exchanges');
+
+});
+
+Then('the number of Exchanges that did not pass is shown in the footer', function() {
+
+    const exchanges_response = this.current_responses.find(r => r.body.exchanges);
+    expect(exchanges_response, 'Expected to find the response containing Liqudity requirement exchanges').to.be.not.undefined;
+
+    const footer = exchanges_response.body.footer;
+    expect(footer, 'Expected to find the footer in the response').to.be.not.undefined;
+
+    const passes_column = footer.find(f => f.name === 'passes');
+    expect(passes_column, 'Expected to find footer column containg number of Exchanges that did not pass').to.be.not.undefined;
+
+    const lacking_exchanges = this.current_liqudity_requirement_exchange_list.filter(e => e.passes === 'liquidity_exchanges.status.lacking');
+    
+    expect(parseInt(passes_column.value)).to.equal(lacking_exchanges.length, 'Expected the number in the footer to match the actual number of lacking Exchanges');
 
 });

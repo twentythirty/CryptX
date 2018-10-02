@@ -31,3 +31,4 @@ Feature: View liquidity requirement details
         And the number of Exchanges will be the number of Exchanges that have mappings for XRP/ETH
         And the Exchange list will contain the Instrument current price, last day volume and average volume for the past week
         And Exchanges that pass the requirement are marked accordinally
+        And the number of Exchanges that did not pass is shown in the footer
