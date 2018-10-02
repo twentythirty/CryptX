@@ -43,6 +43,7 @@ module.exports = (sequelize, DataTypes) => {
       foreignKey: 'recipe_run_order_id'
     });
     ColdStorageTransfer.belongsTo(models.Asset);
+    ColdStorageTransfer.belongsTo(models.ColdStorageAccount)
   };
 
   return ColdStorageTransfer;

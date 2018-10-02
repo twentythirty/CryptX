@@ -28,6 +28,7 @@ Given(/^the system has Exchange Account for (.*) on (.*)$/, async function(asset
         if(!this.current_exchange_accounts) this.current_exchange_accounts = [];
 
         this.current_exchange_accounts.push(account);
+        this.current_exchange_account = account;
 
     });
 
