@@ -12,7 +12,7 @@ import { getAllCustodiansData, addAccountData } from '../../../testing/service-m
 import { testFormControlForm } from '../../../testing/commonTests';
 
 
-fdescribe('AddAccountComponent', () => {
+describe('AddAccountComponent', () => {
   let component: AddAccountComponent;
   let fixture: ComponentFixture<AddAccountComponent>;
   let assetService: AssetService;
