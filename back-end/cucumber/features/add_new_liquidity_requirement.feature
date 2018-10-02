@@ -27,6 +27,7 @@ Feature: Add a new liquidity requiremen
         And I select an Instrument which is not mapped to OKEx
         And I add a Liquidity Requirement for OKEx
         Then the system will display an error about my selected instrument not having mappings for OKEx
+        And a new Liquidity Requirement is not created
 
     Scenario: new valid liquidity requirement for all exchanges
 

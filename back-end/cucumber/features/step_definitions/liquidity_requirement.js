@@ -452,3 +452,18 @@ Then('the number of Exchanges that did not pass is shown in the footer', functio
     expect(parseInt(passes_column.value)).to.equal(lacking_exchanges.length, 'Expected the number in the footer to match the actual number of lacking Exchanges');
 
 });
+
+Then('a new Liquidity Requirement is not created', async function() {
+
+    const { InstrumentLiquidityRequirement } = require('../../../models');
+
+    const requiremnt = await InstrumentLiquidityRequirement.findOne({
+        where: {
+            exchange: this.current_exchange.id,
+            instrument_id: this.current_instrument.id
+        }
+    });
+
+    expect(requiremnt, `Expected not to find a Liquidity Requirement for ${this.current_instrument.symbol} and ${this.current_exchange.name}`).to.be.null;
+
+});
