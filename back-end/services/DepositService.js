@@ -57,8 +57,14 @@ const generateRecipeRunDeposits = async function (recipe_run_id) {
     FROM recipe_run_detail AS rrd
     LEFT JOIN recipe_run_detail_investment AS rrdi ON rrdi.recipe_run_detail_id = rrd.id AND rrdi.asset_id = rrd.quote_asset_id
     LEFT JOIN investment_asset_conversion AS iac ON iac.recipe_run_id = rrd.recipe_run_id AND iac.target_asset_id = rrd.quote_asset_id
+    WHERE rrd.recipe_run_id=:recipe_run_id
     GROUP BY rrd.quote_asset_id, rrd.target_exchange_id, iac.amount
-  `, { type: sequelize.QueryTypes.SELECT }));
+  `, {
+    replacements: { 
+      recipe_run_id: recipe_run.id
+    },
+    type: sequelize.QueryTypes.SELECT
+  }));
   
   if(err) TE(err.message);
 
