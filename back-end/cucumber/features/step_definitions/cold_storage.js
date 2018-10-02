@@ -306,3 +306,25 @@ Then('I can only add one Cold Storage Account with the same address', function()
         });
 
 });
+
+Then('the system will display an error abount using a non-cryptocurrency asset', function() {
+
+    expect(this.current_response).to.have.status(422);
+
+    const error = this.current_response.response.body.error;
+
+    expect(error).to.equal(`Asset "${this.current_asset.symbol}" is not a cryptocurrency`);
+
+});
+
+Then('a new Cold Storage Account is not created', async function() {
+
+    const { ColdStorageAccount } = require('../../../models');
+
+    const account = await ColdStorageAccount.findOne({
+        where: { address: this.current_cold_storage_account_address }
+    });
+
+    expect(account, `Expected not find a Cold Storage Account with adddress ${this.current_cold_storage_account_address}`).to.be.null;
+ 
+})

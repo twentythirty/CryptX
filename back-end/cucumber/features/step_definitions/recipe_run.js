@@ -215,7 +215,7 @@ When('I initiate a new Recipe Run', function () {
             this.current_response = result;
 
         }).catch(error => {
-            World.print(error.response.body.error);
+            //World.print(error.response.body.error);
             this.current_response = error;
 
         });
