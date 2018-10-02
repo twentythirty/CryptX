@@ -97,7 +97,30 @@ Given('the recipe run deposit has status Completed', async function() {
     }
 });
 
+Given('the system has some recipe run deposits with status Pending', async function() {
 
+    chai.assert.isNotNull(this.current_recipe_run, 'Cant create deposits without context recipe run!');
+
+    let deposits_records = await generateDeposits.bind(this)('Pending');
+
+    chai.assert.isArray(deposits_records, 'Expected to generate array of deposits');
+    chai.assert.isAbove(deposits_records.length, 1, 'Expected to generate more than one Pending deposit');
+
+    const null_for_pending = ['depositor_user_id', 'completion_timestamp', 'amount', 'fee'];
+    _.forEach(deposits_records, record => {
+        _.forEach(null_for_pending, prop_name => {
+            record[prop_name] = null;
+        })
+    });
+    const RecipeRunDeposit = require('../../../models').RecipeRunDeposit;
+
+    return RecipeRunDeposit.bulkCreate(deposits_records, {
+        returning: true
+    }).then(records => {
+
+        this.current_recipe_run_deposits = records;
+    });
+});
 
 Given('the system has one recipe run deposit with status Pending', async function () {
 
@@ -178,7 +201,9 @@ When('approve recipe run deposit', async function() {
     if (err) {
         this.current_recipe_run_deposit_approve_error = err;
     }
-
+    //save prev investmetn run state due to possible status change
+    this.prev_investment_run = this.current_investment_run;
+    this.current_investment_run = await require('../../../models').InvestmentRun.findById(this.current_investment_run.id);
     //fill check log id for future step
     this.check_log_id = this.current_recipe_run_deposit.id;
 

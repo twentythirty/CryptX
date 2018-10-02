@@ -53,3 +53,15 @@ Feature: Complete Deposits
 		And approve recipe run deposit
 		Then the recipe run deposit status will remain unchanged
 		And the system will report error related to status
+
+	@investment_run_cache_cleanup
+	Scenario: complete deposit successfully
+  
+		Given the system has some recipe run deposits with status Pending
+		When I log onto CryptX as Depositor
+		And navigate to Pending recipe run deposit
+		And confirm recipe run deposit with provided amount and fee
+		And approve recipe run deposit 
+		Then the recipe run deposit will have status Completed
+		And this action was logged with recipe run deposit id
+		And the investment run status will remain unchanged
