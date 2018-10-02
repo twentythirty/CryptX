@@ -3,6 +3,7 @@
 const ColdStorageCustodian = require('../models').ColdStorageCustodian;
 const ColdStorageAccount = require('../models').ColdStorageAccount;
 const ColdStorageTransfer = require('../models').ColdStorageTransfer;
+const sequelize = require('../models').sequelize;
 
 const Asset = require('../models').Asset;
 
@@ -69,12 +70,24 @@ const createColdStorageAccount = async (strategy_type, asset_id, cold_storage_cu
     if(!found_custodian) TE(`Custodian with id ${cold_storage_custodian_id} was not found`);
 
     let account = null;
-    [ err, account ] = await to(ColdStorageAccount.create({
-        strategy_type,
-        asset_id,
-        cold_storage_custodian_id,
-        address,
-        tag
+    [ err, account ] = await to(sequelize.transaction(transaction => {
+
+        return ColdStorageAccount.count({
+            where: { address }
+        }).then(found_account => {
+
+            if(found_account) TE(`Account with public address "${address}" already exists`);
+
+            return ColdStorageAccount.create({
+                strategy_type,
+                asset_id,
+                cold_storage_custodian_id,
+                address,
+                tag
+            });
+
+        })
+
     }));
 
     if(err) TE(err.message);

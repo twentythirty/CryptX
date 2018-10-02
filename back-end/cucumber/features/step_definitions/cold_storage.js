@@ -117,6 +117,14 @@ Given(/^the system has (.*) (.*) Cold Storage (Transfers|Transfer)$/, async func
 
 });
 
+Given('there are no Cold Storage Accounts in the system', function() {
+
+    const { ColdStorageAccount } = require('../../../models');
+
+    return ColdStorageAccount.destroy({ where: { } });
+
+});
+
 When(/^I select a (.*) Cold Storage Transfer$/, async function(status) {
 
     const { ColdStorageTransfer } = require('../../../models');
@@ -169,6 +177,53 @@ When(/^I (approve|complete) (a|the) (.*) Cold Storage Transfer$/, async function
 
 });
 
+When('I select a Cold Storage Custodian', async function() {
+
+    const { ColdStorageCustodian, sequelize } = require('../../../models');
+
+    const custodian = await ColdStorageCustodian.findOne({
+        order: sequelize.literal('random()')
+    });
+
+    expect(custodian, 'Expected to find any Custodian').to.be.not.null;
+
+    this.current_custodian = custodian;
+
+});
+
+When(/^I create a new (LCI|MCI) Cold Storage Account$/, function(strategy) {
+
+    const address = String(_.random(10000, 99999));
+    this.current_cold_storage_account_address = address;
+
+    const account = {
+        strategy_type: STRATEGY_TYPES[strategy],
+        asset_id: this.current_asset.id,
+        custodian_id: this.current_custodian.id,
+        address: address
+    }
+
+    return chai
+        .request(this.app)
+        .post(`/v1/cold_storage/accounts/add`)
+        .set('Authorization', World.current_user.token)
+        .send(account)
+        .then(result => {   
+
+            expect(result).to.have.status(200);
+
+            expect(result.body.account).to.be.an('object', 'Expected to find a Cold Storage Account object in the response body');
+
+            this.current_response = result;
+
+        }).catch(error => {
+
+            this.current_response = error;
+
+        });
+
+});
+
 Then(/^I can only (.*) Cold Storage Transfers with status (.*)$/, async function(action, status) {
 
     const { ColdStorageTransfer, sequelize } = require('../../../models');
@@ -198,6 +253,55 @@ Then(/^I can only (.*) Cold Storage Transfers with status (.*)$/, async function
             const error = result.response.body.error;
 
             expect(error_map[action]).includes(error);
+
+        });
+
+});
+
+Then('a new Cold Storage Account is saved to the database', async function() {
+
+    const { ColdStorageAccount } = require('../../../models');
+
+    const account = await ColdStorageAccount.findOne({
+        where: { address: this.current_cold_storage_account_address }
+    });
+
+    expect(account, `Expected to find a Cold Storage Account with address ${this.current_cold_storage_account_address}`).to.be.not.null;
+
+    this.current_cold_storage_account = account;
+
+});
+
+Then('the selected Asset and Custodian is assigned to it', function() {
+
+    const account = this.current_cold_storage_account;
+
+    expect(account.cold_storage_custodian_id).to.equal(this.current_custodian.id, 'Expected the Custodian ids to match');
+    expect(account.asset_id).to.equal(this.current_asset.id, 'Expected Assets ids to match');
+
+});
+
+Then('I can only add one Cold Storage Account with the same address', function() {
+
+    const account = {
+        strategy_type: STRATEGY_TYPES.LCI,
+        asset_id: this.current_asset.id,
+        custodian_id: this.current_custodian.id,
+        address: this.current_cold_storage_account.address
+    }
+
+    return chai
+        .request(this.app)
+        .post(`/v1/cold_storage/accounts/add`)
+        .set('Authorization', World.current_user.token)
+        .send(account)
+        .catch(result => {
+
+            expect(result).to.has.status(422);
+
+            const error = result.response.body.error;
+
+            expect(error).to.equal(`Account with public address "${account.address}" already exists`);
 
         });
 

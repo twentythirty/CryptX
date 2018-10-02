@@ -16,10 +16,19 @@ describe('ColdStorage testing', () => {
         app.dbPromise.then(migrations => {
             console.log("Migrations: %o", migrations);
 
-            //sinon.stub(ActionLogUtil, 'logAction').callsFake(() => {return;});
+            sinon.stub(sequelize, 'transaction').callsFake(callback => {
+                return Promise.resolve(callback());
+            });
 
             done();
         })
+    });
+
+    after(done => {
+
+        sequelize.transaction.restore();
+
+        done()
     });
 
     const ColdStorageService = require('./../../services/ColdStorageService');
@@ -27,6 +36,7 @@ describe('ColdStorage testing', () => {
     const ColdStorageAccount = require('./../../models').ColdStorageAccount;
     const ColdStorageTransfer = require('./../../models').ColdStorageTransfer;
     const Asset = require('./../../models').Asset;
+    const sequelize = require('./../../models').sequelize;
 
     describe('and method createCustodian shall', () => {
 

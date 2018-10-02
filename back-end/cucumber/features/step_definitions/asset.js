@@ -379,7 +379,7 @@ When('retrieve a list of Assets', function() {
 
 });
 
-When(/^I select a (.*) Asset$/, async function(type) {
+When(/^I select a (Blacklisted|Whitelisted|Greylisted) Asset$/, async function(type) {
 
     const type_map = {
         Blacklisted: INSTRUMENT_STATUS_CHANGES.Blacklisting,
@@ -397,7 +397,7 @@ When(/^I select a (.*) Asset$/, async function(type) {
 
 });
 
-When(/^I (.*) (the|an|any) Asset$/, async function (action, pointer) {
+When(/^I (Blacklist|Whitelist|Greylist|Degreylist) (the|an|any) Asset$/, async function (action, pointer) {
 
     const action_map = {
         Blacklist: INSTRUMENT_STATUS_CHANGES.Blacklisting,
@@ -580,6 +580,30 @@ When('the system completes the task "fetch asset market capitalization"', {
     });
 
     await job.JOB_BODY(config, console.log);
+
+});
+
+When(/^I select a (non-cryptocurrency|cryptocurrency) Asset$/, async function(asset_type) {
+
+    const is_crypto = (asset_type === 'cryptocurrency');
+
+    const { Asset, sequelize } = require('../../../models');
+    const { Op } = sequelize;
+    const non_cryptos = ['USD'];
+
+    let where = {
+        symbol: { [Op.notIn]: non_cryptos }
+    };
+    if(!is_crypto) where = { symbol: non_cryptos };
+
+    const asset = await Asset.findOne({ 
+        where,
+        order: sequelize.literal('random()')
+    });
+
+    expect(asset, `Expected to find a ${asset_type} Asset`).to.be.not.null;
+
+    this.current_asset = asset;
 
 });
 
