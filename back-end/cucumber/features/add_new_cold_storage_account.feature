@@ -18,7 +18,7 @@ Feature: Add a new cold storage account
         And the selected Asset and Custodian is assigned to it
         But I can only add one Cold Storage Account with the same address
 
-    Scenario: attepting to add a cold storage account for a non-cryptocurrency asset
+    Scenario: attempting to add a cold storage account for a non-cryptocurrency asset
 
         Given there are no Cold Storage Accounts in the system
         When I log onto CryptX as Investment Manager
