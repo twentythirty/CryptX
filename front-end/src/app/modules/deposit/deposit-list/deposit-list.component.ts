@@ -16,7 +16,7 @@ import { Deposit } from '../../../shared/models/deposit';
 
 import { DepositService } from '../../../services/deposit/deposit.service';
 import { DepositApproveComponent } from '../deposit-approve/deposit-approve.component';
-import permissions from '../../../config/permissions';
+import { permissions } from '../../../config/permissions';
 import { AuthService } from '../../../services/auth/auth.service';
 
 @Component({

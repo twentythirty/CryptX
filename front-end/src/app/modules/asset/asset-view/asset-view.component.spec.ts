@@ -8,7 +8,7 @@ import { AssetViewComponent } from './asset-view.component';
 import { AssetService, AssetResultData } from '../../../services/asset/asset.service';
 import { AuthService } from '../../../services/auth/auth.service';
 import { Asset } from '../../../shared/models/asset';
-import permissions from '../../../config/permissions';
+import { permissions } from '../../../config/permissions';
 
 
 const AssetServiceStub = {

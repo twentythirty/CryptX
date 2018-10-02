@@ -20,7 +20,7 @@ import { AuthService } from '../../../services/auth/auth.service';
 import { ModelConstantsService } from '../../../services/model-constants/model-constants.service';
 import { Asset, AssetStatus } from '../../../shared/models/asset';
 import { StatusClass } from '../../../shared/models/common';
-import permissions from '../../../config/permissions';
+import { permissions } from '../../../config/permissions';
 
 
 @Component({

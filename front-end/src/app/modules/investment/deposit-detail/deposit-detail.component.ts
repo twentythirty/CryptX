@@ -5,7 +5,7 @@ import { mergeMap, finalize } from 'rxjs/operators';
 import * as _ from 'lodash';
 
 import { StatusClass } from '../../../shared/models/common';
-import permissions from '../../../config/permissions';
+import { permissions } from '../../../config/permissions';
 
 import {
   TimelineDetailComponent,

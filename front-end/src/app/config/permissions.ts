@@ -1,4 +1,4 @@
-export default {
+export const permissions = {
   ALTER_ROLES: 'perm_alter_user_roles',
   ALTER_PERMS: 'perm_alter_role_perm',
   VIEW_ROLES: 'perm_view_roles',

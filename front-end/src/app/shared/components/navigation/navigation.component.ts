@@ -2,7 +2,7 @@ import { Component, HostListener, ElementRef, OnInit, Input } from '@angular/cor
 import { Router } from '@angular/router';
 
 import { AuthService } from '../../../services/auth/auth.service';
-import permissions from '../../../config/permissions';
+import { permissions } from '../../../config/permissions';
 
 @Component({
   selector: 'app-navigation',

@@ -6,7 +6,6 @@ import { Observable,  of, forkJoin } from 'rxjs';
 import { catchError, tap } from 'rxjs/operators';
 
 import { User } from '../../shared/models/user';
-import PERMISSIONS from '../../config/permissions';
 
 import { ModelConstantsService } from '../model-constants/model-constants.service';
 import { environment } from '../../../environments/environment';

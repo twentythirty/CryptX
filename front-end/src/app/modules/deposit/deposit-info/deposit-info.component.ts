@@ -7,7 +7,7 @@ import * as _ from 'lodash';
 import { AuthService } from '../../../services/auth/auth.service';
 import { DepositService, DepositResultData } from '../../../services/deposit/deposit.service';
 import { InvestmentService } from '../../../services/investment/investment.service';
-import permissions from '../../../config/permissions';
+import { permissions } from '../../../config/permissions';
 import {
   ActionCellDataColumn,
   DataCellAction,

@@ -2,7 +2,7 @@ import { Component, OnInit, Input } from '@angular/core';
 import { Router } from '@angular/router';
 
 import { StatusClass } from '../../models/common';
-import permissions from '../../../config/permissions';
+import { permissions } from '../../../config/permissions';
 
 import { AuthService } from '../../../services/auth/auth.service';
 
