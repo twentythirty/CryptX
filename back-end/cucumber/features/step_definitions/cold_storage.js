@@ -307,7 +307,7 @@ Then('I can only add one Cold Storage Account with the same address', function()
 
 });
 
-Then('the system will display an error abount using a non-cryptocurrency asset', function() {
+Then('the system will display an error about using a non-cryptocurrency asset', function() {
 
     expect(this.current_response).to.have.status(422);
 

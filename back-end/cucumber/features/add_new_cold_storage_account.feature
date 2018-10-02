@@ -25,6 +25,6 @@ Feature: Add a new cold storage account
         And I select a Cold Storage Custodian
         And I select a non-cryptocurrency Asset
         And I create a new LCI Cold Storage Account
-        Then the system will display an error abount using a non-cryptocurrency asset
+        Then the system will display an error about using a non-cryptocurrency asset
         And a new Cold Storage Account is not created
         
