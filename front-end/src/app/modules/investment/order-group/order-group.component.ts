@@ -170,7 +170,7 @@ export class OrderGroupComponent extends TimelineDetailComponent implements OnIn
           } else {
             this.showGenerateOrders = false;
           }
-          this.disableGenerateOrders = false;
+          this.generateOrdersLoading = false;
         } else {
           this.showGenerateOrders = true;
         }
@@ -231,7 +231,7 @@ export class OrderGroupComponent extends TimelineDetailComponent implements OnIn
   }
 
   public generateOrders() {
-    this.disableGenerateOrders = true;
+    this.generateOrdersLoading = true;
 
     this.route.params.pipe(
       mergeMap(

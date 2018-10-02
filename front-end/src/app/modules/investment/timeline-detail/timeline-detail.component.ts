@@ -32,7 +32,7 @@ export interface ITimelineDetailComponent {
 
   showGenerateOrders?: boolean; // Optional
   showConversionAmountModal?: boolean; // Optional
-  disableGenerateOrders?: boolean; // Optional
+  generateOrdersLoading?: boolean; // Optional
 
   singleDataSource: SingleTableDataSource;
   listDataSource: TableDataSource;
@@ -116,7 +116,7 @@ export class TimelineDetailComponent extends DataTableCommonManagerComponent imp
 
   public showGenerateOrders = false; // Optional
   public showConversionAmountModal = false; // Optional
-  public disableGenerateOrders = false; // Optional
+  public generateOrdersLoading = false; // Optional
 
   public logsTitle: string; // Optional
   public logsSource: Array<ActionLog>; // Optional

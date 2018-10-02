@@ -85,10 +85,10 @@ export class TimelineComponent implements OnInit {
         if (this.authService.hasPermissions([permissions.VIEW_ORDERS])) {
           return false; // can view even empty page
         }
-        return !events.recipe_orders;
+        return !(events.recipe_deposits && events.recipe_deposits.status === 'deposits.status.151');
 
       case 'execution_orders':
-        return !events.execution_orders;
+        return !events.recipe_orders;
     }
   }
 

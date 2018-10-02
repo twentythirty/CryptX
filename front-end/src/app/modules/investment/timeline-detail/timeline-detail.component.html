@@ -9,14 +9,16 @@
 <div class="left-part-dashboard">
   <div class="top-controls">
     <span class="headline-title">{{ singleTitle }}</span>
-    <a
+    <app-btn
       *ngIf="showGenerateOrders"
-      class="btn start"
-      [class.disabled]="disableGenerateOrders"
-      (click)="!disableGenerateOrders && generateOrders()"
+      [extraClass]="!generateOrdersLoading && 'start'"
+      [thinner]="true"
+      (onClick)="generateOrders()"
+      [loading]="generateOrdersLoading"
+      [disabled]="generateOrdersLoading"
     >
       <span>{{ 'orders.generate_orders' | translate }}</span>
-    </a>
+    </app-btn>
   </div>
 
   <app-data-table
