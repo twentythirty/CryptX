@@ -38,25 +38,24 @@ export class AddAccountComponent implements OnInit {
     private modelConstantService: ModelConstantsService,
     private assetService: AssetService,
     private coldStorageService: ColdStorageService,
-    private router: Router,
+    public router: Router,
   ) {}
 
   ngOnInit() {
-    this.getStrategies();
     this.getAssets();
     this.getCustodians();
+    this.getStrategies();
   }
 
   getStrategies() {
-    const group_name = 'STRATEGY_TYPES';
-
-    Object.entries(this.modelConstantService.getGroup(group_name)).map((item, index) => {
+    const groupName = 'STRATEGY_TYPES';
+    Object.entries(this.modelConstantService.getGroup(groupName)).map((item, index) => {
       this.strategies[index] = {
         id: item[1],
         value: item[0]
       };
-      this.strategiesLoading = false;
     });
+    this.strategiesLoading = false;
   }
 
 
@@ -66,7 +65,6 @@ export class AddAccountComponent implements OnInit {
 
     this.assetService.getAllAssetsDetailed(requestData).subscribe(res => {
       this.assetsLoading = false;
-
       this.assets = res.assets.map(asset => {
         return {
           id: asset.id,
@@ -90,6 +88,10 @@ export class AddAccountComponent implements OnInit {
   }
 
   add() {
+    if (this.form.invalid) {
+      return;
+    }
+
     const request = _.mapValues(this.form.value, val => {
       if (val === null) {
         return val;
