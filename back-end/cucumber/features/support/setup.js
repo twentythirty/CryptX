@@ -26,12 +26,15 @@ function CustomWorld() {
     }
 
     attachServices(this)
+    //add FE transaltions for admin view checking
+    this.i18n = require('../../../public/fe/i18n/en.json');
 }
 
 function attachServices(world) {
 
     world.invitationService = require('../../../services/InvitationService');
     world.depositService = require('../../../services/DepositService');
+    world.adminViewService = require('../../../services/AdminViewsService');
 }
 
 Before(function(scenario) {

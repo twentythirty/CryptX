@@ -56,6 +56,7 @@ const get_model_status_value_for = (model_name, status_val) => {
 const to_model_name = (field) => _.upperFirst(_.camelCase(field));
 const to_context_name = (field, ctx_type = 'current') => `${ctx_type}_${_.snakeCase(_.lowerCase(field))}`;
 const get_model_status_field_name = (model) => _.find(Object.keys(model.attributes), field_name => field_name.includes('status'));
+const to_admin_view_fetch = (descriptor_plural) => `fetch${to_model_name(descriptor_plural)}ViewDataWithCount`;
 
 When(/^navigate to (\w*) (.*)$/, async function(status_val, object_type) {
 
@@ -90,6 +91,27 @@ When(/^navigate to (\w*) (.*)$/, async function(status_val, object_type) {
             this[context_field_name].status = this[context_field_name][status_field_name];
         }
     }
+});
+
+When(/view list of (.*)/, async function(descriptor_plural) {
+
+    const adminViewService = this.adminViewService;
+    chai.assert.isNotNull(adminViewService, 'World context did not contain admin view service!');
+    const fetch_method = to_admin_view_fetch(descriptor_plural);
+
+    //TODO: if upgrade to chai 4 happens - this can be replaced with isFunction(), chai 3 didnt support async function checks
+    chai.assert.isDefined(adminViewService[fetch_method], `AdminViewService did not contain method ${fetch_method}!`);
+
+    //to fetch exactly like FE, we sort by id desc
+    const { data, total } = await adminViewService[fetch_method]({
+        order: [
+            ['id', 'DESC']
+        ]
+    })
+    chai.assert.isAbove(total, 0, `Fetched records were empty! Create records before this step!`);
+    chai.assert.isArray(data, 'Fetcher must return array of records!');
+
+    this.view_data_list = data;
 });
 
 When('I provide a rationale', function () {
@@ -183,6 +205,38 @@ Then(/^this action was logged with (.*)/, async function(logged_property_express
 
     chai.assert.isNotNull(new_log_entry, `Actions should have generated a log entry with ${logged_property} equal ${this.check_log_id}!`);
     }
+});
+
+Then('I see data layout:', async function(raw_data_table) {
+
+    const data_table = raw_data_table.hashes();
+    chai.assert.isArray(this.view_data_list, 'Context should have current view list before this check');
+    chai.assert.isArray(data_table, 'Poorly formatted data table not array!');
+    chai.assert.equal(this.view_data_list.length, data_table.length, `Records show is different from example`);
+
+    _.forEach(this.view_data_list, (view_record, idx) => {
+
+        const example_record = data_table[idx];
+        chai.assert.isObject(example_record, `No exmaple record found at data record ${idx}`);
+        chai.assert.isObject(this.i18n, 'No internationalization object in context, need to check views!');
+
+        _.forEach(Object.keys(example_record), prop_name => {
+            let check_value = view_record[prop_name];
+            let example = example_record[prop_name];
+            //string might be translation, try that
+            if (check_value != example_record[prop_name] && _.isString(check_value)) {
+                check_value = _.get(this.i18n, check_value);
+            }
+            //if value is missing but should be a number, it can be equated to 0
+            if (check_value == null && _.isNumber(parseFloat(example))) {
+                check_value = 0;
+                example = 0;
+            }
+            chai.assert.equal(check_value, example, `View record ${idx} porperty ${prop_name} is not equal to example!`);
+        });
+    });
+
+
 });
 
 

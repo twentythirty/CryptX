@@ -117,12 +117,48 @@ Given(/^the system has (.*) (.*) Cold Storage (Transfers|Transfer)$/, async func
 
 });
 
+Given(/there is a Cold Storage Custodian named "(.*)"/, async function(custodian_name) {
+
+    const { ColdStorageCustodian } = require('../../../models');
+
+    return ColdStorageCustodian.create({
+        name: custodian_name
+    }).then(custodian => {
+
+        this.current_cold_storage_custodian = custodian;
+    });
+});
+
 Given('there are no Cold Storage Accounts in the system', function() {
 
     const { ColdStorageAccount } = require('../../../models');
 
     return ColdStorageAccount.destroy({ where: { } });
 
+});
+
+
+Given(/there is a cold storage account for (.*), strategy (.*), address "(.*)"/, async function(coin_long_name, strategy_type, account_address) {
+
+    chai.assert.isNotNull(this.current_cold_storage_custodian, 'Context should contain a custodian by now');
+    
+    const { Asset, ColdStorageAccount } = require('../../../models');
+
+    const asset = await Asset.findOne({
+        where: {
+            long_name: coin_long_name
+        }
+    })
+    chai.assert.isNotNull(asset, `Asset for name ${coin_long_name} not found!`);
+    chai.assert.isNumber(STRATEGY_TYPES[strategy_type], `Strategy type constant not found for suppleid type ${strategy_type}!`);
+
+    return ColdStorageAccount.create({
+        strategy_type: STRATEGY_TYPES[strategy_type],
+        address: account_address,
+        tag: null,
+        asset_id: asset.id,
+        cold_storage_custodian_id: this.current_cold_storage_custodian.id 
+    })
 });
 
 When(/^I select a (.*) Cold Storage Transfer$/, async function(status) {
