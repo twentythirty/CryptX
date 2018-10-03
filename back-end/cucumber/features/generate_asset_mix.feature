@@ -104,7 +104,7 @@ Feature: Generating an Asset mix
             But Blacklisted Assets <blacklisted_assets> will be ignored
             And if <asset> gets Blacklisted
             Then <asset> will remain unchanged in the Asset Mix
-            But generating a <strategy_type> Asset Mix, <asset> will be ignored
+            But generating a new <strategy_type> Asset Mix, <asset> will be ignored
             
 
         Examples:

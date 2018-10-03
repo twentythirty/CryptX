@@ -546,7 +546,7 @@ Then(/^(\w*) will remain unchanged in the Asset Mix$/, async function(asset_symb
 
 });
 
-Then(/^generating a (LCI|MCI) Asset Mix, (\w*) will be ignored$/, async function(strategy, asset_symbol) {
+Then(/^generating a new (LCI|MCI) Asset Mix, (\w*) will be ignored$/, async function(strategy, asset_symbol) {
 
     const { Asset, GroupAsset } = require('../../../models');
 

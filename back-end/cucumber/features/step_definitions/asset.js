@@ -566,6 +566,7 @@ Given(/^the Assets (.*) are Blacklisted$/, async function(blacklisted_assets) {
             type: INSTRUMENT_STATUS_CHANGES.Blacklisting
         };
     }));
+});
 
 Given(/there is a (.*) asset called "(.*)" with the symbol "(.*)"/, async function(asset_type, asset_long_name, asset_symbol) {
 
