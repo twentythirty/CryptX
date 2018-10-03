@@ -20,7 +20,7 @@ Feature: Synchronization of asset information
         Then missing Assets were saved to the database
         And Asset market history is saved to the database
 
-    Scenario: Asset NVT calculation
+    Scenario: Asset NVT calculation when some assets lack the required market data
 
         Given the system does not have Market History Calculations
         And the system has Asset Market Capitalization for the last 7 days
@@ -28,3 +28,18 @@ Feature: Synchronization of asset information
         When the system finished the task "calculate market history"
         Then the system will save the NVT calculations of the Assets
         But Assets that don't have Market Capitalization data for the last 7 days will be ignored
+
+    Scenario: weekly NVT calculation for a single asset
+
+        Given the system does not have Market History Calculations
+        And the Market Capitalization for BTC is as follows:
+            |  day  |  capitalization_usd  |  daily_volume_usd  |  market_share  |
+            | 1  |  151351351  | 35352  | 37.6  |
+            | 2  |  145463463  | 34512  | 37.8  |
+            | 3  |  145452113  | 34250  | 37.3  |
+            | 4  |  151456781  | 34010  | 37.6  |
+            | 5  |  151759742  | 34199  | 37.9  |
+            | 6  |  152002101  | 36452  | 38.0  |
+            | 7  |  151895643  | 35846  | 37.8  |
+        When the system finished the task "calculate market history"
+        Then the BTC weekly NVT will appropriately be equal to 4300.61427
