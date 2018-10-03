@@ -144,6 +144,41 @@ Given(/^there is an Instrument that can be Mapped to (.*)$/, async function(exch
 
 });
 
+async function fetchExchangesFromCSV(csv_exchange_names) {
+
+    const exchange_names = _.chain(csv_exchange_names).split(',').map(exchange_name => exchange_name.trim()).value();
+    chai.assert.isArray(exchange_names, 'Should have created array of exchange names!');
+    chai.assert.isAbove(exchange_names.length, 0, 'Should connect to at least 1 exchange!');
+
+    const { Exchange } = require('../../../models');
+
+    const exchanges = await Exchange.findAll({
+        where: {
+            name: exchange_names
+        }
+    });
+    chai.assert.equal(exchanges.length, exchange_names.length, `Not all of the names ${exchange_names} have corresponding exchanges!`);
+    return exchanges;
+}
+
+Given(/the instrument has exchange mappings on (.*)/, async function(csv_exchange_names) {
+    
+    chai.assert.isNotNull(this.current_instrument, 'No instrument in current context!');
+
+    const exchanges = fetchExchangesFromCSV(csv_exchange_names);
+
+    const { InstrumentExchangeMapping } = require('../../../models');
+
+    await InstrumentExchangeMapping.bulkCreate(_.map(exchanges, exchange => {
+        return {
+            exchange_id: exchange.id,
+            instrument_id: this.current_instrument.id,
+            tick_size: _.random() / 2,
+            external_instrument_id: this.current_instrument.symbol
+        }
+    }))
+});
+
 Given('the system has updated the Instrument Market Data', async function(){
 
     const { InstrumentMarketData, InstrumentExchangeMapping } = require('../../../models');
@@ -296,6 +331,62 @@ Given('the system does not have Instrument Market Data', function() {
         })
     ]);
 
+});
+
+Given(/fetching market data on instrument has (.*) for (.*)/, async function(fetch_status, csv_exchange_names) {
+
+    chai.assert.isNotNull(this.current_instrument, 'No instrument in current context!');
+
+    const exchanges = await fetchExchangesFromCSV(csv_exchange_names);
+
+    const {
+        InstrumentMarketData,
+        Sequelize
+    } = require('../../../models');
+
+    const fetch_failed = fetch_status == 'failed';
+    //if fetch failed we have to ensure there is no fresh data for this instrument, perhaps from other tests
+    if (fetch_failed) {
+        chai.assert.isObject(SYSTEM_SETTINGS, 'System settings object not loaded!');
+        //settings defiend however many seconds ago
+        const allowed_delay_cutoff = new Date(new Date().getTime() - 1000 * SYSTEM_SETTINGS.BASE_ASSET_PRICE_TTL_THRESHOLD);
+
+        for (exchange of exchanges) {
+            let useable_market_data = await InstrumentMarketData.findAll({
+                where: {
+                    instrument_id: this.current_instrument.id,
+                    exchange_id: exchange.id,
+                    timestamp: {
+                        [Sequelize.Op.gte]: allowed_delay_cutoff
+                    }
+                }
+            });
+
+            if (useable_market_data.length) {
+                //update all these timestamps to 1 year ago
+                let oneYearAgo = new Date();
+                oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
+
+                await Promise.all(_.map(useable_market_data, market_data => {
+                    market_data.timestamp = oneYearAgo;
+                    return market_data.save()
+                }));
+            }
+        }
+    } else {
+
+        //market data success - just generate bunch of new market data
+        await InstrumentMarketData.bulkCreate(_.map(exchanges, exchange => {
+
+            return {
+                exchange_id: exchange.id,
+                instrument_id: this.current_instrument.id,
+                timestamp: new Date(),
+                ask_price: _.random(),
+                bid_price: _.random()
+            }
+        }))
+    }
 });
 
 Given('the instrument doesnt have any exchange mappings', async function() {
