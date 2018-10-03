@@ -567,6 +567,113 @@ Given(/^the Assets (.*) are Blacklisted$/, async function(blacklisted_assets) {
         };
     }));
 
+Given(/there is a (.*) asset called "(.*)" with the symbol "(.*)"/, async function(asset_type, asset_long_name, asset_symbol) {
+
+    const is_crypto = asset_type == 'crypto';
+    const { Asset, AssetBlockchain } = require('../../../models');
+
+    let existing_asset = await Asset.findOne({
+        where: {
+            symbol: asset_symbol,
+            long_name: asset_long_name
+        }
+    });
+    
+    if (existing_asset == null) {
+        //asset itself missing, lets add asset!
+        existing_asset = await Asset.create({
+            symbol: asset_symbol,
+            long_name: asset_long_name,
+            is_deposit: false,
+            is_base: false
+        })
+    }
+    //check blockchain requirement
+    if (is_crypto) {
+        const blockchain = await AssetBlockchain.findOne({
+            where: {
+                asset_id: existing_asset.id
+            }
+        });
+        if (blockchain == null) {
+            //missing blockchain, lets add it
+            await AssetBlockchain.create({
+                asset_id: existing_asset.id,
+                coinmarketcap_identifier: 'CUCUMBER'
+            })
+        }
+    }
+    //set asset as scenario context
+    this.current_asset = existing_asset;
+});
+
+async function remove_context_asset_data(data_model) {
+
+    chai.assert.isObject(this.current_asset, 'Context should have asset for this step!');
+    const model = require('../../../models')[data_model];
+    chai.assert.isNotNull(model, `No data model found for term ${data_model}`);
+
+    await model.destroy({
+        where: {
+            asset_id: this.current_asset.id
+        }
+    });
+
+}
+
+Given('the asset has no status change history', async function() {
+
+    await remove_context_asset_data.bind(this)('AssetStatusChange');
+});
+Given('the asset has no known capitalization', async function() {
+
+    await remove_context_asset_data.bind(this)('AssetMarketCapitalization');
+});
+Given('the asset has no known market history calculations', async function() {
+
+    await remove_context_asset_data.bind(this)('MarketHistoryCalculation');
+});
+
+
+Given(/the asset had capitalization of (.*) USD and market share of (.*)% recorded on (.*)/, async function(capitalization_text, market_share_text, timestamp_text) {
+
+    chai.assert.isNotNull(this.current_asset, 'Context should have asset for this step!');
+
+    const capitalization_usd = parseFloat(capitalization_text);
+    const market_share_percentage = parseFloat(market_share_text);
+    [capitalization_usd, market_share_percentage].forEach(datum => {
+        chai.assert.isAtLeast(datum, 0, `The parsed value ${datum} was supposed ot be positive or 0!`);
+    })
+    const timestamp = new Date(timestamp_text);
+    chai.assert.notEqual(timestamp.toString(), 'Invalid Date', `The provided timestamp text ${timestamp_text} did not resolve to a valid date!`);
+
+    const { AssetMarketCapitalization } = require('../../../models');
+
+    await AssetMarketCapitalization.create({
+        timestamp,
+        capitalization_usd,
+        asset_id: this.current_asset.id,
+        //can be random since irrelevant to view
+        daily_volume_usd: _.random(0, capitalization_usd, true),
+        market_share_percentage,
+    });
+});
+
+Given(/the asset had NVT value of (.*) calculated/, async function(nvt_text) {
+
+    chai.assert.isNotNull(this.current_asset, 'Context should have asset for this step!');
+
+    const nvt_value = parseFloat(nvt_text);
+    chai.assert.isAtLeast(nvt_value, 0.0, `Parsed nvt text ${nvt_text} was not a non-negative value!`);
+
+    const { MarketHistoryCalculation } = require('../../../models');
+
+    await MarketHistoryCalculation.create({
+        timestamp: new Date(),
+        type: MARKET_HISTORY_CALCULATION_TYPES.NVT,
+        value: nvt_value,
+        asset_id: this.current_asset.id
+    });
 });
 
 When('retrieve a list of Assets', function() {

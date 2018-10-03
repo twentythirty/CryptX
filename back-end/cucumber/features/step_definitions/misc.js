@@ -256,6 +256,10 @@ Then('I see data layout:', async function(raw_data_table) {
                 check_value = 0;
                 example = 0;
             }
+            //if the check_value is a date, then we convert to JSON for comparison
+            if (check_value != null && _.isDate(check_value)) {
+                check_value = check_value.toJSON();
+            }
             chai.assert.equal(check_value, example, `View record ${idx} porperty ${prop_name} is not equal to example!`);
         });
     });
