@@ -298,6 +298,52 @@ Given('the system does not have Instrument Market Data', function() {
 
 });
 
+Given('the instrument doesnt have any exchange mappings', async function() {
+
+    chai.assert.isNotNull(this.current_instrument, 'Context must contain a current instrument by this point!');
+
+    const { InstrumentExchangeMapping } = require('../../../models');
+
+    //ensure no mappings
+    await InstrumentExchangeMapping.destroy({
+        where: {
+            instrument_id: this.current_instrument.id
+        }
+    });
+});
+
+Given(/there is an instrument with transaction asset "(.*)" and quote asset "(.*)"/, async function(tx_asset_long_name, quote_asset_long_name) {
+    
+    const { Asset, Instrument } = require('../../../models');
+
+    const [tx_asset, quote_asset] = await Promise.all(_.map([tx_asset_long_name, quote_asset_long_name], long_name => {
+        return Asset.findOne({ 
+            where: {
+                long_name
+            }
+        })
+    }));
+    chai.assert.isNotNull(tx_asset, `Cant find asset with name ${tx_asset_long_name}`);
+    chai.assert.isNotNull(quote_asset, `Cant find asset with name ${quote_asset_long_name}`);
+    
+    //check instrument exists, create if not
+    let instrument = await Instrument.findOne({
+        where: {
+            transaction_asset_id: tx_asset.id,
+            quote_asset_id: quote_asset.id
+        }
+    });
+    if (instrument == null) {
+        instrument = await Instrument.create({
+            transaction_asset_id: tx_asset.id,
+            quote_asset_id: quote_asset.id,
+            symbol: `${tx_asset.symbol}/${quote_asset.symbol}`
+        })
+    }
+
+    this.current_instrument = instrument;
+})
+
 When('I create a new Instrument with those Assets', function() {
 
     const new_instrument = {
