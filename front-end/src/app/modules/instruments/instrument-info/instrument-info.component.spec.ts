@@ -146,7 +146,7 @@ describe('InstrumentInfoComponent', () => {
       const mappingTable = getMappingTable();
       const firstTd = mappingTable.nativeElement.querySelector('tbody td:nth-child(1)');
 
-      expect(firstTd.querySelector('.disable-paging')).toBeFalsy('select is disabled');
+      expect(firstTd.querySelector('.disabled')).toBeFalsy('select is disabled');
     });
 
     it('should have action button "undo"', () => {
@@ -184,7 +184,7 @@ describe('InstrumentInfoComponent', () => {
         const mappingTable = getMappingTable();
         const secondTd = mappingTable.nativeElement.querySelector('tbody td:nth-child(2)');
 
-        expect(secondTd.querySelector('.disable-paging')).toBeFalsy('select is disabled');
+        expect(secondTd.querySelector('.disabled')).toBeFalsy('select is disabled');
       });
 
 
@@ -278,8 +278,8 @@ describe('InstrumentInfoComponent', () => {
       const firstTd = mappingTable.nativeElement.querySelector('tbody td:nth-child(1)');
       const secondTd = mappingTable.nativeElement.querySelector('tbody td:nth-child(2)');
 
-      expect(firstTd.querySelector('.disable-paging')).toBeTruthy('select 1 isint disabled');
-      expect(secondTd.querySelector('.disable-paging')).toBeTruthy('select 2 isint disabled');
+      expect(firstTd.querySelector('.disabled')).toBeTruthy('select 1 isint disabled');
+      expect(secondTd.querySelector('.disabled')).toBeTruthy('select 2 isint disabled');
     });
 
     it('should can add new mapping on "new mapping" button press', () => {

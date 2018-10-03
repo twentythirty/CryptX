@@ -1,13 +1,13 @@
 <app-input-item
   [class.select-small]="small"
-  [class.disable-paging]="disabled"
-  (selectChange)="onChange($event)"
   [(ngModel)]="value"
+  (selectChange)="onChange($event)"
   (openList)="openDropDown()"
   [fieldType]="fieldType"
   [items]="dropDownList"
   [placeholder]="placeholder"
+  [disabled]="isDisabled(this.row)"
   clearable="false"
   bindValue="id"
   bindLabel="name"
-></app-input-item> 
+></app-input-item>

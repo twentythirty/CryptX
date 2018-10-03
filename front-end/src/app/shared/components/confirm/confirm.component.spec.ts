@@ -1,5 +1,6 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 import { extraTestingModules } from '../../../testing/utils';
+import { MatProgressSpinnerModule } from '@angular/material';
 
 import { ConfirmComponent } from './confirm.component';
 import { BtnComponent } from '../btn/btn.component';
@@ -17,7 +18,8 @@ describe('ConfirmComponent', () => {
         ModalComponent,
       ],
       imports: [
-        ...extraTestingModules
+        ...extraTestingModules,
+        MatProgressSpinnerModule,
       ]
     })
     .compileComponents();

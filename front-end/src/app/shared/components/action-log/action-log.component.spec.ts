@@ -1,5 +1,6 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 import { extraTestingModules, click } from '../../../testing/utils';
+import { MatProgressSpinnerModule } from '@angular/material';
 
 import { ActionLogComponent } from './action-log.component';
 import { ModalComponent } from '../modal/modal.component';
@@ -17,7 +18,8 @@ describe('ActionLogComponent', () => {
         ModalComponent,
       ],
       imports: [
-        ...extraTestingModules
+        ...extraTestingModules,
+        MatProgressSpinnerModule,
       ]
     })
     .compileComponents();

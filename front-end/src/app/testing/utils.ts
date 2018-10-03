@@ -104,7 +104,6 @@ export const errorResponse = throwError({
  * function for ng-select option selecting in tests
  */
 export function selectOption(fixture, key: KeyCode, index: number) {
-
   triggerKeyDownEvent(getNgSelectElement(fixture), KeyCode.Space); // open
   for (let i = 0; i < index; i++) {
     triggerKeyDownEvent(getNgSelectElement(fixture), key);

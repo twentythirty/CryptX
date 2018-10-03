@@ -27,7 +27,6 @@ export class SelectCellDataColumn extends TableDataColumn {
   styleUrls: ['./select-cell.component.scss']
 })
 export class SelectCellComponent implements OnInit {
-  disabled = true;
   dropDownList: any = [];
   selected: any = {};
 
@@ -46,7 +45,6 @@ export class SelectCellComponent implements OnInit {
   constructor() { }
 
   ngOnInit() {
-    this.disabled = this.isDisabled(this.row);
     this.dropDownList = this.items(this.row);
     this.selected = this.selectedValue(this.row);
   }

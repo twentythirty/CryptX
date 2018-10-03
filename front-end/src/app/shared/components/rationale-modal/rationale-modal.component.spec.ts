@@ -1,5 +1,6 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 import { ReactiveFormsModule } from '@angular/forms';
+import { MatProgressSpinnerModule } from '@angular/material';
 
 import { RationaleModalComponent } from './rationale-modal.component';
 import { BtnComponent } from '../btn/btn.component';
@@ -15,7 +16,8 @@ describe('RationaleModalComponent', () => {
         BtnComponent,
       ],
       imports: [
-        ReactiveFormsModule
+        ReactiveFormsModule,
+        MatProgressSpinnerModule,
       ]
     })
     .compileComponents();

@@ -32,6 +32,7 @@ export class InputItemComponent implements ControlValueAccessor, OnInit {
   @Input() type: string = 'text';
   @Input() clearable: boolean; // ability to clear selection
   @Input() readonly: boolean; // makes input readonly
+  @Input() disabled: boolean; // makes input disabled
   @Input() spinnerLoading: boolean; // shows spinner while loading input selection data
   @Input() fieldType: string; // type of input (input/select/autocomplete)
 
