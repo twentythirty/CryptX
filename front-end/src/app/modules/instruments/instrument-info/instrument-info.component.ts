@@ -325,7 +325,6 @@ export class InstrumentInfoComponent extends DataTableCommonManagerComponent imp
 
     this.loading = true;
 
-    console.log('save mapping');
     this.route.params.pipe(
       mergeMap(
         params => this.instrumentsService.addMapping(params['id'], request).pipe(
@@ -345,7 +344,7 @@ export class InstrumentInfoComponent extends DataTableCommonManagerComponent imp
   }
 
   public canSave() {
-    const changes = this.mappingDataSource.body.filter(mapping => (mapping['isNew'] || mapping['isDeleted']) && mapping['valid']);
+    const changes = this.mappingDataSource.body.filter(mapping => (mapping.isNew || mapping.isDeleted) && mapping.valid);
     if (changes.length) { this.noChanges = false; } else { this.noChanges = true; }
   }
 

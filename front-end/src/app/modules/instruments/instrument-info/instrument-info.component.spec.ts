@@ -31,8 +31,6 @@ describe('InstrumentInfoComponent', () => {
   let addMappingSpy;
   let navigateSpy;
 
-  let submitButton;
-
   function getMappingTable() {
     return fixture.debugElement.queryAll(By.css('table'))[1]; // second component table
   }
@@ -71,8 +69,6 @@ describe('InstrumentInfoComponent', () => {
     checkMappingSpy = spyOn(instrumentsService, 'checkMapping').and.returnValue(fakeAsyncResponse(checkMappingData));
     addMappingSpy = spyOn(instrumentsService, 'addMapping').and.returnValue(fakeAsyncResponse(addMappingData));
     navigateSpy = spyOn(fixture.debugElement.injector.get(Router), 'navigate');
-
-    submitButton = fixture.nativeElement.querySelector('app-form-action-bar button');
 
     fixture.detectChanges();
 
@@ -356,6 +352,7 @@ describe('InstrumentInfoComponent', () => {
 
 
   it('"save" button should be disabled', () => {
+    const submitButton = fixture.nativeElement.querySelector('app-form-action-bar button');
     expect(submitButton.hasAttribute('disabled')).toBeTruthy('button not disabled');
   });
 
@@ -383,10 +380,12 @@ describe('InstrumentInfoComponent', () => {
 
         checkMappingSpy.calls.mostRecent().returnValue.subscribe(() => {
           fixture.detectChanges();
+
+          const submitButton = fixture.nativeElement.querySelector('app-form-action-bar button');
           click(submitButton);
           fixture.detectChanges();
 
-          addMappingSpy.calls.mostRecent().returnValue().subscribe(() => {
+          addMappingSpy.calls.mostRecent().returnValue.subscribe(() => {
             done();
           });
         });
@@ -394,8 +393,8 @@ describe('InstrumentInfoComponent', () => {
 
     });
 
-    // it('should be navigated', () => {
-    //   expect(navigateSpy).toHaveBeenCalledWith(['/instruments']);
-    // });
+    it('should be navigated', () => {
+      expect(navigateSpy).toHaveBeenCalledWith(['/instruments']);
+    });
   });
 });
