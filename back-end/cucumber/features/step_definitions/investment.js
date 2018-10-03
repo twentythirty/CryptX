@@ -460,3 +460,121 @@ Then('the system does not create a new Investment Run', async function() {
     expect(new_initiated_investment_runs).to.equal(0, 'Expected not to find new Investment runs');
 
 });
+
+Then('the new Asset Mix is saved to the database', async function() {
+
+    const { Asset, GroupAsset, InvestmentRunAssetGroup } = require('../../../models');
+
+    const asset_mix = await InvestmentRunAssetGroup.findById(this.current_asset_mix.id, {
+        include: {
+            model: GroupAsset,
+            include: Asset
+        }
+    });
+
+    expect(asset_mix, `Expected to find an Asset Mix with id "${this.current_asset_mix.id}"`).to.be.not.null;
+
+    this.current_asset_mix = asset_mix;
+
+});
+
+Then(/^the size of the Asset Mix will be (\d*)$/, function(size) {
+
+    size = parseInt(size);
+
+    const whitelisted = this.current_asset_mix.GroupAssets.filter(a => a.status === INSTRUMENT_STATUS_CHANGES.Whitelisting)
+
+    expect(whitelisted.length).to.equal(size, 'Expected the Asset Mix size to match');
+
+});
+
+Then(/^Assets are selected from (\w*) to (\w*) inclusively$/, async function(starting_symbol, ending_symbol) {
+
+    const data_list = this.current_asset_data;
+    const list_start = data_list.findIndex(data => data.asset === starting_symbol);
+    const list_end = data_list.findIndex(data => data.asset === ending_symbol);
+
+    const cropped_list = data_list.slice(list_start, list_end + 1); 
+
+    for(let asset of this.current_asset_mix.GroupAssets) {
+
+        const matching_data = cropped_list.find(data => data.asset === asset.Asset.symbol);
+
+        expect(matching_data, `Expected to find matching data from asset ${asset.Asset.symbol}`).to.be.not.undefined;
+
+    };
+
+    this.current_strategy_asset_data = cropped_list;
+
+});
+
+Then(/^Blacklisted Assets (.*) will be ignored$/, function(asset_string) {
+
+    const asset_symbols = asset_string.split(',').map(a => a.trim());
+
+    for(let symbol of asset_symbols) {
+
+        const matching_asset = this.current_asset_mix.GroupAssets.find(a => a.Asset.symbol === symbol);
+
+        if(matching_asset) {
+            expect(matching_asset, `Expected to find a matching Asset in the Mix with a symbol ${symbol}`).to.be.not.undefined;
+            expect(matching_asset.status).to.equal(INSTRUMENT_STATUS_CHANGES.Blacklisting);
+        }
+        
+    };
+
+});
+
+Then(/^(\w*) will remain unchanged in the Asset Mix$/, async function(asset_symbol) {
+
+    const { Asset, GroupAsset } = require('../../../models');
+
+    const group_asset = await GroupAsset.findOne({
+        where: {
+            investment_run_asset_group_id: this.current_asset_mix.id
+        },
+        include: {
+            model: Asset,
+            where: { symbol: asset_symbol },
+            required: true
+        }
+    });
+
+    expect(group_asset, `Expected to find Group Asset ${asset_symbol} in the current Asset Mix`).to.be.not.null;
+
+    expect(group_asset.status).to.equal(INSTRUMENT_STATUS_CHANGES.Whitelisting);
+
+});
+
+Then(/^generating a (LCI|MCI) Asset Mix, (\w*) will be ignored$/, async function(strategy, asset_symbol) {
+
+    const { Asset, GroupAsset } = require('../../../models');
+
+    const asset = await Asset.findOne({
+        where: { symbol: asset_symbol }
+    });
+
+    expect(asset, `Expected to find Asset with symbol ${asset_symbol}`).to.be.not.null;
+
+    return chai
+        .request(this.app)
+        .post('/v1/investments/select_assets')
+        .set('Authorization', World.current_user.token)
+        .send({ strategy_type: STRATEGY_TYPES[strategy] })
+        .then(async result => {   
+            
+            expect(result).to.have.status(200);
+            
+            const group_asset = await GroupAsset.findOne({
+                where: {
+                    asset_id: asset.id,
+                    investment_run_asset_group_id: result.body.list.id
+                }
+            });
+
+            expect(group_asset, `Expected to find Group Asset with symbol ${asset_symbol}`).to.be.not.null;
+            expect(group_asset.status, `Expected Group Asset ${asset_symbol}, to be Blacklisted`).to.equal(INSTRUMENT_STATUS_CHANGES.Blacklisting);
+
+        });
+
+});

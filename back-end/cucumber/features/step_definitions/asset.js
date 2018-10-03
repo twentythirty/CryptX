@@ -508,6 +508,67 @@ Given(/^the system does not have Asset Market Capitalization for the last (.*) m
 
 });
 
+Given('the current Asset Capitalization is as follows:', async function(table) {
+
+    const { Asset, AssetMarketCapitalization, sequelize } = require('../../../models');
+
+    const asset_data = table.hashes();
+
+    this.current_asset_data = asset_data;
+
+    const assets = await Asset.findAll({
+        where: {},
+        raw: true
+    });
+    
+    const capitalizations = asset_data.map(data => {
+
+        const asset = assets.find(a => a.symbol === data.asset.trim());
+
+        expect(asset, `Expected to find asset ${data.asset}`).to.be.not.undefined;
+
+        return {
+            timestamp: Date.now(),
+            asset_id: asset.id,
+            capitalization_usd: data.capitalization_usd,
+            daily_volume_usd: _.random(1, 1000),
+            market_share_percentage: data.market_share
+        };
+
+    });
+
+    return sequelize.transaction(transaction => {
+        return AssetMarketCapitalization.destroy({
+            where: {},
+            transaction
+        }).then(() => {
+            return AssetMarketCapitalization.bulkCreate(capitalizations, { transaction });
+        });
+    });
+
+});
+
+Given(/^the Assets (.*) are Blacklisted$/, async function(blacklisted_assets) {
+
+    const { Asset, AssetStatusChange } = require('../../../models');
+    
+    const asset_symbols = blacklisted_assets.split(',').map(a => a.trim());
+
+    const to_blacklist = await Asset.findAll({
+        where: { symbol: asset_symbols }
+    });
+
+    return AssetStatusChange.bulkCreate(to_blacklist.map(asset => {
+        return {
+            asset_id: asset.id,
+            comment: 'blacklisted',
+            timestamp: Date.now(),
+            type: INSTRUMENT_STATUS_CHANGES.Blacklisting
+        };
+    }));
+
+});
+
 When('retrieve a list of Assets', function() {
 
     return chai
@@ -1079,6 +1140,31 @@ Then(/^the (\w*) weekly NVT will appropriately be equal to (\d+(?:\.\d+)?)$/, as
     expected_nvt = Decimal(expected_nvt);
 
     expect(expected_nvt.toPrecision(expected_nvt.dp())).to.equal(Decimal(newest_calculation.value).toPrecision(expected_nvt.dp()));
+
+});
+
+Then(/^if (\w*) gets (Blacklisted|Whitelisted|Greylisted)$/, async function(asset_symbol, type) {
+
+    const type_map = {
+        Blacklisted: INSTRUMENT_STATUS_CHANGES.Blacklisting,
+        Whitelisted: INSTRUMENT_STATUS_CHANGES.Whitelisting,
+        Greylisted: INSTRUMENT_STATUS_CHANGES.Graylisting
+    };
+
+    const { Asset, AssetStatusChange } = require('../../../models');
+
+    const asset = await Asset.findOne({
+        where: { symbol: asset_symbol }
+    });
+
+    expect(asset, `Expected to find Asset with symbol ${asset_symbol}`).to.be.not.null;
+
+    return AssetStatusChange.create({
+        asset_id: asset.id,
+        type: type_map[type],
+        timestamp: Date.now(),
+        comment: type
+    });
 
 });
 
