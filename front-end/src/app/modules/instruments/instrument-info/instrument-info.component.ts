@@ -105,7 +105,7 @@ export class InstrumentInfoComponent extends DataTableCommonManagerComponent imp
           valueChange: ({ value, row }) => {
             row.exchange_id = +value;
             row.external_instrument = null;
-            // row.external_instrument_list = [];
+            row.external_instrument_list = null;
             this.loading = true;
             this.exchangesService.getExchangeInstrumentIdentifiers(row.exchange_id)
             .subscribe(res => {
