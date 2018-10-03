@@ -22,7 +22,7 @@ Feature: Generating Orders
         When I log onto CryptX as Trader
         And I generate new Orders for the Approved Recipe Run
         Then a new Recipe Group is created with the status Pending
-        And a Recipe Order is created for each Recipe Run Detail
+        And only one Recipe Order is created for each Recipe Run Detail
         And the Recipe Orders have the status Pending
         And the Investment Run will have status OrdersGenerated
         But the system won't allow me to generate Recipe Orders while this group is not Rejected

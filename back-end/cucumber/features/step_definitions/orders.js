@@ -456,7 +456,7 @@ Then('a new Recipe Group is created with the status Pending', async function () 
 
 });
 
-Then('a Recipe Order is created for each Recipe Run Detail', async function () {
+Then('only one Recipe Order is created for each Recipe Run Detail', async function () {
 
     const {
         RecipeOrder,
