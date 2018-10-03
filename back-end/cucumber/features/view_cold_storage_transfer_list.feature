@@ -10,11 +10,11 @@ Feature: View cold storage transfer list
         And the system has Exchange Account for XRP on Bitfinex
         And the system has Recipe Order with status Completed on Bitfinex
         And the system has LCI Cold Storage Account for XRP
-        And the system has 3 Pending Cold Storage Transfer
-        And the system has 1 Approved Cold Storage Transfer
-        And the system has 2 Sent Cold Storage Transfer
-        And the system has 4 Completed Cold Storage Transfer
-        And the system has 1 Failed Cold Storage Transfer
+        And the system has 3 Pending Cold Storage Transfer for XRP
+        And the system has 1 Approved Cold Storage Transfer for XRP
+        And the system has 2 Sent Cold Storage Transfer for XRP
+        And the system has 4 Completed Cold Storage Transfer for XRP
+        And the system has 1 Failed Cold Storage Transfer for XRP
 
     Scenario: view a list of cold storage transfers with different statuses
 

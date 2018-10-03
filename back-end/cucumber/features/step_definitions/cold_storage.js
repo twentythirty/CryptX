@@ -78,12 +78,16 @@ Given(/^the system has (.*) Cold Storage Account for (.*)$/, async function(stra
 
 });
 
-Given(/^the system has (\d*) (.*) Cold Storage (Transfers|Transfer)$/, async function(amount, status, plural) {
+Given(/^the system has (\d*) (.*) Cold Storage (Transfers|Transfer) for (\w*)$/, async function(amount, status, plural, asset_symbol) {
 
     amount = parseInt(amount);
 
-    const { ColdStorageTransfer, ColdStorageAccount, sequelize } = require('../../../models');
+    const { ColdStorageTransfer, ColdStorageAccount, Asset, sequelize } = require('../../../models');
     const { Op } = sequelize;
+
+    const asset = await Asset.findOne({
+        where: { symbol: asset_symbol }
+    });
 
     const placed_timestamp_statuses = [
         COLD_STORAGE_ORDER_STATUSES.Sent,
@@ -99,14 +103,23 @@ Given(/^the system has (\d*) (.*) Cold Storage (Transfers|Transfer)$/, async fun
         where: {
             status: COLD_STORAGE_ORDER_STATUSES[status],
             cold_storage_account_id: { [Op.ne]: null },
-            asset_id: { [Op.ne]: null }
+            asset_id: asset.id
+        },
+        include: {
+            model: ColdStorageAccount,
+            where: {
+                asset_id: asset.id
+            },
+            required: true
         }
     });
     let new_transfers = [];
 
     if(exisitng_transfers.length < amount) {
 
-        const accounts = await ColdStorageAccount.findAll();
+        const accounts = await ColdStorageAccount.findAll({
+            where: { asset_id: asset.id }
+        });
    
         expect(accounts.length).to.be.greaterThan(0, `Expected to find at least one Cold Storage Account to create trasnfers`);
 
@@ -493,7 +506,7 @@ Then('I will see the Custodian name based on the Cold Storage Account it is bein
 
     for(let transfer of this.current_cold_storage_transfer_list) {
 
-        const matching_transfer = transfers.find(t => t.id = transfer.id);
+        const matching_transfer = transfers.find(t => t.id === transfer.id);
 
         expect(transfer.custodian).to.equal(_.get(matching_transfer, 'ColdStorageAccount.ColdStorageCustodian.name'), 'Expected the custodian names to match');
 

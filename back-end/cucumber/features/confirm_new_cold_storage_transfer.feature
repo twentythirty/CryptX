@@ -10,7 +10,7 @@ Feature: Confirm anew cold storage transfer
 
     Scenario: confirming a pending cold storage transfer
 
-        Given the system has 1 Pending Cold Storage Transfer
+        Given the system has 1 Pending Cold Storage Transfer for XRP
         When I log onto CryptX as Investment Manager
         And I select a Pending Cold Storage Transfer
         And I approve the Pending Cold Storage Transfer
