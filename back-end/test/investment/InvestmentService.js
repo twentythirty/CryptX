@@ -1804,23 +1804,32 @@ describe('InvestmentService testing:', () => {
 
   describe('and method generateInvestmentAssetGroup shall', () => {
 
-    let cap_usd = _.random(10, 30, false);
-    let market_share = 0.01;
+    before(() => {
+      sinon.stub(assetService, 'getStrategyAssets').callsFake((strategy_type) => {
+        if (strategy_type < 0) return Promise.reject();
 
-    const ASSETS = [];
+        let cap_usd = _.random(10, 30, false);
+        let market_share = 0.01;
 
-    for(let i = 1 ; i <= 100 ; i++) {
+        let assets = [...Array(50)].map((val, index) => {
+          let status = index % 10 != 0 ? INSTRUMENT_STATUS_CHANGES.Whitelisting : INSTRUMENT_STATUS_CHANGES.Blacklisting;
+          
+          return {
+            id: index + 1,
+            capitalization_usd: cap_usd * index,
+            avg_share: market_share * index,
+            status: status
+          };
+        });
+        let all = _.partition(assets, (a) => a.status != INSTRUMENT_STATUS_CHANGES.Whitelisting);
 
-      const new_asset = {
-        id: i,
-        capitalization_usd: cap_usd * i,
-        avg_share: market_share * i,
-        status: _.random(400, 402, false)
-      };
+        return Promise.resolve(all);
+      });
+    });
 
-      ASSETS.push(new_asset);
-
-    }
+    after(() => {
+      assetService.getStrategyAssets.restore();
+    });
 
     const generateInvestmentAssetGroup = investmentService.generateInvestmentAssetGroup;
 
@@ -1838,9 +1847,6 @@ describe('InvestmentService testing:', () => {
 
     it('generate correct asset mixes for the appropriate strategy types', () => {
 
-      /* sinon.stub(sequelize, 'transaction').callsFake(transaction => Promise.resolve(transaction())); */
-      sinon.stub(sequelize, 'query').callsFake(query => Promise.resolve(_.reverse(_.sortBy(ASSETS, 'capitalization_usd'))));
-
       return Promise.all([
         generateInvestmentAssetGroup(USER_ID, STRATEGY_TYPES.MCI),
         generateInvestmentAssetGroup(USER_ID, STRATEGY_TYPES.LCI)
@@ -1856,25 +1862,7 @@ describe('InvestmentService testing:', () => {
   
           chai.expect(group.user_id).to.equal(USER_ID);
           chai.expect(group.created_timestamp).to.be.a('date');
-  
-          for(let asset of assets) {
-  
-            const matching_asset = ASSETS.find(a => a.id === asset.asset_id);
-  
-            chai.expect(matching_asset).to.be.not.undefined;
-            
-            chai.expect(asset.investment_run_asset_group_id).to.equal(group.id);
-            chai.expect(asset.status).to.equal(matching_asset.status);
-  
-          }
-
         }
-
-        const [ [ mci_group, mci_assets ], [ lci_group, lci_assets ] ] = promise_result;
-
-        const difference = _.differenceBy(lci_assets, mci_assets, 'asset_id');
-
-        chai.expect(difference.length).to.equal(SYSTEM_SETTINGS.INDEX_LCI_CAP);
 
       });
 

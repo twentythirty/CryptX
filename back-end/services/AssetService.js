@@ -108,7 +108,18 @@ const getStrategyAssets = async function (strategy_type) {
   }
 
   // get assets that aren't blacklisted, sorted by marketcap average of 7 days
-  let [err, assets] = await to(sequelize.query(`
+  let err, assets, excluded = [],
+    included = [],
+    iteration = 1,
+    per_iteration = 50,
+    lci_skipped = false,
+    amount_needed = strategy_type == STRATEGY_TYPES.LCI ?
+      SYSTEM_SETTINGS.INDEX_LCI_CAP :
+      SYSTEM_SETTINGS.INDEX_MCI_CAP;
+
+  asset_selection:
+  do {
+    [err, assets] = await to(sequelize.query(`
     SELECT asset.id,
       asset.symbol,
       asset.long_name,
@@ -116,14 +127,14 @@ const getStrategyAssets = async function (strategy_type) {
       asset.is_deposit,
       cap.capitalization_usd,
       cap.market_share_percentage AS avg_share,
-      CASE WHEN status.type IS NULL THEN 400 ELSE status.type END as status
+        CASE WHEN status.type IS NULL THEN :whitelisted ELSE status.type END as status
     FROM asset
     JOIN LATERAL
     (
       SELECT *
       FROM asset_market_capitalization AS c
       WHERE c.asset_id=asset.id
-        -- AND c.timestamp >= NOW() - interval '7 days'
+          AND c.timestamp >= NOW() - interval '1 day'
       ORDER BY c.asset_id NULLS LAST, c.timestamp DESC NULLS LAST
       LIMIT 1
     ) AS cap ON cap.asset_id=asset.id
@@ -135,37 +146,51 @@ const getStrategyAssets = async function (strategy_type) {
       LIMIT 1
     ) as status ON TRUE
     ORDER BY cap.capitalization_usd DESC
-    LIMIT ${SYSTEM_SETTINGS.INDEX_LCI_CAP + SYSTEM_SETTINGS.INDEX_MCI_CAP}`, {
+      
+      LIMIT :limit_count OFFSET :offset_count`, {
+      replacements: { 
+        limit_count: per_iteration,
+        offset_count: (iteration - 1) * per_iteration,
+        whitelisted: INSTRUMENT_STATUS_CHANGES.Whitelisting
+      },
     type: sequelize.QueryTypes.SELECT
   }));
+    if (err) TE(err.message);
+    
+    for (let asset of assets) {
 
-  if (err) TE(err.message);
+      if (asset.status == INSTRUMENT_STATUS_CHANGES.Whitelisting)
+        included.push(asset);
+      else
+        excluded.push(asset);
 
-  assets.map(a => {
+      if (included.length == SYSTEM_SETTINGS.INDEX_LCI_CAP && 
+        strategy_type != STRATEGY_TYPES.LCI &&
+        !lci_skipped) {
+        included = [];
+        excluded = [];
+        lci_skipped = true;
+      }
+
+      if (included.length >= amount_needed) {
+        break asset_selection; // exit out of loop if got needed amount
+      }
+    }
+
+    iteration++;
+  } while (assets.length); // stop when a
+
+  included.map(a => {
     Object.assign(a, {
       capitalization_usd: parseFloat(a.capitalization_usd),
       avg_share: parseFloat(a.avg_share)
     });
   });
 
-  /* let totalMarketShare = 0;
-  // selects all assets before threshold MARKETCAP_LIMIT_PERCENT, total marketshare sum of assets
-  let before_marketshare_limit = assets.reduce((acc, coin, currentIndex) => {
-    totalMarketShare += coin.avg_share;    
-    if(totalMarketShare <= SYSTEM_SETTINGS.MARKETCAP_LIMIT_PERCENT)
-      acc.push(coin);
-    return acc;
-  }, []); */
+  if (!included.length)
+    TE(`No assets found for ${_.invert(STRATEGY_TYPES)[strategy_type]} portfolio`);
 
-  let lci = assets.slice(0, SYSTEM_SETTINGS.INDEX_LCI_CAP);
-
-  if (strategy_type == STRATEGY_TYPES.LCI) {
-    return lci;
-  }
-
-  let mci = assets.slice(lci.length, lci.length + SYSTEM_SETTINGS.INDEX_MCI_CAP);
-
-  return mci;
+  return [included, excluded];
 };
 module.exports.getStrategyAssets = getStrategyAssets;
 

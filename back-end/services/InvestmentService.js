@@ -841,6 +841,9 @@ const generateInvestmentAssetGroup = async function (user_id, strategy_type) {
   let [err, strategy_assets] = await to(AssetService.getStrategyAssets(strategy_type));
   if (err) TE(err.message);
 
+  let all = _.concat(...strategy_assets),
+   [included] = strategy_assets; 
+  
   let group, group_assets;
   [err, group_assets] = await to(sequelize.transaction(transaction => {
 
@@ -854,7 +857,7 @@ const generateInvestmentAssetGroup = async function (user_id, strategy_type) {
 
       group = asset_group;
 
-      return GroupAsset.bulkCreate(strategy_assets.map(asset => {
+      return GroupAsset.bulkCreate(all.map(asset => {
 
         return {
           asset_id: asset.id,
