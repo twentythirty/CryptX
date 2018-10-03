@@ -344,6 +344,152 @@ Given('the system is missing some of the top 100 coins', function () {
         });
 });
 
+Given(/^the average Market Capitalization of (\w*) for the last (\d*) (hours|days) is (\d*) USD$/, async function(asset_symbol, interval, interval_type, capital) {
+
+    interval = parseInt(interval);
+    capital = parseInt(capital);
+    const fuzzyness = capital/100;
+
+    const now = new Date();
+
+    const { Asset, AssetMarketCapitalization, sequelize } = require('../../../models');
+    const { Op } = sequelize;
+
+    const intervals = [];
+
+    for (let i = 0; i < interval; i++) {
+
+        let new_capitalization = capital;
+
+        if(i === interval - 1) {
+
+            const current_total = intervals.reduce((acc, interval) => acc += interval.capitalization, 0);
+            const expected_sum = capital * interval;
+            new_capitalization = expected_sum - current_total;
+
+        }
+
+        else new_capitalization = capital + _.random(-fuzzyness, fuzzyness); 
+
+        const new_time = new Date(now);
+
+        switch(interval_type) {
+
+            case 'days':
+                new_time.setDate(now.getDate() - i);
+                break;
+
+            case 'hours':
+            default:
+                new_time.setHours(now.getHours() - i);
+                break;
+
+        };
+        
+        intervals.unshift({
+            date: new_time,
+            capitalization: new_capitalization
+        });
+
+    }
+
+    const asset = await Asset.findOne({
+        where: { symbol: asset_symbol }
+    });
+
+    expect(asset, `Expected to find Asset with symbol ${asset_symbol}`).to.be.not.null;
+
+    let capitalizations = intervals.map(i => {
+        return {
+            timestamp: i.date,
+            asset_id: asset.id,
+            capitalization_usd: i.capitalization,
+            market_share_percentage: _.random(0.01, 40, true), //Unless required, will remain random
+            daily_volume_usd: i.capitalization / _.random(90, 98) 
+        };
+    });
+
+    capitalizations = await sequelize.transaction(transaction => {
+        return AssetMarketCapitalization.destroy({
+            where: {
+                timestamp: {
+                    [Op.gte]: intervals[interval - 1].date.getTime() - 60000
+                },
+                asset_id: asset.id
+            },
+            transaction
+        }).then(() => {
+            return AssetMarketCapitalization.bulkCreate(capitalizations, { transaction, returning: true });
+        });
+    });
+
+});
+
+Given(/^the daily volume of (\w*) is consistently (\d*) USD$/, async function(asset_symbol, daily_volume_usd) {
+
+    const { Asset, AssetMarketCapitalization } = require('../../../models');
+
+    const asset = await Asset.findOne({
+        where: { symbol: asset_symbol }
+    });
+
+    return AssetMarketCapitalization.update({ daily_volume_usd }, {
+        where: { asset_id: asset.id }
+    });
+
+});
+
+Given(/^the Market Capitalization for (\w*) is as follows:$/, async function(asset_symbol, table) {
+
+    const { Asset, AssetMarketCapitalization, sequelize } = require('../../../models');
+
+    const capitalizations_in_days = table.hashes();
+    const entries_per_day = 4;
+
+    const asset = await Asset.findOne({
+        where: { symbol: asset_symbol }
+    });
+
+    expect(asset, `Expected to find Asset with symbol ${asset_symbol}`).to.be.not.null;
+
+    const capitalizations = [];
+
+    for(let day of capitalizations_in_days) {
+        const start_time = new Date();
+
+        start_time.setDate(start_time.getDate() - (parseInt(day.day))); // extra one so that it starts at 0 AKA today
+        start_time.setHours(0, 0 ,0 ,0);
+        
+        let current_entry = 1;
+        while(current_entry <= entries_per_day) {
+            current_entry++;
+ 
+            capitalizations.push({
+                timestamp: start_time.getTime(),
+                asset_id: asset.id,
+                capitalization_usd: day.capitalization_usd,
+                daily_volume_usd: day.daily_volume_usd,
+                market_share_percentage: day.market_share
+            });
+
+            start_time.setHours(start_time.getHours() + 2);
+        }
+
+    }
+
+    return sequelize.transaction(transaction => {
+        return AssetMarketCapitalization.destroy({
+            where: {
+                asset_id: asset.id
+            },
+            transaction
+        }).then(() => {
+            return AssetMarketCapitalization.bulkCreate(capitalizations, { transaction });
+        });
+    });
+
+});
+
 Given(/^the system does not have Asset Market Capitalization for the last (.*) minutes$/, async function(minutes) {
 
     minutes = parseInt(minutes);
@@ -1018,6 +1164,30 @@ Then('Assets that don\'t have Market Capitalization data for the last 7 days wil
     });
 
     expect(calculations).to.equal(0, 'Expected not to find calculation for Assets that don\'t have market data for the last 7 days');
+
+});
+
+Then(/^the (\w*) weekly NVT will appropriately be equal to (\d+(?:\.\d+)?)$/, async function(asset_symbol, expected_nvt) {
+
+    const { Asset, MarketHistoryCalculation } = require('../../../models');
+
+    const asset = await Asset.findOne({
+        where: { symbol: asset_symbol }
+    });
+
+    expect(asset, `Expected to find Asset with symbol ${asset_symbol}`).to.be.not.null;
+
+    const newest_calculation = await MarketHistoryCalculation.findOne({
+        where: {
+            asset_id: asset.id,
+            type: MARKET_HISTORY_CALCULATION_TYPES.NVT
+        },
+        order: [ [ 'timestamp', 'DESC' ] ]
+    });
+
+    expected_nvt = Decimal(expected_nvt);
+
+    expect(expected_nvt.toPrecision(expected_nvt.dp())).to.equal(Decimal(newest_calculation.value).toPrecision(expected_nvt.dp()));
 
 });
 
