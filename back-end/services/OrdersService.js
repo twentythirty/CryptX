@@ -503,13 +503,18 @@ const changeRecipeOrderGroupStatus = async (user_id, order_group_id, status, com
                     }
                     //pick correct symbol to check market
                     const check_symbol = mapping.external_instrument_id;
-                    const check_market = connector.getMarket(check_symbol);
+                    const check_market = connector.markets[check_symbol];
 
-                    if (check_market == null || check_market.market == null || !check_market.market.active) {
+                    if (check_market == null || !check_market.active) {
 
                         TE(`Can't approve recipe order ${recipe_order.id}: No market for mapping ${check_symbol} on exchange ${connector.name}.`)
                     }
 
+                    const lower_limit = Decimal(check_market.limits.amount.min || '0');
+                    if (Decimal(recipe_order.quantity || '0').lt(lower_limit)) {
+
+                        TE(`Can't approve recipe order ${recipe_order.id}: Market ${check_market.symbol} on exchange ${connector.name} lower trade limit: ${lower_limit.toString()}, recipe order quantity was: ${recipe_order.quantity}.`);
+                    }
                     //market exists for this order, we can approve it
                     recipe_order.status = RECIPE_ORDER_STATUSES.Executing;
                     return recipe_order.save({

@@ -669,6 +669,16 @@ describe('OrdersService testing', () => {
                             } else {
                                 return null
                             }
+                        },
+                        markets: {
+                            [TEST_INSTRUMENTS[0].symbol]: {
+                                    active: true,
+                                    limits: {
+                                        amount: {
+                                            min: 0
+                                        }
+                                    }
+                            }
                         }
                     }
                 })
