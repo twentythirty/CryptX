@@ -174,8 +174,8 @@ Given(/^the system has Recipe Order with status (.*) on (.*)$/g, async function 
 
             return RecipeOrder.create({
                 instrument_id: mapping.Instrument.id,
-                price: _.random(0.0001, 0.1, true),
-                quantity: amount_limits.max,
+                price: _.random(0.00001, 0.001, true),
+                quantity: _.clamp(amount_limits.min * 100, amount_limits.max),
                 side: ORDER_SIDES.Buy,
                 status: RECIPE_ORDER_STATUSES[status],
                 target_exchange_id: exchange.id,
@@ -411,6 +411,16 @@ Given('the Order remaining amount is not within exchange minimum amount limits',
 
 });
 
+Given('the Order is not filled by Execuion Orders at all', function() {
+
+    const { ExecutionOrder } = require('../../../models');
+
+    return ExecutionOrder.destroy({
+        where: { recipe_order_id: this.current_recipe_order.id }
+    });
+
+});
+
 When('I generate new Orders for the Approved Recipe Run', {
     timeout: 15000
 }, function () {
@@ -464,6 +474,53 @@ When(/^(.*) the order group with a rationale/, {
     this.current_investment_run = await require('../../../models').InvestmentRun.findById(this.current_investment_run.id);
 });
 
+When('the system does the task "generate execution orders" until it stops generating for the Order', async function() {
+
+    const models = require('../../../models');
+    const config = { models };
+    const job = require('../../../jobs/exec-order-generator');
+
+    const { ExecutionOrder, ExecutionOrderFill, sequelize } = models;
+
+    let tolerance = 0;
+    while(tolerance < 50) {
+        tolerance++;
+
+        const job_result = await job.JOB_BODY(config, console.log);
+
+        const order_result = job_result.find(j => _.get(j, 'instance.id') === this.current_recipe_order.id);
+
+        if(_.get(order_result, 'instance.id') === this.current_recipe_order.id && 
+        _.get(order_result, 'status') === JOB_RESULT_STATUSES.Skipped &&
+        _.get(order_result, 'step') === '3B') break;
+
+        await sequelize.transaction(async transaction => {
+
+            const new_execution_order = await ExecutionOrder.findOne({
+                where: { 
+                    recipe_order_id: this.current_recipe_order.id, 
+                    status: EXECUTION_ORDER_STATUSES.Pending 
+                },
+                transaction
+            });
+
+            new_execution_order.status = EXECUTION_ORDER_STATUSES.FullyFilled;
+
+            await new_execution_order.save({ transaction });
+
+            await ExecutionOrderFill.create({
+                execution_order_id: new_execution_order.id,
+                price: _.random(0.01, 1, true),
+                quantity: new_execution_order.total_quantity,
+                timestamp: Date.now()
+            }, { transaction });
+
+        });
+    }
+
+    expect(tolerance).to.be.lessThan(50, `Job failed to fill Order with id "${this.current_recipe_order.id}" after 50 cycles`);
+
+});
 
 Then('a new Recipe Group is created with the status Pending', async function () {
 
@@ -694,5 +751,30 @@ Then('no Orders were generated for the Recipe Run', async function () {
     });
 
     expect(order_group, 'Expected not to find any new orders in the database').to.be.null;
+
+});
+
+Then('the sum of Execution Order total quantities will equal the Recipe Order quantity', async function() {
+
+    const { ExecutionOrder, RecipeOrder, sequelize } = require('../../../models');
+
+    const [ recipe_order, [ execution_order_data ] ] = await Promise.all([
+        RecipeOrder.findById(this.current_recipe_order.id),
+        ExecutionOrder.findAll({
+            where: { recipe_order_id: this.current_recipe_order.id },
+            attributes: [
+                'recipe_order_id',
+                [ sequelize.fn('sum', sequelize.col('total_quantity')), 'total_quantity' ]
+            ],
+            group: [ 'recipe_order_id']
+        })
+    ]);
+
+    expect(recipe_order, `Expected to find the current Recipe Order[${this.current_recipe_order.id}]`).to.be.not.null;
+    this.current_recipe_order = recipe_order;
+
+    expect(execution_order_data, `Expected to find Execution Orders for Recipe Order[${recipe_order.id}]`).to.be.not.undefined;
+
+    expect(Decimal(recipe_order.quantity).toString()).to.equal(Decimal(execution_order_data.total_quantity).toString(), `Expected the sum of total quantities to equal the quantity of the Reciep Order[${recipe_order.id}]`);
 
 });
