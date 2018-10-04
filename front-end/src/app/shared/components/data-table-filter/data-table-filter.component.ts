@@ -1,6 +1,7 @@
 import { Component, OnInit, Input, EventEmitter, Output, OnChanges } from '@angular/core';
 import * as _ from 'lodash';
 import { Observable } from 'rxjs';
+import { DataTableFilterType } from './data-table-filter-type.enum';
 
 export interface DataTableFilterData {
   column: string;
@@ -22,19 +23,19 @@ export interface DataTableFilterData {
   styleUrls: ['./data-table-filter.component.scss']
 })
 export class DataTableFilterComponent implements OnInit, OnChanges {
-  public _filterData = {
+  filterData = {
     values: [],
     order: ''
   };
-  public _showSearch = false;
-  public _filterSearchText = '';
+  showSearch = false;
+  filterSearchText = '';
 
   active = false;
   name = 'ORDER BY';
   rowDataLoading = false;
 
   @Input() column: string;
-  @Input() type = 'text';
+  @Input() type: DataTableFilterType = DataTableFilterType.Text;
   @Input() sortable = true;
   @Input() hasRange = true;
   @Input() inputSearch;
@@ -73,77 +74,77 @@ export class DataTableFilterComponent implements OnInit, OnChanges {
     };
 
     switch (this.type) {
-      case 'text':
-        if (this.rowData && this.rowData.length && this._filterData.values.length) {
+      case DataTableFilterType.Text:
+        if (this.rowData && this.rowData.length && this.filterData.values.length) {
           // checkbox data pick
           data.values.push({
             field: this.column,
-            value: this._filterData.values,
+            value: this.filterData.values,
             expression: 'in',
             type: 'string'
           });
-        } else if ( this._filterSearchText.length ) {
+        } else if ( this.filterSearchText.length ) {
           // search field data
           data.values.push({
             field: this.column,
-            value: `%${this._filterSearchText}%`,
+            value: `%${this.filterSearchText}%`,
             expression: 'iLike',
             type: 'string'
           });
         }
         break;
 
-      case 'boolean':
-        if (this.rowData && this.rowData.length && this._filterData.values.length === 1) {
+      case DataTableFilterType.Bool:
+        if (this.rowData && this.rowData.length && this.filterData.values.length === 1) {
           // checkbox data pick only for bool values
           data.values.push({
             field: this.column,
-            value: this._filterData.values[0],
+            value: this.filterData.values[0],
             expression: 'eq',
             type: 'boolean'
           });
         }
         break;
 
-      case 'date':
-        if ( this._filterData.values[0] ) {
+      case DataTableFilterType.Date:
+        if ( this.filterData.values[0] ) {
           data.values.push({
             field: this.column,
-            value: Date.parse(this._filterData.values[0]),
+            value: Date.parse(this.filterData.values[0]),
             expression: 'gt',
             type: 'timestamp'
           });
         }
-        if ( this._filterData.values[1] ) {
+        if ( this.filterData.values[1] ) {
           data.values.push({
             field: this.column,
-            value: Date.parse(this._filterData.values[1]),
+            value: Date.parse(this.filterData.values[1]),
             expression: 'lt',
             type: 'timestamp'
           });
         }
         break;
 
-      case 'number':
-        if ( this._filterSearchText.length ) {
+      case DataTableFilterType.Number:
+        if ( this.filterSearchText.length ) {
           // search field data
           data.values.push({
             field: this.column,
-            value: this._filterSearchText,
+            value: this.filterSearchText,
           });
         }
-        if ( _.isNumber(this._filterData.values[0]) ) {
+        if ( _.isNumber(this.filterData.values[0]) ) {
           data.values.push({
             field: this.column,
-            value: this._filterData.values[0],
+            value: this.filterData.values[0],
             expression: 'gte',
             type: 'number'
           });
         }
-        if ( _.isNumber(this._filterData.values[1]) ) {
+        if ( _.isNumber(this.filterData.values[1]) ) {
           data.values.push({
             field: this.column,
-            value: this._filterData.values[1],
+            value: this.filterData.values[1],
             expression: 'lte',
             type: 'number'
           });
@@ -151,10 +152,10 @@ export class DataTableFilterComponent implements OnInit, OnChanges {
         break;
     }
 
-    if ( this._filterData.order ) {
+    if (this.filterData.order) {
       data.order = {
         by: this.column,
-        order: this._filterData.order
+        order: this.filterData.order
       };
     }
 
@@ -162,8 +163,8 @@ export class DataTableFilterComponent implements OnInit, OnChanges {
   }
 
   cancelSearch() {
-    this._filterSearchText = '';
-    this._showSearch = !this._showSearch;
+    this.filterSearchText = '';
+    this.showSearch = !this.showSearch;
   }
 
   isActive() {
@@ -172,39 +173,41 @@ export class DataTableFilterComponent implements OnInit, OnChanges {
 
   sortAsc() {
     this.isActive();
-    this._filterData.order = 'asc';
+    this.filterData.order = 'asc';
     this.name = 'A - Z';
   }
 
   sortDesc() {
     this.isActive();
-    this._filterData.order = 'desc';
+    this.filterData.order = 'desc';
     this.name = 'Z - A';
   }
 
   noSort() {
     this.isActive();
-    this._filterData.order = '';
+    this.filterData.order = '';
     this.name = 'ORDER BY';
   }
 
   onCheckboxToggle({ value }) {
-    this._filterData.values = _.xor(this._filterData.values, [value]);
+    this.filterData.values = _.xor(this.filterData.values, [value]);
   }
 
-  onNumberRangeChange(value) {
+  onNumberRangeChange(value): void {
+    if (typeof this.filterData.values[0] !== 'number' || typeof this.filterData.values[1] !== 'number') {
+      return;
+    }
+
     if (
       value === 'min'
-      && this._filterData.values[0] && this._filterData.values[1]
-      && this._filterData.values[0] > this._filterData.values[1]
+      && this.filterData.values[0] > this.filterData.values[1]
     ) {
-      this._filterData.values[1] = this._filterData.values[0];
+      this.filterData.values[1] = this.filterData.values[0];
     } else if (
       value === 'max'
-      && this._filterData.values[1] && this._filterData.values[0]
-      && this._filterData.values[0] > this._filterData.values[1]
+      && this.filterData.values[0] > this.filterData.values[1]
     ) {
-      this._filterData.values[0] = this._filterData.values[1];
+      this.filterData.values[0] = this.filterData.values[1];
     }
   }
 
@@ -212,10 +215,10 @@ export class DataTableFilterComponent implements OnInit, OnChanges {
     if (typeof this.inputSearch !== 'undefined') {
       return this.inputSearch;
     }
-    return this.type === 'text';
+    return this.type === DataTableFilterType.Text;
   }
 
-  public stopPropagation(e) {
+  stopPropagation(e) {
     e.stopPropagation();
   }
 

@@ -1,4 +1,4 @@
-import { NgModule, Component } from '@angular/core';
+import { NgModule } from '@angular/core';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { HttpClientModule } from '@angular/common/http';
@@ -41,6 +41,7 @@ import { ActionLogComponent } from './components/action-log/action-log.component
 import { NguiAutoCompleteModule } from '@ngui/auto-complete/dist';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { MarkAsTouchedDirective } from './directives/mark-as-touched.directive';
+import { AutofocusDirective } from './directives/autofocus.directive';
 
 @NgModule({
     imports: [
@@ -102,6 +103,7 @@ import { MarkAsTouchedDirective } from './directives/mark-as-touched.directive';
         ButtonRadioComponent,
         ActionLogComponent,
         MarkAsTouchedDirective,
+        AutofocusDirective,
     ],
     exports: [
         MatProgressSpinnerModule,
@@ -133,6 +135,7 @@ import { MarkAsTouchedDirective } from './directives/mark-as-touched.directive';
         ActionLogComponent,
         MarkAsTouchedDirective,
         NgSelectModule,
+        AutofocusDirective,
     ]
 })
 export class SharedModule {}

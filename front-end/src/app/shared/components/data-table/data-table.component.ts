@@ -1,5 +1,5 @@
 import { Component, OnInit, Input, EventEmitter, Output } from '@angular/core';
-import { ActivatedRoute, Router, NavigationStart } from '@angular/router';
+import { ActivatedRoute } from '@angular/router';
 import { trigger, state, style, transition, animate } from '@angular/animations';
 import { Observable } from 'rxjs';
 import * as _ from 'lodash';
@@ -93,7 +93,6 @@ export class DataTableComponent implements OnInit {
 
   constructor(
     private translate: TranslateService,
-    private router: Router,
     private route: ActivatedRoute
   ) {}
 
@@ -114,7 +113,6 @@ export class DataTableComponent implements OnInit {
     Object.apply(this.filterAppliedMap, this.filterMap);
 
     // remove all _dirty properties on url param change
-
     this.route.params.subscribe(params => {
       this.dataSource.header.map(item => {
           delete item._dirty;
