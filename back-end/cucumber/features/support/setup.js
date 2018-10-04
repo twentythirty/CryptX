@@ -60,7 +60,29 @@ BeforeAll({ timeout: 15000000 }, async function(){
             exchange._init();
         }   
  
-        return Promise.resolve(exchange);
+        return Promise.resolve(exchange).then(exchange => {
+            exchange.markets_loaded = true;
+            exchange.loading_failed = false;
+            return exchange;
+        }).catch(exchange => {
+            exchange.markets_loaded = true;
+            exchange.loading_failed = true;
+        });
+    });
+
+    sinon.stub(ccxtUtils, 'allConnectors').callsFake(async () => {
+
+        const exchanges_data = await Exchange.findAll();
+        const exchanges_by_api = _.keyBy(exchanges_data, 'api_id');
+
+        //return all exchange connectors mapped to exchange ids
+        return _.fromPairs(_.map(exchanges, (exchange_object, api_id) => {
+
+            return [
+                exchanges_by_api[api_id].id,
+                exchange_object
+            ]
+        }))
     });
 
     sinon.stub(ccxtUtils, 'getThrottle').callsFake(async id => {

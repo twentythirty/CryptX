@@ -39,6 +39,18 @@ Feature: Approving Orders
         And all orders in the group statuses will remain unchanged
 
     @investment_run_cache_cleanup
+    Scenario: fail to approve generated orders due to trading bounds
+  
+        Given there is a recipe order group with status Pending
+        But one of the orders total quantity is below the trade threshold on this exchange and instrument pair
+        When I log onto CryptX as Investment Manager
+        And navigate to Pending recipe order group
+        And approve the order group with a rationale
+        Then the approval fails with an error message including the offending value and the threshold requirement
+        And the recipe order group status will remain unchanged
+        And all orders in the group statuses will remain unchanged
+
+    @investment_run_cache_cleanup
     Scenario: reject generated orders
   
         Given there is a recipe order group with status Pending

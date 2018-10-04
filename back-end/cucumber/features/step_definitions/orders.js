@@ -70,6 +70,37 @@ Given('one of the orders is missing their CCXT mapping', async function () {
     await new_order.save()
 });
 
+Given('one of the orders total quantity is below the trade threshold on this exchange and instrument pair', async function() {
+
+    const models = require('../../../models');
+    
+    chai.assert.isArray(this.current_generated_orders, 'Generated orders array not present in World!');
+    //Sometimes it would select an array object out of bounds as length is greater than last index by 1
+    const random_idx = _.random(0, this.current_generated_orders.length - 1, false);
+    const new_order = this.current_generated_orders[random_idx];
+    chai.assert.isObject(new_order, 'Did not find any Pending Recipe Orders to tamper with!');
+
+    const connector = await require('../../../utils/CCXTUtils').getConnector(new_order.target_exchange_id);
+    chai.assert.isFalse(connector.loading_failed, `CCXT connector for exchange id ${new_order.target_exchange_id} failed to load!`);
+    
+    const mapping = await models.InstrumentExchangeMapping.findOne({
+        where: {
+            instrument_id: new_order.instrument_id,
+            exchange_id: new_order.target_exchange_id
+        }
+    })
+    chai.assert.isNotNull(mapping, `recipe order ${new_order.id} lacked mapping under instrument id ${new_order.instrument_id} and exchange id ${new_order.target_exchange_id}`);
+    const connector_market = connector.markets[mapping.external_instrument_id];
+    chai.assert.isObject(connector_market, `CCXT did not have connector object for instrument ${mapping.external_instrument_id}`);
+    chai.assert.isTrue(connector_market.active, `Connector ${connector.id} for instrument ${mapping.external_instrument_id} is not active!`);
+    const connector_min = connector_market.limits.amount.min;
+    chai.assert.isNumber(connector_min, `Cannot tamper with min when connector amount min is ${connector_min} - not a number!`);
+    new_order.quantity = connector_min * 0.75; //about 25% less for IEEE to notice even with small values
+    this.current_ccxt_lower_bound = connector_min;
+    this.current_bad_low_total = new_order.quantity;
+    await new_order.save();
+});
+
 Given(/^the recipe run does not have recipe order group with status (.*)$/, function (status) {
 
     const {
@@ -558,13 +589,28 @@ Then('the approval fails with an error message including mapping and exchange', 
 
     const message = _.toLower(this.current_recipe_order_group_status_change_error.message);
     chai.assert.include(message, 'no mapping found', 'Error did not mention its about missing a mapping!');
-    chai.assert.isObject(this.current_bad_instrument, 'No instrument saved as bad for recipe!');
 
+    chai.assert.isObject(this.current_bad_instrument, 'No instrument saved as bad for recipe!');
     const instrument = this.current_bad_instrument;
     chai.assert.include(message, _.toLower(instrument.symbol), `Bad instrument symbol ${instrument.symbol} wasnt mentioned in the error!`);
+
     chai.assert.isObject(this.current_order_exchange, 'No exchange persisted for recipe orders!');
     chai.assert.include(message, _.toLower(this.current_order_exchange.name), `Exchange name ${this.current_order_exchange.name} not mnetioned in error!`)
 
+});
+
+Then('the approval fails with an error message including the offending value and the threshold requirement', async function( ) {
+
+    //there should have been an error saved
+    chai.assert.isDefined(this.current_recipe_order_group_status_change_error, 'No error saved after recipe order group status changed!');
+    const message = _.toLower(this.current_recipe_order_group_status_change_error.message);
+    chai.assert.include(message, 'lower trade limit', 'Error did not mention its about lower trade limit!');
+
+    chai.assert.isDefined(this.current_ccxt_lower_bound, 'No ccxt lower bound saved for check!');
+    chai.assert.include(message, '' + this.current_ccxt_lower_bound, `Error did not mention ccxt lower bound ${this.current_ccxt_lower_bound}!`);
+
+    chai.assert.isDefined(this.current_bad_low_total, 'No order low total quantity saved for check!');
+    chai.assert.include(message, '' + this.current_bad_low_total, `Error did not mention low order total ${this.current_bad_low_total}!`);
 });
 
 Then('the system won\'t allow me to generate Recipe Orders while this group is not Rejected', function () {

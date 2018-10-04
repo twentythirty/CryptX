@@ -129,7 +129,7 @@ const from_exchange_data = async (map_id, map_api, exchange_data, resolve_market
             const message = ex? ex.message : 'N\\A';
             let logOpts = {
                 args: {
-                    error: `[${connector.id}-${load_markets}]: ${message}`
+                    error: `[${connector.id}-load_markets]: ${message}`
                 },
                 log_level: ACTIONLOG_LEVELS.Error
             };

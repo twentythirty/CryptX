@@ -20,7 +20,6 @@ async function fetchOrder(external_id, symbol, params = {}) {
     return order;
 
 };
-
 module.exports.fetchOrder = fetchOrder;
 module.exports.fetch_order = fetchOrder;
 
@@ -37,6 +36,12 @@ async function fetchOrders(symbol, since) {
 };
 module.exports.fetchOrders = fetchOrders;
 module.exports.fetch_orders = fetchOrders;
+
+async function loadMarkets() {
+    return Promise.resolve()
+}
+module.exports.loadMarkets = loadMarkets;
+module.exports.load_markets = loadMarkets;
 
 async function fetchMyTrades(symbol, since) {
 
