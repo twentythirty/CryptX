@@ -7,6 +7,7 @@ Feature: Approving Recipe Run
         Given the system has a Investment Manager
         And the system has a Trader
         And the system has a Depositor
+        And the system has Asset Market Capitalization for the last 2 hours
         And the system has Instrument Mappings for Kraken
         And the system has updated the Instrument Market Data
         And there is a LCI Investment Run created by an Investment Manager

@@ -13,7 +13,10 @@ Feature: Generating execution orders
         Then a new Execution Order is saved to the database
         And the Execution Order will have status Pending
         And the total quantity will be within exchange limits
-        And the initial price will not be set
+        And the Execution Order placed timestamp and completed timestamp will not be set
+        And the Execution Order price, fee and external identifier will not be set
+        And the Execution Order side, instrument and exchange will be the same as the Order
+        And the Execution Order type will be Market
 
     Scenario: Fully filled order with status Execution
 

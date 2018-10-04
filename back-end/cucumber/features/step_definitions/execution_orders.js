@@ -673,23 +673,36 @@ Then('the total quantity will be within exchange limits', async function () {
 
 });
 
-Then('the initial price will not be set', function () {
-
-    /**
-     * Might as well asset everything else for the heck of it
-     */
+Then(/^the Execution Order (.*) will (not be set|be the same as the Order|be Market)$/, function (fields, assertion) {
 
     const order = this.current_execution_order;
 
-    expect(order.price, 'Expected execution order price to be a null').to.be.null;
-    expect(order.fee, 'Expected execution order fee to be a null').to.be.null;
-    expect(order.placed_timestamp, 'Expected execution order placed timestamp to be a null').to.be.null;
-    expect(order.completed_timestamp, 'Expected execution order completed timestamp to be a null').to.be.null;
-    expect(order.external_identifier, 'Expected execution order external identifier to be a null').to.be.null;
-    expect(order.instrument_id).to.equal(this.current_recipe_order.instrument_id, 'Expected execution order instrument to match the recipe orders instrument');
-    expect(order.type).to.equal(EXECUTION_ORDER_TYPES.Market, 'Expected the execution order to be a Market Order');
-    expect(order.side).to.equal(this.current_recipe_order.side, 'Expected the side of execution order to equal the side of the recipe order');
-    expect(order.exchange_id).to.equal(this.current_recipe_order.target_exchange_id, 'Expected the execution order to have the same exchange identifier as the recipe order');
+    const field_names = fields.split(/,|and/).map(f => _.snakeCase(f.trim()));
+
+    for(let field of field_names) {
+
+        let field_to_check = order[field];
+        if(_.isUndefined(field_to_check)) field_to_check = order[`${field}_id`];
+        expect(field_to_check, `Expected to find the field "${field}" in Order object`).to.be.not.undefined;
+
+        switch(assertion) {
+
+            case 'not be set':
+                expect(field_to_check, `Expected Order ${field} to be not set`).to.be.null;
+                break;
+
+            case 'be the same as the Order':
+                const expected = this.current_recipe_order[field] || this.current_recipe_order[`${field}_id`] ||this.current_recipe_order[`target_${field}_id`];
+                expect(field_to_check).to.equal(expected, `Expected fields "${field}" to match`);
+                break;
+
+            case 'be Market':
+                expect(field_to_check).to.equal(EXECUTION_ORDER_TYPES.Market, `Expected order to be a Market type`);
+                break;
+
+        }
+        
+    }
 
 });
 

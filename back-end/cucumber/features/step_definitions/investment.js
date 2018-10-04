@@ -387,8 +387,10 @@ Then(/^the Asset Mix is assigned to it with appropriate (.*) assets$/, function(
         expect(asset_mix.strategy_type).to.equal(STRATEGY_TYPES[strategy_type], 'Expected the investment run and asset mix strategy type to match');
         expect(this.current_investment_run.strategy_type).to.equal(asset_mix.strategy_type);
 
-        if(strategy_type === 'LCI') expect(asset_mix.GroupAssets.length).to.satisfy(lessThanOrEqual(SYSTEM_SETTINGS.INDEX_LCI_CAP, `Expected the asset mix size to be less or equal the LCI index of ${SYSTEM_SETTINGS.INDEX_LCI_CAP}`));
-        else expect(asset_mix.GroupAssets.length).to.equal(SYSTEM_SETTINGS.INDEX_MCI_CAP, `Expected the asset mix size to be less or equal the MCI index of ${SYSTEM_SETTINGS.INDEX_MCI_CAP}`);
+        const whitelisted_assets = asset_mix.GroupAssets.filter(a => a.status === INSTRUMENT_STATUS_CHANGES.Whitelisting);
+
+        if(strategy_type === 'LCI') expect(whitelisted_assets.length).to.equal(SYSTEM_SETTINGS.INDEX_LCI_CAP, `Expected the asset mix size to equal the LCI index of ${SYSTEM_SETTINGS.INDEX_LCI_CAP}`);
+        else expect(whitelisted_assets.length).to.equal(SYSTEM_SETTINGS.INDEX_MCI_CAP, `Expected the asset mix size to equal the MCI index of ${SYSTEM_SETTINGS.INDEX_MCI_CAP}`);
 
     });
 
