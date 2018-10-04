@@ -545,6 +545,7 @@ Then('only one Recipe Order is created for each Recipe Run Detail', async functi
     expect(orders.length).to.equal(details.length, 'Expected the number of orders to equal the number of recipe run details');
 
     const base_asset_ids = base_assets.map(asset => asset.id);
+    this.current_order_detail_pairs = [];
 
     for (let order of orders) {
 
@@ -558,12 +559,61 @@ Then('only one Recipe Order is created for each Recipe Run Detail', async functi
 
         expect(matching_detail, 'Expected to find a matching recipe run detail forthe order').to.be.not.undefined;
 
-        if (base_asset_ids.includes(order.Instrument.quote_asset_id)) expect(order.side).to.equal(ORDER_SIDES.Buy, 'Expected the order to be a "BUY" type');
-        else expect(order.side).to.equal(ORDER_SIDES.Sell, 'Expected the order to be a "SELL" type');
+        this.current_order_detail_pairs.push([order, matching_detail]);
 
     }
 
     this.current_recipe_orders = orders;
+    this.current_recipe_details = details;
+
+});
+
+//While technically this is already checked using find in the above step, we still need a step describing this, so here we are,
+Then('the Recipe Order Instrument will be based on the quote and transaction assets of the corresponding Detail', function() {
+
+    for(let pair of this.current_order_detail_pairs) {
+
+        const [ order, detail ] = pair;
+
+        if(order.side === ORDER_SIDES.Buy){
+            expect(order.Instrument.quote_asset_id).to.equal(detail.quote_asset_id, `Expected the instrument quote asset to match the Details quote asset`);
+            expect(order.Instrument.transaction_asset_id).to.equal(detail.transaction_asset_id, `Expected the instrument transaction asset to match the Details transaction asset`);
+        }
+        else{
+            expect(order.Instrument.quote_asset_id).to.equal(detail.transaction_asset_id, `Expected the instrument quote asset to match the Details transaction asset`);
+            expect(order.Instrument.transaction_asset_id).to.equal(detail.quote_asset_id, `Expected the instrument transaction asset to match the Details quote asset`);
+        }
+
+    }
+
+});
+
+Then('the Recipe Order Exchange will be the same as the corresponding Detail', function() {
+
+    for(let pair of this.current_order_detail_pairs) {
+
+        const [ order, detail ] = pair;
+
+        expect(order.target_exchange_id).to.equal(detail.target_exchange_id, `Expected the exchange to match the Details exchange`);
+
+    }
+
+});
+
+Then(/^if Order`s Instrument and Detail transaction assets (do not match|match), then the Order side will be (Buy|Sell)$/, async function(match, side) {
+
+    match = (match === 'match');
+
+    const matching_orders = this.current_order_detail_pairs.filter(pair => {
+
+        const [ order, detail ] = pair;
+
+        if(match) return (order.Instrument.transaction_asset_id === detail.transaction_asset_id);
+        else return (order.Instrument.transaction_asset_id !== detail.transaction_asset_id);
+
+    }).map(pair => pair[0]);
+
+    for(let order of matching_orders) expect(order.side).to.equal(ORDER_SIDES[side], `Expected Order[${order.id}] side to be ${side}`);
 
 });
 

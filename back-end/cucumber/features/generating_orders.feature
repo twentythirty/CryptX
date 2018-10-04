@@ -23,6 +23,10 @@ Feature: Generating Orders
         And I generate new Orders for the Approved Recipe Run
         Then a new Recipe Group is created with the status Pending
         And only one Recipe Order is created for each Recipe Run Detail
+        And the Recipe Order Instrument will be based on the quote and transaction assets of the corresponding Detail
+        And the Recipe Order Exchange will be the same as the corresponding Detail
+        And if Order`s Instrument and Detail transaction assets match, then the Order side will be Buy
+        And if Order`s Instrument and Detail transaction assets do not match, then the Order side will be Sell
         And the Recipe Orders have the status Pending
         And the Investment Run will have status OrdersGenerated
         But the system won't allow me to generate Recipe Orders while this group is not Rejected

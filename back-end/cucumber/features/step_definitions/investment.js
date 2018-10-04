@@ -103,7 +103,7 @@ Given(/there is a (.*) Investment Run created by an Investment Manager/, async f
      */
     const [ top_assets ] = await sequelize.query(`
         SELECT Distinct ON(a.id) a.id, cap.capitalization_usd, a.symbol FROM asset AS a
-        INNER JOIN LATERAL (
+        LEFT JOIN LATERAL (
             SELECT DISTINCT ON(cap.asset_id) cap.capitalization_usd, cap.asset_id FROm asset_market_capitalization AS cap
             ORDER BY cap.asset_id, cap.timestamp DESC
         ) AS cap ON a.id = cap.asset_id
