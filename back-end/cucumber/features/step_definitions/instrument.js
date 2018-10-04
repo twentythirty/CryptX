@@ -61,12 +61,13 @@ Given(/^the system has Instrument Mappings for (.*)$/, async function (exchange_
     const missing_mappings = exchange_instruments.map(symbol => {
         const instrument_mapping = instrument_mappings.find(im => im.external_instrument_id === symbol && im.exchange_id === exchange.id);
         const instrument = instruments.find(i => i.symbol === symbol);
+
         if(!instrument_mapping && instrument) {
             return {
                 exchange_id: exchange.id,
                 external_instrument_id: symbol,
                 instrument_id: instrument.id,
-                tick_size: _.get(connector.markets, `${symbol}.limits.amount.min`, 0)
+                tick_size: Decimal(1).div(Decimal(10).pow(_.get(connector.markets, `${symbol}.precision.amount`, 0.0001) || 0)).toString()
             }
         }
     }).filter(im => im);

@@ -33,3 +33,12 @@ Feature: Generating execution orders
         When the system finished the task "generate execution orders"
         Then the task will skip the Recipe Order due to next total being not within limits
         And no new Execution Order is saved to the database
+
+    Scenario: Generating Execution Orders until Recipe Order is completed
+
+        Given the system has Recipe Order with status Executing on Bitfinex
+        And the Order is not filled by Execuion Orders at all
+        When the system does the task "generate execution orders" until it stops generating for the Order
+        And the system finished the task "update recipe order statuses"
+        Then the Recipe Order will have status Completed
+        And the sum of Execution Order total quantities will equal the Recipe Order quantity
