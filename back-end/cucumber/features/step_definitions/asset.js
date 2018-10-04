@@ -458,7 +458,7 @@ Given(/^the Market Capitalization for (\w*) is as follows:$/, async function(ass
         const start_time = new Date();
 
         start_time.setDate(start_time.getDate() - (parseInt(day.day))); // extra one so that it starts at 0 AKA today
-        start_time.setHours(0, 0 ,0 ,0);
+        //start_time.setHours(0, 0 ,0 ,0);
         
         let current_entry = 1;
         while(current_entry <= entries_per_day) {
@@ -1247,7 +1247,7 @@ Then(/^the (\w*) weekly NVT will appropriately be equal to (\d+(?:\.\d+)?)$/, as
 
     expected_nvt = Decimal(expected_nvt);
 
-    expect(expected_nvt.toPrecision(expected_nvt.dp())).to.equal(Decimal(newest_calculation.value).toPrecision(expected_nvt.dp()));
+    expect(expected_nvt.toFixed(expected_nvt.dp())).to.equal(Decimal(newest_calculation.value).toFixed(expected_nvt.dp()));
 
 });
 
