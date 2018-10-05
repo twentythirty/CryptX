@@ -30,6 +30,11 @@ const fills_sum_decimal = (fills) => {
         .reduce((acc, current) => acc.plus(current), Decimal(0))
 }
 
+let execution_active = [
+    EXECUTION_ORDER_STATUSES.Pending,
+    EXECUTION_ORDER_STATUSES.InProgress
+];
+
 //every day, every 5 minutes
 module.exports.SCHEDULE = "0 */5 * * * *";
 module.exports.NAME = "GEN_EXEC_OR";
@@ -42,6 +47,7 @@ module.exports.JOB_BODY = async (config, log) => {
     const ExecutionOrder = models.ExecutionOrder;
     const ExecutionOrderFill = models.ExecutionOrderFill;
     const InstrumentExchangeMapping = models.InstrumentExchangeMapping;
+    const sequelize = models.sequelize;
 
     //settings should be injected before this point in db-config, so its safe to reference
     let trade_base = {
@@ -50,18 +56,20 @@ module.exports.JOB_BODY = async (config, log) => {
     };
     const fuzzyness = SYSTEM_SETTINGS.TRADE_BASE_FUZYNESS;
 
-    const approved_groups_ids = _.map(await RecipeOrderGroup.findAll({
-        where: {
-            approval_status: RECIPE_ORDER_GROUP_STATUSES.Approved
-        }
-    }), 'id');
-
+    // fetch all recipe orders where of approved recipe order group
     return RecipeOrder.findAll({
         where: {
-            status: RECIPE_ORDER_STATUSES.Executing,
-            recipe_order_group_id: approved_groups_ids
+            status: RECIPE_ORDER_STATUSES.Executing
         },
-        include: [Instrument]
+        include: [
+            Instrument,
+            { 
+                model: RecipeOrderGroup,
+                where: {
+                    approval_status: RECIPE_ORDER_GROUP_STATUSES.Approved
+                }
+            }
+        ]
     }).then(active_orders => {
         log(`1. Analyzing ${active_orders.length} active orders...`)
         return Promise.all(
@@ -79,10 +87,22 @@ module.exports.JOB_BODY = async (config, log) => {
 
                 return Promise.all([
                     Promise.resolve(pending_order),
-                    ExecutionOrder.findAll({
-                        where: {
+                    // fetch execution order quantity and filled grouped by status
+                    sequelize.query(`
+                        SELECT 
+                            eo.status,
+                            COUNT(*) execution_order_count,
+                            COALESCE(SUM(eo.total_quantity), 0) as total_quantity,
+                            COALESCE(SUM(eof.quantity),0) as filled
+                        FROM execution_order eo
+                        LEFT JOIN execution_order_fill eof ON eof.execution_order_id=eo.id
+                        WHERE eo.recipe_order_id = :recipe_order_id
+                        GROUP BY eo.status
+                    `, {
+                        replacements: {
                             recipe_order_id: pending_order.id
-                        }
+                        },
+                        type: sequelize.QueryTypes.SELECT
                     })
                 ]).then(orderAndExecs => {
 
@@ -90,19 +110,20 @@ module.exports.JOB_BODY = async (config, log) => {
                     const [pending_order, execution_orders] = orderAndExecs;
 
                     //inspect existing execution orders of this pending one
-                    const unfilled_execution = _.find(execution_orders, order => order.isActive());
+                    const unfilled_execution = execution_orders.find(e => execution_active.includes(e.status));
 
                     if (unfilled_execution != null) {
-                        //an active execution order was found, let system deal with it before attempting another one
-                        log(`[WARN.3A]: Found execution order ${unfilled_execution.id} with status ${unfilled_execution.status} for pending recipe order ${pending_order.id}! Skipping recipe order...`);
+                        //an active execution order was found, let system deal with it before attempting another one //${unfilled_execution.id}
+                        log(`[WARN.3A]: Found execution orders  with status ${unfilled_execution.status} for pending recipe order ${pending_order.id}! Skipping recipe order...`);
                         return { instance: pending_order, status: JOB_RESULT_STATUSES.Skipped, step: '3A' };
                     }
 
-                    const inactive_execution_orders = _.filter(execution_orders, order => !order.isActive());
+                    const inactive_execution_orders = execution_orders.filter(e => !execution_active.includes(e.status));/*  _.filter(execution_orders, order => !order.isActive()); */
                     log(`3. Fetching all execution order fills for ${inactive_execution_orders.length} inactive execution orders of pending recipe order ${pending_order.id}`);
-                    const resumable_execution_orders = _.filter(execution_orders, order => order.status == EXECUTION_ORDER_STATUSES.Failed && order.failed_attempts < SYSTEM_SETTINGS.EXEC_ORD_FAIL_TOLERANCE);
+                    const resumable_execution_orders = execution_orders.filter(e => e.status==EXECUTION_ORDER_STATUSES.Failed);
 
-                    log(`3.1. Reserving quantity for ${resumable_execution_orders.length} failed but resumable execution orders...`);
+                    log(`3.1. Reserving quantity for ${resumable_execution_orders.execution_order_count ?
+                        resumable_execution_orders.execution_order_count : 0} failed but resumable execution orders...`);
 
                     return Promise.all([
                         Promise.resolve(pending_order),
@@ -118,18 +139,14 @@ module.exports.JOB_BODY = async (config, log) => {
                         //carry over resumable execution orders to add them to potentially covered total
                         Promise.resolve(resumable_execution_orders),
                         //fetch all finished execution order fills for all non-active execution orders
-                        ExecutionOrderFill.findAll({
-                            where: {
-                                execution_order_id: _.map(inactive_execution_orders, 'id')
-                            }
-                        })
+                        Promise.resolve(inactive_execution_orders)
                     ]).then(pendingAndMappingAndOrdersAndFills => {
 
                         const [
                             pending_order,
                             exchange_mapping,
                             exchange_connector,
-                            resumable_execution_orders,
+                            resumable_amount,
                             execution_fills
                         ] = pendingAndMappingAndOrdersAndFills;
 
@@ -165,16 +182,16 @@ module.exports.JOB_BODY = async (config, log) => {
 
 
                         //sum up all quantities that could potentially be realized
-                        const potential_qnatity = _.map(resumable_execution_orders, execution_order => {
-                            const fills_sum = fills_sum_decimal(
-                                _.filter(execution_fills, fill => fill.execution_order_id == execution_order.id)
-                            )
-                            return Decimal(execution_order.total_quantity).minus(fills_sum)
-                        }).reduce((acc, current) => acc.plus(current), Decimal(0))
+                        const potential_qnatity = resumable_amount.length ?
+                            Decimal(resumable_amount.total_quantity).minus(Decimal(resumable_amount.filled)) :
+                            0;
+
 
 
                         //realized total is the sum of actual fills and potential quantity in resumable execution orders
-                        const realized_total = fills_sum_decimal(execution_fills).plus(potential_qnatity)
+                        const realized_total = Decimal(
+                            execution_fills.reduce((acc, exec) => acc.add(Decimal(exec.filled)), Decimal(0))
+                        ).plus(potential_qnatity);
                         const order_total = Decimal(pending_order.quantity)
                         const remain_quantity = order_total.minus(realized_total);
 
@@ -254,5 +271,7 @@ module.exports.JOB_BODY = async (config, log) => {
                 });
             })
         );
+    }).catch(err => {
+        console.log(err);
     });
 };

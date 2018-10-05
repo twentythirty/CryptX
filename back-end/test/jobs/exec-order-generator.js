@@ -18,6 +18,7 @@ const Instrument = require('../../models').Instrument;
 const ExecutionOrder = require('../../models').ExecutionOrder;
 const ExecutionOrderFill = require('../../models').ExecutionOrderFill;
 const InstrumentExchangeMapping = require('../../models').InstrumentExchangeMapping;
+const sequelize = require('../../models').sequelize;
 
 /**
  * Attempts to call the `restore` method on the provided symbols (method specified by `sinon`) 
@@ -61,7 +62,8 @@ describe('Execution Order generator job', () => {
             ExecutionOrder: ExecutionOrder,
             Instrument: Instrument,
             ExecutionOrderFill: ExecutionOrderFill,
-            InstrumentExchangeMapping: InstrumentExchangeMapping
+            InstrumentExchangeMapping: InstrumentExchangeMapping,
+            sequelize: sequelize
         }
     };
 
@@ -189,7 +191,7 @@ describe('Execution Order generator job', () => {
             stubSave(pending_order1, pending_order2);
             return Promise.resolve([pending_order1, pending_order2]);
         });
-        sinon.stub(ExecutionOrder, 'findAll').callsFake(options => {
+        /* sinon.stub(ExecutionOrder, 'findAll').callsFake(options => {
             switch (options.where.recipe_order_id) {
                 case PENDING_ORDER_IDS[0]:
                     return Promise.resolve([new ExecutionOrder(TEST_PENDING_EXECUTION_ORDER)]);
@@ -198,13 +200,39 @@ describe('Execution Order generator job', () => {
                 default:
                     return Promise.resolve([]);
             }
+        }); */
+        sinon.stub(sequelize, 'query').callsFake((query, options) => {
+            let exec_stats = {
+                status: 63,
+                execution_order_count: "1339",
+                total_quantity: "20118962",
+                filled: "20118962"
+            };
+
+            switch (options.replacements.recipe_order_id) {
+                case PENDING_ORDER_IDS[0]:
+                    return Promise.resolve([
+                        Object.assign(exec_stats, { 
+                            status: EXECUTION_ORDER_STATUSES.Pending
+                        })
+                    ]);
+                case PENDING_ORDER_IDS[1]:
+                    return Promise.resolve([
+                        Object.assign(exec_stats, { 
+                            status: EXECUTION_ORDER_STATUSES.InProgress
+                        })
+                    ]);
+                default:
+                    return Promise.resolve([]);
+            }
         });
 
         return execOrderGenerator.JOB_BODY(stubbed_config, console.log).then(orders => {
-
+            
             restoreSymbols(
                 RecipeOrder.findAll,
-                ExecutionOrder.findAll
+                /* ExecutionOrder.findAll, */
+                sequelize.query
             );
 
             const [failed_order, marked_order] = orders;
@@ -235,7 +263,7 @@ describe('Execution Order generator job', () => {
             stubSave(pending_order2);
             return Promise.resolve([pending_order2]);
         });
-        sinon.stub(ExecutionOrder, 'findAll').callsFake(options => Promise.resolve([]));
+        sinon.stub(sequelize, 'query').callsFake((query, options) => Promise.resolve([]));
         sinon.stub(InstrumentExchangeMapping, 'find').callsFake(options => {
             return Promise.resolve(new InstrumentExchangeMapping(options.where))
         });
@@ -247,7 +275,8 @@ describe('Execution Order generator job', () => {
 
             restoreSymbols(
                 RecipeOrder.findAll,
-                ExecutionOrder.findAll,
+                /* ExecutionOrder.findAll, */
+                sequelize.query,
                 InstrumentExchangeMapping.find,
                 ExecutionOrderFill.findAll
             );
@@ -279,14 +308,25 @@ describe('Execution Order generator job', () => {
                 tick_size: 0.5
             })))
         });
+        sinon.stub(sequelize, 'query').callsFake((query, options) => {
+            let exec_stats = {
+                status: EXECUTION_ORDER_STATUSES.FullyFilled,
+                execution_order_count: "1339",
+                total_quantity: PENDING_ORDER_QNTY,
+                filled: PENDING_ORDER_QNTY
+            };
+
+            return Promise.resolve([exec_stats]);
+        });
         sinon.stub(ExecutionOrderFill, 'findAll').callsFake(options => {
             const fills_num = _.random(1, 9, false);
-            return Promise.resolve(_.map(Array(fills_num).fill(PENDING_ORDER_QNTY / (fills_num - 1)), (qnty, idx) => {
+            let val = _.map(Array(fills_num).fill(PENDING_ORDER_QNTY / (fills_num - 1)), (qnty, idx) => {
                 return new ExecutionOrderFill({
                     quantity: qnty,
                     id: idx
                 });
-            }))
+            });
+            return Promise.resolve();
         });
 
         return execOrderGenerator.JOB_BODY(stubbed_config, console.log).then(orders => {
@@ -294,7 +334,8 @@ describe('Execution Order generator job', () => {
             restoreSymbols(
                 RecipeOrder.findAll,
                 InstrumentExchangeMapping.find,
-                ExecutionOrderFill.findAll
+                ExecutionOrderFill.findAll,
+                sequelize.query
             );
 
             chai.expect(orders.length).to.eq(1);
@@ -340,12 +381,37 @@ describe('Execution Order generator job', () => {
         }, TEST_SYMBOL_PENDING_ORDER_BASE, {
             id: PENDING_ORDER_IDS[2]
         });
-        sinon.stub(ExecutionOrder, 'findAll').callsFake(options => {
+        /* sinon.stub(ExecutionOrder, 'findAll').callsFake(options => {
             switch (options.where.recipe_order_id) {
                 case PENDING_ORDER_IDS[0]:
                     return Promise.resolve([new ExecutionOrder(TEST_PENDING_EXECUTION_ORDER)]);
                 case PENDING_ORDER_IDS[1]:
                     return Promise.resolve([new ExecutionOrder(TEST_PARTIAL_EXECUTION_ORDER)]);
+                default:
+                    return Promise.resolve([]);
+            }
+        }); */
+        sinon.stub(sequelize, 'query').callsFake((query, options) => {
+            let exec_stats = {
+                status: EXECUTION_ORDER_STATUSES.FullyFilled,
+                execution_order_count: "1339",
+                total_quantity: 1,
+                filled: 1
+            };
+
+            switch (options.replacements.recipe_order_id) {
+                case PENDING_ORDER_IDS[0]:
+                    return Promise.resolve([
+                        Object.assign(exec_stats, { 
+                            status: EXECUTION_ORDER_STATUSES.Pending
+                        })
+                    ]);
+                case PENDING_ORDER_IDS[1]:
+                    return Promise.resolve([
+                        Object.assign(exec_stats, { 
+                            status: EXECUTION_ORDER_STATUSES.InProgress
+                        })
+                    ]);
                 default:
                     return Promise.resolve([]);
             }
@@ -377,7 +443,8 @@ describe('Execution Order generator job', () => {
                 RecipeOrder.findAll,
                 ExecutionOrder.findAll,
                 ExecutionOrderFill.findAll,
-                InstrumentExchangeMapping.find
+                InstrumentExchangeMapping.find,
+                sequelize.query
             );
 
             const [failed_recipe, execution_orders] = processed_recipes;
@@ -435,7 +502,7 @@ describe('Execution Order generator job', () => {
             })))
         });
 
-        //Make sure the order is unfilled yet.
+        /* //Make sure the order is unfilled yet.
         sinon.stub(ExecutionOrderFill, 'findAll').callsFake(options => {
             return Promise.resolve([
                 new ExecutionOrderFill({
@@ -443,6 +510,32 @@ describe('Execution Order generator job', () => {
                     id: 1
                 })
             ])
+        }); */
+
+        sinon.stub(sequelize, 'query').callsFake((query, options) => {
+            let exec_stats = {
+                status: EXECUTION_ORDER_STATUSES.FullyFilled,
+                execution_order_count: "1339",
+                total_quantity: 1,
+                filled: 1
+            };
+
+            switch (options.replacements.recipe_order_id) {
+                /* case PENDING_ORDER_IDS[0]:
+                    return Promise.resolve([
+                        Object.assign(exec_stats, { 
+                            status: EXECUTION_ORDER_STATUSES.Pending
+                        })
+                    ]); */
+                /* case PENDING_ORDER_IDS[1]:
+                    return Promise.resolve([
+                        Object.assign(exec_stats, { 
+                            status: EXECUTION_ORDER_STATUSES.InProgress
+                        })
+                    ]); */
+                default:
+                    return Promise.resolve([exec_stats]);
+            }
         });
 
         sinon.stub(ExecutionOrder, 'create').callsFake(options => {
@@ -456,7 +549,8 @@ describe('Execution Order generator job', () => {
                 RecipeOrder.findAll,
                 ExecutionOrderFill.findAll,
                 InstrumentExchangeMapping.find,
-                ExecutionOrder.create
+                ExecutionOrder.create,
+                sequelize.query
             );
             //console.log(processed_recipes);
             const [
@@ -486,7 +580,8 @@ describe('Execution Order generator job', () => {
             stubSave(pending_order1, pending_order2);
             return Promise.resolve([pending_order1, pending_order2]);
         });
-        sinon.stub(ExecutionOrder, 'findAll').callsFake(options => {
+
+        /* sinon.stub(ExecutionOrder, 'findAll').callsFake(options => {
 
             switch (options.where.recipe_order_id) {
                 case PENDING_ORDER_IDS[0]:
@@ -508,7 +603,35 @@ describe('Execution Order generator job', () => {
                 default:
                     return Promise.resolve([]);
             }
+        }); */
+
+        sinon.stub(sequelize, 'query').callsFake((query, options) => {
+            
+
+            switch (options.replacements.recipe_order_id) {
+                case PENDING_ORDER_IDS[0]:
+                    let exec_stats = {
+                        status: EXECUTION_ORDER_STATUSES.FullyFilled,
+                        execution_order_count: "1339",
+                        total_quantity: PENDING_ORDER_QNTY / 2 / 2,
+                        filled: PENDING_ORDER_QNTY / 2 / 2
+                    };
+                    return Promise.resolve([
+                        Object.assign(exec_stats, { 
+                            status: EXECUTION_ORDER_STATUSES.filled
+                        })
+                    ]);
+                /* case PENDING_ORDER_IDS[1]:
+                    return Promise.resolve([
+                        Object.assign(exec_stats, { 
+                            status: EXECUTION_ORDER_STATUSES.InProgress
+                        })
+                    ]); */
+                default:
+                    return Promise.resolve([]);
+            }
         });
+
         sinon.stub(ExecutionOrder, 'create').callsFake(options => {
 
             return Promise.resolve(options);
@@ -529,11 +652,12 @@ describe('Execution Order generator job', () => {
                 ExecutionOrder.findAll,
                 ExecutionOrder.create,
                 ExecutionOrderFill.findAll,
-                InstrumentExchangeMapping.find
+                InstrumentExchangeMapping.find,
+                sequelize.query
             );
 
             const [parent_and_line_order, parent_and_whole_order] = orders_and_execution_orders;
-
+            console.log(parent_and_line_order, parent_and_whole_order);
             const [parent_line, line_order] = parent_and_line_order;
             const [parent_whole, whole_order] = parent_and_whole_order;
 
