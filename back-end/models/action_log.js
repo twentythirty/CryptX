@@ -62,7 +62,7 @@ module.exports = (sequelize, DataTypes) => {
       json.translationArgs = json.translation_args;
       delete json.translation_args;
 
-      delete json.details;
+      if(process.env.NODE_ENV !== 'cucumber') delete json.details;
     }
     else {
       delete json.translation_key;

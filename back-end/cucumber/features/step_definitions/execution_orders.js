@@ -338,6 +338,7 @@ Given(/^the Execution Order was (half|fully) filled by (\d*) Fills on (.*)$/, as
     const proportion = amount === 'half' ? 0.5 : 1;
 
     const { ExecutionOrder, ExecutionOrderFill, Instrument, Asset, sequelize } = require('../../../models');
+    const { logAction } = require('../../../utils/ActionLogUtil');
 
     const instrument = await Instrument.findById(this.current_execution_order.instrument_id, {
         include: [{
@@ -366,6 +367,11 @@ Given(/^the Execution Order was (half|fully) filled by (\d*) Fills on (.*)$/, as
             price: this.current_execution_order.price,
             quantity: (this.current_execution_order.total_quantity / count) * proportion,
             timestamp: Date.parse(date_string)
+        });
+
+        await logAction('execution_orders.generate_fill', {
+            args: { amount: (this.current_execution_order.total_quantity / count) * proportion },
+            relations: { execution_order_id: this.current_execution_order.id }
         });
 
     }
@@ -515,7 +521,7 @@ When('I fetch the Execution Order details', async function() {
     this.current_execution_order_logs = execution_order.body.action_logs;
     this.current_execution_order_fills_list = fills.body.execution_order_fills;
     this.current_execution_order_fills_footer = fills.body.footer;
-
+    
 });
 
 Then('an Execution Order Fill is created for each Trade fetched from the exchange', async function () {

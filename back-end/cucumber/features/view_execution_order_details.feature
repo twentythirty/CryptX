@@ -20,7 +20,7 @@ Feature: View execution order details
         | DOCK/BTC  | Buy   |   Market  | Binance | -   | 45    | 0 | - | Pending   |
         And if I look at the Execution Order Fills list
         Then I see an empty table
-        
+
     @execution_orders_cache_cleanup
     Scenario: view in progress execution order details
 
@@ -41,3 +41,7 @@ Feature: View execution order details
         | 0.4   | 2.5   |   Sat Oct 06 2018 23:10:05   |
         | 0.4   | 2.5   |   Sat Oct 06 2018 23:10:05   |
         | 0.4   | 2.5   |   Sat Oct 06 2018 23:10:05   |
+        And if I look at the Execution Order Fills footer
+        Then I see data layout:
+        | fill_price    | quantity   | fill_time    |
+        | 0.40000000000000000000 average  | 10.0 total   |   -   |
