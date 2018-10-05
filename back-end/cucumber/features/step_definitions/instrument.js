@@ -166,18 +166,20 @@ Given(/the instrument has exchange mappings on (.*)/, async function(csv_exchang
     
     chai.assert.isNotNull(this.current_instrument, 'No instrument in current context!');
 
-    const exchanges = fetchExchangesFromCSV(csv_exchange_names);
+    const exchanges = await fetchExchangesFromCSV(csv_exchange_names);
 
     const { InstrumentExchangeMapping } = require('../../../models');
 
-    await InstrumentExchangeMapping.bulkCreate(_.map(exchanges, exchange => {
+    const [err, res] = await to(InstrumentExchangeMapping.bulkCreate(_.map(exchanges, exchange => {
         return {
             exchange_id: exchange.id,
             instrument_id: this.current_instrument.id,
             tick_size: _.random() / 2,
             external_instrument_id: this.current_instrument.symbol
         }
-    }))
+    })))
+
+    chai.assert.isNull(err, 'mapping creation wasnt supposed to fail!');
 });
 
 Given('the system has updated the Instrument Market Data', async function(){
@@ -383,8 +385,8 @@ Given(/fetching market data on instrument has (.*) for (.*)/, async function(fet
                 exchange_id: exchange.id,
                 instrument_id: this.current_instrument.id,
                 timestamp: new Date(),
-                ask_price: _.random(),
-                bid_price: _.random()
+                ask_price: _.random(true),
+                bid_price: _.random(true)
             }
         }))
     }

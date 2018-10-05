@@ -60,7 +60,7 @@ module.exports.compareViewTables = function(view_table_data, example_table_data,
             let example = example_record[prop_name];
             //string might be translation, try that if values arent already equal
             if (check_value != example_record[prop_name] && _.isString(check_value)) {
-                check_value = _.get(this.i18n, check_value);
+                check_value = _.get(this.i18n, check_value) || check_value;
             }
             //if value is missing but should be a number, it can be equated to 0 
             //along with exampel being tested

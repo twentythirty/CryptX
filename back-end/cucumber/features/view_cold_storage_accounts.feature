@@ -18,7 +18,7 @@ Feature: View cold storage accounts
 		#so cant test ids
 		Then I see data layout:
 			| asset | strategy_type  | address  | custodian 		 | balance | balance_usd | balance_update_timestamp |
-			| ETH   | MCI 		 	 | c6b57bfc | Cucumber Custodian | 0.00	   | 0$			 | -			   			|
-			| BTC   | LCI 		 	 | c6b5751c | Cucumber Custodian | 0.00	   | 0$			 | -			   			|
+			| ETH   | MCI 		 	 | c6b57bfc | Cucumber Custodian | 0	   | 0			 | -			   			|
+			| BTC   | LCI 		 	 | c6b5751c | Cucumber Custodian | 0	   | 0			 | -			   			|
 
 
