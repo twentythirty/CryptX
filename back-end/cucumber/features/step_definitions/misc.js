@@ -272,7 +272,7 @@ Then(/^if I look at the (.*) (details|list|footer)$/, function(data_name, data_t
 
     data.map(d => {
         for(let field in d) {
-            if(/timestamp/.test(field) && !_.isNull(d[field])){
+            if((/timestamp/.test(field) || /time/.test(field))&& !_.isNull(d[field])){
                 d[field] = new Date(d[field]).toString().split('GMT')[0].trim();
             }
             else if(!isNaN(d[field]) && !_.isNull(d[field]) && !_.isDate(d[field])) {

@@ -322,6 +322,68 @@ Given(/^the Execution Order is (buying|selling) (\d*|\d+(?:\.\d+)?) (\w*) (using
     
 });
 
+Given(/^the Execution Order was priced at (\d*|\d+(?:\.\d+)?) (\w*) and feed at (\d*|\d+(?:\.\d+)?) (\w*) on the Exchange$/, function(price, optional_symbol_1, fee, optional_symbol_2) {
+
+    const { ExecutionOrder } = require('../../../models');
+
+    return ExecutionOrder.update({ price, fee }, {
+        where: { id: this.current_execution_order.id }
+    });
+
+});
+
+Given(/^the Execution Order was (half|fully) filled by (\d*) Fills on (.*)$/, async function(amount, count, date_string) {
+
+    count = parseInt(count);
+    const proportion = amount === 'half' ? 0.5 : 1;
+
+    const { ExecutionOrder, ExecutionOrderFill, Instrument, Asset, sequelize } = require('../../../models');
+
+    const instrument = await Instrument.findById(this.current_execution_order.instrument_id, {
+        include: [{
+            model: Asset,
+            as: 'transaction_asset'
+        },{
+            model: Asset,
+            as: 'quote_asset'
+        }]
+    });
+    expect(instrument, `Expected to find instrument with id "${this.current_execution_order.instrument_id}"`).to.be.not.null;
+    
+    const fee_asset = this.current_execution_order.side === ORDER_SIDES.Buy ? instrument.quote_asset : instrument.transaction_asset;
+
+    //update execution order
+    this.current_execution_order = await ExecutionOrder.findById(this.current_execution_order.id);
+
+    let fills = [];
+    for(let i = 0; i < count; i++) {
+
+        fills.push({
+            execution_order_id: this.current_execution_order.id,
+            fee: this.current_execution_order.fee / count,
+            fee_asset_id: fee_asset.id,
+            fee_asset_symbol: fee_asset.symbol,
+            price: this.current_execution_order.price,
+            quantity: (this.current_execution_order.total_quantity / count) * proportion,
+            timestamp: Date.parse(date_string)
+        });
+
+    }
+
+    fills = await sequelize.transaction(async transaction => {
+
+        await ExecutionOrderFill.destroy({
+            where: { execution_order_id: this.current_execution_order.id }
+        }, { transaction });
+
+        return ExecutionOrderFill.bulkCreate(fills, { transaction, returning: true });
+
+    });
+
+    this.current_execution_order_fills = fills;
+    
+});
+
 When('the system does the task "fetch execution order information" until the Execution Orders are no longer in progress', async function () {
 
     const models = require('../../../models');
