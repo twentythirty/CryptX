@@ -54,7 +54,7 @@ describe('OrderGroupComponent', () => {
   });
 
   it('should not show generate orders button', () => {
-    const button = fixture.nativeElement.querySelector('a.start');
+    const button = fixture.nativeElement.querySelector('app-btn button.start');
     expect(button).toBeNull();
   });
 
@@ -65,7 +65,7 @@ describe('OrderGroupComponent', () => {
       ordersGroupOfRecipeSpy.calls.mostRecent().returnValue.subscribe(res => {
         expect(component.showGenerateOrders).toBeTruthy();
         fixture.detectChanges();
-        const button = fixture.nativeElement.querySelector('a.start');
+        const button = fixture.nativeElement.querySelector('app-btn button.start');
         expect(button).not.toBeNull();
       });
     });
@@ -81,7 +81,7 @@ describe('OrderGroupComponent', () => {
       ordersGroupOfRecipeSpy.calls.mostRecent().returnValue.subscribe(() => {
         expect(component.showGenerateOrders).toBeTruthy();
         fixture.detectChanges();
-        const button = fixture.nativeElement.querySelector('a.start');
+        const button = fixture.nativeElement.querySelector('app-btn button.start');
         expect(button).not.toBeNull();
       });
     });
@@ -97,7 +97,7 @@ describe('OrderGroupComponent', () => {
       ordersGroupOfRecipeSpy.calls.mostRecent().returnValue.subscribe(res => {
         expect(component.showGenerateOrders).toBeFalsy();
         fixture.detectChanges();
-        const button = fixture.nativeElement.querySelector('a.start');
+        const button = fixture.nativeElement.querySelector('app-btn button.start');
         expect(button).toBeNull();
       });
     });
@@ -161,7 +161,7 @@ describe('OrderGroupComponent', () => {
     it('should update all data on "generate orders" button press', fakeAsync(() => {
       component.showGenerateOrders = true;
       fixture.detectChanges();
-      const button = fixture.nativeElement.querySelector('a.start');
+      const button = fixture.nativeElement.querySelector('app-btn button.start');
       ordersGroupOfRecipeSpy.calls.reset();
       ordersOfGroupSpy.calls.reset();
       click(button);
