@@ -327,10 +327,6 @@ const getInstrumentPrices = async (instrument_id, exchange_id) => {
     if (!_.isArray(instrument_id) || !_.isArray(exchange_id))
         TE("Expectd array of ids");
 
-    console.log('>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>');
-    console.log(instrument_id)
-    console.log(exchange_id)
-    console.log('>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>');
     let [err, instrument_prices] = await to(sequelize.query(`
         SELECT *
         FROM instrument_exchange_mapping iem

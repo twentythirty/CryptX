@@ -136,3 +136,48 @@ Feature: View investment run details
         Then I see data layout:
         | symbol    | long_name | capitalization    | nvt_ration    | market_share  |
         | 20 Items  | -   |   195680328085 total | -  |  -  |
+
+    Scenario: view MCI initiated investment run
+
+        Given there is a MCI Investment Run created by an Investment Manager
+        And the Investment Run was started on Fri, 05 Oct 2018 11:55:35
+        And the Investment Run was updated on Fri, 05 Oct 2018 16:55:35
+        And the status of the Investment Run is Initiated
+        And the Investment Run deposit amounts are as followed: 
+            | currency  |  amount  |
+            |   USD   |   25000   |
+            |   ETH   |    15     |
+            |   BTC   |    1      |
+        When I log onto CryptX as Investment Manager
+        And I fetch the details of the Investment Run
+        Then if I look at the Investment Run details
+        Then I see data layout:
+        | started_timestamp  | updated_timestamp   | completed_timestamp | user_created   | strategy_type   | status|
+        | Fri Oct 05 2018 11:55:35  | Fri Oct 05 2018 16:55:35    | -   | Investment Manager  | MCI | Initiated    |
+        And if I look at the Investment Run deposit list
+        Then I see data layout:
+        | currency_name | amount    | value_usd |
+        | US Dollars | 25000     | 25000    |
+        | Ethereum | 15     | 12750    | 
+        | Bitcoin | 1     | 6800    | 
+        And if I look at the Investment Run deposit footer
+        Then I see data layout:
+        | currency_name | amount    | value_usd |
+        | 3 Items  | -     | 44550    |
+        And if I look at the Asset Mix list
+        Then I see data layout:
+        | symbol    | long_name | capitalization    | nvt_ration    | market_share  |
+        |	ZEC	|	Zcash	|	592864691	|	7742.078	|	0.274559938	|
+        |	OMG	|	OmiseGO	|	479593312	|	1608.344	|	0.222103141	|
+        |	BTG	|	Bitcoin Gold	|	436079205	|	5123.849	|	0.201951443	|
+        |	BCN	|	Bytecoin	|	405899746	|	9775.48	|	0.187975116	|
+        |	LSK	|	Lisk	|	368377329	|	3802.578	|	0.170598213	|
+        |	MKR	|	Maker	|	358158473	|	9372.667	|	0.165865786	|
+        |	ONT	|	Ontology	|	351678170	|	6697.694	|	0.162864711	|
+        |	QTUM	|	Qtum	|	344272444	|	3223.472	|	0.159435066	|
+        |	ZRX	|	0x	|	331785556	|	8306.846	|	0.153652297	|
+        |	DCR	|	Decred	|	329144259	|	3056.366	|	0.152429093	|
+        And if I look at the Asset Mix footer
+        Then I see data layout:
+        | symbol    | long_name | capitalization    | nvt_ration    | market_share  |
+        | 50 Items  | -   |   10406727041 total | -  |  -  |
