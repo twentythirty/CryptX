@@ -6,7 +6,7 @@ import { MatProgressSpinnerModule, MatDatepickerModule, MatFormFieldModule, MatN
 import * as _ from 'lodash';
 import { testingTranslateModule, click, newEvent, fakeAsyncResponse } from '../../../testing/utils';
 
-import { DataTableFilterComponent } from './data-table-filter.component';
+import { DataTableFilterComponent, DataTableFilterData } from './data-table-filter.component';
 import { FilterPipe } from '../../pipes/filter.pipe';
 import { CheckboxComponent } from '../checkbox/checkbox.component';
 import { BtnComponent } from '../btn/btn.component';
@@ -46,7 +46,6 @@ describe('DataTableFilterComponent', () => {
       `));
 
       const types = [
-        DataTableFilterType.Bool,
         DataTableFilterType.Date,
         DataTableFilterType.Number
       ];
@@ -283,7 +282,6 @@ describe('DataTableFilterComponent', () => {
       `));
 
       const types = [
-        DataTableFilterType.Bool,
         DataTableFilterType.Date,
         DataTableFilterType.Text
       ];
@@ -382,21 +380,360 @@ describe('DataTableFilterComponent', () => {
 
 
   describe('filter submiting', () => {
-    describe('when filter type is text', () => {
+
+    describe('text filter', () => {
       beforeEach(() => {
         ({ fixture, component } = createTestingModule(`
           <app-data-table-filter
+            column="id"
             type="${DataTableFilterType.Text}"
+            [rowData]="rowData"
+            (onFilter)="onSetFilter($event)"
+          ></app-data-table-filter>
+        `));
+
+        component.rowData = [
+          { value: 'value1' },
+          { value: 'value2' },
+        ];
+
+        openSearchButton();
+      });
+
+
+      it('filter by text', () => {
+        fillTextSearchField('text query');
+        submitFilter();
+
+        const expectation: DataTableFilterData = {
+          column: 'id',
+          values: [
+            {
+              field: 'id',
+              value: '%text query%',
+              expression: 'iLike',
+              type: 'string'
+            }
+          ]
+        };
+
+        expect(component.filterResult).toEqual(expectation);
+      });
+
+      it('filter by single checkbox', () => {
+        checkCheckboxByIndex(0);
+        submitFilter();
+
+        const expectation: DataTableFilterData = {
+          column: 'id',
+          values: [
+            {
+              field: 'id',
+              value: ['value1'],
+              expression: 'in',
+              type: 'string'
+            }
+          ]
+        };
+
+        expect(component.filterResult).toEqual(expectation);
+      });
+
+      it('filter by single checkbox when search query field filled', () => {
+        fillTextSearchField('value1');
+        checkCheckboxByIndex(0);
+        submitFilter();
+
+        const expectation: DataTableFilterData = {
+          column: 'id',
+          values: [
+            {
+              field: 'id',
+              value: ['value1'],
+              expression: 'in',
+              type: 'string'
+            }
+          ]
+        };
+
+        expect(component.filterResult).toEqual(expectation);
+      });
+
+      it('filter by multiple checkbox', () => {
+        checkCheckboxByIndex(0, 1);
+        submitFilter();
+
+        const expectation: DataTableFilterData = {
+          column: 'id',
+          values: [
+            {
+              field: 'id',
+              value: ['value1', 'value2'],
+              expression: 'in',
+              type: 'string'
+            }
+          ]
+        };
+
+        expect(component.filterResult).toEqual(expectation);
+      });
+    });
+
+
+    describe('date filter', () => {
+      beforeEach(() => {
+        ({ fixture, component } = createTestingModule(`
+          <app-data-table-filter
+            column="id"
+            type="${DataTableFilterType.Date}"
+            (onFilter)="onSetFilter($event)"
           ></app-data-table-filter>
         `));
       });
 
 
+      it('filter by date "from"', () => {
+        const dateFrom = new Date(2015, 5, 15);
+        component.filterComponent.filterData.values = [dateFrom];
+        submitFilter();
 
+        const expectation: DataTableFilterData = {
+          column: 'id',
+          values: [
+            {
+              field: 'id',
+              value: Date.parse(String(dateFrom)),
+              expression: 'gt',
+              type: 'timestamp'
+            }
+          ]
+        };
+
+        expect(component.filterResult).toEqual(expectation);
+      });
+
+      it('filter by date "to"', () => {
+        const dateTo = new Date(2015, 5, 15);
+        component.filterComponent.filterData.values = [null, dateTo];
+        submitFilter();
+
+        const expectation: DataTableFilterData = {
+          column: 'id',
+          values: [
+            {
+              field: 'id',
+              value: Date.parse(String(dateTo)),
+              expression: 'lt',
+              type: 'timestamp'
+            }
+          ]
+        };
+
+        expect(component.filterResult).toEqual(expectation);
+      });
+
+      it('filter by date range', () => {
+        const dateFrom = new Date(2015, 5, 10);
+        const dateTo = new Date(2015, 5, 15);
+        component.filterComponent.filterData.values = [dateFrom, dateTo];
+        submitFilter();
+
+        const expectation: DataTableFilterData = {
+          column: 'id',
+          values: [
+            {
+              field: 'id',
+              value: Date.parse(String(dateFrom)),
+              expression: 'gt',
+              type: 'timestamp'
+            },
+            {
+              field: 'id',
+              value: Date.parse(String(dateTo)),
+              expression: 'lt',
+              type: 'timestamp'
+            }
+          ]
+        };
+
+        expect(component.filterResult).toEqual(expectation);
+      });
+
+      it('filter by date "from" and sorting', () => {
+        const dateFrom = new Date(2015, 5, 10);
+        component.filterComponent.filterData.values = [dateFrom];
+        selectSorting('asc');
+        submitFilter();
+
+        const expectation: DataTableFilterData = {
+          column: 'id',
+          values: [
+            {
+              field: 'id',
+              value: Date.parse(String(dateFrom)),
+              expression: 'gt',
+              type: 'timestamp'
+            }
+          ],
+          order: {
+            by: 'id',
+            order: 'asc'
+          }
+        };
+
+        expect(component.filterResult).toEqual(expectation);
+      });
+    });
+
+
+    describe('number filter', () => {
+      beforeEach(() => {
+        ({ fixture, component } = createTestingModule(`
+          <app-data-table-filter
+            column="id"
+            type="${DataTableFilterType.Number}"
+            [inputSearch]="true"
+            (onFilter)="onSetFilter($event)"
+          ></app-data-table-filter>
+        `));
+
+        openSearchButton();
+      });
+
+
+      it('search by text input', () => {
+        fillTextSearchField('5');
+        submitFilter();
+
+        const expectation: DataTableFilterData = {
+          column: 'id',
+          values: [
+            {
+              field: 'id',
+              value: '5'
+            }
+          ]
+        };
+
+        expect(component.filterResult).toEqual(expectation);
+      });
+
+      it('search by number "from"', fakeAsync(() => {
+        fillNumberRangeField1(7);
+        submitFilter();
+
+        const expectation: DataTableFilterData = {
+          column: 'id',
+          values: [
+            {
+              field: 'id',
+              value: 7,
+              expression: 'gte',
+              type: 'number'
+            }
+          ]
+        };
+
+        expect(component.filterResult).toEqual(expectation);
+      }));
+
+      it('search by number "to"', fakeAsync(() => {
+        fillNumberRangeField2(7);
+        submitFilter();
+
+        const expectation: DataTableFilterData = {
+          column: 'id',
+          values: [
+            {
+              field: 'id',
+              value: 7,
+              expression: 'lte',
+              type: 'number'
+            }
+          ]
+        };
+
+        expect(component.filterResult).toEqual(expectation);
+      }));
+
+      it('search by number range', fakeAsync(() => {
+        fillNumberRangeFields(3, 7);
+        submitFilter();
+
+        const expectation: DataTableFilterData = {
+          column: 'id',
+          values: [
+            {
+              field: 'id',
+              value: 3,
+              expression: 'gte',
+              type: 'number'
+            },
+            {
+              field: 'id',
+              value: 7,
+              expression: 'lte',
+              type: 'number'
+            }
+          ]
+        };
+
+        expect(component.filterResult).toEqual(expectation);
+      }));
+
+      it('search by number "from" and sorting', fakeAsync(() => {
+        fillNumberRangeField1(4);
+        selectSorting('desc');
+        submitFilter();
+
+        const expectation: DataTableFilterData = {
+          column: 'id',
+          values: [
+            {
+              field: 'id',
+              value: 4,
+              expression: 'gte',
+              type: 'number'
+            }
+          ],
+          order: {
+            by: 'id',
+            order: 'desc'
+          }
+        };
+
+        expect(component.filterResult).toEqual(expectation);
+      }));
     });
   });
 
 
+
+  function openSearchButton() {
+    const searchButton = fixture.nativeElement.querySelector('.search-in-filters .ico');
+    click(searchButton);
+    fixture.detectChanges();
+  }
+
+  function fillTextSearchField(query: string) {
+    const input = fixture.nativeElement.querySelector('.search-in-filters input');
+    input.value = query;
+    input.dispatchEvent(newEvent('input'));
+    fixture.detectChanges();
+
+    return input;
+  }
+
+  function checkCheckboxByIndex(...indexArr: number[]) {
+    const checkboxes = fixture.nativeElement.querySelectorAll('.list-of-filters input[type=checkbox]');
+
+    return indexArr.map(i => {
+      checkboxes[i].checked = true;
+      checkboxes[i].dispatchEvent(newEvent('change'));
+
+      return checkboxes[i];
+    });
+  }
 
   function fillNumberRangeField(index, val) {
     const inputs = fixture.nativeElement.querySelectorAll('.calendar-filter input[type=number]');
@@ -424,7 +761,30 @@ describe('DataTableFilterComponent', () => {
     ];
   }
 
+  function selectSorting(value: '' | 'asc' | 'desc') {
+    const select = fixture.nativeElement.querySelector('.bottom-part .select-styled');
+    click(select);
+    fixture.detectChanges();
 
+    const options = fixture.nativeElement.querySelectorAll('.bottom-part .select-options li');
+    let index;
+
+    switch (value) {
+      case '': index = 0; break;
+      case 'asc': index = 1; break;
+      case 'desc': index = 2;
+    }
+
+    click(options[index]);
+
+    return options[index];
+  }
+
+  function submitFilter() {
+    const btn = fixture.nativeElement.querySelector('.bottom-part button');
+    click(btn);
+    fixture.detectChanges();
+  }
 
 });
 
@@ -439,6 +799,11 @@ class ComponentWrapperComponent {
   rowData;
   rowData$;
   dirty;
+  filterResult;
+
+  onSetFilter(data) {
+    this.filterResult = data;
+  }
 }
 
 

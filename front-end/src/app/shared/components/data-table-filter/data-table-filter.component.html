@@ -47,17 +47,31 @@
         <label>{{ 'table.filter.from' | translate }}</label>
         <div>
           <mat-form-field color="accent">
-            <input matInput [matDatepicker]="picker" [(ngModel)]="filterData.values[0]" placeholder="dd/mm/yyyy">
-            <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
-            <mat-datepicker #picker></mat-datepicker>
+            <input
+              matInput
+              [matDatepicker]="picker1"
+              [(ngModel)]="filterData.values[0]"
+              [max]="picker1MaxDate"
+              (dateChange)="date1Change($event)"
+              placeholder="dd/mm/yyyy"
+            >
+            <mat-datepicker-toggle matSuffix [for]="picker1"></mat-datepicker-toggle>
+            <mat-datepicker #picker1></mat-datepicker>
           </mat-form-field>
         </div>
       </div>
       <div>
         <label>{{ 'table.filter.to' | translate }}</label>
         <div>
-          <mat-form-field  color="accent">
-            <input matInput [matDatepicker]="picker2" [(ngModel)]="filterData.values[1]" placeholder="dd/mm/yyyy">
+          <mat-form-field color="accent">
+            <input
+              matInput
+              [matDatepicker]="picker2"
+              [(ngModel)]="filterData.values[1]"
+              [min]="picker2MinDate"
+              (dateChange)="date2Change($event)"
+              placeholder="dd/mm/yyyy"
+            >
             <mat-datepicker-toggle matSuffix [for]="picker2"></mat-datepicker-toggle>
             <mat-datepicker #picker2></mat-datepicker>
           </mat-form-field>
@@ -89,7 +103,7 @@
         <option value="asc">A - Z</option>
         <option value="desc">Z - A</option>
       </select>
-      <div class="select-styled" (click)=isActive()>
+      <div class="select-styled" (click)="isActive()">
         <div>{{ name }}</div>
       </div>
       <ul *ngIf="active" class="select-options display-block">

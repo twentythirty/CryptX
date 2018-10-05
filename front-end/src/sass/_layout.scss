@@ -161,6 +161,8 @@ body {
 .mat-calendar-body-today:not(.mat-calendar-body-selected) {
     border-color: $green;
 }
-.mat-calendar-body-cell-content:hover {
-    border-color: $green;
+.mat-calendar-body-cell:not(.mat-calendar-body-disabled):hover {
+    .mat-calendar-body-cell-content {
+        border-color: $green;
+    }
 }

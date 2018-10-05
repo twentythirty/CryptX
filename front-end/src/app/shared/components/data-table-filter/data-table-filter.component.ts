@@ -1,6 +1,7 @@
-import { Component, OnInit, Input, EventEmitter, Output, OnChanges } from '@angular/core';
-import * as _ from 'lodash';
+import { Component, OnInit, Input, EventEmitter, Output, OnChanges, ViewChild } from '@angular/core';
+import { MatDatepickerInputEvent } from '@angular/material';
 import { Observable } from 'rxjs';
+import * as _ from 'lodash';
 import { DataTableFilterType } from './data-table-filter-type.enum';
 
 export interface DataTableFilterData {
@@ -33,6 +34,9 @@ export class DataTableFilterComponent implements OnInit, OnChanges {
   active = false;
   name = 'ORDER BY';
   rowDataLoading = false;
+
+  picker1MaxDate: Date;
+  picker2MinDate: Date;
 
   @Input() column: string;
   @Input() type: DataTableFilterType = DataTableFilterType.Text;
@@ -90,18 +94,6 @@ export class DataTableFilterComponent implements OnInit, OnChanges {
             value: `%${this.filterSearchText}%`,
             expression: 'iLike',
             type: 'string'
-          });
-        }
-        break;
-
-      case DataTableFilterType.Bool:
-        if (this.rowData && this.rowData.length && this.filterData.values.length === 1) {
-          // checkbox data pick only for bool values
-          data.values.push({
-            field: this.column,
-            value: this.filterData.values[0],
-            expression: 'eq',
-            type: 'boolean'
           });
         }
         break;
@@ -216,6 +208,13 @@ export class DataTableFilterComponent implements OnInit, OnChanges {
       return this.inputSearch;
     }
     return this.type === DataTableFilterType.Text;
+  }
+
+  date1Change(event: MatDatepickerInputEvent<Date>) {
+    this.picker2MinDate = event.value;
+  }
+  date2Change(event: MatDatepickerInputEvent<Date>) {
+    this.picker1MaxDate = event.value;
   }
 
   stopPropagation(e) {

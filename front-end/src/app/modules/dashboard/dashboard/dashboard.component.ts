@@ -19,7 +19,7 @@ export class DashboardComponent extends DataTableCommonManagerComponent implemen
 
   public investmentsDataSource: TableDataSource = {
     header: [
-      { column: 'id', nameKey: 'table.header.id', filter: { type: 'number', hasRange: false, inputSearch: true, sortable: true } },
+      { column: 'id', nameKey: 'table.header.id', filter: { type: 'number', hasRange: true, inputSearch: true, sortable: true } },
       { column: 'started_timestamp', nameKey: 'table.header.creation_time', filter: { type: 'date', sortable: true } },
       { column: 'updated_timestamp', nameKey: 'table.header.updated', filter: { type: 'date', sortable: true } },
       { column: 'completed_timestamp', nameKey: 'table.header.completion_time', filter: { type: 'date', sortable: true } },

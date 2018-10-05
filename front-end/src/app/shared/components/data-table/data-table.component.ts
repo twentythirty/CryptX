@@ -13,7 +13,7 @@ export interface TableDataSource {
     nameKey: string
     column_class?: string
     filter?: {
-      type: 'text' | 'boolean' | 'date' | 'number'
+      type: 'text' | 'date' | 'number'
       sortable?: boolean
       /**
        * @param hasRange - False if you no need number range filter for number type filter

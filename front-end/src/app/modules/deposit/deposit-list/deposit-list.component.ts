@@ -92,7 +92,7 @@ export class DepositListComponent extends DataTableCommonManagerComponent implem
 
   getFilterLOV(): void {
     this.depositDataSource.header.filter(
-      col => col.filter && (col.filter.type == 'text' || col.filter.type == 'boolean')
+      col => col.filter && (col.filter.type == 'text')
     ).map(
       col => {
         col.filter.rowData$ = this.depositService.getHeaderLOV(col.column);
