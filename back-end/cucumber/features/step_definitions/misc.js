@@ -238,34 +238,7 @@ Then('I see data layout:', async function(raw_data_table) {
     chai.assert.isArray(data_table, 'Poorly formatted data table not array!');
     chai.assert.equal(this.view_data_list.length, data_table.length, `Records show is different from example`);
 
-    _.forEach(this.view_data_list, (view_record, idx) => {
-
-        const example_record = data_table[idx];
-        chai.assert.isObject(example_record, `No exmaple record found at data record ${idx}`);
-
-        _.forEach(Object.keys(example_record), prop_name => {
-            let check_value = view_record[prop_name];
-            let example = example_record[prop_name];
-            //string might be translation, try that if values arent already equal
-            if (check_value != example_record[prop_name] && _.isString(check_value)) {
-                check_value = _.get(this.i18n, check_value);
-            }
-            //if value is missing but should be a number, it can be equated to 0 
-            //along with exampel being tested
-            //point is to test view data, not recreate entire FE formatting ruleset
-            if (check_value == null && _.isNumber(parseFloat(example))) {
-                check_value = 0;
-                example = 0;
-            }
-            //if the check_value is a date, then we convert to JSON for comparison
-            if (check_value != null && _.isDate(check_value)) {
-                check_value = check_value.toJSON();
-            }
-            chai.assert.equal(check_value, example, `View record ${idx} porperty ${prop_name} is not equal to example!`);
-        });
-    });
-
-
+    utils.compareViewTables.bind(this)(this.view_data_list, data_table);
 });
 
 
