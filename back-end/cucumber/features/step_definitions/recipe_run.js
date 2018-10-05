@@ -199,6 +199,67 @@ Given('the system has Approved Recipe Run with Details', async function () {
 
 });
 
+Given('the Recipe Run Details are as followed:', async function(table) {
+
+    const { RecipeRunDetail, RecipeRunDetailInvestment, Asset, Exchange, sequelize } = require('../../../models');
+
+    let recipe_details = table.hashes();
+
+    const [ transaction_assets, quote_assets, deposit_assets, exchanges ] = await Promise.all([
+        Asset.findAll({ where: { symbol: recipe_details.map(d => d.transaction_asset) } }),
+        Asset.findAll({ where: { symbol: recipe_details.map(d => d.quote_asset) } }),
+        Asset.findAll({ where: { is_deposit: true } }),
+        Exchange.findAll({ where: { name: recipe_details.map(d => d.exchange) } })
+    ]);
+
+    recipe_details = recipe_details.map(detail => {
+
+        const transaction_asset = transaction_assets.find(a => a.symbol === detail.transaction_asset);
+        const quote_asset = quote_assets.find(a => a.symbol === detail.quote_asset);
+        const exchange = exchanges.find(e => e.name === detail.exchange);
+
+        expect(transaction_asset, `Expected to find transaction asset ${detail.transaction_asset}`).to.be.not.undefined;
+        expect(quote_asset, `Expected to find quote asset ${detail.quote_asset}`).to.be.not.undefined;
+        expect(exchange, `Expected to find exchange ${detail.exchange}`).to.be.not.undefined;
+
+        return {
+            recipe_run_id: this.current_recipe_run.id,
+            transaction_asset_id: transaction_asset.id,
+            quote_asset_id: quote_asset.id,
+            target_exchange_id: exchange.id,
+            investment_percentage: detail.percentage,
+            investments: detail.investment_currency.split('/').map((currency, index) => {
+                return {
+                    asset_id: deposit_assets.find(a => a.symbol === currency).id,
+                    amount: detail.investment_amount.split('/')[index]
+                };
+            })
+        };
+
+    });
+    
+    return sequelize.transaction(async transaction => {
+
+        await RecipeRunDetail.destroy({
+            where: { recipe_run_id: this.current_recipe_run.id },
+            transaction
+        });
+
+        return Promise.all(recipe_details.map(async detail => {
+
+            const new_detail = await RecipeRunDetail.create(detail, { transaction });
+            const new_investments = detail.investments.map(i => {
+                return Object.assign(i, { recipe_run_detail_id: new_detail.id })
+            });
+
+            return RecipeRunDetailInvestment.bulkCreate(new_investments, { transaction });
+
+        }));
+
+    });
+
+});
+
 When('I initiate a new Recipe Run', function () {
 
     return chai
@@ -376,7 +437,7 @@ Then('a Recipe Run Detail is created for each Whitelisted Asset in Asset Mix', a
 
 Then('the investment amounts are divided accordingly between each Recipe Detail', function () {
 
-    const investment_amounts = this.current_investment_run.amounts.reduce((acc, amount) => {
+    /*const investment_amounts = this.current_investment_run.amounts.reduce((acc, amount) => {
         return _.assign(acc, {
             [amount.asset_id]: Decimal(amount.amount)
         })
@@ -397,6 +458,26 @@ Then('the investment amounts are divided accordingly between each Recipe Detail'
         expect(investment_amounts[asset].eq(0), 'Expected the investment amounts to be spread correctly across each detail').to.be.true;
 
     }
+    */
+    const sums = _.fromPairs(this.current_investment_run.amounts.map(a => {
+        return [ a.asset_id, Decimal(0) ]
+    }));
+
+    for (let detail of this.current_recipe_run_details) {
+
+        for (let detail_investment of detail.RecipeRunDetailInvestments) {
+
+            sums[detail_investment.asset_id] = sums[detail_investment.asset_id].plus(detail_investment.amount || 0);
+
+        }
+
+    }
+
+    for (let investment of this.current_investment_run.amounts) {
+
+        expect(Decimal(investment.amount).toFixed(2)).to.equal(sums[investment.asset_id].toFixed(2), 'Expected the sums to match');
+
+    }
 
 });
 
@@ -406,7 +487,7 @@ Then('the investment percentage is divided equally between Recipe Details', func
 
     for (let detail of this.current_recipe_run_details) {
 
-        expect(expected_percentage.eq(detail.investment_percentage), `Expected details to have equaly divided investment percentage, expected: ${expected_percentage.toString()}%, got: ${detail.investment_percentage}%`).to.be.true;
+        expect(expected_percentage.toFixed(2)).to.equal(Decimal(detail.investment_percentage).toFixed(2), `Expected details to have equaly divided investment percentage, expected: ${expected_percentage.toString()}%, got: ${detail.investment_percentage}%`);
 
     }
 

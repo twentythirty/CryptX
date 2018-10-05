@@ -828,3 +828,45 @@ Then('the sum of Execution Order total quantities will equal the Recipe Order qu
     expect(Decimal(recipe_order.quantity).toString()).to.equal(Decimal(execution_order_data.total_quantity).toString(), `Expected the sum of total quantities to equal the quantity of the Reciep Order[${recipe_order.id}]`);
 
 });
+
+Then('the Recipe Orders will have the folowing prices and quantities:', async function(table) {
+
+    const { RecipeOrder, Exchange, Instrument } = require('../../../models');
+
+    const order_data = table.hashes();
+
+    const orders = await RecipeOrder.findAll({
+        where: { recipe_order_group_id: this.current_recipe_order_group.id }
+    });
+
+    const [ instruments, exchanges ] = await Promise.all([
+        Instrument.findAll({
+            where: {
+                symbol: _.uniq(order_data.map(d => d.instrument))
+            }
+        }),
+        Exchange.findAll({
+            where: {
+                name: _.uniq(order_data.map(d => d.exchange))
+            }
+        })
+    ]);
+
+    for(let data of order_data) {
+
+        const instrument = instruments.find(i => i.symbol === data.instrument);
+        expect(instrument, `Expected to find instrument ${data.instrument}`).to.be.not.undefined;
+
+        const exchange = exchanges.find(i => i.name === data.exchange);
+        expect(exchange, `Expected to find exchange ${data.exchange}`).to.be.not.undefined;
+
+        const matching_order = orders.find(o => o.target_exchange_id === exchange.id && o.instrument_id === instrument.id);
+        expect(matching_order, `Expected find matching order for ${data.instrument} at ${data.exchange}`).to.be.not.undefined;
+
+        expect(matching_order.price).to.equal(data.price, `Expected Order[${matching_order.id}] prices to match`);
+        expect(matching_order.quantity).to.equal(data.quantity, `Expected Order[${matching_order.id}] quantities to match`);
+        expect(matching_order.side).to.equal(ORDER_SIDES[data.side], `Expected Order[${matching_order.id}] side to be ${data.side}`);
+
+    }
+
+});

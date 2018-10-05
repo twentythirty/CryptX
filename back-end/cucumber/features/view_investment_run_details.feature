@@ -108,7 +108,7 @@ Feature: View investment run details
         Then if I look at the Investment Run details
         Then I see data layout:
         | started_timestamp  | updated_timestamp   | completed_timestamp | user_created   | strategy_type   | status|
-        | Thu Oct 04 2018 11:55:35 GMT+0300 (EEST) | Thu Oct 04 2018 16:55:35 GMT+0300 (EEST)    | -   | Investment Manager  | LCI | Initiated    |
+        | Thu Oct 04 2018 11:55:35  | Thu Oct 04 2018 16:55:35    | -   | Investment Manager  | LCI | Initiated    |
         And if I look at the Investment Run deposit list
         Then I see data layout:
         | currency_name | amount    | value_usd |

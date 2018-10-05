@@ -191,7 +191,7 @@ const generateApproveRecipeOrders = async (recipe_run_id) => {
     const asset_ids = _.uniq(_.flatMap(recipe_run_details, recipe_run_detail => {
         return [recipe_run_detail.transaction_asset_id, recipe_run_detail.quote_asset_id]
     }));
-
+    
     //fetch all instruments corresponding to detail assets
     //map them by instrument id
     const instruments_by_id = _.keyBy(await Instrument.findAll({

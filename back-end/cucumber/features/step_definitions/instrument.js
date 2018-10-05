@@ -438,6 +438,49 @@ Given(/there is an instrument with transaction asset "(.*)" and quote asset "(.*
     this.current_instrument = instrument;
 })
 
+Given(/^the current price of (\w*) is (\d*|\d+(?:\.\d+)?) (\w*)$/, async function(transaction_asset_symbol, price, quote_asset_symbol) {
+
+    const { Exchange, Instrument, InstrumentMarketData, sequelize } = require('../../../models');
+    const { Op } = sequelize;
+    
+    let search_symbol = [`${transaction_asset_symbol}/${quote_asset_symbol}`];
+    if(quote_asset_symbol === 'USD') search_symbol.push(`${transaction_asset_symbol}/USDT`)
+    
+    const [ instruments, exchanges ] = await Promise.all([
+        Instrument.findAll({ where: { symbol: search_symbol } }),
+        Exchange.findAll()
+    ]);
+
+    return sequelize.transaction(async transaction => {
+
+        await InstrumentMarketData.destroy({
+            where: {
+                instrument_id: instruments.map(i => i.id),
+                timestamp: {
+                    [Op.gte]: Date.now() - 10000
+                }
+            },
+            transaction
+        });
+
+        return InstrumentMarketData.bulkCreate(_.flatten(exchanges.map(exchange => {
+
+            return instruments.map(instrument => {
+                return {
+                    ask_price: price,
+                    bid_price: price,
+                    exchange_id: exchange.id,
+                    instrument_id: instrument.id,
+                    timestamp: Date.now()
+                };
+            });
+
+        })), { transaction });
+
+    });
+
+});
+
 When('I create a new Instrument with those Assets', function() {
 
     const new_instrument = {

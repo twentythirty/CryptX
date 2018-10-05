@@ -167,6 +167,56 @@ Given(/^the recipe run deposit has amount (.*) and fee (.*)$/, async function(am
     await pending_deposit.save();
 });
 
+Given('the Recipe Run Deposits are as followed:', async function(table) {
+
+    const { RecipeRunDeposit, Asset, Exchange, ExchangeAccount, sequelize } = require('../../../models');
+
+    const [ base_assets, exchanges ] = await Promise.all([
+        Asset.findAll({ where: { is_base: true } }),
+        Exchange.findAll()
+    ]);
+
+    let deposits = table.hashes();
+
+    deposits = await Promise.all(deposits.map(async deposit => {
+        const base_asset = base_assets.find(a => a.symbol === deposit.asset)
+        expect(base_asset, `Expected to find base Asset ${deposit.asset}`).to.be.not.undefined;
+
+        const exchange = exchanges.find(e => e.name === deposit.exchange);
+        expect(exchange, `Expected to find Exchnage ${deposit.exchange}`).to.be.not.undefined;
+
+        const exchange_account = await ExchangeAccount.findOne({
+            where: {
+                exchange_id: exchange.id,
+                asset_id: base_asset.id
+            }
+        });
+        expect(exchange_account, `Expected to find Exchange account ${exchange.name}/${base_asset.symbol} `).to.be.not.null;
+
+        return {
+            amount: deposit.amount,
+            asset_id: base_asset.id,
+            target_exchange_account_id: exchange_account.id,
+            fee: deposit.fee,
+            status: RECIPE_RUN_DEPOSIT_STATUSES[deposit.status],
+            depositor_user_id: World.users.depositor.id,
+            recipe_run_id: this.current_recipe_run.id,
+            creation_timestamp: Date.now(),
+            completion_timestamp: deposit.status === 'Compelted' ? Date.now() : null
+        };
+    }));
+    
+    return sequelize.transaction(async transaction => {
+
+        await RecipeRunDeposit.destroy({
+            where: { recipe_run_id: this.current_recipe_run.id }
+        }, { transaction });
+
+        return RecipeRunDeposit.bulkCreate(deposits, { transaction });
+
+    });
+
+});
 
 When('confirm recipe run deposit with provided amount and fee', async function() {
 
