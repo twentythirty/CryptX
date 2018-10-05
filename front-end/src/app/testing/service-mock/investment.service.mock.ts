@@ -49,4 +49,44 @@ export const getTimelineData = {
   success: true,
 };
 
+export const getSingleRecipeData = {
+  success: true,
+  recipe_run: {
+    approval_comment: 'testing',
+    approval_status: 'recipes.status.43',
+    approval_timestamp: '2018-08-06T10:41:11.364Z',
+    approval_user: 'Admin ',
+    approval_user_id: 1,
+    created_timestamp: '2018-08-02T07:33:55.248Z',
+    id: 7,
+    investment_run_id: 7,
+    user_created: 'Tautvydas Petkunas',
+    user_created_id: 3
+  }
+};
+
+export const getAllRecipeOrdersData = {
+  success: true,
+  recipe_orders: [
+    {
+      completed_timestamp: null,
+      created_timestamp: 1533199144899,
+      exchange: 'Bittrex',
+      id: 5,
+      instrument: 'LTC/ETH',
+      instrument_id: 4,
+      investment_id: 7,
+      price: '1.52',
+      quantity: '33',
+      recipe_order_group_id: 2,
+      recipe_run_id: 7,
+      side: 'orders.side.999',
+      status: 'orders.status.53',
+      sum_of_exchange_trading_fee: '0',
+      target_exchange_id: 4
+    }
+  ],
+  footer: [],
+  count: 1
+};
 

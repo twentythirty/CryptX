@@ -344,6 +344,30 @@ Given('the system is missing some of the top 100 coins', function () {
         });
 });
 
+Given(/^the user has (.*) the asset with rationale "(.*)" on (.*)$/, async function(new_status_word, status_rationale, timestamp_text) {
+
+    chai.assert.isObject(this.current_asset, `Context did not contain current asset for this step!`);
+    this.current_user = World.users.investment_manager;
+    chai.assert.isObject(this.current_user, `Context did not contain current user for this step!`);
+
+    const timestamp = new Date(timestamp_text);
+    chai.assert.notEqual(timestamp.toString(), 'Invalid Date', `The timestamp texxt ${timestamp_text} did not create a valid date!`);
+    chai.assert.isObject(this.i18n, `Context missing internationalization object!`);
+    chai.assert.isObject(this.i18n.assets.status, `Internationalization object on context missing assets statuses!`);
+    const i18n_asset_status = _.invert(this.i18n.assets.status);
+    const new_status = parseInt(i18n_asset_status[new_status_word]);
+    chai.assert.isNotNaN(new_status, `Status word ${new_status_word} did not produce a status constant for asset!`);
+    chai.assert.isAbove(status_rationale.length, 0, `Rationale shouldnt be empty!`);
+
+    await require('../../../models').AssetStatusChange.create({
+        timestamp,
+        comment: status_rationale,
+        type: new_status,
+        asset_id: this.current_asset.id,
+        user_id: this.current_user.id
+    });
+});
+
 Given(/^the average Market Capitalization of (\w*) for the last (\d*) (hours|days) is (\d*) USD$/, async function(asset_symbol, interval, interval_type, capital) {
 
     interval = parseInt(interval);
@@ -1035,6 +1059,22 @@ Then('I am assigned to the Status Change', function () {
     expect(this.current_status_change.user_id).to.equal(World.current_user.id, 'Expected the status change user id to equal to id of the user curretly logged in');
 
 });
+
+Then('I see the status change logs:', async function(data_table_raw) {
+
+    chai.assert.isObject(this.current_asset, `Context missing current asset for this step!`);
+
+    const asset_status_history = await require('../../../services/AssetService').fetchAssetStatusHistory(this.current_asset);
+    chai.assert.isNotNull(asset_status_history, `Could not fetch asset status history for asset ${this.current_asset}!`);
+
+    const example_history = data_table_raw.hashes();
+    chai.assert.isArray(example_history, 'Poorly formatted data table not array!');
+    chai.assert.equal(asset_status_history.length, example_history.length, `history retrieved is different size from example history!`);
+
+    utils.compareViewTables.bind(this)(asset_status_history, example_history, {
+        'type': (value) => `assets.status.${value}`
+    });
+})
 
 Then('I can see the new status and history by getting the Asset details', function () {
 
