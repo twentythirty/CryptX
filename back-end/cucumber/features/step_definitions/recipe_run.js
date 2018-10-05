@@ -381,7 +381,7 @@ Then('the investment amounts are divided accordingly between each Recipe Detail'
             [amount.asset_id]: Decimal(amount.amount)
         })
     }, {});
-
+ 
     for (let detail of this.current_recipe_run_details) {
 
         for (let detail_investment of detail.RecipeRunDetailInvestments) {
@@ -406,7 +406,7 @@ Then('the investment percentage is divided equally between Recipe Details', func
 
     for (let detail of this.current_recipe_run_details) {
 
-        expect(expected_percentage.eq(detail.investment_percentage), 'Expected details to have equaly divided investment percentage').to.be.true;
+        expect(expected_percentage.eq(detail.investment_percentage), `Expected details to have equaly divided investment percentage, expected: ${expected_percentage.toString()}%, got: ${detail.investment_percentage}%`).to.be.true;
 
     }
 

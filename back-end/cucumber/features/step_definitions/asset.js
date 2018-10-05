@@ -510,7 +510,7 @@ Given(/^the system does not have Asset Market Capitalization for the last (.*) m
 
 Given('the current Asset Capitalization is as follows:', async function(table) {
 
-    const { Asset, AssetMarketCapitalization, sequelize } = require('../../../models');
+    const { Asset, AssetMarketCapitalization, MarketHistoryCalculation, sequelize } = require('../../../models');
 
     const asset_data = table.hashes();
 
@@ -521,11 +521,21 @@ Given('the current Asset Capitalization is as follows:', async function(table) {
         raw: true
     });
     
+    const nvt = [];
     const capitalizations = asset_data.map(data => {
 
         const asset = assets.find(a => a.symbol === data.asset.trim());
 
         expect(asset, `Expected to find asset ${data.asset}`).to.be.not.undefined;
+
+        if(data.nvt) {
+            nvt.push({
+                timestamp: Date.now(),
+                asset_id: asset.id,
+                type: MARKET_HISTORY_CALCULATION_TYPES.NVT,
+                value: data.nvt
+            });
+        }
 
         return {
             timestamp: Date.now(),
@@ -537,13 +547,22 @@ Given('the current Asset Capitalization is as follows:', async function(table) {
 
     });
 
-    return sequelize.transaction(transaction => {
-        return AssetMarketCapitalization.destroy({
+    await sequelize.transaction(async transaction => {
+        await AssetMarketCapitalization.destroy({
             where: {},
             transaction
-        }).then(() => {
-            return AssetMarketCapitalization.bulkCreate(capitalizations, { transaction });
         });
+
+        await AssetMarketCapitalization.bulkCreate(capitalizations, { transaction });
+
+        if(!nvt.length) return;
+
+        await MarketHistoryCalculation.destroy({
+            where: {},
+            transaction
+        });
+
+        await MarketHistoryCalculation.bulkCreate(nvt, { transaction });
     });
 
 });
@@ -675,6 +694,49 @@ Given(/the asset had NVT value of (.*) calculated/, async function(nvt_text) {
         value: nvt_value,
         asset_id: this.current_asset.id
     });
+});
+
+Given(/^the current price of (\w*) is (\d*) (\w*)$/, async function(transaction_asset_symbol, price, quote_asset_symbol) {
+
+    const { Exchange, Instrument, InstrumentMarketData, sequelize } = require('../../../models');
+    const { Op } = sequelize;
+    
+    let search_symbol = [`${transaction_asset_symbol}/${quote_asset_symbol}`];
+    if(quote_asset_symbol === 'USD') search_symbol.push(`${transaction_asset_symbol}/USDT`)
+    
+    const [ instruments, exchanges ] = await Promise.all([
+        Instrument.findAll({ where: { symbol: search_symbol } }),
+        Exchange.findAll()
+    ]);
+
+    return sequelize.transaction(async transaction => {
+
+        await InstrumentMarketData.destroy({
+            where: {
+                instrument_id: instruments.map(i => i.id),
+                timestamp: {
+                    [Op.gte]: Date.now() - 10000
+                }
+            },
+            transaction
+        });
+
+        return InstrumentMarketData.bulkCreate(_.flatten(exchanges.map(exchange => {
+
+            return instruments.map(instrument => {
+                return {
+                    ask_price: price,
+                    bid_price: price,
+                    exchange_id: exchange.id,
+                    instrument_id: instrument.id,
+                    timestamp: Date.now()
+                };
+            });
+
+        })), { transaction });
+
+    });
+
 });
 
 When('retrieve a list of Assets', function() {

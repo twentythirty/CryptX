@@ -268,6 +268,44 @@ Then('I see data layout:', async function(raw_data_table) {
 
 });
 
+Then(/^if I look at the (.*) (details|list|footer)$/, function(data_name, data_type) {
+
+    const { replaceArgs } = require('../../../utils/ActionLogUtil');
+
+    let data = this[`current_${_.snakeCase(data_name)}_${data_type}`];
+
+    expect(data, `Expected to look at ${data_name} ${data_type}`).to.be.not.undefined;
+
+    switch(data_type) {
+
+        case 'details':
+            data = [ data ];
+            break;
+        
+        case 'footer':
+            data = _.fromPairs(data.map(d => {
+                const template_string = _.get(this.i18n, d.template);
+                const converted = replaceArgs(template_string, d.args)
+                return [d.name, converted]
+            }));
+            data = [ data ];
+    }
+
+    data.map(d => {
+        for(let field in d) {
+            if(/timestamp/.test(field) && !_.isNull(d[field])){
+                d[field] = new Date(d[field]).toString();
+            }
+            else if(!isNaN(d[field]) && !_.isNull(d[field]) && !_.isDate(d[field])) {
+                d[field] = Decimal(d[field]).toString();
+            }
+        }
+    });
+
+    this.view_data_list = data;
+
+});
+
 
 //called after scenarios where this tag is placed
 //cleans out cached investmetn run if present

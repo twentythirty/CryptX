@@ -90,7 +90,7 @@ Given(/there is a (.*) Investment Run created by an Investment Manager/, async f
             asset_id: asset.id
         }
     });
-
+    
     const new_asset_group = {
         created_timestamp: new Date(),
         user_id: World.users.investment_manager.id,
@@ -101,9 +101,10 @@ Given(/there is a (.*) Investment Run created by an Investment Manager/, async f
      * It's seems the recipe run needs assets to be included in an instrument which is
      * also mapped to atleast one exchange.
      */
+    /*
     const [ top_assets ] = await sequelize.query(`
         SELECT Distinct ON(a.id) a.id, cap.capitalization_usd, a.symbol FROM asset AS a
-        LEFT JOIN LATERAL (
+        INNER JOIN LATERAL (
             SELECT DISTINCT ON(cap.asset_id) cap.capitalization_usd, cap.asset_id FROm asset_market_capitalization AS cap
             ORDER BY cap.asset_id, cap.timestamp DESC
         ) AS cap ON a.id = cap.asset_id
@@ -113,10 +114,13 @@ Given(/there is a (.*) Investment Run created by an Investment Manager/, async f
         ORDER BY a.id, cap.capitalization_usd DESC
         LIMIT ${SYSTEM_SETTINGS.INDEX_LCI_CAP + SYSTEM_SETTINGS.INDEX_MCI_CAP}
     `);
+    */
+    
+    const [ asset_group, group_assets ] = await require('../../../services/InvestmentService').generateInvestmentAssetGroup(World.users.investment_manager.id, STRATEGY_TYPES[type]);
 
     return sequelize.transaction(transaction => {
 
-        return InvestmentRunAssetGroup.create(new_asset_group, { transaction }).then(asset_group => {
+        /*return InvestmentRunAssetGroup.create(new_asset_group, { transaction }).then(asset_group => {
 
             let strategy_assets = [];
             if(asset_group.strategy_type === STRATEGY_TYPES.LCI) strategy_assets = top_assets.slice(0, SYSTEM_SETTINGS.INDEX_LCI_CAP).map(asset => {
@@ -138,23 +142,26 @@ Given(/there is a (.*) Investment Run created by an Investment Manager/, async f
             
             return GroupAsset.bulkCreate(strategy_assets, { transaction }).then(group_assets => {
                 
-                return InvestmentRun.create(new_investment_run, { transaction }).then(investment_run => {
-
-                    this.current_investment_run = investment_run.toJSON();
-        
-                    return InvestmentAmount.bulkCreate(new_amounts.map(amount => {
-        
-                        return Object.assign(amount, { investment_run_id: investment_run.id });
-        
-                    }), { transaction, returning: true }).then(amounts => {
-        
-                        this.current_investment_run.amounts = amounts.map(amount => amount.toJSON());
-        
-                    });
-                });
+                
 
             });
 
+        });*/
+        new_investment_run.investment_run_asset_group_id = asset_group.id;
+
+        return InvestmentRun.create(new_investment_run, { transaction }).then(investment_run => {
+
+            this.current_investment_run = investment_run.toJSON();
+
+            return InvestmentAmount.bulkCreate(new_amounts.map(amount => {
+                
+                return Object.assign(amount, { investment_run_id: investment_run.id });
+
+            }), { transaction, returning: true }).then(amounts => {
+
+                this.current_investment_run.amounts = amounts.map(amount => amount.toJSON());
+
+            });
         });
 
     });
@@ -203,6 +210,56 @@ Given('there are real and simulated Executing Investment Runs in the system', as
             defaults: _.assign({ is_simulated: true }, base)
         })
     ]);
+
+});
+
+Given('the Investment Run deposit amounts are as followed:', async function(table) {
+
+    const { InvestmentAmount, Asset, sequelize } = require('../../../models');
+
+    const deposit_amounts = table.hashes();
+
+    const deposit_assets = await Asset.findAll({
+        where: { is_deposit: true },
+        limit: 3
+    });
+
+    return sequelize.transaction(async transaction => {
+
+        const investment_run_id = this.current_investment_run.id;
+        expect(investment_run_id).to.be.a('number', 'Expected to have an ID of the current investment run');
+
+        await InvestmentAmount.destroy({
+            where: { investment_run_id },
+            transaction
+        });
+
+        this.current_investment_run_deposit_amounts = await InvestmentAmount.bulkCreate(deposit_amounts.map(da => {
+
+            const asset = deposit_assets.find(a => a.symbol === da.currency.trim());
+            expect(asset, `Expected to find Asset with symbol "${da.currency}"`).to.be.not.undefined;
+
+            return {
+                amount: da.amount,
+                asset_id: asset.id,
+                investment_run_id
+            };
+
+        }), { transaction, returning: true });
+
+    });
+
+});
+
+Given(/^the Investment Run was (started|updated) on (.*)$/, function(timestamp_type, date_string) {
+
+    const { InvestmentRun } = require('../../../models');
+
+    return InvestmentRun.update({
+        [`${timestamp_type}_timestamp`]: Date.parse(date_string)
+    }, {
+        where: { id: this.current_investment_run.id }
+    });
 
 });
 
@@ -305,6 +362,35 @@ When(/^I attempt to create a new Investment Run with invalid values: (.*), (.*),
             
             this.current_response = result;
         });
+
+});
+
+When('I fetch the details of the Investment Run', async  function() {
+
+    const investment_run_id = this.current_investment_run.id;
+    expect(investment_run_id).to.be.a('number', 'Expected to have an investment id of the current Investment Run');
+
+    const [ investment_run_details, investement_run_deposits ] = await Promise.all([
+        chai
+        .request(this.app)
+        .post(`/v1/investments/${investment_run_id}`)
+        .set('Authorization', World.current_user.token)
+        .send({
+            limit: 10,
+            order: [ { by: 'capitalization', order: 'desc' } ]
+        }),
+        chai
+        .request(this.app)
+        .post(`/v1/investments/${investment_run_id}/deposit_amounts`)
+        .set('Authorization', World.current_user.token)
+    ]);
+
+    this.current_investment_run_details = investment_run_details.body.investment_run;
+    this.current_asset_mix_list = investment_run_details.body.asset_mix;
+    this.current_asset_mix_footer = investment_run_details.body.footer;
+
+    this.current_investment_run_deposit_list = investement_run_deposits.body.deposit_amounts;
+    this.current_investment_run_deposit_footer = investement_run_deposits.body.footer;
 
 });
 
