@@ -45,14 +45,16 @@ async function generateExecutionOrders(amount, order_status, for_exchange) {
     } = require('../../../models');
     const ccxtUtil = require('../../../utils/CCXTUtils');
 
-    const execution_order_count = await ExecutionOrder.count({
+    const exisitng_orders = await ExecutionOrder.findAll({
         where: {
             exchange_id: for_exchange.id,
             status: order_status
         }
     });
 
-    if (execution_order_count >= amount) return;
+    if (exisitng_orders.length >= amount) {
+        return exisitng_orders;
+    }
 
     const connector = await ccxtUtil.getConnector(for_exchange.api_id);
 
@@ -74,7 +76,7 @@ async function generateExecutionOrders(amount, order_status, for_exchange) {
     });
 
     let new_execution_orders = [];
-
+    
     for (let i = 0; i < amount; i++) {
 
         const instrument = instruments[i];
@@ -100,7 +102,7 @@ async function generateExecutionOrders(amount, order_status, for_exchange) {
     return new_execution_orders;
 }
 
-Given(/^there are (.*) (.*) Execution Orders for (.*)$/, async function (amount, status, exchange_name) {
+Given(/^there (are|is) (.*) (.*) (Execution Orders|Execution Order) for (.*)$/, async function (plural_1, amount, status, plural_2, exchange_name) {
 
     amount = parseInt(amount);
     const Exchange = require('../../../models').Exchange;
@@ -112,6 +114,8 @@ Given(/^there are (.*) (.*) Execution Orders for (.*)$/, async function (amount,
     chai.assert.isDefined(EXECUTION_ORDER_STATUSES[status], `No key ${status} present for execution order status constants!`);
 
     this.current_execution_orders = await generateExecutionOrders(amount, EXECUTION_ORDER_STATUSES[status], exchange);
+
+    if(amount === 1 && this.current_execution_orders) this.current_execution_order = this.current_execution_orders[0];
 
     return;
 });
@@ -293,6 +297,31 @@ Given('the Pending Execution Orders Failed to be placed on the Exchanges', async
 
 });
 
+Given(/^the Execution Order is (buying|selling) (\d*|\d+(?:\.\d+)?) (\w*) (using|for) (\w*)$/, async function(side, amount, first_asset, pointer, second_asset) {
+
+    side = _.capitalize(side.replace('ing', ''));
+
+    const { ExecutionOrder, Instrument } = require('../../../models');
+
+    let symbol = `${first_asset}/${second_asset}`;
+    if(side === 'Sell') symbol = `${second_asset}/${first_asset}`;
+
+    const instrument = await Instrument.findOne({
+        where: { symbol }
+    });
+
+    expect(instrument, `Expected to find instrument ${symbol}`).to.be.not.null
+
+    return ExecutionOrder.update({
+        side: ORDER_SIDES[side],
+        instrument_id: instrument.id,
+        total_quantity: amount
+    },{
+        where: { id: this.current_execution_order.id }
+    });
+    
+});
+
 When('the system does the task "fetch execution order information" until the Execution Orders are no longer in progress', async function () {
 
     const models = require('../../../models');
@@ -404,6 +433,26 @@ When('I retry the Execution Order', async function() {
             this.current_response = result;
 
         });
+
+});
+
+When('I fetch the Execution Order details', async function() {
+
+    const [ execution_order, fills ] = await Promise.all([
+        chai
+        .request(this.app)
+        .get(`/v1/execution_orders/${this.current_execution_order.id}`)
+        .set('Authorization', World.current_user.token),
+        chai
+        .request(this.app)
+        .post(`/v1/exec_orders_fills/of_execution_order/${this.current_execution_order.id}`)
+        .set('Authorization', World.current_user.token)
+    ]);
+
+    this.current_execution_order_details = execution_order.body.execution_order;
+    this.current_execution_order_logs = execution_order.body.action_logs;
+    this.current_execution_order_fills_list = fills.body.execution_order_fills;
+    this.current_execution_order_fills_footer = fills.body.footer;
 
 });
 

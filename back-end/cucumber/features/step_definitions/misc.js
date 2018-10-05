@@ -241,6 +241,12 @@ Then('I see data layout:', async function(raw_data_table) {
     utils.compareViewTables.bind(this)(this.view_data_list, data_table);
 });
 
+Then('I see an empty table', function() {
+
+    expect(this.view_data_list.length).to.equal(0, 'Expected an empty list/table');
+
+});
+
 Then(/^if I look at the (.*) (details|list|footer)$/, function(data_name, data_type) {
 
     const { replaceArgs } = require('../../../utils/ActionLogUtil');
