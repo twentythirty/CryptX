@@ -250,6 +250,13 @@ module.exports.JOB_BODY = async (config, log) => {
                             log(`[INFO.4C]: Skipping upper bound check on quantity ${next_total.toString()} for recipe order ${pending_order.id} due to missing upper bound on market ${exchange_market.symbol} for exchange ${exchange_connector.name}`);
                         }
 
+                        //reamining quantity for reciep order after this execution order gets generated
+                        const next_order_qnty = order_total.minus(next_total.plus(realized_total))
+                        if (next_order_qnty.lt(amount_limit.min)) {
+                            log(`[WARN.4C]: Post-gen recipe order total of ${next_order_qnty.toString()} is less than the markets min limit of ${amount_limit.min}. Adding remainder to current and finishing recipe order!`);
+                            next_total = next_total.plus(next_order_qnty);
+                        }
+
                         log(`4d. Current fulfilled recipe order total is ${realized_total.toString()}, adding another ${next_total.toString()}...`);
 
                         //create next pending execution order and save it
