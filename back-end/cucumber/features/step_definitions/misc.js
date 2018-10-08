@@ -116,15 +116,19 @@ When(/view list of (.*)/, async function(descriptor_plural) {
     this.view_data_list = data;
 });
 
+const admin_aliases = {
+    'recipe run deposit': 'recipe deposit'
+}
+
 When(/view details of this (.*)/, async function(model_descriptor) {
 
     const adminViewService = this.adminViewService;
     chai.assert.isNotNull(adminViewService, 'World context did not contain admin view service!');
 
     const context_name = to_context_name(model_descriptor);
-    chai.assert.isNotNull(this[context_name], `Context doesnt have object at ${context_name}!`);
+    chai.assert.isDefined(this[context_name], `Context doesnt have object at ${context_name}!`);
 
-    const fetch_method = to_admin_entity_view_fetch(model_descriptor);
+    const fetch_method = to_admin_entity_view_fetch(admin_aliases[model_descriptor] || model_descriptor);
     //TODO: if upgrade to chai 4 happens - this can be replaced with isFunction(), chai 3 didnt support async function checks
     chai.assert.isDefined(adminViewService[fetch_method], `AdminViewService did not contain method ${fetch_method}!`);
 
