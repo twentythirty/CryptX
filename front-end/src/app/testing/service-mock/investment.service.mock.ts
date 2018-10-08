@@ -169,3 +169,50 @@ export const createRecipeRunResponse = {
   }
 };
 
+export const getSingleOrderData = {
+  success: true,
+  recipe_order: {
+    completed_timestamp: null,
+    created_timestamp: 1538494222737,
+    exchange: 'Binance',
+    id: 1150,
+    instrument: 'IOST/BTC',
+    instrument_id: 3939,
+    investment_id: 140,
+    price: '0.00000201',
+    quantity: '519143',
+    recipe_order_group_id: 70,
+    recipe_run_id: 191,
+    side: 'orders.side.999',
+    status: 'orders.status.51',
+    sum_of_exchange_trading_fee: '0',
+    target_exchange_id: 1
+  }
+};
+
+export const getAllExecutionOrdersData = {
+  count: 1,
+  success: true,
+  footer: [],
+  execution_orders: [
+    {
+      completion_time: null,
+      exchange: 'HitBTC',
+      exchange_id: 5,
+      exchange_trading_fee: null,
+      filled_quantity: '0',
+      id: 146556,
+      instrument: 'BCN/BTC',
+      instrument_id: 3825,
+      investment_run_id: 86,
+      price: null,
+      recipe_order_id: 1010,
+      side: 'execution_orders.side.999',
+      status: 'execution_orders.status.62',
+      submission_time: 1538991605014,
+      total_quantity: '14770',
+      type: 'execution_orders.type.71'
+    }
+  ]
+};
+
