@@ -336,9 +336,11 @@ Given('the system does not have Instrument Market Data', function() {
 
 });
 
-Given(/fetching market data on instrument has (.*) for (.*)/, async function(fetch_status, csv_exchange_names) {
+Given(/fetching market data with ask (.*) on instrument has (.*) for (.*)/, async function(ask_price_string, fetch_status, csv_exchange_names) {
 
     chai.assert.isNotNull(this.current_instrument, 'No instrument in current context!');
+    const ask_price = parseFloat(ask_price_string);
+    chai.assert.isNotNaN(ask_price, `Supplied ask price ${ask_price_string} was not parseable to float!`);
 
     const exchanges = await fetchExchangesFromCSV(csv_exchange_names);
 
@@ -385,7 +387,7 @@ Given(/fetching market data on instrument has (.*) for (.*)/, async function(fet
                 exchange_id: exchange.id,
                 instrument_id: this.current_instrument.id,
                 timestamp: new Date(),
-                ask_price: _.random(true),
+                ask_price,
                 bid_price: _.random(true)
             }
         }))
@@ -919,6 +921,40 @@ Then('the system creates a new entry for each Instrument that has a valid mappin
     this.current_market_data_mapping_difference = instrument_mappings.length - market_data.length;
 
 });
+
+Then('I view mappings details of this instrument', async function() {
+
+    chai.assert.isNotNull(this.current_instrument, 'Context needs to have current instrument for this step!');
+    chai.assert.isNotNull(this.adminViewService, 'Context needs admin view service wired for this step!');
+
+    let {
+        data: instrument_exchanges,
+        total: count
+    } = await this.adminViewService.fetchInstrumentExchangesViewDataWithCount({
+        where: {
+            instrument_id: this.current_instrument.id
+        }
+    });
+
+    this.current_instrument_exchange_mappings = instrument_exchanges;
+});
+
+Then(/The last update of (.*) mappings is older than fail threshold/, async function(csv_exchange_names) {
+
+    chai.assert.isNotNull(SYSTEM_SETTINGS.BASE_ASSET_PRICE_TTL_THRESHOLD, 'System doesnt have asset price TTL threshold set!');
+    chai.assert.isNotNull(this.current_instrument_exchange_mappings, 'Context needs to have current exchange mappings set for this step');
+
+    const exchanges = await fetchExchangesFromCSV(csv_exchange_names);
+    chai.assert.isAbove(exchanges.length, 0, 'Should have created at least one exchange from CSV!');
+    const exchange_ids = _.map(exchanges, 'id');
+    const cutoff_date = new Date(new Date().getTime() - SYSTEM_SETTINGS.BASE_ASSET_PRICE_TTL_THRESHOLD * 1000);
+
+    const check_mappings = _.filter(this.current_instrument_exchange_mappings, mapping => exchange_ids.includes(mapping.exchange_id));
+
+    _.forEach(check_mappings, mapping => {
+        chai.assert.isBelow(mapping.last_updated || 0, cutoff_date.getTime(), `Exchange mapping should have data from before cutoff ${cutoff_date}!`);
+    })
+})
 
 Then('a warning log entry is created for each Instrument which did not have a price on the exchange', async function() {
 

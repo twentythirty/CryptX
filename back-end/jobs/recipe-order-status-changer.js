@@ -151,7 +151,11 @@ module.exports.JOB_BODY = async (config, log) => {
             } = record;
 
             const connector = connectors_map[target_exchange_id];
-            const amount_min = Decimal((connector? connector.limits.amount.min : 0) || 0).minus(Number.MIN_VALUE);
+            let amount_min = Decimal(0);
+            if (_.isNumber(_.get(connector, 'limits.amount.min'))) {
+                amount_min = Decimal(connector.limits.amount.min);
+            }
+            amount_min = amount_min.minus(Number.MIN_VALUE);
 
             //we can always remove the lower-trading margin when assuming the order is completed 
             //if no more orders can be generated anyway, therefore if its not complete now it never will be
