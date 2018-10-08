@@ -242,7 +242,7 @@ module.exports.log = async (details, translation_key = null, options = {}) => {
 
     let base_log = {
         details,
-        timestamp: new Date(),
+        timestamp: options.timestamp || new Date(),
         failed_attempts: 0,
         level: _.isUndefined(options.log_level) ? ACTIONLOG_LEVELS.Info : options.log_level,
         translation_key,

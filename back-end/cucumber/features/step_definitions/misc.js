@@ -247,7 +247,7 @@ Then('I see an empty table', function() {
 
 });
 
-Then(/^if I look at the (.*) (details|list|footer)$/, function(data_name, data_type) {
+Then(/^if I look at the (.*) (details|list|footer|logs)$/, function(data_name, data_type) {
 
     const { replaceArgs } = require('../../../utils/ActionLogUtil');
 
@@ -268,6 +268,15 @@ Then(/^if I look at the (.*) (details|list|footer)$/, function(data_name, data_t
                 return [d.name, converted]
             }));
             data = [ data ];
+            break;
+
+        case 'logs':
+            data = data.map(d => {
+                return {
+                    timestamp: d.timestamp,
+                    entry: d.details
+                };
+            });
     }
 
     data.map(d => {

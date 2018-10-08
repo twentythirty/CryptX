@@ -371,7 +371,8 @@ Given(/^the Execution Order was (half|fully) filled by (\d*) Fills on (.*)$/, as
 
         await logAction('execution_orders.generate_fill', {
             args: { amount: (this.current_execution_order.total_quantity / count) * proportion },
-            relations: { execution_order_id: this.current_execution_order.id }
+            relations: { execution_order_id: this.current_execution_order.id },
+            timestamp: Date.parse(date_string)
         });
 
     }

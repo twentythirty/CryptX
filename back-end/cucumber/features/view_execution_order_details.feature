@@ -45,3 +45,10 @@ Feature: View execution order details
         Then I see data layout:
         | fill_price    | quantity   | fill_time    |
         | 0.40000000000000000000 average  | 10.0 total   |   -   |
+        And if I look at the Execution Order logs
+        Then I see data layout:
+        |   timestamp   |   entry    |
+        |   Sat Oct 06 2018 23:10:05    |   Retrieved a new fill with amount of 2.5     |
+        |   Sat Oct 06 2018 23:10:05    |   Retrieved a new fill with amount of 2.5     |
+        |   Sat Oct 06 2018 23:10:05    |   Retrieved a new fill with amount of 2.5     |
+        |   Sat Oct 06 2018 23:10:05    |   Retrieved a new fill with amount of 2.5     |
