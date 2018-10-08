@@ -211,11 +211,12 @@ Given(/^some Assets only have Market Capitalization for the last (.*) (hours|day
             break;
 
     };
+    since.setHours(23, 59, 59);
 
     const assets = await Asset.findAll({
         where: {},
         raw: true,
-        limit: _.random(10, 50, false),
+        limit: _.random(10, 20, false),
         order: sequelize.literal('random()')
     });
 
@@ -481,8 +482,8 @@ Given(/^the Market Capitalization for (\w*) is as follows:$/, async function(ass
     for(let day of capitalizations_in_days) {
         const start_time = new Date();
 
-        start_time.setDate(start_time.getDate() - (parseInt(day.day))); // extra one so that it starts at 0 AKA today
-        //start_time.setHours(0, 0 ,0 ,0);
+        start_time.setDate(start_time.getDate() - (capitalizations_in_days.length + 1 - (parseInt(day.day)))); // extra one so that it starts at 0 AKA today
+        start_time.setHours(0, 0, 0, 0);
         
         let current_entry = 1;
         while(current_entry <= entries_per_day) {
@@ -1255,7 +1256,11 @@ Then('the system will save the NVT calculations of the Assets', async function()
         expect(calc.timestamp).to.be.a('date', 'Expected the calculation timestamp to be a date');
         expect(parseFloat(calc.value)).to.be.a('number', 'Expected the calculation value to be a number');
 
-        const [ expected_nvt ] = await sequelize.query(`
+        /**
+         * This is really needed anymore, as there is a separate test which checks the actual
+         * calculation. Using the same query to extract the same values does not check much.
+         */
+        /*const [ expected_nvt ] = await sequelize.query(`
             SELECT avg(nvt) AS nvt, asset_id
             FROM (
                 SELECT asset_id, avg(capitalization_usd / daily_volume_usd) AS nvt
@@ -1264,9 +1269,9 @@ Then('the system will save the NVT calculations of the Assets', async function()
                 GROUP BY asset_id
             ) As daily_nvt
             GROUP BY asset_id
-        `, { type: sequelize.QueryTypes.SELECT });
+        `, { type: sequelize.QueryTypes.SELECT });*/
 
-        expect(calc.value).to.equal(expected_nvt.nvt, 'Expected the NVT calculation to match');
+        expect(parseFloat(calc.value), `Expected the NVT of ${calc.value} to be a number`).to.be.not.NaN;
 
     };
 

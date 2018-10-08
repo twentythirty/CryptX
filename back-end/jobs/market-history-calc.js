@@ -1,6 +1,5 @@
 'use strict';
 var request_promise = require('request-promise');
-
 //run once a day, 1 hour past midnight every night
 module.exports.SCHEDULE = '0 0 1 * * *';
 module.exports.NAME = 'CALC_MH';
@@ -26,79 +25,73 @@ module.exports.JOB_BODY = async (config, log) => {
 
     log(`1. Checking for valid date ranges on coins...`);
 
-    return sequelize.query(`
-        SELECT asset_id,
-        low_ts,
+    let [ err, nvt_data ] = await to(sequelize.query(`
+        WITH average_daly_volumes AS (
+            SELECT
+                AVG(daily_volume_usd) AS volume,
+                MIN("timestamp") AS earliest_timestamp,
+                asset_id
+            FROm asset_market_capitalization
+            WHERE "timestamp" >= (NOW() - INTERVAL '7 days')::DATE AND "timestamp" < NOW()::DATE
+            GROUP BY asset_id
+        ),
+        last_day_average_capitalizations AS (
+            SELECT
+                AVG(capitalization_usd) AS capitalization,
+                asset_id
+            FROM asset_market_capitalization
+            WHERE "timestamp" >= (NOW() - INTERVAL '1 days')::DATE AND "timestamp" < NOW()::DATE
+            GROUP BY asset_id
+        )
+        
+        SELECT
+            cap.asset_id,
+            (cap.capitalization/adv.volume) AS nvt,
             CASE
-                WHEN low_ts <= NOW() - interval '${NVT_MA_DAYS} days' THEN 1
-                ELSE 0
-            END AS old_enough
-        FROM
-        (SELECT asset_id,
-            MIN(TIMESTAMP) AS low_ts
-        FROM asset_market_capitalization
-        GROUP BY asset_id) AS time_check
+                WHEN adv.earliest_timestamp::DATE <= (NOW() - INTERVAL '7 days')::DATE THEN TRUE
+                ELSE FALSE
+            END AS old_enough,
+            adv.earliest_timestamp
+        FROM last_day_average_capitalizations AS cap
+        INNER JOIN average_daly_volumes AS adv ON adv.asset_id = cap.asset_id       
     `, {
         type: sequelize.QueryTypes.SELECT
-    }).then(results => {
+    }));
 
-        log(`2.Filtering down to coins with enough data for NVT...`);
+    if(err) {
+        return log(`ERROR(1A): ${err.message}`);
+        
+    }
+    //console.log(JSON.stringify(nvt_data, null, 4));
+    //console.log(nvt_data[0].earliest_timestamp);
+    log(`2.Filtering down to coins with enough data for NVT...`);
 
-        const good_asset_ids = _.filter(results,
-            obj => obj.old_enough
-        ).map(obj => obj.asset_id);
+    const eligible_data = _.filter(nvt_data, data => data.old_enough);
 
-        if (good_asset_ids.length == 0) {
+    if (eligible_data.length == 0) {
 
-            return Promise.resolve(`
-            ERR: No coins with enough market data to calculate NVT!
-            Earliest data was: ${_.minBy(results, 'low_ts').low_ts}
-            `);
-        } else {
+        return Promise.resolve(`
+            ERROR: No coins with enough market data to calculate NVT!
+            Earliest data was: ${_.minBy(results, 'earliest_timestamp').earliest_timestamp}
+        `);
+    }
 
-            log(`3. Executing nested averages query fo fetch per-coin NVT for ${good_asset_ids.length} coins...`);
+    log(`3. Saving ${eligible_data.length} results...`);
 
-            const days_seq = _.map(Array(NVT_MA_DAYS), (_, idx) => idx);
-            const good_assets_string = good_asset_ids.toString();
-            const day_queries = _.map(days_seq, 
-                val => dailyNVTTemplate(val, good_assets_string)
-            );
+    [ err ] = await to(sequelize.queryInterface.bulkInsert('market_history_calculation',
+        _.map(eligible_data, data => {
 
-            const joined_query = _.join(day_queries, `
-            UNION
-            `);
+            return {
+                timestamp: new Date(),
+                type: MARKET_HISTORY_CALCULATION_TYPES.NVT,
+                value: data.nvt,
+                asset_id: data.asset_id
+            }
+        })
+    ));
 
-            return sequelize.query(`
-                SELECT 
-                    asset_id as asset_id,
-                    avg(nvt) as nvt
-                FROM (
-                    ${joined_query}
-                ) as daily_nvts
-                GROUP BY asset_id
-            `, {
-                type: sequelize.QueryTypes.SELECT
-            }).then(results => {
+    if(err) {
+        return log(`ERROR(3A): ${err.message}`);
+    }
 
-                log(`4. Saving ${results.length} results...`);
-
-                if (!results.length) {
-                    log(`There are ${results.length} entries to insert, skipping insert...`);
-                    return;
-                }
-                
-                //insert all in one query
-                return sequelize.queryInterface.bulkInsert('market_history_calculation',
-                    _.map(results, obj => {
-
-                        return {
-                            timestamp: new Date(),
-                            type: MARKET_HISTORY_CALCULATION_TYPES.NVT,
-                            value: obj.nvt,
-                            asset_id: obj.asset_id
-                        }
-                    }));
-            });
-        }
-    });
 };
