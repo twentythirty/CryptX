@@ -212,13 +212,13 @@ describe('Execution Order generator job', () => {
             switch (options.replacements.recipe_order_id) {
                 case PENDING_ORDER_IDS[0]:
                     return Promise.resolve([
-                        Object.assign(exec_stats, { 
+                        Object.assign(exec_stats, {
                             status: EXECUTION_ORDER_STATUSES.Pending
                         })
                     ]);
                 case PENDING_ORDER_IDS[1]:
                     return Promise.resolve([
-                        Object.assign(exec_stats, { 
+                        Object.assign(exec_stats, {
                             status: EXECUTION_ORDER_STATUSES.InProgress
                         })
                     ]);
@@ -228,7 +228,7 @@ describe('Execution Order generator job', () => {
         });
 
         return execOrderGenerator.JOB_BODY(stubbed_config, console.log).then(orders => {
-            
+
             restoreSymbols(
                 RecipeOrder.findAll,
                 /* ExecutionOrder.findAll, */
@@ -236,7 +236,7 @@ describe('Execution Order generator job', () => {
             );
 
             const [failed_order, marked_order] = orders;
- 
+
             chai.assert.isDefined(failed_order);
             chai.assert.isDefined(marked_order);
 
@@ -246,7 +246,7 @@ describe('Execution Order generator job', () => {
             chai.expect(failed_order.instance.status).to.eq(TEST_SYMBOL_PENDING_ORDER_BASE.status, `Status changed for ${failed_order.id}`);
             chai.expect(failed_order.status).to.equal(JOB_RESULT_STATUSES.Skipped);
             chai.expect(failed_order.step).to.equal('3A');
-            
+
             chai.expect(marked_order.instance.status).to.eq(TEST_PENDING_ORDER_BASE.status, `Status changed for ${marked_order.id}`);
             chai.expect(marked_order.status).to.equal(JOB_RESULT_STATUSES.Skipped);
             chai.expect(marked_order.step).to.equal('3A');
@@ -349,8 +349,9 @@ describe('Execution Order generator job', () => {
         });
     });
 
-    it("shall skip a pending order if the execution total is less than the minimum limit of the market and order cant cover the remainder", () => {
+    it("shall create an extra chunky execution order if the post-order quantity is lower than the exchange trading threshold", () => {
         ccxtUtils.getConnector.restore();
+        const CONNECTOR_MIN = 400;
         sinon.stub(ccxtUtils, 'getConnector').callsFake(exhange => {
             const connector = {
                 name: 'Mock exchange',
@@ -358,11 +359,11 @@ describe('Execution Order generator job', () => {
                     'LTC/BTC': {
                         limits: {
                             amount: {
-                                min: 400,
+                                min: CONNECTOR_MIN,
                                 max: 1000000
                             },
                             price: {
-                                min: 400,
+                                min: CONNECTOR_MIN,
                                 max: 1000000
                             }
                         },
@@ -379,18 +380,9 @@ describe('Execution Order generator job', () => {
         let not_completed_order = Object.assign({
 
         }, TEST_SYMBOL_PENDING_ORDER_BASE, {
-            id: PENDING_ORDER_IDS[2]
+            id: PENDING_ORDER_IDS[2],
+            quantity: (CONNECTOR_MIN * 2 - 1)
         });
-        /* sinon.stub(ExecutionOrder, 'findAll').callsFake(options => {
-            switch (options.where.recipe_order_id) {
-                case PENDING_ORDER_IDS[0]:
-                    return Promise.resolve([new ExecutionOrder(TEST_PENDING_EXECUTION_ORDER)]);
-                case PENDING_ORDER_IDS[1]:
-                    return Promise.resolve([new ExecutionOrder(TEST_PARTIAL_EXECUTION_ORDER)]);
-                default:
-                    return Promise.resolve([]);
-            }
-        }); */
         sinon.stub(sequelize, 'query').callsFake((query, options) => {
             let exec_stats = {
                 status: EXECUTION_ORDER_STATUSES.FullyFilled,
@@ -398,22 +390,25 @@ describe('Execution Order generator job', () => {
                 total_quantity: 1,
                 filled: 1
             };
-
-            switch (options.replacements.recipe_order_id) {
-                case PENDING_ORDER_IDS[0]:
-                    return Promise.resolve([
-                        Object.assign(exec_stats, { 
-                            status: EXECUTION_ORDER_STATUSES.Pending
-                        })
-                    ]);
-                case PENDING_ORDER_IDS[1]:
-                    return Promise.resolve([
-                        Object.assign(exec_stats, { 
-                            status: EXECUTION_ORDER_STATUSES.InProgress
-                        })
-                    ]);
-                default:
-                    return Promise.resolve([]);
+            if (options.replacements) {
+                switch (options.replacements.recipe_order_id) {
+                    case PENDING_ORDER_IDS[0]:
+                        return Promise.resolve([
+                            Object.assign(exec_stats, {
+                                status: EXECUTION_ORDER_STATUSES.Pending
+                            })
+                        ]);
+                    case PENDING_ORDER_IDS[1]:
+                        return Promise.resolve([
+                            Object.assign(exec_stats, {
+                                status: EXECUTION_ORDER_STATUSES.InProgress
+                            })
+                        ]);
+                    default:
+                        return Promise.resolve([]);
+                }
+            } else {
+                return Promise.resolve([]);
             }
         });
         sinon.stub(RecipeOrder, 'findAll').callsFake(options => {
@@ -436,24 +431,28 @@ describe('Execution Order generator job', () => {
                 })
             ])
         });
+        sinon.stub(ExecutionOrder, 'create').callsFake(options => {
+
+            return Promise.resolve(options);
+        });
 
         return execOrderGenerator.JOB_BODY(stubbed_config, console.log).then(processed_recipes => {
 
             restoreSymbols(
                 RecipeOrder.findAll,
                 ExecutionOrder.findAll,
+                ExecutionOrder.create,
                 ExecutionOrderFill.findAll,
                 InstrumentExchangeMapping.find,
                 sequelize.query
             );
 
-            const [failed_recipe, execution_orders] = processed_recipes;
-                console.log(JSON.stringify(processed_recipes, null, 4));
-            chai.expect(failed_recipe.instance).to.deep.equal(not_completed_order, "Order should not have changed!");
-            chai.expect(failed_recipe.status).to.equal(JOB_RESULT_STATUSES.Skipped);
-            chai.expect(failed_recipe.step).to.equal('4C');
+            const [
+                [recipe, execution_order]
+            ] = processed_recipes;
 
-            chai.expect(execution_orders).to.be.undefined;
+            chai.expect(execution_order).to.be.not.undefined;
+            chai.expect(execution_order.total_quantity).to.equal('' + not_completed_order.quantity)
         });
 
     });
@@ -606,7 +605,7 @@ describe('Execution Order generator job', () => {
         }); */
 
         sinon.stub(sequelize, 'query').callsFake((query, options) => {
-            
+
 
             switch (options.replacements.recipe_order_id) {
                 case PENDING_ORDER_IDS[0]:
@@ -617,16 +616,16 @@ describe('Execution Order generator job', () => {
                         filled: PENDING_ORDER_QNTY / 2 / 2
                     };
                     return Promise.resolve([
-                        Object.assign(exec_stats, { 
+                        Object.assign(exec_stats, {
                             status: EXECUTION_ORDER_STATUSES.filled
                         })
                     ]);
-                /* case PENDING_ORDER_IDS[1]:
-                    return Promise.resolve([
-                        Object.assign(exec_stats, { 
-                            status: EXECUTION_ORDER_STATUSES.InProgress
-                        })
-                    ]); */
+                    /* case PENDING_ORDER_IDS[1]:
+                        return Promise.resolve([
+                            Object.assign(exec_stats, { 
+                                status: EXECUTION_ORDER_STATUSES.InProgress
+                            })
+                        ]); */
                 default:
                     return Promise.resolve([]);
             }

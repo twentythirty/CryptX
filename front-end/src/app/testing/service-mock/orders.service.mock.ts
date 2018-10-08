@@ -36,7 +36,7 @@ export const getOrderGroupOfRecipeData: OrderGroupOfRecipeResponse = {
   success: true,
   recipe_order_group: new OrderGroup({
     approval_comment: 'as',
-    approval_user: 'Tautvydas Petkunas',
+    approval_user: 'Test User',
     created_timestamp: 1537789964411,
     id: 67,
     status: 'orders_group.status.83'

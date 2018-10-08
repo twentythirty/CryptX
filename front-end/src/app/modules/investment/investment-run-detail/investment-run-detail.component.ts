@@ -290,7 +290,7 @@ export class InvestmentRunDetailComponent extends TimelineDetailComponent implem
     );
   }
 
-  public openListRow(row: any): void {
+  public openDetailRow(row: any): void {
     this.router.navigate([`/run/recipe/${row.id}`]);
   }
 

@@ -188,6 +188,7 @@ export class TimelineDetailComponent extends DataTableCommonManagerComponent imp
 
   public openSingleRow(row: any): void {}
   public openListRow(row: any): void {}
+  public openDetailRow(row: any): void {}
 
   /**
    * Additional

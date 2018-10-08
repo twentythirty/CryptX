@@ -80,7 +80,7 @@
   <app-data-table
     *ngIf="detailTableDataSource"
     [dataSource]="detailTableDataSource"
-    (openRow)="openListRow($event)"
+    (openRow)="openDetailRow($event)"
     [columnsToShow]="detailTableColumnsToShow"
   ></app-data-table>
 
