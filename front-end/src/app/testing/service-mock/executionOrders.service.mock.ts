@@ -26,3 +26,8 @@ export const getAllExecutionOrdersData: OrderAllResponse = {
     footer: [],
     count: 1
 };
+
+export const changeExecutionOrderStatusResponse = {
+  success: true,
+  status: 'execution_orders.status.61'
+};

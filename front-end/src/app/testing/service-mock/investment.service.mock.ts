@@ -216,3 +216,52 @@ export const getAllExecutionOrdersData = {
   ]
 };
 
+export const getSingleExecutionOrderData = {
+  action_logs: [
+    {
+      id: 708600,
+      level: 1,
+      timestamp: 1538992501226,
+      translationArgs: {
+        amount: 1654
+      },
+      translationKey: 'logs.execution_orders.generate_fill'
+    }
+  ],
+  execution_order: {
+    completion_time: 1538992500876,
+    exchange: 'HitBTC',
+    exchange_id: 5,
+    exchange_trading_fee: '0.7569872667155884',
+    filled_quantity: '16963',
+    id: 146600,
+    instrument: 'BCN/BTC',
+    instrument_id: 3825,
+    investment_run_id: 86,
+    price: '75.69872667155883',
+    recipe_order_id: 1010,
+    side: 'execution_orders.side.999',
+    status: 'execution_orders.status.63',
+    submission_time: 1538992205009,
+    total_quantity: '16963',
+    type: 'execution_orders.type.71'
+  },
+  success: true
+};
+
+export const getAllExecutionOrderFillsData = {
+  count: 1,
+  success: true,
+  footer: [],
+  execution_order_fills: [
+    {
+      execution_order_id: 146600,
+      fill_price: '75.69872667155883',
+      fill_time: 1538992500876,
+      id: 146697,
+      quantity: '16963'
+    }
+  ]
+};
+
+
