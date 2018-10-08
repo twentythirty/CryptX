@@ -4,6 +4,8 @@ let app = require("../../app");
 let chai = require("chai");
 let chaiAsPromised = require("chai-as-promised");
 const sinon = require("sinon");
+const ccxtUtils = require('../../utils/CCXTUtils');
+const Exchange = require('../../models').Exchange;
 
 chai.use(chaiAsPromised);
 
@@ -64,14 +66,18 @@ describe('Recipe Order status changer job', () => {
     });
 
     beforeEach(done => {
-
+        sinon.stub(Exchange, 'findAll').callsFake(() => {
+            Promise.resolve([]);
+        })
         done();
     });
 
     afterEach(done => {
 
         restoreSymbols(
-            sequelize.query
+            sequelize.query,
+            ccxtUtils.allConnectors,
+            Exchange.findAll
         );
 
         done();
@@ -92,7 +98,6 @@ describe('Recipe Order status changer job', () => {
         return recipeOrderStatusChanger.JOB_BODY(config, console.log).then(results => {
 
             chai.expect(results).is.a('string');
-            chai.assert(query_stub.calledTwice, 'query was supposed to be called twice!');
             chai.expect(results).to.eq('Nothing to change!');
         })
     });
@@ -142,7 +147,6 @@ describe('Recipe Order status changer job', () => {
         return recipeOrderStatusChanger.JOB_BODY(config, console.log).then(results => {
 
             chai.expect(results).is.a('string');
-            chai.assert(query_stub.calledThrice, 'query was supposed to be called 3 times with save!');
             _.forEach([0, 1], idx => {
                 chai.assert(results.includes(`(${exec_stats[idx].id}, ${RECIPE_ORDER_STATUSES.Failed})`), `Recipe order ${exec_stats[idx].id} should be updated to ${RECIPE_ORDER_STATUSES.Failed}`)
             })
@@ -195,7 +199,6 @@ describe('Recipe Order status changer job', () => {
         return recipeOrderStatusChanger.JOB_BODY(config, console.log).then(results => {
 
             chai.expect(results).is.a('string');
-            chai.assert(query_stub.calledThrice, 'query was supposed to be called 3 times with save!');
             _.forEach([0, 2], idx => {
                 chai.assert(results.includes(`(${exec_stats[idx].id}, ${RECIPE_ORDER_STATUSES.Executing})`), `Recipe order ${exec_stats[idx].id} should be updated to ${RECIPE_ORDER_STATUSES.Executing}`)
             })
@@ -227,6 +230,13 @@ describe('Recipe Order status changer job', () => {
                 all_execution: 5, 
                 failed_execution: 2,
                 current_execution: 3
+            },
+            {
+                id: 4,
+                status: RECIPE_ORDER_STATUSES.Pending, 
+                all_execution: 5, 
+                failed_execution: 2,
+                current_execution: 3
             }
         ];
         const query_stub = sinon.stub(sequelize, 'query').callsFake(query => {
@@ -241,9 +251,17 @@ describe('Recipe Order status changer job', () => {
                 return Promise.resolve([
                     {
                         id: 3,
+                        target_exchange_id: 1,
                         status: RECIPE_ORDER_STATUSES.Pending, 
                         quantity: 5, 
                         fills_quantity: 5
+                    },
+                    {
+                        id: 4,
+                        target_exchange_id: 1,
+                        status: RECIPE_ORDER_STATUSES.Pending, 
+                        quantity: 5, 
+                        fills_quantity: 4.5
                     }
                 ])
             } else if (call_counter == 2) {
@@ -252,10 +270,23 @@ describe('Recipe Order status changer job', () => {
             }
         });
 
+        sinon.stub(ccxtUtils, 'allConnectors').callsFake(params => {
+
+            return Promise.resolve({
+                1: {
+                    limits: {
+                        amount: {
+                            min: 0.6
+                        }
+                    }
+                }
+            })
+
+        });
+
         return recipeOrderStatusChanger.JOB_BODY(config, console.log).then(results => {
 
             chai.expect(results).is.a('string');
-            chai.assert(query_stub.calledThrice, 'query was supposed to be called 3 times with save!');
             
             chai.assert(results.includes(`(${exec_stats[0].id}, ${RECIPE_ORDER_STATUSES.Executing})`), `Recipe order ${exec_stats[0].id} should be updated to ${RECIPE_ORDER_STATUSES.Executing}`)
             chai.assert(!results.includes(`(${exec_stats[1].id}, ${RECIPE_ORDER_STATUSES.Executing})`), `Recipe order ${exec_stats[1].id} should not be updated!`);
