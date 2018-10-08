@@ -376,7 +376,6 @@ When('I fetch the details of the Investment Run', async  function() {
         .post(`/v1/investments/${investment_run_id}`)
         .set('Authorization', World.current_user.token)
         .send({
-            limit: 10,
             order: [ { by: 'capitalization', order: 'desc' } ]
         }),
         chai

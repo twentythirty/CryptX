@@ -540,9 +540,9 @@ Given('the current Asset Capitalization is as follows:', async function(table) {
     const nvt = [];
     const capitalizations = asset_data.map(data => {
 
-        const asset = assets.find(a => a.symbol === data.asset.trim());
+        const asset = assets.find(a => a.symbol === data.asset.trim() && a.long_name === data.name.trim());
 
-        expect(asset, `Expected to find asset ${data.asset}`).to.be.not.undefined;
+        expect(asset, `Expected to find asset ${data.asset}, ${data.name}`).to.be.not.undefined;
 
         if(data.nvt) {
             nvt.push({
