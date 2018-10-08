@@ -290,10 +290,7 @@ export class InvestmentRunDetailComponent extends TimelineDetailComponent implem
     );
   }
 
-  public openListRow(row: any): void {
-    if (row.nvt_ratio) {
-      return;
-    }
+  public openDetailRow(row: any): void {
     this.router.navigate([`/run/recipe/${row.id}`]);
   }
 

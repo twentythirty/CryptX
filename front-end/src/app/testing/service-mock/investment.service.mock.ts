@@ -60,7 +60,7 @@ export const getSingleRecipeData = {
     created_timestamp: '2018-08-02T07:33:55.248Z',
     id: 7,
     investment_run_id: 7,
-    user_created: 'Tautvydas Petkunas',
+    user_created: 'Test User',
     user_created_id: 3
   }
 };
@@ -114,12 +114,12 @@ export const getAllRecipesData = {
       approval_comment: 'NO',
       approval_status: 'recipes.status.42',
       approval_timestamp: 1538634240146,
-      approval_user: 'Tautvydas Petkunas',
+      approval_user: 'Test User',
       approval_user_id: 3,
       created_timestamp: 1538630980595,
       id: 210,
       investment_run_id: 155,
-      user_created: 'Tautvydas Petkunas',
+      user_created: 'Test User',
       user_created_id: 3
     }
   ]
@@ -150,7 +150,7 @@ export const getSingleInvestmentData = {
     status: 'investment.status.302',
     strategy_type: 'investment.strategy.101',
     updated_timestamp: 1538630993430,
-    user_created: 'Tautvydas Petkunas',
+    user_created: 'Test User',
     user_created_id: 3
   }
 };
