@@ -90,3 +90,82 @@ export const getAllRecipeOrdersData = {
   count: 1
 };
 
+export const getDepositAmountsData = {
+  success: true,
+  footer: [],
+  deposit_amounts: [
+    {
+      amount: '123456',
+      currency_name: 'US Dollars',
+      currency_symbol: 'USD',
+      id: 207,
+      investment_run_id: 155,
+      value_usd: '123456'
+    }
+  ]
+};
+
+export const getAllRecipesData = {
+  count: 1,
+  footer: [],
+  success: true,
+  recipe_runs: [
+    {
+      approval_comment: 'NO',
+      approval_status: 'recipes.status.42',
+      approval_timestamp: 1538634240146,
+      approval_user: 'Tautvydas Petkunas',
+      approval_user_id: 3,
+      created_timestamp: 1538630980595,
+      id: 210,
+      investment_run_id: 155,
+      user_created: 'Tautvydas Petkunas',
+      user_created_id: 3
+    }
+  ]
+};
+
+export const getSingleInvestmentData = {
+  asset_mix: [
+    {
+      capitalization: '150193862',
+      comment: null,
+      id: 1536,
+      long_name: 'Holo',
+      market_share: '0.0688582945596126',
+      nvt_ratio: '32.1169106386237957',
+      status: 'assets.status.400',
+      symbol: 'HOT'
+    }
+  ],
+  count: 1,
+  footer: [],
+  success: true,
+  investment_run: {
+    completed_timestamp: null,
+    deposit_usd: '0',
+    id: 155,
+    is_simulated: 'investment.is_simulated.yes',
+    started_timestamp: 1538630845461,
+    status: 'investment.status.302',
+    strategy_type: 'investment.strategy.101',
+    updated_timestamp: 1538630993430,
+    user_created: 'Tautvydas Petkunas',
+    user_created_id: 3
+  }
+};
+
+export const createRecipeRunResponse = {
+  success: true,
+  recipe_run: {
+    id: 10,
+    created_timestamp: 1525424340810,
+    investment_run_id: 10,
+    user_created_id: 4,
+    approval_status: 41,
+    approval_timestamp: 1525424340810,
+    approval_comment: 'I approve this recipe run because...',
+    approval_user_id: 6
+  }
+};
+
