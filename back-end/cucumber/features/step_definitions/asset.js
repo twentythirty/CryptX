@@ -1016,7 +1016,21 @@ Then('I see the status change logs:', async function(data_table_raw) {
     utils.compareViewTables.bind(this)(asset_status_history, example_history, {
         'type': (value) => `assets.status.${value}`
     });
-})
+
+    this.current_asset_status_history = asset_status_history;
+});
+
+Then(/the rationale from change at (.*) has text "(.*)"/, async function(change_time_text, change_rationale) {
+
+    chai.assert.isNotNull(this.current_asset_status_history, 'Context needs to have asset status history for this step!');
+    const timestamp = new Date(change_time_text);
+    chai.assert.notEqual(timestamp.toString(), 'Invalid Date', `The provided timestamp text ${change_time_text} did not resolve to a valid date!`);
+
+    const relevant_change = _.find(this.current_asset_status_history, status => status.timestamp.getTime() == timestamp.getTime());
+    chai.assert.isNotNull(relevant_change, `Did not find status change at ${timestamp}`);
+    
+    chai.assert.equal(relevant_change.comment, change_rationale, `Relevant status change rationale different, expected ${change_rationale}!`);
+});
 
 Then('I can see the new status and history by getting the Asset details', function () {
 

@@ -30,6 +30,8 @@ Feature: View asset details
 			| symbol | is_cryptocurrency | long_name | is_base | is_deposit | capitalization | nvt_ratio | market_share | capitalization_updated   | status 	 |
 			| TOK	 | Yes				 | Tokugawa	 | No 	   | No 		| 15000			 | 0.0175	 | 0.5			| 2018-10-01T00:00:00.000Z | Whitelisted |
 		And I see the status change logs:
-			| comment 			 | timestamp 				| type 			|
-			| cucumber whitelist | 2018-02-05T00:00:00.000Z	| Whitelisted	|
-			| cucumber blacklist | 2017-07-03T00:00:00.000Z	| Blacklisted	|
+			| timestamp 				| type 			|
+			| 2018-02-05T00:00:00.000Z	| Whitelisted	|
+			| 2017-07-03T00:00:00.000Z	| Blacklisted	|
+		And the rationale from change at 2018-02-05 has text "cucumber whitelist"
+		And the rationale from change at 2017-07-03 has text "cucumber blacklist"
