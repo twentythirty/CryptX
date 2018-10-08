@@ -2,7 +2,7 @@ Feature: Initiate a recipe run
 
     Investment Manager has the ability to initiate a recipe run
     for the selected investment run.
-
+    
     Background:
     
         Given the system has an Investment Manager

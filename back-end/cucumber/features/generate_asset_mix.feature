@@ -91,8 +91,6 @@ Feature: Generating an Asset mix
 
 
 
-
-
         Scenario Outline: generating a <strategy_type> Asset Mix
 
             Given the Assets <blacklisted_assets> are Blacklisted

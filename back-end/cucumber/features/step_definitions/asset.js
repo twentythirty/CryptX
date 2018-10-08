@@ -74,13 +74,7 @@ Given(/^the system has some (.*) Assets$/, async function(type) {
 
     if(assets.length === amount) return;
  
-    assets = await Asset.findAll({
-        where: {
-            is_base: false, is_deposit: false
-        },
-        raw: true,
-        limit: amount
-    });
+    assets = await Asset.findAllMapped(amount);
 
     return AssetStatusChange.bulkCreate(assets.map(asset => {
         return {
@@ -134,10 +128,7 @@ Given(/^the system has Asset Market Capitalization for the last (.*) (hours|days
 
     }
 
-    const assets = await Asset.findAll({
-        where: {},
-        raw: true
-    });
+    const assets = await Asset.findAllMapped();
 
     const current_capitalization = await AssetMarketCapitalization.count({
         where: {
@@ -750,7 +741,7 @@ When(/^I select a (Blacklisted|Whitelisted|Greylisted) Asset$/, async function(t
 
     const [ asset ] = await sequelize.query(queryAssetByType(type_map[type], 1), { model: Asset })
 
-    expect(asset, 'Expected to find a Greylisted asset').to.be.not.null;
+    expect(asset, 'Expected to find a Greylisted asset').to.be.not.undefined;
 
     this.current_asset = asset;
 
@@ -782,18 +773,11 @@ When(/^I (Blacklist|Whitelist|Greylist|Degreylist) (the|an|any) Asset$/, async f
         case 'an':
         case 'any':
         default: 
-            asset = await Asset.findOne({
-                where: {
-                    is_base: false,
-                    is_deposit: false
-                },
-                raw: true
-            });
+            [ asset ] = await Asset.findAllMapped(1);
+            this.current_asset = asset;
             break;
 
     }
-
-    this.current_asset = asset;
 
     this.current_action = status;
     
@@ -1346,9 +1330,10 @@ const queryAssetByType = (type, limit = 1, id = null) => {
             SELECT DISTINCT ON(asset_id) asset_id, "timestamp", "type" FROm asset_status_change
             ORDER BY asset_id, "timestamp" DESC
         )
-        SELECT * FROM asset AS a
+        SELECT a.* FROM asset AS a
         LEFT JOIN newest_statuses AS n ON n.asset_id = a.id
-        WHERE ("type" = ${type} ${type === INSTRUMENT_STATUS_CHANGES.Whitelisting ? `OR "type" IS NULL` : ''}) ${id ? `AND id = ${id}` : ''}
+        INNER JOIN asset_market_capitalization AS cap ON cap.asset_id = a.id
+        WHERE ("type" = ${type} ${type === INSTRUMENT_STATUS_CHANGES.Whitelisting ? `OR "type" IS NULL` : ''}) ${id ? `AND a.id = ${id}` : ''}
         LIMIT ${limit}
     `
 };

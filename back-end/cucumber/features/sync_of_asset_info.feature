@@ -42,4 +42,4 @@ Feature: Synchronization of asset information
             | 6  |  152002101  | 36452  | 38.0  |
             | 7  |  151895643  | 35846  | 37.8  |
         When the system finished the task "calculate market history"
-        Then the BTC weekly NVT will appropriately be equal to 4346.59944
+        Then the BTC weekly NVT will appropriately be equal to 4346.599437
