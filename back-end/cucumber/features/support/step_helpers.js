@@ -103,7 +103,7 @@ module.exports.extractTimeLineField = (card, object, field) => {
 
         case 'amount':
             result = _.get(object, 'amount') || _.get(object, 'count');
-            if(result) result = parseInt(reuslt);
+            if(result) result = String(result);
             break;
 
         case 'time':

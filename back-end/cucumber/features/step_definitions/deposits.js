@@ -53,17 +53,46 @@ async function generateDeposits(status) {
 }
 
 
-Given(/^the system has (.*) Deposits$/, async function (status) {
+Given(/^the system has (Pending|Completed|Faulty) Deposits$/, async function (status) {
 
     const records = await generateDeposits.bind(this)(status);
     const RecipeRunDeposit = require('../../../models').RecipeRunDeposit;
-
+    
     return RecipeRunDeposit.bulkCreate(records, {
         returning: true
     }).then(deposits => {
 
         this.current_deposits = deposits;
     });
+});
+
+Given(/^the system has (\d*) (Pending|Completed) Deposits$/, async function (amount, status) {
+
+    amount = parseInt(amount);
+    
+    const { Asset, RecipeRunDeposit } = require('../../../models');
+    
+    const base_assets = await Asset.findAll({
+        where: { is_base: true }
+    });
+
+    const deposits = [];
+    for(let i = 0; i < amount; i++) {
+
+        deposits.push({
+            amount: _.random(10, 200, true),
+            asset_id: base_assets[_.random(0, base_assets.length - 1, false)].id,
+            creation_timestamp: new Date(),
+            depositor_user_id: World.users.depositor.id,
+            fee: _.random(0.1, 2, true),
+            recipe_run_id: this.current_recipe_run.id,
+            status: RECIPE_RUN_DEPOSIT_STATUSES[status] || RECIPE_RUN_DEPOSIT_STATUSES.Completed
+        });
+
+    }
+
+    this.current_deposits = await RecipeRunDeposit.bulkCreate(deposits, { returning: true });
+
 });
 
 Given('the system has one recipe run deposit with valid amount and fee', async function() {
