@@ -31,7 +31,7 @@ Given('there are no Execution Orders in the system', function () {
 
 });
 
-async function generateExecutionOrders(amount, order_status, for_exchange) {
+async function generateExecutionOrders(amount, order_status, for_exchange, order_id) {
 
     chai.assert.isNumber(amount, `Specified execution orders amount ${amount} is not a number!`);
     chai.assert.includeMembers(Object.values(EXECUTION_ORDER_STATUSES), [order_status], `Specified execution orders status ${order_status} needs to be a constant from execution orders statuses set!`);
@@ -45,12 +45,13 @@ async function generateExecutionOrders(amount, order_status, for_exchange) {
     } = require('../../../models');
     const ccxtUtil = require('../../../utils/CCXTUtils');
 
-    const exisitng_orders = await ExecutionOrder.findAll({
-        where: {
-            exchange_id: for_exchange.id,
-            status: order_status
-        }
-    });
+    let where = {
+        exchange_id: for_exchange.id,
+        status: order_status
+    };
+    if(order_id) where.recipe_order_id = order_id;
+
+    const exisitng_orders = await ExecutionOrder.findAll({ where });
 
     if (exisitng_orders.length >= amount) {
         return exisitng_orders;
@@ -86,6 +87,7 @@ async function generateExecutionOrders(amount, order_status, for_exchange) {
         new_execution_orders.push({
             exchange_id: for_exchange.id,
             instrument_id: instrument.id,
+            recipe_order_id: order_id,
             side: ORDER_SIDES.Buy,
             status: order_status,
             type: EXECUTION_ORDER_TYPES.Market,
@@ -98,7 +100,7 @@ async function generateExecutionOrders(amount, order_status, for_exchange) {
     new_execution_orders = await ExecutionOrder.bulkCreate(new_execution_orders, {
         returning: true
     });
-
+    
     return new_execution_orders;
 }
 
@@ -113,7 +115,11 @@ Given(/^there (are|is) (.*) (.*) (Execution Orders|Execution Order) for (.*)$/, 
     });
     chai.assert.isDefined(EXECUTION_ORDER_STATUSES[status], `No key ${status} present for execution order status constants!`);
 
-    this.current_execution_orders = await generateExecutionOrders(amount, EXECUTION_ORDER_STATUSES[status], exchange);
+    let order_id;
+    if(this.current_recipe_orders) order_id = this.current_recipe_orders[_.random(0, this.current_recipe_orders.length - 1, false)].id;
+    else if(this.current_recipe_order) order_id = this.current_recipe_order.id
+
+    this.current_execution_orders = await generateExecutionOrders(amount, EXECUTION_ORDER_STATUSES[status], exchange, order_id);
 
     if(amount === 1 && this.current_execution_orders) this.current_execution_order = this.current_execution_orders[0];
 

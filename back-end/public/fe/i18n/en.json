@@ -297,11 +297,11 @@
   "execution_orders_timeline": {
     "status": {
       "61": "Pending",
-      "62": "InProgress",
-      "63": "FullyFilled",
-      "64": "PartiallyFilled",
+      "62": "In Progress",
+      "63": "Fully Filled",
+      "64": "Partially Filled",
       "66": "Failed",
-      "67": "NotFilled"
+      "67": "Not Filled"
     }
   },
 
