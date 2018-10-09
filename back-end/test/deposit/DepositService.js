@@ -40,6 +40,10 @@ describe('DepositService testing', () => {
 
     const ActionLogUtil = require('./../../utils/ActionLogUtil');
 
+    const MOCK_USER = {
+        logAction() { return Promise.resolve() }
+    }
+
     describe('and method submitDeosit shall', () => {
 
         const { Pending, Completed } = MODEL_CONST.RECIPE_RUN_DEPOSIT_STATUSES;
@@ -96,29 +100,29 @@ describe('DepositService testing', () => {
                 { deposit_management_fee: '22f', amount: 'fg' },
                 { deposit_management_fee: [], amount: [1] }
             ], params => {
-                chai.assert.isRejected(DepositService.submitDeposit(2, 1, params));
+                chai.assert.isRejected(DepositService.submitDeposit(2, MOCK_USER, params));
             }))
         });
 
         it('reject if the deposit status is not Pending', () => {
             const valid_update = { deposit_management_fee: 45.123123, amount: 21.31231 };
 
-            return chai.assert.isRejected(DepositService.submitDeposit(1, 1, valid_update));
+            return chai.assert.isRejected(DepositService.submitDeposit(1, MOCK_USER, valid_update));
         });
 
         it('resolve in a null when a deposit is not found at all', () => {
             const valid_update = { deposit_management_fee: 45.123123, amount: 21.31231 };
 
-            return DepositService.submitDeposit(999, 1, valid_update).then(deposit => {
+            return DepositService.submitDeposit(999, MOCK_USER, valid_update).then(deposit => {
                 chai.expect(deposit).to.be.null;
             });
         });
 
         it('submit a Pending deposit and update it appropriately', () => {
             const valid_update = { deposit_management_fee: 45.123123, amount: 21.31231 };
-            const user_id = 1
+            const user = MOCK_USER
 
-            return DepositService.submitDeposit(2, user_id, valid_update).then(deposit_data => {
+            return DepositService.submitDeposit(2, user, valid_update).then(deposit_data => {
 
                 const deposit = deposit_data.updated_deposit;
 

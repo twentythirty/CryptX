@@ -155,7 +155,7 @@ const generateRecipeRunDeposits = async function (recipe_run_id) {
 }
 module.exports.generateRecipeRunDeposits = generateRecipeRunDeposits;
 
-const submitDeposit = async (deposit_id, user_id, updated_values = {}) => {
+const submitDeposit = async (deposit_id, user, updated_values = {}) => {
   const { deposit_management_fee, amount } = updated_values;
 
   if(_.isEmpty(updated_values)){
@@ -182,6 +182,16 @@ const submitDeposit = async (deposit_id, user_id, updated_values = {}) => {
 
   [ err, deposit ] = await to(deposit.save());
   if(err) TE(err.message);
+
+  await user.logAction('modified', { 
+    previous_instance: original_values, 
+    updated_instance: deposit,
+    ignore: ['completion_timestamp'],
+    replace: { status: { 
+      [RECIPE_RUN_DEPOSIT_STATUSES.Pending]: `{deposits.status.${RECIPE_RUN_DEPOSIT_STATUSES.Pending}}`, 
+      [RECIPE_RUN_DEPOSIT_STATUSES.Completed]: `{deposits.status.${RECIPE_RUN_DEPOSIT_STATUSES.Completed}}`,
+    } }
+  });
 
   return { original_deposit: original_values, updated_deposit: deposit };
 };
