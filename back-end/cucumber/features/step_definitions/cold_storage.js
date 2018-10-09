@@ -293,8 +293,6 @@ When(/^I create a new (LCI|MCI) Cold Storage Account$/, function(strategy) {
 
 When('I retrieve the Cold Storage Transfer list', async function() {
 
-
-
     return chai
         .request(this.app)
         .post(`/v1/cold_storage/all`)
@@ -310,6 +308,46 @@ When('I retrieve the Cold Storage Transfer list', async function() {
 
             this.current_cold_storage_transfer_list = result.body.transfers;
             this.current_cold_storage_transfer_footer = result.body.footer;
+
+        });
+
+});
+
+When(/^I edit (the|an) Account with new values:$/, async function(pointer, table) {
+
+    const { ColdStorageAccount } = require('../../../models');
+
+    const [ updated_values ] = table.hashes();
+
+    let account = {};
+    switch(pointer) {
+
+        case 'the':
+            account = this.current_cold_storage_account;
+            break;
+
+        case 'an':
+        default:
+            acount = await ColdStorageAccount.findOne();
+            this.current_cold_storage_account = acount;
+            break;
+
+    }
+
+    this.previous_cold_storage_account = account;
+
+    return chai
+        .request(this.app)
+        .post(`/v1/cold_storage/accounts/${account.id}/edit`)
+        .set('Authorization', World.current_user.token)
+        .send(updated_values)
+        .then(result => {   
+
+            expect(result).to.have.status(200);
+
+            expect(result.body.account).to.be.an('object', 'Expected to find an updated Cold Storage account object');
+
+            this.current_cold_storage_account = result.body.account;
 
         });
 
@@ -540,5 +578,30 @@ Then('the Transfers footer will show a number of Pending Transfers', function() 
     const pending_transfers = transfers.filter(t => t.status === `cold_storage_transfers.status.${COLD_STORAGE_ORDER_STATUSES.Pending}`)
 
     expect(parseInt(footer_column.value)).to.equal(pending_transfers.length, 'Expected the number of pending Transfers to equal the number in the footer');
+
+});
+
+Then(/^the Cold Storage Account (\w*) will be "(.*)"$/, async function(field, expected_value) {
+
+    const { ColdStorageAccount } = require('../../../models');
+
+    const account = await ColdStorageAccount.findById(this.current_cold_storage_account.id);
+
+    expect(account, `Expected to find Cold Storage Account with id "${this.current_cold_storage_account.id}"`).to.be.not.null;
+
+    this.current_cold_storage_account = account;
+
+    expect(account[field]).to.equal(expected_value, `Expected Cold Storage Account ${field} to equal ${expected_value}`);
+
+});
+
+Then('the Cold Storage Account asset, strategy and custodian will remain unchanged', function() {
+
+    const updated = this.current_cold_storage_account;
+    const original = this.previous_cold_storage_account;
+
+    expect(original.asset_id).to.equal(updated.asset_id, `Expected the updated Cold Storage Account to have the same asset as the original`);
+    expect(original.strategy_type).to.equal(updated.strategy_type, `Expected the updated Cold Storage Account to have the same strategy as the original`);
+    expect(original.custodian_id).to.equal(updated.custodian_id, `Expected the updated Cold Storage Account to have the same custodian as the original`);
 
 });
