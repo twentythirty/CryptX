@@ -100,6 +100,7 @@ ROUTE_MATCHERS = {
     GetColdStorageCustodians: /\/cold_storage\/custodians\/all$/,
     GetColdStorageCustodiansColLOV: /\/cold_storage\/custodians\/header_lov\/\w+$/,
     AddColdstorageAccount: /\/cold_storage\/accounts\/add$/,
+    EditColdStorageAccount: /\/cold_storage\/accounts\/d+\/edit$/,
     GetColdstorageAccounts: /\/cold_storage\/accounts\/all$/,
     GetColdstorageAccountsColLOV: /\/cold_storage\/accounts\/header_lov\/\w+$/,
     GetColdstorageAccountsFees: /\/cold_storage\/accounts\/fees/,

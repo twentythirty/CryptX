@@ -116,6 +116,21 @@ const addColdstorageAccount = async function (req, res) {
 };
 module.exports.addColdstorageAccount = addColdstorageAccount;
 
+const editColdStorageAccount = async (req, res) => {
+
+  const { address, tag } = req.body;
+  const { account_id } = req.params;
+
+  const [ err, account ] = await to(ColdStorageService.editColdStorageAccount(account_id, address, tag));
+
+  if(err) return ReE(res, err.message, 422);
+  if(!account) return ReE(res, `Account was not found with id "${account_id}"`, 404);
+
+  return ReS(res, { account });
+
+};
+module.exports.editColdStorageAccount = editColdStorageAccount;
+
 const getColdstorageAccounts = async function (req, res) {
 
   const { seq_query, sql_where } = req;

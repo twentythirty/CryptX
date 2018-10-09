@@ -998,6 +998,13 @@ router.post(
   ColdstorageController.addColdstorageAccount
 );
 router.post(
+  ROUTES.EditColdStorageAccount.router_string,
+  stateless_auth,
+  res_new_token,
+  check_permissions,
+  ColdstorageController.editColdStorageAccount
+);
+router.post(
   ROUTES.GetColdstorageAccounts.router_string,
   stateless_auth,
   res_new_token,

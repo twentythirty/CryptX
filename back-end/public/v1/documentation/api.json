@@ -296,6 +296,49 @@
         ]
       }
     },
+    "/cold_storage/accounts/{account_id}/edit": {
+      "post": {
+        "tags": [
+          "cold storage"
+        ],
+        "summary": "Edit a cold storage accounts",
+        "description": "Edit cold storage account address or tag, or both",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "account_id",
+            "in": "path",
+            "description": "Cold Storage Account id",
+            "required": true,
+            "type": "integer"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "description": "Data needed to edit a cold storage account",
+            "required": false,
+            "schema": {
+              "$ref": "#/definitions/EditColdStorageAccountParams"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "$ref": "#/definitions/ColdStorageAccountResponse"
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
     "/exchanges/all": {
       "get": {
         "tags": [
@@ -4834,6 +4877,7 @@
     "AddColdStorageAccountParams": {
       "description": "Cold storage transfer information",
       "type": "object",
+      "required": ["strategy_type", "asset_id", "custodian_id", "address"],
       "properties": {
         "strategy_type": {
           "type": "number",
@@ -4850,6 +4894,24 @@
         "address": {
           "type": "string",
           "example": "1F1tAaz5x1HUXrCNLbtMDqcw6o5GNn4xqX"
+        },
+        "tag": {
+          "type": "string",
+          "example": "BTC-213"
+        }
+      }
+    },
+    "EditColdStorageAccountParams": {
+      "description": "Cold storage transfer information",
+      "type": "object",
+      "properties": {
+        "address": {
+          "type": "string",
+          "example": "1F1tAaz5x1HUXrCNLbtMDqcw6o5GNn4xqX"
+        },
+        "tag": {
+          "type": "string",
+          "example": "BTC-213"
         }
       }
     },

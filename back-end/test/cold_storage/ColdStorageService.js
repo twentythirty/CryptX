@@ -212,7 +212,125 @@ describe('ColdStorage testing', () => {
 
     });
 
-    describe('and methode changeTransferStatus shall', () => {
+    describe('and method editColdStorageAccount shall', () => {
+
+        const editColdStorageAccount = ColdStorageService.editColdStorageAccount;
+
+        const MOCK_ACCOUNT_1 = {
+            id: 1,
+            strategy_type: STRATEGY_TYPES.LCI,
+            address: 'asdffghj',
+            tag: 'AD#2',
+            asset_id: 2,
+            cold_storage_custodian_id: 3,
+            save: function() {
+                return Promise.resolve(
+                    Object.assign({}, this)
+                );
+            }
+        };
+
+        const MOCK_ACCOUNTS = [MOCK_ACCOUNT_1];
+
+        const NEW_ADDRESS = 'fou43fuiboi3o4ho34ih';
+        const NEW_TAG = 'ZIPZOOPP'
+
+        beforeEach(done => {
+
+            sinon.stub(ColdStorageAccount, 'findById').callsFake(async id => {
+
+                const account = MOCK_ACCOUNTS.find(a => a.id === parseInt(id));
+
+                if(account) return account;
+
+                return null;
+
+            });
+
+            done();
+        });
+
+        afterEach(done => {
+
+            ColdStorageAccount.findById.restore();
+
+            done();
+        });
+
+        it('exist', () => {
+
+            chai.expect(editColdStorageAccount).to.be.not.undefined;
+
+        });
+
+        it('reject if provided with invalid values', () => {
+
+            return chai.assert.isFulfilled(Promise.all(
+                _.map([
+                    [],
+                    [1, null],
+                    [1, {}],
+                    [1, '123', {}],
+                    [1, null, []]
+                ], params => {
+                    return editColdStorageAccount(...params);
+                }).map(p => p.catch(() => undefined))
+            ));
+
+        });
+
+        it('return null if the account was not found', () => {
+
+            return editColdStorageAccount(-1, '11111').then(account => {
+
+                chai.expect(account).to.be.null;
+
+            });
+
+        });
+
+        it('only update the address when address is only provied', function() {
+
+            return editColdStorageAccount(MOCK_ACCOUNT_1.id, NEW_ADDRESS).then(account => {
+
+                chai.expect(account).to.be.an('object');
+
+                chai.expect(account.address).to.equal(NEW_ADDRESS);
+                chai.expect(account.tag).to.equal(MOCK_ACCOUNT_1.tag);
+
+            });
+
+        });
+
+        it('only update the tag when tag is only provied', function() {
+
+            return editColdStorageAccount(MOCK_ACCOUNT_1.id, null, NEW_TAG).then(account => {
+
+                chai.expect(account).to.be.an('object');
+
+                chai.expect(account.address).to.equal(MOCK_ACCOUNT_1.address);
+                chai.expect(account.tag).to.equal(NEW_TAG);
+
+            });
+
+        });
+
+        it('update the address and the tag when both are provided', function() {
+
+            return editColdStorageAccount(MOCK_ACCOUNT_1.id, NEW_ADDRESS, NEW_TAG).then(account => {
+
+                chai.expect(account).to.be.an('object');
+
+                chai.expect(account.address).to.equal(NEW_ADDRESS);
+                chai.expect(account.tag).to.equal(NEW_TAG);
+
+            });
+
+        });
+
+    });
+
+    describe('and method changeTransferStatus shall', () => {
 
         const changeTransferStatus = ColdStorageService.changeTransferStatus;
 

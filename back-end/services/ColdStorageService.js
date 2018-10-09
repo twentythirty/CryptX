@@ -97,6 +97,28 @@ const createColdStorageAccount = async (strategy_type, asset_id, cold_storage_cu
 };
 module.exports.createColdStorageAccount = createColdStorageAccount;
 
+const editColdStorageAccount = async (account_id, address = null, tag = null) => {
+
+    if(
+        !account_id ||
+        isNaN(account_id) ||
+        (address && !_.isString(address)) ||
+        (tag && !_.isString(tag))
+    ) TE('Account id, address and tag (if provided) must be valid');
+
+    let [ err, account ] = await to(ColdStorageAccount.findById(account_id));
+
+    if(err) TE(err.message);
+    if(!account) return null;
+
+    if(address) account.address = address;
+    if(tag) account.tag = tag;
+
+    return account.save();
+
+};
+module.exports.editColdStorageAccount = editColdStorageAccount;
+
 const changeTransferStatus = async (transfer_id, status, user = null) => {
 
     if(!_.isNumber(transfer_id) || !_.isNumber(status)) TE('Must provide a valid transfer id and status');
