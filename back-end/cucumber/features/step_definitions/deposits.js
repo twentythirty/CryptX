@@ -259,6 +259,19 @@ When('approve recipe run deposit', async function() {
 
 });
 
+Then('there are no deposit log entries', async function() {
+
+    chai.assert.isDefined(this.current_recipe_run_deposit, 'Context needs to have recipe run deposit for this step!');
+
+    const deposit_logs = await require('../../../models').ActionLog.findAll({
+        where: { recipe_run_deposit_id: this.current_recipe_run_deposit.id },
+        attributes: ['id', 'details', 'timestamp', 'level', 'translation_key', 'translation_args'],
+        order: [ [ 'timestamp', 'DESC' ] ]
+    })
+
+    chai.assert.equal(deposit_logs.length, 0, `Deposit logs array for deposit ${this.current_recipe_run_deposit.id} should have been empty!`);
+});
+
 Then('the system will report error with bad values', async function() {
 
     chai.assert.isNotNull(this.current_recipe_run_deposit, 'Context should contain pending recipe run deposit by now!');

@@ -17,10 +17,14 @@ Feature: view deposit details
 	@investment_run_cache_cleanup
 	Scenario: view generated deposit
 
-		Given the system has some recipe run deposits with status Pending
+		Given the system has one recipe run deposit with status Pending
 		When I log onto CryptX as Depositor
 		And navigate to Pending recipe run deposit
 		And view details of this recipe run deposit
-		# Then I see data layout:
-		# 	| quote_asset | exchange | status  |
-		# 	| BTC		  | Binance  | Pending |
+		Then the view detail quote asset is BTC or ETH
+		And the view detail exchange is Binance
+		And the view detail status is Pending
+		And the view detail deposit management fee is unknown
+		And the view detail depositor user is unknown
+		And there are no deposit log entries
+		
