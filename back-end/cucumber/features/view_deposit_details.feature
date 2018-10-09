@@ -21,6 +21,6 @@ Feature: view deposit details
 		When I log onto CryptX as Depositor
 		And navigate to Pending recipe run deposit
 		And view details of this recipe run deposit
-		Then I see data layout:
-			| quote_asset | exchange | status  |
-			| BTC		  | Binance  | Pending |
+		# Then I see data layout:
+		# 	| quote_asset | exchange | status  |
+		# 	| BTC		  | Binance  | Pending |
