@@ -409,9 +409,7 @@ When('I fetch the timeline of the current Investment Run', function() {
             expect(result.body.timeline).to.be.an('object', 'Expected to find a timeline object in the response body');
 
             this.current_timeline = result.body.timeline;
-
-            World.print(this.current_timeline);
-
+            
         });
 
 });

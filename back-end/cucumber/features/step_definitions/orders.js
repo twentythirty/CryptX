@@ -473,6 +473,36 @@ Given('the Order is not filled by Execuion Orders at all', function() {
 
 });
 
+Given('the Recipe Orders statuses were updated', async function() {
+
+    const { ExecutionOrder, RecipeOrder, sequelize } = require('../../../models');
+    const { Op } = sequelize;
+
+    const orders_with_statuses = await sequelize.query(`
+        SELECT
+            COUNT(*) AS order_count,
+            "group".id AS group_id, 
+            eo.status AS ex_status
+        FROM execution_order AS eo
+        JOIN recipe_order AS "order" ON "order".id = eo.recipe_order_id
+        JOIN recipe_order_group AS "group" ON "order".recipe_order_group_id = "group".id
+        WHERE eo.recipe_order_id IS NOT NULL
+        GROUP By group_id, ex_status
+    `, { type: sequelize.QueryTypes.SELECT });
+
+    const grouped_orders = _.groupBy(orders_with_statuses, 'group_id');
+    const fully_filled_only = _.map(grouped_orders, (orders, id) => {
+        if(orders.length === 1) return id;
+    }).filter(id => id);
+
+    return RecipeOrder.update({
+        status: RECIPE_ORDER_STATUSES.Completed
+    }, {
+        where: { recipe_order_group_id: fully_filled_only }
+    });
+
+});
+
 When('I generate new Orders for the Approved Recipe Run', {
     timeout: 15000
 }, function () {

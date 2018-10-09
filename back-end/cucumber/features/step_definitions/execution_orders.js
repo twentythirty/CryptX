@@ -100,7 +100,7 @@ async function generateExecutionOrders(amount, order_status, for_exchange, order
     new_execution_orders = await ExecutionOrder.bulkCreate(new_execution_orders, {
         returning: true
     });
-    
+
     return new_execution_orders;
 }
 
