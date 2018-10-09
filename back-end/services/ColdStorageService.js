@@ -48,11 +48,11 @@ const createColdStorageAccount = async (strategy_type, asset_id, cold_storage_cu
     if(!Object.values(STRATEGY_TYPES).includes(strategy_type)) TE(`Strategy type "${strategy_type}" is not valid`);
 
     let [ err, found_account ] = await to(ColdStorageAccount.count({
-        where: { address }
+        where: { strategy_type, asset_id, cold_storage_custodian_id }
     }));
 
     if(err) TE(err.message);
-    if(found_account) TE(`Account with public address "${address}" already exists`);
+    if(found_account) TE(`Account with the same strategy, asset and custodian already exists`);
 
     let result;
     [ err, result ] = await to(Promise.all([
@@ -73,10 +73,10 @@ const createColdStorageAccount = async (strategy_type, asset_id, cold_storage_cu
     [ err, account ] = await to(sequelize.transaction(transaction => {
 
         return ColdStorageAccount.count({
-            where: { address }
+            where: { strategy_type, asset_id, cold_storage_custodian_id }
         }).then(found_account => {
 
-            if(found_account) TE(`Account with public address "${address}" already exists`);
+            if(found_account) TE(`Account with the same strategy, asset and custodian already exists`);
 
             return ColdStorageAccount.create({
                 strategy_type,

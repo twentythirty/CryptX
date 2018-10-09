@@ -188,7 +188,7 @@ describe('ColdStorage testing', () => {
             chai.assert.isRejected(createColdStorageAccount(STRATEGY_TYPES.MCI, MOCK_IDS.CRYPTO_ASSET, MOCK_IDS.NOT_FOUND, MOCK_ADDRESS));
         });
 
-        it('reject if it finds an account with the same public address', () => {
+        it('reject if it finds an account with the same strategy, asset and custodian', () => {
             ColdStorageAccount.count.restore();
 
             sinon.stub(ColdStorageAccount, 'count').callsFake(() => {

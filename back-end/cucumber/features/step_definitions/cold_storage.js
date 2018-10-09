@@ -372,7 +372,7 @@ Then('the selected Asset and Custodian is assigned to it', function() {
 
 });
 
-Then('I can only add one Cold Storage Account with the same address', function() {
+Then('I can only add one Cold Storage Account with the same strategy, asset and custodian', function() {
 
     const account = {
         strategy_type: STRATEGY_TYPES.LCI,
@@ -392,7 +392,7 @@ Then('I can only add one Cold Storage Account with the same address', function()
 
             const error = result.response.body.error;
 
-            expect(error).to.equal(`Account with public address "${account.address}" already exists`);
+            expect(error).to.equal(`Account with the same strategy, asset and custodian already exists`);
 
         });
 

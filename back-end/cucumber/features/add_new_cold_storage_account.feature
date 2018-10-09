@@ -16,7 +16,7 @@ Feature: Add a new cold storage account
         And I create a new LCI Cold Storage Account
         Then a new Cold Storage Account is saved to the database
         And the selected Asset and Custodian is assigned to it
-        But I can only add one Cold Storage Account with the same address
+        But I can only add one Cold Storage Account with the same strategy, asset and custodian
 
     Scenario: attempting to add a cold storage account for a non-cryptocurrency asset
 
