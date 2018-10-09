@@ -247,24 +247,51 @@ Given('the Recipe Run Deposits are as followed:', async function(table) {
 
 });
 
+async function adjust_deposit_values(recipe_run_deposit_id, depositor_user, amount = _.random(Number.EPSILON, 5, true), fee = _.random(0, 1, false)) {
+
+    chai.assert.isDefined(this.depositService, 'Context needs to have deposit service for this step!');
+    chai.assert.isNotNull(recipe_run_deposit_id, 'Provided reciep run deposit id is null');
+    chai.assert.isNotNull(depositor_user, 'Provided depositor user is null');
+    chai.assert.isNumber(amount, 'Provided amount is not a number: ' + amount);
+    chai.assert.isNumber(fee, 'Provided fee is not a number: ' + fee);
+
+    const [err, results] = await to(this.depositService.submitDeposit(
+        recipe_run_deposit_id,
+        depositor_user,
+        {
+            deposit_management_fee: fee,
+            amount
+        }
+    ));
+
+    return { err, results }
+}
+
 When('confirm recipe run deposit with provided amount and fee', async function() {
 
     chai.assert.isNotNull(this.depositService, 'Context needs to have deposit service for this step!');
     chai.assert.isNotNull(this.current_recipe_run_deposit, 'Context should contain pending recipe run deposit by now!');
 
-    //confirm with OK values
-    const amount = _.random(Number.EPSILON, 5, true); // amount must be > 0
-    const fee = _.random(0, 1, false); //fee 0 is ok
+    await adjust_deposit_values.bind(this)(this.current_recipe_run_deposit.id, World.users.depositor);
+});
 
-    await this.depositService.submitDeposit(
-        this.current_recipe_run_deposit.id,
-        World.users.depositor.id,
-        {
-            deposit_management_fee: fee,
-            amount
-        }
-    );
+When(/confirm recipe run deposit with amount (.*) and fee (.*)/, async function(deposit_amount_text, deposit_fee_text) {
 
+    chai.assert.isNotNull(this.current_recipe_run_deposit, 'Context should contain pending recipe run deposit for this step!');
+    chai.assert.isNotNull(this.current_user, 'Context needs to have current user for this step');
+    const deposit_amount = parseFloat(deposit_amount_text);
+    chai.assert.isNumber(deposit_amount, `Provided deposit_amount text ${deposit_amount_text} did not resolve to a number!`);
+    const deposit_fee = parseFloat(deposit_fee_text);
+    chai.assert.isNumber(deposit_fee, `Provided deposit_fee text ${deposit_fee_text} did not resolve to a number!`);
+
+    const { err, results } = await adjust_deposit_values.bind(this)(
+        this.current_recipe_run_deposit.id, 
+        this.current_user,
+        deposit_amount,
+        deposit_fee)
+    chai.assert.isNull(err, `Adjusting deposit should not have produced an error: ${JSON.stringify(err)}`);
+    //refresh deposit info 
+    this.current_recipe_run_deposit = results.updated_deposit;
 });
 
 When('approve recipe run deposit', async function() {
@@ -301,6 +328,35 @@ Then('there are no deposit log entries', async function() {
     chai.assert.equal(deposit_logs.length, 0, `Deposit logs array for deposit ${this.current_recipe_run_deposit.id} should have been empty!`);
 });
 
+Then(/there is a log of this (.*) for this deposit/, async function(field_name_descriptor) {
+
+    chai.assert.isNotNull(this.current_recipe_run_deposit, 'Context should contain recipe run deposit for this step!');
+
+    const deposit_logs = await require('../../../models').ActionLog.findAll({
+        where: {
+            recipe_run_deposit_id: this.current_recipe_run_deposit.id
+        },
+        attributes: ['id', 'details', 'timestamp', 'level', 'translation_key', 'translation_args'],
+        order: [
+            ['timestamp', 'DESC']
+        ]
+    });
+    chai.assert.isAbove(deposit_logs.length, 0, `Deposit ${this.current_recipe_run_deposit.id} had no associated action logs!`);
+
+    const lowercase_descriptor = _.lowerCase(field_name_descriptor);
+    const field_name = _.snakeCase(lowercase_descriptor);
+
+    const deposit_record_value = this.current_recipe_run_deposit[field_name];
+    chai.assert.isDefined(deposit_record_value, `Deposit record did not have field value under ${field_name}!`);
+
+    let logs_contain_info = false;
+    _.forEach(_.map(deposit_logs, 'details'), text => {
+        const lower_text = _.toLower(text);
+        logs_contain_info = logs_contain_info || (lower_text.includes(lowercase_descriptor) && lower_text.includes(String(deposit_record_value)))
+    });
+    chai.assert.isTrue(logs_contain_info, `None of the ${deposit_logs.length} logs about deposit ${this.current_recipe_run_deposit.id} contained info on ${lowercase_descriptor} value of ${deposit_record_value}`);
+});
+
 Then('the system will report error with bad values', async function() {
 
     chai.assert.isNotNull(this.current_recipe_run_deposit, 'Context should contain pending recipe run deposit by now!');
@@ -329,3 +385,15 @@ Then('the system will report error related to status', async function() {
 
     chai.assert.include(message, `confirmation is only allowed for Pending`, 'message not indicative of deposit confirmation failure due to status!');
 });
+
+Then('I can adjust both values again', async function() {
+
+    chai.assert.isNotNull(this.current_recipe_run_deposit, 'Context should contain pending recipe run deposit for this step!');
+    chai.assert.isNotNull(this.current_user, 'Context needs to have current user for this step');
+
+    const { err, results } = await adjust_deposit_values.bind(this)(
+        this.current_recipe_run_deposit.id, 
+        this.current_user
+    );
+    chai.assert.isNull(err, `Adjusting deposit should not have produced an error: ${JSON.stringify(err)}`);
+})

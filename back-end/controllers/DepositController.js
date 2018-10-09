@@ -66,21 +66,11 @@ const submitDeposit = async function (req, res) {
 
   const user = req.user;
 
-  let [ err, deposit_result ] = await to(DepositService.submitDeposit(deposit_id, user.id, req.body));  
+  let [ err, deposit_result ] = await to(DepositService.submitDeposit(deposit_id, user, req.body));  
   if(err) return ReE(res, err.message, 422);
   if(!deposit_result) return ReE(res, `Deposit with id ${deposit_id} was not found`, 404);
 
   let { original_deposit, updated_deposit: deposit } = deposit_result;
-
-  await user.logAction('modified', { 
-    previous_instance: original_deposit, 
-    updated_instance: deposit,
-    ignore: ['completion_timestamp'],
-    replace: { status: { 
-      [RECIPE_RUN_DEPOSIT_STATUSES.Pending]: `{deposits.status.${RECIPE_RUN_DEPOSIT_STATUSES.Pending}}`, 
-      [RECIPE_RUN_DEPOSIT_STATUSES.Completed]: `{deposits.status.${RECIPE_RUN_DEPOSIT_STATUSES.Completed}}`,
-    } }
-  });
 
   deposit = deposit.toWeb();
   deposit.deposit_management_fee = deposit.fee; 
