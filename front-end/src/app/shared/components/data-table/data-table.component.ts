@@ -1,46 +1,50 @@
 import { Component, OnInit, Input, EventEmitter, Output } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { trigger, state, style, transition, animate } from '@angular/animations';
+import { TranslateService } from '@ngx-translate/core';
 import { Observable } from 'rxjs';
 import * as _ from 'lodash';
-import { TranslateService } from '@ngx-translate/core';
 
 import { DataTableFilterData } from '../data-table-filter/data-table-filter.component';
 
 export interface TableDataSource {
-  header: Array<{
-    column: string
-    nameKey: string
-    column_class?: string
-    filter?: {
-      type: 'text' | 'date' | 'number'
-      sortable?: boolean
-      /**
-       * @param hasRange - False if you no need number range filter for number type filter
-       */
-      hasRange?: boolean
-      /**
-       * @param inputSearch - Show/hide text search independent on filter type
-       */
-      inputSearch?: boolean
-      rowData?: Array<{
-        value: string | boolean,
-        label?: string
-      }>,
-      rowData$?: Observable<Array<{
-        value: string | boolean,
-        label?: string
-      }>>
-    },
-    _dirty?: boolean;
-  }>;
+  header: Array<TableDataSourceHeader>;
   body: Array<any>;
-  footer?: Array<{
-    name: string
-    value: string
-    template: string
-    args?: object
-  }>;
+  footer?: Array<TableDataSourceFooter>;
+}
+
+export interface TableDataSourceHeader {
+  column: string;
+  nameKey: string;
+  column_class?: string;
+  filter?: {
+    type: 'text' | 'date' | 'number';
+    sortable?: boolean;
+    /**
+     * @param hasRange - False if you no need number range filter for number type filter
+     */
+    hasRange?: boolean;
+    /**
+     * @param inputSearch - Show/hide text search independent on filter type
+     */
+    inputSearch?: boolean;
+    rowData?: Array<{
+      value: string | boolean;
+      label?: string;
+    }>,
+    rowData$?: Observable<Array<{
+      value: string | boolean,
+      label?: string
+    }>>
+  };
+  _dirty?: boolean;
+}
+
+export interface TableDataSourceFooter {
+  name: string;
+  value: string;
+  template: string;
+  args?: object;
 }
 
 /**
@@ -81,12 +85,12 @@ export class DataTableComponent implements OnInit {
   private filterAppliedMap: Object = {}; // Flag map is filter applied to column or not
 
   @Input() dataSource: TableDataSource;
-  @Input() columnsToShow: Array<string | TableDataColumn>;
-  @Input() customRows = false;
+  @Input() columnsToShow: Array<TableDataColumn>;
+  @Input() customRows = false; // deprecated ???
   @Input() emptyText: string;
   @Input() loading = false;
 
-  @Input() rowClass: (row: any) => string = (row) => null;
+  @Input() rowClass: (row: any) => string = (row) => '';
 
   @Output() setFilter = new EventEmitter<object>();
   @Output() openRow = new EventEmitter<any>();
@@ -106,7 +110,7 @@ export class DataTableComponent implements OnInit {
 
     // generate filter flag objects
     this.filterMap = _.zipObject(
-      this.columnsToShow.map(el => (typeof el === 'string') ? el : el.column ),
+      this.columnsToShow.map(el => el.column),
       _.fill( Array(this.columnsToShow.length), false )
     );
     // clone object
@@ -115,9 +119,9 @@ export class DataTableComponent implements OnInit {
     // remove all _dirty properties on url param change
     this.route.params.subscribe(params => {
       this.dataSource.header.map(item => {
-          delete item._dirty;
-          return item;
-        });
+        delete item._dirty;
+        return item;
+      });
     });
 
   }
@@ -155,7 +159,7 @@ export class DataTableComponent implements OnInit {
 
   getFooterData(): Array<object> {
     return this.columnsToShow.map((col: TableDataColumn) => {
-      return _.filter(this.dataSource.footer, ['name', (typeof col === 'string') ? col : col.column])[0] || { name: col.column };
+      return _.filter(this.dataSource.footer, ['name', col.column])[0] || { name: col.column };
     });
   }
 
@@ -163,8 +167,8 @@ export class DataTableComponent implements OnInit {
    * Dynamic columns
    */
 
-  columnIsBasic(column: string | TableDataColumn): boolean {
-    return typeof column === 'string' || !column.component;
+  columnIsBasic(column: TableDataColumn): boolean {
+    return !column.component;
   }
 
   public dynamicInputs(column: TableDataColumn, value: any, row: any): any {
