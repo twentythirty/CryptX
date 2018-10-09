@@ -55,7 +55,8 @@ const get_model_status_value_for = (model_name, status_val) => {
 }
 
 const to_model_name = (field) => _.upperFirst(_.camelCase(field));
-const to_context_name = (field, ctx_type = 'current') => `${ctx_type}_${_.snakeCase(_.lowerCase(field))}`;
+const to_field_name = (field) => `${_.snakeCase(_.lowerCase(field))}`;
+const to_context_name = (field, ctx_type = 'current') => `${ctx_type}_${to_field_name(field)}`;
 const get_model_status_field_name = (model) => _.find(Object.keys(model.attributes), field_name => field_name.includes('status'));
 const to_admin_list_view_fetch = (descriptor_plural) => `fetch${to_model_name(descriptor_plural)}ViewDataWithCount`;
 const to_admin_entity_view_fetch = (model_descriptor) => `fetch${to_model_name(model_descriptor)}View`;
@@ -201,7 +202,7 @@ Then(/^the (.*) will have status (\w*)/, async function(current_obj_type, status
 
 Then(/^this action was logged with (.*)/, async function(logged_property_expression) {
 
-    const logged_property = _.snakeCase(_.lowerCase(logged_property_expression));
+    const logged_property = to_field_name(logged_property_expression);
     const ActionLog = require('../../../models').ActionLog;
     chai.assert.isNotNull(this.check_log_id, `Context did not have check_log_id field! Fill that in during a step before action log gets checked!`);
 
@@ -233,6 +234,48 @@ Then(/^this action was logged with (.*)/, async function(logged_property_express
     chai.assert.isNotNull(new_log_entry, `Actions should have generated a log entry with ${logged_property} equal ${this.check_log_id}!`);
     }
 });
+
+Then(/the view detail (.*) is (.*)/, async function(field_name_descriptor, value_descriptor) {
+
+    chai.assert.isArray(this.view_data_list, 'Context requires view data list for this step!');
+    chai.assert.equal(this.view_data_list.length, 1, 'Context needs view data list of 1 item for this step!');
+
+    const data_record = _.first(this.view_data_list);
+    chai.assert.isNotNull(data_record, 'Data at index 0 was not present!');
+
+    const field_name = to_field_name(field_name_descriptor);
+    chai.assert.isDefined(data_record[field_name], `Field name ${field_name} did not correspond to valid data record field!`);
+    chai.assert.isString(value_descriptor, `Supplied value descriptor ${value_descriptor} was not a string!`);
+
+    let value_to_check = data_record[field_name];
+    //ensure i18n presence when dealing with status
+    if (field_name.includes('status')) {
+        chai.assert.isDefined(this.i18n, 'Context did not have internationalization object, required for thsi step!');
+        //if status is known value, might as well trasnalte it
+        if (value_to_check != null) {
+            value_to_check = _.get(this.i18n, value_to_check) || value_to_check;
+        }
+    }
+
+    if (_.isString(value_to_check)) {
+        value_to_check = value_to_check.trim();
+    }
+    //CASE 1: value needs to be unknown
+    if (value_descriptor.trim() == 'unknown') {
+        chai.assert.isTrue(_.isEmpty(value_to_check), `Record member ${field_name} was supposed to be null/undefined, got ${value_to_check}!`);
+    } else {
+        //CASE 2: value is defined
+        const acceptable_values = value_descriptor.trim().split(' or ').map(value =>  value.trim());
+
+        //CASE 2a: there is only 1 value to check against
+        if (acceptable_values.length == 1) {
+            chai.assert.equal(value_to_check, _.first(acceptable_values), `Record member ${field_name} was not eqaul to expected value!`);
+        } else {
+            //CASE 2b: there is a list of values to check against
+            chai.assert.isTrue(acceptable_values.includes(value_to_check), `The data record ${field_name} member value ${value_to_check} was not in list of acceptable values ${acceptable_values}!`);
+        }
+    }
+})
 
 Then('I see data layout:', async function(raw_data_table) {
 
