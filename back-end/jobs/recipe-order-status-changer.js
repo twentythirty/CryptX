@@ -74,8 +74,7 @@ module.exports.JOB_BODY = async (config, log) => {
         log(`MARK.1: Analyzing ${exec_order_stats.length} recipe orders...`)
 
         //stats for logging
-        let to_executing = 0,
-            to_failed = 0;
+        let to_executing = 0, to_failed = 0;
 
         _.forEach(exec_order_stats, record => {
 
@@ -103,11 +102,8 @@ module.exports.JOB_BODY = async (config, log) => {
 
         log(`MARK.1: Marked ${to_executing} orders for execution and ${to_failed} for failure...`)
 
-        return Promise.all([
-            ccxtUtils.allConnectors(),
-            sequelize.query(`
+        return sequelize.query(`
             SELECT ro.id,
-                    ro.target_exchange_id,
                     ro.status,
                     ro.quantity,
                     COALESCE(fills_stats.fills_quantity, 0) AS fills_quantity
@@ -126,15 +122,12 @@ module.exports.JOB_BODY = async (config, log) => {
                 WHERE ro.status NOT IN (:statuses_recipe_order_done)
 
         `, {
-                replacements: {
-                    statuses_recipe_order_done: RECIPE_ORDER_TERMINAL_STATUSES
-                },
-                type: sequelize.QueryTypes.SELECT
-            })
-        ])
-    }).then(ccxt_and_exec_fill_stats => {
-
-        const [connectors_map, exec_fill_stats] = ccxt_and_exec_fill_stats;
+            replacements: {
+                statuses_recipe_order_done: RECIPE_ORDER_TERMINAL_STATUSES
+            },
+            type: sequelize.QueryTypes.SELECT
+        })
+    }).then(exec_fill_stats => {
 
         log(`MARK.2: Analyzing ${exec_fill_stats.length} recipe order fills...`)
 
@@ -144,27 +137,17 @@ module.exports.JOB_BODY = async (config, log) => {
 
             const {
                 id: order_id,
-                target_exchange_id,
                 status: order_status,
                 quantity: order_quantity,
                 fills_quantity
             } = record;
 
-            const connector = connectors_map[target_exchange_id];
-            let amount_min = Decimal(0);
-            if (_.isNumber(_.get(connector, 'limits.amount.min'))) {
-                amount_min = Decimal(connector.limits.amount.min);
-            }
-            amount_min = amount_min.minus(Number.MIN_VALUE);
-
-            //we can always remove the lower-trading margin when assuming the order is completed 
-            //if no more orders can be generated anyway, therefore if its not complete now it never will be
-            if (Decimal(order_quantity).minus(amount_min).lte(Decimal(fills_quantity))) {
+            if (Decimal(order_quantity).lte(Decimal(fills_quantity))) {
                 if (order_status_from_to(order_id, order_status, RECIPE_ORDER_STATUSES.Completed)) {
                     to_completed++;
                 }
             }
-        })
+        })  
 
         log(`MARK.2: Marked ${to_completed} orders for completion...`);
 
