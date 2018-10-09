@@ -341,29 +341,28 @@ Then(/^if I look at the (.*) (details|list|footer|logs)$/, function(data_name, d
 
 });
 
-Then('I will see the timeline:', function(table) {
+Then(/^in the (.*) timeline card, I will see the following information:$/, function(card_name, table) {
+
+    const formatted_card_name = _.snakeCase(card_name);
 
     expect(this.current_timeline, `Expected to have a timeline to validate`).to.be.not.undefined;
 
-    for(let info of table.hashes()) {
+    const [ expected_values ] = table.hashes();
 
-        let current_info_type;
-        for(let card in info) {
+    for(let field in expected_values) {
 
-            if(card === 'info') {
-                current_info_type = info[card];
-                continue;
-            }
+        const expected_value = expected_values[field];
+        const card = this.current_timeline[formatted_card_name];
 
-            const timeline_value = utils.extractTimeLineField(card, this.current_timeline[card], current_info_type);
+        expect(card, `Expected to find timeline card "${card_name}" (${formatted_card_name})`).to.be.not.undefined;
 
-            if(!timeline_value && info[card] === '-') continue;
+        const timeline_value = utils.extractTimeLineField(formatted_card_name, card, field);
 
-            expect(timeline_value).to.equal(info[card], `Expected the ${_.startCase(card)} ${current_info_type} to match`);
+        if(!timeline_value && expected_value === '-') continue;
 
-        };
+        expect(timeline_value).to.equal(expected_value, `Expected the ${_.startCase(card_name)} ${field} to match`);
 
-    }
+    };
 
 });
 
