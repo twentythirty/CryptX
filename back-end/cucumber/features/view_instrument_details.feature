@@ -19,8 +19,8 @@ Feature: View instrument details
 
 	Scenario: view details for instrument with some failed and some success
 		Given there is an instrument with transaction asset "Tokugawa" and quote asset "Dogecoin"
-		And the instrument has exchange mappings on Binance, Huobi, Kraken
-		And fetching market data with ask 0.5 on instrument has worked for Binance, Kraken
+		And the instrument has exchange mappings on Binance, Huobi, Bitfinex
+		And fetching market data with ask 0.5 on instrument has worked for Binance, Bitfinex
 		But fetching market data with ask 0.5 on instrument has failed for Huobi
 		When I log onto CryptX as Investment Manager
 		And view details of this instrument
