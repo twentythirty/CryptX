@@ -336,11 +336,9 @@ Given('the system does not have Instrument Market Data', function() {
 
 });
 
-Given(/fetching market data with ask (.*) on instrument has (.*) for (.*)/, async function(ask_price_string, fetch_status, csv_exchange_names) {
+Given(/fetching market data on instrument has (.*) for (.*)/, async function(fetch_status, csv_exchange_names) {
 
     chai.assert.isNotNull(this.current_instrument, 'No instrument in current context!');
-    const ask_price = parseFloat(ask_price_string);
-    chai.assert.isNotNaN(ask_price, `Supplied ask price ${ask_price_string} was not parseable to float!`);
 
     const exchanges = await fetchExchangesFromCSV(csv_exchange_names);
 
@@ -387,7 +385,7 @@ Given(/fetching market data with ask (.*) on instrument has (.*) for (.*)/, asyn
                 exchange_id: exchange.id,
                 instrument_id: this.current_instrument.id,
                 timestamp: new Date(),
-                ask_price,
+                ask_price: _.random(true),
                 bid_price: _.random(true)
             }
         }))
