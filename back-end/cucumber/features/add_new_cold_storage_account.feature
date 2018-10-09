@@ -28,7 +28,7 @@ Feature: Add a new cold storage account
         Then the system will display an error about using a non-cryptocurrency asset
         And a new Cold Storage Account is not created
         
-    Scenario: editing the address and tag of an exisitng account
+    Scenario: editing the address and tag of an existing account
 
         Given the system has LCI Cold Storage Account for ETH
         When I log onto CryptX as Investment Manager

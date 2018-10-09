@@ -1,6 +1,7 @@
 'use strict';
 
 const chai = require('chai');
+const i18n = require('../../../public/fe/i18n/en.json');
 
 
 const descriptionToJobFile = {
@@ -76,4 +77,49 @@ module.exports.compareViewTables = function(view_table_data, example_table_data,
             chai.assert.equal(check_value, example, `View record ${idx} porperty ${prop_name} is not equal to example!`);
         });
     });
+};
+
+/**
+ * Function to extract certain fields from the timeline when names don't match.
+ * Mainly used to have more user friendly names in the scenario
+ */
+module.exports.extractTimeLineField = (card, object, field) => {
+
+    const not_created_map = {
+        recipe_run: 'recipes.recipe_runs_not_created',
+        recipe_deposits: 'deposits.deposits_not_created',
+        recipe_orders: 'investment.no_orders',
+        execution_orders: 'investment.no_execution_orders'
+    };
+
+    let result;
+    switch(field) {
+
+        case 'status':
+            result = _.get(object, 'status') || _.get(object, 'approval_status');
+            if(result) result = _.get(i18n, result);
+            else result = _.get(i18n, not_created_map[card]);
+            break;
+
+        case 'amount':
+            result = _.get(object, 'amount') || _.get(object, 'count');
+            if(result) result = parseInt(reuslt);
+            break;
+
+        case 'time':
+            result = _.get(object, 'started_timestamp') || _.get(object, 'creation_timestamp') || _.get(object, 'timestamp');
+            if(result) result = new Date(result).toString().split('GMT')[0].trim();
+            break;
+
+        case 'strategy':
+            result = _.get(object, 'strategy_type') || _.get(object, 'strategy');
+            if(result) result = _.get(i18n, result);
+            break;
+
+    }
+
+    if(!result) return null;
+
+    return result;
+
 };

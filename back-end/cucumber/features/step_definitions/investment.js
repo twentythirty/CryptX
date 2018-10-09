@@ -393,6 +393,29 @@ When('I fetch the details of the Investment Run', async  function() {
 
 });
 
+When('I fetch the timeline of the current Invetsment Run', function() {
+
+    expect(this.current_investment_run, `Expected to have a current Investment Run`).to.be.not.undefined;
+
+    return chai
+        .request(this.app)
+        .post(`/v1/investments/timeline`)
+        .set('Authorization', World.current_user.token)
+        .send({ investment_run_id: this.current_investment_run.id })
+        .then(result => {
+
+            expect(result).to.has.status(200);
+
+            expect(result.body.timeline).to.be.an('object', 'Expected to find a timeline object in the response body');
+
+            this.current_timeline = result.body.timeline;
+
+            World.print(this.current_timeline);
+
+        });
+
+});
+
 Then('a new Investment Run is created with the status Initiated', async function() {
 
     const { InvestmentRun, InvestmentAmount, Asset } = require('../../../models');

@@ -298,6 +298,32 @@ Then(/^if I look at the (.*) (details|list|footer|logs)$/, function(data_name, d
 
 });
 
+Then('I will see the timeline:', function(table) {
+
+    expect(this.current_timeline, `Expected to have a timeline to validate`).to.be.not.undefined;
+
+    for(let info of table.hashes()) {
+
+        let current_info_type;
+        for(let card in info) {
+
+            if(card === 'info') {
+                current_info_type = info[card];
+                continue;
+            }
+
+            const timeline_value = utils.extractTimeLineField(card, this.current_timeline[card], current_info_type);
+
+            if(!timeline_value && info[card] === '-') continue;
+
+            expect(timeline_value).to.equal(info[card], `Expected the ${_.startCase(card)} ${current_info_type} to match`);
+
+        };
+
+    }
+
+});
+
 
 //called after scenarios where this tag is placed
 //cleans out cached investmetn run if present
