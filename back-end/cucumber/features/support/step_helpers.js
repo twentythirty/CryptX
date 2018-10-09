@@ -107,7 +107,7 @@ module.exports.extractTimeLineField = (card, object, field) => {
             break;
 
         case 'time':
-            result = _.get(object, 'started_timestamp') || _.get(object, 'creation_timestamp') || _.get(object, 'timestamp');
+            result = _.get(object, 'started_timestamp') || _.get(object, 'creation_timestamp') || _.get(object, 'created_timestamp') ||  _.get(object, 'timestamp');
             if(result) result = new Date(result).toString().split('GMT')[0].trim();
             break;
 
