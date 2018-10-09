@@ -21,6 +21,58 @@ Given('there is a recipe order group with status Pending', {
     this.current_generated_orders = generated_orders;
 });
 
+Given(/^the system has (Pending|Rejected|Approved) Recipe Order Group with (\d*) Orders$/, async function(group_status, order_amount) {
+
+    order_amount = parseInt(order_amount);
+
+    const { RecipeOrderGroup, RecipeOrder, Instrument, Exchange, sequelize }  = require('../../../models');
+
+    const [ instruments, exchanges ] = await Promise.all([
+        Instrument.findAll({
+            order: sequelize.literal('random()'),
+            limit: 20,
+            raw: true
+        }),
+        Exchange.findAll({ raw: true })
+    ]);
+
+    return sequelize.transaction(async transaction => {
+
+        const group = await RecipeOrderGroup.create({
+            approval_comment: group_status === 'Pending' ? '' : 'RATIOSNAKE',
+            approval_status: RECIPE_ORDER_GROUP_STATUSES[group_status],
+            approval_timestamp: group_status === 'Pending' ? null : new Date(),
+            approval_user_id: group_status === 'Pending' ? null : World.users.trader.id,
+            created_timestamp: new Date(),
+            recipe_run_id: this.current_recipe_run.id
+        }, { transaction });
+
+        this.current_recipe_order_group = group;
+
+        let orders = [];
+        for(let i = 0; i < order_amount; i++) {
+
+            orders.push({
+                instrument_id: instruments[_.random(0, instruments.length - 1, false)].id,
+                price: _.random(0.01, 2, true),
+                quantity: _.random(0.1, 20, true),
+                recipe_order_group_id: group.id,
+                side: _.random(0, 1, false) ? ORDER_SIDES.Buy : ORDER_SIDES.Sell,
+                status: group_status === 'Approved' ? RECIPE_ORDER_STATUSES.Executing : RECIPE_ORDER_STATUSES[group_status],
+                target_exchange_id: exchanges[_.random(0, exchanges.length - 1, false)].id
+            });
+
+        }
+
+        orders = await RecipeOrder.bulkCreate(orders, { transaction, returning: true });
+
+        this.current_recipe_orders = orders;
+        this.current_recipe_order = orders[0];
+
+    });
+
+});
+
 Given('one of the orders is missing their CCXT mapping', async function () {
 
     const models = require('../../../models');

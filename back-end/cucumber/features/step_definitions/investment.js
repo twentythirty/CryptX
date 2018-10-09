@@ -393,7 +393,7 @@ When('I fetch the details of the Investment Run', async  function() {
 
 });
 
-When('I fetch the timeline of the current Invetsment Run', function() {
+When('I fetch the timeline of the current Investment Run', function() {
 
     expect(this.current_investment_run, `Expected to have a current Investment Run`).to.be.not.undefined;
 

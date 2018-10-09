@@ -6,78 +6,106 @@ Feature: View the timeline of an investment run process
 
         Given the system has an Investment Manager
         And the system has an Depositor
+        And the system has a Trader
 
-    Scenario: view timeline of an invetsment run with status "initiated"
+    Scenario: view timeline of an investment run with status "initiated"
 
         Given there is a LCI Investment Run created by an Investment Manager
         And the Investment Run was started on Thu, 04 Oct 2018 11:55:35
         And the status of the Investment Run is Initiated
-        When I log onto CryptX as InvestmentManager
-        And I fetch the timeline of the current Invetsment Run
+        When I log onto CryptX as Investment Manager
+        And I fetch the timeline of the current Investment Run
         Then in the Investment Run timeline card, I will see the following information:
         |   status  |   time    |   strategy    |
         |   Initiated   |   Thu Oct 04 2018 11:55:35    |   LCI |
-        Then in the Recipe Run timeline card, I will see the following information:
+        And in the Recipe Run timeline card, I will see the following information:
         |   status  |
         |   Recipe runs are not created yet   |
-        Then in the Recipe Deposits timeline card, I will see the following information:
+        And in the Recipe Deposits timeline card, I will see the following information:
         |   status  |
         |   Deposits are not created yet   |
-        Then in the Recipe Orders timeline card, I will see the following information:
+        And in the Recipe Orders timeline card, I will see the following information:
         |   status  |
         |   Orders are not created yet   |
-        Then in the Execution Orders timeline card, I will see the following information:
+        And in the Execution Orders timeline card, I will see the following information:
         |   status  |
         |   Execution orders are not created yet   |
 
-    Scenario: view timeline of an invetsment run with status "recipe run"
+    Scenario: view timeline of an investment run with status "recipe run"
 
         Given there is a LCI Investment Run created by an Investment Manager
         And the Investment Run was started on Thu, 04 Oct 2018 11:55:35
+        And the status of the Investment Run is RecipeRun
         And the system has Pending Recipe Run with Details
         And the Recipe Run was created on Thu, 04 Oct 2018 14:20:10
-        And the status of the Investment Run is RecipeRun
-        When I log onto CryptX as InvestmentManager
-        And I fetch the timeline of the current Invetsment Run
+        When I log onto CryptX as Investment Manager
+        And I fetch the timeline of the current Investment Run
         Then in the Investment Run timeline card, I will see the following information:
         |   status  |   time    |   strategy    |
         |   Recipe Run   |   Thu Oct 04 2018 11:55:35    |   LCI |
-        Then in the Recipe Run timeline card, I will see the following information:
+        And in the Recipe Run timeline card, I will see the following information:
         |   status  |   time    |
         |   Pending   |     Thu Oct 04 2018 14:20:10    |
-        Then in the Recipe Deposits timeline card, I will see the following information:
+        And in the Recipe Deposits timeline card, I will see the following information:
         |   status  |
         |   Deposits are not created yet   |
-        Then in the Recipe Orders timeline card, I will see the following information:
+        And in the Recipe Orders timeline card, I will see the following information:
         |   status  |
         |   Orders are not created yet   |
-        Then in the Execution Orders timeline card, I will see the following information:
+        And in the Execution Orders timeline card, I will see the following information:
         |   status  |
         |   Execution orders are not created yet   |
 
-    Scenario: view timeline of an invetsment run with status "recipe approved" and pending deposits
+    Scenario: view timeline of an investment run with status "recipe approved" and pending deposits
 
         Given there is a LCI Investment Run created by an Investment Manager
         And the Investment Run was started on Thu, 04 Oct 2018 11:55:35
+        And the status of the Investment Run is RecipeApproved
         And the system has Approved Recipe Run with Details
         And the Recipe Run was created on Thu, 04 Oct 2018 14:20:10
-        And the status of the Investment Run is RecipeApproved
         And the system has 8 Pending Deposits
         And the system has 2 Completed Deposits
-        When I log onto CryptX as InvestmentManager
-        And I fetch the timeline of the current Invetsment Run
+        When I log onto CryptX as Investment Manager
+        And I fetch the timeline of the current Investment Run
         Then in the Investment Run timeline card, I will see the following information:
         |   status  |   time    |   strategy    |
         |   Recipe Approved   |   Thu Oct 04 2018 11:55:35    |   LCI |
-        Then in the Recipe Run timeline card, I will see the following information:
+        And in the Recipe Run timeline card, I will see the following information:
         |   status  |   time    |
         |   Approved   |     Thu Oct 04 2018 14:20:10    |
-        Then in the Recipe Deposits timeline card, I will see the following information:
+        And in the Recipe Deposits timeline card, I will see the following information:
         |   status  |   amount   |
         |   Pending   |     10    |
-        Then in the Recipe Orders timeline card, I will see the following information:
+        And in the Recipe Orders timeline card, I will see the following information:
         |   status  |
         |   Orders are not created yet   |
-        Then in the Execution Orders timeline card, I will see the following information:
+        And in the Execution Orders timeline card, I will see the following information:
+        |   status  |
+        |   Execution orders are not created yet   |
+
+    Scenario: view timeline of an investment run with status "orders generated"
+
+        Given there is a LCI Investment Run created by an Investment Manager
+        And the Investment Run was started on Thu, 04 Oct 2018 11:55:35
+        And the status of the Investment Run is OrdersGenerated
+        And the system has Approved Recipe Run with Details
+        And the Recipe Run was created on Thu, 04 Oct 2018 14:20:10
+        And the system has 10 Completed Deposits
+        And the system has Pending Recipe Order Group with 42 Orders
+        When I log onto CryptX as Investment Manager
+        And I fetch the timeline of the current Investment Run
+        Then in the Investment Run timeline card, I will see the following information:
+        |   status  |   time    |   strategy    |
+        |   Orders Generated   |   Thu Oct 04 2018 11:55:35    |   LCI |
+        And in the Recipe Run timeline card, I will see the following information:
+        |   status  |   time    |
+        |   Approved   |     Thu Oct 04 2018 14:20:10    |
+        And in the Recipe Deposits timeline card, I will see the following information:
+        |   status  |   amount   |
+        |   Completed   |     10    |
+        And in the Recipe Orders timeline card, I will see the following information:
+        |   status  |   amount  |
+        |   Pending   | 42      |
+        And in the Execution Orders timeline card, I will see the following information:
         |   status  |
         |   Execution orders are not created yet   |
