@@ -55,7 +55,7 @@ describe('ExecutionOrderFillDetailComponent', () => {
   });
 
   it('should load execution order table data on init', () => {
-    fixture.whenStable().then(() =>{
+    fixture.whenStable().then(() => {
       expect(component.singleDataSource.body).toEqual([getSingleExecutionOrderData.execution_order]);
     });
   });
