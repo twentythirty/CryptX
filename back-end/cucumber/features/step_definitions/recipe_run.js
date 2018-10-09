@@ -113,7 +113,7 @@ Given('at least one recipe run detail is missing an exchange instrument mapping'
  * As it is more important that the order generation correctly uses the recipe details
  * Rather than the recipe run details are accurate.
  */
-Given('the system has Approved Recipe Run with Details', async function () {
+Given(/^the system has (\w*) Recipe Run with Details$/, async function (status) {
 
     const {
         RecipeRun,
@@ -161,10 +161,10 @@ Given('the system has Approved Recipe Run with Details', async function () {
     return sequelize.transaction(transaction => {
 
         return RecipeRun.create({
-            approval_comment: 'I Approved',
-            approval_status: RECIPE_RUN_STATUSES.Approved,
-            approval_user_id: World.users.investment_manager.id,
-            approval_timestamp: new Date(),
+            approval_comment: status === 'Pending' ? '' : 'I Approved',
+            approval_status: RECIPE_RUN_STATUSES[status],
+            approval_user_id: status === 'Pending' ? null : World.users.investment_manager.id,
+            approval_timestamp: status === 'Pending' ? null : new Date(),
             created_timestamp: new Date(),
             investment_run_id: this.current_investment_run.id,
             user_created_id: World.users.investment_manager.id
@@ -256,6 +256,20 @@ Given('the Recipe Run Details are as followed:', async function(table) {
 
         }));
 
+    });
+
+});
+
+Given(/^the Recipe Run was created on (.*)$/, function(date_string) {
+
+    const { RecipeRun } = require('../../../models');
+
+    return RecipeRun.update({
+        created_timestamp: Date.parse(date_string)
+    }, {
+        where: {
+            id: this.current_recipe_run.id
+        }
     });
 
 });
