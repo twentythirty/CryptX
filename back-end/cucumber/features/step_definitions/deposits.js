@@ -299,9 +299,12 @@ When('approve recipe run deposit', async function() {
     chai.assert.isNotNull(this.depositService, 'Context needs to have deposit service for this step!');
     chai.assert.isNotNull(this.current_recipe_run_deposit, 'Context should contain pending recipe run deposit by now!');
 
+    const approve_user_id = this.current_user? this.current_user.id : World.users.depositor.id;
+    chai.assert.isNotNull(approve_user_id, 'current user needs to be in context, or World depositor user!');
+
     const [err, result] = await to(this.depositService.approveDeposit(
         this.current_recipe_run_deposit.id,
-        World.users.depositor.id
+        approve_user_id
     ));
 
     if (err) {
@@ -312,7 +315,11 @@ When('approve recipe run deposit', async function() {
     this.current_investment_run = await require('../../../models').InvestmentRun.findById(this.current_investment_run.id);
     //fill check log id for future step
     this.check_log_id = this.current_recipe_run_deposit.id;
-
+    //save the deposit states if the update worked
+    if (err == null && result != null) {
+        this.prev_recipe_run_deposit = this.current_recipe_run_deposit;
+        this.current_recipe_run_deposit = result.updated_deposit;
+    }
 });
 
 Then('there are no deposit log entries', async function() {
@@ -346,15 +353,24 @@ Then(/there is a log of this (.*) for this deposit/, async function(field_name_d
     const lowercase_descriptor = _.lowerCase(field_name_descriptor);
     const field_name = _.snakeCase(lowercase_descriptor);
 
-    const deposit_record_value = this.current_recipe_run_deposit[field_name];
+    let deposit_record_value = this.current_recipe_run_deposit[field_name];
     chai.assert.isDefined(deposit_record_value, `Deposit record did not have field value under ${field_name}!`);
+    //field is status of some kind, compare log text to status instead of const
+    const field_is_status = field_name.includes('status');
+    if (field_is_status) {
+        const inverted_status = _.invert(RECIPE_RUN_DEPOSIT_STATUSES);
+        chai.assert.isDefined(inverted_status[deposit_record_value], `Did not find a deposit status term for const ${deposit_record_value}`);
+        deposit_record_value = inverted_status[deposit_record_value];
+    }
 
-    let logs_contain_info = false;
-    _.forEach(_.map(deposit_logs, 'details'), text => {
+    const correct_log = _.find(_.map(deposit_logs, 'details'), text => {
         const lower_text = _.toLower(text);
-        logs_contain_info = logs_contain_info || (lower_text.includes(lowercase_descriptor) && lower_text.includes(String(deposit_record_value)))
+        console.log(text);
+        //if the field is a status the word "status" isnt mentioned
+        return ((field_is_status? true : lower_text.includes(lowercase_descriptor)) 
+                    && lower_text.includes(String(deposit_record_value)));
     });
-    chai.assert.isTrue(logs_contain_info, `None of the ${deposit_logs.length} logs about deposit ${this.current_recipe_run_deposit.id} contained info on ${lowercase_descriptor} value of ${deposit_record_value}`);
+    chai.assert.isNotNull(correct_log, `None of the ${deposit_logs.length} logs about deposit ${this.current_recipe_run_deposit.id} contained info on ${lowercase_descriptor} value of ${deposit_record_value}`);
 });
 
 Then('the system will report error with bad values', async function() {
@@ -396,4 +412,16 @@ Then('I can adjust both values again', async function() {
         this.current_user
     );
     chai.assert.isNull(err, `Adjusting deposit should not have produced an error: ${JSON.stringify(err)}`);
-})
+});
+
+Then('I can\'t adjust the values anymore', async function() {
+
+    chai.assert.isNotNull(this.current_recipe_run_deposit, 'Context should contain pending recipe run deposit for this step!');
+    chai.assert.isNotNull(this.current_user, 'Context needs to have current user for this step');
+
+    const { err, results } = await adjust_deposit_values.bind(this)(
+        this.current_recipe_run_deposit.id, 
+        this.current_user
+    );
+    chai.assert.isNotNull(err, `Adjusting deposit should not have been allowed after its completed!`);
+});
