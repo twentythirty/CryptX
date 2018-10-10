@@ -118,7 +118,7 @@ describe('AddAccountComponent', () => {
         component: component,
         fixture: fixture,
         formControl: component.form,
-        submitButton: fixture.nativeElement.querySelector('button.submit'),
+        submitButton: () => fixture.nativeElement.querySelector('button.submit'),
         fillForm: () => {
           component.form.controls.strategy_type.setValue(1);
           component.form.controls.asset_id.setValue(2);

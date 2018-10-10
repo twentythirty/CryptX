@@ -6,7 +6,6 @@ import { throwError, of, defer } from 'rxjs';
 import { Observable } from 'rxjs/Observable';
 import { routes } from '../config/routes/routes';
 import { FakeEmptyModule, FakeEmptyComponent } from './fake-empty.component';
-import { ComponentFixture } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 
 /**

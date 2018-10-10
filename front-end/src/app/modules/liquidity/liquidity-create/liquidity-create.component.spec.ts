@@ -88,7 +88,7 @@ describe('LiquidityCreateComponent', () => {
       component: component,
       fixture: fixture,
       formControl: component.form,
-      submitButton: fixture.nativeElement.querySelector('button.submit'),
+      submitButton: () => fixture.nativeElement.querySelector('button.submit'),
       fillForm: () => {
         component.form.controls.instrument_id.setValue(1);
         component.form.controls.exchange_id.setValue(2);

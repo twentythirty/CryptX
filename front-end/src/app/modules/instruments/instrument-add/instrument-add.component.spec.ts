@@ -69,7 +69,7 @@ describe('InstrumentAddComponent', () => {
       component: component,
       fixture: fixture,
       formControl: component.form,
-      submitButton: fixture.nativeElement.querySelector('button.submit'),
+      submitButton: () => fixture.nativeElement.querySelector('button.submit'),
       fillForm: () => {
         component.form.controls.transaction_asset_id.setValue(1);
         component.form.controls.quote_asset_id.setValue(2);

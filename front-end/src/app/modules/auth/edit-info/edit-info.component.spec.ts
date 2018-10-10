@@ -87,7 +87,7 @@ describe('EditInfoComponent', () => {
       component: component,
       fixture: fixture,
       formControl: component.userForm,
-      submitButton: fixture.nativeElement.querySelector('button.submit'),
+      submitButton: () => fixture.nativeElement.querySelector('button.submit'),
       fillForm: () => {
         const inputs = fixture.nativeElement.querySelectorAll('form input[type=password]');
         inputs[0].value = 'oldpass';

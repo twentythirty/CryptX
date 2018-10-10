@@ -1,5 +1,7 @@
 import { Component, OnInit, Input, Output, EventEmitter } from '@angular/core';
 import { FormGroup, FormControl, Validators } from '@angular/forms';
+import { finalize } from 'rxjs/operators';
+
 import { DepositService, DepositResponseData } from '../../../services/deposit/deposit.service';
 
 @Component({
@@ -55,10 +57,10 @@ export class DepositApproveComponent implements OnInit {
 
     this.isSubmitDepositLoading = true;
 
-    this.depositService.Submit(this.depositId, request).subscribe(
+    this.depositService.Submit(this.depositId, request).pipe(
+      finalize(() => this.isSubmitDepositLoading = false)
+    ).subscribe(
       (res: DepositResponseData) => {
-        this.isSubmitDepositLoading = false;
-
         if (res.success) {
           this.hideModal();
           this.openConfirm();

@@ -105,7 +105,7 @@ describe('LoginComponent', () => {
       component: component,
       fixture: fixture,
       formControl: component.loginForm,
-      submitButton: fixture.nativeElement.querySelector('.login-block form [type="submit"]'),
+      submitButton: () => fixture.nativeElement.querySelector('.login-block form [type="submit"]'),
       fillForm: () => {
         fillLoginForm('test@domain.com', 'pass');
       },

@@ -89,7 +89,7 @@ describe('PasswordResetComponent', () => {
       component: component,
       fixture: fixture,
       formControl: component.resetForm,
-      submitButton: fixture.nativeElement.querySelector('.login-block form [type="submit"]'),
+      submitButton: () => fixture.nativeElement.querySelector('.login-block form [type="submit"]'),
       fillForm: () => {
         fillPasswordChangeForm('pass', 'pass');
       },

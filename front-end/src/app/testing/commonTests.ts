@@ -1,4 +1,4 @@
-import { async } from '@angular/core/testing';
+import { async, fakeAsync } from '@angular/core/testing';
 import { FormGroup } from '@angular/forms';
 import { click } from './utils';
 
@@ -37,41 +37,50 @@ export function testFormControlForm(
     component: any,
     fixture: any,
     formControl: FormGroup,
-    submitButton: HTMLElement,
-    fillForm: Function,
-    changeToUnsuccess: Function,
+    submitButton: () => HTMLElement,
+    fillForm: () => void,
+    changeToUnsuccess: () => void,
   }
 ) {
   describe('common form validating/submiting', () => {
+    let warningShown = false;
+
     let component: any;
     let fixture: any;
     let formControl: FormGroup;
-    let submitButton: HTMLElement;
-    let fillForm: Function;
-    let changeToUnsuccess: Function;
+    let submitButton: () => HTMLElement;
+    let fillForm: () => void;
+    let changeToUnsuccess: () => void;
 
     let navigateSpy;
 
     beforeEach(async(() => {
       ({ component, fixture, formControl, submitButton, fillForm, changeToUnsuccess } = additionalData());
-      try {
-        navigateSpy = spyOn(component.router, 'navigate');
-      } catch (error) {
-        navigateSpy = component.router.navigate;
+
+      // dont spy 'navigate' if component dont have router DI
+      if (component.router) {
+        try {
+          navigateSpy = spyOn(component.router, 'navigate');
+        } catch (error) {
+          navigateSpy = component.router.navigate;
+        }
+      } else if (!warningShown) {
+        console.warn(`${component.constructor.name}: dont have router DI, navigate spy not created. Ignore if its correct logic.`);
+        warningShown = true;
       }
     }));
 
     it('submit button should be enabled after component init', () => {
-      expect(submitButton.hasAttribute('disabled')).toBe(false);
+      expect(submitButton().hasAttribute('disabled')).toBe(false);
     });
 
     it('submit button should be enabled if form is invalid', () => {
       expect(formControl.invalid).toBe(true, 'form isint invalid');
-      expect(submitButton.hasAttribute('disabled')).toBe(false, 'button isint enabled');
+      expect(submitButton().hasAttribute('disabled')).toBe(false, 'button isint enabled');
     });
 
     it('should mark all form controls as touched on submit button press', () => {
-      click(submitButton);
+      click(submitButton());
 
       for (const field of Object.keys(formControl.controls)) {
         expect(formControl.controls[field].touched).toBe(true, `${field} isint touched`);
@@ -82,37 +91,47 @@ export function testFormControlForm(
       beforeEach(async(() => fillForm()));
 
       it('form submit button should not be disabled', () => {
-        expect(submitButton.hasAttribute('disabled')).toBe(false);
+        expect(submitButton().hasAttribute('disabled')).toBe(false);
       });
 
       describe('after form is successfuly submited', () => {
         beforeEach(async(() => {
-          click(submitButton);
+          click(submitButton());
           fixture.detectChanges();
         }));
 
         it('submit button should be disabled', () => {
-          expect(submitButton.hasAttribute('disabled')).toBe(true);
+          expect(submitButton().hasAttribute('disabled')).toBe(true);
         });
 
         it('should be redirected', () => {
-          expect(navigateSpy).toHaveBeenCalled();
+          if (navigateSpy) {
+            expect(navigateSpy).toHaveBeenCalled();
+          }
         });
 
-        it('submit button should not be disabled', () => {
+        it('submit button should not be disabled', fakeAsync(() => {
           fixture.detectChanges();
-          expect(submitButton.hasAttribute('disabled')).toBe(false);
-        });
+          const btn = submitButton();
+
+          if (btn) {
+            expect(btn.hasAttribute('disabled')).toBe(false);
+          } else {
+            console.warn(`${component.constructor.name}: form submit button not found. Ignore if its correct logic.`);
+          }
+        }));
       });
 
       describe('after form is unsuccessfuly submited', () => {
         beforeEach(async(() => {
           changeToUnsuccess();
-          click(submitButton);
+          click(submitButton());
         }));
 
         it('should not be redirected', () => {
-          expect(navigateSpy).not.toHaveBeenCalled();
+          if (navigateSpy) {
+            expect(navigateSpy).not.toHaveBeenCalled();
+          }
         });
       });
 
