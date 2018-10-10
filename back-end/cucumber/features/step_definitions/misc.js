@@ -391,3 +391,9 @@ After('@execution_orders_cache_cleanup', async function() {
             });
         }
 });
+
+After('@restore_settings', function() {
+    
+    if(!_.isEmpty(World._default_settings)) SYSTEM_SETTINGS = _.clone(World._default_settings);
+
+});

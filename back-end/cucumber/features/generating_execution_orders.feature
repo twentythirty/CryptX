@@ -26,13 +26,16 @@ Feature: Generating execution orders
         Then the task will skip the Recipe Order due to Order was already filled
         And no new Execution Order is saved to the database
 
-    Scenario: Next total quantity of the Execution Order is not within limits
+    @restore_settings
+    Scenario: Last total quantity of the Execution Order is not within limits
 
         Given the system has Recipe Order with status Executing on Bitfinex
-        And the Order remaining amount is not within exchange minimum amount limits
+        And the setting "base trade fuzzyness" is set to 0
+        And the Order is two Execution Orders short, one of which will be smaller than the Exchnages allowed minimum
         When the system finished the task "generate execution orders"
-        Then the task will skip the Recipe Order due to next total being not within limits
-        And no new Execution Order is saved to the database
+        Then a new Execution Order is saved to the database
+        And the total quantity will be within exchange limits
+        And the last Execution Order will fulfill the Recipe Order required quantity
 
     Scenario: Generating Execution Orders until Recipe Order is completed
 

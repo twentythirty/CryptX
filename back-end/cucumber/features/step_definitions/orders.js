@@ -503,6 +503,74 @@ Given('the Recipe Orders statuses were updated', async function() {
 
 });
 
+Given('the Order is two Execution Orders short, one of which will be smaller than the Exchnages allowed minimum', async function() {
+
+    const { ExecutionOrder, ExecutionOrderFill, InstrumentExchangeMapping, sequelize } = require('../../../models');
+    const CCXTUtils = require('../../../utils/CCXTUtils');
+
+    const order = this.current_recipe_order;
+
+    expect(order, `Expected to have a current recipe order`).to.be.not.undefined;
+
+    const [ instrument_mapping, connector ] = await Promise.all([
+        InstrumentExchangeMapping.findOne({
+            where: {
+                exchange_id: order.target_exchange_id,
+                instrument_id: order.instrument_id
+            }
+        }),
+        CCXTUtils.getConnector(order.target_exchange_id)
+    ]);
+
+    const sold_symbol = instrument_mapping.external_instrument_id.split('/')[1];
+    const base_trade_amount = SYSTEM_SETTINGS[`BASE_${sold_symbol}_TRADE`];
+    const predicted_amount = Decimal(base_trade_amount).div(order.price);
+    const min_amount = connector.markets[instrument_mapping.external_instrument_id].limits.amount.min;
+    const order_quantity = order.quantity;
+
+    const needed_fill = Decimal(order_quantity).minus(predicted_amount).minus(min_amount/2);
+
+    this.current_expected_execution_order_quantity = Decimal(order.quantity).minus(needed_fill);
+
+    /*World.print(`
+        ORDER QUANTITY: ${order_quantity},
+        INSTRUMENT: ${instrument_mapping.external_instrument_id},
+        PREDICTED_AMOUNT: ${predicted_amount.toString()},
+        NEEDED FILL: ${needed_fill.toString()},
+        EXCHANGE LIMIT: ${min_amount}
+    `);*/
+
+    return sequelize.transaction(async transaction => {
+
+        const execution_order = await ExecutionOrder.create({
+            placed_timestamp: new Date(),
+            completed_timestamp: new Date(),
+            exchange_id: order.target_exchange_id,
+            external_identifier: 'jk4h5kj34h5k3h5j3hk',
+            failed_attempts: 0,
+            fee: (parseFloat(order.price) / _.random(98, 100, false)),
+            instrument_id: order.instrument_id,
+            price: order.price,
+            recipe_order_id: order.id,
+            side: order.side,
+            status: EXECUTION_ORDER_STATUSES.FullyFilled,
+            total_quantity: needed_fill.toString(),
+            type: EXECUTION_ORDER_TYPES.Market
+        }, { transaction });
+
+        return ExecutionOrderFill.create({
+            execution_order_id: execution_order.id,
+            external_identifier: '4762387426478362',
+            fee: execution_order.fee,
+            price: execution_order.price,
+            quantity: execution_order.total_quantity,
+            timestamp: new Date()
+        }, { transaction });
+
+    });
+
+});
+
 When('I generate new Orders for the Approved Recipe Run', {
     timeout: 15000
 }, function () {
@@ -950,5 +1018,32 @@ Then('the Recipe Orders will have the folowing prices and quantities:', async fu
         expect(matching_order.side).to.equal(ORDER_SIDES[data.side], `Expected Order[${matching_order.id}] side to be ${data.side}`);
 
     }
+
+});
+
+Then('the last Execution Order will fulfill the Recipe Order required quantity', async function() {
+
+    const { ExecutionOrder, sequelize } = require('../../../models');
+
+    const order = this.current_recipe_order;
+
+    const [ current_quantity ] = await ExecutionOrder.findAll({
+        where: {
+            recipe_order_id: order.id,
+            status: EXECUTION_ORDER_STATUSES.FullyFilled
+        },
+        attributes: [
+            'recipe_order_id',
+            'status',
+            [ sequelize.fn('sum', sequelize.col('total_quantity')), 'total_quantity' ]
+        ],
+        group: [ 'recipe_order_id', 'status' ]
+    });
+
+    expect(current_quantity, `Expected to find current FufllyFilled Execution Orders of Recipe Order[${order.id}]`).to.be.not.undefined;
+
+    const newest_quantity = this.current_execution_order.total_quantity;
+
+    expect(Decimal(current_quantity.total_quantity).plus(newest_quantity).toString()).to.equal(order.quantity, 'Expected the quantities to match');
 
 });
