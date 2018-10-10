@@ -468,9 +468,16 @@ const changeRecipeOrderGroupStatus = async (user_id, order_group_id, status, com
                 transaction
             }).then(recipe_orders => {
                 //add relevant mappings and ccxt connectors to orders
+                const orders_instrument_ids = _.map(recipe_orders, 'instrument_id');
+                const orders_exchanges_ids = _.map(recipe_orders, 'target_exchange_id');
 
                 return Promise.all([
                     Promise.resolve(recipe_orders),
+                    InstrumentService.getInstrumentPrices(
+                        orders_instrument_ids,
+                        orders_exchanges_ids,
+                        true
+                    ),
                     InstrumentExchangeMapping.findAll({
                         where: {
                             instrument_id: _.map(recipe_orders, 'instrument_id'),
@@ -482,7 +489,7 @@ const changeRecipeOrderGroupStatus = async (user_id, order_group_id, status, com
                 ])
             }).then(order_data => {
 
-                const [recipe_orders, exchange_mappings, connectors_map] = order_data;
+                const [recipe_orders, newest_market_data, exchange_mappings, connectors_map] = order_data;
 
                 return Promise.all(_.map(recipe_orders, recipe_order => {
 
@@ -508,6 +515,28 @@ const changeRecipeOrderGroupStatus = async (user_id, order_group_id, status, com
                     if (check_market == null || !check_market.active) {
 
                         TE(`Can't approve recipe order ${recipe_order.id}: No market for mapping ${check_symbol} on exchange ${connector.name}.`)
+                    }
+
+                    const order_market_prices = _.find(
+                        newest_market_data, 
+                        datum => (datum.exchange_id == recipe_order.target_exchange_id 
+                            && datum.instrument_id == recipe_order.instrument_id)
+                    ); 
+                    
+                    //number of seconds we handicap from the TTL value
+                    //ideally  this is the arg1 difference 
+                    //but if initial TTL is bad then we take 0 (fails he approvals)
+                    //if difference too large we take the initial defined differnece of 15 min
+                    const handicap_seconds = clamp(
+                        SYSTEM_SETTINGS.BASE_ASSET_PRICE_TTL_THRESHOLD - SYSTEM_SETTINGS.MARKET_DATA_TTL_HANDICAP, 
+                        0, 
+                        DEFAULT_SETTINGS.BASE_ASSET_PRICE_TTL_THRESHOLD
+                    );
+                    const cutoff_date = new Date(new Date().getTime() - handicap_seconds * 1000);
+                    
+                    if (order_market_prices == null || order_market_prices.timestamp < cutoff_date) {
+
+                        TE(`Can't approve recipe order ${recipe_order.id}: No recent market data found for instrument ${recipe_order.Instrument.symbol}, must be newer than ${cutoff_date}!`);
                     }
 
                     const lower_limit = Decimal(check_market.limits.amount.min || '0');
