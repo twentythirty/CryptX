@@ -503,7 +503,7 @@ Given('the Recipe Orders statuses were updated', async function() {
 
 });
 
-Given('the Order is two Execution Orders short, one of which will be smaller than the Exchnages allowed minimum', async function() {
+Given('the Recipe Orde is two Execution Orders short, one of which will be smaller than the minimum allowed by the Exchange', async function() {
 
     const { ExecutionOrder, ExecutionOrderFill, InstrumentExchangeMapping, sequelize } = require('../../../models');
     const CCXTUtils = require('../../../utils/CCXTUtils');

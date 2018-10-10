@@ -481,6 +481,66 @@ Given(/^the current price of (\w*) is (\d*|\d+(?:\.\d+)?) (\w*)$/, async functio
 
 });
 
+Given(/^the average (\w*\/\w*) Liquidity for the last (\d*) days is:$/, async function(instrument_symbol, days, table) {
+
+    days = parseInt(days);
+    const [ exchange_liquidities ] = table.hashes();
+    const exchange_names = Object.keys(exchange_liquidities);
+
+    const { Instrument, InstrumentLiquidityHistory, Exchange, sequelize } = require('../../../models');
+
+    const [ exchanges, instrument ] = await Promise.all([
+        Exchange.findAll({
+            where: { name: exchange_names }
+        }),
+        Instrument.findOne({
+            where: { symbol: instrument_symbol }
+        })
+    ]);
+
+    expect(exchanges.length).to.equal(exchange_names.length, `Expected to find ${exchange_names.length} exchanges: ${exchange_names.join(', ')}`);
+    expect(instrument, `Expected to find Instrument "${instrument_symbol}"`).to.be.not.null;
+
+    const history = [];
+
+    for(let i = 0; i < days; i++) {
+
+        const timestamp_to = new Date();
+        timestamp_to.setDate(timestamp_to.getDate() - i);
+        const timestamp_from = new Date(timestamp_to);
+        timestamp_from.setDate(timestamp_from.getDate() - 1);
+
+        for(let exchange_name in exchange_liquidities) {
+
+            const exchange = exchanges.find(e => e.name === exchange_name);
+            expect(exchange, `Expected to find exchnage ${exchange_name}`).to.be.not.undefined;
+
+            history.unshift({
+                timestamp_to, timestamp_from,
+                exchange_id: exchange.id,
+                instrument_id: instrument.id,
+                volume: exchange_liquidities[exchange_name]
+            });
+
+        }
+
+    }
+
+    return sequelize.transaction(async transaction => {
+
+        await InstrumentLiquidityHistory.destroy({
+            where:{
+                instrument_id: instrument.id,
+                exchange_id: exchanges.map(e => e.id)
+            }
+        }, { transaction });
+
+        return InstrumentLiquidityHistory.bulkCreate(history, { transaction });
+
+    });
+
+});
+
 When('I create a new Instrument with those Assets', function() {
 
     const new_instrument = {

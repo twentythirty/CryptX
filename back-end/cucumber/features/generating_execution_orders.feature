@@ -27,11 +27,11 @@ Feature: Generating execution orders
         And no new Execution Order is saved to the database
 
     @restore_settings
-    Scenario: Last total quantity of the Execution Order is not within limits
+    Scenario: Last Execution Order quantity is not within limits
 
         Given the system has Recipe Order with status Executing on Bitfinex
         And the setting "base trade fuzzyness" is set to 0
-        And the Order is two Execution Orders short, one of which will be smaller than the Exchnages allowed minimum
+        And the Recipe Orde is two Execution Orders short, one of which will be smaller than the minimum allowed by the Exchange
         When the system finished the task "generate execution orders"
         Then a new Execution Order is saved to the database
         And the total quantity will be within exchange limits

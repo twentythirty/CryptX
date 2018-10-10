@@ -17,7 +17,7 @@ Given('there are no Liquidity Requirements in the system', function() {
 
 });
 
-Given(/^the system has Liquidity Requirement for (\w+\/\w+) for (.*) and periodicity of (.*) days$/, async function(instrument_symbol, exchange_name, periodicity) {
+Given(/^the system has Liquidity Requirement (\d*) for (\w+\/\w+) for (.*) and periodicity of (.*) days$/, async function(volume, instrument_symbol, exchange_name, periodicity) {
 
     const { Exchange, Instrument, InstrumentLiquidityRequirement, InstrumentLiquidityHistory, sequelize } = require('../../../models');
 
@@ -40,23 +40,34 @@ Given(/^the system has Liquidity Requirement for (\w+\/\w+) for (.*) and periodi
     expect(instrument, `Expected to find an instrument with the symbol ${instrument_symbol}`).to.be.not.null;
     this.current_instrument = instrument;
 
-    const [ history ] = await InstrumentLiquidityHistory.findAll({
+    /*const [ history ] = await InstrumentLiquidityHistory.findAll({
         where: { instrument_id: instrument.id },
         attributes: [
             [ sequelize.fn('avg', sequelize.col('volume')), 'average_volume' ]
         ],
         group: ['instrument_id'],
         raw: true
-    });
+    });*/
 
-    const requiremnt = await InstrumentLiquidityRequirement.create({
-        exchange: exchange_id,
-        instrument_id: instrument.id,
-        minimum_volume: history.average_volume,
-        periodicity_in_days: periodicity
-    });
+    return sequelize.transaction(async transaction => {
 
-    this.current_liqudity_requirement = requiremnt;
+        await InstrumentLiquidityRequirement.destroy({
+            where: {
+                instrument_id: instrument.id,
+                exchange: exchange_id
+            }
+        }, { transaction });
+
+        const requiremnt = await InstrumentLiquidityRequirement.create({
+            exchange: exchange_id,
+            instrument_id: instrument.id,
+            minimum_volume: volume,
+            periodicity_in_days: periodicity
+        }, { transaction });
+    
+        this.current_liqudity_requirement = requiremnt;
+
+    });
 
 });
 
@@ -154,9 +165,11 @@ When(/^I retrieve the Liquidity Requirement details for (\w+\/\w+) instrument$/,
 
     this.current_responses = [ requirement_details, requirement_exchanges ];
 
-    this.current_liqudity_requirement_details = requirement_details.body.liquidity_requirement;
-    this.current_liqudity_requirement_exchange_list = requirement_exchanges.body.exchanges
-
+    this.current_liquidity_requirement_details = requirement_details.body.liquidity_requirement;
+    this.current_liquidity_requirement_exchanges_list = requirement_exchanges.body.exchanges;
+    this.current_liquidity_requirement_exchanges_footer = requirement_exchanges.body.footer
+    //World.print(this.current_liqudity_requirement_details);
+    //World.print(requirement_exchanges.body);
 });
 
 Then('the new Liquidity Requirement is saved to the database', async function() {
