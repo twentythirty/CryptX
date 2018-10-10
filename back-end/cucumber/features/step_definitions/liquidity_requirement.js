@@ -167,7 +167,7 @@ When(/^I retrieve the Liquidity Requirement details for (\w+\/\w+) instrument$/,
 
     this.current_liquidity_requirement_details = requirement_details.body.liquidity_requirement;
     this.current_liquidity_requirement_exchanges_list = requirement_exchanges.body.exchanges;
-    this.current_liquidity_requirement_exchanges_footer = requirement_exchanges.body.footer
+    this.current_liquidity_requirement_exchanges_footer = requirement_exchanges.body.footer;
 
 });
 

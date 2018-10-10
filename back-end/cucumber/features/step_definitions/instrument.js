@@ -522,8 +522,8 @@ Given(/^the current price of (\w*) is (\d*|\d+(?:\.\d+)?) (\w*)$/, async functio
 Given(/^the average (\w*\/\w*) Liquidity for the last (\d*) days is:$/, async function(instrument_symbol, days, table) {
 
     days = parseInt(days);
-    const [ exchange_liquidities ] = table.hashes();
-    const exchange_names = Object.keys(exchange_liquidities);
+    const exchange_liquidities = table.hashes();
+    const exchange_names = Object.keys(exchange_liquidities[0]).filter(name => name !== 'day');
 
     const { Instrument, InstrumentLiquidityHistory, Exchange, sequelize } = require('../../../models');
 
@@ -541,23 +541,29 @@ Given(/^the average (\w*\/\w*) Liquidity for the last (\d*) days is:$/, async fu
 
     const history = [];
 
-    for(let i = 0; i < days; i++) {
+    for(let i = 1; i <= days; i++) {
 
         const timestamp_to = new Date();
-        timestamp_to.setDate(timestamp_to.getDate() - i);
+        timestamp_to.setMinutes(timestamp_to.getMinutes() + 5); //Safety minutes
+        timestamp_to.setDate(timestamp_to.getDate() - (days + 1 - i));
         const timestamp_from = new Date(timestamp_to);
         timestamp_from.setDate(timestamp_from.getDate() - 1);
 
-        for(let exchange_name in exchange_liquidities) {
+        const current_day_liquidities = exchange_liquidities.find(l => l.day === String(i));
+        expect(current_day_liquidities, `There is not Liquidity information for day ${i}`).to.be.not.undefined;
+
+        for(let exchange_name in current_day_liquidities) {
+
+            if(exchange_name === 'day') continue;
 
             const exchange = exchanges.find(e => e.name === exchange_name);
             expect(exchange, `Expected to find exchnage ${exchange_name}`).to.be.not.undefined;
 
-            history.unshift({
+            history.push({
                 timestamp_to, timestamp_from,
                 exchange_id: exchange.id,
                 instrument_id: instrument.id,
-                volume: exchange_liquidities[exchange_name]
+                volume: current_day_liquidities[exchange_name]
             });
 
         }
