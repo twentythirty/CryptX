@@ -17,7 +17,7 @@ Given('there are no Liquidity Requirements in the system', function() {
 
 });
 
-Given(/^the system has Liquidity Requirement (\d*) for (\w+\/\w+) for (.*) and periodicity of (.*) days$/, async function(volume, instrument_symbol, exchange_name, periodicity) {
+Given(/^the system has Liquidity Requirement of (\d*) for (\w+\/\w+) for (.*) and periodicity of (.*) days$/, async function(volume, instrument_symbol, exchange_name, periodicity) {
 
     const { Exchange, Instrument, InstrumentLiquidityRequirement, InstrumentLiquidityHistory, sequelize } = require('../../../models');
 
