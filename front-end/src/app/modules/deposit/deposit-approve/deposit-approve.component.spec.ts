@@ -8,7 +8,7 @@ import { DepositService } from '../../../services/deposit/deposit.service';
 import { SubmitData, ApproveData } from '../../../testing/service-mock/deposit.service.mock';
 
 
-fdescribe('DepositApproveComponent', () => {
+describe('DepositApproveComponent', () => {
   let component: DepositApproveComponent;
   let fixture: ComponentFixture<DepositApproveComponent>;
   let depositService: DepositService;
