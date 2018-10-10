@@ -322,7 +322,7 @@ const createLiquidityRequirement = async (instrument_id, periodicity, minimum_ci
 };
 module.exports.createLiquidityRequirement = createLiquidityRequirement;
 
-const getInstrumentPrices = async (instrument_id, exchange_id) => {
+const getInstrumentPrices = async (instrument_id, exchange_id, raw = false) => {
 
     if (!_.isArray(instrument_id) || !_.isArray(exchange_id))
         TE("Expectd array of ids");
@@ -351,11 +351,14 @@ const getInstrumentPrices = async (instrument_id, exchange_id) => {
     }));
     if (err) TE(err.message);
 
-    instrument_prices = instrument_prices.map(price => Object.assign(price, {
-        ask_price: parseFloat(price.ask_price),
-        bid_price: parseFloat(price.bid_price),
-        ask_price: parseFloat(price.tick_size)
-    }));
+    //add parsed keys by default
+    if (!raw) {
+        instrument_prices = instrument_prices.map(price => Object.assign(price, {
+            ask_price: parseFloat(price.ask_price),
+            bid_price: parseFloat(price.bid_price),
+            ask_price: parseFloat(price.tick_size)
+        }));
+    }
 
     return instrument_prices;
 };

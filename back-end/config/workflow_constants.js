@@ -2,20 +2,23 @@
  *  Default values, a backup if for some reason we don't get any from database 
  */
 DEFAULT_SETTINGS = {
-    /* Maximum marketshare percentage for LCI. Total marketshare of coins
-    in LCI index should not go over this value */
+    /** 
+     * Maximum marketshare percentage for LCI. Total marketshare of coins
+     * in LCI index should not go over this value 
+     */
     MARKETCAP_LIMIT_PERCENT: 90.0,
 
     /* Maximum sizes of coins in indexes */
     INDEX_LCI_CAP: 20,
     INDEX_MCI_CAP: 50,
 
-    /** Base trade amounts in base currencies. These amounts are guidelines for
-     *  the trading volume a new execution order will tend towards
+    /** 
+     * Base trade amounts in base currencies. These amounts are guidelines for
+     * the trading volume a new execution order will tend towards
      * in cases when a recipe order specifies to trade more than this.
-     * Actual values will be `TRADE_BASE_FUZZYNESS` fuzzy */
-    BASE_BTC_TRADE: 0.005,
-    BASE_ETH_TRADE: 0.5,
+     * Actual values will be fuzzy by `TRADE_BASE_FUZZYNESS * 100` percent 
+     * */
+    BASE_BTC_TRADE: 0.005, BASE_ETH_TRADE: 0.5,
 
     /**
      * Amount of randomization to apply to a base value in either direction (-fuzzy; +fuzzy).
@@ -24,16 +27,24 @@ DEFAULT_SETTINGS = {
     TRADE_BASE_FUZYNESS: 0.15,
     /**
      * Max number of exexcution order fails tolerated.
-     * When this threshold is reached by a specific execution order, it will no longer be placed on exchanges and marked as failed
+     * When this threshold is reached by a specific execution order, 
+     * it will no longer be placed on exchanges and marked as failed
      */
     EXEC_ORD_FAIL_TOLERANCE: 5,
 
     /**
-     * Threshold which is used to make rcipe runs fail if base asset
+     * Threshold which is used to make recipe runs fail if base asset
      * haven't updated too long. The value is in seconds.
      * Currently it is 900 seconds, or 15 minutes.
      */
-    BASE_ASSET_PRICE_TTL_THRESHOLD: 900
+    BASE_ASSET_PRICE_TTL_THRESHOLD: 900,
+    /**
+     * The amount of time (in seconds) that an instrument's market data needs to be valid
+     * before BASE_ASSET_PRICE_TTL_THRESHOLD seconds are up so that the instrument is still elligible
+     * to be approved in an order. Currently set to 150 seconds or 2.5 minutes.
+     * 
+     */
+    MARKET_DATA_TTL_HANDICAP: 150
 };
 /**
  * Actual system-used active database settings values

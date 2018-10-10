@@ -580,6 +580,91 @@ describe('OrdersService testing', () => {
             return chai.assert.isRejected(ordersService.changeRecipeOrderGroupStatus(TEST_USER_ID, TEST_ORDER_GROUP_ID, RECIPE_ORDER_GROUP_STATUSES.Approved, APPROVE_COMMENT));
         });
 
+        it('shall reject if a recipe order doesnt have up to date instrument market data', (done) => {
+
+            sinon.stub(RecipeOrderGroup, 'findById').callsFake(options => {
+                let new_group = Object.assign({}, TEST_RECIPE_ORDER_GROUP);
+                new_group.save = () => {
+                    return Promise.resolve(new_group);
+                };
+                return Promise.resolve(new_group);
+            });
+
+            sinon.stub(RecipeOrder, 'findAll').callsFake(options => {
+                let obj = Object.assign({}, TEST_RECIPE_ORDER_SHOULD_PASS)
+                obj.save = async () => {
+                    return Promise.resolve(obj);
+                }
+                return Promise.resolve([
+                    obj
+                ])
+            });
+            sinon.stub(InstrumentExchangeMapping, 'findAll').callsFake(options => {
+                return Promise.resolve([
+                    {
+                        external_instrument_id: TEST_INSTRUMENTS[0].symbol,
+                        instrument_id: TEST_INSTRUMENTS[0].id,
+                        exchange_id: TEST_EXCHANGE_IDS[0]
+                    }
+                ])
+            });
+            sinon.stub(ccxtUtils, 'allConnectors').callsFake(options => {
+
+                return Promise.resolve({
+                    [String(TEST_EXCHANGE_IDS[0])]: {
+                        name: 'Test Connector',
+                        getMarket: (symbol) => {
+                            if (symbol == TEST_INSTRUMENTS[0].symbol) {
+                                return {
+                                    market: {
+                                        active: true
+                                    }
+                                }
+                            } else {
+                                return null
+                            }
+                        },
+                        markets: {
+                            [TEST_INSTRUMENTS[0].symbol]: {
+                                    active: true,
+                                    limits: {
+                                        amount: {
+                                            min: 0
+                                        }
+                                    }
+                            }
+                        }
+                    }
+                })
+            });
+            if (InstrumentService.getInstrumentPrices.restore) {
+                InstrumentService.getInstrumentPrices.restore()
+            }
+            sinon.stub(InstrumentService, 'getInstrumentPrices').callsFake(options => {
+                return Promise.resolve([])
+            })
+
+            ordersService.changeRecipeOrderGroupStatus(TEST_USER_ID, TEST_ORDER_GROUP_ID, RECIPE_ORDER_GROUP_STATUSES.Approved, APPROVE_COMMENT).then(fulfill => {
+                if (InstrumentService.getInstrumentPrices.restore) {
+                    InstrumentService.getInstrumentPrices.restore()
+                }
+                sinon.stub(InstrumentService, 'getInstrumentPrices').callsFake(options => {
+
+                    return Promise.resolve(TEST_INSTRUMENT_MARKET_DATA);
+                });
+                throw(Error("should have rejected due to lack of fresh market data!"))
+            }, rejection => {
+                if (InstrumentService.getInstrumentPrices.restore) {
+                    InstrumentService.getInstrumentPrices.restore()
+                }
+                sinon.stub(InstrumentService, 'getInstrumentPrices').callsFake(options => {
+
+                    return Promise.resolve(TEST_INSTRUMENT_MARKET_DATA);
+                });
+                done();
+            });
+        });
+
         it ("shall reject if a recipe order doesnt have valid market on exchange", () => {
             //the group is OK
             sinon.stub(RecipeOrderGroup, 'findById').callsFake(options => {
