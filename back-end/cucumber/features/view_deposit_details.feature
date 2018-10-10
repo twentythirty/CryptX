@@ -30,7 +30,7 @@ Feature: view deposit details
 		And there are no deposit log entries
 
 	@investment_run_cache_cleanup
-	Scenario: view generated deposit
+	Scenario: view generated deposit with altered values
 
 		Given the system has one recipe run deposit with status Pending
 		When I log onto CryptX as Depositor
@@ -48,7 +48,7 @@ Feature: view deposit details
 		And I can adjust both values again
 
 	@investment_run_cache_cleanup
-	Scenario: view generated deposit
+	Scenario: view deposit after completion
 
 		Given the system has one recipe run deposit with status Pending
 		When I log onto CryptX as Depositor
