@@ -140,13 +140,12 @@ Feature: View investment run details
         | ETC	|	Ethereum Classic	|	1154134980	|	930.147	|	0.53448828	|
         | XEM	|	NEM	|	922802501	|	7753.976	|	0.427356531	|
         | XTZ	|	Tezos	|	791391439	|	7150.496	|	0.366499115	|
-        | VET	|	VeChain	|	705880382	|	6096.763	|	0.326898324	|
-        | DOGE	|	Dogecoin	|	665162927	|	7169.571	|	0.308041776	|
+        
 
         And if I look at the Asset Mix footer
         Then I see data layout:
         | symbol    | long_name | capitalization    | nvt_ration    | market_share  |
-        | 20 Items  | -   |   195680328085 total | -  |  -  |
+        | 18 Items  | -   |   194309284776 total | -  |  -  |
 
     Scenario: view MCI initiated investment run
 
@@ -178,6 +177,8 @@ Feature: View investment run details
         And if I look at the Asset Mix list
         Then I see data layout:
         | symbol    | long_name | capitalization    | nvt_ration    | market_share  |
+        | VET	|	VeChain	|	705880382	|	6096.763	|	0.326898324	|
+        | DOGE	|	Dogecoin	|	665162927	|	7169.571	|	0.308041776	|
         |	ZEC	|	Zcash	|	592864691	|	7742.078	|	0.274559938	|
         |	OMG	|	OmiseGO	|	479593312	|	1608.344	|	0.222103141	|
         |	BTG	|	Bitcoin Gold	|	436079205	|	5123.849	|	0.201951443	|
@@ -226,9 +227,7 @@ Feature: View investment run details
         |	WAN	|	Wanchain	|	101966364	|	7742.347	|	0.047221363	|
         |	HC	|	HyperCash	|	101759361	|	1387.597	|	0.047125498	|
         |	AION	|	Aion	|	90795648	|	1489.9	|	0.042048123	|
-        |	HT	|	Huobi Token	|	87445694	|	594.336	|	0.040496735	|
-        |	ELF	|	aelf	|	86712454	|	9585.103	|	0.040157166	|
         And if I look at the Asset Mix footer
         Then I see data layout:
         | symbol    | long_name | capitalization    | nvt_ration    | market_share  |
-        | 50 Items  | -   |   10406727041 total | -  |  -  |
+        | 50 Items  | -   |   11603612202 total | -  |  -  |

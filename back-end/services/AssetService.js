@@ -113,6 +113,7 @@ const getStrategyAssets = async function (strategy_type) {
     iteration = 1,
     per_iteration = 50,
     lci_skipped = false,
+    total_market_share = 0,
     amount_needed = strategy_type == STRATEGY_TYPES.LCI ?
       SYSTEM_SETTINGS.INDEX_LCI_CAP :
       SYSTEM_SETTINGS.INDEX_MCI_CAP;
@@ -156,36 +157,42 @@ const getStrategyAssets = async function (strategy_type) {
     type: sequelize.QueryTypes.SELECT
   }));
     if (err) TE(err.message);
-    
+           
+    assets.map(a => {
+      Object.assign(a, {
+        capitalization_usd: parseFloat(a.capitalization_usd),
+        avg_share: parseFloat(a.avg_share)
+      });
+    });
+
     for (let asset of assets) {
 
-      if (asset.status == INSTRUMENT_STATUS_CHANGES.Whitelisting)
-        included.push(asset);
-      else
-        excluded.push(asset);
-
-      if (included.length == SYSTEM_SETTINGS.INDEX_LCI_CAP && 
-        strategy_type != STRATEGY_TYPES.LCI &&
+      // if we reached LCI amount and we didn't skip LCI assets yet
+      if (( total_market_share + asset.avg_share > SYSTEM_SETTINGS.MARKETCAP_LIMIT_PERCENT ||
+        included.length == SYSTEM_SETTINGS.INDEX_LCI_CAP ) &&
         !lci_skipped) {
-        included = [];
-        excluded = [];
-        lci_skipped = true;
-      }
 
-      if (included.length >= amount_needed) {
-        break asset_selection; // exit out of loop if got needed amount
+        // if it's not LCI strategy, the skip LCI assets.
+        if ( strategy_type != STRATEGY_TYPES.LCI ) {
+          included = [];
+          excluded = [];
+          lci_skipped = true;
+        } else // exit asset selection if it is LCI strategy
+          break asset_selection;
+
+      } else if (included.length == amount_needed) { // reached needed amount, exit asset selection
+        break asset_selection;
       }
+     
+      if (asset.status == INSTRUMENT_STATUS_CHANGES.Whitelisting) { // include if whitelisted
+        included.push(asset);
+        total_market_share += asset.avg_share;
+      } else // exclude all not whitelisted
+        excluded.push(asset);      
     }
 
-    iteration++;
+    iteration++; // increment this to calculate offset
   } while (assets.length); // stop when a
-
-  included.map(a => {
-    Object.assign(a, {
-      capitalization_usd: parseFloat(a.capitalization_usd),
-      avg_share: parseFloat(a.avg_share)
-    });
-  });
 
   if (!included.length)
     TE(`No assets found for ${_.invert(STRATEGY_TYPES)[strategy_type]} portfolio`);
