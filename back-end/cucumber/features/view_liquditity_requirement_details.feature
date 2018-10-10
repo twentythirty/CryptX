@@ -33,13 +33,27 @@ Feature: View liquidity requirement details
         | 1 Exchanges   | 1 Identifiers  | 0 Lacking |
         
 
-    #Scenario: view liquidity requirement details for all exchanges
+    Scenario: view liquidity requirement details for all exchanges
 
-    #    Given the system has Liquidity Requirement for XRP/ETH for all Exchanges and periodicity of 7 days
-    #    When I log onto CryptX as Compliance Manager
-    #    And I retrieve the Liquidity Requirement details for XRP/ETH instrument
-    #    Then I will see the details of the Liquidity Requirement
-    #    And the number of Exchanges will be the number of Exchanges that have mappings for XRP/ETH
-    #    And the Exchange list will contain the Instrument current price, last day volume and average volume for the past week
-    #    And Exchanges that pass the requirement are marked accordinally
-    #    And the number of Exchanges that did not pass is shown in the footer
+        Given the Instrument EOS/ETH is not mapped to Bittrex, Bitstamp, HitBTC, Kraken and Huobi 
+        Given the average EOS/ETH Liquidity for the last 7 days is:
+        |   Binance |   Bitfinex    |   OKEx    |
+        |   3520   |   2990      |   3200   |
+        And the current price of EOS is 0.007 ETH
+        And the system has Liquidity Requirement 3000 for EOS/ETH for all Exchanges and periodicity of 7 days
+        When I log onto CryptX as Compliance Manager
+        And I retrieve the Liquidity Requirement details for EOS/ETH instrument
+        Then if I look at the Liquidity Requirement details
+        Then I see data layout:
+        | instrument    | periodicity   | quote_asset   | minimum_circulation   | exchange  | exchange_count    | exchange_not_pass |
+        | EOS/ETH   |   7   |   ETH     |   3000   |   All |   3   |   1   |
+        And if I look at the Liquidity Requirement Exchanges list
+        Then I see data layout:
+        | exchange  | instrument_identifier | current_price | last_day_volume | last_week_volume    | passes |
+        | Binance   | EOS/ETH   | 0.007   |   3520 |   3520 |   MeetsLiquidityRequirements  |
+        | Bitfinex   | EOS/ETH   | 0.007   |   2990 |   2990 |   Lacking  |
+        | OKEx   | EOS/ETH   | 0.007   |   3200 |   3200 |   MeetsLiquidityRequirements  |
+        Then if I look at the Liquidity Requirement Exchanges footer
+        Then I see data layout:
+        | exchange  | instrument_identifier | passes    |
+        | 3 Exchanges   | 1 Identifiers  | 1 Lacking |

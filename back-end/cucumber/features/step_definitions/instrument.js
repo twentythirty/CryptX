@@ -17,6 +17,44 @@ Given('there are no Instruments in the system', function() {
 
 });
 
+Given(/^the Instrument (\w*\/\w*) is not mapped to (.*)$/, async function(instrument_symbol, exchange_names) {
+
+    exchange_names = exchange_names.split(/,|and|or/).map(name => name.trim());
+
+    const { Exchange, Instrument, InstrumentExchangeMapping, InstrumentLiquidityHistory, sequelize } = require('../../../models');
+
+    const [ exchanges, instrument ] = await Promise.all([
+        Exchange.findAll({
+            where: { name: exchange_names }
+        }),
+        Instrument.findOne({
+            where: { symbol: instrument_symbol }
+        })
+    ]);
+
+    expect(exchanges.length).to.equal(exchange_names.length, `Expected to find ${exchange_names.length} Exchanges: ${exchange_names.join(', ')}`);
+    expect(instrument, `Expected to find instrument "${instrument_symbol}"`).to.be.not.null;
+
+    return sequelize.transaction(async transaction => {
+
+        await InstrumentExchangeMapping.destroy({
+            where: {
+                instrument_id: instrument.id,
+                exchange_id: exchanges.map(e => e.id)
+            }, transaction
+        });
+
+        return InstrumentLiquidityHistory.destroy({
+            where: {
+                instrument_id: instrument.id,
+                exchange_id: exchanges.map(e => e.id)
+            }, transaction
+        });
+
+    });
+
+});
+
 Given(/^the system has Instrument Mappings for (.*)$/, async function (exchange_name) {
 
     const { Exchange, Asset, Instrument, InstrumentExchangeMapping, sequelize } = require('../../../models');
