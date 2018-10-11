@@ -46,7 +46,7 @@ export class AddAccountResponse {
 export class AddCustodianResponse {
   success: boolean;
   custodian: any;
-  error: string;
+  error?: string;
 }
 
 @Injectable()

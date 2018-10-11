@@ -4,7 +4,7 @@ import { extraTestingModules, fakeAsyncResponse, click } from '../../../testing/
 import { InvestmentModule } from '../investment.module';
 import { ExecutionOrdersComponent } from './execution-orders.component';
 import { InvestmentService } from '../../../services/investment/investment.service';
-import { getAllExecutionOrdersData, getTimelineData } from '../../../testing/service-mock/investment.service.mock';
+import { getAllExecutionOrdersData, getAllTimelineDataData } from '../../../testing/service-mock/investment.service.mock';
 import { testHeaderLov } from '../../../testing/commonTests';
 
 
@@ -33,7 +33,7 @@ describe('ExecutionOrdersComponent', () => {
     fixture = TestBed.createComponent(ExecutionOrdersComponent);
     component = fixture.componentInstance;
     investmentService = fixture.debugElement.injector.get(InvestmentService);
-    timelineSpy = spyOn (investmentService, 'getAllTimelineData').and.returnValue(fakeAsyncResponse(getTimelineData));
+    timelineSpy = spyOn (investmentService, 'getAllTimelineData').and.returnValue(fakeAsyncResponse(getAllTimelineDataData));
     getAllExecutionOrdersSpy = spyOn (investmentService, 'getAllExecOrders').and.returnValue(fakeAsyncResponse(getAllExecutionOrdersData));
     navigateSpy = spyOn (component.router, 'navigate');
 

@@ -9,7 +9,7 @@ import { getOrderGroupOfRecipeData,
          getAllOrdersByGroupIdData,
          generateOrdersData } from '../../../testing/service-mock/orders.service.mock';
 import { testHeaderLov } from '../../../testing/commonTests';
-import { getTimelineData } from '../../../testing/service-mock/investment.service.mock';
+import { getAllTimelineDataData } from '../../../testing/service-mock/investment.service.mock';
 
 
 describe('OrderGroupComponent', () => {
@@ -45,7 +45,7 @@ describe('OrderGroupComponent', () => {
     ordersGroupOfRecipeSpy = spyOn ( ordersService, 'getOrderGroupOfRecipe').and.returnValue(fakeAsyncResponse(getOrderGroupOfRecipeData));
     ordersOfGroupSpy = spyOn ( ordersService, 'getAllOrdersByGroupId').and.returnValue(fakeAsyncResponse(getAllOrdersByGroupIdData));
     generateOrdersSpy = spyOn ( ordersService, 'generateOrders').and.returnValue(fakeAsyncResponse(generateOrdersData));
-    timelineSpy = spyOn ( investmentService, 'getAllTimelineData').and.returnValue(fakeAsyncResponse(getTimelineData.timeline));
+    timelineSpy = spyOn ( investmentService, 'getAllTimelineData').and.returnValue(fakeAsyncResponse(getAllTimelineDataData.timeline));
     navigateSpy = spyOn (component.router, 'navigate');
   });
 
