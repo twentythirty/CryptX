@@ -155,12 +155,13 @@ Feature: View recipe run details
             |   ETH   |    540     |
             |   BTC   |    50     |
         And there is a recipe run with status Pending
+        And the Recipe Run was created on Thu, 04 Oct 2018 11:55:35
         When I log onto CryptX as Investment Manager
         And I fetch the Recipe Run details
         Then if I look at the Recipe Run details
         Then I see data layout:
-        | user_created    | approval_status | approval_user    | approval_timestamp    | approval_comment  |
-        | Investment Manager    | Pending   |   -   |   -   |      |
+        | created_timestamp | user_created    | approval_status | approval_user    | approval_timestamp    | approval_comment  |
+        | Thu Oct 04 2018 11:55:35  | Investment Manager    | Pending   |   -   |   -   |      |
         And if I look at the Recipe Run Details list
         Then I see data layout:
         | transaction_asset | quote_asset   | target_exchange   | investment_usd    | investment_btc    | investment_eth    | investment_percentage |
@@ -191,6 +192,52 @@ Feature: View recipe run details
         | transaction_asset | quote_asset   | target_exchange   | investment_percentage |
         |   20 Assets       |   2 Assets    |   3 Exchanges     |       100%            |
 
+    @limit_to_MVP_exchanges
+    Scenario: view approved recipe run details of an investment run
 
+        Given the Assets DOGE, USDT, MIOTA, XTZ, BTC, ETH are Blacklisted
+        And there is a LCI Investment Run created by an Investment Manager
+        And the Investment Run deposit amounts are as followed: 
+            | currency  |  amount  |
+            |   USD   |   32000   |
+            |   ETH   |    16     |
+            |   BTC   |    4     |
+        And there is a recipe run with status Pending
+        And the Recipe Run was created on Thu, 04 Oct 2018 11:55:35
+        But the Recipe Run was approved by Investment Manager on Fri, 05 Oct 2018 09:30:00
+        When I log onto CryptX as Investment Manager
+        And I fetch the Recipe Run details
+        Then if I look at the Recipe Run details
+        Then I see data layout:
+        | created_timestamp | user_created    | approval_status | approval_user    | approval_timestamp    | approval_comment  |
+        | Thu Oct 04 2018 11:55:35  | Investment Manager    | Approved   | Investment Manager   | Fri Oct 05 2018 09:30:00   | I approve.  |
+        And if I look at the Recipe Run Details list
+        Then I see data layout:
+        | transaction_asset | quote_asset   | target_exchange   | investment_usd    | investment_btc    | investment_eth    | investment_percentage |
+        | TRX	| ETH	| Bitfinex	| 0	| 0	| 13.42203781	| 5	| 
+        | XEM	| ETH	| OKEx	| 2443.604	| 0	| 2.57796219	| 5	| 
+        | ADA	| BTC	| Binance	| 0	| 0.486159855	| 0	| 5	| 
+        | BCH	| BTC	| OKEx	| 0	| 0.486159855	| 0	| 5	| 
+        | BCN	| BTC	| Binance	| 0	| 0.486159855	| 0	| 5	| 
+        | BTG	| BTC	| Bitfinex	| 0	| 0.486159855	| 0	| 5	| 
+        | EOS	| BTC	| OKEx	| 0	| 0.486159855	| 0	| 5	| 
+        | LTC	| BTC	| Bitfinex	| 0	| 0.486159855	| 0	| 5	| 
+        | MKR	| BTC	| Bitfinex	| 0	| 0.486159855	| 0	| 5	| 
+        | ZEC	| BTC	| Binance	| 0	| 0.486159855	| 0	| 5	| 
+        | XRP	| BTC	| Binance	| 2335.698	| 0.110721157	| 0	| 5	| 
+        | BNB	| ETH	| Binance	| 3024.522	| 0	| 0	| 5	| 
+        | DASH	| BTC	| OKEx	| 3024.522	| 0	| 0	| 5	| 
+        | ETC	| ETH	| Binance	| 3024.522	| 0	| 0	| 5	| 
+        | LSK	| BTC	| OKEx	| 3024.522	| 0	| 0	| 5	| 
+        | NEO	| BTC	| Bitfinex	| 3024.522	| 0	| 0	| 5	| 
+        | OMG	| BTC	| Binance	| 3024.522	| 0	| 0	| 5	| 
+        | VET	| BTC	| Binance	| 3024.522	| 0	| 0	| 5	| 
+        | XLM	| BTC	| Binance	| 3024.522	| 0	| 0	| 5	| 
+        | XMR	| BTC	| Bitfinex	| 3024.522	| 0	| 0	| 5	| 
+
+        And if I look at the Recipe Run Details footer
+        Then I see data layout:
+        | transaction_asset | quote_asset   | target_exchange   | investment_percentage |
+        |   20 Assets       |   2 Assets    |   3 Exchanges     |       100%            |
         
         

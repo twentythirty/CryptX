@@ -274,6 +274,26 @@ Given(/^the Recipe Run was created on (.*)$/, function(date_string) {
 
 });
 
+Given(/^the Recipe Run was approved by (.*) on (.*)$/, function(user_name, date_string) {
+
+    const { RecipeRun } = require('../../../models');
+
+    const user = World.users[_.snakeCase(user_name)];
+    expect(user, `Expected to have user "${user_name}"`).to.be.not.undefined;
+
+    return RecipeRun.update({
+        approval_timestamp: Date.parse(date_string),
+        approval_user_id: user.id,
+        approval_comment: 'I approve.',
+        approval_status: RECIPE_RUN_STATUSES.Approved
+    }, {
+        where: {
+            id: this.current_recipe_run.id
+        }
+    });
+
+});
+
 When('I initiate a new Recipe Run', function () {
 
     return chai
