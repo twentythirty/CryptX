@@ -276,9 +276,14 @@ export class InvestmentRunDetailComponent extends TimelineDetailComponent implem
 
   public addAction(): void {
     const recipeRun = {};
+
+    this.addActionLoading = true;
+
     this.route.params.pipe(
       mergeMap(
-        params => this.investmentService.createRecipeRun(params['id'], recipeRun)
+        params => this.investmentService.createRecipeRun(params['id'], recipeRun).pipe(
+          finalize(() => this.addActionLoading = false)
+        )
       )
     ).subscribe(
       res => {

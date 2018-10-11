@@ -72,9 +72,16 @@
 
   <div class="top-controls" *ngIf="detailTableTitle">
     <span class="headline-title">{{ detailTableTitle }}</span>
-    <a *ngIf="addTitle" (click)="addAction()" class="btn start">
+    <app-btn
+      *ngIf="addTitle"
+      [extraClass]="!addActionLoading && 'start'"
+      [thinner]="true"
+      (onClick)="addAction()"
+      [loading]="addActionLoading"
+      [disabled]="addActionLoading"
+    >
       <span>{{ addTitle }}</span>
-    </a>
+    </app-btn>
   </div>
 
   <app-data-table

@@ -124,7 +124,7 @@ describe('InvestmentRunDetailComponent', () => {
       fixture.detectChanges();
       getAllRecipesSpy.calls.mostRecent().returnValue.subscribe((re) => {
         fixture.detectChanges();
-        const button = fixture.nativeElement.querySelector('a.start');
+        const button = fixture.nativeElement.querySelector('button.start');
         expect(button).not.toBeNull();
       });
     });
@@ -212,7 +212,7 @@ describe('InvestmentRunDetailComponent', () => {
         fixture.detectChanges();
         getAllRecipesSpy.calls.mostRecent().returnValue.subscribe(() => {
           expect(component.detailTableDataSource.body).toEqual([]);
-          const button = fixture.nativeElement.querySelector('a.start');
+          const button = fixture.nativeElement.querySelector('button.start');
           expect(button).not.toBeNull();
         });
       });
@@ -220,7 +220,7 @@ describe('InvestmentRunDetailComponent', () => {
 
     it('should update tables data on "start new run" button click', fakeAsync(() => {
       fixture.detectChanges();
-      const button = fixture.nativeElement.querySelector('a.start');
+      const button = fixture.nativeElement.querySelector('button.start');
       getSingleInvestmentSpy.calls.reset();
       getDepositAmountsSpy.calls.reset();
       getAllRecipesSpy.calls.reset();

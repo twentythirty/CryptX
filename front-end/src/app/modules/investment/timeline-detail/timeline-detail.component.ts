@@ -46,6 +46,7 @@ export interface ITimelineDetailComponent {
   getSingleData: () => void;
   getTimelineData: () => void;
 
+  addActionLoading?: boolean;
   addAction?: () => void; // optional
 
   generateOrders?: () => void; // optional
@@ -174,6 +175,7 @@ export class TimelineDetailComponent extends DataTableCommonManagerComponent imp
   /**
    * 5. Abstract methods to handle user actions
    */
+  public addActionLoading = false;
   public addAction(): void {
     // Do nothing by default
   }

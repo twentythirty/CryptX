@@ -123,19 +123,19 @@ export class InvestmentNewComponent extends DataTableCommonManagerComponent impl
       };
 
       this.investmentService.createInvestmentRun(request).pipe(
-          finalize(() => this.loading = false)
-        ).subscribe(
-          data => {
-            if (data.success) {
-              this.onClose();
-              this.onComplete.emit();
-              this.router.navigate(['/run/investment', data.investment_run.id]);
-            }
-          }, error => {
-            console.log('Error', error);
-          }, () => {
+        finalize(() => this.loading = false)
+      ).subscribe(
+        data => {
+          if (data.success) {
+            this.onClose();
+            this.onComplete.emit();
+            this.router.navigate(['/run/investment', data.investment_run.id]);
           }
-        );
+        }, error => {
+          console.log('Error', error);
+        }, () => {
+        }
+      );
     }
   }
 
@@ -146,26 +146,23 @@ export class InvestmentNewComponent extends DataTableCommonManagerComponent impl
       this.getSkippedAssets();
     }
     if (this.next_step && this.showSelectedAssetsMix && !this.showSkippedAssets) {
-    this.tableLoading = true;
-    const request = {
-      strategy_type: this.strategyType
-    };
-   this.investmentService.createAssetMix(request).subscribe( data => {
-      if (data.success) {
+      this.tableLoading = true;
+      const request = {
+        strategy_type: this.strategyType
+      };
 
-        this.assetGroup = data.list.id;
+      this.investmentService.createAssetMix(request).subscribe(data => {
+        if (data.success) {
+          this.assetGroup = data.list.id;
 
-        this.count = data.count;
-        this.tableTitle = this.count + ' Selected asset mix';
-        this.assetDataSource.body = data.list.group_assets;
-        this.assetDataSource.footer = data.footer;
-        this.tableLoading = false;
-        this.loading = false;
-      }
-    }, error => {
-      console.log('Error', error);
-    }, () => {
-    });
+          this.count = data.count;
+          this.tableTitle = this.count + ' Selected asset mix';
+          this.assetDataSource.body = data.list.group_assets;
+          this.assetDataSource.footer = data.footer;
+          this.tableLoading = false;
+          this.loading = false;
+        }
+      });
     }
   }
 
@@ -196,7 +193,7 @@ export class InvestmentNewComponent extends DataTableCommonManagerComponent impl
     _.set(this.requestData, 'filter.status', ['assets.status.401', 'assets.status.402']);
     _.set(this.requestData, 'order[0]', { by: 'capitalization', order: 'desc' });
 
-    this.investmentService.getAssetMix(this.assetGroup, this.requestData).subscribe (
+    this.investmentService.getAssetMix(this.assetGroup, this.requestData).subscribe(
       res => {
         if (res.success) {
           this.assetDataSource.body = res.assets;
@@ -206,9 +203,6 @@ export class InvestmentNewComponent extends DataTableCommonManagerComponent impl
           this.tableLoading = false;
           this.loading = false;
         }
-      }, error => {
-        console.log('Error', error);
-      }, () => {
       }
     );
   }
