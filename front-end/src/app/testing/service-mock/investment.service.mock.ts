@@ -264,4 +264,40 @@ export const getAllExecutionOrderFillsData = {
   ]
 };
 
+export const getAllRecipeDetailsData = {
+  count: 1,
+  success: true,
+  footer: [],
+  recipe_details: [
+    {
+      id: 2742,
+      investment_btc: '0',
+      investment_eth: '0',
+      investment_percentage: '2',
+      investment_usd: '2469.12',
+      quote_asset: 'ETH',
+      quote_asset_id: 312,
+      recipe_run_id: 215,
+      target_exchange: 'HitBTC',
+      target_exchange_id: 5,
+      transaction_asset: 'NANO',
+      transaction_asset_id: 587
+    }
+  ]
+};
+
+export const approveRecipeResponse = {
+  success: true,
+  recipe_run: {
+    id: 10,
+    created_timestamp: 1525424340810,
+    investment_run_id: 10,
+    user_created_id: 4,
+    approval_status: 41,
+    approval_timestamp: 1525424340810,
+    approval_comment: 'I approve this recipe run because...',
+    approval_user_id: 6
+  }
+};
+
 

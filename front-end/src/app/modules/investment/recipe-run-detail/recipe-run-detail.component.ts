@@ -76,6 +76,7 @@ export class RecipeRunDetailComponent extends TimelineDetailComponent implements
       actions: [
         new DataCellAction({
           label: 'READ',
+          isShown: row => row.approval_status !== 'recipes.status.41',
           exec: (row: any) => {
             this.showReadModal({
               title: 'Rationale',
@@ -228,7 +229,7 @@ export class RecipeRunDetailComponent extends TimelineDetailComponent implements
    * Additional
    */
 
-  private confirmRun({ rationale, data }): void {
+ private confirmRun({ rationale, data }): void {
     const run = data;
     this.investmentService.approveRecipe(run.id, { status: 43, comment: rationale }).subscribe(
       res => {
