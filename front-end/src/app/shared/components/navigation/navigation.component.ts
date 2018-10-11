@@ -46,7 +46,7 @@ export class NavigationComponent implements OnInit {
       {link: '/cold_storage/custodians', permission: [permissions.VIEW_INVESTMENT_RUN], name: 'Custodians'},
       {link: '/cold_storage/accounts', permission: [permissions.VIEW_INVESTMENT_RUN], name: 'Accounts'},
       {link: '/cold_storage/transfers', permission: [permissions.VIEW_INVESTMENT_RUN], name: 'Transfer'},
-      {link: '/cold_storage/account_storage_fee', permission: [permissions.VIEW_INVESTMENT_RUN], name: 'Fees'},
+      // {link: '/cold_storage/account_storage_fee', permission: [permissions.VIEW_INVESTMENT_RUN], name: 'Fees'},
     ]}
   ];
 

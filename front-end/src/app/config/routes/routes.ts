@@ -213,11 +213,11 @@ export const routes: Routes = [
     canActivate: [AuthGuard]
   },
 
-  {
-    path: 'cold_storage/account_storage_fee',
-    component: ColdStorageAccountStorageFeeListComponent,
-    canActivate: [AuthGuard]
-  },
+  // {
+  //   path: 'cold_storage/account_storage_fee',
+  //   component: ColdStorageAccountStorageFeeListComponent,
+  //   canActivate: [AuthGuard]
+  // },
 
 
   /**
