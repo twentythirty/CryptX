@@ -310,4 +310,99 @@ export const approveRecipeResponse = {
   }
 };
 
+export const getAllConversionsData = {
+  success: true,
+  conversions: [
+    {
+      id: 24,
+      converted_amount: null,
+      investment_amount: '76',
+      investment_currency: 'USD',
+      recipe_run_id: 225,
+      status: 'asset_conversions.status.501',
+      target_currency: 'BTC'
+    },
+    {
+      id: 25,
+      converted_amount: null,
+      investment_amount: '24',
+      investment_currency: 'USD',
+      recipe_run_id: 225,
+      status: 'asset_conversions.status.501',
+      target_currency: 'ETH'
+    }
+  ],
+  count: 2,
+  footer: [
+    {
+      name: 'target_currency',
+      template: 'asset_conversions.footer.target_currency',
+      value: '2',
+      args: { target_currency: '2' }
+    }
+  ]
+};
 
+export const submitAssetConversionData = {
+  success: true,
+  conversation: {
+    id: 24,
+    converted_amount: '25',
+    investment_amount: '76',
+    investment_currency: 'USD',
+    recipe_run_id: 225,
+    status: 'asset_conversions.status.501',
+    target_currency: 'BTC'
+  }
+};
+
+export const completeAssetConversionData = {
+  success: true,
+  conversion: {
+    id: 24,
+    converted_amount: '25',
+    investment_amount: '76',
+    investment_currency: 'USD',
+    recipe_run_id: 225,
+    status: 'asset_conversions.status.502',
+    target_currency: 'BTC'
+  }
+};
+
+export const getAllRecipeDepositsData = {
+  success: true,
+  recipe_deposits: [
+    {
+      id: 105,
+      account: '0xbb21d3b9806b4b5d654e13cba283e1f37b35028b',
+      amount: '39087',
+      deposit_management_fee: '0',
+      depositor_user: 'Test User',
+      exchange: 'Huobi',
+      exchange_id: 7,
+      investment_percentage: '5.2631578947368421053',
+      investment_run_id: 89,
+      quote_asset: 'ETH',
+      quote_asset_id: 312,
+      recipe_run_id: 128,
+      status: 'deposits.status.150'
+    },
+    {
+      id: 104,
+      account: '0xd6cc6255a1ea769468dcf3bb4296538ff8b6ea9a',
+      amount: '39087',
+      deposit_management_fee: '0',
+      depositor_user: 'Test User',
+      exchange: 'Bitfinex',
+      exchange_id: 2,
+      investment_percentage: '5.2631578947368421053',
+      investment_run_id: 89,
+      quote_asset: 'ETH',
+      quote_asset_id: 312,
+      recipe_run_id: 128,
+      status: 'deposits.status.151'
+    }
+  ],
+  count: 2,
+  footer: []
+};
