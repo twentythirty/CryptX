@@ -124,6 +124,4 @@ export class DepositInfoComponent implements OnInit {
     this.timeline$ = this.investmentService.getAllTimelineData({ recipe_deposit_id: id });
   }
 
-  onSetFilter(filterData): void {}
-
 }

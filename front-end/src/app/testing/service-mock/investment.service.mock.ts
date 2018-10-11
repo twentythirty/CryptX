@@ -18,7 +18,8 @@ export const getAllInvestmentsData = {
   footer: []
 };
 
-export const getTimelineDataData = {
+export const getAllTimelineDataData = {
+  success: true,
   timeline: {
     investment_run: {
       id: 155,
@@ -42,11 +43,20 @@ export const getTimelineDataData = {
       user_created_id: 3,
       approval_user_id: 3
     },
-    recipe_deposits: null,
-    recipe_orders: null,
-    execution_orders: null
-  },
-  success: true,
+    recipe_deposits: {
+      count: 5,
+      status: 'deposits.status.151'
+    },
+    recipe_orders: {
+      count: 18,
+      order_group_id: 35,
+      status: 'order.status.53'
+    },
+    execution_orders: {
+      count: 1756,
+      status: 'execution_orders_timeline.status.63'
+    }
+  }
 };
 
 export const getSingleRecipeData = {

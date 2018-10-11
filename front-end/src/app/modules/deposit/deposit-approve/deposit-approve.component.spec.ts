@@ -8,31 +8,33 @@ import { DepositService } from '../../../services/deposit/deposit.service';
 import { SubmitData, ApproveData } from '../../../testing/service-mock/deposit.service.mock';
 
 
+
+const depositApproveFormModal: (ComponentFixture) => HTMLElement = (f) => {
+  return f.nativeElement.querySelector('app-modal[deposit-form-modal]');
+};
+const depositApproveConfirmModal: (ComponentFixture) => HTMLElement = (f) => {
+  return f.nativeElement.querySelector('app-confirm');
+};
+const depositApproveFormModalX: (ComponentFixture) => HTMLElement = (f) => {
+  return f.nativeElement.querySelector('app-modal .close-modal');
+};
+const depositApproveFormModalSubmitBtn: (ComponentFixture) => HTMLElement = (f) => {
+  return f.nativeElement.querySelector('app-modal button.submit');
+};
+const depositApproveConfirmModalCancelBtn: (ComponentFixture) => HTMLElement = (f) => {
+  return f.nativeElement.querySelector('app-confirm .btn.grey');
+};
+const depositApproveConfirmModalConfirmBtn: (ComponentFixture) => HTMLElement = (f) => {
+  return f.nativeElement.querySelector('app-confirm .btn:not(.grey)');
+};
+
+
 describe('DepositApproveComponent', () => {
   let component: DepositApproveComponent;
   let fixture: ComponentFixture<DepositApproveComponent>;
   let depositService: DepositService;
   let submitSpy;
   let approveSpy;
-
-  const depositApproveFormModal: () => HTMLElement = () => {
-    return fixture.nativeElement.querySelector('app-modal[deposit-form-modal]');
-  };
-  const depositApproveConfirmModal: () => HTMLElement = () => {
-    return fixture.nativeElement.querySelector('app-confirm');
-  };
-  const depositApproveFormModalX: () => HTMLElement = () => {
-    return fixture.nativeElement.querySelector('app-modal .close-modal');
-  };
-  const depositApproveFormModalSubmitBtn: () => HTMLElement = () => {
-    return fixture.nativeElement.querySelector('app-modal button.submit');
-  };
-  const depositApproveConfirmModalCancelBtn: () => HTMLElement = () => {
-    return fixture.nativeElement.querySelector('app-confirm .btn.grey');
-  };
-  const depositApproveConfirmModalConfirmBtn: () => HTMLElement = () => {
-    return fixture.nativeElement.querySelector('app-confirm .btn:not(.grey)');
-  };
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
@@ -60,12 +62,12 @@ describe('DepositApproveComponent', () => {
   });
 
   it('deposit approve form modal should not be rendered', () => {
-    const modal = depositApproveFormModal();
+    const modal = depositApproveFormModal(fixture);
     expect(modal).toBeFalsy('modal is rendered');
   });
 
   it('deposit approve confirm modal should not be rendered', () => {
-    const modal = depositApproveConfirmModal();
+    const modal = depositApproveConfirmModal(fixture);
     expect(modal).toBeFalsy('modal is rendered');
   });
 
@@ -77,7 +79,7 @@ describe('DepositApproveComponent', () => {
 
 
     it('should open modal', () => {
-      const modal = depositApproveFormModal();
+      const modal = depositApproveFormModal(fixture);
       expect(modal).toBeTruthy('modal not opened');
     });
 
@@ -86,7 +88,7 @@ describe('DepositApproveComponent', () => {
         component: component,
         fixture: fixture,
         formControl: component.form,
-        submitButton: depositApproveFormModalSubmitBtn,
+        submitButton: () => depositApproveFormModalSubmitBtn(fixture),
         fillForm: () => {
           fillDepositApproveForm(fixture, 5.5, 6.6);
         },
@@ -97,26 +99,26 @@ describe('DepositApproveComponent', () => {
     });
 
     it('should close deposit approve form modal on cross button press', () => {
-      const x = depositApproveFormModalX();
+      const x = depositApproveFormModalX(fixture);
       click(x);
       fixture.detectChanges();
 
-      const modal = depositApproveFormModal();
+      const modal = depositApproveFormModal(fixture);
       expect(modal).toBeFalsy('modal opened');
     });
 
     it('should not close deposit form approve modal if form is invalid', () => {
-      const btn = depositApproveFormModalSubmitBtn();
+      const btn = depositApproveFormModalSubmitBtn(fixture);
       click(btn);
       fixture.detectChanges();
 
-      const modal = depositApproveFormModal();
+      const modal = depositApproveFormModal(fixture);
       expect(modal).toBeTruthy('modal not opened');
     });
 
     describe('submited valid form', () => {
       beforeEach((done) => {
-        const btn = depositApproveFormModalSubmitBtn();
+        const btn = depositApproveFormModalSubmitBtn(fixture);
         fillDepositApproveForm(fixture, 5.5, 6.6);
         click(btn);
 
@@ -128,12 +130,12 @@ describe('DepositApproveComponent', () => {
 
 
       it('should close deposit form approve modal', () => {
-        const modal = depositApproveFormModal();
+        const modal = depositApproveFormModal(fixture);
         expect(modal).toBeFalsy('modal opened');
       });
 
       it('open confirm modal', () => {
-        const modal = depositApproveConfirmModal();
+        const modal = depositApproveConfirmModal(fixture);
         expect(modal).toBeTruthy('modal not opened');
       });
 
@@ -143,14 +145,14 @@ describe('DepositApproveComponent', () => {
 
           beforeEach(() => {
             updateDataSpy = spyOn(component.updateData, 'emit').and.callThrough();
-            const btn = depositApproveConfirmModalCancelBtn();
+            const btn = depositApproveConfirmModalCancelBtn(fixture);
             click(btn);
             fixture.detectChanges();
           });
 
 
           it('should close confirm modal', () => {
-            const modal = depositApproveConfirmModal();
+            const modal = depositApproveConfirmModal(fixture);
             expect(modal).toBeFalsy('modal opened');
           });
 
@@ -164,7 +166,7 @@ describe('DepositApproveComponent', () => {
 
           beforeEach((done) => {
             updateDataSpy = spyOn(component.updateData, 'emit').and.callThrough();
-            const btn = depositApproveConfirmModalConfirmBtn();
+            const btn = depositApproveConfirmModalConfirmBtn(fixture);
             click(btn);
 
             approveSpy.calls.mostRecent().returnValue.subscribe(() => {
@@ -175,7 +177,7 @@ describe('DepositApproveComponent', () => {
 
 
           it('should close confirm modal', () => {
-            const modal = depositApproveConfirmModal();
+            const modal = depositApproveConfirmModal(fixture);
             expect(modal).toBeFalsy('modal opened');
           });
 
@@ -187,8 +189,6 @@ describe('DepositApproveComponent', () => {
     });
 
   });
-
-
 
 });
 

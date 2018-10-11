@@ -4,7 +4,7 @@ import { extraTestingModules, fakeAsyncResponse, click } from '../../../testing/
 import { InvestmentModule } from '../investment.module';
 import { ExecutionOrderDetailComponent } from './execution-order-detail.component';
 import { InvestmentService } from '../../../services/investment/investment.service';
-import { getSingleOrderData, getTimelineDataData } from '../../../testing/service-mock/investment.service.mock';
+import { getSingleOrderData, getAllTimelineDataData } from '../../../testing/service-mock/investment.service.mock';
 import { getAllExecutionOrdersData } from '../../../testing/service-mock/executionOrders.service.mock';
 import { testHeaderLov } from '../../../testing/commonTests';
 
@@ -37,7 +37,7 @@ describe('ExecutionOrderDetailComponent', () => {
     investmentService = fixture.debugElement.injector.get(InvestmentService);
     getSingleOrderSpy = spyOn (investmentService, 'getSingleOrder').and.returnValue(fakeAsyncResponse(getSingleOrderData));
     getAllExecutionOrdersSpy = spyOn (investmentService, 'getAllExecutionOrders').and.returnValue(fakeAsyncResponse(getAllExecutionOrdersData));
-    timelineSpy = spyOn (investmentService, 'getAllTimelineData').and.returnValue(fakeAsyncResponse(getTimelineDataData));
+    timelineSpy = spyOn (investmentService, 'getAllTimelineData').and.returnValue(fakeAsyncResponse(getAllTimelineDataData));
     navigateSpy = spyOn (component.router, 'navigate');
     fixture.detectChanges();
   });

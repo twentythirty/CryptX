@@ -5,7 +5,7 @@ import { InvestmentModule } from '../investment.module';
 import { RecipeRunDetailComponent } from './recipe-run-detail.component';
 import { InvestmentService } from '../../../services/investment/investment.service';
 import { testHeaderLov } from '../../../testing/commonTests';
-import { getTimelineDataData,
+import { getAllTimelineDataData,
          getSingleRecipeData,
          getAllRecipeDetailsData,
          approveRecipeResponse } from '../../../testing/service-mock/investment.service.mock';
@@ -41,7 +41,7 @@ describe('RecipeRunDetailComponent', () => {
     approveSpy = spyOn(investmentService, 'approveRecipe').and.returnValue(fakeAsyncResponse(approveRecipeResponse));
     getSingleRecipeSpy = spyOn (investmentService, 'getSingleRecipe').and.returnValue(fakeAsyncResponse(getSingleRecipeData));
     getAllRecipeDetailsSpy = spyOn (investmentService, 'getAllRecipeDetails').and.returnValue(fakeAsyncResponse(getAllRecipeDetailsData));
-    timelineSpy = spyOn ( investmentService, 'getAllTimelineData').and.returnValue(fakeAsyncResponse(getTimelineDataData.timeline));
+    timelineSpy = spyOn ( investmentService, 'getAllTimelineData').and.returnValue(fakeAsyncResponse(getAllTimelineDataData.timeline));
     fixture.detectChanges();
   });
 

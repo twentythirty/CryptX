@@ -9,6 +9,7 @@ import { DepositInfoComponent } from './deposit-info/deposit-info.component';
 
 import { DepositService } from '../../services/deposit/deposit.service';
 import { AuthService } from '../../services/auth/auth.service';
+import { InvestmentService } from '../../services/investment/investment.service';
 import { ModelConstantsService } from '../../services/model-constants/model-constants.service';
 import { DepositApproveComponent } from './deposit-approve/deposit-approve.component';
 
@@ -27,6 +28,7 @@ import { DepositApproveComponent } from './deposit-approve/deposit-approve.compo
   providers: [
     AuthService,
     DepositService,
+    InvestmentService,
     ModelConstantsService,
   ],
   exports: [

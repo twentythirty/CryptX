@@ -8,7 +8,7 @@ import { InvestmentService } from '../../../services/investment/investment.servi
 import { getSingleInvestmentData,
          getDepositAmountsData,
          getAllRecipesData,
-         getTimelineDataData,
+         getAllTimelineDataData,
          createRecipeRunResponse} from '../../../testing/service-mock/investment.service.mock';
 
 describe('InvestmentRunDetailComponent', () => {
@@ -40,7 +40,7 @@ describe('InvestmentRunDetailComponent', () => {
     fixture = TestBed.createComponent(InvestmentRunDetailComponent);
     component = fixture.componentInstance;
     investmentService = fixture.debugElement.injector.get(InvestmentService);
-    timelineSpy = spyOn ( investmentService, 'getAllTimelineData').and.returnValue(fakeAsyncResponse(getTimelineDataData.timeline));
+    timelineSpy = spyOn ( investmentService, 'getAllTimelineData').and.returnValue(fakeAsyncResponse(getAllTimelineDataData.timeline));
     navigateSpy = spyOn ( component.router, 'navigate');
     getSingleInvestmentSpy = spyOn (investmentService, 'getSingleInvestment').and.returnValue(fakeAsyncResponse(getSingleInvestmentData));
     getDepositAmountsSpy = spyOn (investmentService, 'getDepositAmounts').and.returnValue(fakeAsyncResponse(getDepositAmountsData));

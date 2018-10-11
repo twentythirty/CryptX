@@ -4,7 +4,7 @@ import { extraTestingModules, fakeAsyncResponse, click } from '../../../testing/
 import { InvestmentModule } from '../investment.module';
 import { OrderDetailComponent } from './order-detail.component';
 import { InvestmentService } from '../../../services/investment/investment.service';
-import { getTimelineDataData, getSingleRecipeData, getAllRecipeOrdersData } from '../../../testing/service-mock/investment.service.mock';
+import { getAllTimelineDataData, getSingleRecipeData, getAllRecipeOrdersData } from '../../../testing/service-mock/investment.service.mock';
 import { testHeaderLov } from '../../../testing/commonTests';
 
 
@@ -37,7 +37,7 @@ describe('OrderDetailComponent', () => {
     investmentService = fixture.debugElement.injector.get(InvestmentService);
     getAllOrdersSpy = spyOn (investmentService, 'getAllOrders').and.returnValue(fakeAsyncResponse(getAllRecipeOrdersData));
     getSingleRecipeSpy = spyOn (investmentService, 'getSingleRecipe').and.returnValue(fakeAsyncResponse(getSingleRecipeData));
-    timelineSpy = spyOn ( investmentService, 'getAllTimelineData').and.returnValue(fakeAsyncResponse(getTimelineDataData.timeline));
+    timelineSpy = spyOn ( investmentService, 'getAllTimelineData').and.returnValue(fakeAsyncResponse(getAllTimelineDataData.timeline));
     navigateSpy = spyOn (component.router, 'navigate');
     fixture.detectChanges();
   });

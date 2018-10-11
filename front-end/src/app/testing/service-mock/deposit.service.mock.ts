@@ -30,3 +30,36 @@ export const ApproveData = {
     target_exchange_account_id: 4
   }
 };
+
+export const getDepositData = {
+  success: true,
+  recipe_deposit: {
+    id: 1,
+    recipe_run_id: 67,
+    investment_run_id: 38,
+    quote_asset_id: 312,
+    quote_asset: 'ETH',
+    exchange_id: 7,
+    exchange: 'Huobi',
+    account: '0xbb21d3b9806b4b5d654e13cba283e1f37b35028b',
+    amount: '10',
+    investment_percentage: '11.111111111111110',
+    deposit_management_fee: '1',
+    depositor_user: 'Test User',
+    status: 'deposits.status.150'
+  },
+  action_logs: [
+    {
+      id: 156871,
+      timestamp: 1535519306322,
+      level: 1,
+      translationKey: 'logs.universal.modified_user',
+      translationArgs: {
+        user_name: 'Test User',
+        column: 'Status',
+        prev_value: '{deposits.status.150}',
+        new_value: '{deposits.status.150}'
+      }
+    },
+  ]
+};
