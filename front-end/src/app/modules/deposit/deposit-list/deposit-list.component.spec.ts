@@ -1,68 +1,65 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
-import { extraTestingModules, fakeAsyncResponse } from '../../../testing/utils';
+import { Router } from '@angular/router';
+import { extraTestingModules, fakeAsyncResponse, click } from '../../../testing/utils';
 
 import { DepositModule } from '../deposit.module';
 import { DepositListComponent } from './deposit-list.component';
-import { DepositService, DepositsAllResponse } from '../../../services/deposit/deposit.service';
-
-
-const DepositServiceStub = {
-  getAllDeposits: () => {
-    return fakeAsyncResponse<DepositsAllResponse>({
-      success: true,
-      recipe_deposits: [
-        {
-          id: 80,
-          recipe_run_id: 67,
-          investment_run_id: 38,
-          quote_asset_id: 312,
-          quote_asset: "ETH",
-          exchange_id: 7,
-          exchange: "Huobi",
-          account: "0xbb21d3b9806b4b5d654e13cba283e1f37b35028b",
-          amount: "10",
-          investment_percentage: "11.111111111111110",
-          deposit_management_fee: "1",
-          depositor_user: "Test User",
-          status: "deposits.status.151"
-        },
-      ],
-      footer: [],
-      count: 1
-    });
-  },
-
-  getHeaderLOV: () => {
-    return fakeAsyncResponse([
-      { value: 'value 1' },
-      { value: 'value 2' },
-      { value: 'value 3' },
-    ]);
-  }
-};
+import { DepositService } from '../../../services/deposit/deposit.service';
+import { AuthService } from '../../../services/auth/auth.service';
+import { getAllDepositsData, getHeaderLOVData } from '../../../testing/service-mock/deposit.service.mock';
+import { testHeaderLov } from '../../../testing/commonTests';
+import { permissions } from '../../../config/permissions';
 
 
 describe('DepositListComponent', () => {
   let component: DepositListComponent;
   let fixture: ComponentFixture<DepositListComponent>;
+  let router: Router;
+  let depositService: DepositService;
+  let authService: AuthService;
+  let getAllDepositsSpy;
+  let getHeaderLOVSpy;
+  let navigateSpy;
+  let getPermissionsSpy;
+
+  const tableFirstRow: () => HTMLElement = () => {
+    return fixture.nativeElement.querySelector('tbody tr');
+  };
+  const depositApproveButton: () => HTMLElement = () => {
+    return fixture.nativeElement.querySelector('tbody td:last-child app-action-cell label');
+  };
+  const depositApproveModal: () => HTMLElement = () => {
+    return fixture.nativeElement.querySelector('app-deposit-approve app-modal');
+  };
+
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
       imports: [
         DepositModule,
         ...extraTestingModules
-      ],
-      providers: [
-        { provide: DepositService, useValue: DepositServiceStub }
       ]
     })
     .compileComponents();
   }));
 
-  beforeEach(() => {
+  beforeEach((done) => {
     fixture = TestBed.createComponent(DepositListComponent);
     component = fixture.componentInstance;
+
+    router = fixture.debugElement.injector.get(Router);
+    depositService = fixture.debugElement.injector.get(DepositService);
+    authService = fixture.debugElement.injector.get(AuthService);
+    getAllDepositsSpy = spyOn(depositService, 'getAllDeposits').and.returnValue(fakeAsyncResponse(getAllDepositsData));
+    getHeaderLOVSpy = spyOn(depositService, 'getHeaderLOV').and.returnValue(fakeAsyncResponse(getHeaderLOVData));
+    navigateSpy = spyOn(router, 'navigate');
+
     fixture.detectChanges();
+
+    getAllDepositsSpy.calls.mostRecent().returnValue.subscribe(() => {
+      fixture.detectChanges();
+      done();
+    });
   });
 
 
@@ -71,11 +68,75 @@ describe('DepositListComponent', () => {
   });
 
   it('should correctly load deposits on init', () => {
-    DepositServiceStub.getAllDeposits().subscribe(res => {
-      expect(component.depositDataSource.body).toEqual(res.recipe_deposits);
-      expect(component.depositDataSource.footer).toEqual(res.footer);
-      expect(component.count).toEqual(component.count);
+    expect(component.depositDataSource.body).toEqual(getAllDepositsData.recipe_deposits);
+    expect(component.depositDataSource.footer).toEqual(getAllDepositsData.footer);
+    expect(component.count).toEqual(getAllDepositsData.count);
+  });
+
+  it('should set header LOV observables for specified columns', () => {
+    const headerLovColumns = ['quote_asset', 'exchange', 'status'];
+
+    fixture.whenStable().then(() => testHeaderLov(component.depositDataSource, headerLovColumns));
+  });
+
+  it('should be navigated to deposid route on table row click', () => {
+    const row = tableFirstRow();
+    click(row);
+
+    expect(navigateSpy).toHaveBeenCalledWith(['/deposits/view', 1]);
+  });
+
+  it('should not show deposit approve button if user dont have APPROVE_DEPOSITS permissions', () => {
+    const btn = depositApproveButton();
+    expect(btn).toBeFalsy('approve button found');
+  });
+
+
+  describe('user with APPROVE_DEPOSITS permissions', () => {
+    beforeEach((done) => {
+      getPermissionsSpy = spyOn(authService, 'getPermissions').and.returnValue([permissions.APPROVE_DEPOSITS]);
+      component.getAllData();
+
+      getAllDepositsSpy.calls.mostRecent().returnValue.subscribe(() => {
+        fixture.detectChanges();
+        done();
+      });
+    });
+
+
+    it('should show deposit approve button', () => {
+      const btn = depositApproveButton();
+      expect(btn).toBeTruthy('approve button not found');
+    });
+
+    it('should not show deposit approve button if deposit status update to "Completed"', () => {
+      component.depositDataSource.body[0].status = 'deposits.status.151';
+      component.appendActionColumnForDeposits();
+      fixture.detectChanges();
+
+      const btn = depositApproveButton();
+      expect(btn).toBeFalsy('approve button found');
+
+      // rollback status
+      component.depositDataSource.body[0].status = 'deposits.status.150';
+      component.appendActionColumnForDeposits();
+    });
+
+
+    describe('when deposit approve button pressed', () => {
+      beforeEach(() => {
+        const btn = depositApproveButton();
+        click(btn);
+        fixture.detectChanges();
+      });
+
+
+      it('should open deposit approve modal', () => {
+        const modal = depositApproveModal();
+        expect(modal).toBeTruthy('modal not found');
+      });
     });
   });
+
 
 });

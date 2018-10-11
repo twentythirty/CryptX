@@ -63,3 +63,39 @@ export const getDepositData = {
     },
   ]
 };
+
+export const getAllDepositsData = {
+  success: true,
+  recipe_deposits: [
+    {
+      id: 1,
+      account: '0xbb21d3b9806b4b5d654e13cba283e1f37b35028b',
+      amount: '44',
+      deposit_management_fee: '44',
+      depositor_user: 'Test User',
+      exchange: 'Huobi',
+      exchange_id: 7,
+      investment_percentage: '5.2631578947368421053',
+      investment_run_id: 127,
+      quote_asset: 'ETH',
+      quote_asset_id: 312,
+      recipe_run_id: 165,
+      status: 'deposits.status.150'
+    }
+  ],
+  count: 1,
+  footer: [
+    {
+      name: 'id',
+      template: 'deposits.footer.id',
+      value: '1',
+      args: { id: '1' }
+    }
+  ]
+};
+
+export const getHeaderLOVData = [
+  { value: 'value 1' },
+  { value: 'value 2' },
+  { value: 'value 3' }
+];

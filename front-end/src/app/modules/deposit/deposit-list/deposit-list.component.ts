@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
+import { Component, ViewChild } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { finalize } from 'rxjs/operators';
 import * as _ from 'lodash';
@@ -24,7 +24,7 @@ import { AuthService } from '../../../services/auth/auth.service';
   templateUrl: './deposit-list.component.html',
   styleUrls: ['./deposit-list.component.scss']
 })
-export class DepositListComponent extends DataTableCommonManagerComponent implements OnInit {
+export class DepositListComponent extends DataTableCommonManagerComponent {
 
   depositId: number;
 
@@ -67,9 +67,6 @@ export class DepositListComponent extends DataTableCommonManagerComponent implem
     super(route, router);
   }
 
-  ngOnInit() {
-    super.ngOnInit();
-  }
 
   getAllData(): void {
     this.depositService.getAllDeposits(this.requestData).pipe(
@@ -92,7 +89,7 @@ export class DepositListComponent extends DataTableCommonManagerComponent implem
 
   getFilterLOV(): void {
     this.depositDataSource.header.filter(
-      col => col.filter && (col.filter.type == 'text')
+      col => ['quote_asset', 'exchange', 'status'].includes(col.column)
     ).map(
       col => {
         col.filter.rowData$ = this.depositService.getHeaderLOV(col.column);
@@ -104,7 +101,7 @@ export class DepositListComponent extends DataTableCommonManagerComponent implem
     this.router.navigate(['/deposits/view', deposit.id]);
   }
 
-  private appendActionColumnForDeposits(): void {
+  appendActionColumnForDeposits(): void {
     _.remove(this.depositDataSource.header, ['column', 'action']);
     _.remove(this.depositColumnsToShow, ['column', 'action']);
 
@@ -118,7 +115,7 @@ export class DepositListComponent extends DataTableCommonManagerComponent implem
               new DataCellAction({
                 label: '',
                 className: 'ico-pencil',
-                isShown: (row: any) => row.status !== 'deposits.status.151',
+                isShown: (row: any) => true,
                 exec: (row: any) => {
                   this.depositId = row.id;
                   this.depositApproveComponent.openModal();

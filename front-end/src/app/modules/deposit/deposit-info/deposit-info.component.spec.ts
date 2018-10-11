@@ -27,9 +27,6 @@ describe('DepositInfoComponent', () => {
   const depositApproveButton: () => HTMLElement = () => {
     return fixture.nativeElement.querySelector('tbody td:last-child app-action-cell label');
   };
-  const depositApproveBlock: () => HTMLElement = () => {
-    return fixture.nativeElement.querySelector('app-deposit-approve');
-  };
   const depositApproveModal: () => HTMLElement = () => {
     return fixture.nativeElement.querySelector('app-deposit-approve app-modal');
   };
