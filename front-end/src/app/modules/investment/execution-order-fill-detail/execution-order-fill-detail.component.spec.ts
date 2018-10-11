@@ -5,7 +5,7 @@ import { InvestmentModule } from '../investment.module';
 import { ExecutionOrderFillDetailComponent } from './execution-order-fill-detail.component';
 import { InvestmentService } from '../../../services/investment/investment.service';
 import { ExecutionOrdersService } from '../../../services/execution-orders/execution-orders.service';
-import { getTimelineData,
+import { getTimelineDataData,
          getSingleExecutionOrderData,
          getAllExecutionOrderFillsData } from '../../../testing/service-mock/investment.service.mock';
 import { changeExecutionOrderStatusResponse } from '../../../testing/service-mock/executionOrders.service.mock';
@@ -46,7 +46,7 @@ describe('ExecutionOrderFillDetailComponent', () => {
       fakeAsyncResponse(getAllExecutionOrderFillsData));
     changeExecutionOrderStatusSpy = spyOn (executionOrdersService, 'changeExecutionOrderStatus').and.returnValue(
       fakeAsyncResponse(changeExecutionOrderStatusResponse));
-    timelineSpy = spyOn (investmentService, 'getAllTimelineData').and.returnValue(fakeAsyncResponse(getTimelineData));
+    timelineSpy = spyOn (investmentService, 'getAllTimelineData').and.returnValue(fakeAsyncResponse(getTimelineDataData));
     fixture.detectChanges();
   });
 

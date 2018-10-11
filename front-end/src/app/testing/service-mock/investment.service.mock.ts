@@ -18,7 +18,7 @@ export const getAllInvestmentsData = {
   footer: []
 };
 
-export const getTimelineData = {
+export const getTimelineDataData = {
   timeline: {
     investment_run: {
       id: 155,
