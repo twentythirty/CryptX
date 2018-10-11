@@ -192,7 +192,7 @@ const getStrategyAssets = async function (strategy_type) {
     }
 
     iteration++; // increment this to calculate offset
-  } while (assets.length); // stop when a
+  } while (assets.length && included.length < amount_needed); // while fetching assets returns some, and we don't have needed amount yet
 
   if (!included.length)
     TE(`No assets found for ${_.invert(STRATEGY_TYPES)[strategy_type]} portfolio`);

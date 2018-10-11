@@ -29,6 +29,8 @@ describe('AssetService testing', () => {
 
   describe('and method getStrategyAssets shall', function () {
 
+    let ASSET_MARKET_SHARE = 6;
+
     beforeEach(() => {
       sinon.stub(sequelize, "query").callsFake((query_str, args) => {
         let assets = [
@@ -36,7 +38,7 @@ describe('AssetService testing', () => {
           ].map((value, index) => ({
           id: index + args.replacements.offset_count,
           status: (index % 10 != 0 ? INSTRUMENT_STATUS_CHANGES.Whitelisting : INSTRUMENT_STATUS_CHANGES.Blacklisting), // every 10th asset blacklisted
-          avg_share: _.random(0.1, 4, true)
+          avg_share: ASSET_MARKET_SHARE
         }));
 
         return Promise.resolve(assets);
@@ -56,6 +58,14 @@ describe('AssetService testing', () => {
       return chai.assert.isRejected(AssetService.getStrategyAssets(incorrect_strategy));
     });
 
+    it('shall throw it no assets would be returned', () => {
+      if (sequelize.query.restore()) sequelize.query.restore();
+
+      sinon.stub(sequelize, "query").returns(Promise.resolve([]));
+
+      return chai.assert.isRejected(AssetService.getStrategyAssets(STRATEGY_TYPES.LCI));
+    });
+
     it('shall throw when no assets found', () => {
       if (sequelize.query.restore()) sequelize.query.restore();
 
@@ -64,13 +74,51 @@ describe('AssetService testing', () => {
       return chai.assert.isRejected(AssetService.getStrategyAssets(STRATEGY_TYPES.LCI));
     });
 
-    it('shall return correct number of assets for LCI portfolio', () => {
+    it('shall return assets with total sum of market share less then or equal MARKETCAP_LIMIT_PERCENT value', () => {
+      return AssetService.getStrategyAssets(STRATEGY_TYPES.LCI).then(result => {
+        let [included, excluded] = result;
+
+        /* should include max amount of assets with total marketshare percentage less then MARKETCAP_LIMIT_PERCENT */
+        let possible_len = Math.floor(SYSTEM_SETTINGS.MARKETCAP_LIMIT_PERCENT / ASSET_MARKET_SHARE);
+
+        chai.assert.isArray(included);
+        chai.assert.isArray(excluded);
+        chai.expect(included.length).to.be.lte(possible_len);
+        chai.expect(_.sumBy(included, a=> a.avg_share)).to.be.lte(SYSTEM_SETTINGS.MARKETCAP_LIMIT_PERCENT);
+
+        chai.expect(included).to.satisfy((assets) => { // check if all are whitelisted
+          return assets.every(asset => asset.status === INSTRUMENT_STATUS_CHANGES.Whitelisting);
+        }, `Includes blacklisted assets`);
+        chai.expect(excluded).to.satisfy((assets) => { // check if all are not whitelisted
+          return assets.every(asset => asset.status !== INSTRUMENT_STATUS_CHANGES.Whitelisting);
+        }, `Includes whitelisted assets`);
+      })
+    });
+
+    it('shall not return more than max amount of assets for LCI portfolio', () => {
+
+      if (sequelize.query.restore) sequelize.query.restore();
+
+      sinon.stub(sequelize, "query").callsFake((query_str, args) => {
+        let assets = [
+            ...Array(args.replacements.limit_count)
+          ].map((value, index) => ({
+          id: index + args.replacements.offset_count,
+          status: (index % 10 != 0 ? INSTRUMENT_STATUS_CHANGES.Whitelisting : INSTRUMENT_STATUS_CHANGES.Blacklisting), // every 10th asset blacklisted
+          avg_share: 1
+        }));
+
+        return Promise.resolve(assets);
+      });
+
       return AssetService.getStrategyAssets(STRATEGY_TYPES.LCI).then(result => {
         let [included, excluded] = result;
 
         chai.assert.isArray(included);
         chai.assert.isArray(excluded);
-        chai.expect(included.length).to.be.equal(SYSTEM_SETTINGS.INDEX_LCI_CAP);
+        // max amount of LCI assets
+        chai.expect(included.length).to.be.lte(SYSTEM_SETTINGS.INDEX_LCI_CAP);
+        chai.expect(_.sumBy(included, a=> a.avg_share)).to.be.lte(SYSTEM_SETTINGS.MARKETCAP_LIMIT_PERCENT);
 
         chai.expect(included).to.satisfy((assets) => { // check if all are whitelisted
           return assets.every(asset => asset.status === INSTRUMENT_STATUS_CHANGES.Whitelisting);
