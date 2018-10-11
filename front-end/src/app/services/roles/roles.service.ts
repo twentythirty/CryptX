@@ -14,6 +14,7 @@ export class RolesAllResponse {
   success: boolean;
   roles: Array<Role>;
   count: number;
+  footer: Array<any>;
 }
 
 export class RolesCreateResponse {

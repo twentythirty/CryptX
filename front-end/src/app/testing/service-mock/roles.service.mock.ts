@@ -10,5 +10,6 @@ export const getAllRolesData: RolesAllResponse = {
             permissions: ['perm_alter_user_roles', 'perm_alter_role_perm'],
         })
     ],
-    count: 1
+    count: 1,
+    footer: []
 };
