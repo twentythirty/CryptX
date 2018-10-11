@@ -476,17 +476,20 @@ Given(/there is an instrument with transaction asset "(.*)" and quote asset "(.*
     this.current_instrument = instrument;
 })
 
-Given(/^the current price of (\w*) is (\d*|\d+(?:\.\d+)?) (\w*)$/, async function(transaction_asset_symbol, price, quote_asset_symbol) {
+Given(/^the current price of (\w*) is (\d*|\d+(?:\.\d+)?) (\w*)(| on (.*))$/, async function(transaction_asset_symbol, price, quote_asset_symbol, optional_exchanges) {
 
     const { Exchange, Instrument, InstrumentMarketData, sequelize } = require('../../../models');
     const { Op } = sequelize;
     
+    let exchange_names = null;
+    if(optional_exchanges) exchange_names = optional_exchanges.split(/,|and/).map(name => name.trim());
+
     let search_symbol = [`${transaction_asset_symbol}/${quote_asset_symbol}`];
     if(quote_asset_symbol === 'USD') search_symbol.push(`${transaction_asset_symbol}/USDT`)
     
     const [ instruments, exchanges ] = await Promise.all([
         Instrument.findAll({ where: { symbol: search_symbol } }),
-        Exchange.findAll()
+        Exchange.findAll(exchange_names ? { where: { name: exchange_names } } : {})
     ]);
 
     return sequelize.transaction(async transaction => {
@@ -580,6 +583,73 @@ Given(/^the average (\w*\/\w*) Liquidity for the last (\d*) days is:$/, async fu
         }, { transaction });
 
         return InstrumentLiquidityHistory.bulkCreate(history, { transaction });
+
+    });
+
+});
+
+Given('the current Instrument market data is:', async function(table) {
+
+    const instrument_data = table.hashes();
+
+    const { 
+        Instrument, Exchange, 
+        InstrumentLiquidityHistory, InstrumentMarketData,
+        sequelize 
+    } = require('../../../models');
+
+    const instrument_symbols = _.uniq(instrument_data.map(i => i.instrument));
+    const exchange_names = _.uniq(instrument_data.map(i => i.exchange));
+
+    const [ instruments, exchanges ] = await Promise.all([
+        Instrument.findAll({
+            where: { symbol: instrument_symbols },
+            raw: true
+        }),
+        Exchange.findAll({
+            where: { name: exchange_names },
+            raw: true
+        })
+    ]);
+
+    expect(instruments.length).to.equal(instrument_symbols.length, 
+        `Expected to find ${instrument_symbols.length} Instruments: ${instrument_symbols}` 
+    );
+    expect(exchanges.length).to.equal(exchange_names.length, 
+        `Expected to find ${exchange_names.length} Exchanges: ${exchange_names}` 
+    );
+
+    return sequelize.transaction(async transaction => {
+
+        await InstrumentLiquidityHistory.destroy({
+            where: { },
+            transaction
+        });
+
+        await InstrumentMarketData.destroy({
+            where: { },
+            transaction
+        });
+
+        await InstrumentLiquidityHistory.bulkCreate(instrument_data.map(data => {
+            return {
+                exchange_id: exchanges.find(ex => ex.name === data.exchange).id,
+                instrument_id: instruments.find(i => i.symbol === data.instrument).id,
+                volume: data.volume,
+                timestamp_to: Date.now(),
+                timestamp_from: Date.now() - 24 * 60 * 60 * 1000
+            };
+        }), { transaction });
+
+        return InstrumentMarketData.bulkCreate(instrument_data.map((data, index) => {
+            return {
+                exchange_id: exchanges.find(ex => ex.name === data.exchange).id,
+                instrument_id: instruments.find(i => i.symbol === data.instrument).id,
+                ask_price: data.ask_price,
+                bid_price: data.bid_price,
+                timestamp: Date.now() + (index * 1000)
+            };
+        }), { transaction });
 
     });
 

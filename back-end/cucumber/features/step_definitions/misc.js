@@ -1,4 +1,4 @@
-const { Given, When, Then, After } = require('cucumber');
+const { Given, When, Then, After, Before } = require('cucumber');
 const chai = require('chai');
 const { expect } = chai;
 
@@ -8,6 +8,14 @@ const { failureResponse, successResponse } = require('../support/assert');
 
 const World = require('../support/global_world');
 const utils = require('../support/step_helpers');
+
+const non_mvp_exchanges = [
+    { name: 'Bitstamp', api_id: 'bitstamp' },
+    { name: 'Bittrex', api_id: 'bittrex' },
+    { name: 'HitBTC', api_id: 'hitbtc2' },
+    { name: 'Kraken', api_id: 'kraken' },
+    { name: 'Huobi', api_id: 'huobipro' }
+];
 
 Then(/^the server return a (.*) response$/, function(response_type) {
 
@@ -331,8 +339,8 @@ Then(/^if I look at the (.*) (details|list|footer|logs)$/, function(data_name, d
             if((/timestamp/.test(field) || /time/.test(field))&& !_.isNull(d[field])){
                 d[field] = new Date(d[field]).toString().split('GMT')[0].trim();
             }
-            else if(!isNaN(d[field]) && !_.isNull(d[field]) && !_.isDate(d[field])) {
-                d[field] = Decimal(d[field]).toString();
+            else if(!isNaN(d[field]) && !_.isNull(d[field]) && !_.isDate(d[field]) && d[field] !== '') {
+                d[field] = Decimal(d[field]).toDP(9).toString();
             }
         }
     });
@@ -395,5 +403,60 @@ After('@execution_orders_cache_cleanup', async function() {
 After('@restore_settings', function() {
     
     if(!_.isEmpty(World._default_settings)) SYSTEM_SETTINGS = _.clone(World._default_settings);
+
+});
+
+Before('@limit_to_MVP_exchanges', function() {
+
+    const {
+        sequelize,
+        Exchange, 
+        InstrumentLiquidityHistory, 
+        InstrumentLiquidityRequirement ,
+        InstrumentExchangeMapping
+    } = require('../../../models');
+
+    return sequelize.transaction(async transaction => {
+
+        const exchanges = await Exchange.findAll({
+            where: { name: non_mvp_exchanges.map(ex => ex.name) },
+            transaction
+        });
+
+        expect(exchanges.length).to.be.lessThan(non_mvp_exchanges.length + 1, `Found more exchanges than needed. STOP`);
+        const exchange_ids = exchanges.map(ex => ex.id);
+        
+        await InstrumentLiquidityHistory.destroy({ where: {
+            exchange_id: exchange_ids
+        }, transaction });
+        await InstrumentLiquidityRequirement.destroy({ where: {
+            exchange: exchange_ids
+        }, transaction });
+        await InstrumentExchangeMapping.destroy({ where: {
+            exchange_id: exchange_ids
+        }, transaction });
+
+        return Exchange.destroy({
+            where: { id: exchange_ids },
+            transaction
+        });
+
+    });
+
+});
+
+After('@limit_to_MVP_exchanges', function() {
+
+    const { Exchange } = require('../../../models');
+
+    //Safety create
+    return Promise.all(non_mvp_exchanges.map(exchange => {
+
+        return Exchange.findCreateFind({
+            where: exchange,
+            defaults: exchange
+        });
+
+    }));
 
 });

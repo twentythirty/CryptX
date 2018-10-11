@@ -34,7 +34,7 @@ Given('there is a recipe run with status Pending', async function () {
         this.current_investment_run.user_created_id,
         this.current_investment_run.id
     )
-
+    
     chai.assert.equal(new_run.approval_status, RECIPE_RUN_STATUSES.Pending, 'New run did not have status pending!');
 
     //update investment run in world
@@ -323,7 +323,40 @@ When(/^(.*) recipe run with provided rationale$/, async function (action) {
     //move investment run to also provide history
     this.prev_investment_run = this.current_investment_run;
     this.current_investment_run = await require('../../../models').InvestmentRun.findById(this.current_investment_run.id);
-})
+});
+
+When('I fetch the Recipe Run details', async function() {
+
+    const [ recipe_run, recipe_run_details ] = await Promise.all([
+        chai
+        .request(this.app)
+        .get(`/v1/recipes/${this.current_recipe_run.id}`)
+        .set('Authorization', World.current_user.token),
+        chai
+        .request(this.app)
+        .post(`/v1/recipe_details/of_recipe/${this.current_recipe_run.id}`)
+        .set('Authorization', World.current_user.token)
+        .send({
+            order: [
+                { by: 'investment_eth', order: 'DESC' },
+                { by: 'investment_btc', order: 'DESC' },
+                { by: 'transaction_asset', order: 'ASC' }
+            ]
+        })
+    ]);
+
+    this.current_recipe_run_details = recipe_run.body.recipe_run;
+    this.current_recipe_run_details_list = recipe_run_details.body.recipe_details;
+    this.current_recipe_run_details_footer = recipe_run_details.body.footer;
+
+    //World.print(recipe_run.body);
+    //World.print(recipe_run_details.body);
+
+    World.printDataTable(recipe_run_details.body.recipe_details, {
+        attributes: ['transaction_asset', 'quote_asset', 'target_exchange', 'investment_usd', 'investment_btc', 'investment_eth', 'investment_percentage']
+    });
+
+});
 
 Then(/^the system creates a new Recipe Run with status (.*)$/, async function (expected_status) {
 
