@@ -22,8 +22,9 @@
   <div>
     <button
       class="btn submit"
-      [disabled]="loading || !form.valid"
+      [disabled]="loading"
       (click)="add()"
+      [appMarkAsTouched]="form"
     >{{ 'common.add_custodian' | translate }}</button>
   </div>
 </app-form-action-bar>

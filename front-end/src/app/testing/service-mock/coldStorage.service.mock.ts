@@ -1,7 +1,8 @@
 import { CustodiansAllResponse,
          AddAccountResponse,
          AccountsAllResponse,
-         TransfersAllResponse } from '../../services/cold-storage/cold-storage.service';
+         TransfersAllResponse, 
+         AddCustodianResponse} from '../../services/cold-storage/cold-storage.service';
 import { Transfer } from '../../shared/models/transfer';
 
 export const getAllCustodiansData: CustodiansAllResponse = {
@@ -61,6 +62,11 @@ export const getAllTransfersData: TransfersAllResponse = {
       strategy_type: 'investment.strategy.102'
     })
   ]
+};
+
+export const addCustodianData: AddCustodianResponse = {
+  success: true,
+  custodian: {}
 };
 
 

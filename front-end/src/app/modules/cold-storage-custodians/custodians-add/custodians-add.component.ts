@@ -27,6 +27,9 @@ export class CustodiansAddComponent implements OnInit {
   }
 
   add() {
+    if (this.form.invalid) {
+      return;
+    }
     const request = {
       name: this.form.get('custodian_name').value
     };
