@@ -18,6 +18,8 @@ const InvestmentRunAssetGroup = require('../models').InvestmentRunAssetGroup;
 const GroupAsset = require('../models').GroupAsset;
 const InvestmentAssetConversion = require('../models').InvestmentAssetConversion;
 
+const { ISOLATION_LEVELS } = require('sequelize').Transaction;
+
 const AdminViewService = require('./AdminViewsService');
 
 const ActionLog = require('../utils/ActionLogUtil');
@@ -213,7 +215,9 @@ const createRecipeRun = async function (user_id, investment_run_id) {
   [err, recipe_run_details] = await to(this.generateRecipeDetails(investment_run.id, investment_run.strategy_type), false);
   if (err) TE(err.message);
 
-  [err] = await to(sequelize.transaction(transaction => {
+  [err] = await to(sequelize.transaction({
+    isolationLevel: ISOLATION_LEVELS.SERIALIZABLE
+  }, transaction => {
     return RecipeRun.findOne({
       where: {
         investment_run_id: investment_run.id,

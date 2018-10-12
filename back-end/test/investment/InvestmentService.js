@@ -248,7 +248,8 @@ describe('InvestmentService testing:', () => {
       return Promise.resolve(assets);
     });
 
-    sinon.stub(sequelize, 'transaction').callsFake(statement => {
+    sinon.stub(sequelize, 'transaction').callsFake((options, statement) => {
+      if(_.isFunction(options)) statement = options;
       return Promise.resolve(statement());
     });
 

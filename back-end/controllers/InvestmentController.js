@@ -11,6 +11,8 @@ const investmentService = require('../services/InvestmentService');
 const OrdersService = require('../services/OrdersService');
 const DepositService = require('../services/DepositService');
 
+const { lock } = require('../utils/LockUtils');
+
 const createInvestmentRun = async function (req, res) {
   let err, investment_run = {};
 
@@ -36,7 +38,10 @@ const createRecipeRun = async function (req, res) {
   let investment_run_id = req.params.investment_id,
 
     [err, recipe_run] = await to(
-      investmentService.createRecipeRun(req.user.id, investment_run_id), false
+      lock(investmentService.createRecipeRun(req.user.id, investment_run_id), {
+        id: 'create_recipe_run', keys: { investment_run_id },
+        error_message: `Recipe Run is currently being generated for Investment Run with id ${investment_run_id}, please wait...`
+      }), false
     );
   if (err) return ReE(res, err, 422);
 
