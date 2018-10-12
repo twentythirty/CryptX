@@ -254,6 +254,10 @@ export class DepositDetailComponent extends TimelineDetailComponent implements O
   }
 
   private updateConversionAmount_attr(row) {
+    if (this.conversionAmountForm.invalid) {
+      return false;
+    }
+
     const amount = +this.conversionAmountForm.controls.amount.value;
 
     this.conversionAmountFormLoading = true;

@@ -82,10 +82,13 @@ export class TimelineComponent implements OnInit {
         return !events.recipe_run || events.recipe_run.approval_status !== 'recipes.status.43';
 
       case 'recipe_orders':
+        if (!events.recipe_deposits) {
+          return true;
+        }
         if (this.authService.hasPermissions([permissions.VIEW_ORDERS])) {
           return false; // can view even empty page
         }
-        return !(events.recipe_deposits && events.recipe_deposits.status === 'deposits.status.151');
+        return events.recipe_deposits.status === 'deposits.status.150';
 
       case 'execution_orders':
         return !events.recipe_orders;

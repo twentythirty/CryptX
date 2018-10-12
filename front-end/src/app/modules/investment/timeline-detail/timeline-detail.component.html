@@ -146,7 +146,8 @@
       <app-btn
         class="right"
         (onClick)="updateConversionAmount()"
-        [disabled]="conversionAmountForm.invalid || conversionAmountFormLoading"
+        [disabled]="conversionAmountFormLoading"
+        [appMarkAsTouched]="conversionAmountForm"
       >{{ 'common.confirm' | translate }}</app-btn>
     </div>
   </form>
