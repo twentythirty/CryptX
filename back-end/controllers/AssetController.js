@@ -54,9 +54,9 @@ const getAssetDetailed = async function (req, res) {
       asset_id: history_element.asset_id,
       timestamp: history_element.timestamp,
       user: {
-        id: history_element.User.id,
-        name: history_element.User.fullName(),
-        email: history_element.User.email
+        id: history_element.User ? history_element.User.id : null,
+        name: history_element.User ? history_element.User.fullName() : 'System',
+        email: history_element.User ? history_element.User.email : 'System'
       },
       comment: history_element.comment,
       type: `assets.status.${history_element.type}`

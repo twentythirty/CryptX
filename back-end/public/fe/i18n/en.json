@@ -556,6 +556,11 @@
       "instrument_error": "Ask & Bid Fetcher: Error while fetching price for {{instrument}} from {{exchange}}: {{error}}"
     },
 
+    "asset_status_changer": {
+      "graylisted": "System graylisted {{asset_name}}({asset_symbol}}) because it doesn't meet liquidity requirements",
+      "whitelisted": "System whitelisted {{asset_name}}({asset_symbol}}) because it meets liquidity requirements"
+    },
+
     "execution_orders": {
       "placed": "Order was placed to {{exchange}}",
       "error": "Error: {{error}}",

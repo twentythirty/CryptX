@@ -92,5 +92,14 @@
         "EXCH_ASK_BID"
       ]
     },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Launch ASSET_LIQUIDITY_CHK job",
+      "program": "${workspaceFolder}/back-end/jobs/jobs-runner.js",
+      "args": [
+        "ASSET_LIQUIDITY_CHK"
+      ]
+    },
   ]
 }
