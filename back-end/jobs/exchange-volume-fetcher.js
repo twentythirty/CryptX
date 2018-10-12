@@ -95,7 +95,8 @@ module.exports.JOB_BODY = async (config, log) => {
                     instrument_id: symbol_mapping.instrument_id,
                     timestamp_to: data_timestamp_to,
                     timestamp_from: new Date(data_timestamp_to.getTime() - 1000 * 60 * 60 * 24),
-                    volume: market_data.baseVolume
+                    volume: market_data.baseVolume,
+                    quote_volume: market_data.quoteVolume ? market_data.quoteVolume : Decimal(market_data.baseVolume).mul(Decimal(market_data.ask).plus(market_data.bid).div(2)).toString()
                 }
             });
         });

@@ -566,7 +566,8 @@ Given(/^the average (\w*\/\w*) Liquidity for the last (\d*) days is:$/, async fu
                 timestamp_to, timestamp_from,
                 exchange_id: exchange.id,
                 instrument_id: instrument.id,
-                volume: current_day_liquidities[exchange_name]
+                volume: current_day_liquidities[exchange_name],
+                quote_volume: current_day_liquidities[exchange_name]
             });
 
         }
@@ -636,6 +637,7 @@ Given('the current Instrument market data is:', async function(table) {
                 exchange_id: exchanges.find(ex => ex.name === data.exchange).id,
                 instrument_id: instruments.find(i => i.symbol === data.instrument).id,
                 volume: data.volume,
+                quote_volume: data.volume,
                 timestamp_to: Date.now(),
                 timestamp_from: Date.now() - 24 * 60 * 60 * 1000
             };
@@ -980,7 +982,7 @@ Then('the Instrument Exchange Mappings their current price, last day and week vo
                 order: [[ 'timestamp_to', 'DESC' ]],
                 raw: true
             }),
-            InstrumentLiquidityHistory.sum('volume', {
+            InstrumentLiquidityHistory.sum('quote_volume', {
                 where: Object.assign(
                     { timestamp_to: { [Op.gte]: last_week } },
                     where
@@ -992,7 +994,7 @@ Then('the Instrument Exchange Mappings their current price, last day and week vo
         expect(parseFloat(mapping.current_price)).to.equal(parseFloat(market_data.ask_price), 'Expected the instrument mapping price to equal the newest ask price');
 
         expect(parseInt(mapping.last_day_vol)).to.be.a('number', 'Expected the instrument mapping last day volume to be a number');
-        expect(parseInt(mapping.last_day_vol)).to.equal(parseInt(last_day_history.volume), 'Expected the instrument mapping last day volume to equal the newest volume');
+        expect(parseInt(mapping.last_day_vol)).to.equal(parseInt(last_day_history.quote_volume), 'Expected the instrument mapping last day volume to equal the newest volume');
 
         expect(parseInt(mapping.last_week_vol)).to.be.a('number', 'Expected the instrument mapping last week volume to be a number');
         expect(parseInt(mapping.last_week_vol)).to.equal(last_week_volume, 'Expected the instrument mapping last week volume to equal the sum of volumes for the last week');

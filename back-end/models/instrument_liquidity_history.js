@@ -7,7 +7,8 @@ module.exports = (sequelize, DataTypes) => {
         {
             timestamp_from: DataTypes.DATE,
             timestamp_to: DataTypes.DATE,
-            volume: DataTypes.DECIMAL
+            volume: DataTypes.DECIMAL,
+            quote_volume: DataTypes.DECIMAL
         },
         modelProps(
             'instrument_liquidity_history',

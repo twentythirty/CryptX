@@ -208,7 +208,7 @@ export class InstrumentInfoComponent extends DataTableCommonManagerComponent imp
         const [{instrument}, { exchanges }] = res;
 
         this.instrumentDataSource.body = [instrument];
-        [this.cryptoSuffix] = instrument.symbol.split('/');
+        this.cryptoSuffix = instrument.symbol.split('/')[1];
 
         this.exchanges = exchanges;
 
