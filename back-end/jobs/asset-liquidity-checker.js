@@ -24,7 +24,7 @@ module.exports.JOB_BODY = async (config, log) => {
       asset.*,
       ilr.minimum_volume,
       ilr.periodicity_in_days,
-      AVG(ilh.volume) as avg_volume,
+      AVG(ilh.quote_volume) as avg_volume,
       ilh.exchange_id,
       CASE WHEN status.type IS NULL THEN :whitelisted ELSE status.type END as status
     FROM instrument_liquidity_requirement ilr
