@@ -8,8 +8,8 @@ const actions = {
   whitelisted: `${action_path}.whitelisted`,
 };
 
-// every day 20 minutes past midnight
-module.exports.SCHEDULE = "0 20 * * *";
+// every 5 minutes
+module.exports.SCHEDULE = "0 */5 * * * *";
 module.exports.NAME = "ASSET_LIQUIDITY_CHK";
 module.exports.JOB_BODY = async (config, log) => {
 
@@ -18,6 +18,7 @@ module.exports.JOB_BODY = async (config, log) => {
   const sequelize = models.sequelize;
   const AssetStatusChange = models.AssetStatusChange;
 
+  log(`Fetch liquidity requirements with average volumes for every exchange`);
   let [err, result] = await to(sequelize.query(`
     SELECT 
       asset.*,
@@ -67,17 +68,51 @@ module.exports.JOB_BODY = async (config, log) => {
 
       // if asset is whitelisted
 
-      // true == change asset status
+      // if true is returned then asset status should be changed
       // if asset is whitelisted, and every asset don't meet requirements, then we should change status
       // if asset is not whitelisted, and some asset meet requirements, then we should whitelist it
       if (liq.some(a => // check if all exchanges don't pass liquidity requirements instrument
         !_.isNull(a.volume) && parseFloat(a.avg_volume) > parseFloat(a.minimum_volume)
       )) {
-        if (asset.status==INSTRUMENT_STATUS_CHANGES.Graylisting)
-          change_status = true
-      } else {
-        if (asset.status==INSTRUMENT_STATUS_CHANGES.Whitelisting)
+        log(`Some of exchange mappings for ${asset.long_name}(${asset.symbol}) meet liquidity requirements.`);
+
+        if (asset.status==INSTRUMENT_STATUS_CHANGES.Graylisting) {
+          asset.change_status_to = INSTRUMENT_STATUS_CHANGES.Whitelisting;
+
+          logAction(actions.whitelisted, {
+            args: { 
+              asset_name: asset.long_name,
+              asset_symbol: asset.symbol },
+            relations: { asset_id: asset.id }
+          });
+  
+          log(`Whitelisting ${asset.long_name}(${asset.symbol})`);
+        
           change_status = true;
+        } else {
+
+          log(`Leaving ${asset.long_name}(${asset.symbol}) status as is - whitelisted.`);
+        }
+      } else {
+        log(`None of exchange mappings for ${asset.long_name}(${asset.symbol}) meet liquidity requirements`);
+
+        if (asset.status==INSTRUMENT_STATUS_CHANGES.Whitelisting) {
+          asset.change_status_to = INSTRUMENT_STATUS_CHANGES.Graylisting;
+
+          logAction(actions.graylisted, {
+            args: { 
+              asset_name: asset.long_name,
+              asset_symbol: asset.symbol },
+            relations: { asset_id: asset.id }
+          });
+  
+          log(`Graylisting ${asset.long_name}(${asset.symbol})`);
+
+          change_status = true;
+        } else {
+
+          log(`Leaving ${asset.long_name}(${asset.symbol}) status as is - graylisted.`);
+        }
       }
 
       return change_status;
@@ -89,33 +124,14 @@ module.exports.JOB_BODY = async (config, log) => {
     return [];
   else
     return AssetStatusChange.bulkCreate(change_asset_status.map(asset => {
-      let type, comment;
-
-      if (asset.status == INSTRUMENT_STATUS_CHANGES.Whitelisting) {
-        type = INSTRUMENT_STATUS_CHANGES.Graylisting;
-        comment = "Doesn't meet liquidity requirements";
-        logAction(actions.graylisted, {
-          args: { 
-            asset_name: asset.long_name,
-            asset_symbol: asset.symbol },
-          relations: { asset_id: asset.id }
-        });
-      } else {
-        type = INSTRUMENT_STATUS_CHANGES.Whitelisting;
-        comment = "Meets liquidity requirements";
-        logAction(actions.whitelisted, {
-          args: { 
-            asset_name: asset.long_name,
-            asset_symbol: asset.symbol },
-          relations: { asset_id: asset.id }
-        });
-      }
 
       return {
         timestamp: new Date(),
         asset_id: asset.id,
-        comment: comment,
-        type: type
+        comment: asset.change_status_to == INSTRUMENT_STATUS_CHANGES.Whitelisting ?
+          "Meets liquidity requirements" :
+          "Doesn't meet liquidity requirements",
+        type: asset.change_status_to
       }
     }));
 };
