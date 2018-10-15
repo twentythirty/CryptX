@@ -61,3 +61,15 @@ Feature: Approving Orders
         Then the recipe order group will have status Rejected
         And all orders in the group will have status Rejected
         And I can generate another order group
+
+    @investment_run_cache_cleanup
+    Scenario: fail to approve generated orders due old market data
+  
+        Given there is a recipe order group with status Pending
+        But one of the orders instrument market data is older than allowed by system thresholds
+        When I log onto CryptX as Investment Manager
+        And navigate to Pending recipe order group
+        And approve the order group with a rationale
+        Then I see an error message including the offending instrument and the threshold requirements
+        And the recipe order group status will remain unchanged
+        And all orders in the group statuses will remain unchanged

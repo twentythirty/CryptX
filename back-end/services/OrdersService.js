@@ -524,19 +524,12 @@ const changeRecipeOrderGroupStatus = async (user_id, order_group_id, status, com
                     ); 
                     
                     //number of seconds we handicap from the TTL value
-                    //ideally  this is the arg1 difference 
-                    //but if initial TTL is bad then we take 0 (fails he approvals)
-                    //if difference too large we take the initial defined differnece of 15 min
-                    const handicap_seconds = clamp(
-                        SYSTEM_SETTINGS.BASE_ASSET_PRICE_TTL_THRESHOLD - SYSTEM_SETTINGS.MARKET_DATA_TTL_HANDICAP, 
-                        0, 
-                        DEFAULT_SETTINGS.BASE_ASSET_PRICE_TTL_THRESHOLD
-                    );
+                    const handicap_seconds = SYSTEM_SETTINGS.BASE_ASSET_PRICE_TTL_THRESHOLD + SYSTEM_SETTINGS.MARKET_DATA_TTL_HANDICAP;
                     const cutoff_date = new Date(new Date().getTime() - handicap_seconds * 1000);
                     
                     if (order_market_prices == null || order_market_prices.timestamp < cutoff_date) {
 
-                        TE(`Can't approve recipe order ${recipe_order.id}: No recent market data found for instrument ${recipe_order.Instrument.symbol}, must be newer than ${cutoff_date}!`);
+                        TE(`Can't approve recipe order ${recipe_order.id}: No recent market data found for instrument ${recipe_order.Instrument.symbol} on ${recipe_order.target_exchange.name}, must be newer than ${cutoff_date.toISOString()}!`);
                     }
 
                     const lower_limit = Decimal(check_market.limits.amount.min || '0');

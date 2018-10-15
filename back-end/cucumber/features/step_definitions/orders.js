@@ -122,13 +122,45 @@ Given('one of the orders is missing their CCXT mapping', async function () {
     await new_order.save()
 });
 
+Given('one of the orders instrument market data is older than allowed by system thresholds', async function() {
+
+    const models = require('../../../models');
+
+    //surprisingly, lodash random int is range-end-inclusive
+    const random_idx = _.random(0, this.current_generated_orders.length, false) % this.current_generated_orders.length;
+    const new_order = this.current_generated_orders[random_idx];
+    chai.assert.isObject(new_order, 'Did not find any Pending Recipe Orders to tamper with!');
+
+    //remove potentially good market data for the instrument exchange pair (newer than 1 day ago)
+    let yesterday = new Date();
+    yesterday.setDate(yesterday.getDate() - 1);
+    await models.InstrumentMarketData.destroy({
+        where: {
+            instrument_id: new_order.instrument_id,
+            exchange_id: new_order.target_exchange_id,
+            timestamp: {
+                [models.Sequelize.Op.gte]: yesterday
+            }
+        }
+    });
+    chai.assert.isObject(SYSTEM_SETTINGS, `System settings object not initialized!`);
+    chai.assert.isNumber(SYSTEM_SETTINGS.BASE_ASSET_PRICE_TTL_THRESHOLD, `Base instrument data price TTL not initialized!`);
+    chai.assert.isNumber(SYSTEM_SETTINGS.MARKET_DATA_TTL_HANDICAP, `Instrument data price TTL handicap not initialized!`)
+    
+    this.current_stale_instrument = await new_order.getInstrument();
+    this.current_stale_exchange = await new_order.getTarget_exchange();
+    const handicap_seconds = SYSTEM_SETTINGS.BASE_ASSET_PRICE_TTL_THRESHOLD + SYSTEM_SETTINGS.MARKET_DATA_TTL_HANDICAP;
+    this.currenth_price_ttl_threshold = new Date(new Date().getTime() - handicap_seconds * 1000)
+});
+
 Given('one of the orders total quantity is below the trade threshold on this exchange and instrument pair', async function() {
 
     const models = require('../../../models');
     
     chai.assert.isArray(this.current_generated_orders, 'Generated orders array not present in World!');
-    //Sometimes it would select an array object out of bounds as length is greater than last index by 1
-    const random_idx = _.random(0, this.current_generated_orders.length - 1, false);
+
+    //surprisingly, lodash random int is range-end-inclusive
+    const random_idx = _.random(0, this.current_generated_orders.length, false) % this.current_generated_orders.length;
     const new_order = this.current_generated_orders[random_idx];
     chai.assert.isObject(new_order, 'Did not find any Pending Recipe Orders to tamper with!');
 
@@ -869,6 +901,30 @@ Then('the approval fails with an error message including the offending value and
     chai.assert.isDefined(this.current_bad_low_total, 'No order low total quantity saved for check!');
     chai.assert.include(message, '' + this.current_bad_low_total, `Error did not mention low order total ${this.current_bad_low_total}!`);
 });
+
+Then('I see an error message including the offending instrument and the threshold requirements', async function() {
+
+    //there should have been an error saved
+    chai.assert.isDefined(this.current_recipe_order_group_status_change_error, 'No error saved after recipe order group status changed!');
+    const message = _.toLower(this.current_recipe_order_group_status_change_error.message);
+    chai.assert.include(message, 'no recent market data found', 'Error did not mention its about stale market data!');
+
+    chai.assert.isDefined(this.current_stale_instrument, 'No instrument saved to check in error!');
+    chai.assert.include(message, _.toLower(this.current_stale_instrument.symbol), `Error did not mention stale instrument symbol ${this.current_stale_instrument.symbol}!`);
+
+    chai.assert.isDefined(this.current_stale_exchange, 'No exchange saved to check in error!');
+    chai.assert.include(message, _.toLower(this.current_stale_exchange.name), `Error did not mention stale exchange name ${this.current_stale_exchange.name}!`);
+
+    chai.assert.isDefined(this.currenth_price_ttl_threshold, 'No price TTL threshold defined in Context!');
+    const error_tail_regex = /must be newer than (.*)!/;
+
+    chai.assert.isTrue(error_tail_regex.test(message), `Error message ${message} did not contain regex ${error_tail_regex}`);
+    const matches = message.match(error_tail_regex);
+    chai.assert.isAtLeast(matches.length, 2, `Regex should have captured at least one group in error!`);
+    const error_date = new Date(matches[1]);
+    chai.assert.notEqual(error_date.toString(), 'Invalid Date', `The match ${matches[1]} did not generate a valid date!`);
+    chai.assert.isAtLeast(error_date.getTime(), this.currenth_price_ttl_threshold.getTime(), `Date mentioned in error ${error_date} was not at least ${this.currenth_price_ttl_threshold}!`);
+})
 
 Then('the system won\'t allow me to generate Recipe Orders while this group is not Rejected', function () {
 
