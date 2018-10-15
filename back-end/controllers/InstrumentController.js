@@ -274,35 +274,23 @@ const getLiquidityRequirementsColumnLOV = async function (req, res) {
 module.exports.getLiquidityRequirementsColumnLOV = getLiquidityRequirementsColumnLOV;
 
 const getLiquidityRequirementExchanges = async function (req, res) {
- 
-  const liquidity_requirement_id = req.params.liquidity_requirement_id
+  
+  const liquidity_requirement_id = req.params.liquidity_requirement_id;
+  const seq_query = Object.assign({ where: {} }, req.seq_query);
 
-  let [ err, liquidity_requirement ] = await to(InstrumentLiquidityRequirement.findById(liquidity_requirement_id));
-  if(err) return ReE(res, err.message, 422);
-  if(!liquidity_requirement) return ReE(res, `Liquidity requirement with id ${liquidity_requirement_id} was not found`, 422);
+  seq_query.where['liquidity_requirement_id'] = liquidity_requirement_id;
+  let sql_where = adminViewUtils.addToWhere(req.sql_where, `liquidity_requirement_id = ${liquidity_requirement_id}`);
 
-  const seq_query = {
-    where: { instrument_id: liquidity_requirement.instrument_id }
-  };
-
-  let sql_where = `instrument_id=${liquidity_requirement.instrument_id}`;
-
-  if(liquidity_requirement.exchange) {
-    seq_query.where.exchange_id = liquidity_requirement.exchange;
-    sql_where += ` AND exchange_id=${liquidity_requirement.exchange}`
-  }
-
-  let result;
-  [ err, result ] = await to(adminViewService.fetchLiquidityExchangesViewDataWithCount(seq_query));
+  let err, result;
+  [ err, result ] = await to(Promise.all([
+    adminViewService.fetchLiquidityExchangesViewDataWithCount(seq_query),
+    adminViewService.fetchLiquidityExchangesViewFooter(sql_where)
+  ]));
   if(err) return ReE(res, err.message, 422);
 
-  let { data: exchanges, total: count } = result;
+  let [{ data: exchanges, total: count }, footer] = result;
 
   exchanges = exchanges.map(ex => ex.toWeb());
-
-  let footer = [];
-  [ err, footer ] = await to(adminViewService.fetchLiquidityExchangesViewFooter(sql_where));
-  if(err) return ReE(res, err.message, 422);
 
   return ReS(res, {
     exchanges,

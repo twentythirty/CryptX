@@ -36,7 +36,7 @@ async function generateDeposits(status) {
     return assets_to_deposit.map(asset => {
 
         return {
-            amount: status === 'Faulty' ? -1 : _.random(10, 200, true),
+            amount: status === 'Faulty' ? -1 : _.random(1000, 2000, true),
             asset_id: asset.quote_asset_id,
             completion_timestamp: new Date(),
             creation_timestamp: new Date(),
