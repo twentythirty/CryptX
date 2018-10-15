@@ -108,4 +108,5 @@ Feature: Generating an Asset mix
         Examples:
         | strategy_type | asset_mix_size | blacklisted_assets |  list_start   |  list_end  |  asset  |
         | LCI  | 20  | ADA, MIOTA, XEM  |   BTC   |   BTG   |  NEO  |
-        | MCI  | 50  | ADA, MIOTA, ZIL, WAVES, STRAT  |   OMG   |   MONA   |  MAID  |
+        | MCI  | 50  | ADA, MIOTA, ZIL, WAVES, STRAT  |   BTG   |   MONA   |  MAID  |
+        | LCI  | 18  | WAVES, STRAT  |   BTC   |   XTZ   |  LTC  |

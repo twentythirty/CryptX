@@ -601,14 +601,15 @@ Then(/^Assets are selected from (\w*) to (\w*) inclusively$/, async function(sta
     const data_list = this.current_asset_data;
     const list_start = data_list.findIndex(data => data.asset === starting_symbol);
     const list_end = data_list.findIndex(data => data.asset === ending_symbol);
-
+    
     const cropped_list = data_list.slice(list_start, list_end + 1); 
+    expect(cropped_list.length).to.equal(this.current_asset_mix.GroupAssets.length, 'Expected the cropped asset list length to match the asset mix length');
 
-    for(let asset of this.current_asset_mix.GroupAssets) {
+    for(let data of cropped_list) {
 
-        const matching_data = cropped_list.find(data => data.asset === asset.Asset.symbol);
+        const matching_data = this.current_asset_mix.GroupAssets.find(asset => data.asset === asset.Asset.symbol);
 
-        expect(matching_data, `Expected to find matching data from asset ${asset.Asset.symbol}`).to.be.not.undefined;
+        expect(matching_data, `Expected to find matching data from asset ${data.asset}`).to.be.not.undefined;
 
     };
 
