@@ -290,6 +290,7 @@ const createLiquidityRequirement = async (instrument_id, periodicity, minimum_ci
         const exchange = requirement.exchange;
 
         if (!exchange) TE(`A requirement for instrument with id ${instrument_id} already exists for all exchanges`);
+        if (!exchange_id && exchange) TE('Cannot set "All exchanges" on a instrument which has requirements for specific exchnages.');
 
         if (exchange === exchange_id) TE(`A requirement for instrument with id ${instrument_id} and exchange with id ${exchange_id} already exists`);
     }
@@ -321,6 +322,55 @@ const createLiquidityRequirement = async (instrument_id, periodicity, minimum_ci
 
 };
 module.exports.createLiquidityRequirement = createLiquidityRequirement;
+
+const editLiquidityRequirement = async (requirement_id, periodicity_in_days, minimum_volume, exchange) => {
+
+    if ((!_.isUndefined(periodicity_in_days) && (!_.isNumber(periodicity_in_days) || periodicity_in_days < 1)) ||
+        (!_.isUndefined(minimum_volume) && (!_.isNumber(minimum_volume) || minimum_volume < 0))) {
+        TE('periodicity or minimum_circulation are not valid.');
+    }
+
+    let updated_values = { periodicity_in_days, minimum_volume, exchange };
+
+    let [ err, requirement ] = await to(InstrumentLiquidityRequirement.findById(requirement_id));
+
+    if(err) TE(err.message);
+    if(!requirement) return null;
+
+    let same_instrument_requirements;
+    [ err, same_instrument_requirements ] = await to(InstrumentLiquidityRequirement.findAll({
+        where: { instrument_id: requirement.instrument_id }
+    }));
+
+    if(err) TE(err.message);
+
+    if(same_instrument_requirements.length !== 1 && _.isNull(exchange)) {
+        TE(`Cannot set "All Exchanges" while there are multiple exchange specific requirements for the instrument`);
+    }
+
+    if(exchange) {
+
+        let found_mapping;
+        [err, found_mapping] = await to(InstrumentExchangeMapping.findOne({
+            where: {
+                instrument_id: requirement.instrument_id,
+                exchange_id: exchange
+            }
+        }));
+
+        if (err) TE(err.message);
+        if (!found_mapping) TE(`Exchange with id "${exchange}" is not mapped to instrument with id "${requirement.instrument_id}"`);
+
+    }
+
+    _.map(updated_values, (value, key) => {
+        if(!_.isUndefined(value)) requirement[key] = value;
+    });
+
+    return requirement.save();
+
+};
+module.exports.editLiquidityRequirement = editLiquidityRequirement;
 
 const getInstrumentPrices = async (instrument_id, exchange_id, raw = false) => {
 

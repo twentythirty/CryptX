@@ -207,6 +207,21 @@ const createLiquidityRequirement = async function (req, res) {
 };
 module.exports.createLiquidityRequirement = createLiquidityRequirement;
 
+const editLiquidityRequirement = async (req, res) => {
+
+  const { exchange_id, periodicity, minimum_circulation } = req.body;
+  const { liquidity_requirement_id } = req.params;
+
+  const [ err, liquidity_requirement ] = await to(instrumentService.editLiquidityRequirement(liquidity_requirement_id, periodicity, minimum_circulation, exchange_id));
+
+  if(err) return ReE(res, err, 422);
+  if(!liquidity_requirement) return ReE(res, `Liquidity Requirement with id ${liquidity_requirement_id} was not found`, 404);
+
+  return ReS(res, { liquidity_requirement });
+
+};
+module.exports.editLiquidityRequirement = editLiquidityRequirement;
+
 const getLiquidityRequirement = async function (req, res) {
  
   const liquidity_req_id = req.params.liquidity_requirement_id

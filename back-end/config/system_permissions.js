@@ -618,9 +618,14 @@ ROUTES = {
   },
 
   // Liquidity requirements
-  LiquidityReqCreate: {
+  CreateLiquidityRequirement: {
     router_string: "/liquidity_requirements/create",
-    permissions_matcher: ROUTE_MATCHERS.LiquidityReqCreate,
+    permissions_matcher: ROUTE_MATCHERS.createLiquidityRequirement,
+    required_permissions: [PERMISSIONS.CREATE_LIQUIDITY_REQUIREMENTS]
+  },
+  EditLiquidityRequirement: {
+    router_string: "/liquidity_requirements/:liquidity_requirement_id/edit",
+    permissions_matcher: ROUTE_MATCHERS.editLiquidityRequirement,
     required_permissions: [PERMISSIONS.CREATE_LIQUIDITY_REQUIREMENTS]
   },
   GetLiquidityRequirement: {

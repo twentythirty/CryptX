@@ -818,12 +818,20 @@ router.delete(
 
 // Liquidity requirements
 router.post(
-  ROUTES.LiquidityReqCreate.router_string,
+  ROUTES.CreateLiquidityRequirement.router_string,
   stateless_auth,
   res_new_token,
   check_permissions,
   post_body_validator,
   InstrumentController.createLiquidityRequirement
+);
+router.post(
+  ROUTES.EditLiquidityRequirement.router_string,
+  stateless_auth,
+  res_new_token,
+  check_permissions,
+  post_body_validator,
+  InstrumentController.editLiquidityRequirement
 );
 router.get(
   ROUTES.GetLiquidityRequirements.router_string,

@@ -525,7 +525,50 @@
           "200": {
             "description": "success",
             "schema": {
-              "$ref": "#/definitions/LiquidityRequirementResponse"
+              "$ref": "#/definitions/CreateOrEditLiqudityRequirementResponse"
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/liquidity_requirements/{liquidity_requirement_id}/edit": {
+      "post": {
+        "tags": [
+          "liquidity"
+        ],
+        "summary": "Edit existing liqudiity requirement",
+        "description": "Edit existing liqudiity requirement. Specific exchnages can be updated to \"All Exchanges\" as long as there no other requirements for the same instrument",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "liquidity_requirement_id",
+            "in": "path",
+            "description": "ID of liquidity requirement",
+            "required": true,
+            "type": "integer"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "description": "Information needed to update the requirement",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/LiquidityRequirementEdit"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "$ref": "#/definitions/CreateOrEditLiqudityRequirementResponse"
             }
           }
         },
@@ -5601,6 +5644,45 @@
         }
       }
     },
+    "CreateOrEditLiqudityRequirementResponse": {
+      "description": "Response when a new liquidity requirement is created or updated",
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean",
+          "example": true
+        },
+        "liquidity_requirement": {
+          "$ref": "#/definitions/RawLiquidityRequirement"
+        }
+      }
+    },
+    "RawLiquidityRequirement": {
+      "description": "Raw liquidity requirement object",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "number",
+          "example": 5
+        },
+        "instrument_id": {
+          "type": "number",
+          "example": 2
+        },
+        "exchnage_id": {
+          "type": "number",
+          "example": 1
+        },
+        "periodicity_in_days": {
+          "type": "number",
+          "example": 7
+        },
+        "minimum_volume": {
+          "type": "number",
+          "example": 15000
+        }
+      }
+    },
     "LiquidityRequirement": {
       "description": "Liquidity requirement view data",
       "type": "object",
@@ -5647,6 +5729,24 @@
           "type": "number",
           "example": 10
         },
+        "exchange_id": {
+          "type": "number",
+          "example": 20
+        },
+        "periodicity": {
+          "type": "number",
+          "example": 7
+        },
+        "minimum_circulation": {
+          "type": "number",
+          "example": 25000
+        }
+      }
+    },
+    "LiquidityRequirementEdit": {
+      "description": "Update the liqudity requirement exchanges, periodicity or minimum circulation",
+      "type": "object",
+      "properties": {
         "exchange_id": {
           "type": "number",
           "example": 20
