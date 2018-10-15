@@ -7,6 +7,8 @@ import { Observable } from 'rxjs/Observable';
 import { routes } from '../config/routes/routes';
 import { FakeEmptyModule, FakeEmptyComponent } from './fake-empty.component';
 import { By } from '@angular/platform-browser';
+import * as _ from 'lodash';
+
 
 /**
  * Helper function for stubbing service data
@@ -14,7 +16,9 @@ import { By } from '@angular/platform-browser';
  * @param data - any data
  */
 export function fakeAsyncResponse<T>(data: T) {
-  return defer(() => Promise.resolve(data));
+  return defer(() => Promise.resolve(
+    _.cloneDeep(data)
+  ));
 }
 
 /**

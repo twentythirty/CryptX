@@ -1,4 +1,5 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import * as _ from 'lodash';
 import { extraTestingModules, fakeAsyncResponse, click } from '../../../testing/utils';
 
 import { InvestmentModule } from '../investment.module';
@@ -82,28 +83,28 @@ describe('ExecutionOrderFillDetailComponent', () => {
   });
 
   describe('if execution order status is failed', () => {
-    beforeEach(() => {
-      const failedOrder = Object.assign({}, getSingleExecutionOrderData);
+    beforeEach((done) => {
+      const failedOrder = _.cloneDeep(getSingleExecutionOrderData);
       failedOrder.execution_order.status = 'execution_orders.status.66';
       getSingleExecutionOrderSpy.and.returnValue(fakeAsyncResponse(failedOrder));
-    });
+      component.getSingleData();
 
-    it('should show "retry" button', () => {
-      fixture.whenStable().then(() => {
+      getSingleExecutionOrderSpy.calls.mostRecent().returnValue.subscribe(() => {
         fixture.detectChanges();
-        const button = fixture.nativeElement.querySelector('table tbody tr app-action-cell label');
-        expect(button).not.toBeNull();
+        done();
       });
     });
 
+    it('should show "retry" button', () => {
+      const button = fixture.nativeElement.querySelector('table tbody tr app-action-cell label');
+      expect(button).toBeTruthy();
+    });
+
     it('should change status to pending on “retry“ button click', () => {
-      fixture.whenStable().then(() => {
-        fixture.detectChanges();
-        const button = fixture.nativeElement.querySelector('table tbody tr app-action-cell label');
-        click(button);
-        changeExecutionOrderStatusSpy.calls.mostRecent().returnValue.subscribe(() => {
-          expect(component.singleDataSource.body[0].status).toBe('execution_orders.status.61');
-        });
+      const button = fixture.nativeElement.querySelector('table tbody tr app-action-cell label');
+      click(button);
+      changeExecutionOrderStatusSpy.calls.mostRecent().returnValue.subscribe(() => {
+        expect(component.singleDataSource.body[0].status).toBe('execution_orders.status.61');
       });
     });
   });

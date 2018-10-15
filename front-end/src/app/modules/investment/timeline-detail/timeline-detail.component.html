@@ -42,6 +42,7 @@
   <div class="top-controls" *ngIf="listTitle">
     <span class="headline-title">{{ listTitle }}</span>
     <app-btn
+      calculate-deposits-button
       *ngIf="showCalculateDeposits()"
       [extraClass]="!calculateDepositsLoading && 'start'"
       [thinner]="true"

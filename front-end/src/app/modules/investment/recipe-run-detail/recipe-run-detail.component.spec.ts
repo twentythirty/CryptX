@@ -1,4 +1,6 @@
 import { async, ComponentFixture, TestBed, fakeAsync } from '@angular/core/testing';
+import { forkJoin } from 'rxjs';
+import * as _ from 'lodash';
 import { extraTestingModules, fakeAsyncResponse, click, newEvent } from '../../../testing/utils';
 
 import { InvestmentModule } from '../investment.module';
@@ -34,15 +36,25 @@ describe('RecipeRunDetailComponent', () => {
     .compileComponents();
   }));
 
-  beforeEach(() => {
+  beforeEach((done) => {
     fixture = TestBed.createComponent(RecipeRunDetailComponent);
     component = fixture.componentInstance;
+
     investmentService = fixture.debugElement.injector.get(InvestmentService);
     approveSpy = spyOn(investmentService, 'approveRecipe').and.returnValue(fakeAsyncResponse(approveRecipeResponse));
     getSingleRecipeSpy = spyOn (investmentService, 'getSingleRecipe').and.returnValue(fakeAsyncResponse(getSingleRecipeData));
     getAllRecipeDetailsSpy = spyOn (investmentService, 'getAllRecipeDetails').and.returnValue(fakeAsyncResponse(getAllRecipeDetailsData));
     timelineSpy = spyOn ( investmentService, 'getAllTimelineData').and.returnValue(fakeAsyncResponse(getAllTimelineDataData.timeline));
+
     fixture.detectChanges();
+
+    forkJoin(
+      getSingleRecipeSpy.calls.mostRecent().returnValue,
+      getAllRecipeDetailsSpy.calls.mostRecent().returnValue,
+    ).subscribe(() => {
+      fixture.detectChanges();
+      done();
+    });
   });
 
   it('should create', () => {
@@ -50,23 +62,17 @@ describe('RecipeRunDetailComponent', () => {
   });
 
   it('should load recipe run table data on init', () => {
-    fixture.whenStable().then(() => {
-      fixture.detectChanges();
-      expect(component.singleDataSource.body).toEqual([getSingleRecipeData.recipe_run]);
-    });
+    fixture.detectChanges();
+    expect(component.singleDataSource.body).toEqual([getSingleRecipeData.recipe_run]);
   });
 
   it('should load recipe run details table data on init', () => {
-    fixture.whenStable().then(() => {
-      fixture.detectChanges();
-      expect(component.listDataSource.body).toEqual(getAllRecipeDetailsData.recipe_details);
-      expect(component.listDataSource.footer).toEqual(getAllRecipeDetailsData.footer);
-      expect(component.count).toEqual(getAllRecipeDetailsData.count);
-    });
+    expect(component.listDataSource.body).toEqual(getAllRecipeDetailsData.recipe_details);
+    expect(component.listDataSource.footer).toEqual(getAllRecipeDetailsData.footer);
+    expect(component.count).toEqual(getAllRecipeDetailsData.count);
   });
 
   it('should load timeline data on init', () => {
-    fixture.detectChanges();
     expect(timelineSpy).toHaveBeenCalled();
     expect(component.timeline$).not.toBeNull();
   });
@@ -77,11 +83,15 @@ describe('RecipeRunDetailComponent', () => {
     fixture.whenStable().then(() => testHeaderLov(component.listDataSource, headerLovColumns));
   });
 
+
   describe('if recipe status is pending', () => {
     beforeEach((done) => {
-      const pendingRecipe = Object.assign({}, getSingleRecipeData);
+      const pendingRecipe = _.cloneDeep(getSingleRecipeData);
+
       pendingRecipe.recipe_run.approval_status = 'recipes.status.41';
       getSingleRecipeSpy.and.returnValue((fakeAsyncResponse(pendingRecipe)));
+      component.getSingleData();
+
       getSingleRecipeSpy.calls.mostRecent().returnValue.subscribe(() => {
         fixture.detectChanges();
         done();
@@ -89,39 +99,27 @@ describe('RecipeRunDetailComponent', () => {
     });
 
     it('should append recipe confirm column', () => {
-      fixture.whenStable().then(() => {
-        fixture.detectChanges();
-        const buttons = fixture.nativeElement.querySelector('app-data-table table tbody tr app-confirm-cell');
-        expect(buttons).not.toBeNull();
-      });
+      const buttons = fixture.nativeElement.querySelector('app-data-table table tbody tr app-confirm-cell');
+      expect(buttons).not.toBeNull();
     });
 
     it('should open rationale modal on "approve" button click', () => {
-      fixture.whenStable().then(() => {
-        fixture.detectChanges();
-        const button = fixture.nativeElement.querySelector('app-data-table table tbody tr app-confirm-cell a.true');
-        click(button);
-        fixture.detectChanges();
-        expect(fixture.nativeElement.querySelector('app-modal')).not.toBeNull();
-      });
+      const button = fixture.nativeElement.querySelector('app-data-table table tbody tr app-confirm-cell a.true');
+      click(button);
+      fixture.detectChanges();
+      expect(fixture.nativeElement.querySelector('app-modal')).not.toBeNull();
     });
 
     it('should open rationale modal on "reject" button click', () => {
-      fixture.whenStable().then(() => {
-        fixture.detectChanges();
-        const button = fixture.nativeElement.querySelector('app-data-table table tbody tr app-confirm-cell a.false');
-        click(button);
-        fixture.detectChanges();
-        expect(fixture.nativeElement.querySelector('app-modal')).not.toBeNull();
-      });
+      const button = fixture.nativeElement.querySelector('app-data-table table tbody tr app-confirm-cell a.false');
+      click(button);
+      fixture.detectChanges();
+      expect(fixture.nativeElement.querySelector('app-modal')).not.toBeNull();
     });
 
     it('should not show rationale column "read" button', () => {
-      fixture.whenStable().then(() => {
-        fixture.detectChanges();
-        const button = fixture.nativeElement.querySelector('app-data-table table tbody tr app-action-cell label');
-        expect(button).toBeNull();
-      });
+      const button = fixture.nativeElement.querySelector('app-data-table table tbody tr app-action-cell label');
+      expect(button).toBeNull();
     });
 
     describe('after rationale submission', () => {
@@ -130,20 +128,20 @@ describe('RecipeRunDetailComponent', () => {
       let textarea;
 
       beforeEach(fakeAsync(() => {
-          const confirmRecipe = Object.assign({}, getSingleRecipeData);
-          confirmRecipe.recipe_run.approval_status = 'recipes.status.43';
-          getSingleRecipeSpy.and.returnValue((fakeAsyncResponse(confirmRecipe)));
-          fixture.detectChanges();
-          confirmButton = fixture.nativeElement.querySelector('app-data-table table tbody tr app-confirm-cell a.true');
-          click(confirmButton);
-          fixture.detectChanges();
-          submitButton = fixture.nativeElement.querySelector('app-rationale-modal app-btn button');
-          textarea = fixture.nativeElement.querySelector('app-rationale-modal textarea');
-          textarea.value = 'confirm text';
-          textarea.dispatchEvent(newEvent('input'));
-          fixture.detectChanges();
-          click(submitButton);
-          fixture.detectChanges();
+        const confirmRecipe = _.cloneDeep(getSingleRecipeData);
+        confirmRecipe.recipe_run.approval_status = 'recipes.status.43';
+        getSingleRecipeSpy.and.returnValue((fakeAsyncResponse(confirmRecipe)));
+        fixture.detectChanges();
+        confirmButton = fixture.nativeElement.querySelector('app-data-table table tbody tr app-confirm-cell a.true');
+        click(confirmButton);
+        fixture.detectChanges();
+        submitButton = fixture.nativeElement.querySelector('app-rationale-modal app-btn button');
+        textarea = fixture.nativeElement.querySelector('app-rationale-modal textarea');
+        textarea.value = 'confirm text';
+        textarea.dispatchEvent(newEvent('input'));
+        fixture.detectChanges();
+        click(submitButton);
+        fixture.detectChanges();
       }));
 
       it('should update tables and timeline data', () => {

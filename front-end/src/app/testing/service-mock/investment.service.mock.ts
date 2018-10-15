@@ -345,7 +345,7 @@ export const getAllConversionsData = {
 
 export const submitAssetConversionData = {
   success: true,
-  conversation: {
+  conversion: {
     id: 24,
     converted_amount: '25',
     investment_amount: '76',
