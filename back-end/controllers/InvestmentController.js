@@ -38,7 +38,9 @@ const createRecipeRun = async function (req, res) {
   let investment_run_id = req.params.investment_id,
 
     [err, recipe_run] = await to(
-      lock(investmentService.createRecipeRun(req.user.id, investment_run_id), {
+      lock(investmentService, {
+        method: 'createRecipeRun',
+        params: [req.user.id, investment_run_id],
         id: 'create_recipe_run', keys: { investment_run_id },
         error_message: `Recipe Run is currently being generated for Investment Run with id ${investment_run_id}, please wait...`
       }), false

@@ -171,6 +171,122 @@ When('I provide an empty rationale', function () {
 
 });
 
+/**
+ * Universal step to spam an endpoint which is protected by a lock or a transactions
+ * to avoid duplicate data in the database
+ */
+When(/^I trigger "(.*)" action multiple times concurrently$/, function(action_name){
+
+    const max_attempts = 200;
+    const default_transaction_error_1 = 'could not serialize access due to concurrent update';
+    const default_transaction_error_2 = 'could not serialize access due to read/write dependencies among transactions';
+
+    const action_map = {
+        'start recipe run': {
+            endpoint: `investments/${this.current_investment_run.id}/start_recipe_run`,
+            method: 'post',
+            request: {},
+            errors: {
+                lock: [`Recipe Run is currently being generated for Investment Run with id ${this.current_investment_run.id}, please wait...`],
+                transaction: [ default_transaction_error_1, default_transaction_error_2 ],
+                duplicate: ['There is already recipe run pending approval']
+            },
+            check_with: { investment_run_id: this.current_investment_run.id },
+            timeout: 15000
+        }
+    };
+
+    const action = action_map[action_name];
+    expect(action, `Action "${action_map}" does not have mapping`).to.be.not.undefined;
+
+    this.current_search_query = action.check_with || {};
+
+    let current_attempt = 0;
+    let completed_requests = 0;
+    let lock_blocks = 0;
+    let transaction_blocks = 0;
+    let duplicate_blocks = 0;
+
+    return new Promise((resolve, reject) => {
+        /**
+         * It seems that the transaction (with serialized isolation level) does not always create a row,
+         * Thus it will not respond and the step will fail. Currently it is OK if some of the rows are not created at all (like recipe run)
+         * as no rows is better than multiple duplicates. As long as the lock in the controller holds, it should respond correctly
+         */
+        let timeout = null;
+        let timeouts_at = null;
+        if(action.timeout) {
+            timeouts_at = Date.now() + action.timeout;
+            timeout = setTimeout(() => {
+                finish();
+            }, action.timeout);
+        }
+
+        while(current_attempt < max_attempts) {
+
+            current_attempt++
+
+            chai
+            .request(this.app)
+            [action.method](`/v1/${action.endpoint}`)
+            .set('Authorization', this.current_user.token)
+            .send(action.request)
+            .then(result => {
+
+                completed_requests++;
+
+                if(timeouts_at && timeouts_at < Date.now()) return;
+                else return finish();
+                
+            })
+            .catch(result => {
+                
+                completed_requests++;
+
+                const error_message = _.get(result, 'response.body.error');
+
+                switch(true) {
+
+                    case action.errors.lock.includes(error_message):
+                        lock_blocks++;
+                        break;
+
+                    case action.errors.duplicate.includes(error_message):
+                        duplicate_blocks++
+                        break;
+
+                    case action.errors.transaction.includes(error_message):
+                        transaction_blocks++;
+                        break;
+
+                    default:
+                        return reject(`Received an unepected error: ${error_message}`); 
+
+                }
+                    
+            });
+
+        };
+
+        function finish(){
+            if(timeout) clearTimeout(timeout);
+
+            World.print(`
+                ENDPOINT SPAM COMPLETED:
+                >Total requests sent: ${current_attempt},
+                >Total requests completed: ${completed_requests},
+                >Requests blocked by the lock: ${lock_blocks},
+                >Requests blocked by the transaction: ${transaction_blocks},
+                >Requests blocked by the duplicate check:${duplicate_blocks}
+            `);
+
+            return resolve();
+        };
+
+    });
+
+});
+
 Then(/^the (.*) status will remain unchanged/, async function(current_obj_type) {
 
     const context_name = to_context_name(current_obj_type, 'prev');
@@ -371,6 +487,27 @@ Then(/^in the (.*) timeline card, I will see the following information:$/, funct
         expect(timeline_value).to.equal(expected_value, `Expected the ${_.startCase(card_name)} ${field} to match`);
 
     };
+
+});
+
+Then(/^only (.*) (Recipe Runs|Recipe Orders) will be saved to the database$/, async function(amounts, model_name){
+
+    const plural_map = {
+        'Recipe Runs': 'RecipeRun'
+    };
+
+    const allowed_numbers = utils.numberStringToArray(amounts);
+
+    model_name = plural_map[model_name] || _.startCase(model_name);
+
+    const model = require('../../../models')[model_name];
+    expect(model, `Could not find databse model with name "${model_name}"`).to.be.not.undefined;
+
+    const result_count = await model.count({
+        where: this.current_search_query
+    });
+
+    expect(allowed_numbers).includes(result_count, `Expected to find ${amounts} rows for ${model_name}, instead found ${result_count}`);
 
 });
 

@@ -123,3 +123,34 @@ module.exports.extractTimeLineField = (card, object, field) => {
     return result;
 
 };
+
+const number_word_map = {
+    no: 0,
+    none: 0,
+    zero: 0,
+    one: 1,
+    two: 2,
+    three: 3,
+    four: 4,
+    five: 5,
+    six: 6,
+    seven: 7,
+    eight: 8,
+    nine: 9,
+    ten: 10
+};
+module.exports.numberStringToArray = (number_string) => {
+
+    let array_of_numbers = number_string.split(/,|and|or/).map(s => s.trim().toLowerCase());
+
+    array_of_numbers = array_of_numbers.map(number => {
+
+        if(isNaN(number)) number = number_word_map[number];
+
+        return parseInt(number);
+
+    });
+
+    return array_of_numbers;
+
+};

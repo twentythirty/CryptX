@@ -19,7 +19,7 @@ describe('LockUtils testing', () => {
     const REJECT_ERROR = 'error_1';
     const RESOLVE_RESULT = 'all good';
 
-    const MOCK_PROMISE = (will_fail, delay = 1000) => {
+    const MOCK_PROMISE = (will_fail = false, delay = 1000) => {
 
         return new Promise((resolve, reject) => {
 
@@ -47,12 +47,14 @@ describe('LockUtils testing', () => {
         it('invalidate invalid arguments', async () => {
 
             const invalid_params = [
-                [null, null, 'the first argument must be a promise'],
-                [MOCK_PROMISE(false), 1, 'options must be an object'],
-                [MOCK_PROMISE(false), { id: {} }, 'promise id must be provided as a string or number'],
-                [MOCK_PROMISE(false), { id: 1, error_message: ['1'] }, 'error message cannot be an empty object/null'],
-                [MOCK_PROMISE(false), { id: 2, error_message: 'error', lock_time: 'kek' }, 'lock time must be a valid number representing ms'],
-                [MOCK_PROMISE(false), { id: 3, error_message: 'error', lock_time: 1000, keys: 'mn--W' }, 'keys must be a plain object']
+                [null, null, 'the first argument must be a method/function or a seperate method name must be provided in the options'],
+                [{MOCK_PROMISE}, {}, 'the first argument must be a method/function or a seperate method name must be provided in the options'],
+                [MOCK_PROMISE, 1, 'options must be an object'],
+                [MOCK_PROMISE, { id: {} }, 'promise id must be provided as a string or number'],
+                [MOCK_PROMISE, { id: 1, params: 123 }, 'passed params must be an array'],
+                [MOCK_PROMISE, { id: 1, error_message: ['1'] }, 'error message cannot be an empty object/null'],
+                [MOCK_PROMISE, { id: 2, error_message: 'error', lock_time: 'kek' }, 'lock time must be a valid number representing ms'],
+                [MOCK_PROMISE, { id: 3, error_message: 'error', lock_time: 1000, keys: 'mn--W' }, 'keys must be a plain object']
             ];
 
             for(let params of invalid_params) {
@@ -65,12 +67,13 @@ describe('LockUtils testing', () => {
 
         });
 
-        it('throw an error of the provided promise', async () => {
+        it('throw an error of the provided method', async () => {
 
             const ID = Date.now();
 
-            const [ error ] = await to(lock(MOCK_PROMISE(true, 0), {
-                id: ID
+            const [ error ] = await to(lock(MOCK_PROMISE, {
+                id: ID,
+                params: [true, 0]
             }));
 
             expect(error, 'Expected to get an error').to.be.not.null;
@@ -82,8 +85,9 @@ describe('LockUtils testing', () => {
 
             const ID = Date.now();
 
-            const [ error, result ] = await to(lock(MOCK_PROMISE(false, 0), {
-                id: ID
+            const [ error, result ] = await to(lock(MOCK_PROMISE, {
+                id: ID,
+                params: [false, 0]
             }));
 
             expect(error, 'Expected to not get an error').to.be.null;
@@ -95,14 +99,16 @@ describe('LockUtils testing', () => {
 
             const ID = Date.now();
 
-            lock(MOCK_PROMISE(false, 100), {
+            lock(MOCK_PROMISE, {
                 id: ID,
-                error_message: MOCK_ERROR
+                error_message: MOCK_ERROR,
+                params: [false, 100]
             });
             
-            const [ error ] = await to(lock(MOCK_PROMISE(false, 100), {
+            const [ error ] = await to(lock(MOCK_PROMISE, {
                 id: ID,
-                error_message: MOCK_ERROR
+                error_message: MOCK_ERROR,
+                params: [false, 100]
             }));
 
             expect(error, 'I was suppose to get an error').to.be.not.null;
@@ -110,9 +116,10 @@ describe('LockUtils testing', () => {
 
             await sleep(150);
 
-            return assert.isFulfilled(lock(MOCK_PROMISE(false, 100), {
+            return assert.isFulfilled(lock(MOCK_PROMISE, {
                 id: ID,
-                error_message: MOCK_ERROR
+                error_message: MOCK_ERROR,
+                params: [false, 100]
             }), 'Expected the method to be unocked by this time');
 
         });
@@ -123,33 +130,37 @@ describe('LockUtils testing', () => {
             const KEYS_1 = { KEY: 1 };
             const KEYS_2 = { KEY: 2 };
 
-            lock(MOCK_PROMISE(false, 100), {
+            lock(MOCK_PROMISE, {
                 id: ID,
                 error_message: MOCK_ERROR,
-                keys: KEYS_1
+                keys: KEYS_1,
+                params: [false, 100]
             });
             //Fails due to using the same keys
-            const [ error ] = await to(lock(MOCK_PROMISE(false, 100), {
+            const [ error ] = await to(lock(MOCK_PROMISE, {
                 id: ID,
                 error_message: MOCK_ERROR,
-                keys: KEYS_1
+                keys: KEYS_1,
+                params: [false, 100]
             }));
 
             expect(error, 'I was suppose to get an error').to.be.not.null;
             expect(error.message).to.equal(MOCK_ERROR);
             //Using a different key should not fail
-            await assert.isFulfilled(lock(MOCK_PROMISE(false, 0), {
+            await assert.isFulfilled(lock(MOCK_PROMISE, {
                 id: ID,
                 error_message: MOCK_ERROR,
-                keys: KEYS_2
+                keys: KEYS_2,
+                params: [false, 100]
             }), 'Expected the lock to be ignored when using a different set of keys');
 
             await sleep(150);
             //The old key should be unlocked
-            return assert.isFulfilled(lock(MOCK_PROMISE(false, 100), {
+            return assert.isFulfilled(lock(MOCK_PROMISE, {
                 id: ID,
                 error_message: MOCK_ERROR,
-                keys: KEYS_1
+                keys: KEYS_1,
+                params: [false, 100]
             }), 'Expected the method to be unocked by this time');
 
         });
@@ -159,15 +170,17 @@ describe('LockUtils testing', () => {
             const ID = Date.now();
 
             //Creating a lock with a promise that resolve in a minute, but it should unlock in 100ms
-            lock(MOCK_PROMISE(false, 1000), {
+            lock(MOCK_PROMISE, {
                 id: ID,
                 error_message: MOCK_ERROR,
-                lock_time: 100
+                lock_time: 100,
+                params: [false, 1000]
             });
             //still locked
-            const [ error ] = await to(lock(MOCK_PROMISE(false, 0), {
+            const [ error ] = await to(lock(MOCK_PROMISE, {
                 id: ID,
-                error_message: MOCK_ERROR
+                error_message: MOCK_ERROR,
+                params: [false, 100]
             }));
 
             expect(error, 'I was suppose to get an error').to.be.not.null;
@@ -175,9 +188,10 @@ describe('LockUtils testing', () => {
 
             await sleep(150);
             //Method should be unlocked, even if the promise is still hanging
-            return assert.isFulfilled(lock(MOCK_PROMISE(false, 0), {
+            return assert.isFulfilled(lock(MOCK_PROMISE, {
                 id: ID,
-                error_message: MOCK_ERROR
+                error_message: MOCK_ERROR,
+                params: [false, 100]
             }), 'Expected the method to be unocked by this time');
 
         });
@@ -195,14 +209,16 @@ describe('LockUtils testing', () => {
             const ID = Date.now();
 
             //Creating a lock with a promise that resolve in a minute
-            lock(MOCK_PROMISE(false, 1000), {
+            lock(MOCK_PROMISE, {
                 id: ID,
-                error_message: MOCK_ERROR
+                error_message: MOCK_ERROR,
+                params: [false, 1000]
             });
             //still locked
-            const [ error ] = await to(lock(MOCK_PROMISE(false, 0), {
+            const [ error ] = await to(lock(MOCK_PROMISE, {
                 id: ID,
-                error_message: MOCK_ERROR
+                error_message: MOCK_ERROR,
+                params: [false, 0]
             }));
 
             expect(error, 'I was suppose to get an error').to.be.not.null;
@@ -210,9 +226,10 @@ describe('LockUtils testing', () => {
 
             unlock(ID);
 
-            return assert.isFulfilled(lock(MOCK_PROMISE(false, 0), {
+            return assert.isFulfilled(lock(MOCK_PROMISE, {
                 id: ID,
-                error_message: MOCK_ERROR
+                error_message: MOCK_ERROR,
+                params: [false, 0]
             }), 'Expected the method to be unocked by the unlock() method');
 
         });

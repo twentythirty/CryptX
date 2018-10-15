@@ -10,17 +10,22 @@ const locks = [];
  * Creates a lock on promise. Method created that promises cannot be accessed until it
  * resolves or rejects, unless diffent keys are provided.
  * As a safety precaution, the locks automatically unlock after some time.
- * @param {Promise} promise a promise of a method that needs to be locked.
+ * @param {Function|Object} method a methodto be lock. Can be an object of methods, if `this` important. Must proved `method` name in the options.
  * @param {Object} options lock options
+ * @param {[String|Number|Object|Buffer]} [options.params=[]] optional array of params for the method. Must be in the same order as the function params.
  * @param {String|Number} options.id REQUIRED. identifier for the method.
  * @param {String} [options.error_message] optional error message which will be thrown if the method is still locked.
  * @param {Number} [options.lock_time=10000] ms after the lock unlocks, despite the result of the promise.
  * @param {Object} [options.keys={}] optional object of keys. Providing different keys will ignore the current lock
+ * @param {String} [options.method] optional method name if the first argument was an object of methods.
  */
-const lock = async (promise, options = {}) => {
+const lock = async (method, options = {}) => {
 
-    if(!(promise instanceof Promise)) throw new Error('the first argument must be a promise');
+    if(!_.isFunction(method) && !_.get(options, 'method')) throw new Error('the first argument must be a method/function or a seperate method name must be provided in the options');
     if(!_.isPlainObject(options)) throw new Error('options must be an object');
+
+    const params = options.params || [];
+    if(!_.isArray(params)) throw new Error('passed params must be an array');
 
     const id = options.id;
     if(!(_.isString(id) || _.isNumber(id))) throw new Error('promise id must be provided as a string or number');
@@ -38,7 +43,7 @@ const lock = async (promise, options = {}) => {
 
     _addLock(id, keys, lock_time);
 
-    const [ error, result ] = await to(promise, false);
+    const [ error, result ] = await to(options.method ? method[options.method](...params) : method(...params), false);
 
     unlock(id, keys);
 
