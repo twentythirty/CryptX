@@ -41,6 +41,9 @@ describe('InstrumentService testing:', () => {
             const update = Object.assign({}, this);
             Object.assign(this, this._previous_values);
             return Promise.resolve(update);
+        },
+        destroy: async () => {
+            return Promise.resolve(this);
         }
     };
     const MOCK_EXISTING_REQUIREMENT_2 = {
@@ -59,6 +62,9 @@ describe('InstrumentService testing:', () => {
             const update = Object.assign({}, this);
             Object.assign(this, this._previous_values);
             return Promise.resolve(update);
+        },
+        destroy: async () => {
+            return Promise.resolve(this);
         }
     };
 
@@ -160,6 +166,12 @@ describe('InstrumentService testing:', () => {
             sinon.stub(InstrumentLiquidityRequirement, 'findById').callsFake(id => {
                 let requirement = MOCK_EXISTING_REQUIREMENTS.find(r => r.id === id);
                 if(!requirement) requirement = null;
+                else {
+                    if(requirement.destroy.restore) requirement.destroy.restore();
+                    sinon.stub(requirement, 'destroy').callsFake(function() {
+                        return Promise.resolve(this);
+                    });
+                }
 
                 return Promise.resolve(requirement);
             });
@@ -517,6 +529,37 @@ describe('InstrumentService testing:', () => {
 
                 });
             }));
+
+        });
+
+    });
+
+    describe(' method deleteLiquidityRequirement shall', () => {
+
+        const { deleteLiquidityRequirement } = instrumentService;
+
+        it('exist', () => {
+            return chai.expect(deleteLiquidityRequirement).to.be.not.undefined;
+        });
+
+        it('shall return null if the requirement was not found', () => {
+
+            return deleteLiquidityRequirement(-1).then(result => {
+                
+                chai.expect(result).to.be.null;
+            
+            });
+
+        });
+
+        it('call destroy() if the requirement was found', () => {
+
+            return deleteLiquidityRequirement(MOCK_EXISTING_REQUIREMENT_1.id).then(result => {
+
+                chai.expect(result).to.be.an('object');
+                chai.expect(result.destroy.calledOnce).to.be.true;
+
+            });
 
         });
 

@@ -222,6 +222,20 @@ const editLiquidityRequirement = async (req, res) => {
 };
 module.exports.editLiquidityRequirement = editLiquidityRequirement;
 
+const deleteLiquidityRequirement = async (req, res) => {
+
+  const { liquidity_requirement_id } = req.params;
+
+  const [ err, liquidity_requirement ] = await to(instrumentService.deleteLiquidityRequirement(liquidity_requirement_id));
+
+  if(err) return ReE(res, err, 422);
+  if(!liquidity_requirement) return ReE(res, `Liquidity Requirement with id ${liquidity_requirement_id} was not found`, 404);
+
+  return ReS(res, { message: 'OK!' });
+
+};
+module.exports.deleteLiquidityRequirement = deleteLiquidityRequirement;
+
 const getLiquidityRequirement = async function (req, res) {
  
   const liquidity_req_id = req.params.liquidity_requirement_id

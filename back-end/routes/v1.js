@@ -833,6 +833,14 @@ router.post(
   post_body_validator,
   InstrumentController.editLiquidityRequirement
 );
+router.delete(
+  ROUTES.DeleteLiquidityRequirement.router_string,
+  stateless_auth,
+  res_new_token,
+  check_permissions,
+  post_body_validator,
+  InstrumentController.deleteLiquidityRequirement
+);
 router.get(
   ROUTES.GetLiquidityRequirements.router_string,
   stateless_auth,

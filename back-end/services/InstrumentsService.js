@@ -372,6 +372,20 @@ const editLiquidityRequirement = async (requirement_id, periodicity_in_days, min
 };
 module.exports.editLiquidityRequirement = editLiquidityRequirement;
 
+const deleteLiquidityRequirement = async (requirement_id) => {
+
+    if(!requirement_id) TE('Liquidity requirement id is required');
+
+    let [ err, requirement ] = await to(InstrumentLiquidityRequirement.findById(requirement_id));
+
+    if(err) TE(err.message);
+    if(!requirement) return null;
+
+    return requirement.destroy();
+
+};
+module.exports.deleteLiquidityRequirement = deleteLiquidityRequirement;
+
 const getInstrumentPrices = async (instrument_id, exchange_id, raw = false) => {
 
     if (!_.isArray(instrument_id) || !_.isArray(exchange_id))

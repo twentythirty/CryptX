@@ -620,12 +620,17 @@ ROUTES = {
   // Liquidity requirements
   CreateLiquidityRequirement: {
     router_string: "/liquidity_requirements/create",
-    permissions_matcher: ROUTE_MATCHERS.createLiquidityRequirement,
+    permissions_matcher: ROUTE_MATCHERS.CreateLiquidityRequirement,
     required_permissions: [PERMISSIONS.CREATE_LIQUIDITY_REQUIREMENTS]
   },
   EditLiquidityRequirement: {
     router_string: "/liquidity_requirements/:liquidity_requirement_id/edit",
-    permissions_matcher: ROUTE_MATCHERS.editLiquidityRequirement,
+    permissions_matcher: ROUTE_MATCHERS.EditLiquidityRequirement,
+    required_permissions: [PERMISSIONS.CREATE_LIQUIDITY_REQUIREMENTS]
+  },
+  DeleteLiquidityRequirement: {
+    router_string: "/liquidity_requirements/:liquidity_requirement_id/delete",
+    permissions_matcher: ROUTE_MATCHERS.DeleteLiquidityRequirement,
     required_permissions: [PERMISSIONS.CREATE_LIQUIDITY_REQUIREMENTS]
   },
   GetLiquidityRequirement: {
