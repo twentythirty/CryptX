@@ -1,5 +1,6 @@
 'use strict';
 
+const MAX_NUM_FORMAT_DECIMALS = 28;
 /**
  * Transforms `where_clause` string into digestable SQL by prepending the WHERE keyword if the string
  * has content
@@ -58,9 +59,15 @@ module.exports.selectSum = selectSum;
 /**
  * generate an SQL snippet that selects the sum of a field and trim the trailing zeroes
  */
-const selectSumTrim = (field_expr, table_expr, where_clause = '') => {
+const selectSumTrim = (field_expr, table_expr, where_clause = '', trailing_decimals_raw = 2) => {
 
-    return `SELECT CAST(to_char(SUM(${field_expr}), 'FM99999999990.9999999999999999999999999999') AS NUMERIC)
+    let trailing_decimals = trailing_decimals_raw;
+    if (!_.isNumber(trailing_decimals) || trailing_decimals < 0) {
+        //bad values or negatives interpreted as max length
+        trailing_decimals = MAX_NUM_FORMAT_DECIMALS;
+    }
+
+    return `SELECT CAST(to_char(SUM(${field_expr}), 'FM99999999990.${_.repeat('9', trailing_decimals)}') AS NUMERIC)
             FROM ${table_expr}
             ${whereOrEmpty(where_clause)}
     `

@@ -935,7 +935,7 @@ const fetchRecipeDepositsViewsFooter = async (where_clause = '', fetch_footer_pe
     ]
 
     if (fetch_footer_percentage) {
-        query_parts.push(builder.selectSum('investment_percentage', view, where_clause));
+        query_parts.push(builder.selectSumTrim('investment_percentage', view, where_clause));
         aliases.push('investment_percentage');
     }
 
