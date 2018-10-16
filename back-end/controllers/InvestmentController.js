@@ -23,7 +23,12 @@ const createInvestmentRun = async function (req, res) {
   } = req.body;
 
   [err, investment_run] = await to(
-    investmentService.createInvestmentRun(req.user.id, strategy_type, is_simulated, deposit_amounts, investment_group_asset_id)
+    lock(investmentService, {
+      method: 'createInvestmentRun',
+      params: [req.user.id, strategy_type, is_simulated, deposit_amounts, investment_group_asset_id],
+      id: 'create_investment_run',
+      error_message: 'An investment run is currently being created.'
+    })
   );
   if (err) return ReE(res, err, 422);
 

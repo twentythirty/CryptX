@@ -321,6 +321,12 @@ describe('InvestmentService testing:', () => {
         return Promise.resolve(investment_create());
       }); */
 
+      InvestmentRun.findOne.restore();
+
+      sinon.stub(InvestmentRun, 'findOne').callsFake(options => {
+        return Promise.resolve(null);
+      });
+
       return investmentService.createInvestmentRun(
         USER_ID, STRATEGY_TYPE, IS_SIMULATED, DEPOSIT_AMOUNTS, ASSET_GROUP_ID
       ).then(investment_run => {
@@ -383,6 +389,12 @@ describe('InvestmentService testing:', () => {
       /* sinon.stub(sequelize, 'transaction').callsFake(investment_create => {
         return Promise.resolve(investment_create());
       }); */
+
+      InvestmentRun.findOne.restore();
+
+      sinon.stub(InvestmentRun, 'findOne').callsFake(options => {
+        return Promise.resolve(null);
+      });
 
       return investmentService.createInvestmentRun(
         USER_ID, STRATEGY_TYPE, IS_SIMULATED, DEPOSIT_AMOUNTS, ASSET_GROUP_ID

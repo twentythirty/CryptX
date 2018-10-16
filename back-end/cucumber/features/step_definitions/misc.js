@@ -182,21 +182,37 @@ When(/^I trigger "(.*)" action multiple times concurrently$/, function(action_na
     const default_transaction_error_2 = 'could not serialize access due to read/write dependencies among transactions';
 
     const action_map = {
-        'start recipe run': {
-            endpoint: `investments/${this.current_investment_run.id}/start_recipe_run`,
-            method: 'post',
-            request: {},
-            errors: {
-                lock: [`Recipe Run is currently being generated for Investment Run with id ${this.current_investment_run.id}, please wait...`],
-                transaction: [ default_transaction_error_1, default_transaction_error_2 ],
-                duplicate: ['There is already recipe run pending approval']
-            },
-            check_with: { investment_run_id: this.current_investment_run.id },
-            timeout: 15000
+        'start recipe run': (local_world) => {
+            return {
+                endpoint: `investments/${local_world.current_investment_run.id}/start_recipe_run`,
+                method: 'post',
+                request: {},
+                errors: {
+                    lock: [`Recipe Run is currently being generated for Investment Run with id ${local_world.current_investment_run.id}, please wait...`],
+                    transaction: [ default_transaction_error_1, default_transaction_error_2 ],
+                    duplicate: ['There is already recipe run pending approval']
+                },
+                check_with: { investment_run_id: local_world.current_investment_run.id },
+                timeout: 15000
+            }
+        },
+        'start investment run': (local_world) => {
+            return {
+                endpoint: `investments/create`,
+                method: 'post',
+                request: local_world.current_investment_run_details,
+                errors: {
+                    lock: ['An investment run is currently being created.'],
+                    transaction: [ default_transaction_error_1, default_transaction_error_2 ],
+                    duplicate: ['Investment run cannot be initiated as other investment runs are still in progress']
+                },
+                check_with: { },
+                timeout: 12000
+            }
         }
     };
 
-    const action = action_map[action_name];
+    const action = action_map[action_name](this);
     expect(action, `Action "${action_map}" does not have mapping`).to.be.not.undefined;
 
     this.current_search_query = action.check_with || {};
@@ -213,6 +229,7 @@ When(/^I trigger "(.*)" action multiple times concurrently$/, function(action_na
          * Thus it will not respond and the step will fail. Currently it is OK if some of the rows are not created at all (like recipe run)
          * as no rows is better than multiple duplicates. As long as the lock in the controller holds, it should respond correctly
          */
+        let finished = false;
         let timeout = null;
         let timeouts_at = null;
         if(action.timeout) {
@@ -252,7 +269,7 @@ When(/^I trigger "(.*)" action multiple times concurrently$/, function(action_na
                         break;
 
                     case action.errors.duplicate.includes(error_message):
-                        duplicate_blocks++
+                        duplicate_blocks++;
                         break;
 
                     case action.errors.transaction.includes(error_message):
@@ -269,6 +286,9 @@ When(/^I trigger "(.*)" action multiple times concurrently$/, function(action_na
         };
 
         function finish(){
+            if(finished) reject(`Test received multiple successful responses.`);
+            finished = true;
+
             if(timeout) clearTimeout(timeout);
 
             World.print(`
@@ -490,10 +510,11 @@ Then(/^in the (.*) timeline card, I will see the following information:$/, funct
 
 });
 
-Then(/^only (.*) (Recipe Runs|Recipe Orders) will be saved to the database$/, async function(amounts, model_name){
+Then(/^only (.*) (Recipe Runs|Recipe Orders|Investment Runs) will be saved to the database$/, async function(amounts, model_name){
 
     const plural_map = {
-        'Recipe Runs': 'RecipeRun'
+        'Recipe Runs': 'RecipeRun',
+        'Investment Runs': 'InvestmentRun'
     };
 
     const allowed_numbers = utils.numberStringToArray(amounts);

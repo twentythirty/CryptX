@@ -42,3 +42,13 @@ Feature: Initiate an investment run
         | MCI | false | XRP=101 |
         | MCI | false |  |
         | MCI | false | USD=-1 |
+
+    Scenario: Attemting to create multiple investment runs
+
+        Given there are no Executing Investment Runs in the system
+        When I log onto CryptX as Investment Manager
+        And I select to create a new LCI Investment Run
+        And I generate a new LCI strategy Asset Mix
+        And I enter the investment amounts in USD, BTC and ETH
+        And I trigger "start investment run" action multiple times concurrently
+        Then only one or no Investment Runs will be saved to the database
