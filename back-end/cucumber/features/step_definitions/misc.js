@@ -210,7 +210,8 @@ When(/^I trigger "(.*)" action multiple times concurrently$/, function(action_na
                     duplicate: ['Investment run cannot be initiated as other investment runs are still in progress']
                 },
                 check_with: {
-                    status: { [Op.ne]: INVESTMENT_RUN_STATUSES.OrdersFilled }
+                    status: INVESTMENT_RUN_STATUSES.Initiated,
+                    is_simulated: false
                 },
                 timeout: 12000
             }
