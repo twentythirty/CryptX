@@ -417,6 +417,7 @@ module.exports.getDepositAssets = getDepositAssets;
 
 const getAssetGroupWithData = async function (investment_run_id) {
 
+  // query recives all whitelisted asset/instrument/exchange pairs.
   let [err, asset_group] = await to(sequelize.query(`
     WITH base_assets_with_prices AS (
       SELECT a.id, a.symbol, a.long_name, a.is_base, a.is_deposit, AVG (prices.ask_price) as value_usd
@@ -438,6 +439,8 @@ const getAssetGroupWithData = async function (investment_run_id) {
     SELECT asset.id,
       asset.symbol,
       asset.long_name,
+      asset.is_base,
+      asset.is_deposit,
       i.quote_asset_id,
       iem.instrument_id,
       iem.exchange_id,
@@ -483,10 +486,12 @@ const getAssetGroupWithData = async function (investment_run_id) {
     ) as imd ON TRUE
     LEFT JOIN base_assets_with_prices as base_price ON base_price.id=i.quote_asset_id
     WHERE ir.id=:investment_run_id
+      AND (ga.status=:whitelisted OR ga.status IS NULL)
     ORDER BY nvt DESC, volume_usd DESC, price_usd DESC
   `, {
     replacements: {
-      investment_run_id
+      investment_run_id,
+      whitelisted: INSTRUMENT_STATUS_CHANGES.Whitelisting
     },
     type: sequelize.QueryTypes.SELECT
   }));

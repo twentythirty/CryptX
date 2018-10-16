@@ -267,13 +267,17 @@ module.exports.createRecipeRun = createRecipeRun;
 
 const generateRecipeDetails = async (investment_run_id, strategy_type) => {
 
+  // get current base asset prices
   let err, prices;
   [err, prices] = await to(AssetService.getBaseAssetPrices(), false);
   if (err) TE(err.message);
 
+  // get deposit assets, where is_deposit is true
   let deposit_assets;
   [err, deposit_assets] = await to(AssetService.getDepositAssets());
   if (err) TE(err.message);
+
+  // find USD asset, it should always be is_deposit=true, and is_base=false
   let usd_deposit_asset = deposit_assets.find(a => a.is_deposit && !a.is_base);
 
   // find investment run with its investment deposit amounts.
@@ -287,6 +291,7 @@ const generateRecipeDetails = async (investment_run_id, strategy_type) => {
       include: Asset
     }]
   }).then(investment_run => {
+    // assign asset symbols to invesment amount object for easier access.
     investment_run.InvestmentAmounts.map(a => {
       Object.assign(a, {
         symbol: a.Asset.symbol,
@@ -300,13 +305,10 @@ const generateRecipeDetails = async (investment_run_id, strategy_type) => {
   if (err) TE(err.message);
   if (!investment_run) TE('Investment run not found');
 
-  let assets;
+  let assets; // get all assets that should be involved in recipe run.
   [err, assets] = await to(AssetService.getAssetGroupWithData(investment_run_id));
   if (err) TE(err.message);
 
-  // leave only whitelisted assets
-  assets = assets.filter(a => a.status == MODEL_CONST.INSTRUMENT_STATUS_CHANGES.Whitelisting);
-  if (!assets.length) TE("Investment asset list is empty.");
   // find liquidity level for each asset.
   assets.map(asset => {
     asset.liquidity_level = AssetService.getLiquidityLevel(asset.volume_usd);
@@ -320,53 +322,91 @@ const generateRecipeDetails = async (investment_run_id, strategy_type) => {
         to_execute: [] // details/conversions that will be saved and performed
       }
     ] */
-  let assets_grouped_by_id = _.map(_.groupBy(assets, 'id'), (asset_group) => {
-    let asset = asset_group[0];
-    return {
-      info: {
-        id: asset.id,
-        symbol: asset.symbol,
-        long_name: asset.long_name
-      },
-      possible: asset_group,
-      to_execute: []
-    }
-  }).map((asset, index, array) => { // calculate investment percentage
-    asset.info.investment_percentage = Decimal(100).div(Decimal(array.length));
-    return asset;
-  });
+  let assets_grouped_by_id = _(assets)
+    .groupBy('id')
+    .values()
+    .value()
+    .map((asset_group) => {
+      let asset = _.first(asset_group);
+      return {
+        info: _.pick(asset, ["id", "symbol", "long_name", "is_base", "is_deposit"]),
+        possible: asset_group,
+        to_execute: []
+      };
+    }).map((asset, index, array) => { // calculate investment percentage
+      asset.info.investment_percentage = Decimal(100).div(Decimal(array.length));
+      return asset;
+    });
+
 
   // calculate investment amounts in USD
   let total_investment_usd = Decimal(0);
   let investment_size = investment_run.InvestmentAmounts;
+  // iterate through every investment asset
   investment_size = investment_size.map(size => {
     let value_usd;
 
-    if (size.asset_id === usd_deposit_asset.id) { // not found if it's USD
-      value_usd = Decimal(parseFloat(size.amount));
+    // asset id not found if it's USD
+    if (size.asset_id === usd_deposit_asset.id) {
+      // amount is 1:1, because we perform calcutions in USD
+      value_usd = Decimal(size.amount);
+      // price per asset is also 1:1.
       size.price_per_asset_usd = 1;
-    } else {
+    } else { // asset id found - it's base asset then
       let base_price_usd = prices.find(price => price.id == size.asset_id);
-      value_usd = Decimal(parseFloat(size.amount)).mul(Decimal(parseFloat(base_price_usd.price)));
-      size.price_per_asset_usd = parseFloat(base_price_usd.price);
+      // calculate total amount needed in USD
+      value_usd = Decimal(size.amount).mul(Decimal(base_price_usd.price));
+      // calculate price of single unit of asset
+      size.price_per_asset_usd = Decimal(base_price_usd.price);
     }
 
+    // assgign whole USD value of investment asset
     size.value_usd = value_usd;
+    // remaining USD is used to calculate remaining amount after subtracting reserved asset/instrument/exchange combinations
     size.remaining_usd = value_usd;
 
     total_investment_usd = Decimal(total_investment_usd).add(Decimal(size.value_usd));
     return size;
   });
 
+  // filter out base assets, their instrument/exchange pairs will be changed as they are not needed
+  let recipe_base_assets;
+  [ recipe_base_assets, assets_grouped_by_id] = _.partition(
+    assets_grouped_by_id, 
+    (asset) => asset.info.is_base
+  );
+
+  // perform calculations and create details for excluded base assets
+  recipe_base_assets = recipe_base_assets.map(asset => {
+    // extract values just for compatibility.
+    let properties = _.pick(_.first(asset.possible), ['nvt', 'liquidity_level', 'price_usd']);
+
+    asset.possible = [{ // include single possible way to acquire an asset
+      id: asset.info.id, 
+      quote_asset_id: asset.info.id,
+      exchange_id: null,
+      ...properties // include those values
+    }];
+
+    return asset;
+  });
+
+  assets_grouped_by_id.push(...recipe_base_assets); 
+
   assets_grouped_by_id = _.orderBy(assets_grouped_by_id, a => a.possible[0].nvt, "desc");
-  assets_grouped_by_id.map(asset => {
-    let chosen = [];
-    let total_spent = new Decimal(0);
-    let should_spend = Decimal(total_investment_usd).mul(Decimal(asset.info.investment_percentage).div(Decimal(100)));
+  assets_grouped_by_id.map(asset => { // iterate through assets trying to find most fitting instruments to buy with.
+    let chosen = []; // store pairs we are going to buy with
+    let total_spent = new Decimal(0); // used for calculating how much USD we allocated to asset, this will be compared with value of should spend 
+    let should_spend = Decimal(total_investment_usd) // how much should be spent on asset, total_investment_usd * asset investment_percentage
+      .mul(
+        Decimal(asset.info.investment_percentage)
+        .div(Decimal(100))
+      );
 
     // sort values by nvt, liquidity_level and price_usd properties
     asset.possible = _.orderBy(asset.possible, ['nvt', 'liquidity_level', 'price_usd'], ['desc', 'desc', 'asc']);
 
+    // iterate through all instrument/exchange
     for (let action of asset.possible) {
       let base = investment_size.find(deposit => deposit.asset_id == action.quote_asset_id);
 
@@ -381,14 +421,14 @@ const generateRecipeDetails = async (investment_run_id, strategy_type) => {
           base_spent = Decimal(base.remaining_usd);
         }
 
-        chosen.push({
+        chosen.push({ // push details of chosen purchase
           asset_id: action.quote_asset_id,
           from_asset_id: base.asset_id,
           exchange_id: action.exchange_id,
           amount_usd: base_spent
         });
-        base.remaining_usd = Decimal(base.remaining_usd).minus(Decimal(base_spent));
-        total_spent = total_spent.add(Decimal(base_spent));
+        base.remaining_usd = Decimal(base.remaining_usd).minus(Decimal(base_spent)); // subtract chosen USD sum from remaining base asset amount in USD 
+        total_spent = total_spent.add(Decimal(base_spent)); // add chosen amount to total spent sum of asset
       }
 
       let usd = investment_size.find(s => s.asset_id == usd_deposit_asset.id);
@@ -410,7 +450,7 @@ const generateRecipeDetails = async (investment_run_id, strategy_type) => {
           exchange_id: action.exchange_id,
           amount_usd: deposit_spent
         });
-        usd.remaining_usd = Decimal(usd.remaining_usd).minus(Decimal(deposit_spent));
+        usd.remaining_usd = Decimal(usd.remaining_usd).minus(Decimal(deposit_spent)); 
         total_spent = total_spent.add(Decimal(deposit_spent));
       }
 
