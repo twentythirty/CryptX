@@ -68,7 +68,6 @@ export class DataTableCommonManagerComponent implements OnInit, OnDestroy {
   }
 
   onSetFilter(filterData): void {
-
     // filter
     if (!this.requestData.filter.and) {
       this.requestData.filter.and = [];

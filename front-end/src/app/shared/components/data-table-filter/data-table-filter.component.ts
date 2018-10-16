@@ -32,7 +32,6 @@ export class DataTableFilterComponent implements OnInit, OnChanges {
   filterSearchText = '';
 
   active = false;
-  name = 'ORDER BY';
   rowDataLoading = false;
 
   picker1MaxDate: Date;
@@ -166,19 +165,16 @@ export class DataTableFilterComponent implements OnInit, OnChanges {
   sortAsc() {
     this.isActive();
     this.filterData.order = 'asc';
-    this.name = 'A - Z';
   }
 
   sortDesc() {
     this.isActive();
     this.filterData.order = 'desc';
-    this.name = 'Z - A';
   }
 
   noSort() {
     this.isActive();
     this.filterData.order = '';
-    this.name = 'ORDER BY';
   }
 
   onCheckboxToggle({ value }) {
