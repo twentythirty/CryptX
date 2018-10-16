@@ -9,6 +9,7 @@ const Asset = require('../models').Asset;
 const Exchange = require('../models').Exchange;
 const ExchangeAccount = require('../models').ExchangeAccount;
 const InvestmentAssetConversion = require('../models').InvestmentAssetConversion;
+const ColdStorageService = require('./ColdStorageService');
 const Sequelize = require('../models').Sequelize;
 const sequelize = require('../models').sequelize;
 
@@ -77,7 +78,8 @@ const generateRecipeRunDeposits = async function (recipe_run_id) {
     investment_totals[detail.quote_asset_id].percentage = investment_totals[detail.quote_asset_id].percentage.plus(detail.investment_percentage);
   }
 
-  const exchange_ids = details.map(d => d.target_exchange_id);
+  const exchange_ids = details.map(d => d.target_exchange_id)
+    .filter(id => id !== null); // no need to search for exchanges by null
   let exchange_accounts = [];
   [ err, exchange_accounts ] = await to(ExchangeAccount.findAll({
     where: { 
@@ -88,6 +90,9 @@ const generateRecipeRunDeposits = async function (recipe_run_id) {
   if(err) TE(err.message);
 
   //Find exchange account for each detail and create return a deposit for each one.
+  let base_assets;
+  [base_assets, details] = _.partition(details, d => !d.target_exchange_id);
+
   let missing_acounts = [];
   let deposits = details.map(detail => {
     const account = exchange_accounts.find(ex_account => detail.target_exchange_id === ex_account.exchange_id && detail.quote_asset_id === ex_account.asset_id);
@@ -117,6 +122,31 @@ const generateRecipeRunDeposits = async function (recipe_run_id) {
     
   }).filter(deposit => deposit);
 
+  [err, investment_run] = await to(InvestmentService.findInvestmentRunFromAssociations({
+    recipe_run_id: recipe_run.id
+  }));
+  if (err) TE(err.message);
+
+  /* let to_cold_storage = await base_assets.map(async (base_asset) => {
+    
+    let [err, cold_storage_account] = await to(
+      ColdStorageService.findColdStorageAccount(
+        investment_run.strategy_type, base_asset.id
+      )
+    );
+
+
+    
+    return {
+      asset_id: account.asset_id,
+      creation_timestamp: new Date(),
+      recipe_run_id: recipe_run.id,
+      cold_storage_account_id: account.id,
+      status: MODEL_CONST.RECIPE_RUN_DEPOSIT_STATUSES.Pending,
+      amount: amount.toString()
+    };
+  }) */
+
   //If there are missing accounts, reject. Also attempt to fetch exchanges and assets to be more informative.
   if(missing_acounts.length) {
     let [ err, result ] = await to(Promise.all([
@@ -137,7 +167,6 @@ const generateRecipeRunDeposits = async function (recipe_run_id) {
     TE(`Could not generate deposits, because deposit accounts are missing for Exchange/Asset pairs: ${missing_pairs.join(', ')}`);
   }
 
-  //console.log(JSON.stringify(deposits, null, 4));
   [ err, deposits ] = await to(RecipeRunDeposit.bulkCreate(deposits, { returning: true }));
   
   if(err) TE(err.message);
@@ -270,7 +299,7 @@ const generateAssetConversions = async recipe_run => {
   const investment_assets = assets.filter(asset => asset.is_deposit && !asset.is_base);
   const base_assets = assets.filter(asset => asset.is_base);
 
-  const conversaions = [];
+  const conversions = [];
   for(let investment_asset of investment_assets) {
     for(let base_asset of base_assets) {
 
@@ -283,7 +312,7 @@ const generateAssetConversions = async recipe_run => {
 
       }, Decimal(0));
 
-      if(total_amount.gt(0)) conversaions.push({
+      if(total_amount.gt(0)) conversions.push({
         recipe_run_id: recipe_run.id,
         investment_asset_id: investment_asset.id,
         target_asset_id: base_asset.id
@@ -292,7 +321,7 @@ const generateAssetConversions = async recipe_run => {
     }
   }
 
-  return conversaions;
+  return conversions;
 
 };
 module.exports.generateAssetConversions = generateAssetConversions;

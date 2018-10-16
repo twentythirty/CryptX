@@ -169,3 +169,18 @@ const changeTransferStatus = async (transfer_id, status, user = null) => {
 
 };
 module.exports.changeTransferStatus = changeTransferStatus;
+
+const findColdStorageAccount = async (strategy_type, asset_id) => {
+
+	let [err, account] = await to(ColdStorageAccount.findOne({
+		where: {
+			asset_id: asset_id,
+			strategy_type: strategy_type
+		}
+	}));
+
+	if (err) TE(err.message);
+
+	return account;
+}
+module.exports.findColdStorageAccount = findColdStorageAccount;
