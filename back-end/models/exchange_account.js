@@ -6,7 +6,12 @@ module.exports = (sequelize, DataTypes) => {
         'ExchangeAccount',
         {
             address: DataTypes.STRING,
-            account_type: DataTypes.SMALLINT
+            account_type: DataTypes.SMALLINT,
+            is_active: {
+                type: DataTypes.BOOLEAN,
+                allowNull: false,
+                defaultValue: true
+            }
         },
         modelProps(
             'exchange_account',

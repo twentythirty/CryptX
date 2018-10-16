@@ -21,10 +21,11 @@ const getExchanges = async function (req, res) {
 module.exports.getExchanges = getExchanges;
 
 const createExchangeAccount = async (req, res) => {
-  const exchange_id = parseInt(req.params.exchange_id); 
-  const { account_type, asset_id, address } = req.body;
 
-  const [ err, exchange_account ] = await to(ExchangeService.createExchangeAccount(account_type, asset_id, exchange_id, address));
+  const { exchange_id } = req.params; 
+  const { account_type, asset_id, address, is_active } = req.body;
+
+  const [ err, exchange_account ] = await to(ExchangeService.createExchangeAccount(account_type, asset_id, exchange_id, address, is_active));
   if(err) return ReE(res, err.message, 422);
 
   return ReS(res, { exchange_account });
