@@ -119,30 +119,48 @@ const createInvestmentRun = async function (user_id, strategy_type, is_simulated
   if (asset_group.strategy_type !== strategy_type) TE(`Attempting to create a ${_.invert(STRATEGY_TYPES)[strategy_type]} Investment Run with a ${_.invert(STRATEGY_TYPES)[asset_group.strategy_type]} Asset Mix`);
 
   let investment_run;
-  [err, investment_run] = await to(sequelize.transaction(transaction =>
-    InvestmentRun.create({
-      strategy_type: strategy_type,
-      is_simulated: is_simulated,
-      user_created_id: user_id,
-      started_timestamp: new Date(),
-      updated_timestamp: new Date(),
-      status: INVESTMENT_RUN_STATUSES.Initiated,
-      deposit_usd: 0,
-      investment_run_asset_group_id: asset_group_id,
+  [err, investment_run] = await to(sequelize.transaction({
+    isolationLevel: ISOLATION_LEVELS.SERIALIZABLE
+  }, async transaction => {
 
-      InvestmentAmounts: [ // also create InvestmentAmount for every deposit
-        ...deposit_amounts.map(deposit => {
-          let asset = deposit_assets.find(asset => asset.symbol == deposit.symbol);
-          return {
-            asset_id: asset.id,
-            amount: deposit.amount
-          };
-        })
-      ]
-    }, {
-      include: InvestmentAmount, // include to create investment amounts with investment run
-      transaction
-    })
+      investment_run = await InvestmentRun.findOne({
+        where: {
+          is_simulated: false,
+          status: {
+            [Op.ne]: INVESTMENT_RUN_STATUSES.OrdersFilled
+          }
+        },
+        transaction
+      });
+
+      if(investment_run) TE('Investment run cannot be initiated as other investment runs are still in progress');
+
+      return InvestmentRun.create({
+        strategy_type: strategy_type,
+        is_simulated: is_simulated,
+        user_created_id: user_id,
+        started_timestamp: new Date(),
+        updated_timestamp: new Date(),
+        status: INVESTMENT_RUN_STATUSES.Initiated,
+        deposit_usd: 0,
+        investment_run_asset_group_id: asset_group_id,
+  
+        InvestmentAmounts: [ // also create InvestmentAmount for every deposit
+          ...deposit_amounts.map(deposit => {
+            let asset = deposit_assets.find(asset => asset.symbol == deposit.symbol);
+            return {
+              asset_id: asset.id,
+              amount: deposit.amount
+            };
+          })
+        ]
+      }, {
+        include: InvestmentAmount, // include to create investment amounts with investment run
+        transaction
+      });
+
+    }
+    
   ));
 
   if (err) TE(err.message);

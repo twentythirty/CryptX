@@ -8,12 +8,13 @@ const ExchangeAccount = require('../models').ExchangeAccount;
 const Instrument = require('../models').Instrument;
 const InstrumentExchangeMapping = require('../models').InstrumentExchangeMapping;
 
-const createExchangeAccount = async (account_type, asset_id, exchange_id, address) => {
+const createExchangeAccount = async (account_type, asset_id, exchange_id, address, is_active = true) => {
     if (
         !account_type ||
         !asset_id ||
         !exchange_id ||
-        !address
+        !address ||
+        (!_.isUndefined(is_active) && !_.isBoolean(is_active))
     ) TE('Creating an exchange account requires to specify an account type, asset id, exchange id and wallet address');
 
     const account_types = Object.values(MODEL_CONST.EXCHANGE_ACCOUNT_TYPES);
@@ -51,12 +52,13 @@ const createExchangeAccount = async (account_type, asset_id, exchange_id, addres
     if (!found_exchange) TE(`Exchange not found with id ${exchange_id}`);
     if (!found_asset) TE(`Asset not found with id ${asset_id} or it is not available on the selected exchange`);
     if (found_account) TE(`Exchange account already exists with the specified parameters`);
-
+ 
     return ExchangeAccount.create({
         account_type,
         asset_id,
         exchange_id,
-        address
+        address,
+        is_active
     });
 
 };

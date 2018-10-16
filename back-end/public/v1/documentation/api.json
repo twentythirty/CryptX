@@ -432,6 +432,49 @@
         ]
       }
     },
+    "/exchanges/{exchange_id}/accounts/create": {
+      "post": {
+        "tags": [
+          "exchange"
+        ],
+        "summary": "Create a new exchange account",
+        "description": "Creates a new exchange account.",
+        "parameters": [
+          {
+            "name": "exchange_id",
+            "in": "path",
+            "description": "Exchange id",
+            "required": true,
+            "type": "integer"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "description": "Information needed for creating an exchange account",
+            "required": false,
+            "schema": {
+              "$ref": "#/definitions/createExchangeAccountParams"
+            }
+          }
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "$ref": "#/definitions/createExchangeAccountResponse"
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
     "/settings": {
       "get": {
         "tags": [
@@ -4951,6 +4994,29 @@
         }
       }
     },
+    "createExchangeAccountParams": {
+      "description": "Exchange account informartion",
+      "type": "object",
+      "required": ["account_type", "asset_id", "is_active", "address"],
+      "properties": {
+        "account_type": {
+          "type": "number",
+          "example": 401
+        },
+        "asset_id": {
+          "type": "number",
+          "example": 21
+        },
+        "address": {
+          "type": "string",
+          "example": "1F1tAaz5x1HUXrCNLbtMDqcw6o5GNn4xqX"
+        },
+        "is_active": {
+          "type": "boolean",
+          "example": true
+        }
+      }
+    },
     "AddColdStorageAccountParams": {
       "description": "Cold storage transfer information",
       "type": "object",
@@ -4989,6 +5055,19 @@
         "tag": {
           "type": "string",
           "example": "BTC-213"
+        }
+      }
+    },
+    "createExchangeAccountResponse":  {
+      "description": "Response you when crating a new exchange account",
+      "type": "object",
+      "properties": {
+        "status": {
+          "type": "boolean",
+          "example": true
+        },
+        "exchange_account": {
+          "$ref": "#/definitions/RawExchangeAccount"
         }
       }
     },
@@ -5040,6 +5119,28 @@
         },
         "account": {
           "$ref": "#/definitions/ColdStorageAccount"
+        }
+      }
+    },
+    "RawExchangeAccount": {
+      "description": "Raw exchange account data",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "number",
+          "example": 18
+        },
+        "asset_id": {
+          "type": "number",
+          "example": 2
+        },
+        "account_type": {
+          "type": "number",
+          "example": 401
+        },
+        "is_active": {
+          "type": "boolean",
+          "example": true
         }
       }
     },
