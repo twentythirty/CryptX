@@ -20,7 +20,7 @@ export class LiquidityListComponent extends DataTableCommonManagerComponent impl
       { column: 'instrument', nameKey: 'table.header.instrument', filter: { type: 'text', sortable: true } },
       { column: 'periodicity', nameKey: 'table.header.periodicity', filter: { type: 'number', sortable: true } },
       { column: 'quote_asset', nameKey: 'table.header.quote_asset', filter: { type: 'text', sortable: true } },
-      { column: 'minimum_circulation', nameKey: 'table.header.minimum_circulation', filter: { type: 'number', sortable: true } },
+      { column: 'minimum_circulation', nameKey: 'table.header.minimum_daily_avg_volume', filter: { type: 'number', sortable: true } },
       { column: 'exchange', nameKey: 'table.header.exchange', filter: { type: 'text', sortable: true } },
       { column: 'exchange_count', nameKey: 'table.header.exchange_count', filter: { type: 'number', sortable: true } },
       { column: 'exchange_not_pass', nameKey: 'table.header.exchange_not_pass', filter: { type: 'number', sortable: true } },

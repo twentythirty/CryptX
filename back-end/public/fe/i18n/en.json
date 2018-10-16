@@ -116,7 +116,8 @@
       "deposit_amount": "Deposit amount",
       "investment_amount": "Investment amount",
       "target_currency": "Target currency",
-      "converted_amount": "Converted amount"
+      "converted_amount": "Converted amount",
+      "minimum_daily_avg_volume": "Minimum daily avg. volume"
     },
     "filter": {
       "all": "All",

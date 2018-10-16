@@ -21,7 +21,7 @@ export class LiquidityInfoComponent extends DataTableCommonManagerComponent impl
       { column: 'instrument', nameKey: 'table.header.instrument' },
       { column: 'periodicity', nameKey: 'table.header.periodicity' },
       { column: 'quote_asset', nameKey: 'table.header.quote_asset' },
-      { column: 'minimum_circulation', nameKey: 'table.header.minimum_circulation' },
+      { column: 'minimum_circulation', nameKey: 'table.header.minimum_daily_avg_volume' },
       { column: 'exchange', nameKey: 'table.header.exchange' },
       { column: 'exchange_count', nameKey: 'table.header.exchange_count' },
       { column: 'exchange_not_pass', nameKey: 'table.header.exchange_not_pass' },
