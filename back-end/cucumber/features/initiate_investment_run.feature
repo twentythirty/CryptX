@@ -43,7 +43,7 @@ Feature: Initiate an investment run
         | MCI | false |  |
         | MCI | false | USD=-1 |
 
-    Scenario: Attemting to create multiple investment runs
+    Scenario: Attempting to create multiple investment runs
 
         Given there are no Executing Investment Runs in the system
         When I log onto CryptX as Investment Manager

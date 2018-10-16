@@ -177,6 +177,9 @@ When('I provide an empty rationale', function () {
  */
 When(/^I trigger "(.*)" action multiple times concurrently$/, function(action_name){
 
+    const { sequelize } = require('../../../models');
+    const { Op } = sequelize;
+
     const max_attempts = 200;
     const default_transaction_error_1 = 'could not serialize access due to concurrent update';
     const default_transaction_error_2 = 'could not serialize access due to read/write dependencies among transactions';
@@ -206,7 +209,9 @@ When(/^I trigger "(.*)" action multiple times concurrently$/, function(action_na
                     transaction: [ default_transaction_error_1, default_transaction_error_2 ],
                     duplicate: ['Investment run cannot be initiated as other investment runs are still in progress']
                 },
-                check_with: { },
+                check_with: {
+                    status: { [Op.ne]: INVESTMENT_RUN_STATUSES.OrdersFilled }
+                },
                 timeout: 12000
             }
         }
