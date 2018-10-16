@@ -37,7 +37,7 @@ export class InvestmentRunDetailComponent extends TimelineDetailComponent implem
   /**
    * 1. Implement attributes to display titles
    */
-  public pageTitle = 'Recipe run';
+  public pageTitle = 'Investment run details';
   public singleTitle = 'Investment run';
   public extraTableTitle = 'Investment deposits';
   public detailTableTitle = 'Recipe runs';
