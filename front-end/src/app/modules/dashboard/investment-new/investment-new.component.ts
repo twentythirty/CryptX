@@ -1,10 +1,11 @@
 import { Component, OnInit, Output, EventEmitter } from '@angular/core';
-import { FormGroup, FormControl, FormBuilder, Validators, FormArray } from '@angular/forms';
+import { FormGroup, FormControl, Validators } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
+import { finalize } from 'rxjs/operators';
+import * as _ from 'lodash';
 
 import { ModelConstantsService } from '../../../services/model-constants/model-constants.service';
 import { InvestmentService } from '../../../services/investment/investment.service';
-import { finalize } from 'rxjs/operators';
 import { DataTableCommonManagerComponent } from '../../../shared/components/data-table-common-manager/data-table-common-manager.component';
 import { TableDataSource, TableDataColumn } from '../../../shared/components/data-table/data-table.component';
 import { CurrencyCellDataColumn,
@@ -12,7 +13,6 @@ import { CurrencyCellDataColumn,
          PercentCellDataColumn,
          ActionCellDataColumn,
          DataCellAction } from '../../../shared/components/data-table-cells';
-import * as _ from 'lodash';
 
 @Component({
   selector: 'app-investment-new',
@@ -36,7 +36,7 @@ export class InvestmentNewComponent extends DataTableCommonManagerComponent impl
   readModalIsShown = false; // Show/hide rationale modal
   readData; // Rationale data
 
-  public pageSize = 999; // Table page size
+  pageSize = 999; // Table page size
 
   group_name = 'STRATEGY_TYPES';
   strategies = {}; // Strategy type list
@@ -76,12 +76,12 @@ export class InvestmentNewComponent extends DataTableCommonManagerComponent impl
     public route: ActivatedRoute,
     public router: Router,
   ) {
-      super (route, router);
+    super (route, router);
   }
 
   ngOnInit() {
-   this.strategies = Object.entries(this.modelConstantService.getGroup(this.group_name));
-   super.ngOnInit();
+    this.strategies = Object.entries(this.modelConstantService.getGroup(this.group_name));
+    super.ngOnInit();
   }
 
   onChangeMode(value) {
@@ -99,7 +99,7 @@ export class InvestmentNewComponent extends DataTableCommonManagerComponent impl
     if (this.isSimulated != null && this.strategyType != null) {
       this.next_step = true;
       this.showSelectedAssetsMix = true;
-      this.getAllData();
+      this.createAssetMix();
     }
   }
 
@@ -131,13 +131,31 @@ export class InvestmentNewComponent extends DataTableCommonManagerComponent impl
             this.onComplete.emit();
             this.router.navigate(['/run/investment', data.investment_run.id]);
           }
-        }, error => {
-          console.log('Error', error);
-        }, () => {
         }
       );
     }
   }
+
+
+  createAssetMix() {
+    if (this.next_step && this.showSelectedAssetsMix && !this.showSkippedAssets) {
+      this.loading = true;
+
+      const request = {
+        strategy_type: this.strategyType
+      };
+
+      this.investmentService.createAssetMix(request).subscribe(data => {
+        this.loading = false;
+
+        if (data.success) {
+          this.assetGroup = data.list.id;
+          this.getAllData();
+        }
+      });
+    }
+  }
+
 
   // Get selected asset mix table
   getAllData() {
@@ -147,55 +165,56 @@ export class InvestmentNewComponent extends DataTableCommonManagerComponent impl
     }
     if (this.next_step && this.showSelectedAssetsMix && !this.showSkippedAssets) {
       this.tableLoading = true;
-      const request = {
-        strategy_type: this.strategyType
-      };
 
-      this.investmentService.createAssetMix(request).subscribe(data => {
-        if (data.success) {
-          this.assetGroup = data.list.id;
+      // load show only whitelisted
+      this.requestData.filter.status = ['assets.status.400'];
 
-          this.count = data.count;
-          this.tableTitle = this.count + ' Selected asset mix';
-          this.assetDataSource.body = data.list.group_assets;
-          this.assetDataSource.footer = data.footer;
-          this.tableLoading = false;
-          this.loading = false;
+      this.investmentService.getAssetMix(this.assetGroup, this.requestData).subscribe(
+        res => {
+          if (res.success) {
+            this.assetDataSource.body = res.assets;
+            this.assetDataSource.footer = res.footer;
+            this.count = res.count;
+            this.tableTitle = this.count + ' Selected asset mix';
+            this.tableLoading = false;
+            this.loading = false;
+          }
         }
-      });
+      );
     }
   }
 
   // Get Skipped assets table
   getSkippedAssets() {
     this.tableLoading = true;
-    // Append new column
-    if (!_.find(this.assetDataSource.header, ['column', 'actions'])) {
-      this.assetDataSource.header.push({ column: 'actions', nameKey: 'table.header.rationale' });
-      this.assetColumnsToShow.push(
-        new ActionCellDataColumn({ column: 'comment', inputs: {
-          actions: [
-            new DataCellAction({
-              label: 'READ',
-              exec: (row: any) => {
-                this.showReadModal({
-                  title: 'Rationale',
-                  content: row.comment
-                });
-              }
-            })
-          ]
-        }})
-      );
-    }
 
     // Get table data
-    _.set(this.requestData, 'filter.status', ['assets.status.401', 'assets.status.402']);
-    _.set(this.requestData, 'order[0]', { by: 'capitalization', order: 'desc' });
+    this.requestData.filter.status = ['assets.status.401', 'assets.status.402'];
+    this.requestData.order.push({ by: 'capitalization', order: 'desc' });
 
     this.investmentService.getAssetMix(this.assetGroup, this.requestData).subscribe(
       res => {
         if (res.success) {
+          // Append new column
+          if (!_.find(this.assetDataSource.header, ['column', 'actions'])) {
+            this.assetDataSource.header.push({ column: 'actions', nameKey: 'table.header.rationale' });
+            this.assetColumnsToShow.push(
+              new ActionCellDataColumn({ column: 'comment', inputs: {
+                actions: [
+                  new DataCellAction({
+                    label: 'READ',
+                    exec: (row: any) => {
+                      this.showReadModal({
+                        title: 'Rationale',
+                        content: row.comment
+                      });
+                    }
+                  })
+                ]
+              }})
+            );
+          }
+
           this.assetDataSource.body = res.assets;
           this.assetDataSource.footer = res.footer;
           this.count = res.count;
@@ -261,4 +280,5 @@ export class InvestmentNewComponent extends DataTableCommonManagerComponent impl
   onClose() {
     this.close.emit();
   }
+
 }

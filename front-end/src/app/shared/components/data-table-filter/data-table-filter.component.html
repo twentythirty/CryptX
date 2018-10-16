@@ -104,13 +104,30 @@
         <option value="desc">Z - A</option>
       </select>
       <div class="select-styled" (click)="isActive()">
-        <div>{{ name }}</div>
+        <div>
+          <ng-container *ngIf="filterData.order === ''">
+            ORDER BY
+          </ng-container>
+          <ng-container *ngIf="filterData.order === 'asc'">
+            <ng-container *ngIf="type !== 'number' else ascNumberLabel">A - Z</ng-container>
+          </ng-container>
+          <ng-container *ngIf="filterData.order === 'desc'">
+            <ng-container *ngIf="type !== 'number' else descNumberLabel">Z - A</ng-container>
+          </ng-container>
+        </div>
       </div>
       <ul *ngIf="active" class="select-options display-block">
         <li (click)="noSort()">ORDER BY</li>
-        <li (click)="sortAsc()">A - Z</li>
-        <li (click)="sortDesc()">Z - A</li>
+        <li (click)="sortAsc()">
+          <ng-container *ngIf="type !== 'number' else ascNumberLabel">A - Z</ng-container>
+        </li>
+        <li (click)="sortDesc()">
+          <ng-container *ngIf="type !== 'number' else descNumberLabel">Z - A</ng-container>
+        </li>
       </ul>
+
+      <ng-template #ascNumberLabel>0 - 9</ng-template>
+      <ng-template #descNumberLabel>9 - 0</ng-template>
     </div>
     <div>
       <app-btn [thinner]="true" (onClick)="onFilterChange()">{{ 'table.filter.filter' | translate }}</app-btn>
