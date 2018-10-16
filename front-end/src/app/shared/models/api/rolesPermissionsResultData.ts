@@ -1,5 +1,6 @@
 export interface RolesPermissionsResultData {
-    total: number
+    total: number;
+    success?: boolean;
     data: Array<{
         id: number
         name: string
@@ -8,5 +9,5 @@ export interface RolesPermissionsResultData {
             code: string
             name: string
         }>
-    }>
+    }>;
 }
