@@ -154,14 +154,14 @@ export class InstrumentInfoComponent extends DataTableCommonManagerComponent imp
         column: 'last_day_vol',
         inputs: {
           suffix: this.cryptoSuffix,
-          digitsInfo: '1.0-2',
+          digitsInfo: '1.2-2',
         }
       }),
       new NumberCellDataColumn({
         column: 'last_week_vol',
         inputs: {
           suffix: this.cryptoSuffix,
-          digitsInfo: '1.0-2',
+          digitsInfo: '1.2-2',
         }
       }),
       new DateCellDataColumn({ column: 'last_updated' }),

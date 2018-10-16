@@ -32,7 +32,9 @@ export class LiquidityInfoComponent extends DataTableCommonManagerComponent impl
     new TableDataColumn({ column: 'instrument' }),
     new TableDataColumn({ column: 'periodicity' }),
     new TableDataColumn({ column: 'quote_asset' }),
-    new NumberCellDataColumn({ column: 'minimum_circulation' }),
+    new NumberCellDataColumn({ column: 'minimum_circulation',  inputs: {
+      digitsInfo: '1.2-2'
+    } }),
     new StatusCellDataColumn({ column: 'exchange' }),
     new TableDataColumn({ column: 'exchange_count' }),
     new TableDataColumn({ column: 'exchange_not_pass' }),
@@ -86,14 +88,14 @@ export class LiquidityInfoComponent extends DataTableCommonManagerComponent impl
         column: 'last_day_vol',
         inputs: {
           suffix: this.cryptoSuffix,
-          digitsInfo: '1.0-2',
+          digitsInfo: '1.2-2',
         }
       }),
       new NumberCellDataColumn({
         column: 'last_week_vol',
         inputs: {
           suffix: this.cryptoSuffix,
-          digitsInfo: '1.0-2',
+          digitsInfo: '1.2-2',
         }
       }),
       new DateCellDataColumn({ column: 'last_updated' }),
