@@ -27,7 +27,8 @@ const createInvestmentRun = async function (req, res) {
       method: 'createInvestmentRun',
       params: [req.user.id, strategy_type, is_simulated, deposit_amounts, investment_group_asset_id],
       id: 'create_investment_run',
-      error_message: 'An investment run is currently being created.'
+      error_message: 'An investment run is currently being created.',
+      max_block: 180
     })
   );
   if (err) return ReE(res, err, 422);
@@ -47,7 +48,8 @@ const createRecipeRun = async function (req, res) {
         method: 'createRecipeRun',
         params: [req.user.id, investment_run_id],
         id: 'create_recipe_run', keys: { investment_run_id },
-        error_message: `Recipe Run is currently being generated for Investment Run with id ${investment_run_id}, please wait...`
+        error_message: `Recipe Run is currently being generated for Investment Run with id ${investment_run_id}, please wait...`,
+        max_block: 180
       }), false
     );
   if (err) return ReE(res, err, 422);

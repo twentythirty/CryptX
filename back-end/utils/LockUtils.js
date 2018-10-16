@@ -18,6 +18,7 @@ const locks = [];
  * @param {Number} [options.lock_time=10000] ms after the lock unlocks, despite the result of the promise.
  * @param {Object} [options.keys={}] optional object of keys. Providing different keys will ignore the current lock
  * @param {String} [options.method] optional method name if the first argument was an object of methods.
+ * @param {Number} [options.max_block] CUCUMBER TESTS ONLY. Set the number of maximum attempts to block. Used to test the transaction layer if the lock fails
  */
 const lock = async (method, options = {}) => {
 
@@ -41,7 +42,7 @@ const lock = async (method, options = {}) => {
 
     if(_isLocked(id, keys)) throw new Error(error_message);
 
-    _addLock(id, keys, lock_time);
+    _addLock(id, keys, lock_time, options.max_block);
 
     const [ error, result ] = await to(options.method ? method[options.method](...params) : method(...params), false);
 
@@ -84,18 +85,34 @@ const _isLocked = (id, keys = {}) => {
         return false;
     }
 
+    /**
+     * If this is a cucumber enviroment and a max block amount was set, it will bypass
+     * the requests after blocking a certain number of requests, does not unlock the lock.
+     */
+    if(process.env.NODE_ENV === 'cucumber' && existing_lock.max_block) {
+        if(existing_lock.attempts_blocked >= existing_lock.max_block) return false;
+    }
+
+    existing_lock.attempts_blocked++;
+
     return true;
 
 }
 
-const _addLock = (id, keys = {}, lock_time = 0) => {
+const _addLock = (id, keys = {}, lock_time = 0 , max_block = null) => {
+
+    const existing_lock = locks.find(l => l.id === id && _.isEqual(l.keys, keys));
+
+    if(existing_lock) return;
 
     locks.push({
         id, keys,
         locked_until: Date.now() + lock_time,
         timeout: setTimeout(() => {
             unlock(id, keys);
-        }, lock_time)
+        }, lock_time),
+        attempts_blocked: 0,
+        max_block
     });
 
 };

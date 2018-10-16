@@ -258,8 +258,7 @@ When(/^I trigger "(.*)" action multiple times concurrently$/, function(action_na
 
                 completed_requests++;
 
-                if(timeouts_at && timeouts_at < Date.now()) return;
-                else return finish();
+                if(completed_requests >= max_attempts) return finish();
                 
             })
             .catch(result => {
@@ -286,13 +285,15 @@ When(/^I trigger "(.*)" action multiple times concurrently$/, function(action_na
                         return reject(`Received an unepected error: ${error_message}`); 
 
                 }
+
+                if(completed_requests >= max_attempts) return finish();
                     
             });
 
         };
 
         function finish(){
-            if(finished) reject(`Test received multiple successful responses.`);
+            if(finished) return;
             finished = true;
 
             if(timeout) clearTimeout(timeout);

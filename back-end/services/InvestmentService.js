@@ -183,9 +183,9 @@ const changeInvestmentRunStatus = async function (identifying_value, status_numb
 
   let err, investment_run;
   if (_.isNumber(identifying_value) || _.isString(identifying_value))
-    [err, investment_run] = await to(InvestmentRun.findById(identifying_value));
+    [err, investment_run] = await to(InvestmentRun.findById(identifying_value, { transaction }));
   else
-    [err, investment_run] = await to(this.findInvestmentRunFromAssociations(identifying_value));
+    [err, investment_run] = await to(this.findInvestmentRunFromAssociations(identifying_value, transaction));
 
   if (err) TE(err.message);
 
@@ -244,10 +244,10 @@ const createRecipeRun = async function (user_id, investment_run_id) {
         }
       },
       transaction
-    }).then(recipe_count => {
+    }).then(existing_recipe_run => {
 
-      if(recipe_count) {
-        if (recipe_run.approval_status === RECIPE_RUN_STATUSES.Pending) TE("There is already recipe run pending approval");
+      if(existing_recipe_run) {
+        if (existing_recipe_run.approval_status === RECIPE_RUN_STATUSES.Pending) TE("There is already recipe run pending approval");
         else TE("No more recipe runs can be generated after one was already approved.");
       }
 
@@ -658,7 +658,7 @@ const changeRecipeRunStatus = async function (user_id, recipe_run_id, status_con
 };
 module.exports.changeRecipeRunStatus = changeRecipeRunStatus;
 
-const findInvestmentRunFromAssociations = async function (entities) {
+const findInvestmentRunFromAssociations = async function (entities, transaction) {
 
   // property names show how value can be served, value show what db table is used.
   let allowed_entities = {
@@ -692,7 +692,8 @@ const findInvestmentRunFromAssociations = async function (entities) {
       entity_id: id_to_find
     },
     plain: true, // assign as single value, not array
-    model: InvestmentRun
+    model: InvestmentRun,
+    transaction
   }));
 
   if (err) TE(err.message);
