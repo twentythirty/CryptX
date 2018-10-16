@@ -30,9 +30,11 @@ export class RolesAddComponent implements OnInit {
 
   constructor(
     private rolesService: RolesService,
-    private router: Router,
+    public router: Router,
     private route: ActivatedRoute,
-  ) {
+  ) { }
+
+  ngOnInit() {
     // generate maps for checkbox value storing
     this.rolesService.getPermissionsList().subscribe(result => {
       this.permissionsMap = result;
@@ -52,8 +54,6 @@ export class RolesAddComponent implements OnInit {
       });
     });
   }
-
-  ngOnInit() { }
 
   onPermissionToggle({ value, checked }) {
     this.permissionsCheckboxMap[value] = checked;
@@ -82,6 +82,7 @@ export class RolesAddComponent implements OnInit {
     }
 
     this.roleForm.controls.permissions.setValue(perm);
+    this.roleForm.controls.permissions.markAsTouched();
   }
 
   generatePermissionsMaps() {
@@ -131,7 +132,9 @@ export class RolesAddComponent implements OnInit {
 
     this.rolesService.createRole(this.roleForm.value).subscribe(
       data => {
-        this.router.navigate(['/roles']);
+        if (data.success) {
+          this.router.navigate(['/roles']);
+        }
       }, error => {
         console.log('Error', error);
         this.loading = false;
@@ -154,7 +157,9 @@ export class RolesAddComponent implements OnInit {
 
     this.rolesService.editRole(roleEditRequest).subscribe(
       data => {
-        this.router.navigate(['/roles']);
+        if (data.success) {
+          this.router.navigate(['/roles']);
+        }
       }, error => {
         console.log('Error', error);
         this.loading = false;
