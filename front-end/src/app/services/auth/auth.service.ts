@@ -48,7 +48,7 @@ export class AuthService {
   }
 
   setAuthData(data): void {
-    // this.setToken(data.token);
+    this.setToken(data.token);
     this.setUser(data.user);
     this.setValidators(data.validators);
     this.setPermissions(data.permissions);
