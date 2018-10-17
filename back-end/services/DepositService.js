@@ -10,6 +10,7 @@ const Exchange = require('../models').Exchange;
 const ExchangeAccount = require('../models').ExchangeAccount;
 const InvestmentAssetConversion = require('../models').InvestmentAssetConversion;
 const ColdStorageService = require('./ColdStorageService');
+const ColdStorageTransfer = require('../models').ColdStorageTransfer;
 const Sequelize = require('../models').Sequelize;
 const sequelize = require('../models').sequelize;
 
@@ -122,30 +123,41 @@ const generateRecipeRunDeposits = async function (recipe_run_id) {
     
   }).filter(deposit => deposit);
 
+  let investment_run;
   [err, investment_run] = await to(InvestmentService.findInvestmentRunFromAssociations({
     recipe_run_id: recipe_run.id
   }));
   if (err) TE(err.message);
 
-  /* let to_cold_storage = await base_assets.map(async (base_asset) => {
+  let direct_to_cold_storage = await Promise.all(base_assets.map(async (base_asset) => {
     
     let [err, cold_storage_account] = await to(
       ColdStorageService.findColdStorageAccount(
-        investment_run.strategy_type, base_asset.id
+        investment_run.strategy_type, base_asset.quote_asset_id
       )
     );
 
-
+    if (err) TE(err.message);
+    if (!cold_storage_account) TE(`No cold storage account found`);
     
+    let quote_totals = investment_totals[base_asset.quote_asset_id];
+    let amount = Decimal(quote_totals.amount);
+
+    const conversion = conversions.find(c => c.target_asset_id === base_asset.quote_asset_id);
+    if(quote_totals && conversion) amount = amount.plus(conversion.amount);
+    amount = amount.mul(base_asset.investment_percentage).div(quote_totals.percentage);
+
     return {
-      asset_id: account.asset_id,
+      asset_id: base_asset.quote_asset_id,
       creation_timestamp: new Date(),
       recipe_run_id: recipe_run.id,
-      cold_storage_account_id: account.id,
+      cold_storage_account_id: cold_storage_account.id,
       status: MODEL_CONST.RECIPE_RUN_DEPOSIT_STATUSES.Pending,
       amount: amount.toString()
     };
-  }) */
+  }));
+
+  deposits.push(...direct_to_cold_storage);
 
   //If there are missing accounts, reject. Also attempt to fetch exchanges and assets to be more informative.
   if(missing_acounts.length) {
@@ -209,7 +221,26 @@ const submitDeposit = async (deposit_id, user, updated_values = {}) => {
   deposit.fee = deposit_management_fee == null? deposit.fee : deposit_management_fee;
   deposit.amount = amount == null? deposit.amount : amount;
 
-  [ err, deposit ] = await to(deposit.save());
+  if (deposit.cold_storage_account_id != null) deposit.fee = 0;
+
+  let cold_storage;
+  [ err, cold_storage ] = await to(sequelize.transaction(transaction => {
+    return deposit.save({ transaction }).then(result => {
+      deposit = result;
+      if (deposit.cold_storage_account_id == null) { // not direct transfer to cold storage
+        return Promise.resolve(result);
+      };
+
+      return ColdStorageTransfer.create({
+        status: COLD_STORAGE_ORDER_STATUSES.Completed,
+        placed_timestamp: new Date(),
+        completed_timestamp: new Date(),
+        fee: deposit_management_fee, // fee is 0 because its save on deposit.
+        ..._.pick(deposit, [ 'cold_storage_account_id', 'asset_id', 'amount'])
+      }, { transaction });
+    })
+  }));
+
   if(err) TE(err.message);
 
   await user.logAction('modified', { 

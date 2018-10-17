@@ -176,7 +176,7 @@ const generateApproveRecipeOrders = async (recipe_run_id) => {
     }
 
     //fetch all individual recipe run details
-    const recipe_run_details = await RecipeRunDetail.findAll({
+    let recipe_run_details = await RecipeRunDetail.findAll({
         where: {
             recipe_run_id: recipe_run_id
         }
@@ -185,6 +185,10 @@ const generateApproveRecipeOrders = async (recipe_run_id) => {
     if (recipe_run_details.length <= 0) {
         TE(`Can't generate orders for recipe run ${recipe_run_id} due to missing recipe run details!`)
     }
+
+    // whenever transaction and quote assets is the same, it's base asset that's transfered
+    // directly to cold storage. filter out those assets to not create recipe orders for them
+    recipe_run_details = recipe_run_details.filter(rrd => rrd.transaction_asset_id!==rrd.quote_asset_id);
 
     //fetch all asset ids involved in this venture
     // (to more concisely fetch involved instruments)

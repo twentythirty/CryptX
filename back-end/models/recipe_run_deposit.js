@@ -30,6 +30,10 @@ module.exports = (sequelize, DataTypes) => {
       as: 'target_exchange_account',
       foreignKey: 'target_exchange_account_id'
     })
+    RecipeRunDeposit.belongsTo(models.ColdStorageAccount, {
+      as: 'cold_storage_account',
+      foreignKey: 'cold_storage_account_id'
+    })
   };
 
   RecipeRunDeposit.prototype.toWeb = function() {
