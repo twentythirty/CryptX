@@ -5,7 +5,12 @@ module.exports = (sequelize, DataTypes) => {
     "Exchange",
     {
       name: DataTypes.STRING,
-      api_id: DataTypes.STRING
+      api_id: DataTypes.STRING,
+      is_mappable: {
+        type: DataTypes.BOOLEAN,
+        allowNull: false,
+        defaultValue: false
+    }
     },
     modelProps(
       "exchange",
