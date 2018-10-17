@@ -52,6 +52,42 @@ class Okex {
   
     return false; //this._connector.createOrder(external_instrument_id, order_type, side, execution_order.total_quantity, execution_order.price);
   }
+
+  /**
+   * Creates a withdraw. OKEx requires to specify the blockchain fee and also a trade/admin password.
+   * @param {String} asset_symbol Asset to withdraw, example: BTC
+   * @param {String|Number} amount Amount to withdraw
+   * @param {Object} cold_storage_account Cold storage account object to send the funds to.
+   * @returns {Promise}
+   */
+  async withdraw(asset_symbol, amount, cold_storage_account) {
+    await this.isReady();
+
+    const fee_map = {
+      BTC: 0.002,
+      LTC: 0.001,
+      ETH: 0.01,
+      ETC: 0.001,
+      BCH: 0.0005
+    };
+
+    const chargefee = fee_map[asset_symbol];
+
+    console.log(`
+      Creating withdraw to ${this.api_id},
+      Asset: ${asset_symbol},
+      Amount: ${amount},
+      Blockchain Fee: ${chargefee},
+      Destination address: ${cold_storage_account.address}
+    `);
+
+    return this._connector.withdraw(asset_symbol, amount, cold_storage_account.address, cold_storage_account.tag, { 
+      chargefee,
+      password: '???' //Currently unknown how this will be handled
+    });
+
+  }
+
 }
 
 module.exports = Okex;

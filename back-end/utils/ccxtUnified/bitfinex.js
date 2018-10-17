@@ -52,6 +52,28 @@ class Bitfinex {
 
     return this._connector.createOrder(external_instrument_id, order_type, side, execution_order.total_quantity, execution_order.price);
   }
+
+  /**
+   * Creates a standart withdraw
+   * @param {String} asset_symbol Asset to withdraw, example: BTC
+   * @param {String|Number} amount Amount to withdraw
+   * @param {Object} cold_storage_account Cold storage account object to send the funds to.
+   * @returns {Promise}
+   */
+  async withdraw(asset_symbol, amount, cold_storage_account) {
+    await this.isReady();
+
+    console.log(`
+      Creating withdraw to ${this.api_id},
+      Asset: ${asset_symbol},
+      Amount: ${amount},
+      Destination address: ${cold_storage_account.address}
+    `);
+
+    return this._connector.withdraw(asset_symbol, amount, cold_storage_account.address, cold_storage_account.tag, {});
+
+  }
+
 }
 
 module.exports = Bitfinex;
