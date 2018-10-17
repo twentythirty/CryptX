@@ -29,6 +29,10 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.DECIMAL,
         allowNull: false,
         defaultValue: 0.0
+      },
+      external_identifier: {
+        type: DataTypes.STRING,
+        allowNull: true
       }
     },
     modelProps(
