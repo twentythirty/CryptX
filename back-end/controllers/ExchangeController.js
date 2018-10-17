@@ -6,8 +6,16 @@ const Exchange = require('../models').Exchange;
 const ExchangeAccount = require('../models').ExchangeAccount;
 
 const getExchanges = async function (req, res) {
+  //return partial list of exchanges if ignore_unmappable is present
+  let seq_query = req.seq_query || { where: {} };
+  const fetch_exclusive = req.query.ignore_unmappable == 'true' || false;
+  if (fetch_exclusive) {
+    seq_query.where.is_mappable = true;
+  } else {
+    delete seq_query.where.is_mappable;
+  }
   
-  let [err, result] = await to(Exchange.findAndCountAll(req.seq_query));
+  let [err, result] = await to(Exchange.findAndCountAll(seq_query));
 
   if (err) return ReE(res, err, 422);
 

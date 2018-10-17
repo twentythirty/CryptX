@@ -345,9 +345,18 @@
           "exchange"
         ],
         "summary": "Get list of exchanges",
-        "description": "Fetches list of exchanges.",
+        "description": "Fetch list of exchanges, optionally filtering down to only those allowed to be mapped.",
         "produces": [
           "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "ignore_unmappable",
+            "in": "query",
+            "description": "Only return exchanges the system considers 'mappable' (MVP)",
+            "required": false,
+            "type": "boolean"
+          }
         ],
         "responses": {
           "200": {
@@ -5573,7 +5582,7 @@
       }
     },
     "ExchangeList": {
-      "description": "Fetches distinct values of table column. Should help implement filtering.",
+      "description": "List of exchagnes fetched in this response.",
       "type": "object",
       "properties": {
         "exchanges": {
@@ -5593,7 +5602,7 @@
       }
     },
     "Exchange": {
-      "description": "Fetches distinct values of table column. Should help implement filtering.",
+      "description": "Exchange for selection in lists. Can be filtered by mappability",
       "type": "object",
       "properties": {
         "id": {
@@ -5603,6 +5612,10 @@
         "name": {
           "type": "string",
           "example": "Bitstamp"
+        },
+        "is_mappable": {
+          "type": "boolean",
+          "example": "false"
         }
       }
     },
