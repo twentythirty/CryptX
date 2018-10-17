@@ -221,8 +221,6 @@ const submitDeposit = async (deposit_id, user, updated_values = {}) => {
   deposit.fee = deposit_management_fee == null? deposit.fee : deposit_management_fee;
   deposit.amount = amount == null? deposit.amount : amount;
 
-  if (deposit.cold_storage_account_id != null) deposit.fee = 0;
-
   let cold_storage;
   [ err, cold_storage ] = await to(sequelize.transaction(transaction => {
     return deposit.save({ transaction }).then(result => {
@@ -231,11 +229,12 @@ const submitDeposit = async (deposit_id, user, updated_values = {}) => {
         return Promise.resolve(result);
       };
 
-      return ColdStorageTransfer.create({
+      return ColdStorageTransfer.create({ // create completed transfer
+        recipe_run_id: deposit.recipe_run_id,
         status: COLD_STORAGE_ORDER_STATUSES.Completed,
         placed_timestamp: new Date(),
         completed_timestamp: new Date(),
-        fee: deposit_management_fee, // fee is 0 because its save on deposit.
+        fee: 0, // fee is 0 because its save on deposit.
         ..._.pick(deposit, [ 'cold_storage_account_id', 'asset_id', 'amount'])
       }, { transaction });
     })

@@ -29,6 +29,10 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.DECIMAL,
         allowNull: false,
         defaultValue: 0.0
+      },
+      external_identifier: {
+        type: DataTypes.STRING,
+        allowNull: true
       }
     },
     modelProps(
@@ -44,6 +48,9 @@ module.exports = (sequelize, DataTypes) => {
     });
     ColdStorageTransfer.belongsTo(models.Asset);
     ColdStorageTransfer.belongsTo(models.ColdStorageAccount)
+    ColdStorageTransfer.belongsTo(models.RecipeRun, {
+      foreignKey: 'recipe_run_id'
+    });
   };
 
   return ColdStorageTransfer;

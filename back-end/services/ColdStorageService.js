@@ -73,10 +73,10 @@ const createColdStorageAccount = async (strategy_type, asset_id, cold_storage_cu
     [ err, account ] = await to(sequelize.transaction(transaction => {
 
         return ColdStorageAccount.count({
-            where: { strategy_type, asset_id, cold_storage_custodian_id }
+            where: { strategy_type, asset_id }
         }).then(found_account => {
-
-            if(found_account) TE(`Account with the same strategy, asset and custodian already exists`);
+            // allow to only create cold storage accounts with for unique strategy and asset pairs.
+            if(found_account) TE(`Account with the same strategy, asset already exists`);
 
             return ColdStorageAccount.create({
                 strategy_type,

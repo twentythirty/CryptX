@@ -133,7 +133,8 @@ const createInvestmentRun = async function (user_id, strategy_type, is_simulated
         transaction
       });
 
-      if(investment_run) TE('Investment run cannot be initiated as other investment runs are still in progress');
+      if(investment_run && !is_simulated)
+        TE('Investment run cannot be initiated as other investment runs are still in progress');
 
       return InvestmentRun.create({
         strategy_type: strategy_type,
