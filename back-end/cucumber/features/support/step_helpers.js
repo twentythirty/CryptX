@@ -11,7 +11,8 @@ const descriptionToJobFile = {
     'fetch instruments ask/bid prices': 'exchange-ask-bid-fetcher',
     'place execution orders on exchanges': 'cucumber-exchange-order-placer',
     'calculate market history': 'market-history-calc',
-    'update recipe order statuses': 'recipe-order-status-changer'
+    'update recipe order statuses': 'recipe-order-status-changer',
+    'asset liquidity check': 'asset-liquidity-checker'
 }
 
 /**
