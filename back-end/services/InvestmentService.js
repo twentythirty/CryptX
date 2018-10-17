@@ -606,20 +606,24 @@ const changeRecipeRunStatus = async function (user_id, recipe_run_id, status_con
         run_detail.id,
         run_detail.transaction_asset.symbol,
         run_detail.quote_asset.symbol,
-        run_detail.target_exchange.name);
+        run_detail.target_exchange_id !== null ? 
+          run_detail.target_exchange.name :
+          null);
 
       const matching_mappings = _.filter(potential_instruments, instrument => {
         return (instrument.tx_asset_id == run_detail.transaction_asset_id && 
             instrument.quote_asset_id == run_detail.quote_asset_id)
       });
 
-      if (_.isEmpty(matching_mappings)) TE(potential_error);
+      if (_.isEmpty(matching_mappings) &&
+        run_detail.transaction_asset_id!==run_detail.quote_asset_id) TE(potential_error);
 
       const matching_mapping = _.find(matching_mappings, mapping => {
         return mapping.exchange_id == run_detail.target_exchange_id
       });
 
-      if (matching_mapping == null) TE(potential_error);
+      if (matching_mapping == null &&
+        run_detail.transaction_asset_id!==run_detail.quote_asset_id) TE(potential_error);
     });
 
     let conversions;
@@ -908,8 +912,7 @@ const generateInvestmentAssetGroup = async function (user_id, strategy_type) {
   let [err, strategy_assets] = await to(AssetService.getStrategyAssets(strategy_type));
   if (err) TE(err.message);
 
-  let all = _.concat(...strategy_assets),
-   [included] = strategy_assets; 
+  let all = _.concat(...strategy_assets);
   
   let group, group_assets;
   [err, group_assets] = await to(sequelize.transaction(transaction => {
