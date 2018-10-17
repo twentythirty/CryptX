@@ -385,6 +385,13 @@
     "select_exchange": "Select exchange"
   },
 
+  "exchange_accounts": {
+    "is_active": {
+      "active": "Active",
+      "inactive": "Inactive"
+    }
+  },
+
   "assets": {
     "assets": "Assets",
     "headline": "{{ count }} Cryptocurrencies",

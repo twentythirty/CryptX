@@ -9,7 +9,7 @@ Feature: Greylistinf of an asset
         And the system has Instrument Mappings for OKEx
         And the system has only WhiteListed Assets
 
-    Scenario: Greylisting assets that do not meet the liqudity requirement
+    Scenario: Greylisting assets that do not meet the liquidity requirement
 
         Given the average XRP/BTC Liquidity for the last 3 days is:
         |   day     |   Binance |   Bitfinex    |   OKEx    |
