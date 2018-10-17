@@ -197,6 +197,10 @@ const getStrategyAssets = async function (strategy_type) {
   if (!included.length)
     TE(`No assets found for ${_.invert(STRATEGY_TYPES)[strategy_type]} portfolio`);
 
+  if (process.env.MAX_MCI_MIX_SIZE && strategy_type === STRATEGY_TYPES.MCI) {
+    included = included.slice(0, parseInt(process.env.MAX_MCI_MIX_SIZE));
+  }
+
   return [included, excluded];
 };
 module.exports.getStrategyAssets = getStrategyAssets;
