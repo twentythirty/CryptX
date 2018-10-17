@@ -24,12 +24,8 @@ export class ExchangesService {
     private http: HttpClient,
   ) {}
 
-  getAllExchanges(request?: EntitiesFilter): Observable<ExchangesAllResponse> {
-    if (request) {
-      return this.http.post<ExchangesAllResponse>(this.baseUrl + `exchanges/all`, request);
-    } else {
-      return this.http.get<ExchangesAllResponse>(this.baseUrl + `exchanges/all`);
-    }
+  getAllExchanges(ignore: boolean = false): Observable<ExchangesAllResponse> {
+    return this.http.get<ExchangesAllResponse>(this.baseUrl + `exchanges/all/?ignore_unmappable=${ignore}`);
   }
 
   getExchangeInstrumentIdentifiers(exchangeId): Observable<ExchangesInstrumentIdentifiersResponse> {

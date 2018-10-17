@@ -54,7 +54,8 @@ export class LiquidityCreateComponent implements OnInit {
       });
     });
 
-    this.exchangesService.getAllExchanges().subscribe(res => {
+    const getMVPExchanges = true;
+    this.exchangesService.getAllExchanges(getMVPExchanges).subscribe(res => {
       this.exchangesLoading = false;
       this.exchanges = res.exchanges.map(exchange => {
         return {

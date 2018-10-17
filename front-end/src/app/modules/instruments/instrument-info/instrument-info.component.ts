@@ -196,11 +196,12 @@ export class InstrumentInfoComponent extends DataTableCommonManagerComponent imp
   }
 
   private getInstrumentData(): void {
+    const getMVPExchanges = true;
     this.route.params.pipe(
       mergeMap(
         params => zip(
           this.instrumentsService.getInstrument(params['id']),
-          this.exchangesService.getAllExchanges(),
+          this.exchangesService.getAllExchanges(getMVPExchanges),
         )
       )
     ).subscribe(
