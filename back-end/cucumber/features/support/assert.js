@@ -4,6 +4,14 @@ module.exports.nullOrNumber = value => {
     else return false;
 }
 
+module.exports.nullOrSpecificNumber = (to_equal) => {
+    return value => {
+        if(value === null) return true;
+        else if(!isNaN(parseFloat(value)) && value === to_equal) return true;
+        else return false;
+    }
+}
+
 module.exports.successResponse = value => {
     return (value >= 200 && value <= 299)
 };

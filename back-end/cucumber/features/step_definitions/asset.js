@@ -10,7 +10,8 @@ const {
 const sinon = require('sinon');
 
 const {
-    nullOrNumber
+    nullOrNumber,
+    nullOrSpecificNumber
 } = require('../support/assert');
 
 const chaiHttp = require("chai-http");
@@ -583,7 +584,7 @@ Given('the current Asset Capitalization is as follows:', async function(table) {
 
 });
 
-Given(/^the Assets (.*) are Blacklisted$/, async function(blacklisted_assets) {
+Given(/^the (Assets|Asset) (.*) (are|is) Blacklisted$/, async function(plural_1, blacklisted_assets, plural_2) {
 
     const { Asset, AssetStatusChange } = require('../../../models');
     
@@ -1335,6 +1336,57 @@ Then(/^if (\w*) gets (Blacklisted|Whitelisted|Greylisted)$/, async function(asse
         timestamp: Date.now(),
         comment: type
     });
+
+});
+
+Then(/^(Asset|Assets) (.*) will (be|remain) (Blacklisted|Whitelisted|Greylisted)$/, async function(dud_1, asset_symbols, dud_2, status) {
+
+    const { Asset, AssetStatusChange } = require('../../../models');
+
+    const status_map = {
+        Blacklisted: INSTRUMENT_STATUS_CHANGES.Blacklisting,
+        Whitelisted: INSTRUMENT_STATUS_CHANGES.Whitelisting,
+        Greylisted: INSTRUMENT_STATUS_CHANGES.Graylisting
+    };
+    const current_status = status_map[status];
+
+    asset_symbols = asset_symbols.split(/,|and|or/).map(a => a.trim());
+    
+    const assets = await Asset.findAll({
+        where: { symbol: asset_symbols },
+        limit: asset_symbols.length
+    });
+
+    expect(assets.length).to.equal(asset_symbols.length, `Expected to find ${asset_symbols.length} : ${asset_symbols.join(', ')}`);
+
+    for(let asset of assets) {
+
+        let current_asset_status = await AssetStatusChange.findOne({
+            where: { asset_id: asset.id },
+            order: [ [ 'timestamp', 'DESC' ] ]
+        });
+        
+        switch(current_status) {
+
+            case status_map.Blacklisted:
+                expect(current_asset_status, `Expected to find an asset status change for ${asset.symbol}`).to.be.not.null;
+                expect(current_asset_status.type).to.equal(current_status, `Expected the asset ${asset.symbol} to be Blacklisted`);
+                break;
+
+            case status_map.Greylisted:
+                expect(current_asset_status, `Expected to find an asset status change for ${asset.symbol}`).to.be.not.null;
+                expect(current_asset_status.type).to.equal(current_status, `Expected the asset ${asset.symbol} to be Greylisted`);
+                break;
+
+            case status_map.Whitelisted:
+                expect(_.get(current_asset_status, 'type', null)).to.satisfy(nullOrSpecificNumber(current_status), `Expected the asset ${asset.symbol} to be Whitelisted`);
+                break;
+
+            default:
+                throw new Error(`Unknow status ${status}`);
+        }
+        
+    }
 
 });
 

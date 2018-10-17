@@ -385,6 +385,13 @@
     "select_exchange": "Select exchange"
   },
 
+  "exchange_accounts": {
+    "is_active": {
+      "active": "Active",
+      "inactive": "Inactive"
+    }
+  },
+
   "assets": {
     "assets": "Assets",
     "headline": "{{ count }} Cryptocurrencies",
@@ -584,6 +591,12 @@
 
     "recipe_run": {
       "failed_action": "No way found to invest into {{ asset }}"
+    },
+
+    "cold_storage_transfers": {
+      "connector_error": "Failed to prepare connection to <b>{{ exchange }}</b>, error: {{ error }}",
+      "withdraw_error": "Failed to withdraw from <b>{{ exchange }}</b>, error: {{ error }}",
+      "placed": "Withdraw request was successfully created with id <b>{{ id }}</b>"
     }
   },
 

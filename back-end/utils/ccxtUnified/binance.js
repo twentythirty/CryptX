@@ -61,17 +61,17 @@ class Binance {
    * @param {Object} cold_storage_account Cold storage account object to send the funds to.
    * @returns {Promise}
    */
-  async withdraw(asset_symbol, amount, cold_storage_account) {
+  async withdraw(asset_symbol, amount, address, tag) {
     await this.isReady();
 
     console.log(`
       Creating withdraw to ${this.api_id},
       Asset: ${asset_symbol},
       Amount: ${amount},
-      Destination address: ${cold_storage_account.address}
+      Destination address: ${address}
     `);
 
-    return this._connector.withdraw(asset_symbol, amount, cold_storage_account.address, cold_storage_account.tag, {});
+    return this._connector.withdraw(asset_symbol, amount, address, tag, {});
 
   }
 }
