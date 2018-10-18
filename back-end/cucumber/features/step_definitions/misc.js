@@ -625,3 +625,16 @@ After('@limit_to_MVP_exchanges', function() {
     }));
 
 });
+
+After('@whitelist_all_assets', function() {
+
+    const { AssetStatusChange, sequelize } = require('../../../models');
+    const { Op } = sequelize;
+
+    return AssetStatusChange.destroy({
+        where: {
+            type: { [Op.ne]: INSTRUMENT_STATUS_CHANGES.Whitelisting }
+        }
+    });
+
+});

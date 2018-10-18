@@ -12,7 +12,8 @@ const descriptionToJobFile = {
     'place execution orders on exchanges': 'cucumber-exchange-order-placer',
     'calculate market history': 'market-history-calc',
     'update recipe order statuses': 'recipe-order-status-changer',
-    'asset liquidity check': 'asset-liquidity-checker'
+    'asset liquidity check': 'asset-liquidity-checker',
+    'asset price age check': 'asset-price-age-checker'
 }
 
 /**

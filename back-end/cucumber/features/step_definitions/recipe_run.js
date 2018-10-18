@@ -372,9 +372,9 @@ When('I fetch the Recipe Run details', async function() {
     //World.print(recipe_run.body);
     //World.print(recipe_run_details.body);
 
-    World.printDataTable(recipe_run_details.body.recipe_details, {
+    /*World.printDataTable(recipe_run_details.body.recipe_details, {
         attributes: ['transaction_asset', 'quote_asset', 'target_exchange', 'investment_usd', 'investment_btc', 'investment_eth', 'investment_percentage']
-    });
+    });*/
 
 });
 
