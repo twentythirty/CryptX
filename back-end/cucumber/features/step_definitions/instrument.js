@@ -6,6 +6,7 @@ const chaiHttp = require("chai-http");
 chai.use(chaiHttp);
 
 const { lessThanOrEqual } = require('../support/assert');
+const utils = require('../support/step_helpers');
 
 const World = require('../support/global_world');
 
@@ -654,6 +655,47 @@ Given('the current Instrument market data is:', async function(table) {
         }), { transaction });
 
     });
+
+});
+
+Given(/^Instruments with transaction assets (.*) have Market Data older than (.*)$/, async function(asset_symbols, interval) {
+
+    const { Exchange, Asset, Instrument, InstrumentMarketData } = require('../../../models');
+
+    asset_symbols = asset_symbols.split(/,|and|or/).map(a => a.trim());
+
+    const [ assets, exchanges ] = await Promise.all([
+        Asset.findAll({
+            where: { symbol: asset_symbols }
+        }),
+        Exchange.findAll()
+    ]);
+
+    expect(assets.length).to.equal(asset_symbols.length, `Expected to find ${asset_symbols.lenght} assets: ${asset_symbols.join(', ')}`);
+
+    const instruments = await Instrument.findAll({
+        where: { transaction_asset_id: assets.map(a => a.id) }
+    });
+
+    expect(instruments.length).to.be.greaterThan(0, `Expected at least one instrument`);
+
+    const timestamp = Date.now() - utils.speechToInterval(interval);
+
+    return InstrumentMarketData.bulkCreate(_.flatten(instruments.map(instrument => {
+
+        return exchanges.map(exchange => {
+
+            return {
+                instrument_id: instrument.id,
+                exchange_id: exchange.id,
+                ask_price: _.random(0.0001, 0.1, true),
+                bid_price: _.random(0.0001, 0.1, true),
+                timestamp
+            };
+
+        });
+
+    })));
 
 });
 

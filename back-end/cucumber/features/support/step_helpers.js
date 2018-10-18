@@ -155,3 +155,21 @@ module.exports.numberStringToArray = (number_string) => {
     return array_of_numbers;
 
 };
+
+const interval_map = {
+    ms: 1,
+    seconds: 1000,
+    minutes: 60 * 1000,
+    hours: 60 * 60 * 1000,
+    days: 24 * 60 * 60 * 1000,
+    months: 30 * 24 * 60 * 60 * 1000
+}
+module.exports.speechToInterval = string_interval => {
+
+    let [ number, interval_type ] = string_interval.split(' ');
+    number = parseInt(number);
+    interval_type = interval_map[interval_type];
+
+    return number * interval_type;
+
+};

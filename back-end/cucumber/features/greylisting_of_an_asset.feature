@@ -11,7 +11,8 @@ Feature: Greylistinf of an asset
 
     Scenario: Greylisting assets that do not meet the liquidity requirement
 
-        Given the average XRP/BTC Liquidity for the last 3 days is:
+        Given Instruments with transaction assets XRP, ADA, BTG, EOS and OMG have Market Data older than 30 days
+        And the average XRP/BTC Liquidity for the last 3 days is:
         |   day     |   Binance |   Bitfinex    |   OKEx    |
         |   1       |   19000   |   14500      |   15000   |
         |   2       |   22500   |   17450      |   19000   |
