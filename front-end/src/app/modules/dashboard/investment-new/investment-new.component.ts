@@ -12,7 +12,8 @@ import { CurrencyCellDataColumn,
          NumberCellDataColumn,
          PercentCellDataColumn,
          ActionCellDataColumn,
-         DataCellAction } from '../../../shared/components/data-table-cells';
+         DataCellAction, 
+         StatusCellDataColumn} from '../../../shared/components/data-table-cells';
 
 @Component({
   selector: 'app-investment-new',
@@ -197,8 +198,10 @@ export class InvestmentNewComponent extends DataTableCommonManagerComponent impl
         if (res.success) {
           // Append new column
           if (!_.find(this.assetDataSource.header, ['column', 'actions'])) {
-            this.assetDataSource.header.push({ column: 'actions', nameKey: 'table.header.rationale' });
+            this.assetDataSource.header.push( { column: 'status', nameKey: 'table.header.status' },
+                                              { column: 'actions', nameKey: 'table.header.rationale' });
             this.assetColumnsToShow.push(
+              new StatusCellDataColumn({ column: 'status'}),
               new ActionCellDataColumn({ column: 'comment', inputs: {
                 actions: [
                   new DataCellAction({
