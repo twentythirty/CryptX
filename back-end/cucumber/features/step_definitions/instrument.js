@@ -660,21 +660,19 @@ Given('the current Instrument market data is:', async function(table) {
 
 Given(/^Instruments with transaction assets (.*) have Market Data older than (.*)$/, async function(asset_symbols, interval) {
 
-    const { Exchange, Asset, Instrument, InstrumentMarketData } = require('../../../models');
+    const { InstrumentExchangeMapping, Asset, Instrument, InstrumentMarketData } = require('../../../models');
 
     asset_symbols = asset_symbols.split(/,|and|or/).map(a => a.trim());
 
-    const [ assets, exchanges ] = await Promise.all([
-        Asset.findAll({
-            where: { symbol: asset_symbols }
-        }),
-        Exchange.findAll()
-    ]);
+    const assets = await Asset.findAll({
+        where: { symbol: asset_symbols }
+    });
 
     expect(assets.length).to.equal(asset_symbols.length, `Expected to find ${asset_symbols.lenght} assets: ${asset_symbols.join(', ')}`);
 
     const instruments = await Instrument.findAll({
-        where: { transaction_asset_id: assets.map(a => a.id) }
+        where: { transaction_asset_id: assets.map(a => a.id) },
+        include: InstrumentExchangeMapping
     });
 
     expect(instruments.length).to.be.greaterThan(0, `Expected at least one instrument`);
@@ -683,11 +681,11 @@ Given(/^Instruments with transaction assets (.*) have Market Data older than (.*
 
     return InstrumentMarketData.bulkCreate(_.flatten(instruments.map(instrument => {
 
-        return exchanges.map(exchange => {
+        return instrument.InstrumentExchangeMappings.map(mapping => {
 
             return {
                 instrument_id: instrument.id,
-                exchange_id: exchange.id,
+                exchange_id: mapping.exchange_id,
                 ask_price: _.random(0.0001, 0.1, true),
                 bid_price: _.random(0.0001, 0.1, true),
                 timestamp
