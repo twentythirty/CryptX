@@ -389,6 +389,9 @@
     "is_active": {
       "active": "Active",
       "inactive": "Inactive"
+    },
+    "footer": {
+      "exchange": "{{ exchange }} Exchanges"
     }
   },
 

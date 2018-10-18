@@ -959,6 +959,29 @@ router.post(
   check_permissions,
   ExchangeController.createExchangeAccount
 );
+router.post(
+  ROUTES.GetExchangeAccounts.router_string,
+  stateless_auth,
+  res_new_token,
+  check_permissions,
+  filter_reducer,
+  ExchangeController.getExchangeAccounts
+);
+router.get(
+  ROUTES.GetExchangeAccount.router_string,
+  stateless_auth,
+  res_new_token,
+  check_permissions,
+  ExchangeController.getExchangeAccount
+);
+router.post(
+  ROUTES.GetExchangeAccountsColumnLOV.router_string,
+  stateless_auth,
+  res_new_token,
+  check_permissions,
+  filter_reducer,
+  ExchangeController.getExchangeAccountsColumnLOV
+);
 
 //COLD STORAGE
 router.post(

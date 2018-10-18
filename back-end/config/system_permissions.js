@@ -36,6 +36,7 @@ PERMISSIONS = {
   CREATE_LIQUIDITY_REQUIREMENTS: "perm_create_liquidity_requirements",
   VIEW_LIQUIDITY_REQUIREMENTS: "perm_view_liquidity_requirements",
   ADD_EXCHANGE_ACCOUNTS: "perm_add_exchange_account",
+  VIEW_EXCHANGE_ACCOUNTS: "perm_view_exchange_accounts",
   RECEIVE_NOTIFICATION_ABOUT_NEW_ASSETS: "perm_receive_notifications_about_new_assets"
 };
 //list of permissions that dotn apply to users
@@ -83,7 +84,8 @@ CATEGORY_TO_PERM_ASSOC = {
     PERMISSIONS.VIEW_COLD_STORAGE_ACCOUNT_FEES,
   ],
   [PERMISSIONS_CATEGORIES.EXCHANGES]: [
-    PERMISSIONS.ADD_EXCHANGE_ACCOUNTS
+    PERMISSIONS.ADD_EXCHANGE_ACCOUNTS,
+    PERMISSIONS.VIEW_EXCHANGE_ACCOUNTS
   ],
   [PERMISSIONS_CATEGORIES.LIQUIDITY]: [
     PERMISSIONS.CREATE_LIQUIDITY_REQUIREMENTS,
@@ -175,6 +177,8 @@ all_permissions[PERMISSIONS.VIEW_LIQUIDITY_REQUIREMENTS] =
 "Permission to view liquidity requirements";
 all_permissions[PERMISSIONS.ADD_EXCHANGE_ACCOUNTS] =
 "Permission to add exchange accounts";
+all_permissions[PERMISSIONS.VIEW_EXCHANGE_ACCOUNTS] =
+"Permission to view exchange accounts";
 all_permissions[PERMISSIONS.RECEIVE_NOTIFICATION_ABOUT_NEW_ASSETS] =
 "Permission to receive email notifications about new assets";
 
@@ -758,6 +762,7 @@ ROUTES = {
     required_permissions: []
   },
 
+  //Exchanges
   GetExchanges: {
     router_string: "/exchanges/all",
     permissions_matcher: ROUTE_MATCHERS.GetExchanges,
@@ -773,5 +778,20 @@ ROUTES = {
     router_string: '/exchanges/:exchange_id/accounts/create',
     permissions_matcher: ROUTE_MATCHERS.CreateExchangeAccount,
     required_permissions: [PERMISSIONS.ADD_EXCHANGE_ACCOUNTS]
+  },
+  GetExchangeAccounts: {
+    router_string: '/exchanges/accounts/all',
+    permissions_matcher: ROUTE_MATCHERS.CreateExchangeAccount,
+    required_permissions: [PERMISSIONS.VIEW_EXCHANGE_ACCOUNTS]
+  },
+  GetExchangeAccount: {
+    router_string: '/exchanges/accounts/:exchange_account_id',
+    permissions_matcher: ROUTE_MATCHERS.CreateExchangeAccount,
+    required_permissions: [PERMISSIONS.VIEW_EXCHANGE_ACCOUNTS]
+  },
+  GetExchangeAccountsColumnLOV: {
+    router_string: '/exchanges/accounts/header_lov/:field_name',
+    permissions_matcher: ROUTE_MATCHERS.CreateExchangeAccount,
+    required_permissions: [PERMISSIONS.VIEW_EXCHANGE_ACCOUNTS]
   }
 };

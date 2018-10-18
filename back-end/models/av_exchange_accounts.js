@@ -1,8 +1,8 @@
 'use strict';
 
 module.exports = (sequelize, DataTypes) => {
-    let AVEXchangeAccount = sequelize.define(
-        'AVEXchangeAccount',
+    let AVExchangeAccount = sequelize.define(
+        'AVExchangeAccount',
         {   
             exchange_id: DataTypes.INTEGER,
             exchange: DataTypes.STRING,
@@ -15,5 +15,5 @@ module.exports = (sequelize, DataTypes) => {
         modelProps('av_exchange_accounts', 'Exchange account view')
     );
 
-    return AVEXchangeAccount;
+    return AVExchangeAccount;
 };

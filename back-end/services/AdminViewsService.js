@@ -21,7 +21,8 @@ const {
     AVColdStorageTransfer,
     AVColdStorageAccount,
     AVColdStorageAccountStorageFee,
-    AVInvestmentAssetConversion
+    AVInvestmentAssetConversion,
+    AVExchangeAccount
 } = require('../models');
 
 const builder = require('../utils/AdminViewUtils');
@@ -110,6 +111,11 @@ const TABLE_LOV_FIELDS = {
         'cold_storage_account_id',
         'custodian',
         'strategy_type'
+    ],
+    'av_exchange_accounts': [
+        'exchange',
+        'asset',
+        'is_active'
     ]
 }
 
@@ -247,6 +253,12 @@ const fetchColdStorageAccountStorageFeesViewHeaderLOV = async (header_field, que
 }
 module.exports.fetchColdStorageAccountStorageFeesViewHeaderLOV = fetchColdStorageAccountStorageFeesViewHeaderLOV;
 
+const fetchExchangeAccountsViewHeaderLOV = async (header_field, query ='', where = '') => {
+
+    return fetchViewHeaderLOV('av_exchange_accounts', header_field, query, where);
+}
+module.exports.fetchExchangeAccountsViewHeaderLOV = fetchExchangeAccountsViewHeaderLOV;
+
 
 
 // ************************ DATA ***************************//
@@ -358,6 +370,12 @@ const fetchInvestmentAssetConversionsViewDataWithCount = async (seq_query = {}) 
     return fetchViewDataWithCount(AVInvestmentAssetConversion, seq_query);
 }
 module.exports.fetchInvestmentAssetConversionsViewDataWithCount = fetchInvestmentAssetConversionsViewDataWithCount;
+
+const fetchExchangeAccountsViewDataWithCount = async (seq_query = {}) => {
+
+    return fetchViewDataWithCount(AVExchangeAccount, seq_query);
+}
+module.exports.fetchExchangeAccountsViewDataWithCount = fetchExchangeAccountsViewDataWithCount;
 
 const fetchAssetView = async (asset_id) => {
 
@@ -471,6 +489,12 @@ const fetchInvestmentAssetConversionView = async (conversion_id) => {
     return fetchSingleEntity(AVInvestmentAssetConversion, conversion_id);
 }
 module.exports.fetchInvestmentAssetConversionView = fetchInvestmentAssetConversionView;
+
+const fetchExchangeAccountView = async (account_id) => {
+
+    return fetchSingleEntity(AVExchangeAccount, account_id);
+}
+module.exports.fetchExchangeAccountView = fetchExchangeAccountView;
 
 // ************************ FOOTERS ***************************//
 
@@ -1033,4 +1057,22 @@ const fetchInvestmentAssetConversionViewFooter = async (where_clause = '') => {
     )
 }
 module.exports.fetchInvestmentAssetConversionViewFooter = fetchInvestmentAssetConversionViewFooter;
+
+const fetchExchangeAccountViewFooter = async (where_clause = '') => {
+
+    const view = 'av_exchange_accounts';
+
+    const query = builder.joinQueryParts([
+        builder.selectCountDistinct('exchange_id', 'exchange', view, where_clause),
+    ], [
+        'exchange'
+    ]);
+
+    const footer = (await sequelize.query(query))[0];
+
+    return builder.addFooterLabels(
+        builder.queryReturnRowToFooterObj(footer), 'exchange_accounts'
+    )
+}
+module.exports.fetchExchangeAccountViewFooter = fetchExchangeAccountViewFooter;
 

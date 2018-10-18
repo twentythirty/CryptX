@@ -484,6 +484,125 @@
         ]
       }
     },
+    "/exchanges/accounts/all": {
+      "post": {
+        "tags": [
+          "exchange"
+        ],
+        "summary": "Get a list of exchange accounts",
+        "description": "Get a list of exchange accounts",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "description": "Filter object used to filter out data",
+            "required": false,
+            "schema": {
+              "$ref": "#/definitions/EntitiesFilter"
+            }
+          }
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "$ref": "#/definitions/ExchangeAccountListResponse"
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/exchanges/accounts/{exchange_account_id}": {
+      "post": {
+        "tags": [
+          "exchange"
+        ],
+        "summary": "Get a single exchange account",
+        "description": "Get a list of exchange accounts",
+        "parameters": [
+          {
+            "name": "exchange_account_id",
+            "in": "path",
+            "description": "ID of the exchange account",
+            "required": true,
+            "type": "integer"
+          }
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "$ref": "#/definitions/ExchangeAccountResponse"
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/exchanges/accounts/header_lov/{field_name}": {
+      "post": {
+        "tags": [
+          "exchange"
+        ],
+        "summary": "Get a list of all values for this field in the users view table",
+        "description": "Optionally filtered list of all values for a speicfic field in the exchange account admin view table. Used as the set of options in LOV-type headers. The POST version can be used in conjunction with header search. For users table, this `field_name` can be: `first_name`, `last_name`, `email`, `is_active`",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "field_name",
+            "in": "path",
+            "description": "name of column field to fetch LOV for. corresponds to value used to fill column by entity.",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "filter query",
+            "in": "body",
+            "description": "the query used to additionally filter the LOV",
+            "required": false,
+            "schema": {
+              "$ref": "#/definitions/LOVFilter"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "schema": {
+              "$ref": "#/definitions/HeaderColListResponse"
+            }
+          },
+          "401": {
+            "description": "unauthorized - no session",
+            "schema": {
+              "$ref": "#/definitions/ApiUnauthorizezdResponse"
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
     "/settings": {
       "get": {
         "tags": [
@@ -5080,6 +5199,38 @@
         }
       }
     },
+    "ExchangeAccountListResponse": {
+      "description": "A list response for exchange accounts",
+      "type": "object",
+      "allOf": [
+        {
+          "$ref": "#/definitions/ListResponse"
+        },
+        {
+          "properties": {
+            "exchange_accounts": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/ExchangeAccount"
+              }
+            }
+          }
+        }
+      ]
+    },
+    "ExchangeAccountResponse": {
+      "description": "Single exchange account response",
+      "type": "object",
+      "properties": {
+        "status": {
+          "type": "boolean",
+          "example": true
+        },
+        "exchange_account": {
+          "$ref": "#/definitions/ExchangeAccount"
+        }
+      }
+    },
     "ColdStorageAccountListResponse": {
       "description": "Cold storage transfer information",
       "type": "object",
@@ -5150,6 +5301,40 @@
         "is_active": {
           "type": "boolean",
           "example": true
+        }
+      }
+    },
+    "ExchangeAccount": {
+      "description": "Detailed exchange account",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "number",
+          "example": 18
+        },
+        "asset_id": {
+          "type": "number",
+          "example": 2
+        },
+        "asset": {
+          "type": "string",
+          "example": "BTC"
+        },
+        "exchange_id": {
+          "type": "number",
+          "example": 354
+        },
+        "exchange": {
+          "type": "string",
+          "example": "Binance"
+        },
+        "address": {
+          "type": "string",
+          "example": "1F1tAaz5x1HUXrCNLbtMDqcw6o5GNn4xqX"
+        },
+        "is_active": {
+          "type": "string",
+          "example": "exchange_accounts.is_active.active"
         }
       }
     },
