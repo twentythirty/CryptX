@@ -386,6 +386,8 @@
   },
 
   "exchange_accounts": {
+    "add_account": "Add account",
+    "header": "Exchange accounts",
     "is_active": {
       "active": "Active",
       "inactive": "Inactive"
@@ -569,8 +571,8 @@
     },
 
     "asset_status_changer": {
-      "graylisted": "System graylisted {{asset_name}}({asset_symbol}}) because it doesn't meet liquidity requirements",
-      "whitelisted": "System whitelisted {{asset_name}}({asset_symbol}}) because it meets liquidity requirements"
+      "graylisted": "System graylisted {{ asset_name }}({{ asset_symbol }}) due to: {{ reason }}",
+      "whitelisted": "System whitelisted {{ asset_name }}({{ asset_symbol }}) due to: {{ reason }}"
     },
 
     "execution_orders": {
@@ -661,6 +663,16 @@
       "target_currency": "{{ target_currency }} Currencies",
       "investment_amount": "{{ investment_amount }} Total",
       "status": "{{ status }} Pending"
+    }
+  },
+
+  "asset_status_changes": {
+    "whitelisting": {
+      "liqudity": "meeting the liquidity requirements"
+    },
+    "graylisting": {
+      "liquidity": "not meeting the liquidity requirements",
+      "price_age": "not having old enough pricing information"
     }
   }
 }

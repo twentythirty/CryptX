@@ -46,7 +46,8 @@ describe("Asset status changer job", () => {
     exchange_id: 1,
     minimum_volume: 10000,
     avg_volume: 10001, // volume bigger then minimum required volume
-    status: INSTRUMENT_STATUS_CHANGES.Graylisting
+    status: INSTRUMENT_STATUS_CHANGES.Graylisting,
+    price_old_enough: true
   }
 
   let GRAYLISTED_COMMENT = "Doesn't meet liquidity requirements"

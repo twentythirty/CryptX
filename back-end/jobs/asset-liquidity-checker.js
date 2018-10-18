@@ -8,6 +8,21 @@ const actions = {
   whitelisted: `${action_path}.whitelisted`,
 };
 
+const REASONS = {
+  WHITELISTING: {
+    LIQUIDITY: {
+      i18n: '{asset_status_changes.whitelisting.liqudity}',
+      comment: 'Meets liquidity requirements'
+    }
+  },
+  GRAYLISTING: {
+    LIQUIDITY: {
+      i18n: '{asset_status_changes.graylisting.liquidity}',
+      comment: 'Doesn\'t meet liquidity requirements'
+    }
+  }
+};
+
 // every 5 minutes
 module.exports.SCHEDULE = "0 */5 * * * *";
 module.exports.NAME = "ASSET_LIQUIDITY_CHK";
@@ -26,7 +41,8 @@ module.exports.JOB_BODY = async (config, log) => {
       ilr.periodicity_in_days,
       AVG(ilh.quote_volume) as avg_volume,
       ilh.exchange_id,
-      CASE WHEN status.type IS NULL THEN :whitelisted ELSE status.type END as status
+      CASE WHEN status.type IS NULL THEN :whitelisted ELSE status.type END as status,
+      apc.price_old_enough
     FROM instrument_liquidity_requirement ilr
     JOIN instrument i ON i.id=ilr.instrument_id
     JOIN asset ON asset.id=i.transaction_asset_id
@@ -43,14 +59,29 @@ module.exports.JOB_BODY = async (config, log) => {
       AND (ilh.exchange_id=ilr.exchange
       OR ilr.exchange IS NULL ) 
     )
+    LEFT JOIN LATERAL (
+        SELECT 
+            CASE
+                WHEN EXISTS (
+                    SELECT * FROM instrument_market_data AS imd
+                    WHERE imd.instrument_id = i.id AND imd.timestamp <= NOW() - INTERVAL :minimum_age
+                )
+                THEN TRUE
+                ELSE FALSE
+            END AS price_old_enough 
+        FROM asset AS a
+        JOIn instrument AS i ON i.transaction_asset_id = asset.id
+        WHERE a.id = asset.id
+    ) AS apc ON TRUE AND apc.price_old_enough IS TRUE
 
     WHERE status.type <> :blacklisted OR status.type IS NULL
 
-    GROUP BY asset.id, ilr.id, i.id, ilh.exchange_id, status.type
+    GROUP BY asset.id, ilr.id, i.id, ilh.exchange_id, status.type, apc.price_old_enough
   `, {
     replacements: { // replace keys with values in query
       whitelisted: INSTRUMENT_STATUS_CHANGES.Whitelisting,
-      blacklisted: INSTRUMENT_STATUS_CHANGES.Blacklisting
+      blacklisted: INSTRUMENT_STATUS_CHANGES.Blacklisting,
+      minimum_age: ASSET_PRICING_MIN_AGE
     },
     type: sequelize.QueryTypes.SELECT
   }));
@@ -66,6 +97,15 @@ module.exports.JOB_BODY = async (config, log) => {
       let asset = _.first(liq);
       let change_status = false;
 
+      // check the price age first
+      if (liq.every(a => !a.price_old_enough)) { //If at all instrument prices is not old enough
+        
+        log(`All of the instruments for ${asset.long_name}(${asset.symbol}) don't have pricing from ${ASSET_PRICING_MIN_AGE} ago`);
+
+        return change_status; //End here, as the asset does not meet the price requirement.
+
+      }
+
       // if asset is whitelisted
 
       // if true is returned then asset status should be changed
@@ -78,11 +118,14 @@ module.exports.JOB_BODY = async (config, log) => {
 
         if (asset.status==INSTRUMENT_STATUS_CHANGES.Graylisting) {
           asset.change_status_to = INSTRUMENT_STATUS_CHANGES.Whitelisting;
+          asset.reason = REASONS.WHITELISTING.LIQUIDITY.comment;
 
           logAction(actions.whitelisted, {
             args: { 
               asset_name: asset.long_name,
-              asset_symbol: asset.symbol },
+              asset_symbol: asset.symbol,
+              reason: REASONS.WHITELISTING.LIQUIDITY.i18n
+            },
             relations: { asset_id: asset.id }
           });
   
@@ -98,11 +141,14 @@ module.exports.JOB_BODY = async (config, log) => {
 
         if (asset.status==INSTRUMENT_STATUS_CHANGES.Whitelisting) {
           asset.change_status_to = INSTRUMENT_STATUS_CHANGES.Graylisting;
+          asset.reason = REASONS.GRAYLISTING.LIQUIDITY.comment;
 
           logAction(actions.graylisted, {
             args: { 
               asset_name: asset.long_name,
-              asset_symbol: asset.symbol },
+              asset_symbol: asset.symbol ,
+              reason: REASONS.GRAYLISTING.LIQUIDITY.i18n
+            },
             relations: { asset_id: asset.id }
           });
   
@@ -128,9 +174,7 @@ module.exports.JOB_BODY = async (config, log) => {
       return {
         timestamp: new Date(),
         asset_id: asset.id,
-        comment: asset.change_status_to == INSTRUMENT_STATUS_CHANGES.Whitelisting ?
-          "Meets liquidity requirements" :
-          "Doesn't meet liquidity requirements",
+        comment: asset.reason,
         type: asset.change_status_to
       }
     }));

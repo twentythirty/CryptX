@@ -41,6 +41,7 @@ export class NavigationComponent implements OnInit {
     {name: 'User management', show: false, items: [
       {link: '/users', permission: [permissions.EDIT_USERS], name: 'Users'},
       {link: '/roles', permission: [permissions.VIEW_ROLES], name: 'Roles'},
+      {link: '/exchange_accounts', permission: [permissions.VIEW_ROLES], name: 'Exchange Account'},
     ]},
     {name: 'Cold Storage', show: false, items: [
       {link: '/cold_storage/custodians', permission: [permissions.VIEW_INVESTMENT_RUN], name: 'Custodians'},

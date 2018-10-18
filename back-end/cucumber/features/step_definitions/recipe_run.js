@@ -372,9 +372,9 @@ When('I fetch the Recipe Run details', async function() {
     //World.print(recipe_run.body);
     //World.print(recipe_run_details.body);
 
-    World.printDataTable(recipe_run_details.body.recipe_details, {
+    /*World.printDataTable(recipe_run_details.body.recipe_details, {
         attributes: ['transaction_asset', 'quote_asset', 'target_exchange', 'investment_usd', 'investment_btc', 'investment_eth', 'investment_percentage']
-    });
+    });*/
 
 });
 
@@ -583,7 +583,11 @@ Then('the correct Exchange is assigned to each Detail', async function () {
             }
         });
 
-        expect(match).to.be.not.null;
+        expect(match, `
+            Expected to find Instrument with transaction asset id : ${detail.transaction_asset_id} 
+            and quote asset id: ${detail.quote_asset_id},
+            That is also mapped to Exchange with id ${detail.target_exchange_id}
+        `).to.be.not.null;
 
     }
 

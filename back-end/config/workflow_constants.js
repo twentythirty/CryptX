@@ -63,6 +63,8 @@ LIQUIDITY_LEVELS = [
     { level: 9, from: 10000000000 }
 ];
 
+ASSET_PRICING_MIN_AGE = '30 days';
+
 //KEYS for various exchanges
 EXCHANGE_KEYS = {
     binance: {
