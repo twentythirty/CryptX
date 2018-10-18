@@ -60,7 +60,10 @@
         ></app-data-table>
       </div>
 
-      <div *ngIf="!showSelectedAssetsMix && !showSkippedAssets">
+      <div
+        *ngIf="!showSelectedAssetsMix && !showSkippedAssets"
+        step-3
+      >
         <div class="checkboxes-modal-wrap input-padding">
           <app-input-item
             class="form-item label"
@@ -85,7 +88,8 @@
             ></app-input-item>
           </div>
           <div class="display-inline">
-            <app-input-item class="form-item label"
+            <app-input-item
+              class="form-item label"
               [label]="'investment.amount_in_eth' | translate"
               [placeholder]="'investment.enter_eth' | translate"
               [formGroup]="runForm"
@@ -96,6 +100,7 @@
           </div>
         </div>
       </div>
+
       <div class="margin-bottom">
         <app-btn
           *ngIf="showSelectedAssetsMix || showSkippedAssets"

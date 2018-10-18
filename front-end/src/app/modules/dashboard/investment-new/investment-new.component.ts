@@ -12,7 +12,7 @@ import { CurrencyCellDataColumn,
          NumberCellDataColumn,
          PercentCellDataColumn,
          ActionCellDataColumn,
-         DataCellAction, 
+         DataCellAction,
          StatusCellDataColumn} from '../../../shared/components/data-table-cells';
 
 @Component({
@@ -161,6 +161,7 @@ export class InvestmentNewComponent extends DataTableCommonManagerComponent impl
   // Get selected asset mix table
   getAllData() {
     this.loading = true;
+
     if (!this.showSelectedAssetsMix && this.showSkippedAssets) {
       this.getSkippedAssets();
     }
@@ -198,11 +199,13 @@ export class InvestmentNewComponent extends DataTableCommonManagerComponent impl
         if (res.success) {
           // Append new column
           if (!_.find(this.assetDataSource.header, ['column', 'actions'])) {
-            this.assetDataSource.header.push( { column: 'status', nameKey: 'table.header.status' },
-                                              { column: 'actions', nameKey: 'table.header.rationale' });
+            this.assetDataSource.header.push(
+              { column: 'status', nameKey: 'table.header.status' },
+              { column: 'actions', nameKey: 'table.header.rationale' }
+            );
             this.assetColumnsToShow.push(
-              new StatusCellDataColumn({ column: 'status'}),
-              new ActionCellDataColumn({ column: 'comment', inputs: {
+              new StatusCellDataColumn({ column: 'status' }),
+              new ActionCellDataColumn({ column: 'actions', inputs: {
                 actions: [
                   new DataCellAction({
                     label: 'READ',

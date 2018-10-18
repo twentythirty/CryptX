@@ -406,3 +406,54 @@ export const getAllRecipeDepositsData = {
   count: 2,
   footer: []
 };
+
+export const createAssetMixData = {
+  success: true,
+  list: {
+    id: 1,
+    strategy_id: 101,
+    user_id: 1
+  }
+};
+
+export const getAssetMixData = {
+  success: true,
+  assets: [
+    {
+      id: 1929,
+      capitalization: '91110653',
+      comment: 'test',
+      long_name: 'ETERNAL TOKEN',
+      market_share: '0.04320480811815845',
+      nvt_ratio: '160.8449316496260203',
+      status: 'assets.status.400',
+      symbol: 'XET'
+    }
+  ],
+  footer: [],
+  count: 1
+};
+
+export const createInvestmentRunData = {
+  success: true,
+  investment_run: {
+    id: 5,
+    completed_timestamp: null,
+    deposit_usd: '0',
+    investment_run_asset_group_id: 289,
+    is_simulated: true,
+    started_timestamp: 1539862913637,
+    status: 301,
+    strategy_type: 101,
+    updated_timestamp: 1539862913637,
+    user_created_id: 1,
+    InvestmentAmounts: [
+      {
+        id: 218,
+        asset_id: 1,
+        amount: '4',
+        investment_run_id: 5
+      }
+    ]
+  }
+};

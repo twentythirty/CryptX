@@ -1,10 +1,11 @@
-<input id="{{ value }}"
+<input
+  [id]="id"
   type="checkbox"
   [value]="value"
   [checked]="checked"
   (change)="handleToggle()"
 >
-<label [class.checked]="checked" for="{{ value }}">
+<label [class.checked]="checked" [for]="id">
   <ng-container *ngIf="checked">
     {{ labelTrue }}
   </ng-container>

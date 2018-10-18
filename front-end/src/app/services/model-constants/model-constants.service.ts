@@ -11,7 +11,7 @@ export class ModelConstantsService {
   }
 
   /** Gets whole model_constants object */
-  getConstants(values: Object) {
+  getConstants() {
     return this.model_constants;
   }
 
@@ -19,8 +19,10 @@ export class ModelConstantsService {
    * @param value constan number that will be used to find name by
    */
   getName(value: any) {
-    for (const group_key in this.model_constants) {
-      const group = this.model_constants[group_key];
+    const constants = this.getConstants();
+
+    for (const group_key in constants) {
+      const group = constants[group_key];
       if (Object.values(group).find(val => val === value)) {
         return Object.keys(group).find(key => group[key] === value );
       }
@@ -31,7 +33,7 @@ export class ModelConstantsService {
    * @param group_name name of group to get names of values from
    */
   getNames(group_name: string) {
-    const group = this.model_constants[group_name];
+    const group = this.getGroup(group_name);
     return Object.keys(group);
   }
 
@@ -39,7 +41,7 @@ export class ModelConstantsService {
    * @param group_name name of group
   */
   getGroup(group_name: string) {
-    return this.model_constants[group_name];
+    return this.getConstants()[group_name];
   }
 
   /* Add other ways to use model constants data if needed */
