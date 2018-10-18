@@ -1,14 +1,23 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
 
 import { EntitiesFilter } from '../../shared/models/api/entitiesFilter';
 import { environment } from '../../../environments/environment';
+import { ExchangeAccount } from '../../shared/models/exchangeAccount';
 
 export class ExchangesAllResponse {
   success: boolean;
   exchanges: Array<any>;
   count: number;
+}
+
+export class ExchangeAccountsAllResponse {
+  success: boolean;
+  exchange_accounts: Array<ExchangeAccount>;
+  count: number;
+  footer: Array<any>;
 }
 
 export class ExchangesInstrumentIdentifiersResponse {
@@ -30,6 +39,28 @@ export class ExchangesService {
 
   getExchangeInstrumentIdentifiers(exchangeId): Observable<ExchangesInstrumentIdentifiersResponse> {
     return this.http.get<ExchangesInstrumentIdentifiersResponse>(this.baseUrl + `exchanges/${exchangeId}/instruments`);
+  }
+
+  getAllExchangeAccounts(requestData?: EntitiesFilter): Observable<ExchangeAccountsAllResponse> {
+    return this.http.post<ExchangeAccountsAllResponse>(this.baseUrl + `exchanges/accounts/all`, requestData);
+  }
+
+  getHeaderLOV(column_name: string): Observable<any> {
+    return this.http.post<any>(this.baseUrl + `exchanges/accounts/header_lov/${column_name}`, {}).pipe(
+      map(
+        res => {
+          if (res && Array.isArray(res.lov)) {
+            return res.lov.map(lov => {
+              if (lov !== null) {
+                return { value: lov.toString() };
+              } else {
+                return {value: '-'};
+              }
+            });
+          } else { return null; }
+        }
+      )
+    );
   }
 
 }

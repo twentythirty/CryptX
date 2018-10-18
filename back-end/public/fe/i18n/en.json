@@ -386,6 +386,8 @@
   },
 
   "exchange_accounts": {
+    "add_account": "Add account",
+    "header": "Exchange accounts",
     "is_active": {
       "active": "Active",
       "inactive": "Inactive"

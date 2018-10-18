@@ -43,6 +43,8 @@ import { AccountsListComponent } from '../../modules/cold-storage-accounts/accou
 import { CustodiansListComponent } from '../../modules/cold-storage-custodians/custodians-list/custodians-list.component';
 import { ColdStorageAccountStorageFeeListComponent } from '../../modules/cold-storage-account-storage-fee/cold-storage-account-storage-fee-list/cold-storage-account-storage-fee-list.component';
 import { CustodiansAddComponent } from '../../modules/cold-storage-custodians/custodians-add/custodians-add.component';
+import { ExchangeAccountsListComponent } from '../../modules/exchange-accounts/exchange-accounts-list/exchange-accounts-list.component';
+import { ExchangeAccountsAddComponent } from '../../modules/exchange-accounts/exchange-accounts-add/exchange-accounts-add.component';
 
 export const routes: Routes = [
   { path: 'login', component: LoginComponent },
@@ -210,6 +212,24 @@ export const routes: Routes = [
   {
     path: 'cold_storage/custodians/add',
     component: CustodiansAddComponent,
+    canActivate: [AuthGuard]
+  },
+
+  {
+    path: 'exchange_accounts',
+    component: ExchangeAccountsListComponent,
+    canActivate: [AuthGuard]
+  },
+
+  {
+    path: 'exchange_accounts/add',
+    component: ExchangeAccountsAddComponent,
+    canActivate: [AuthGuard]
+  },
+
+  {
+    path: 'exchange_accounts/view/:id',
+    component: ExchangeAccountsAddComponent,
     canActivate: [AuthGuard]
   },
 
