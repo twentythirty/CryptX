@@ -22,7 +22,8 @@
     "add_new_account": "Add new account",
     "all": "All",
     "add_custodian": "Add custodian",
-    "discard": "Discard"
+    "discard": "Discard",
+    "row_number": "Row Nr."
   },
   "table": {
     "header": {
@@ -128,7 +129,8 @@
     },
     "footer": {
       "exchange_id": "{{ exchange_id }} Exchanges",
-      "external_instrument": "{{ external_instrument }} Identifiers"
+      "external_instrument": "{{ external_instrument }} Identifiers",
+      "row_number": "{{ row_number }} Items"
     }
   },
 

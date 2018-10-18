@@ -421,6 +421,7 @@ export const getAssetMixData = {
   assets: [
     {
       id: 1929,
+      row_number: 1,
       capitalization: '91110653',
       comment: 'test',
       long_name: 'ETERNAL TOKEN',

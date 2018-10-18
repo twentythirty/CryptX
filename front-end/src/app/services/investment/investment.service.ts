@@ -204,7 +204,9 @@ export class InvestmentService {
    */
 
   getSingleInvestment(investment_id: number, requestData: EntitiesFilter): Observable<any> {
-    return this.http.post<any>(this.baseUrl + `investments/${investment_id}`, requestData);
+    return this.http.post<any>(this.baseUrl + `investments/${investment_id}`, requestData).pipe(
+      tap(data => this.appendRowNumberData(data, requestData))
+    );
   }
 
   getSingleRecipe(recipe_id: number): Observable<any> {
@@ -288,7 +290,30 @@ export class InvestmentService {
   }
 
   getAssetMix(asset_group_id: number, requestData?: EntitiesFilter): Observable<any> {
-    return this.http.post<any>(this.baseUrl + `assets/detailed/of_investment_asset_group/${asset_group_id}`, requestData);
+    return this.http.post<any>(this.baseUrl + `assets/detailed/of_investment_asset_group/${asset_group_id}`, requestData).pipe(
+      tap(data => this.appendRowNumberData(data, requestData))
+    );
+  }
+
+  private appendRowNumberData(data, requestData: EntitiesFilter) {
+    let iterator = requestData.offset;
+    let assets = data.assets ? data.assets : data.asset_mix;
+
+    assets = assets.map(item => {
+      item.row_number = ++iterator;
+      return item;
+    });
+
+    // copy "symbol" column footer value
+    data.footer.push(
+      Object.assign(
+        {},
+        data.footer.find(item => item.name === 'symbol'),
+        { name : 'row_number' }
+      )
+    );
+
+    return data;
   }
 
   getDepositAmounts(investments_id: number): Observable<any> {

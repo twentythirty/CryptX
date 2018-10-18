@@ -8,7 +8,7 @@ import { getAllExchangeAccountsData } from '../../../testing/service-mock/exchan
 import { testHeaderLov } from '../../../testing/commonTests';
 import { Location } from '@angular/common';
 
-fdescribe('ExchangeAccountsListComponent', () => {
+describe('ExchangeAccountsListComponent', () => {
   let component: ExchangeAccountsListComponent;
   let fixture: ComponentFixture<ExchangeAccountsListComponent>;
   let exchangeService: ExchangesService;

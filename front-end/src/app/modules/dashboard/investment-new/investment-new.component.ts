@@ -48,6 +48,7 @@ export class InvestmentNewComponent extends DataTableCommonManagerComponent impl
 
   public assetDataSource: TableDataSource = {
     header: [
+      { column: 'row_number', nameKey: 'common.row_number' },
       { column: 'symbol', nameKey: 'table.header.symbol', filter: { type: 'text', sortable: true } },
       { column: 'long_name', nameKey: 'table.header.long_name', filter: { type: 'text', sortable: true } },
       { column: 'capitalization', nameKey: 'table.header.capitalisation', filter: { type: 'number', sortable: true } },
@@ -58,6 +59,7 @@ export class InvestmentNewComponent extends DataTableCommonManagerComponent impl
   };
 
   public assetColumnsToShow: Array<TableDataColumn> = [
+    new TableDataColumn({ column: 'row_number' }),
     new TableDataColumn({ column: 'symbol' }),
     new TableDataColumn({ column: 'long_name' }),
     new CurrencyCellDataColumn({ column: 'capitalization' }),
