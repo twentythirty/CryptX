@@ -569,6 +569,8 @@ Then('the correct Exchange is assigned to each Detail', async function () {
 
     for (let detail of this.current_recipe_run_details) {
 
+        if(detail.quote_asset_id === detail.transaction_asset_id) continue;
+
         const match = await Instrument.findOne({
             where: {
                 quote_asset_id: detail.quote_asset_id,
