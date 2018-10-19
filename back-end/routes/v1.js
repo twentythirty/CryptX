@@ -960,6 +960,13 @@ router.post(
   ExchangeController.createExchangeAccount
 );
 router.post(
+  ROUTES.EditExchangeAccount.router_string,
+  stateless_auth,
+  res_new_token,
+  check_permissions,
+  ExchangeController.editExchangeAccount
+);
+router.post(
   ROUTES.GetExchangeAccounts.router_string,
   stateless_auth,
   res_new_token,

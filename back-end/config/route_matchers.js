@@ -95,6 +95,7 @@ ROUTE_MATCHERS = {
     Logout: /\/users\/logout/,
     GetExchanges: /\/exchanges\/all$/,
     CreateExchangeAccount: /\/exchanges\/d+\/accounts\/create/,
+    EditExchangeAccount: /\/exchanges\/accounts\/\d+$\/edit/,
     GetExchangeAccounts: /\/exchanges\/accounts\/all/,
     GetExchangeAccount: /\/exchanges\/accounts\/\d+$/,
     GetExchangeAccountsColumnLOV: /\/exchanges\/accounts\/header_lov\/w+$/,

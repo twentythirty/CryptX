@@ -42,6 +42,20 @@ const createExchangeAccount = async (req, res) => {
 };
 module.exports.createExchangeAccount= createExchangeAccount;
 
+const editExchangeAccount = async (req, res) => {
+
+  const { exchange_account_id } = req.params; 
+  const { is_active } = req.body;
+
+  const [ err, exchange_account ] = await to(ExchangeService.editExchangeAccount(exchange_account_id, is_active));
+  if(err) return ReE(res, err.message, 422);
+  if(!exchange_account) return ReE(res, `Exchange account with id ${exchange_account_id} was not found`);
+
+  return ReS(res, { message: 'OK!' });
+
+};
+module.exports.editExchangeAccount= editExchangeAccount;
+
 const getExchangeAccounts = async (req, res) => {
 
   const { seq_query, sql_where } = req;

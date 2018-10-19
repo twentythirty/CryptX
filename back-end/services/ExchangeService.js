@@ -1,7 +1,8 @@
 'use strict';
 
-const { or } = require('sequelize').Op;
+const { or, and, ne } = require('sequelize').Op;
 
+const InvestmentRun = require('../models').InvestmentRun;
 const Asset = require('../models').Asset;
 const Exchange = require('../models').Exchange;
 const ExchangeAccount = require('../models').ExchangeAccount;
@@ -63,3 +64,33 @@ const createExchangeAccount = async (account_type, asset_id, exchange_id, addres
 
 };
 module.exports.createExchangeAccount = createExchangeAccount;
+
+const editExchangeAccount = async (account_id, is_active) => {
+
+    if(!_.isBoolean(is_active)) TE('\'is_active\' must be a valid boolean expression');
+
+    let [ err, active_investment_run ] = await to(InvestmentRun.findOne({
+        where: {
+            [and]: [ 
+                { status: { [ne]: INVESTMENT_RUN_STATUSES.Initiated } },
+                { status: { [ne]: INVESTMENT_RUN_STATUSES.OrdersFilled } }
+            ],
+            is_simulated: false
+        }
+    }));
+
+    if(err) TE(err.message);
+    if(active_investment_run) TE(`Cannot edit Exchange Account while there are active Investment Runs`);
+
+    let exchange_acount;
+    [ err, exchange_acount ] = await to(ExchangeAccount.findById(account_id));
+
+    if(err) TE(err.message);
+    if(!exchange_acount) return null;
+
+    exchange_acount.is_active = is_active;
+
+    return exchange_acount.save();
+
+};
+module.exports.editExchangeAccount = editExchangeAccount;

@@ -779,6 +779,11 @@ ROUTES = {
     permissions_matcher: ROUTE_MATCHERS.CreateExchangeAccount,
     required_permissions: [PERMISSIONS.ADD_EXCHANGE_ACCOUNTS]
   },
+  EditExchangeAccount: {
+    router_string: '/exchanges/accounts/:exchange_account_id/edit',
+    permissions_matcher: ROUTE_MATCHERS.EditExchangeAccount,
+    required_permissions: [PERMISSIONS.ADD_EXCHANGE_ACCOUNTS]
+  },
   GetExchangeAccounts: {
     router_string: '/exchanges/accounts/all',
     permissions_matcher: ROUTE_MATCHERS.CreateExchangeAccount,

@@ -526,7 +526,7 @@
           "exchange"
         ],
         "summary": "Get a single exchange account",
-        "description": "Get a list of exchange accounts",
+        "description": "Get a single exchange account",
         "parameters": [
           {
             "name": "exchange_account_id",
@@ -544,6 +544,49 @@
             "description": "success",
             "schema": {
               "$ref": "#/definitions/ExchangeAccountResponse"
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/exchanges/accounts/{exchange_account_id}/edit": {
+      "post": {
+        "tags": [
+          "exchange"
+        ],
+        "summary": "Edit a single exchange account",
+        "description": "Edit a single exchange account. Editing is only allowed while there are no active investment runs",
+        "parameters": [
+          {
+            "name": "exchange_account_id",
+            "in": "path",
+            "description": "ID of the exchange account",
+            "required": true,
+            "type": "integer"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "description": "What can be edited",
+            "required": false,
+            "schema": {
+              "$ref": "#/definitions/EditExchangeAccountParams"
+            }
+          }
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "$ref": "#/definitions/GenericOkResponse"
             }
           }
         },
@@ -5139,6 +5182,17 @@
           "type": "string",
           "example": "1F1tAaz5x1HUXrCNLbtMDqcw6o5GNn4xqX"
         },
+        "is_active": {
+          "type": "boolean",
+          "example": true
+        }
+      }
+    },
+    "EditExchangeAccountParams": {
+      "description": "Exchange account editing fields",
+      "type": "object",
+      "required": ["is_active"],
+      "properties": {
         "is_active": {
           "type": "boolean",
           "example": true
