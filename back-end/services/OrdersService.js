@@ -18,6 +18,8 @@ const sequelize = require('../models').sequelize;
 const Op = require('../models').Sequelize.Op;
 const ccxtUtils = require('../utils/CCXTUtils');
 
+const { ISOLATION_LEVELS } = sequelize.Transaction;
+
 /**
  * Check if 2 Instrument objects are using the same assets (by id)
  */
@@ -144,7 +146,7 @@ const marketDataKeyForRunDetail = (market_data_keys, instruments_by_id, recipe_r
 const generateApproveRecipeOrders = async (recipe_run_id) => {
 
     //check if there already is a non-rejected recipe order group for this recipe
-    const existing_group = await RecipeOrderGroup.findOne({
+    let existing_group = await RecipeOrderGroup.findOne({
         where: {
             recipe_run_id: recipe_run_id,
             approval_status: {
@@ -284,10 +286,27 @@ const generateApproveRecipeOrders = async (recipe_run_id) => {
     if (valid_recipe_run_details.length == 0) TE(`no valid recipe run details! Check WARN messages...`);
 
     //save orders group and orders in single transaction to roll them all back if need be
-    let [err, results] = await to(sequelize.transaction(transaction => {
+    let [ err, results ] = await to(sequelize.transaction({
+        isolationLevel: ISOLATION_LEVELS.SERIALIZABLE
+    }, async transaction => {
+
+        //Check again inside the transaction
+        existing_group = await RecipeOrderGroup.findOne({
+            where: {
+                recipe_run_id: recipe_run_id,
+                approval_status: {
+                    [Op.ne]: RECIPE_ORDER_GROUP_STATUSES.Rejected
+                }
+            },
+            transaction
+        });
+
+        if (existing_group) {
+            TE(`Recipe run ${recipe_run_id} already has a non-rejected orders group ${existing_group.id} with status ${existing_group.approval_status}, wont generate more!`);
+        }
 
         //run details filtered, generating orders group for orders
-        return RecipeOrderGroup.create({
+        const orders_group = await RecipeOrderGroup.create({
             created_timestamp: new Date(),
             approval_status: RECIPE_ORDER_GROUP_STATUSES.Pending,
             approval_timestamp: null,
@@ -296,82 +315,82 @@ const generateApproveRecipeOrders = async (recipe_run_id) => {
             recipe_run_id: recipe_run_id
         }, {
             transaction
-        }).then(orders_group => {
-            //create saving futures for orders from recipe run details
-            return Promise.all(_.map(valid_recipe_run_details, recipe_run_detail => {
+        });
 
-                const market_data_key = marketDataKeyForRunDetail(market_data_keys, instruments_by_id, recipe_run_detail);
-                //if the market data and recipe run detail use the same base currency
-                //then we use the bid price and make a buy order
-                const market_data = grouped_market_data[market_data_key][0];
-                const instrument = instruments_by_id[market_data.instrument_id];
-                const buy_order = recipe_run_detail.transaction_asset_id == instrument.transaction_asset_id;
+        const orders = await Promise.all(_.map(valid_recipe_run_details, recipe_run_detail => {
 
-                //get correct price/order side, use precise division if possible
-                const price = (buy_order ? market_data.bid_price : Decimal(1).div(Decimal(market_data.bid_price)).toString());
-                const side = buy_order ? ORDER_SIDES.Buy : ORDER_SIDES.Sell;
-                //get deposit object in base currency (includes amount and investemnt percentage)
-                const relevant_deposit = exchange_deposits[recipe_run_detail.target_exchange_id][buy_order ? recipe_run_detail.quote_asset_id : recipe_run_detail.transaction_asset_id];
+            const market_data_key = marketDataKeyForRunDetail(market_data_keys, instruments_by_id, recipe_run_detail);
+            //if the market data and recipe run detail use the same base currency
+            //then we use the bid price and make a buy order
+            const market_data = grouped_market_data[market_data_key][0];
+            const instrument = instruments_by_id[market_data.instrument_id];
+            const buy_order = recipe_run_detail.transaction_asset_id == instrument.transaction_asset_id;
 
-                const decimal_100 = Decimal('100');
-                //create adjustment coeficient to know how to scale detail percentages
-                const investment_prc_adjustment = decimal_100.div(relevant_deposit.investment_prc)
-                //reciep order quantity, scaled but not adjusted by order type and tick size (happens later)
-                const order_qnty_unadjusted =
-                    //multiply known deposited amount
-                    Decimal(relevant_deposit.amount).mul(
-                        //by how many percent go into this detail, scaled by how much of total deposit this asset takes up
-                        investment_prc_adjustment.mul(Decimal(recipe_run_detail.investment_percentage)).div(decimal_100)
-                    )
+            //get correct price/order side, use precise division if possible
+            const price = (buy_order ? market_data.bid_price : Decimal(1).div(Decimal(market_data.bid_price)).toString());
+            const side = buy_order ? ORDER_SIDES.Buy : ORDER_SIDES.Sell;
+            //get deposit object in base currency (includes amount and investemnt percentage)
+            const relevant_deposit = exchange_deposits[recipe_run_detail.target_exchange_id][buy_order ? recipe_run_detail.quote_asset_id : recipe_run_detail.transaction_asset_id];
 
-                //get mapping tick size as decimal
-                const correct_mapping = _.find(
-                    flat_exchange_mappings_list, {
-                        instrument_id: market_data.instrument_id,
-                        exchange_id: recipe_run_detail.target_exchange_id
-                    }
-                );
-                const tick_size_decimal = correct_mapping == null ? null : Decimal(correct_mapping.tick_size);
-                //round qnty to same dp as tick size, rounding down (only perform rounding if tick size was defined)
-                //divide by price if this is a buy order
-                const qnty_decimal = order_qnty_unadjusted.div(buy_order ? Decimal(price) : Decimal(1))
-                const qnty_decimal_adjusted = tick_size_decimal != null ? qnty_decimal.toDP(tick_size_decimal.dp(), Decimal.ROUND_HALF_DOWN) : qnty_decimal
+            const decimal_100 = Decimal('100');
+            //create adjustment coeficient to know how to scale detail percentages
+            const investment_prc_adjustment = decimal_100.div(relevant_deposit.investment_prc)
+            //reciep order quantity, scaled but not adjusted by order type and tick size (happens later)
+            const order_qnty_unadjusted =
+                //multiply known deposited amount
+                Decimal(relevant_deposit.amount).mul(
+                    //by how many percent go into this detail, scaled by how much of total deposit this asset takes up
+                    investment_prc_adjustment.mul(Decimal(recipe_run_detail.investment_percentage)).div(decimal_100)
+                )
 
-                console.log(`
-                Recipe ordering recipe run detail: ${recipe_run_detail.id}
-                use market price: ${price}
-                instrument: ${instrument.symbol}
-                exchange: ${recipe_run_detail.target_exchange_id}
-                buy order?: ${buy_order}
-                relevant deposit: ${JSON.stringify(relevant_deposit)}
-                initial investment prc: ${recipe_run_detail.investment_percentage}
-                investment prc adjust: ${investment_prc_adjustment.toString()}
-                initial order qnty: ${order_qnty_unadjusted.toString()}
-                tick size: ${tick_size_decimal != null? tick_size_decimal.toString() : 'N\\A'}
-                qnty: ${qnty_decimal_adjusted.toString()}
-                `)
-
-                return RecipeOrder.create({
-                    recipe_order_group_id: orders_group.id,
+            //get mapping tick size as decimal
+            const correct_mapping = _.find(
+                flat_exchange_mappings_list, {
                     instrument_id: market_data.instrument_id,
-                    target_exchange_id: recipe_run_detail.target_exchange_id,
-                    price: price,
-                    quantity: qnty_decimal_adjusted.toString(),
-                    side: side,
-                    status: RECIPE_ORDER_STATUSES.Pending
-                }, {
-                    transaction
-                });
-            }))
-        })
+                    exchange_id: recipe_run_detail.target_exchange_id
+                }
+            );
+            const tick_size_decimal = correct_mapping == null ? null : Decimal(correct_mapping.tick_size);
+            //round qnty to same dp as tick size, rounding down (only perform rounding if tick size was defined)
+            //divide by price if this is a buy order
+            const qnty_decimal = order_qnty_unadjusted.div(buy_order ? Decimal(price) : Decimal(1))
+            const qnty_decimal_adjusted = tick_size_decimal != null ? qnty_decimal.toDP(tick_size_decimal.dp(), Decimal.ROUND_HALF_DOWN) : qnty_decimal
+
+            console.log(`
+            Recipe ordering recipe run detail: ${recipe_run_detail.id}
+            use market price: ${price}
+            instrument: ${instrument.symbol}
+            exchange: ${recipe_run_detail.target_exchange_id}
+            buy order?: ${buy_order}
+            relevant deposit: ${JSON.stringify(relevant_deposit)}
+            initial investment prc: ${recipe_run_detail.investment_percentage}
+            investment prc adjust: ${investment_prc_adjustment.toString()}
+            initial order qnty: ${order_qnty_unadjusted.toString()}
+            tick size: ${tick_size_decimal != null? tick_size_decimal.toString() : 'N\\A'}
+            qnty: ${qnty_decimal_adjusted.toString()}
+            `)
+
+            return RecipeOrder.create({
+                recipe_order_group_id: orders_group.id,
+                instrument_id: market_data.instrument_id,
+                target_exchange_id: recipe_run_detail.target_exchange_id,
+                price: price,
+                quantity: qnty_decimal_adjusted.toString(),
+                side: side,
+                status: RECIPE_ORDER_STATUSES.Pending
+            }, {
+                transaction
+            });
+        }));
+
+        await InvestmentService.changeInvestmentRunStatus({
+            recipe_run_id: recipe_run_id
+        }, INVESTMENT_RUN_STATUSES.OrdersGenerated, transaction);
+
+        return orders;
+
     }));
 
-    if (err) TE(err);
-
-    let investment_run;
-    [err, investment_run] = await to(InvestmentService.changeInvestmentRunStatus({
-        recipe_run_id: recipe_run_id
-    }, INVESTMENT_RUN_STATUSES.OrdersGenerated));
     if (err) TE(err.message);
 
     //filter out non-generated null reicpe orders (skipped due to low quantity)

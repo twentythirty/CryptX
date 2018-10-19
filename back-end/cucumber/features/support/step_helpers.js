@@ -174,3 +174,40 @@ module.exports.speechToInterval = string_interval => {
     return number * interval_type;
 
 };
+
+module.exports.matchErrors = (expected_errors, received_error) => {
+
+    for(let error of expected_errors) {
+
+        error = error.split(' ');
+        received_error = received_error.split(' ');
+
+        for(let index = 0; index < error.length; index++) {
+
+            let word = error[index];
+            
+            switch(word) {
+            
+                case '{number}':
+                    let matching_word = received_error[index];
+                    if(!isNaN(matching_word)) error[index] = received_error[index];
+                    break;
+
+                case '{string}':
+                    error[index] = received_error[index];
+                    break;
+            
+            }
+        
+        }
+
+        error = error.join(' ');
+        received_error = received_error.join(' ');
+
+        if(error === received_error) return true;
+
+    }
+
+    return false;
+
+};

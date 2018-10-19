@@ -215,6 +215,23 @@ When(/^I trigger "(.*)" action multiple times concurrently$/, function(action_na
                 },
                 timeout: 12000
             }
+        },
+        'generate recipe run orders': (local_world) => {
+            return {
+                endpoint: `recipes/${local_world.current_recipe_run.id}/generate_orders`,
+                method: 'post',
+                request: {},
+                errors: {
+                    lock: [`Recipe Orders are currently being generated for Recipe Run with id ${local_world.current_recipe_run.id}. Please wait...`],
+                    transaction: [ default_transaction_error_1, default_transaction_error_2 ],
+                    duplicate: [`Recipe run ${local_world.current_recipe_run.id} already has a non-rejected orders group {number} with status ${RECIPE_ORDER_GROUP_STATUSES.Pending}, wont generate more!`]
+                },
+                check_with: {
+                    approval_status: RECIPE_ORDER_GROUP_STATUSES.Pending,
+                    recipe_run_id: local_world.current_recipe_run.id
+                },
+                timeout: 12000
+            }
         }
     };
 
@@ -265,24 +282,24 @@ When(/^I trigger "(.*)" action multiple times concurrently$/, function(action_na
                 
                 completed_requests++;
 
-                const error_message = _.get(result, 'response.body.error');
+                const error_message = _.get(result, 'response.body.error') || _.get(result, 'response.body');
 
                 switch(true) {
 
-                    case action.errors.lock.includes(error_message):
+                    case utils.matchErrors(action.errors.lock, error_message):
                         lock_blocks++;
                         break;
 
-                    case action.errors.duplicate.includes(error_message):
+                    case utils.matchErrors(action.errors.duplicate, error_message):
                         duplicate_blocks++;
                         break;
 
-                    case action.errors.transaction.includes(error_message):
+                    case utils.matchErrors(action.errors.transaction, error_message):
                         transaction_blocks++;
                         break;
 
                     default:
-                        return reject(`Received an unepected error: ${error_message}`); 
+                        return reject(`Received an unepected error: ${JSON.stringify(error_message)}`); 
 
                 }
 
@@ -517,11 +534,12 @@ Then(/^in the (.*) timeline card, I will see the following information:$/, funct
 
 });
 
-Then(/^only (.*) (Recipe Runs|Recipe Orders|Investment Runs) will be saved to the database$/, async function(amounts, model_name){
+Then(/^only (\b(?:[a-z']*)(?:\s[a-z']*)*\b) (\b(?:[A-Z][a-z']*)(?:\s[A-Z][a-z']*)*\b) will be saved to the database$/, async function(amounts, model_name){
 
     const plural_map = {
         'Recipe Runs': 'RecipeRun',
-        'Investment Runs': 'InvestmentRun'
+        'Investment Runs': 'InvestmentRun',
+        'Recipe Order Groups': 'RecipeOrderGroup'
     };
 
     const allowed_numbers = utils.numberStringToArray(amounts);
@@ -529,7 +547,7 @@ Then(/^only (.*) (Recipe Runs|Recipe Orders|Investment Runs) will be saved to th
     model_name = plural_map[model_name] || _.startCase(model_name);
 
     const model = require('../../../models')[model_name];
-    expect(model, `Could not find databse model with name "${model_name}"`).to.be.not.undefined;
+    expect(model, `Could not find database model with name "${model_name}"`).to.be.not.undefined;
 
     const result_count = await model.count({
         where: this.current_search_query

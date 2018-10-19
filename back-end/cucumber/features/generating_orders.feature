@@ -74,3 +74,12 @@ Feature: Generating Orders
         | instrument| side  | exchange  | price | quantity  |
         | XRP/BTC   | Buy   | Binance   | 0.001     | 3600     |
         | XRP/ETH   | Buy   | Binance   | 0.07     | 420     |
+
+    Scenario: Attempting to generate multiple recipe order groups
+
+        Given the system has Completed Deposits
+        And the recipe run does not have recipe order group with status Pending
+        And the recipe run does not have recipe order group with status Approved
+        When I log onto CryptX as Trader
+        And I trigger "generate recipe run orders" action multiple times concurrently
+        Then only one or no Recipe Order Groups will be saved to the database
