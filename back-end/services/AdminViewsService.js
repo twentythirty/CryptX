@@ -22,7 +22,8 @@ const {
     AVColdStorageAccount,
     AVColdStorageAccountStorageFee,
     AVInvestmentAssetConversion,
-    AVExchangeAccount
+    AVExchangeAccount,
+    AVExchangeCredential
 } = require('../models');
 
 const builder = require('../utils/AdminViewUtils');
@@ -377,6 +378,12 @@ const fetchExchangeAccountsViewDataWithCount = async (seq_query = {}) => {
 }
 module.exports.fetchExchangeAccountsViewDataWithCount = fetchExchangeAccountsViewDataWithCount;
 
+const fetchExchangeCredentialsViewDataWithCount = async (seq_query = {}) => {
+
+    return fetchViewDataWithCount(AVExchangeCredential, seq_query);
+}
+module.exports.fetchExchangeCredentialsViewDataWithCount = fetchExchangeCredentialsViewDataWithCount;
+
 const fetchAssetView = async (asset_id) => {
 
     return fetchSingleEntity(AVAsset, asset_id)
@@ -495,6 +502,14 @@ const fetchExchangeAccountView = async (account_id) => {
     return fetchSingleEntity(AVExchangeAccount, account_id);
 }
 module.exports.fetchExchangeAccountView = fetchExchangeAccountView;
+
+const fetchExchangeCredentialView = async (exchange_id) => {
+
+    return AVExchangeCredential.findOne({
+        where: { exchange_id }
+    });
+}
+module.exports.fetchExchangeCredentialView = fetchExchangeCredentialView;
 
 // ************************ FOOTERS ***************************//
 
@@ -1075,4 +1090,22 @@ const fetchExchangeAccountViewFooter = async (where_clause = '') => {
     )
 }
 module.exports.fetchExchangeAccountViewFooter = fetchExchangeAccountViewFooter;
+
+const fetchExchangeCredentialViewFooter = async (where_clause = '') => {
+
+    const view = 'av_exchange_credentials';
+
+    const query = builder.joinQueryParts([
+        builder.selectCountDistinct('exchange_id', 'exchange', view, where_clause),
+    ], [
+        'exchange'
+    ]);
+
+    const footer = (await sequelize.query(query))[0];
+
+    return builder.addFooterLabels(
+        builder.queryReturnRowToFooterObj(footer), 'exchange_credentials'
+    )
+}
+module.exports.fetchExchangeCredentialViewFooter = fetchExchangeCredentialViewFooter;
 

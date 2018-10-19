@@ -6,8 +6,10 @@ const InvestmentRun = require('../models').InvestmentRun;
 const Asset = require('../models').Asset;
 const Exchange = require('../models').Exchange;
 const ExchangeAccount = require('../models').ExchangeAccount;
+const ExchangeCredential = require('../models').ExchangeCredential;
 const Instrument = require('../models').Instrument;
 const InstrumentExchangeMapping = require('../models').InstrumentExchangeMapping;
+const sequelize = require('../models').sequelize;
 
 const createExchangeAccount = async (account_type, asset_id, exchange_id, address, is_active = true) => {
     if (
@@ -94,3 +96,39 @@ const editExchangeAccount = async (account_id, is_active) => {
 
 };
 module.exports.editExchangeAccount = editExchangeAccount;
+
+const setExchangeCredentials = async (exchange_id, api_user_id, password) => {
+
+    let [ err, exchange ] = await to(Exchange.findById(exchange_id));
+
+    if(err) TE(err.message);
+    if(!exchange) return null;
+
+    //If both were passed as null or not passed, consider this as "unset"
+    if(!api_user_id && !password) {
+
+        return ExchangeCredential.destroy({
+            where: { exchange_id }
+        });
+
+    }
+
+    if(!_.isString(api_user_id) || !_.isString(password)) TE('Exchange API username and password must be valid values');
+
+    return sequelize.transaction(async transaction => {
+
+        await ExchangeCredential.destroy({
+            where: { exchange_id },
+            transaction
+        });
+
+        return ExchangeCredential.create({
+            exchange_id,
+            api_user_id,
+            password
+        }, { transaction });
+
+    });
+
+};
+module.exports.setExchangeCredentials = setExchangeCredentials;

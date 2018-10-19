@@ -521,7 +521,7 @@
       }
     },
     "/exchanges/accounts/{exchange_account_id}": {
-      "post": {
+      "get": {
         "tags": [
           "exchange"
         ],
@@ -636,6 +636,119 @@
             "description": "unauthorized - no session",
             "schema": {
               "$ref": "#/definitions/ApiUnauthorizezdResponse"
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/exchanges/credentials/all": {
+      "post": {
+        "tags": [
+          "exchange"
+        ],
+        "summary": "Get a list of exchange credentials",
+        "description": "Get a list of exchange credentials",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "description": "Filter object used to filter out data",
+            "required": false,
+            "schema": {
+              "$ref": "#/definitions/EntitiesFilter"
+            }
+          }
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "$ref": "#/definitions/ExchangeCredentialListResponse"
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/exchanges/{exchange_id}/credentials": {
+      "get": {
+        "tags": [
+          "exchange"
+        ],
+        "summary": "Get a single exchange credentials",
+        "description": "Get a single exchange credentials",
+        "parameters": [
+          {
+            "name": "exchange_id",
+            "in": "path",
+            "description": "ID of the exchange",
+            "required": true,
+            "type": "integer"
+          }
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "$ref": "#/definitions/ExchangeCredentialResponse"
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/exchanges/{exchange_id}/credentials/set": {
+      "post": {
+        "tags": [
+          "exchange"
+        ],
+        "summary": "Set credentials on an exchange",
+        "description": "Set credentials on an exchange. Passing nulls will unset the credentials",
+        "parameters": [
+          {
+            "name": "exchange_id",
+            "in": "path",
+            "description": "ID of the exchange",
+            "required": true,
+            "type": "integer"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "description": "What can be edited",
+            "required": false,
+            "schema": {
+              "$ref": "#/definitions/SetExchangeCredentialParams"
+            }
+          }
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "$ref": "#/definitions/GenericOkResponse"
             }
           }
         },
@@ -5199,6 +5312,20 @@
         }
       }
     },
+    "SetExchangeCredentialParams": {
+      "description": "Set exchange credentials fields",
+      "type": "object",
+      "properties": {
+        "username": {
+          "type": "string",
+          "example": "OKEx_user_184"
+        },
+        "password": {
+          "type": "string",
+          "example": "mhmmmm_secrets_dot_dot_dot"
+        }
+      }
+    },
     "AddColdStorageAccountParams": {
       "description": "Cold storage transfer information",
       "type": "object",
@@ -5282,6 +5409,38 @@
         },
         "exchange_account": {
           "$ref": "#/definitions/ExchangeAccount"
+        }
+      }
+    },
+    "ExchangeCredentialListResponse": {
+      "description": "A list response for exchange credentials",
+      "type": "object",
+      "allOf": [
+        {
+          "$ref": "#/definitions/ListResponse"
+        },
+        {
+          "properties": {
+            "exchange_credentials": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/ExchangeCredential"
+              }
+            }
+          }
+        }
+      ]
+    },
+    "ExchangeCredentialResponse": {
+      "description": "Single exchange credentials response",
+      "type": "object",
+      "properties": {
+        "status": {
+          "type": "boolean",
+          "example": true
+        },
+        "exchange_credential": {
+          "$ref": "#/definitions/ExchangeCredential"
         }
       }
     },
@@ -5389,6 +5548,28 @@
         "is_active": {
           "type": "string",
           "example": "exchange_accounts.is_active.active"
+        }
+      }
+    },
+    "ExchangeCredential": {
+      "description": "Detailed exchange credentials",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "number",
+          "example": 18
+        },
+        "exchange_id": {
+          "type": "number",
+          "example": 354
+        },
+        "exchange": {
+          "type": "string",
+          "example": "Binance"
+        },
+        "username": {
+          "type": "string",
+          "example": "SuperBinanceUser64"
         }
       }
     },

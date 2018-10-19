@@ -37,6 +37,8 @@ PERMISSIONS = {
   VIEW_LIQUIDITY_REQUIREMENTS: "perm_view_liquidity_requirements",
   ADD_EXCHANGE_ACCOUNTS: "perm_add_exchange_account",
   VIEW_EXCHANGE_ACCOUNTS: "perm_view_exchange_accounts",
+  ALTER_EXCHANGE_CREDENTIALS: "perm_alter_exchange_credentials",
+  VIEW_EXCHANGE_CREDENTIALS: "perm_view_exchange_credentials",
   RECEIVE_NOTIFICATION_ABOUT_NEW_ASSETS: "perm_receive_notifications_about_new_assets"
 };
 //list of permissions that dotn apply to users
@@ -85,7 +87,9 @@ CATEGORY_TO_PERM_ASSOC = {
   ],
   [PERMISSIONS_CATEGORIES.EXCHANGES]: [
     PERMISSIONS.ADD_EXCHANGE_ACCOUNTS,
-    PERMISSIONS.VIEW_EXCHANGE_ACCOUNTS
+    PERMISSIONS.VIEW_EXCHANGE_ACCOUNTS,
+    PERMISSIONS.ALTER_EXCHANGE_CREDENTIALS,
+    PERMISSIONS.VIEW_EXCHANGE_CREDENTIALS
   ],
   [PERMISSIONS_CATEGORIES.LIQUIDITY]: [
     PERMISSIONS.CREATE_LIQUIDITY_REQUIREMENTS,
@@ -179,6 +183,10 @@ all_permissions[PERMISSIONS.ADD_EXCHANGE_ACCOUNTS] =
 "Permission to add exchange accounts";
 all_permissions[PERMISSIONS.VIEW_EXCHANGE_ACCOUNTS] =
 "Permission to view exchange accounts";
+all_permissions[PERMISSIONS.ALTER_EXCHANGE_CREDENTIALS] =
+"Permission to alter exchange credentials";
+all_permissions[PERMISSIONS.VIEW_EXCHANGE_CREDENTIALS] =
+"Permission to view exchange credentials";
 all_permissions[PERMISSIONS.RECEIVE_NOTIFICATION_ABOUT_NEW_ASSETS] =
 "Permission to receive email notifications about new assets";
 
@@ -798,5 +806,20 @@ ROUTES = {
     router_string: '/exchanges/accounts/header_lov/:field_name',
     permissions_matcher: ROUTE_MATCHERS.CreateExchangeAccount,
     required_permissions: [PERMISSIONS.VIEW_EXCHANGE_ACCOUNTS]
-  }
+  },
+  SetExchangeCredentials: {
+    router_string: '/exchanges/:exchange_id/credentials/set',
+    permissions_matcher: ROUTE_MATCHERS.EditExchangeAccount,
+    required_permissions: [PERMISSIONS.ALTER_EXCHANGE_CREDENTIALS]
+  },
+  GetExchangeCredentials: {
+    router_string: '/exchanges/credentials/all',
+    permissions_matcher: ROUTE_MATCHERS.CreateExchangeAccount,
+    required_permissions: [PERMISSIONS.VIEW_EXCHANGE_CREDENTIALS]
+  },
+  GetExchangeCredential: {
+    router_string: '/exchanges/:exchange_id/credentials',
+    permissions_matcher: ROUTE_MATCHERS.CreateExchangeAccount,
+    required_permissions: [PERMISSIONS.VIEW_EXCHANGE_CREDENTIALS]
+  },
 };

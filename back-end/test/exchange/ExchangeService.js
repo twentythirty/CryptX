@@ -12,21 +12,33 @@ chai.use(asPromised);
 
 describe('ExchangeService testing', () => {
 
+    const ExchangeService = require('./../../services/ExchangeService');
+    const Asset = require('./../../models').Asset;
+    const Exchange = require('./../../models').Exchange;
+    const ExchangeAccount = require('./../../models').ExchangeAccount;
+    const ExchangeCredential = require('./../../models').ExchangeCredential;
+    const InstrumentExchangeMapping = require('./../../models').InstrumentExchangeMapping;
+    const InvestmentRun = require('./../../models').InvestmentRun;
+    const sequelize = require('./../../models').sequelize;
+
     //ensure working DB before test
     before(done => {
 
         app.dbPromise.then(migrations => {
             console.log("Migrations: %o", migrations);
+
+            sinon.stub(sequelize, 'transaction').callsFake(async transaction => transaction());
+
             done();
         })
     });
 
-    const ExchangeService = require('./../../services/ExchangeService');
-    const Asset = require('./../../models').Asset;
-    const Exchange = require('./../../models').Exchange;
-    const ExchangeAccount = require('./../../models').ExchangeAccount;
-    const InstrumentExchangeMapping = require('./../../models').InstrumentExchangeMapping;
-    const InvestmentRun = require('./../../models').InvestmentRun;
+    after(done => {
+
+        sequelize.transaction.restore();
+
+        done();
+    });
 
     describe('and method createExchangeAccount shall', () => {
 
@@ -228,6 +240,102 @@ describe('ExchangeService testing', () => {
                 expect(result.asset_id).to.equal(original.asset_id);
                 expect(result.exchange_id).to.equal(original.exchange_id);
                 expect(result.address).to.equal(original.address);
+
+            });
+
+        });
+
+    });
+
+    describe('and the mthod setExchangeCredentials shall', () => {
+
+        const { setExchangeCredentials } = ExchangeService;
+
+        const VALID_EXCHANGE_ID = 1;
+
+        beforeEach(done => {
+
+            sinon.stub(Exchange, 'findById').callsFake(async id => {
+
+                if(VALID_EXCHANGE_ID === id) return {};
+                
+                return null;
+
+            });
+
+            sinon.stub(ExchangeCredential, 'destroy').callsFake(async options => {
+
+                return options;
+
+            });
+
+            sinon.stub(ExchangeCredential, 'create').callsFake(async values => {
+
+                return values;
+
+            });
+
+            done();
+        });
+
+        afterEach(done => {
+
+            Exchange.findById.restore();
+            ExchangeCredential.destroy.restore();
+            ExchangeCredential.create.restore();
+
+            done();
+        });
+
+        it('exist', () => {
+
+            expect(setExchangeCredentials).to.be.not.undefined;
+
+        });
+
+        it('reject if only passing one valid param', async () => {
+
+            await assert.isRejected(setExchangeCredentials(VALID_EXCHANGE_ID, null, '23113123'));
+            return assert.isRejected(setExchangeCredentials(VALID_EXCHANGE_ID, 'usernamenamename', null));
+
+        });
+
+        it('return null if the exchange was not found', () => {
+
+            return setExchangeCredentials(-1, 'aaa', 'bbb').then(result => {
+
+                expect(result).to.be.null;
+
+            });
+
+        });
+
+        it('call destroy if both params are not passed', () => {
+
+            return setExchangeCredentials(VALID_EXCHANGE_ID, null, null).then(result => {
+
+                expect(result).to.be.an('object');
+                expect(result.where.exchange_id).to.equal(VALID_EXCHANGE_ID);
+
+            });
+
+        });
+
+        it('destroy the previous credentials and set the new ones', () => {
+
+            const USERNAME = '3hk12j3g13g13jh1g3';
+            const PASSWORD = 'kj4h2jk34h2j4h2jk4h2jh42jkh423h4jk2h4k2h4h';
+
+            return setExchangeCredentials(VALID_EXCHANGE_ID, USERNAME, PASSWORD).then(result => {
+
+                expect(result).to.be.an('object');
+
+                expect(ExchangeCredential.destroy.calledOnce).to.be.true;
+                expect(ExchangeCredential.destroy.args[0][0].where.exchange_id).to.equal(VALID_EXCHANGE_ID);
+
+                expect(result.exchange_id).to.equal(VALID_EXCHANGE_ID);
+                expect(result.api_user_id).to.equal(USERNAME);
+                expect(result.password).to.equal(PASSWORD);
 
             });
 

@@ -399,6 +399,12 @@
     }
   },
 
+  "exchange_credentials": {
+    "footer": {
+      "exchange": "{{ exchange }} Exchanges"
+    }
+  },
+
   "assets": {
     "assets": "Assets",
     "headline": "{{ count }} Cryptocurrencies",
