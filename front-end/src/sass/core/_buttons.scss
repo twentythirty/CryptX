@@ -1,48 +1,52 @@
-.action-button {
-    position: relative;
-    display: inline-block;
-    width: 27px;
-    height: 27px;
-    border-radius: 17px;
-    border: 1px solid rgba(120,144,156,0.2);
-    background: #F7F9FA center center no-repeat;
-    cursor: pointer;
-    outline: none;
-    margin-right: 3px;
+.action-buttons {
+    display: flex;
+    
+    .action-button {
+        position: relative;
+        display: inline-block;
+        width: 27px;
+        height: 27px;
+        border-radius: 17px;
+        border: 1px solid rgba(120,144,156,0.2);
+        background: #F7F9FA center center no-repeat;
+        cursor: pointer;
+        outline: none;
+        margin-right: 3px;
 
-    &:hover {
-        opacity: 0.7;
+        &:hover {
+            opacity: 0.7;
+        }
+
+        &:last-of-type {
+            margin-right: 0;
+        }
+
+        // modifiers
+        &.highlighted {
+            border-color: #10A950;
+            background-color: rgba(235,255,243,0.4);
+        }
+
+        &.ico-pencil {
+            background-image: url($imagePath + "icons/pencil.svg");
+        }
+
+        &.ico-check-mark {
+            background-image: url($imagePath + "icons/action-true.svg");
+        }
+
+        &.remove-icon {
+            background-image: none;
+        }
+
+
+        .mat-progress-spinner {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            margin: auto;
+        }
     }
-
-    &:last-of-type {
-        margin-right: 0;
-    }
-
-    // modifiers
-    &.highlighted {
-        border-color: #10A950;
-        background-color: rgba(235,255,243,0.4);
-    }
-
-    &.ico-pencil {
-        background-image: url($imagePath + "icons/pencil.svg");
-    }
-
-    &.ico-check-mark {
-        background-image: url($imagePath + "icons/action-true.svg");
-    }
-
-    &.remove-icon {
-        background-image: none;
-    }
-
-
-    .mat-progress-spinner {
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        margin: auto;
-    }
- }
+}

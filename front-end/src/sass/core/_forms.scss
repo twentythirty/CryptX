@@ -85,9 +85,11 @@
         }
 
         &:hover, &:focus {
-            background: rgba(235,255,243,0.40);
-            border: 1px solid #10A950;
-            opacity: 1;
+            &:not([disabled]) {
+                background: rgba(235,255,243,0.40);
+                border: 1px solid #10A950;
+                opacity: 1;
+            }
         }
 
         &:-webkit-autofill {

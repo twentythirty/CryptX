@@ -98,6 +98,12 @@ export class InputItemComponent implements ControlValueAccessor, OnInit {
     this.onTouchedCallback = fn;
   }
 
+  // From ControlValueAccessor interface
+  setDisabledState(isDisabled: boolean): void {
+    this.disabled = isDisabled;
+  }
+
+
   change(val) {
     this.selectChange.emit(val);
   }
