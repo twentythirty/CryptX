@@ -777,15 +777,15 @@ describe('OrdersService testing', () => {
                 chai.expect(recipe_data).is.a('array');
                 let [recipe_order, orders] = recipe_data;
                 chai.assert.isNotNull(recipe_order, 'Should have returned recipe order!');
-                chai.expect(orders).is.a('array');
+                
                 chai.assert.equal(recipe_order.approval_status, RECIPE_ORDER_GROUP_STATUSES.Approved, 'Status was not Approved!');
                 chai.assert.equal(recipe_order.approval_user_id, TEST_USER_ID, 'Approval not provided by specified user!');
                 chai.assert.equal(recipe_order.approval_comment, APPROVE_COMMENT, 'approval comment not as specified!');
 
-                orders.map(order => {
-                    chai.assert.equal(order.recipe_order_group_id, TEST_ORDER_GROUP_ID);
-                    chai.assert.equal(order.status, RECIPE_ORDER_STATUSES.Executing, `order ${order} is not executing!`);
-                });
+                const [ update, options ] = RecipeOrder.update.args[0];
+
+                chai.assert.equal(options.where.recipe_order_group_id, TEST_ORDER_GROUP_ID);
+                chai.assert.equal(update.status, RECIPE_ORDER_STATUSES.Executing, `wrong status update!`);
 
             });
         });
@@ -817,16 +817,18 @@ describe('OrdersService testing', () => {
                 RecipeOrderGroup.findById.restore();
                 chai.assert.isNotNull(recipe_data, 'Should have returned recipe order group and orders in it!');
                 chai.expect(recipe_data).is.a('array');
-                let [recipe_order, orders] = recipe_data;
+                let [recipe_order] = recipe_data;
                 chai.assert.isNotNull(recipe_order, 'Should have returned recipe order!');
-                chai.expect(orders).is.a('array');
+
                 chai.assert.equal(recipe_order.approval_status, RECIPE_ORDER_GROUP_STATUSES.Rejected, 'Status was not Rejected!');
                 chai.assert.equal(recipe_order.approval_user_id, TEST_USER_ID, 'Approval not provided by specified user!');
                 chai.assert.equal(recipe_order.approval_comment, REJECT_COMMENT, 'approval comment not as specified!');
 
-                orders.map(order => {
-                    chai.assert.equal(order.status, RECIPE_ORDER_STATUSES.Rejected, `order ${order} was not rejected with group!`);
-                });
+                const [ update, options ] = RecipeOrder.update.args[0];
+
+                chai.assert.equal(options.where.recipe_order_group_id, TEST_ORDER_GROUP_ID);
+                chai.assert.equal(update.status, RECIPE_ORDER_STATUSES.Rejected, `wrong status update!`);
+
             });
         });
     });

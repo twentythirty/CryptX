@@ -386,7 +386,7 @@ const deleteLiquidityRequirement = async (requirement_id) => {
 };
 module.exports.deleteLiquidityRequirement = deleteLiquidityRequirement;
 
-const getInstrumentPrices = async (instrument_id, exchange_id, raw = false) => {
+const getInstrumentPrices = async (instrument_id, exchange_id, raw = false, transaction) => {
 
     if (!_.isArray(instrument_id) || !_.isArray(exchange_id))
         TE("Expectd array of ids");
@@ -411,7 +411,8 @@ const getInstrumentPrices = async (instrument_id, exchange_id, raw = false) => {
             //extract value lists from grouped association, flatten those lists and extract property from entries
             exchange_id
         },
-        type: sequelize.QueryTypes.SELECT
+        type: sequelize.QueryTypes.SELECT,
+        transaction
     }));
     if (err) TE(err.message);
 
