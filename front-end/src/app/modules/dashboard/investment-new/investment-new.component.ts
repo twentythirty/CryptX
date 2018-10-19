@@ -200,28 +200,31 @@ export class InvestmentNewComponent extends DataTableCommonManagerComponent impl
       res => {
         if (res.success) {
           // Append new column
-          if (!_.find(this.assetDataSource.header, ['column', 'actions'])) {
-            this.assetDataSource.header.push(
-              { column: 'status', nameKey: 'table.header.status' },
-              { column: 'actions', nameKey: 'table.header.rationale' }
-            );
-            this.assetColumnsToShow.push(
-              new StatusCellDataColumn({ column: 'status' }),
-              new ActionCellDataColumn({ column: 'actions', inputs: {
-                actions: [
-                  new DataCellAction({
-                    label: 'READ',
-                    exec: (row: any) => {
-                      this.showReadModal({
-                        title: 'Rationale',
-                        content: row.comment
-                      });
-                    }
-                  })
-                ]
-              }})
-            );
-          }
+          this.assetDataSource.header.push(
+            { column: 'status', nameKey: 'table.header.status' },
+            { column: 'actions', nameKey: 'table.header.rationale' }
+          );
+          this.assetColumnsToShow.push(
+            new StatusCellDataColumn({ column: 'status' }),
+            new ActionCellDataColumn({ column: 'actions', inputs: {
+              actions: [
+                new DataCellAction({
+                  label: 'READ',
+                  exec: (row: any) => {
+                    this.showReadModal({
+                      title: 'Rationale',
+                      content: row.comment
+                    });
+                  }
+                })
+              ]
+            }})
+          );
+
+          // remove columns witch should not appear in this step
+          _.remove(this.assetDataSource.header, item => item.column === 'row_number');
+          _.remove(this.assetColumnsToShow, item => item.column === 'row_number');
+
 
           this.assetDataSource.body = res.assets;
           this.assetDataSource.footer = res.footer;
