@@ -30,7 +30,15 @@ export class TimelineEvent {
   ) {}
 }
 
-type TimelineStepKey = 'investment_run' | 'recipe_run' | 'recipe_deposits' | 'recipe_orders' | 'execution_orders';
+export class TimelineEvents {
+  investment_run: TimelineEvent;
+  recipe_run: TimelineEvent;
+  recipe_deposits: TimelineEvent;
+  recipe_orders: TimelineEvent;
+  execution_orders: TimelineEvent;
+  cold_storage_transfers: TimelineEvent;
+}
+
 
 @Component({
   selector: 'app-timeline',
@@ -39,13 +47,7 @@ type TimelineStepKey = 'investment_run' | 'recipe_run' | 'recipe_deposits' | 're
 })
 export class TimelineComponent implements OnInit {
 
-  @Input() timelineEvents: {
-    investment_run: TimelineEvent,
-    recipe_run: TimelineEvent,
-    recipe_deposits: TimelineEvent,
-    recipe_orders: TimelineEvent,
-    execution_orders: TimelineEvent
-  };
+  @Input() timelineEvents: TimelineEvents;
 
   constructor(
     private router: Router,
@@ -54,21 +56,23 @@ export class TimelineComponent implements OnInit {
 
   ngOnInit() {}
 
-  public isActive(key: TimelineStepKey): boolean {
+
+  public isActive(key: keyof TimelineEvents): boolean {
     let routeParts: Array<string>;
 
     switch (key) {
-      case 'investment_run':   routeParts = ['run/investment']; break;
-      case 'recipe_run':       routeParts = ['run/recipe']; break;
-      case 'recipe_deposits':  routeParts = ['run/deposit']; break;
-      case 'recipe_orders':    routeParts = ['run/order', 'run/order-group']; break;
-      case 'execution_orders': routeParts = ['run/execution-orders']; break;
+      case 'investment_run':          routeParts = ['run/investment']; break;
+      case 'recipe_run':              routeParts = ['run/recipe']; break;
+      case 'recipe_deposits':         routeParts = ['run/deposit']; break;
+      case 'recipe_orders':           routeParts = ['run/order', 'run/order-group']; break;
+      case 'execution_orders':        routeParts = ['run/execution-orders']; break;
+      case 'cold_storage_transfers':  routeParts = ['run/execution-orders']; break;
     }
 
     return routeParts.some(part => this.router.isActive(part, false));
   }
 
-  public isDisabled(key: TimelineStepKey) {
+  public isDisabled(key: keyof TimelineEvents) {
     const events = this.timelineEvents;
 
     switch (key) {
@@ -92,10 +96,13 @@ export class TimelineComponent implements OnInit {
 
       case 'execution_orders':
         return !events.recipe_orders;
+
+      case 'cold_storage_transfers':
+        return !events.execution_orders;
     }
   }
 
-  public openStep(key: TimelineStepKey, event: TimelineEvent): void {
+  public openStep(key: keyof TimelineEvents): void {
     const events = this.timelineEvents;
 
     switch (key) {
@@ -121,6 +128,10 @@ export class TimelineComponent implements OnInit {
 
       case 'execution_orders':
         this.router.navigate([`/run/execution-orders/${events.investment_run.id}`]);
+        break;
+
+      case 'cold_storage_transfers':
+        this.router.navigate([`/run/cold-storage-transfers/${events.investment_run.id}`]);
         break;
     }
   }

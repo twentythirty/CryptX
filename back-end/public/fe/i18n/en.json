@@ -142,12 +142,14 @@
     "deposits": "Deposits",
     "orders": "Orders",
     "execution_orders": "Execution orders",
+    "cold_storage_transfers": "Cold storage transfers",
     "no_investment": "There is no investment run",
     "no_recipe_run": "There is no recipe run",
     "no_deposits": "Deposits aren't made yet",
     "no_orders": "Orders are not created yet",
     "no_recipe_runs": "No recipe runs have been created yet",
     "no_execution_orders": "Execution orders are not created yet",
+    "no_cold_storage_transfers": "Cold storage transfers are not created yet",
     "enter_usd": "Enter amount, USD",
     "enter_btc": "Enter amount, BTC",
     "enter_eth": "Enter amount, ETH",
@@ -311,9 +313,9 @@
 
   "execution_order_fills": {
     "footer": {
-      "id": "{{id}} items",
-      "fill_price": "{{fill_price}} average",
-      "quantity": "{{quantity}} total"
+      "id": "{{ id }} items",
+      "fill_price": "{{ fill_price }} average",
+      "quantity": "{{ quantity }} total"
     }
   },
 
@@ -557,8 +559,6 @@
       "error": "Error: {{error}}",
       "error_user": "{{user_name}} has encountered an Error: {{error}}", 
       "warning": "Warning: {{warning}}"
-
-
     },
     
     "instruments": {
@@ -625,11 +625,11 @@
       "95":"Failed"
     },
     "footer": {
-      "id": "{{id}} Items",
-      "asset": "{{asset}} Assets",
+      "id": "{{ id }} Items",
+      "asset": "{{ asset }} Assets",
       "status": "{{ status }} Pending",
-      "source_exchange": "{{source_exchange}} Exchanges",
-      "balance_usd": "{{balance_usd}} Total"
+      "source_exchange": "{{ source_exchange }} Exchanges",
+      "balance_usd": "{{ balance_usd }} Total"
     }
   },
 
