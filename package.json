@@ -46,6 +46,7 @@
     "eslint": "^4.19.1",
     "express": "~4.15.5",
     "flatpickr": "^4.5.1",
+    "https-proxy-agent": "^2.2.1",
     "jade": "~1.11.0",
     "lodash": "^4.17.10",
     "moment": "^2.19.3",

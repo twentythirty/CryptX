@@ -3,6 +3,8 @@
 const ccxt = require('ccxt');
 const Bottleneck = require('bottleneck');
 const Exchange = require('../models').Exchange;
+const HttpsProxyAgent = require('https-proxy-agent');
+const proxy = new HttpsProxyAgent(process.env.PROXY_URL || 'localhost:3000');
 
 const {
     logAction
@@ -13,6 +15,8 @@ let con_by_id = {},
     con_by_api = {};
 let lim_by_id = {},
     lim_by_api = {};
+let proxy_by_id = {},
+    proxy_by_api = {};
 
 //only fetch exchanges after app DB done loading
 //this will need to be lazy loaded since DB not available on app startup
@@ -64,11 +68,31 @@ const cache_init_promise = async () => {
             }
             registerEvents(throttle.bottleneck);
 
+            const proxied_connector = new Proxy(connector, {
+                get(target, prop_key) {
+                    if (!_.isFunction(target[prop_key])) return target[prop_key];
+
+                    const original_method = target[prop_key];
+
+                    return function (...args) {
+                        target.agent = proxy;
+                        let result = original_method.apply(target, args);
+                        
+                        return result.finally(() => {
+                            target.agent = null;
+                        });
+                    };
+                }
+            });
+            
             lim_by_id[exchange.id] = throttle;
             lim_by_api[exchange.api_id] = throttle;
 
             con_by_id[exchange.id] = connector;
             con_by_api[exchange.api_id] = connector;
+
+            proxy_by_id[exchange.id] = proxied_connector;
+            proxy_by_api[exchange.api_id] = proxied_connector;
         });
 
         _.forEach(con_by_id, (connector, id) => {
@@ -183,6 +207,16 @@ const getThrottle = async (exchange_data) => {
     return await from_exchange_data(lim_by_id, lim_by_api, exchange_data, false);
 }
 module.exports.getThrottle = getThrottle;
+
+/**
+ * Fetch a connector which will apply a proxy before the request and unapply it afterwards.
+ * 
+  * @param { String | Number | Object } exchange_data - An identifying piece of exchange data, such as exchange id, exchange api_id or full exchange object  
+ */
+const getProxied = async (exchange_data) => {
+    return await from_exchange_data(proxy_by_id, proxy_by_api, exchange_data, false);
+}
+module.exports.getProxied = getProxied;
 
 
 /**
