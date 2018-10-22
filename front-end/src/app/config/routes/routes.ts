@@ -157,6 +157,11 @@ export const routes: Routes = [
     canActivate: [AuthGuard]
   },
   {
+    path: 'liquidity_requirements/edit/:id',
+    component: LiquidityCreateComponent,
+    canActivate: [AuthGuard]
+  },
+  {
     path: 'liquidity_requirements/preview/:id',
     component: LiquidityInfoComponent,
     canActivate: [AuthGuard]

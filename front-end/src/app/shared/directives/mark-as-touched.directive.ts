@@ -14,6 +14,7 @@ export class MarkAsTouchedDirective {
     this.markAsTouched(this.appMarkAsTouched);
 
     // prevent form submiting if form is invalid
+    // only when button submit form
     if (this.appMarkAsTouched.invalid) {
       return false;
     }

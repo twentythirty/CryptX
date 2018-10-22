@@ -40,13 +40,6 @@ export class InstrumentAddComponent implements OnInit {
     });
   }
 
-  // reset form group control value if user dont pick anything from autocomplete
-  assetValueChanged(value, controlName) {
-    if (typeof value === 'string') {
-      this.form.controls[ controlName ].setValue('');
-    }
-  }
-
   saveInstrument() {
     if (this.form.invalid) {
       return;

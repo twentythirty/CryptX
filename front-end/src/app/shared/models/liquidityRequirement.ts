@@ -5,6 +5,7 @@ export class LiquidityRequirement {
     public minimum_circulation: string | number;
     public periodicity: number;
     public quote_asset: string;
+    public exchange_id: string | number;
     public exchange: string;
     public exchange_count: number | string;
     public exchange_pass: number | string;

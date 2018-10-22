@@ -33,6 +33,17 @@ export class LiquiditiesAllResponse {
   liquidity_requirements: Array<LiquidityRequirement>;
 }
 
+export class LiquidityUpdateRequestData {
+  exchange_id: number;
+  periodicity: number;
+  minimum_circulation: number;
+}
+
+export class LiquidityUpdateResponse {
+  success: boolean;
+  liquidity_requirement: LiquidityRequirement;
+}
+
 
 @Injectable()
 export class LiquidityService {
@@ -44,6 +55,10 @@ export class LiquidityService {
 
   getLiquidity(liquidityId: number): Observable<LiquidityResponse> {
     return this.http.get<LiquidityResponse>(this.baseUrl + `liquidity_requirements/${liquidityId}`);
+  }
+
+  updateLiquidity(liquidityId: number, request: LiquidityUpdateRequestData): Observable<LiquidityUpdateResponse> {
+    return this.http.post<LiquidityUpdateResponse>(this.baseUrl + `liquidity_requirements/${liquidityId}/edit`, request);
   }
 
   getExchanges(liquidityId: number): Observable<ExchangesResponse> {

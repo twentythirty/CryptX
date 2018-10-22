@@ -4,7 +4,12 @@ import { finalize } from 'rxjs/operators';
 
 import { TableDataSource, TableDataColumn } from '../../../shared/components/data-table/data-table.component';
 import { DataTableCommonManagerComponent } from '../../../shared/components/data-table-common-manager/data-table-common-manager.component';
-import { StatusCellDataColumn, NumberCellDataColumn } from '../../../shared/components/data-table-cells';
+import {
+  StatusCellDataColumn,
+  NumberCellDataColumn,
+  ActionCellDataColumn,
+  DataCellAction
+} from '../../../shared/components/data-table-cells';
 import { LiquidityRequirement } from '../../../shared/models/liquidityRequirement';
 
 import { LiquidityService } from '../../../services/liquidity/liquidity.service';
@@ -24,6 +29,7 @@ export class LiquidityListComponent extends DataTableCommonManagerComponent impl
       { column: 'exchange', nameKey: 'table.header.exchange', filter: { type: 'text', sortable: true } },
       { column: 'exchange_count', nameKey: 'table.header.exchange_count', filter: { type: 'number', sortable: true } },
       { column: 'exchange_not_pass', nameKey: 'table.header.exchange_not_pass', filter: { type: 'number', sortable: true } },
+      { column: 'actions', nameKey: 'table.header.actions' },
     ],
     body: null,
   };
@@ -38,6 +44,26 @@ export class LiquidityListComponent extends DataTableCommonManagerComponent impl
     new StatusCellDataColumn({ column: 'exchange' }),
     new TableDataColumn({ column: 'exchange_count' }),
     new TableDataColumn({ column: 'exchange_not_pass' }),
+    new ActionCellDataColumn({ column: 'actions', inputs: {
+      actions: [
+        new DataCellAction({
+          label: 'Edit',
+          className: '',
+          isShown: row => true,
+          exec: (row: any) => {
+            this.navigateToEdit(row.id);
+          }
+        }),
+        new DataCellAction({
+          label: 'View',
+          className: '',
+          isShown: row => true,
+          exec: (row: any) => {
+            this.openRow(row);
+          }
+        }),
+      ]
+    }}),
   ];
 
   constructor(
@@ -79,6 +105,10 @@ export class LiquidityListComponent extends DataTableCommonManagerComponent impl
 
   openRow(liquidity: LiquidityRequirement): void {
     this.router.navigate(['/liquidity_requirements/preview', liquidity.id]);
+  }
+
+  navigateToEdit(id: number): void {
+    this.router.navigate(['/liquidity_requirements/edit', id]);
   }
 
 }

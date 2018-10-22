@@ -1,13 +1,13 @@
 import { async, ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core/testing';
+import { Location } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
-import { extraTestingModules, fakeAsyncResponse, click } from '../../../testing/utils';
 import { of } from 'rxjs';
+import { extraTestingModules, fakeAsyncResponse, click } from '../../../testing/utils';
 
 import { LiquidityModule } from '../liquidity.module';
 import { LiquidityListComponent } from './liquidity-list.component';
 import { LiquidityService } from '../../../services/liquidity/liquidity.service';
 import { testHeaderLov } from '../../../testing/commonTests';
-import { Location } from '@angular/common';
 import { getAllLiquiditiesData } from '../../../testing/service-mock/liquidity.service.mock';
 
 
@@ -19,7 +19,7 @@ describe('LiquidityListComponent', () => {
   let headerLovColumns: Array<string>;
   let button: HTMLElement;
   let liquidityService: LiquidityService;
-  let getAllLiquidityRequirementsSpy;
+  let getAllLiquiditiesSpy;
   let navigateSpy;
 
   beforeEach(async(() => {
@@ -37,13 +37,12 @@ describe('LiquidityListComponent', () => {
             params: of({ page: 1 }),
           }
         },
-
       ]
     })
     .compileComponents();
   }));
 
-  beforeEach(() => {
+  beforeEach((done) => {
     fixture = TestBed.createComponent(LiquidityListComponent);
     component = fixture.componentInstance;
     router = TestBed.get(Router);
@@ -52,10 +51,15 @@ describe('LiquidityListComponent', () => {
     navigateSpy = spyOn(component.router, 'navigate');
     button = fixture.nativeElement.querySelector('div a');
     liquidityService = fixture.debugElement.injector.get(LiquidityService);
-    getAllLiquidityRequirementsSpy = spyOn (liquidityService, 'getAllLiquidities').and.returnValue(
-      fakeAsyncResponse(getAllLiquiditiesData));
+    getAllLiquiditiesSpy = spyOn(liquidityService, 'getAllLiquidities')
+      .and.returnValue(fakeAsyncResponse(getAllLiquiditiesData));
 
     fixture.detectChanges();
+
+    getAllLiquiditiesSpy.calls.mostRecent().returnValue.subscribe(() => {
+      fixture.detectChanges();
+      done();
+    });
   });
 
   it('should create', () => {
@@ -63,11 +67,9 @@ describe('LiquidityListComponent', () => {
   });
 
   it('should correctly load liquidity requirements table data on init', () => {
-    fixture.whenStable().then(() => {
-      expect(component.liquidityDataSource.body).toEqual(getAllLiquiditiesData.liquidity_requirements);
-      expect(component.liquidityDataSource.footer).toEqual(getAllLiquiditiesData.footer);
-      expect(component.count).toEqual(getAllLiquiditiesData.count);
-    });
+    expect(component.liquidityDataSource.body).toEqual(getAllLiquiditiesData.liquidity_requirements);
+    expect(component.liquidityDataSource.footer).toEqual(getAllLiquiditiesData.footer);
+    expect(component.count).toEqual(getAllLiquiditiesData.count);
   });
 
   it('should set header LOV observables for specified columns', () => {
@@ -85,8 +87,14 @@ describe('LiquidityListComponent', () => {
   });
 
   it('should be navigated to liquidity requirement creation page on "add requirement" button press', fakeAsync(() => {
-      click(button);
-      tick();
-      expect(location.path()).toBe('/liquidity_requirements/create');
+    click(button);
+    tick();
+    expect(location.path()).toBe('/liquidity_requirements/create');
   }));
+
+  it('should navigate to edit page on edit button click', () => {
+    const btn = fixture.nativeElement.querySelector('table tbody tr td:last-child label');
+    click(btn);
+    expect(navigateSpy).toHaveBeenCalledWith(['/liquidity_requirements/edit', 21]);
+  });
 });

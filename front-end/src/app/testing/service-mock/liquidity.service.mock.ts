@@ -1,4 +1,4 @@
-import { ExchangesResponse, LiquidityRequirementsCreateResponse, LiquiditiesAllResponse } from '../../services/liquidity/liquidity.service';
+import { ExchangesResponse, LiquidityRequirementsCreateResponse, LiquiditiesAllResponse, LiquidityUpdateResponse } from '../../services/liquidity/liquidity.service';
 import { LiquidityResponse } from '../../services/liquidity/liquidity.service';
 import { LiquidityRequirement } from '../../shared/models/liquidityRequirement';
 
@@ -30,19 +30,19 @@ export const getExchangesData: ExchangesResponse = {
 
 export const getLiquidityData: LiquidityResponse = {
     success: true,
-    liquidity_requirement:
-      new LiquidityRequirement ({
-        exchange: 'Binance',
-        exchange_count: '1',
-        exchange_not_pass: '0',
-        exchange_pass: '1',
-        id: 21,
-        instrument: 'IOTA/BTC',
-        instrument_id: 3868,
-        minimum_circulation: '50000',
-        periodicity: 1,
-        quote_asset: 'BTC'
-      })
+    liquidity_requirement: new LiquidityRequirement ({
+      id: 21,
+      exchange_id: '1',
+      exchange: 'Binance',
+      exchange_count: '1',
+      exchange_not_pass: '0',
+      exchange_pass: '1',
+      instrument: 'IOTA/BTC',
+      instrument_id: 3868,
+      minimum_circulation: '50000',
+      periodicity: 1,
+      quote_asset: 'BTC'
+    })
 };
 
 export const postLiquidityRequirementData: LiquidityRequirementsCreateResponse = {
@@ -59,6 +59,7 @@ export const getAllLiquiditiesData: LiquiditiesAllResponse = {
   success: true,
   liquidity_requirements: [
     new LiquidityRequirement ({
+      exchange_id: '1',
       exchange: 'Binance',
       exchange_count: '1',
       exchange_not_pass: '0',
@@ -78,4 +79,21 @@ export const getAllLiquiditiesData: LiquiditiesAllResponse = {
     args: {id: '358'}
   }],
   count: 1
+};
+
+export const updateLiquidityData: LiquidityUpdateResponse = {
+  success: true,
+  liquidity_requirement: new LiquidityRequirement ({
+    id: 21,
+    exchange_id: '1',
+    exchange: 'Binance',
+    exchange_count: '1',
+    exchange_not_pass: '0',
+    exchange_pass: '1',
+    instrument: 'IOTA/BTC',
+    instrument_id: 3868,
+    minimum_circulation: '50000',
+    periodicity: 1,
+    quote_asset: 'BTC'
+  })
 };

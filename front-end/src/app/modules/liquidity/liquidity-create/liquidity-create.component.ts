@@ -1,9 +1,9 @@
 import { Component, OnInit } from '@angular/core';
 import { FormGroup, FormControl, Validators } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 import { TranslateService } from '@ngx-translate/core';
 import * as _ from 'lodash';
-import { finalize } from 'rxjs/operators';
+import { finalize, filter } from 'rxjs/operators';
 
 import { LiquidityService } from '../../../services/liquidity/liquidity.service';
 import { InstrumentsService } from '../../../services/instruments/instruments.service';
@@ -15,6 +15,7 @@ import { ExchangesService } from '../../../services/exchanges/exchanges.service'
   styleUrls: ['./liquidity-create.component.scss']
 })
 export class LiquidityCreateComponent implements OnInit {
+  liquidityId: number;
   instruments: Array<{ id: number, value: string }>;
   exchanges: Array<{ id: number, value: string }>;
 
@@ -40,6 +41,7 @@ export class LiquidityCreateComponent implements OnInit {
     private instrumentService: InstrumentsService,
     private exchangesService: ExchangesService,
     private router: Router,
+    private route: ActivatedRoute,
     private translate: TranslateService,
   ) {}
 
@@ -72,18 +74,37 @@ export class LiquidityCreateComponent implements OnInit {
           value: value
         });
       });
+    });
 
+    this.route.params.pipe(
+      filter(params => params.id)
+    ).subscribe(params => {
+      this.liquidityId = params.id;
+
+      // disable instrument select
+      this.form.controls.instrument_id.disable();
+
+      this.liquidityService.getLiquidity(this.liquidityId)
+      .subscribe(
+        res => {
+          const record = res.liquidity_requirement;
+          const exchange_id = record.exchange_id === null ? 0 : record.exchange_id;
+
+          this.form.controls.instrument_id.setValue(record.instrument_id);
+          this.form.controls.exchange_id.setValue(exchange_id);
+          this.form.controls.periodicity.setValue(record.periodicity);
+          this.form.controls.minimum_circulation.setValue(record.minimum_circulation);
+        }
+      );
     });
   }
 
-  // reset form group control value if user dont pick anything from autocomplete
-  assetValueChanged(value, controlName) {
-    if (typeof value === 'string') {
-      this.form.controls[ controlName ].setValue('');
-    }
-  }
 
   saveLiquidityRequirement() {
+    if (this.form.invalid) {
+      return false;
+    }
+
     const request = _.mapValues(this.form.value, val => {
       /*in case of 'All Exchanges' selection, return id value back to
       expression: 'null'*/
@@ -92,7 +113,14 @@ export class LiquidityCreateComponent implements OnInit {
 
     this.loading = true;
 
-    this.liquidityService.createLiquidityRequirement(request).pipe(
+    let endpoint;
+    if (this.liquidityId) {
+      endpoint = this.liquidityService.updateLiquidity(this.liquidityId, request);
+    } else {
+      endpoint = this.liquidityService.createLiquidityRequirement(request);
+    }
+
+    endpoint.pipe(
       finalize(() => this.loading = false)
     ).subscribe(
       data => {
