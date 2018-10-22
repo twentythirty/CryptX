@@ -37,11 +37,11 @@ export class NavigationComponent implements OnInit {
       {link: '/orders', permission: [permissions.ALTER_PERMS], name: 'Orders'},
       {link: '/deposits', permission: [permissions.ALTER_PERMS], name: 'Deposits'},
       {link: '/execution_orders', permission: [permissions.ALTER_PERMS], name: 'Execution Orders'},
+      {link: '/exchange_accounts', permission: [permissions.VIEW_ROLES], name: 'Exchange Account'},
     ]},
     {name: 'User management', show: false, items: [
       {link: '/users', permission: [permissions.EDIT_USERS], name: 'Users'},
       {link: '/roles', permission: [permissions.VIEW_ROLES], name: 'Roles'},
-      {link: '/exchange_accounts', permission: [permissions.VIEW_ROLES], name: 'Exchange Account'},
     ]},
     {name: 'Cold Storage', show: false, items: [
       {link: '/cold_storage/custodians', permission: [permissions.VIEW_INVESTMENT_RUN], name: 'Custodians'},
