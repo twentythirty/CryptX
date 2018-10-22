@@ -81,7 +81,7 @@ const createInstrument = async (transaction_asset_id, quote_asset_id) => {
     }));
 
     if (err != null) {
-        TE(`error occurred creating instrument ${instrument_symbol}!: ${err.message}`)
+        TE(`error occurred creating instrument ${instrument_symbol} !: ${err.message}`)
     }
 
     return instrument;

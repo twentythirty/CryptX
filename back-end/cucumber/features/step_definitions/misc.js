@@ -238,23 +238,39 @@ When(/^I trigger "(.*)" action multiple times concurrently$/, function(action_na
             return {
                 endpoint: `instruments/create`,
                 method: 'post',
-                request: {
-                    transaction_asset_id: local_world.current_transaction_asset.id,
-                    quote_asset_id: local_world.current_quote_asset.id
-                },
+                request: [
+                    {
+                        transaction_asset_id: local_world.current_transaction_asset.id,
+                        quote_asset_id: local_world.current_quote_asset.id
+                    },
+                    {
+                        quote_asset_id: local_world.current_transaction_asset.id,
+                        transaction_asset_id: local_world.current_quote_asset.id
+                    }
+                ],
+                request_selection: 'switch', //Optional. How the request will be sent. by default, the whole object is sent, but it can also be an array of multiple requests
                 errors: {
                     lock: [`Instrument is already being created with those assets. Please wait...`],
                     transaction: [ 
-                        `error occurred creating instrument ${instrument_symbol}!: ${default_transaction_error_1}`, 
-                        `error occurred creating instrument ${instrument_symbol}!: ${default_transaction_error_2}` ],
+                        `error occurred creating instrument {string} !: ${default_transaction_error_1}`, 
+                        `error occurred creating instrument {string} !: ${default_transaction_error_2}` 
+                    ],
                     duplicate: [
-                        `error occurred creating instrument ${instrument_symbol}!: Instrument ${instrument_symbol} already exists!!`,
-                        `error occurred creating instrument ${instrument_symbol}!: Only one unique asset pair is allowed. Asset pair ${local_world.current_transaction_asset.symbol} and ${local_world.current_quote_asset.symbol} already used in instrument ${instrument_symbol}`
+                        `error occurred creating instrument {string} !: Instrument {string} already exists!!`,
+                        `error occurred creating instrument {string} !: Only one unique asset pair is allowed. Asset pair {string} and {string} already used in instrument {string}`
                     ]
                 },
                 check_with: {
-                    transaction_asset_id: local_world.current_transaction_asset.id,
-                    quote_asset_id: local_world.current_quote_asset.id
+                    [Op.or]: [
+                        {
+                            transaction_asset_id: local_world.current_transaction_asset.id,
+                            quote_asset_id: local_world.current_quote_asset.id
+                        },
+                        {
+                            quote_asset_id: local_world.current_transaction_asset.id,
+                            transaction_asset_id: local_world.current_quote_asset.id
+                        }
+                    ]
                 },
                 timeout: 12000
             };
@@ -288,15 +304,39 @@ When(/^I trigger "(.*)" action multiple times concurrently$/, function(action_na
             }, action.timeout);
         }
 
+        let request_index = 0;
         while(current_attempt < max_attempts) {
 
-            current_attempt++
+            current_attempt++;
+
+            let request = {};
+
+            switch(action.request_selection) {
+
+                case 'switch':
+                    request = action.request[request_index];
+                    request_index++;
+                    if(request_index >= action.request.length) request_index = 0;
+                    break;
+
+                case 'random':
+                    request = action.request[_.random(0, action.request.length - 1)];
+                    break;
+
+                case undefined:
+                    request = action.request;
+                    break;
+
+                default:
+                    return reject(`Unknown request selection type: ${action.request_selection}`);
+
+            }
 
             chai
             .request(this.app)
             [action.method](`/v1/${action.endpoint}`)
             .set('Authorization', this.current_user.token)
-            .send(action.request)
+            .send(request)
             .then(result => {
 
                 completed_requests++;
