@@ -44,7 +44,7 @@ Feature: View execution order details
         And if I look at the Execution Order Fills footer
         Then I see data layout:
         | fill_price    | quantity   | fill_time    |
-        | 0.40000000000000000000 average  | 10.0 total   |   -   |
+        | 0.4 average  | 10.0 total   |   -   |
         And if I look at the Execution Order logs
         Then I see data layout:
         |   timestamp   |   entry    |

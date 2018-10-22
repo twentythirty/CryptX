@@ -765,6 +765,8 @@ Then('a new Execution Order is saved to the database', async function () {
         }
     });
 
+    expect(execution_order, `Expected to find a new pending Execution order for Order with id ${this.current_recipe_order.id}`).to.be.not.null;
+
     this.current_execution_order = execution_order;
 
 });

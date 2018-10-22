@@ -214,6 +214,9 @@ Given(/^the system has Recipe Order with status (.*) on (.*)$/g, async function 
         Asset,
         sequelize
     } = require('../../../models');
+
+    const { Op } = sequelize;
+
     const CCXTUtil = require('../../../utils/CCXTUtils');
 
     const [exchange, base_assets] = await Promise.all([
@@ -239,12 +242,15 @@ Given(/^the system has Recipe Order with status (.*) on (.*)$/g, async function 
             where: {
                 quote_asset_id: base_assets.map(asset => asset.id)
             }
-        }
+        },
+        order: sequelize.literal('random()')
     });
 
     const connector = await CCXTUtil.getConnector(exchange.api_id);
 
     const amount_limits = _.get(connector, `markets.${mapping.external_instrument_id}.limits.amount`);
+    
+    if(amount_limits.min > 100) amount_limits.min = 0.1; //Seems the job does not work well with large min limits.
 
     return sequelize.transaction(transaction => {
 
