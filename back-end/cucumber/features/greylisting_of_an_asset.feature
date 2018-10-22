@@ -59,7 +59,7 @@ Feature: Greylistinf of an asset
     Scenario: Greylisting assets that don't belong to instruments or have pricing older than 30 days
 
         Given Instruments with transaction assets XRP, ADA and OMG have Market Data older than 30 days
-        But Instruments with transaction assets BTG, EOS and DOGE have Market Data older than 20 days
+        But Instruments with transaction assets BTG, EOS and DOGE have Market Data not older than 20 days
         When the system finished the task "asset price age check"
         Then Assets BTG, EOS and DOGE will be Greylisted
         But Assets XRP, ADA and OMG will remain Whitelisted

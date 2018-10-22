@@ -658,7 +658,7 @@ Given('the current Instrument market data is:', async function(table) {
 
 });
 
-Given(/^Instruments with transaction assets (.*) have Market Data older than (.*)$/, async function(asset_symbols, interval) {
+Given(/^Instruments with transaction assets (.*) have Market Data (not older|older) than (.*)$/, async function(asset_symbols, not, interval) {
 
     const { InstrumentExchangeMapping, Asset, Instrument, InstrumentMarketData } = require('../../../models');
 
