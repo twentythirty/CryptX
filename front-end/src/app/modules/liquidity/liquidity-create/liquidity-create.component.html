@@ -63,7 +63,7 @@
     (click)="saveLiquidityRequirement()"
     [appMarkAsTouched]="form"
   >
-    <ng-container *ngIf="liquidity">{{ 'common.save_changes' | translate }}</ng-container>
-    <ng-container *ngIf="!liquidity">{{ 'common.add_requirement' | translate }}</ng-container>
+    <ng-container *ngIf="liquidityId">{{ 'common.save_changes' | translate }}</ng-container>
+    <ng-container *ngIf="!liquidityId">{{ 'common.add_requirement' | translate }}</ng-container>
   </button>
 </app-form-action-bar>
