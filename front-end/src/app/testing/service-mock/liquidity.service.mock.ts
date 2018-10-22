@@ -1,4 +1,4 @@
-import { ExchangesResponse, LiquidityRequirementsCreateResponse, LiquiditiesAllResponse, LiquidityUpdateResponse } from '../../services/liquidity/liquidity.service';
+import { ExchangesResponse, LiquidityRequirementsCreateResponse, LiquiditiesAllResponse, LiquidityUpdateResponse, LiquidityDeleteResponse } from '../../services/liquidity/liquidity.service';
 import { LiquidityResponse } from '../../services/liquidity/liquidity.service';
 import { LiquidityRequirement } from '../../shared/models/liquidityRequirement';
 
@@ -96,4 +96,9 @@ export const updateLiquidityData: LiquidityUpdateResponse = {
     periodicity: 1,
     quote_asset: 'BTC'
   })
+};
+
+export const deleteLiquidityData: LiquidityDeleteResponse = {
+  success: true,
+  message: 'ok'
 };

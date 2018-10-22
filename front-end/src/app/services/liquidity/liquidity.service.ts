@@ -44,6 +44,11 @@ export class LiquidityUpdateResponse {
   liquidity_requirement: LiquidityRequirement;
 }
 
+export class LiquidityDeleteResponse {
+  success: boolean;
+  message: string;
+}
+
 
 @Injectable()
 export class LiquidityService {
@@ -59,6 +64,10 @@ export class LiquidityService {
 
   updateLiquidity(liquidityId: number, request: LiquidityUpdateRequestData): Observable<LiquidityUpdateResponse> {
     return this.http.post<LiquidityUpdateResponse>(this.baseUrl + `liquidity_requirements/${liquidityId}/edit`, request);
+  }
+
+  deleteLiquidity(liquidityId: number): Observable<LiquidityDeleteResponse> {
+    return this.http.delete<LiquidityDeleteResponse>(this.baseUrl + `liquidity_requirements/${liquidityId}/delete`);
   }
 
   getExchanges(liquidityId: number): Observable<ExchangesResponse> {

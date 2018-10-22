@@ -17,3 +17,20 @@
     [columnsToShow]="exchangesColumnsToShow"
   ></app-data-table>
 </ng-container>
+
+
+<app-form-action-bar>
+  <app-btn
+    extraClass="deactive"
+    (click)="openDeleteConfirm()"
+    [loading]="deleteLoading"
+    [disabled]="deleteLoading"
+  >{{ 'common.delete' | translate }}</app-btn>
+</app-form-action-bar>
+
+<app-confirm
+  *ngIf="showDeleteConfirm"
+  [heading]="'liquidity.liquidity_delete_confirm_msg' | translate"
+  (onReject)="closeDeleteConfirm()"
+  (onConfirm)="deleteLiquidity()"
+></app-confirm>

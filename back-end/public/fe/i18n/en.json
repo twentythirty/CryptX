@@ -338,7 +338,8 @@
     "enter_periodicity": "Enter periodicity",
     "minimum_circulation": "Minimum circulation",
     "enter_minimum_circulation": "Enter minimum circulation",
-    "enter_liquidity_information": "Enter liquidity information"
+    "enter_liquidity_information": "Enter liquidity information",
+    "liquidity_delete_confirm_msg": "Do you really want to delete this liquidity requirement?"
   },
   "instrument_liquidity_requirements": {
     "footer": {

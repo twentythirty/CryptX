@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { mergeMap } from 'rxjs/operators';
+import { mergeMap, finalize } from 'rxjs/operators';
 
 import { DataTableCommonManagerComponent } from '../../../shared/components/data-table-common-manager/data-table-common-manager.component';
 import { TableDataColumn, TableDataSource } from '../../../shared/components/data-table/data-table.component';
@@ -15,6 +15,8 @@ import { LiquidityService } from '../../../services/liquidity/liquidity.service'
 })
 export class LiquidityInfoComponent extends DataTableCommonManagerComponent implements OnInit {
   private cryptoSuffix: string;
+  showDeleteConfirm: boolean = false;
+  deleteLoading: boolean = false;
 
   public liquidityDataSource: TableDataSource = {
     header: [
@@ -119,7 +121,7 @@ export class LiquidityInfoComponent extends DataTableCommonManagerComponent impl
     );
   }
 
-  public getAllData(): void {
+  getAllData(): void {
     this.route.params.pipe(
       mergeMap(
         params => this.liquidityService.getExchanges(params['id'])
@@ -132,6 +134,34 @@ export class LiquidityInfoComponent extends DataTableCommonManagerComponent impl
         });
       },
       err => this.exchangesDataSource.body = []
+    );
+  }
+
+
+  openDeleteConfirm(): void {
+    this.showDeleteConfirm = true;
+  }
+
+  closeDeleteConfirm(): void {
+    this.showDeleteConfirm = false;
+  }
+
+  deleteLiquidity(): void {
+    this.closeDeleteConfirm();
+    this.deleteLoading = true;
+
+    this.route.params.pipe(
+      mergeMap(
+        params => this.liquidityService.deleteLiquidity(params.id).pipe(
+          finalize(() => this.deleteLoading = false)
+        )
+      )
+    ).subscribe(
+      res => {
+        if (res.success) {
+          this.router.navigate(['/liquidity_requirements']);
+        }
+      }
     );
   }
 
