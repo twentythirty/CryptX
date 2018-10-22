@@ -6,6 +6,8 @@ const adminViewUtils = require('../utils/AdminViewUtils');
 
 const InstrumentLiquidityRequirement = require('../models').InstrumentLiquidityRequirement;
 
+const { lock } = require('../utils/LockUtils');
+
 const createInstrument = async function (req, res) {
  
   let {
@@ -16,7 +18,17 @@ const createInstrument = async function (req, res) {
   if (!transaction_asset_id || !quote_asset_id)
     return ReE(res, "Both assets must be specified to create an instrument", 422);
   
-  const [err, instrument] = await to(instrumentService.createInstrument(transaction_asset_id, quote_asset_id));
+  //const [err, instrument] = await to(instrumentService.createInstrument(transaction_asset_id, quote_asset_id));
+  const [ err, instrument ] = await to(
+    lock(instrumentService, {
+      method: 'createInstrument',
+      params: [ transaction_asset_id, quote_asset_id ],
+      id: 'create_instrument',
+      keys: [ transaction_asset_id, quote_asset_id ].sort(), //disallow any combination of those ids
+      error_message: 'Instrument is already being created with those assets. Please wait...',
+      max_block: 180
+    })
+  );
   if (err) {
     return ReE(res, err, 422);
   }

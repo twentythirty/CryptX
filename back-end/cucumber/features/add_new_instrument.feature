@@ -23,3 +23,11 @@ Feature: Add a new instrument
         But I select the same Asset as quote and transaction asset
         And I create a new Instrument with those Assets
         Then the system will display an error about not using two different assets
+
+    Scenario: attempting to create multiple identical instruments
+
+        Given there are no Instruments in the system
+        When I log onto CryptX as Compliance Manager
+        And I select different Assets as quote and transaction assets
+        And I trigger "create instrument" action multiple times concurrently
+        Then only one or no Instruments will be saved to the database

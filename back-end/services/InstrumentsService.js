@@ -7,6 +7,8 @@ const InstrumentLiquidityRequirement = require('../models').InstrumentLiquidityR
 const Exchange = require('../models').Exchange;
 const sequelize = require('../models').sequelize;
 
+const { ISOLATION_LEVELS } = sequelize.Transaction;
+
 const {
     or: opOr
 } = require('sequelize').Op;
@@ -37,40 +39,49 @@ const createInstrument = async (transaction_asset_id, quote_asset_id) => {
         TE(`Suppleid asset ids ${transaction_asset_id} and ${quote_asset_id} dont all correspond to actual assets!`);
     }
     const assets_by_id = _.keyBy(instrument_assets, 'id');
-    //check that an instrument with the same assets doesnt already exist
-    const old_instrument = await Instrument.findOne({
-        where: {
-            [opOr]: [{
-                    transaction_asset_id: transaction_asset_id,
-                    quote_asset_id: quote_asset_id
-                },
-                {
-                    transaction_asset_id: quote_asset_id,
-                    quote_asset_id: transaction_asset_id
-                }
-            ]
-        }
-    });
-    if (old_instrument) {
-        let message = `Instrument ${old_instrument.symbol} already exists!!`
-
-        if (old_instrument.transaction_asset_id === quote_asset_id && old_instrument.quote_asset_id === transaction_asset_id) {
-            message = `Only one unique asset pair is allow. Asset pair ${assets_by_id[transaction_asset_id].symbol} and ${assets_by_id[quote_asset_id].symbol} already used in instrument ${old_instrument.symbol}`
-        }
-
-        TE(message);
-    }
 
     const instrument_symbol = `${assets_by_id[transaction_asset_id].symbol}/${assets_by_id[quote_asset_id].symbol}`;
 
-    const [err, instrument] = await to(Instrument.create({
-        transaction_asset_id: transaction_asset_id,
-        quote_asset_id: quote_asset_id,
-        symbol: instrument_symbol
+    const [ err, instrument ] = await to(sequelize.transaction({
+        isolationLevel: ISOLATION_LEVELS.SERIALIZABLE
+    }, async transaction => {
+
+        //check that an instrument with the same assets doesnt already exist
+        const old_instrument = await Instrument.findOne({
+            where: {
+                [opOr]: [{
+                        transaction_asset_id: transaction_asset_id,
+                        quote_asset_id: quote_asset_id
+                    },
+                    {
+                        transaction_asset_id: quote_asset_id,
+                        quote_asset_id: transaction_asset_id
+                    }
+                ]
+            },
+            transaction
+        });
+
+        if (old_instrument) {
+            let message = `Instrument ${old_instrument.symbol} already exists!!`
+
+            if (old_instrument.transaction_asset_id === quote_asset_id && old_instrument.quote_asset_id === transaction_asset_id) {
+                message = `Only one unique asset pair is allowed. Asset pair ${assets_by_id[transaction_asset_id].symbol} and ${assets_by_id[quote_asset_id].symbol} already used in instrument ${old_instrument.symbol}`
+            }
+
+            TE(message);
+        }
+
+        return Instrument.create({
+            transaction_asset_id: transaction_asset_id,
+            quote_asset_id: quote_asset_id,
+            symbol: instrument_symbol
+        }, { transaction });
+
     }));
 
     if (err != null) {
-        TE(`error occurred creating instrument ${instrument_symbol}!: ${err}`)
+        TE(`error occurred creating instrument ${instrument_symbol}!: ${err.message}`)
     }
 
     return instrument;

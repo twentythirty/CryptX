@@ -16,7 +16,7 @@ const locks = [];
  * @param {String|Number} options.id REQUIRED. identifier for the method.
  * @param {String} [options.error_message] optional error message which will be thrown if the method is still locked.
  * @param {Number} [options.lock_time=10000] ms after the lock unlocks, despite the result of the promise.
- * @param {Object} [options.keys={}] optional object of keys. Providing different keys will ignore the current lock
+ * @param {Object|String|Number} [options.keys={}] optional object of keys. Providing different keys will ignore the current lock
  * @param {String} [options.method] optional method name if the first argument was an object of methods.
  * @param {Number} [options.max_block] CUCUMBER TESTS ONLY. Set the number of maximum attempts to block. Used to test the transaction layer if the lock fails
  */
@@ -38,7 +38,6 @@ const lock = async (method, options = {}) => {
     if(!_.isNumber(lock_time)) throw new Error('lock time must be a valid number representing ms');
 
     const keys = options.keys || DEFAULT.KEYS;
-    if(!_.isPlainObject(keys)) throw new Error('keys must be a plain object');
 
     if(_isLocked(id, keys)) throw new Error(error_message);
 
@@ -62,7 +61,6 @@ const lock = async (method, options = {}) => {
 const unlock = (id, keys = {}) => {
 
     if(!id) throw new Error('method id must be provided');
-    if(!_.isPlainObject(keys)) throw new Error('keys must be a plain object');
 
     const existing_lock = locks.find(l => l.id === id && _.isEqual(l.keys, keys));
     

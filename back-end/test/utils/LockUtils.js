@@ -53,8 +53,7 @@ describe('LockUtils testing', () => {
                 [MOCK_PROMISE, { id: {} }, 'promise id must be provided as a string or number'],
                 [MOCK_PROMISE, { id: 1, params: 123 }, 'passed params must be an array'],
                 [MOCK_PROMISE, { id: 1, error_message: ['1'] }, 'error message cannot be an empty object/null'],
-                [MOCK_PROMISE, { id: 2, error_message: 'error', lock_time: 'kek' }, 'lock time must be a valid number representing ms'],
-                [MOCK_PROMISE, { id: 3, error_message: 'error', lock_time: 1000, keys: 'mn--W' }, 'keys must be a plain object']
+                [MOCK_PROMISE, { id: 2, error_message: 'error', lock_time: 'kek' }, 'lock time must be a valid number representing ms']
             ];
 
             for(let params of invalid_params) {

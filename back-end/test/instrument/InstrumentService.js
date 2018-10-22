@@ -194,11 +194,15 @@ describe('InstrumentService testing:', () => {
                 return Promise.resolve(mapping);
             });
 
-            sinon.stub(sequelize, 'transaction').callsFake(() => {
-                return Promise.resolve([{
-                    tick_size: MOCK_ASSET_2.id,
-                    external_instrument_id: MOCK_INSTRUMENT.symbol
-                }]);
+            sinon.stub(InstrumentExchangeMapping, 'destroy').callsFake(async () => {
+                return;
+            });
+
+            sinon.stub(InstrumentExchangeMapping, 'bulkCreate').callsFake(async records => records);
+
+            sinon.stub(sequelize, 'transaction').callsFake(async (options, transaction) => {
+                if(_.isFunction(options)) transaction = options;
+                return transaction();
             });
 
             done();
@@ -210,6 +214,8 @@ describe('InstrumentService testing:', () => {
             Asset.findAll,
             InstrumentExchangeMapping.build,
             InstrumentExchangeMapping.findOne,
+            InstrumentExchangeMapping.destroy,
+            InstrumentExchangeMapping.bulkCreate,
             InstrumentLiquidityRequirement.findAll,
             InstrumentLiquidityRequirement.create,
             sequelize.transaction

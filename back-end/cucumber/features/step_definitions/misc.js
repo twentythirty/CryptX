@@ -185,7 +185,7 @@ When(/^I trigger "(.*)" action multiple times concurrently$/, function(action_na
     const default_transaction_error_2 = 'could not serialize access due to read/write dependencies among transactions';
 
     const action_map = {
-        'start recipe run': (local_world) => {
+        'start recipe run': local_world => {
             return {
                 endpoint: `investments/${local_world.current_investment_run.id}/start_recipe_run`,
                 method: 'post',
@@ -199,7 +199,7 @@ When(/^I trigger "(.*)" action multiple times concurrently$/, function(action_na
                 timeout: 15000
             }
         },
-        'start investment run': (local_world) => {
+        'start investment run': local_world => {
             return {
                 endpoint: `investments/create`,
                 method: 'post',
@@ -216,7 +216,7 @@ When(/^I trigger "(.*)" action multiple times concurrently$/, function(action_na
                 timeout: 12000
             }
         },
-        'generate recipe run orders': (local_world) => {
+        'generate recipe run orders': local_world => {
             return {
                 endpoint: `recipes/${local_world.current_recipe_run.id}/generate_orders`,
                 method: 'post',
@@ -232,6 +232,32 @@ When(/^I trigger "(.*)" action multiple times concurrently$/, function(action_na
                 },
                 timeout: 12000
             }
+        },
+        'create instrument': local_world => {
+            const instrument_symbol = `${local_world.current_transaction_asset.symbol}/${local_world.current_quote_asset.symbol}`;
+            return {
+                endpoint: `instruments/create`,
+                method: 'post',
+                request: {
+                    transaction_asset_id: local_world.current_transaction_asset.id,
+                    quote_asset_id: local_world.current_quote_asset.id
+                },
+                errors: {
+                    lock: [`Instrument is already being created with those assets. Please wait...`],
+                    transaction: [ 
+                        `error occurred creating instrument ${instrument_symbol}!: ${default_transaction_error_1}`, 
+                        `error occurred creating instrument ${instrument_symbol}!: ${default_transaction_error_2}` ],
+                    duplicate: [
+                        `error occurred creating instrument ${instrument_symbol}!: Instrument ${instrument_symbol} already exists!!`,
+                        `error occurred creating instrument ${instrument_symbol}!: Only one unique asset pair is allowed. Asset pair ${local_world.current_transaction_asset.symbol} and ${local_world.current_quote_asset.symbol} already used in instrument ${instrument_symbol}`
+                    ]
+                },
+                check_with: {
+                    transaction_asset_id: local_world.current_transaction_asset.id,
+                    quote_asset_id: local_world.current_quote_asset.id
+                },
+                timeout: 12000
+            };
         }
     };
 
@@ -539,7 +565,8 @@ Then(/^only (\b(?:[a-z']*)(?:\s[a-z']*)*\b) (\b(?:[A-Z][a-z']*)(?:\s[A-Z][a-z']*
     const plural_map = {
         'Recipe Runs': 'RecipeRun',
         'Investment Runs': 'InvestmentRun',
-        'Recipe Order Groups': 'RecipeOrderGroup'
+        'Recipe Order Groups': 'RecipeOrderGroup',
+        'Instruments': 'Instrument'
     };
 
     const allowed_numbers = utils.numberStringToArray(amounts);
