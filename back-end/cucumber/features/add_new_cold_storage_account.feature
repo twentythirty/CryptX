@@ -27,6 +27,15 @@ Feature: Add a new cold storage account
         And I create a new LCI Cold Storage Account
         Then the system will display an error about using a non-cryptocurrency asset
         And a new Cold Storage Account is not created
+
+    Scenario: attempting to add multiple identical cold storage accounts
+
+        Given there are no Cold Storage Accounts in the system
+        When I log onto CryptX as Investment Manager
+        And I select a Cold Storage Custodian
+        And I select a cryptocurrency Asset
+        And I trigger "add LCI cold storage account" action multiple times concurrently
+        Then only one or no Cold Storage Accounts will be saved to the database
         
     #Scenario: editing the address and tag of an existing account
 

@@ -5,6 +5,8 @@ const ColdStorageAccount = require('../models').ColdStorageAccount;
 const ColdStorageTransfer = require('../models').ColdStorageTransfer;
 const sequelize = require('../models').sequelize;
 
+const { ISOLATION_LEVELS } = sequelize.Transaction;
+
 const Asset = require('../models').Asset;
 
 const { fn: seq_fn, where: seq_where, col: seq_col } = require('../models').sequelize; 
@@ -19,15 +21,20 @@ const createCustodian = async (name) => {
         TE(`Custodian name must bit a valid, non-empty string`);
     }
     
-    let [ err, existing_custodian ] = await to(ColdStorageCustodian.count({
-        where: seq_where(seq_fn('lower', seq_col('name')), seq_fn('lower', name))
+    const [ err, custodian ] = await to(sequelize.transaction({
+        isolationLevel: ISOLATION_LEVELS.SERIALIZABLE
+    }, async transaction => {
+
+        let existing_custodian = await ColdStorageCustodian.count({
+            where: seq_where(seq_fn('lower', seq_col('name')), seq_fn('lower', name)),
+            transaction
+        });
+
+        if(existing_custodian) TE(`Custodian with the name "${name}" already exists`);
+
+        return ColdStorageCustodian.create({ name }, { transaction });
+
     }));
-
-    if(err) TE(err.message);
-    if(existing_custodian) TE(`Custodian with the name "${name}" already exists`);
-
-    let custodian = null;
-    [ err, custodian ] = await to(ColdStorageCustodian.create({ name }));
 
     if(err) TE(err.message);
 
@@ -70,23 +77,24 @@ const createColdStorageAccount = async (strategy_type, asset_id, cold_storage_cu
     if(!found_custodian) TE(`Custodian with id ${cold_storage_custodian_id} was not found`);
 
     let account = null;
-    [ err, account ] = await to(sequelize.transaction(transaction => {
+    [ err, account ] = await to(sequelize.transaction({
+        isolationLevel: ISOLATION_LEVELS.SERIALIZABLE
+    }, async transaction => {
 
-        return ColdStorageAccount.count({
-            where: { strategy_type, asset_id }
-        }).then(found_account => {
-            // allow to only create cold storage accounts with for unique strategy and asset pairs.
-            if(found_account) TE(`Account with the same strategy, asset already exists`);
+        found_account = await ColdStorageAccount.count({
+            where: { strategy_type, asset_id, cold_storage_custodian_id }, transaction
+        });
 
-            return ColdStorageAccount.create({
-                strategy_type,
-                asset_id,
-                cold_storage_custodian_id,
-                address,
-                tag
-            });
+        // allow to only create cold storage accounts with for unique strategy and asset pairs.
+        if(found_account) TE(`Account with the same strategy, asset and custodian already exists`);
 
-        })
+        return ColdStorageAccount.create({
+            strategy_type,
+            asset_id,
+            cold_storage_custodian_id,
+            address,
+            tag
+        }, { transaction });
 
     }));
 

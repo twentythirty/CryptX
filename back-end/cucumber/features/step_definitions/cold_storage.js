@@ -268,7 +268,7 @@ When(/^I create a new (LCI|MCI) Cold Storage Account$/, function(strategy) {
         asset_id: this.current_asset.id,
         custodian_id: this.current_custodian.id,
         address: address
-    }
+    };
 
     return chai
         .request(this.app)

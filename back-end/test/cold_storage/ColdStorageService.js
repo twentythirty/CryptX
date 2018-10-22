@@ -16,7 +16,8 @@ describe('ColdStorage testing', () => {
         app.dbPromise.then(migrations => {
             console.log("Migrations: %o", migrations);
 
-            sinon.stub(sequelize, 'transaction').callsFake(callback => {
+            sinon.stub(sequelize, 'transaction').callsFake((options, callback) => {
+                if(_.isFunction(options)) callback = options; 
                 return Promise.resolve(callback());
             });
 

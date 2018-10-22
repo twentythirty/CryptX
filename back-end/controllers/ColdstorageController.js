@@ -8,6 +8,8 @@ const ColdStorageCustodian = require('../models').ColdStorageCustodian;
 
 const { logAction } = require('../utils/ActionLogUtil');
 
+const { lock } = require('../utils/LockUtils');
+
 const approveColdStorageTransfer = async function (req, res) {
 
   const { transfer_id } = req.params;
@@ -84,7 +86,16 @@ const addCustodian = async (req, res) => {
   const { name } = req.body;
   const { user } = req;
 
-  const [err, custodian] = await to(ColdStorageService.createCustodian(name));
+  const [ err, custodian ] = await to(
+    lock(ColdStorageService, {
+      method: 'createCustodian',
+      params: [ name ],
+      id: 'create_cold_storage_custodian',
+      keys: { name },
+      error_message: 'A cold storage custodian is currently being added with that name. Please wait...',
+      max_block: 180
+    })
+  );
 
   if (err) return ReE(res, err.message, 422);
 
@@ -106,7 +117,16 @@ const addColdstorageAccount = async function (req, res) {
   if (strategy_type == null || asset_id == null || custodian_id == null || address == null)
     return ReE(res, "strategy_type, asset_id, custodian_id and address must be supplied")
 
-  let [err, account] = await to(ColdStorageService.createColdStorageAccount(strategy_type, asset_id, custodian_id, address, tag));
+  const [ err, account ] = await to(
+    lock(ColdStorageService, {
+      method: 'createColdStorageAccount',
+      params: [ strategy_type, asset_id, custodian_id, address, tag ],
+      id: 'create_cold_storage_account',
+      keys: { strategy_type, asset_id, custodian_id },
+      error_message: 'A cold storage account is currently being added with those selections. Please wait...',
+      max_block: 180
+    })
+  );
 
   if (err) return ReE(res, err.message, 422);
 

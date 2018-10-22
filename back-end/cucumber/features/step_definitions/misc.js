@@ -274,6 +274,32 @@ When(/^I trigger "(.*)" action multiple times concurrently$/, function(action_na
                 },
                 timeout: 12000
             };
+        },
+        'add LCI cold storage account': local_world => {
+            return {
+                endpoint: `cold_storage/accounts/add`,
+                method: 'post',
+                request: {
+                    strategy_type: STRATEGY_TYPES.LCI,
+                    asset_id: local_world.current_asset.id,
+                    custodian_id: local_world.current_custodian.id,
+                    address: '3jkh12j3h213h12k3h1k2j3h1jk23h1jh231kh'
+                },
+                errors: {
+                    lock: [`A cold storage account is currently being added with those selections. Please wait...`],
+                    transaction: [ 
+                        default_transaction_error_1, 
+                        default_transaction_error_2 
+                    ],
+                    duplicate: [`Account with the same strategy, asset and custodian already exists`]
+                },
+                check_with: {
+                    strategy_type: STRATEGY_TYPES.LCI,
+                    asset_id: local_world.current_asset.id,
+                    cold_storage_custodian_id: local_world.current_custodian.id
+                },
+                timeout: 12000
+            };
         }
     };
 
@@ -606,7 +632,8 @@ Then(/^only (\b(?:[a-z']*)(?:\s[a-z']*)*\b) (\b(?:[A-Z][a-z']*)(?:\s[A-Z][a-z']*
         'Recipe Runs': 'RecipeRun',
         'Investment Runs': 'InvestmentRun',
         'Recipe Order Groups': 'RecipeOrderGroup',
-        'Instruments': 'Instrument'
+        'Instruments': 'Instrument',
+        'Cold Storage Accounts': 'ColdStorageAccount'
     };
 
     const allowed_numbers = utils.numberStringToArray(amounts);
