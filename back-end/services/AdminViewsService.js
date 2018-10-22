@@ -934,11 +934,13 @@ const fetchExecutionOrderFillsViewsFooter = async (where_clause = '') => {
         'quantity'
     ])
     */
+    //round the fills result calculation thing to this many decimal places
+    const FILLS_VIEW_FOOTER_DECIMAL_PLACES = 8;
     //Desperate math calls for desperate sql queries
     const query = `
         SELECT
             COUNT(id) AS id,
-            (SUM(quantity*fill_price)/SUM(quantity)) AS fill_price,
+            CAST(to_char(SUM(quantity*fill_price)/SUM(quantity), 'FM99999999990.${_.repeat('9', FILLS_VIEW_FOOTER_DECIMAL_PLACES)}') AS NUMERIC)  AS fill_price,
             SUM(quantity) as quantity
         FROM av_execution_order_fills
         ${builder.whereOrEmpty(where_clause)}
