@@ -1064,14 +1064,14 @@ router.post(
   res_new_token,
   check_permissions,
   ColdstorageController.addColdstorageAccount
-);
+);/* Removed for now, may be added later
 router.post(
   ROUTES.EditColdStorageAccount.router_string,
   stateless_auth,
   res_new_token,
   check_permissions,
   ColdstorageController.editColdStorageAccount
-);
+);*/
 router.post(
   ROUTES.GetColdstorageAccounts.router_string,
   stateless_auth,
