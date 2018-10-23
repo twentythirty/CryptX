@@ -46,6 +46,20 @@ export const getAllExchangeAccountsData = {
   ]
 };
 
+export const getAllExchangeCredentialsData = {
+    success: true,
+    count: 1,
+    footer: [],
+    exchange_credentials: [
+      {
+        id: 18,
+        exchange_id: 354,
+        exchange: 'Binance',
+        api_key: 'SuperBinanceUser64'
+      }
+    ]
+};
+
 export const getSingleExchangeAccountsData = {
   success: true,
   exchange_account: {

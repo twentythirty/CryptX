@@ -38,6 +38,7 @@ export class NavigationComponent implements OnInit {
       {link: '/deposits', permission: [permissions.ALTER_PERMS], name: 'Deposits'},
       {link: '/execution_orders', permission: [permissions.ALTER_PERMS], name: 'Execution Orders'},
       {link: '/exchange_accounts', permission: [permissions.VIEW_ROLES], name: 'Exchange Account'},
+      {link: '/exchange_credentials', permission: [permissions.VIEW_EXCHANGE_CREDENTIALS], name: 'Exchange Credential'},
     ]},
     {name: 'User management', show: false, items: [
       {link: '/users', permission: [permissions.EDIT_USERS], name: 'Users'},

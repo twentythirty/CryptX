@@ -121,7 +121,8 @@
       "investment_amount": "Investment amount",
       "target_currency": "Target currency",
       "converted_amount": "Converted amount",
-      "minimum_daily_avg_volume": "Minimum daily avg. volume"
+      "minimum_daily_avg_volume": "Minimum daily avg. volume",
+      "username": "Username"
     },
     "filter": {
       "all": "All",
@@ -420,7 +421,9 @@
   "exchange_credentials": {
     "footer": {
       "exchange": "{{ exchange }} Exchanges"
-    }
+    },
+    "header": "Exchange credentials",
+    "add_credential": "Add credential"
   },
 
   "assets": {
