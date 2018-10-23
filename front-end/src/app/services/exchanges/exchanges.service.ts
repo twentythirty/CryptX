@@ -63,4 +63,15 @@ export class ExchangesService {
     );
   }
 
+  createExchangeAccount(data: object, id: number): Observable<any> {
+    return this.http.post<any>(this.baseUrl + `exchanges/${id}/accounts/create`, data);
+  }
+
+  getSingleExchangeAccount(id: number): Observable<any> {
+    return this.http.get<any>(this.baseUrl + `exchanges/accounts/${id}`);
+  }
+
+  editExchangeAccountData(data: object, id: number): Observable<any> {
+    return this.http.post<any>(this.baseUrl + `exchanges/accounts/${id}/edit`, data);
+  }
 }
