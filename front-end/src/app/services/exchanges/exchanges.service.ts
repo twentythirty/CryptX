@@ -20,6 +20,13 @@ export class ExchangeAccountsAllResponse {
   footer: Array<any>;
 }
 
+export class ExchangeCredentialsAllResponse {
+  success: boolean;
+  exchange_credentials: Array<any>;
+  count: number;
+  footer: Array<any>;
+}
+
 export class ExchangesInstrumentIdentifiersResponse {
   identifiers: Array<string>;
   success: boolean;
@@ -43,6 +50,10 @@ export class ExchangesService {
 
   getAllExchangeAccounts(requestData?: EntitiesFilter): Observable<ExchangeAccountsAllResponse> {
     return this.http.post<ExchangeAccountsAllResponse>(this.baseUrl + `exchanges/accounts/all`, requestData);
+  }
+
+  getAllExchangeCredentials(requestData?: EntitiesFilter): Observable<ExchangeCredentialsAllResponse> {
+    return this.http.post<ExchangeCredentialsAllResponse>(this.baseUrl + `exchanges/credentials/all`, requestData);
   }
 
   getHeaderLOV(column_name: string): Observable<any> {

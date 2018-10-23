@@ -33,5 +33,8 @@ export const permissions = {
   CREATE_LIQUIDITY_REQUIREMENTS: 'perm_create_liquidity_requirements',
   VIEW_LIQUIDITY_REQUIREMENTS: 'perm_view_liquidity_requirements',
   ADD_EXCHANGE_ACCOUNTS: 'perm_add_exchange_account',
+  VIEW_EXCHANGE_ACCOUNTS: 'perm_view_exchange_account',
+  ADD_EXCHANGE_CREDENTIALS: 'perm_add_exchange_credentials',
+  VIEW_EXCHANGE_CREDENTIALS: 'perm_view_exchange_credentials',
   RECEIVE_NOTIFICATION_ABOUT_NEW_ASSETS: 'perm_receive_notifications_about_new_assets'
 };

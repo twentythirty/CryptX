@@ -44,6 +44,7 @@ import { ColdStorageCustodiansModule } from './modules/cold-storage-custodians/c
 import { ColdStorageAccountStorageFeeModule } from './modules/cold-storage-account-storage-fee/cold-storage-account-storage-fee.module';
 import { MatProgressSpinnerModule, MatDatepickerModule, MatFormFieldModule, MatNativeDateModule, MatInputModule } from '@angular/material';
 import { ExchangeAccountsModule } from './modules/exchange-accounts/exchange-accounts.module';
+import { ExchangeCredentialsModule } from './modules/exchange-credentials/exchange-credentials.module';
 
 
 export function HttpLoaderFactory(httpClient: HttpClient) {
@@ -92,6 +93,7 @@ export function HttpLoaderFactory(httpClient: HttpClient) {
     ColdStorageCustodiansModule,
     ColdStorageAccountStorageFeeModule,
     ExchangeAccountsModule,
+    ExchangeCredentialsModule,
   ],
   providers: [
     {
