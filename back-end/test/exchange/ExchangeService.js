@@ -21,6 +21,8 @@ describe('ExchangeService testing', () => {
     const InvestmentRun = require('./../../models').InvestmentRun;
     const sequelize = require('./../../models').sequelize;
 
+    const ccxtUtils = require('./../../utils/CCXTUtils');
+
     //ensure working DB before test
     before(done => {
 
@@ -252,6 +254,8 @@ describe('ExchangeService testing', () => {
         const { setExchangeCredentials } = ExchangeService;
 
         const VALID_EXCHANGE_ID = 1;
+        
+        let DUMMY_CONNECTOR = {};
 
         beforeEach(done => {
 
@@ -275,6 +279,12 @@ describe('ExchangeService testing', () => {
 
             });
 
+            sinon.stub(ccxtUtils, 'getConnector').callsFake(async api_id => {
+
+                return DUMMY_CONNECTOR;
+
+            });
+
             done();
         });
 
@@ -283,6 +293,7 @@ describe('ExchangeService testing', () => {
             Exchange.findById.restore();
             ExchangeCredential.destroy.restore();
             ExchangeCredential.create.restore();
+            ccxtUtils.getConnector.restore();
 
             done();
         });
@@ -335,6 +346,9 @@ describe('ExchangeService testing', () => {
                 expect(result.exchange_id).to.equal(VALID_EXCHANGE_ID);
                 expect(result.api_key_string).to.equal(API_KEY);
                 expect(result.api_secret_string).to.equal(API_SECRET);
+
+                expect(DUMMY_CONNECTOR.apiKey).to.equal(API_KEY);
+                expect(DUMMY_CONNECTOR.secret).to.equal(API_SECRET);
 
             });
 

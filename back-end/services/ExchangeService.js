@@ -11,6 +11,8 @@ const Instrument = require('../models').Instrument;
 const InstrumentExchangeMapping = require('../models').InstrumentExchangeMapping;
 const sequelize = require('../models').sequelize;
 
+const ccxtUtils = require('../utils/CCXTUtils');
+
 const createExchangeAccount = async (account_type, asset_id, exchange_id, address, is_active = true) => {
     if (
         !account_type ||
@@ -104,6 +106,11 @@ const setExchangeCredentials = async (exchange_id, api_key_string, api_secret_st
     if(err) TE(err.message);
     if(!exchange) return null;
 
+    let connector;
+    [ err, connector ] = await to(ccxtUtils.getConnector(exchange.api_id));
+
+    if(err) TE(err.message);
+
     //If both were passed as null or not passed, consider this as "unset"
     if(!api_key_string && !api_secret_string) {
 
@@ -111,13 +118,18 @@ const setExchangeCredentials = async (exchange_id, api_key_string, api_secret_st
             where: { exchange_id }
         });
 
+        connector.apiKey = null;
+        connector.secret = null;
+        connector.password = null;
+
         return true;
 
     }
 
     if(!_.isString(api_key_string) || !_.isString(api_secret_string)) TE('Exchange API key and secret must be valid values');
 
-    return sequelize.transaction(async transaction => {
+    let credential;
+    [ err, credential ] = await to(sequelize.transaction(async transaction => {
 
         await ExchangeCredential.destroy({
             where: { exchange_id },
@@ -131,7 +143,15 @@ const setExchangeCredentials = async (exchange_id, api_key_string, api_secret_st
             admin_password_string
         }, { transaction });
 
-    });
+    }));
+
+    if(err) TE(err.message);
+
+    connector.apiKey = credential.api_key_string;
+    connector.secret = credential.api_secret_string;
+    connector.password = credential.admin_password_string;
+    
+    return credential;
 
 };
 module.exports.setExchangeCredentials = setExchangeCredentials;

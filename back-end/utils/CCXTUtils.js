@@ -3,6 +3,7 @@
 const ccxt = require('ccxt');
 const Bottleneck = require('bottleneck');
 const Exchange = require('../models').Exchange;
+const ExchangeCredential = require('../models').ExchangeCredential;
 const HttpsProxyAgent = require('https-proxy-agent');
 const proxy = new HttpsProxyAgent(process.env.PROXY_URL || 'localhost:3000');
 
@@ -23,7 +24,9 @@ let proxy_by_id = {},
 const cache_init_promise = async () => {
     const app = require('../app');
     return app.dbPromise.then(migrations => {
-        return Exchange.findAll({})
+        return Exchange.findAll({
+            include: ExchangeCredential
+        })
     }).then(exchanges => {
 
         _.mapValues(EXCHANGE_KEYS, exchange_options => {
@@ -31,7 +34,23 @@ const cache_init_promise = async () => {
         });
 
         _.forEach(exchanges, exchange => {
-            const connector = new ccxt[exchange.api_id](EXCHANGE_KEYS[exchange.api_id]);
+
+            /**
+             * For now, we only have one set of credentials per exchange, this might change in case we
+             * use different keys for say READ and WRITE.
+             * For now it will also default to ENV if the credentials were not found in the database.
+             */
+            const connector_options = Object.assign({}, EXCHANGE_KEYS[exchange.api_id]);
+            if(exchange.ExchangeCredentials.length) {
+
+                const credentials = exchange.ExchangeCredentials[0];
+                connector_options.apiKey = credentials.api_key_string;
+                connector_options.secret = credentials.api_secret_string;
+                connector_options.password = credentials.admin_password_string; //admin password for OKEx
+
+            }
+
+            const connector = new ccxt[exchange.api_id](connector_options);
             const throttle = {
                 id: `LIM-${exchange.api_id}`,
                 bottleneck: new Bottleneck({
