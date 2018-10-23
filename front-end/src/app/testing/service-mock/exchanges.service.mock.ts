@@ -37,11 +37,34 @@ export const getAllExchangeAccountsData = {
     new ExchangeAccount({
       id: 1,
       asset_id: 10,
-      asset:	'BTC',
-      exchange_id:	2,
-      exchange:	'Biffinex',
-      address:	'test',
-      is_active:	'exchange_accounts.is_active.active'
+      asset: 'BTC',
+      exchange_id: 2,
+      exchange: 'Biffinex',
+      address: 'test',
+      is_active: 'exchange_accounts.is_active.active'
     }),
   ]
+};
+
+export const getSingleExchangeAccountsData = {
+  success: true,
+  exchange_account: {
+    address: 'test',
+    asset: 'USD',
+    asset_id: 1,
+    exchange: 'OKEx',
+    exchange_id: 2,
+    id: 1,
+    is_active: 'exchange_accounts.is_active.active'
+  }
+};
+
+export const createExchangeAccountData = {
+  success: true,
+  exchange_account: {
+    id: 18,
+    asset_id: 2,
+    account_type: 401,
+    is_active: true
+  }
 };

@@ -23,7 +23,10 @@
     "all": "All",
     "add_custodian": "Add custodian",
     "discard": "Discard",
-    "row_number": "Row Nr."
+    "row_number": "Row Nr.",
+    "save": "Save",
+    "deactivate": "Deactivate",
+    "ok": "Ok"
   },
   "table": {
     "header": {
@@ -391,8 +394,20 @@
   },
 
   "exchange_accounts": {
+    "exchange": "Exchange",
+    "asset": "Asset",
+    "select_exchange": "Select exchange",
+    "enter_asset": "Enter asset",
+    "address": "Address",
+    "enter_address_of_cryptocurrency_wallet": "Enter address of a cryptocurrency wallet",
+    "enter_exchange_account_information": "Enter exchange account information",
+    "add_new_exchange_account": "Add new exchange account",
     "add_account": "Add account",
     "header": "Exchange accounts",
+    "exchange_account_deactivate_confirm_msg": "Are you sure you want {{buttonName}} this exchange account?",
+    "exchange_cant_deactivate": "Can't deactivate this account",
+    "exchange_account_cant_deactivate": "Can't {{buttonName}} this account",
+    "cant_deactivate_msg": "There is some active investment runs linked with this account",
     "is_active": {
       "active": "Active",
       "inactive": "Inactive"
