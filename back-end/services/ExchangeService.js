@@ -97,7 +97,7 @@ const editExchangeAccount = async (account_id, is_active) => {
 };
 module.exports.editExchangeAccount = editExchangeAccount;
 
-const setExchangeCredentials = async (exchange_id, api_user_id, password) => {
+const setExchangeCredentials = async (exchange_id, api_key_string, api_secret_string, admin_password_string) => {
 
     let [ err, exchange ] = await to(Exchange.findById(exchange_id));
 
@@ -105,15 +105,17 @@ const setExchangeCredentials = async (exchange_id, api_user_id, password) => {
     if(!exchange) return null;
 
     //If both were passed as null or not passed, consider this as "unset"
-    if(!api_user_id && !password) {
+    if(!api_key_string && !api_secret_string) {
 
-        return ExchangeCredential.destroy({
+        await ExchangeCredential.destroy({
             where: { exchange_id }
         });
 
+        return true;
+
     }
 
-    if(!_.isString(api_user_id) || !_.isString(password)) TE('Exchange API username and password must be valid values');
+    if(!_.isString(api_key_string) || !_.isString(api_secret_string)) TE('Exchange API key and secret must be valid values');
 
     return sequelize.transaction(async transaction => {
 
@@ -124,11 +126,53 @@ const setExchangeCredentials = async (exchange_id, api_user_id, password) => {
 
         return ExchangeCredential.create({
             exchange_id,
-            api_user_id,
-            password
+            api_key_string,
+            api_secret_string,
+            admin_password_string
         }, { transaction });
 
     });
 
 };
 module.exports.setExchangeCredentials = setExchangeCredentials;
+
+//Not using a view as the data is encrypted and must be decrypted first.
+const getExchangeCredentials = async (exchange_id) => {
+
+    const [ err, credentials ] = await to(ExchangeCredential.findAll({
+        where: exchange_id ? { exchange_id } : {},
+        include: Exchange
+    }));
+
+    if(err) TE(err.message);
+    if(exchange_id && !credentials.length) return null;
+
+    let exchange_credentials = credentials.map(c => {
+        return {
+            id: c.id,
+            exchange_id: _.get(c, 'Exchange.id', null),
+            exchange: _.get(c, 'Exchange.name', null),
+            api_key: c.api_key_string
+        };
+    });
+
+    let footer = [
+        {
+            name: 'exchange',
+            value: credentials.length,
+            template: 'exchange_credentials.footer.exchange',
+            args: {
+                exchange: credentials.length
+            }
+        }
+    ];
+
+    if(exchange_id) {
+        exchange_credentials = exchange_credentials[0];
+        footer = undefined;
+    }
+
+    return { exchange_credentials, footer };
+
+};
+module.exports.getExchangeCredentials = getExchangeCredentials;

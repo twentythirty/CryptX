@@ -314,8 +314,7 @@ describe('ExchangeService testing', () => {
 
             return setExchangeCredentials(VALID_EXCHANGE_ID, null, null).then(result => {
 
-                expect(result).to.be.an('object');
-                expect(result.where.exchange_id).to.equal(VALID_EXCHANGE_ID);
+                expect(result).to.be.true;
 
             });
 
@@ -323,10 +322,10 @@ describe('ExchangeService testing', () => {
 
         it('destroy the previous credentials and set the new ones', () => {
 
-            const USERNAME = '3hk12j3g13g13jh1g3';
-            const PASSWORD = 'kj4h2jk34h2j4h2jk4h2jh42jkh423h4jk2h4k2h4h';
+            const API_KEY = '3hk12j3g13g13jh1g3';
+            const API_SECRET = 'kj4h2jk34h2j4h2jk4h2jh42jkh423h4jk2h4k2h4h';
 
-            return setExchangeCredentials(VALID_EXCHANGE_ID, USERNAME, PASSWORD).then(result => {
+            return setExchangeCredentials(VALID_EXCHANGE_ID, API_KEY, API_SECRET).then(result => {
 
                 expect(result).to.be.an('object');
 
@@ -334,8 +333,8 @@ describe('ExchangeService testing', () => {
                 expect(ExchangeCredential.destroy.args[0][0].where.exchange_id).to.equal(VALID_EXCHANGE_ID);
 
                 expect(result.exchange_id).to.equal(VALID_EXCHANGE_ID);
-                expect(result.api_user_id).to.equal(USERNAME);
-                expect(result.password).to.equal(PASSWORD);
+                expect(result.api_key_string).to.equal(API_KEY);
+                expect(result.api_secret_string).to.equal(API_SECRET);
 
             });
 

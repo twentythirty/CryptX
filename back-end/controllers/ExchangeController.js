@@ -110,9 +110,9 @@ module.exports.getExchangeAccountsColumnLOV = getExchangeAccountsColumnLOV;
 const setExchangeCredentials = async (req, res) => {
 
   const { exchange_id } = req.params;
-  const { username, password } = req.body;
+  const { api_key, api_secret, admin_password } = req.body;
 
-  const [ err, result ] = await to(ExchangeService.setExchangeCredentials(exchange_id, username, password));
+  const [ err, result ] = await to(ExchangeService.setExchangeCredentials(exchange_id, api_key, api_secret, admin_password));
 
   if(err) return ReE(res, err.message, 422);
   if(!result) return ReE(res, `Exchange with id ${exchange_id} was not found`, 404);
@@ -126,19 +126,15 @@ const getExchangeCredentials = async (req, res) => {
 
   const { seq_query, sql_where } = req;
 
-  const [ err, result ] = await to(Promise.all([
-    AdminViewService.fetchExchangeCredentialsViewDataWithCount(seq_query),
-    AdminViewService.fetchExchangeCredentialViewFooter(sql_where)
-  ]));
+  const [ err, result ] = await to(ExchangeService.getExchangeCredentials());
 
   if(err) return ReE(res, err, 422);
 
-  const [ data_and_total, footer ] = result;
-  const { data: exchange_credentials, total: count } = data_and_total;
+  const { exchange_credentials, footer } = result;
 
   return ReS(res, {
     exchange_credentials,
-    count,
+    count: exchange_credentials.length,
     footer
   });
 
@@ -149,10 +145,12 @@ const getExchangeCredential = async (req, res) => {
 
   const { exchange_id } = req.params;
 
-  const [ err, exchange_credential ] = await to(AdminViewService.fetchExchangeCredentialView(exchange_id));
+  const [ err, result ] = await to(ExchangeService.getExchangeCredentials(exchange_id));
 
   if(err) return ReE(res, err.message, 422);
-  if(!exchange_credential) return ReE(res, `Exchange credentials are not set for Exchange with id ${exchange_id}`, 404);
+  if(!result) return ReE(res, `Exchange credentials are not set for Exchange with id ${exchange_id}`, 404);
+
+  const { exchange_credentials: exchange_credential } = result;
 
   return ReS(res, { exchange_credential });
 

@@ -734,7 +734,7 @@
           {
             "name": "body",
             "in": "body",
-            "description": "What can be edited",
+            "description": "Exchange credentials. admin_password is optional.",
             "required": false,
             "schema": {
               "$ref": "#/definitions/SetExchangeCredentialParams"
@@ -5316,13 +5316,17 @@
       "description": "Set exchange credentials fields",
       "type": "object",
       "properties": {
-        "username": {
+        "api_key": {
           "type": "string",
-          "example": "OKEx_user_184"
+          "example": "23jkh423jkh42kj34h2j3h42kj3h4kj"
         },
-        "password": {
+        "api_secret": {
           "type": "string",
-          "example": "mhmmmm_secrets_dot_dot_dot"
+          "example": "h5jh34jk5h3k45h3jk45h34jkh534kjh53jkh53kjh5"
+        },
+        "admin_password": {
+          "type": "string",
+          "example": "6h4jk654y68596y468y5986y4568y"
         }
       }
     },
@@ -5567,7 +5571,7 @@
           "type": "string",
           "example": "Binance"
         },
-        "username": {
+        "api_key": {
           "type": "string",
           "example": "SuperBinanceUser64"
         }
