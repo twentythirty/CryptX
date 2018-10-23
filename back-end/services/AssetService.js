@@ -562,3 +562,34 @@ const getAssetFilteringBasedOnInvestmentAssetGroup = async (id, seq_query = {}, 
 
 };
 module.exports.getAssetFilteringBasedOnInvestmentAssetGroup = getAssetFilteringBasedOnInvestmentAssetGroup;
+
+const getExchangeMappedAssets = async (exchange_id) => {
+
+  const [ err, exchange ] = await to(Exchange.findById(exchange_id));
+
+  if(err) TE(err.message);
+  if(!exchange) return null;
+
+  return sequelize.query(`
+    WITH exchange_instruments AS (
+        SELECT
+            DISTINCT ON(ins.id)
+            *
+        FROM instrument AS ins
+        JOIn instrument_exchange_mapping AS iem ON iem.exchange_id = :exchange_id AND iem.instrument_id = ins.id
+    )
+
+    SELECT
+        DISTINCT ON(asset.symbol, asset.id)
+        asset.id,
+        asset.symbol
+    FROM asset
+    JOIN exchange_instruments AS ei ON ei.transaction_asset_id = asset.id OR ei.quote_asset_id = asset.id
+    ORDER BY asset.symbol, asset.id ASC
+  `, {
+    type: sequelize.QueryTypes.SELECT,
+    replacements: { exchange_id }
+  });
+
+};
+module.exports.getExchangeMappedAssets = getExchangeMappedAssets;

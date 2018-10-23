@@ -162,3 +162,17 @@ const changeAssetStatus = async function (req, res) {
   })
 };
 module.exports.changeAssetStatus = changeAssetStatus;
+
+const getExchangeAssets = async function(req, res) {
+
+  const { exchange_id } = req.params;
+
+  const [ err, assets ] = await to(assetService.getExchangeMappedAssets(exchange_id));
+
+  if(err) return ReE(res, err.message, 422);
+  if(!assets) return ReE(res, `Exchange with id ${exchange_id} was not found`, 404);
+
+  return ReS(res, { assets, count: assets.length });
+
+}
+module.exports.getExchangeAssets = getExchangeAssets;

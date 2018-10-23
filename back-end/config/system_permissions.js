@@ -346,6 +346,11 @@ ROUTES = {
     permissions_matcher: ROUTE_MATCHERS.ChangeAssetStatus,
     required_permissions: [PERMISSIONS.VIEW_ASSETS, PERMISSIONS.CHANGE_ASSET_STATUS]
   },
+  GetExchangeAssets: {
+    router_string: "/assets/of_exchange/:exchange_id",
+    permissions_matcher: ROUTE_MATCHERS.GetExchangeAssets,
+    required_permissions: [PERMISSIONS.VIEW_ASSETS]
+  },
 
   // Investment
   CreateInvestment: {

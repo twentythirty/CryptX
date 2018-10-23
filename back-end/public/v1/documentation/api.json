@@ -3136,6 +3136,39 @@
         ]
       }
     },
+    "/assets/of_exchange/{exchange_id}": {
+      "get": {
+        "tags": [
+          "assets"
+        ],
+        "description": "Get a list of assets that have related instrument mappings for the exchange",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "exchange_id",
+            "in": "path",
+            "description": "ID of the exchange",
+            "required": true,
+            "type": "integer"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "$ref": "#/definitions/ExchangeAssetListResponse"
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
     "/roles/create": {
       "post": {
         "tags": [
@@ -7692,6 +7725,26 @@
         }
       }
     },
+    "ExchangeAssetListResponse": {
+      "description": "Example of a response where list of exchange assets are returned",
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean",
+          "example": true
+        },
+        "count": {
+          "type": "number",
+          "example": 20
+        },
+        "assets": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/AssetSimple"
+          }
+        }
+      }
+    },
     "AssetResponse": {
       "description": "Example of server response when asset is retured",
       "type": "object",
@@ -7728,6 +7781,20 @@
         "is_deposit": {
           "type": "boolean",
           "example": false
+        }
+      }
+    },
+    "AssetSimple": {
+      "description": "Simpliefied version of the asset, sporting only the id and symbol",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "number",
+          "example": 22
+        },
+        "symbol": {
+          "type": "string",
+          "example": "ETH"
         }
       }
     },

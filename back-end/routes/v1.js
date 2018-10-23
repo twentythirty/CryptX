@@ -315,6 +315,13 @@ router.post(
   post_body_validator,
   AssetController.changeAssetStatus
 );
+router.get(
+  ROUTES.GetExchangeAssets.router_string,
+  stateless_auth,
+  res_new_token,
+  check_permissions,
+  AssetController.getExchangeAssets
+);
 
 
 // INVESTMENT
