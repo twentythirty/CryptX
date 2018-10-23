@@ -140,7 +140,8 @@ const setExchangeCredentials = async (exchange_id, api_key_string, api_secret_st
             exchange_id,
             api_key_string,
             api_secret_string,
-            admin_password_string
+            admin_password_string,
+            updated: true
         }, { transaction });
 
     }));

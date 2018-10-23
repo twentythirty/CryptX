@@ -25,7 +25,11 @@ module.exports = (sequelize, DataTypes) => {
             admin_password_string: encrypted_admin_password_field.field('admin_password_string', {
                 type: DataTypes.STRING,
                 allowNull: true
-            })
+            }),
+            updated: {
+                type: DataTypes.BOOLEAN,
+                defaultValue: true
+            }
         },
         modelProps(
             'exchange_credential',
