@@ -10,10 +10,12 @@ const utils = require('../support/step_helpers');
 
 const World = require('../support/global_world');
 
-Given('there are no Instruments in the system', function() {
+Given('there are no Instruments in the system', {
+    timeout: 60000 //tempory fix, now it takes much longer to delete. Needs investigation
+}, function() {
 
     const { Instrument } = require('../../../models');
-
+    
     return Instrument.destroy({ where: {} });
 
 });
