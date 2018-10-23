@@ -74,24 +74,6 @@ export class ExchangesService {
     );
   }
 
-  getCredentialsHeaderLOV(column_name: string): Observable<any> {
-    return this.http.post<any>(this.baseUrl + `exchanges/credentials/header_lov/${column_name}`, {}).pipe(
-      map(
-        res => {
-          if (res && Array.isArray(res.lov)) {
-            return res.lov.map(lov => {
-              if (lov !== null) {
-                return { value: lov.toString() };
-              } else {
-                return {value: '-'};
-              }
-            });
-          } else { return null; }
-        }
-      )
-    );
-  }
-
   createExchangeAccount(data: object, id: number): Observable<any> {
     return this.http.post<any>(this.baseUrl + `exchanges/${id}/accounts/create`, data);
   }

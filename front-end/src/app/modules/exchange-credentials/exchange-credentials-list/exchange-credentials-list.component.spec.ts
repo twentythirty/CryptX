@@ -1,7 +1,6 @@
 import { async, ComponentFixture, TestBed, tick, fakeAsync } from '@angular/core/testing';
 
 import { ExchangeCredentialsListComponent } from './exchange-credentials-list.component';
-import { testHeaderLov } from '../../../testing/commonTests';
 import { click, fakeAsyncResponse, extraTestingModules } from '../../../testing/utils';
 import { ExchangesService } from '../../../services/exchanges/exchanges.service';
 import { Location } from '@angular/common';
@@ -53,12 +52,7 @@ describe('ExchangeCredentialsListComponent', () => {
     });
   });
 
-  it('should set header LOV observables for specified columns', () => {
-    const headerLovColumns = ['exchange'];
-    fixture.whenStable().then(() => testHeaderLov(component.exchangeCredentialsDataSource, headerLovColumns));
-  });
-
-  it('should be navigated to exchange account view on table row click', () => {
+  it('should be navigated to exchange credentials view on table row click', () => {
     fixture.whenStable().then(() => {
       fixture.detectChanges();
       const tableRow = fixture.nativeElement.querySelector('table tbody tr');
@@ -67,7 +61,7 @@ describe('ExchangeCredentialsListComponent', () => {
     });
   });
 
-  it('should navigate to exchange account creation on "add account" button click', fakeAsync(() => {
+  it('should navigate to exchange credentials creation on "add cedential" button click', fakeAsync(() => {
     const button = fixture.nativeElement.querySelector('a.start');
     click(button);
     tick();

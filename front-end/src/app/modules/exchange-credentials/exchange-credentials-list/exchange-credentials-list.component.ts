@@ -14,8 +14,8 @@ export class ExchangeCredentialsListComponent extends DataTableCommonManagerComp
 
   public exchangeCredentialsDataSource: TableDataSource = {
     header: [
-      { column: 'exchange', nameKey: 'table.header.exchange', filter: { type: 'text', sortable: true } },
-      { column: 'api_key', nameKey: 'table.header.username', filter: { type: 'text', sortable: true } },
+      { column: 'exchange', nameKey: 'table.header.exchange' },
+      { column: 'api_key', nameKey: 'table.header.username' },
     ],
     body: null
   };
@@ -45,17 +45,6 @@ export class ExchangeCredentialsListComponent extends DataTableCommonManagerComp
           footer: res.footer
         });
         this.count = res.count;
-        this.getFilterLOV();
-      }
-    );
-  }
-
-  getFilterLOV(): void {
-    this.exchangeCredentialsDataSource.header.filter(
-      col => ['exchange'].includes(col.column)
-    ).map(
-      col => {
-        col.filter.rowData$ = this.exchangesService.getCredentialsHeaderLOV(col.column);
       }
     );
   }
