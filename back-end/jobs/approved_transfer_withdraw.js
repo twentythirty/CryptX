@@ -149,7 +149,7 @@ module.exports.JOB_BODY = async (config, log) => {
                 }
             });
 
-            const fee = _.get(withdraw, 'info.fees', null); //Attempt to exctract fee from Bitfinex response
+            const fee = _.get(withdraw, 'info.fees', 0); //Attempt to exctract fee from Bitfinex response
 
             [ err ] = await to(updateTransferStatus(transfer.id, COLD_STORAGE_ORDER_STATUSES.Completed, withdraw.id, fee));
 

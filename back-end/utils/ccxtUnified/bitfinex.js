@@ -74,6 +74,38 @@ class Bitfinex {
 
   }
 
+  /**
+   * Simillar to Binance, but this time we wtch both deposit and withdraws and filter out only withdraws.
+   * @param {[Object]} transfers Array of cold storage transfers with `asset` field containing the coin symbol
+   */
+  async fetchWithdraws (transfers) {
+    await this.isReady();
+
+    const transfers_by_asset = _.groupBy(transfers, 'asset');
+    const withdraw_ids = _.map(transfers, t => t.external_identifier);
+
+    //Create seperate requests for each asset and pick the oldest transfer as the starting point
+    const requests = _.map(transfers_by_asset, (asset_transfers, asset) => {
+
+      return {
+        asset,
+        since: _.get(_.minBy(transfers, 'placed_timestamp'), 'placed_timestamp', null)
+      }
+
+    });
+
+    const results = await Promise.all(_.map(requests, request => {
+
+      return this._connector.fetchTransactions(request.asset, request.since);
+
+    }));
+
+    const withdraws = _.filter(_.flatten(results), r => withdraw_ids.includes(r.id) && r.type === 'withdrawal');
+
+    return withdraws;    
+
+  };
+
 }
 
 module.exports = Bitfinex;

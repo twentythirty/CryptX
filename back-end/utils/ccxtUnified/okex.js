@@ -1,5 +1,13 @@
-
+const crypto = require('crypto');
+const querystring = require('querystring');
+const request = require('request-promise');
+const BottleNeck = require('bottleneck');
 const ccxtUtils = require('../CCXTUtils');
+
+const limiter = new BottleNeck({
+  maxConcurrent: 1,
+  minTime: 100 //10 requests / 1 sec
+});
 
 class Okex {
 
@@ -85,6 +93,95 @@ class Okex {
       chargefee,
       password: '???' //Currently unknown how this will be handled
     });
+
+  }
+
+  /**
+   * CCXT does not support withdraw or transaction list fetching, we will have send a direct request to OKEX.
+   * @param {[Object]} transfers Array of cold storage transfers with `asset` field containing the coin symbol
+   */
+  async fetchWithdraws (transfers) {
+    await this.isReady();
+
+    const results = await Promise.all(_.map(transfers, transfer => {
+      //user records does not return any id, so we can't 100% match them with our records, for now we will fetch indidividual withdraws
+      return limiter.schedule(() => {
+        return this.createPostRequest('withdraw_info.do', {
+          withdraw_id: transfer.external_identifier,
+          symbol: `${transfer.asset.toLowerCase()}_usd`, //I don't even know...
+        });
+      }); 
+
+    }));
+
+    const withdraws = _.map(results, result => {
+
+      const withdraw = result.withdraw[0];
+
+      //Convert to CCXT format as muc as possible
+      return {
+        info: withdraw,
+        id: String(withdraw.withdraw_id),
+        timestamp: new Date(withdraw.created_date),
+        address: withdraw.address,
+        amount: withdraw.amount,
+        fee: {
+          cost: withdraw.chargefee
+        },
+        status: this.parseStatus(withdraw.status)
+      };
+
+    });
+
+    return withdraws;    
+
+  };
+
+  sign (query) {
+
+    const algorithm = 'md5';
+  
+    return crypto.createHash(algorithm).
+      update(new Buffer(`${query}&secret_key=${this._connector.secret}`)).
+      digest('hex').toString().toUpperCase();
+  };
+  
+  createPostRequest(method, params) {
+    
+    const api_url = 'https://www.okex.com/api/v1/';
+
+    const body = _.assign(params, {
+      api_key: this._connector.apiKey,
+    });
+
+    const sign = this.sign(querystring.stringify(body).split('&').sort().join('&'));
+
+    return request.post({
+      uri: `${api_url}${method}`,
+      body: {
+        ...body,
+        sign
+      },
+      json: true
+    });
+
+  };
+
+  parseStatus(code) {
+
+    const status_map = {
+      '-3': 'failed',
+      '-2': 'canceled',
+      '-1': 'failed',
+      '0': 'pending', // 0 and 1 are both shown as `pending` in the documentation, no idea what is the difference
+      '1': 'pending',
+      '2': 'ok',
+      '3': 'pending',
+      '4': 'pending',
+      '5': 'pending'
+    };
+
+    return status_map[code];
 
   }
 

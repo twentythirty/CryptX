@@ -74,6 +74,39 @@ class Binance {
     return this._connector.withdraw(asset_symbol, amount, address, tag, {});
 
   }
+
+  /**
+   * This one is the most straght forward, as we can dirrectly take withdraws. The only thing is done is that it checks from when to take and matches needed withdraw ids.
+   * @param {[Object]} transfers Array of cold storage transfers with `asset` field containing the coin symbol
+   */
+  async fetchWithdraws (transfers) {
+    await this.isReady();
+
+    const transfers_by_asset = _.groupBy(transfers, 'asset');
+    const withdraw_ids = _.map(transfers, t => t.external_identifier);
+
+    //Create seperate requests for each asset and pick the oldest transfer as the starting point
+    const requests = _.map(transfers_by_asset, (asset_transfers, asset) => {
+
+      return {
+        asset,
+        since: _.get(_.minBy(transfers, 'placed_timestamp'), 'placed_timestamp', null)
+      }
+
+    });
+
+    const results = await Promise.all(_.map(requests, request => {
+
+      return this._connector.fetchWithdraws(request.asset, request.since);
+
+    }));
+
+    const withdraws = _.filter(_.flatten(results), r => withdraw_ids.includes(r.id));
+
+    return withdraws;    
+
+  };
+
 }
 
 module.exports = Binance;
