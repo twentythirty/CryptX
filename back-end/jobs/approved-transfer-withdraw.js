@@ -18,7 +18,7 @@ module.exports.JOB_BODY = async (config, log) => {
     const updateTransferStatus = (id, status, external_identifier, fee) => {
         return ColdStorageTransfer.update({
             status,
-            placed_timestamp: status === COLD_STORAGE_ORDER_STATUSES.Completed ? Date.now() : undefined,
+            placed_timestamp: status === COLD_STORAGE_ORDER_STATUSES.Sent ? Date.now() : null,
             completed_timestamp: status === COLD_STORAGE_ORDER_STATUSES.Completed ? Date.now() : undefined,
             external_identifier,
             fee
@@ -148,6 +148,8 @@ module.exports.JOB_BODY = async (config, log) => {
                     cold_storage_transfer_id: transfer.id
                 }
             });
+            /*
+            /We will keep in Sent status
 
             const fee = _.get(withdraw, 'info.fees', 0); //Attempt to exctract fee from Bitfinex response
 
@@ -156,7 +158,7 @@ module.exports.JOB_BODY = async (config, log) => {
             if(err) {
                 log(`[ERROR.3D](${exchange_api_id})(CST-${transfer.id}) Error occured during transfer status update: ${err.message}`);
             }
-
+            */
             return;
 
         }));

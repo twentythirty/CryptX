@@ -11,7 +11,7 @@ chai.use(chaiAsPromised);
 
 const ccxtUnified = require('../../utils/ccxtUnified');
 const { sequelize, ColdStorageTransfer } = require('../../models');
-const { JOB_BODY } = require('../../jobs/approved_transfer_withdraw');
+const { JOB_BODY } = require('../../jobs/approved-transfer-withdraw');
 
 describe('Approved Cold Storage Transfer withdraw job:', () => {
 
@@ -172,7 +172,7 @@ describe('Approved Cold Storage Transfer withdraw job:', () => {
             else {
 
                 expect(update.status).to.equal(COLD_STORAGE_ORDER_STATUSES.Failed);
-                expect(update.placed_timestamp).to.be.undefined;
+                expect(update.placed_timestamp).to.be.null;
                 expect(update.completed_timestamp).to.be.undefined;
                 expect(update.external_identifier).to.be.undefined;
                 expect(TRANSFER_DATA.map(t => t.id)).include(options.where.id);
@@ -190,28 +190,16 @@ describe('Approved Cold Storage Transfer withdraw job:', () => {
         await JOB_BODY(stub_config, console.log);
 
         const callCount = ColdStorageTransfer.update.callCount;
-        expect(callCount).to.equal(TRANSFER_DATA.length * 2);
+        expect(callCount).to.equal(TRANSFER_DATA.length);
 
         for(let i = 0; i < callCount; i++) {
 
             const [ update, options ] = ColdStorageTransfer.update.args[i];
 
-            if(i < callCount / 2) {
-
-                expect(update.status).to.equal(COLD_STORAGE_ORDER_STATUSES.Sent);
-                expect(TRANSFER_DATA.map(t => t.id)).include(options.where.id);
-
-            }
-
-            else {
-
-                expect(update.status).to.equal(COLD_STORAGE_ORDER_STATUSES.Completed);
-                expect(update.placed_timestamp).to.be.a('number');
-                expect(update.completed_timestamp).to.be.a('number');
-                expect(update.external_identifier).to.equal(EXTERNAL_IDENTIFIER);
-                expect(TRANSFER_DATA.map(t => t.id)).include(options.where.id);
-
-            }
+            expect(update.status).to.equal(COLD_STORAGE_ORDER_STATUSES.Sent);
+            expect(TRANSFER_DATA.map(t => t.id)).include(options.where.id);
+            expect(update.placed_timestamp).to.be.a('number');
+            expect(update.completed_timestamp).to.be.undefined;
 
         }
 

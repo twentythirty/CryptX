@@ -104,7 +104,8 @@ MODEL_CONST = {
     Approved: 92, //"order was approved by a user",
     Sent: 93, //"order wassent to exchange or blockchain (waiting confirmation)",
     Completed: 94, //"when order reaches its final successful state",
-    Failed: 95 //"system failed to execute the order"
+    Failed: 95, //"system failed to execute the order",
+    Canceled: 96 //"the withdraw was canceled by the user ???"
   },
 
   CUSTODIANS: {
