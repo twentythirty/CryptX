@@ -3,15 +3,14 @@ import { async, ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core
 import { ExchangeAccountsAddComponent } from './exchange-accounts-add.component';
 import { ActivatedRoute } from '@angular/router';
 import { of } from 'rxjs/observable/of';
-import { extraTestingModules, fakeAsyncResponse, click, errorResponse } from '../../../testing/utils';
+import { extraTestingModules, fakeAsyncResponse, click, errorResponse, KeyCode, selectOption, triggerKeyDownEvent, getNgSelectElement } from '../../../testing/utils';
 import { ExchangeAccountsModule } from '../exchange-accounts.module';
 import { ExchangesService } from '../../../services/exchanges/exchanges.service';
 import { AssetService } from '../../../services/asset/asset.service';
-import { getAllExchangesData,
-         getSingleExchangeAccountsData,
-         createExchangeAccountData } from '../../../testing/service-mock/exchanges.service.mock';
+import { getAllExchangesData, getSingleExchangeAccountsData, createExchangeAccountData } from '../../../testing/service-mock/exchanges.service.mock';
 import { getAllAssetsData } from '../../../testing/service-mock/asset.service.mock';
 import { testFormControlForm } from '../../../testing/commonTests';
+import { By } from '@angular/platform-browser';
 
 describe('ExchangeAccountsAddComponent', () => {
   let component: ExchangeAccountsAddComponent;
@@ -52,9 +51,9 @@ describe('ExchangeAccountsAddComponent', () => {
       component = fixture.componentInstance;
       exchangesService = fixture.debugElement.injector.get(ExchangesService);
       assetsService = fixture.debugElement.injector.get(AssetService);
-      getExchangesSpy = spyOn (exchangesService, 'getAllExchanges').and.returnValue(fakeAsyncResponse(getAllExchangesData));
-      getAssetsSpy = spyOn (assetsService, 'getAllAssets').and.returnValue(fakeAsyncResponse(getAllAssetsData));
-      getSingleExchangeAccountSpy = spyOn (exchangesService, 'getSingleExchangeAccount').and.returnValue(fakeAsyncResponse(getSingleExchangeAccountsData));
+      getExchangesSpy = spyOn(exchangesService, 'getAllExchanges').and.returnValue(fakeAsyncResponse(getAllExchangesData));
+      getAssetsSpy = spyOn(assetsService, 'getAllAssetsOfExchange').and.returnValue(fakeAsyncResponse(getAllAssetsData));
+      getSingleExchangeAccountSpy = spyOn(exchangesService, 'getSingleExchangeAccount').and.returnValue(fakeAsyncResponse(getSingleExchangeAccountsData));
 
       fixture.detectChanges();
     });
@@ -87,8 +86,8 @@ describe('ExchangeAccountsAddComponent', () => {
       let modal;
 
       beforeEach((done) => {
-        navigateSpy = spyOn (component.router, 'navigate');
-        editExchangeAccountSpy = spyOn (exchangesService, 'editExchangeAccountData').and.returnValue(fakeAsyncResponse({success: true}));
+        navigateSpy = spyOn(component.router, 'navigate');
+        editExchangeAccountSpy = spyOn(exchangesService, 'editExchangeAccountData').and.returnValue(fakeAsyncResponse({ success: true }));
         fixture.whenStable().then(() => {
           fixture.detectChanges();
           deactivateButton = fixture.nativeElement.querySelector('button.deactive');
@@ -131,13 +130,13 @@ describe('ExchangeAccountsAddComponent', () => {
         fixture.whenStable().then(() => {
           const confirmButton = fixture.nativeElement.querySelector('app-btn.confirm');
           click(confirmButton);
-            fixture.detectChanges();
-            const errorModal = fixture.nativeElement.querySelector('app-modal');
-            expect(errorModal).not.toBeNull();
-            expect(component.showErrorModal).toBeTruthy();
+          fixture.detectChanges();
+          const errorModal = fixture.nativeElement.querySelector('app-modal');
+          expect(errorModal).not.toBeNull();
+          expect(component.showErrorModal).toBeTruthy();
         });
       });
-     });
+    });
   });
 
   describe('if user create exchange account', () => {
@@ -152,9 +151,9 @@ describe('ExchangeAccountsAddComponent', () => {
       component = fixture.componentInstance;
       exchangesService = fixture.debugElement.injector.get(ExchangesService);
       assetsService = fixture.debugElement.injector.get(AssetService);
-      getExchangesSpy = spyOn (exchangesService, 'getAllExchanges').and.returnValue(fakeAsyncResponse(getAllExchangesData));
-      getAssetsSpy = spyOn (assetsService, 'getAllAssets').and.returnValue(fakeAsyncResponse(getAllAssetsData));
-      createExchangeAccountSpy = spyOn (exchangesService, 'createExchangeAccount').and.returnValue(fakeAsyncResponse(createExchangeAccountData));
+      getExchangesSpy = spyOn(exchangesService, 'getAllExchanges').and.returnValue(fakeAsyncResponse(getAllExchangesData));
+      getAssetsSpy = spyOn(assetsService, 'getAllAssetsOfExchange').and.returnValue(fakeAsyncResponse(getAllAssetsData));
+      createExchangeAccountSpy = spyOn(exchangesService, 'createExchangeAccount').and.returnValue(fakeAsyncResponse(createExchangeAccountData));
 
       fixture.detectChanges();
     });
@@ -171,15 +170,17 @@ describe('ExchangeAccountsAddComponent', () => {
       });
     });
 
-    it('should load assets on Init', () => {
-      const assets = getAllAssetsData.assets.map(asset => {
-        return {
-          id: asset.id,
-          value: `${asset.long_name} (${asset.symbol})`
-        };
-      });
+    it('should load asset after exchange is selected', () => {
+      const inputs = fixture.debugElement.queryAll(By.css('app-input-item'));
+      const exchangeId = inputs[0];
+      const assetId = inputs[1];
       fixture.whenStable().then(() => {
-        expect(component.assets).toEqual(assets);
+        fixture.detectChanges();
+        selectOption(exchangeId, KeyCode.ArrowDown, 1);
+        getAssetsSpy.calls.mostRecent().returnValue.subscribe(() => {
+          triggerKeyDownEvent(getNgSelectElement(assetId), KeyCode.Space);
+          expect(component.assets.length).toBeGreaterThan(0);
+        });
       });
     });
 

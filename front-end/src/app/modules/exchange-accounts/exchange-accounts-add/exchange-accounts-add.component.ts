@@ -20,14 +20,14 @@ export class ExchangeAccountsAddComponent implements OnInit {
 
   loading = false;
   exchangesLoading = true;
-  assetsLoading = true;
+  assetsLoading = false;
 
   showDeactivateConfirm = false;
   showErrorModal = false;
 
   form: FormGroup = new FormGroup({
     exchangeId: new FormControl({value: '', disabled: false}, Validators.required),
-    assetId: new FormControl({value: '', disabled: false}, Validators.required),
+    assetId: new FormControl({value: '', disabled: true}, Validators.required),
     address: new FormControl({value: '', disabled: false}, Validators.required),
   });
 
@@ -47,6 +47,7 @@ export class ExchangeAccountsAddComponent implements OnInit {
 
       this.exchangesService.getSingleExchangeAccount(this.exchangeAccountId).subscribe(res => {
         this.form.disable();
+        this.exchangeIdChanged(res.exchange_account.exchange_id);
         this.form.controls.exchangeId.setValue(res.exchange_account.exchange_id);
         this.form.controls.assetId.setValue(res.exchange_account.asset_id);
         this.form.controls.address.setValue(res.exchange_account.address);
@@ -61,23 +62,13 @@ export class ExchangeAccountsAddComponent implements OnInit {
       });
     });
 
-    const getMVPExchanges = false;
+    const getMVPExchanges = true;
     this.exchangesService.getAllExchanges(getMVPExchanges).subscribe(res => {
       this.exchangesLoading = false;
       this.exchanges = res.exchanges.map(exchange => {
         return {
           id: exchange.id,
           value: exchange.name,
-        };
-      });
-    });
-
-    this.assetService.getAllAssets().subscribe(res => {
-      this.assetsLoading = false;
-      this.assets = res.assets.map(asset => {
-        return {
-          id: asset.id,
-          value: `${asset.long_name} (${asset.symbol})`
         };
       });
     });
@@ -126,6 +117,22 @@ export class ExchangeAccountsAddComponent implements OnInit {
       this.loading = false;
     }, () => {
       this.loading = false;
+    });
+  }
+
+  exchangeIdChanged(exchangeId) {
+    this.form.controls.assetId.disable();
+    this.form.controls.assetId.setValue('');
+    this.assetsLoading = true;
+    this.assetService.getAllAssetsOfExchange(exchangeId).subscribe(res => {
+      this.assetsLoading = false;
+      this.form.controls.assetId.enable();
+      this.assets = res.assets.map(asset => {
+        return {
+          id: asset.id,
+          value: asset.symbol
+        };
+      });
     });
   }
 }
