@@ -5887,6 +5887,10 @@
         "execution_order_id": {
           "type": "number",
           "example": 2
+        },
+        "cold_storage_transfer_id": {
+          "type": "number",
+          "example": 2
         }
       }
     },
@@ -6008,9 +6012,22 @@
                   "type": "number",
                   "example": 4
                 },
-                "execution_order_status": {
+                "status": {
                   "type": "string",
                   "example": "execution_orders_timeline.status.307"
+                }
+              }
+            },
+            "cold_storage_transfers": {
+              "type": "object",
+              "properties": {
+                "count": {
+                  "type": "number",
+                  "example": 4
+                },
+                "status": {
+                  "type": "string",
+                  "example": "cold_storage_transfers_timeline.status.93"
                 }
               }
             }

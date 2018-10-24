@@ -1684,19 +1684,44 @@ describe('InvestmentService testing:', () => {
         return Promise.resolve(whole_investment);
       });
 
-      sinon.stub(sequelize, 'query').callsFake((query, options) => {
-        let exec_order_statuses = [{
-          status: 61,
-          count: 1000
-        }];
+      sinon.stub(sequelize, 'query').callsFake(async (query, options) => {
 
-        if(options.replacements.rog_id == 1)
-          exec_order_statuses.push({
-            status: 66,
-            count: 1
-          });
+        if(query.match('execution_order')) {
+          let exec_order_statuses = [{
+            status: 61,
+            count: 1000
+          }];
+  
+          if(options.replacements.rog_id == 1)
+            exec_order_statuses.push({
+              status: 66,
+              count: 1
+            });
+  
+          return exec_order_statuses;
+        }
 
-        return Promise.resolve(exec_order_statuses);
+        else if(query.match('cold_storage_transfer')) {
+
+          if(options.replacements.recipe_run_id !== 5) return [];
+
+          return [{
+            status: COLD_STORAGE_ORDER_STATUSES.Pending,
+            count: _.random(1, 10)
+          },{
+            status: COLD_STORAGE_ORDER_STATUSES.Approved,
+            count: _.random(1, 10)
+          },{
+            status: COLD_STORAGE_ORDER_STATUSES.Sent,
+            count: _.random(1, 10)
+          },{
+            status: COLD_STORAGE_ORDER_STATUSES.Completed,
+            count: _.random(1, 10)
+          }]
+        }
+
+        else return [];
+        
       });
     });
 
@@ -1813,6 +1838,14 @@ describe('InvestmentService testing:', () => {
         chai.expect(result.execution_orders.status).to.be.equal('execution_orders_timeline.status.62');
       });
     });
+
+    it('it should count cold storage transfers and return with status SENT', () => {
+      return investmentService.getInvestmentRunTimeline(INVESTMENT_ID.EXEC_ORDERS_EXECUTING).then(result => {
+        chai.assert.isNumber(result.cold_storage_transfers.count);
+        chai.expect(result.cold_storage_transfers.status).to.be.equal('cold_storage_transfers_timeline.status.93');
+      });
+    });
+
   });
 
   describe('and method generateInvestmentAssetGroup shall', () => {

@@ -676,7 +676,8 @@ const findInvestmentRunFromAssociations = async function (entities, transaction)
     "recipe_deposit_id": 'recipe_run_deposit',
     "recipe_order_group_id": 'recipe_order_group',
     "recipe_order_id": 'recipe_order',
-    "execution_order_id": 'execution_order'
+    "execution_order_id": 'execution_order',
+    "cold_storage_transfer_id": 'cold_storage_transfer'
   };
 
   if (!Object.keys(entities).length) TE('No id was supplied. Please supply atleast one ID.')
@@ -694,6 +695,7 @@ const findInvestmentRunFromAssociations = async function (entities, transaction)
     LEFT JOIN recipe_order_group ON recipe_order_group.recipe_run_id=recipe_run.id
     LEFT JOIN recipe_order ON recipe_order.recipe_order_group_id=recipe_order_group.id
     LEFT JOIN execution_order ON execution_order.recipe_order_id=recipe_order.id
+    LEFT JOIN cold_storage_transfer ON cold_storage_transfer.id = recipe_order.id OR cold_storage_transfer.recipe_run_id = recipe_run.id
     WHERE ${allowed_entities[foundClosestEntity]}.id=:entity_id
     LIMIT 1
   `, {
@@ -773,7 +775,8 @@ const getInvestmentRunTimeline = async function (investment_run_id) {
       recipe_run: null,
       recipe_deposits: null,
       recipe_orders: null,
-      execution_orders: null
+      execution_orders: null,
+      cold_storage_transfers: null
     }
   }
 
@@ -801,7 +804,8 @@ const getInvestmentRunTimeline = async function (investment_run_id) {
       recipe_run: recipe_run_data,
       recipe_deposits: null,
       recipe_orders: null,
-      execution_orders: null
+      execution_orders: null,
+      cold_storage_transfers: null
     }
   }
 
@@ -830,7 +834,8 @@ const getInvestmentRunTimeline = async function (investment_run_id) {
       recipe_run: recipe_run_data,
       recipe_deposits: deposit_stats,
       recipe_orders: null,
-      execution_orders: null
+      execution_orders: null,
+      cold_storage_transfers: null
     }
   }
 
@@ -881,7 +886,8 @@ const getInvestmentRunTimeline = async function (investment_run_id) {
       recipe_run: recipe_run_data,
       recipe_deposits: deposit_stats,
       recipe_orders: prepared_recipe_orders,
-      execution_orders: null
+      execution_orders: null,
+      cold_storage_transfers: null
     }
   }
 
@@ -898,13 +904,61 @@ const getInvestmentRunTimeline = async function (investment_run_id) {
     status: `execution_orders_timeline.status.${exec_order_status}`
   };
 
+  // find related transfers
+  let transfer_statuses;
+  [err, transfer_statuses] = await to(sequelize.query(`
+    SELECT 
+      COUNT(*) AS count,
+      cst.status
+    FROM cold_storage_transfer AS cst
+    WHERE cst.recipe_run_id = :recipe_run_id OR cst.recipe_run_order_id IN (:recipe_order_ids)
+    GROUP BY cst.status
+  `, {
+    type: sequelize.QueryTypes.SELECT,
+    replacements: {
+      recipe_run_id: recipe_run_data.id,
+      recipe_order_ids: recipe_orders.map(r => r.id)
+    }
+  }));
+
+  let transfer_count = _.sumBy(transfer_statuses, cst => parseInt(cst.count, 10));
+  if(!transfer_count) {
+    return {
+      investment_run: investment_run_data,
+      recipe_run: recipe_run_data,
+      recipe_deposits: deposit_stats,
+      recipe_orders: prepared_recipe_orders,
+      execution_orders: exec_order_data,
+      cold_storage_transfers: null
+    }
+  }
+
+  let transfer_status;
+  if(transfer_statuses.every(t => t.status === COLD_STORAGE_ORDER_STATUSES.Pending || t.status === COLD_STORAGE_ORDER_STATUSES.Approved)) {
+    transfer_status = COLD_STORAGE_ORDER_STATUSES.Pending;
+  }
+  else if(transfer_statuses.some(t => t.status === COLD_STORAGE_ORDER_STATUSES.Sent)) {
+    transfer_status = COLD_STORAGE_ORDER_STATUSES.Sent;
+  }
+  else if(transfer_statuses.every(t => t.status === COLD_STORAGE_ORDER_STATUSES.Completed)) {
+    transfer_status = COLD_STORAGE_ORDER_STATUSES.Completed;
+  }
+  else transfer_status = COLD_STORAGE_ORDER_STATUSES.Failed;
+
+  let transfer_data = {
+    count: transfer_count,
+    status: `cold_storage_transfers_timeline.status.${transfer_status}`
+  };
+
   return {
     investment_run: investment_run_data,
     recipe_run: recipe_run_data,
     recipe_deposits: deposit_stats,
     recipe_orders: prepared_recipe_orders,
-    execution_orders: exec_order_data
+    execution_orders: exec_order_data,
+    cold_storage_transfers: transfer_data
   }
+  
 }
 module.exports.getInvestmentRunTimeline = getInvestmentRunTimeline;
 

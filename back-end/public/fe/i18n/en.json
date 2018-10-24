@@ -651,6 +651,16 @@
     }
   },
 
+  "cold_storage_transfers_timeline": {
+    "status": {
+      "91":"Pending",
+      "92":"Approved",
+      "93":"In Progress",
+      "94":"Completed",
+      "95":"Failed"
+    }
+  },
+
   "conversion": {
     "converted_amount": "Converted amount",
     "enter_converted_amount": "Enter converted amount",
