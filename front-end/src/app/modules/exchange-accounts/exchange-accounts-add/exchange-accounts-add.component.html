@@ -23,6 +23,8 @@
         placeholder="{{'exchange_accounts.select_exchange' | translate}}"
         bindValue="id"
         bindLabel="value"
+        (selectChange)="exchangeIdChanged($event.id)"
+        clearable="false"
       ></app-input-item>
 
       <app-input-item

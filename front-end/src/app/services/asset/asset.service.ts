@@ -48,6 +48,10 @@ export class AssetService {
     }
   }
 
+  getAllAssetsOfExchange(exchangeId: number): Observable<AssetsAllResponse> {
+    return this.http.get<AssetsAllResponse>(this.baseUrl + `/assets/of_exchange/${exchangeId}`);
+  }
+
   getAllAssetsDetailed(requestData?: EntitiesFilter): Observable<AssetsAllResponseDetailed> {
     if (requestData) {
       return this.http.post<AssetsAllResponseDetailed>(this.baseUrl + `assets/detailed/all`, requestData).pipe(
