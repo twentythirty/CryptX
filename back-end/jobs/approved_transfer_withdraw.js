@@ -18,8 +18,8 @@ module.exports.JOB_BODY = async (config, log) => {
     const updateTransferStatus = (id, status, external_identifier, fee) => {
         return ColdStorageTransfer.update({
             status,
-            placed_timestamp: status === 'Completed' ? Date.now() : undefined,
-            completed_timestamp: status === 'Completed' ? Date.now() : undefined,
+            placed_timestamp: status === COLD_STORAGE_ORDER_STATUSES.Completed ? Date.now() : undefined,
+            completed_timestamp: status === COLD_STORAGE_ORDER_STATUSES.Completed ? Date.now() : undefined,
             external_identifier,
             fee
         }, {
