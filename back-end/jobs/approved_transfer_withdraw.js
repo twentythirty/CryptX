@@ -15,12 +15,13 @@ module.exports.JOB_BODY = async (config, log) => {
 
     const { ColdStorageTransfer, sequelize } = config.models;
 
-    const updateTransferStatus = (id, status, external_identifier) => {
+    const updateTransferStatus = (id, status, external_identifier, fee) => {
         return ColdStorageTransfer.update({
-            status: COLD_STORAGE_ORDER_STATUSES[status],
+            status,
             placed_timestamp: status === 'Completed' ? Date.now() : undefined,
             completed_timestamp: status === 'Completed' ? Date.now() : undefined,
-            external_identifier
+            external_identifier,
+            fee
         }, {
             where: { id },
             limit: 1
@@ -86,7 +87,7 @@ module.exports.JOB_BODY = async (config, log) => {
             })
             return;
         }
-
+        
         log(`3. Creating ${exchange_transfers.length} withdraw requests from ${exchange_transfers[0].exchange_name}`);
         return Promise.all(_.map(exchange_transfers, async transfer => {
 
@@ -100,7 +101,7 @@ module.exports.JOB_BODY = async (config, log) => {
              * Having a failed transfer with status sent, is better than have a successful withdraw and a transfer with status approved.
              * Perhaps a better solution will be found later.
              */
-            [ err ] = await to(updateTransferStatus(transfer.id, 'Sent'));
+            [ err ] = await to(updateTransferStatus(transfer.id, COLD_STORAGE_ORDER_STATUSES.Sent));
             if(err) {
                 log(`[ERROR.3A](${exchange_api_id})(CST-${transfer.id}) Error occured during transfer status update: ${err.message}`);
                 return;
@@ -111,6 +112,7 @@ module.exports.JOB_BODY = async (config, log) => {
             [ err, withdraw ] = await to(connector.withdraw(asset, amount, address, tag));
 
             if(err) {
+                //console.log(JSON.stringify(err, null, 4));
                 log(`[ERROR.3B](${exchange_api_id})(CST-${transfer.id}) Error occured during withdraw creation: ${err.message}`);
                 await logAction(actions.withdraw_error, {
                     args: {
@@ -123,7 +125,7 @@ module.exports.JOB_BODY = async (config, log) => {
                     },
                     log_level: ACTIONLOG_LEVELS.Error
                 });
-                [ err ] = await to(updateTransferStatus(transfer.id, 'Failed'));
+                [ err ] = await to(updateTransferStatus(transfer.id, COLD_STORAGE_ORDER_STATUSES.Failed));
 
                 if(err) {
                     log(`[ERROR.3C](${exchange_api_id})(CST-${transfer.id}) Error occured during transfer status update: ${err.message}`);
@@ -131,6 +133,11 @@ module.exports.JOB_BODY = async (config, log) => {
 
                 return;
             }
+
+            /*console.log(`
+                TRANSFER ID: ${transfer.id},
+                WITHDRAW: ${JSON.stringify(withdraw, null, 4)}
+            `);*/
 
             await logAction(actions.placed, {
                 args: {
@@ -142,7 +149,9 @@ module.exports.JOB_BODY = async (config, log) => {
                 }
             });
 
-            [ err ] = await to(updateTransferStatus(transfer.id, 'Completed', withdraw.id));
+            const fee = _.get(withdraw, 'info.fees', null); //Attempt to exctract fee from Bitfinex response
+
+            [ err ] = await to(updateTransferStatus(transfer.id, COLD_STORAGE_ORDER_STATUSES.Completed, withdraw.id, fee));
 
             if(err) {
                 log(`[ERROR.3D](${exchange_api_id})(CST-${transfer.id}) Error occured during transfer status update: ${err.message}`);
