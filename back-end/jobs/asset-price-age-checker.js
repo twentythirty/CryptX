@@ -38,6 +38,9 @@ module.exports.JOB_BODY = async (config, log) => {
                 LIMIT 1
             ) AS status ON TRUE
             WHERE asset.is_deposit IS FALSE AND asset.is_base IS FALSE
+        ),
+        active_exchanges AS (
+            SELECT * FROM exchange WHERE exchange.is_mappable IS TRUE
         )
         
         SELECT
@@ -45,6 +48,7 @@ module.exports.JOB_BODY = async (config, log) => {
             CASE
                 WHEN EXISTS (
                     SELECT * FROM instrument_market_data AS imd
+                    INNER JOIN active_exchanges AS ex on ex.id = imd.exchange_id
                     WHERE imd.instrument_id = i.id AND imd.timestamp <= NOW() - INTERVAL :minimum_age
                 )
                 THEN TRUE

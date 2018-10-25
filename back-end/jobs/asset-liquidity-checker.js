@@ -35,6 +35,10 @@ module.exports.JOB_BODY = async (config, log) => {
 
   log(`Fetch liquidity requirements with average volumes for every exchange`);
   let [err, result] = await to(sequelize.query(`
+    WITH active_exchanges AS (
+        SELECT * FROM exchange WHERE exchange.is_mappable IS TRUE
+    )
+
     SELECT 
       asset.*,
       ilr.minimum_volume,
@@ -64,6 +68,7 @@ module.exports.JOB_BODY = async (config, log) => {
             CASE
                 WHEN EXISTS (
                     SELECT * FROM instrument_market_data AS imd
+                    INNER JOIN active_exchanges AS ex ON ex.id = imd.exchange_id
                     WHERE imd.instrument_id = i.id AND imd.timestamp <= NOW() - INTERVAL :minimum_age
                 )
                 THEN TRUE
@@ -73,6 +78,8 @@ module.exports.JOB_BODY = async (config, log) => {
         JOIn instrument AS i ON i.transaction_asset_id = asset.id
         WHERE a.id = asset.id
     ) AS apc ON TRUE AND apc.price_old_enough IS TRUE
+
+    JOIN active_exchanges AS ex ON ex.id = ilh.exchange_id
 
     WHERE status.type <> :blacklisted OR status.type IS NULL
 

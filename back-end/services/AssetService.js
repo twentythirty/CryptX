@@ -302,6 +302,7 @@ const getBaseAssetPrices = async function () {
     JOIN instrument i ON i.quote_asset_id=a1.id
     JOIN asset as assetBuy ON assetBuy.id=i.transaction_asset_id
     JOIN instrument_exchange_mapping as iem1 ON iem1.instrument_id=i.id
+    JOIN exchange AS ex ON iem1.exchange_id = ex.id AND ex.is_mappable IS TRUE
     JOIN instrument_market_data imd1 ON imd1.id=(
         SELECT id FROM instrument_market_data imdd 
         WHERE imdd.instrument_id=i.id
@@ -320,6 +321,7 @@ const getBaseAssetPrices = async function () {
     JOIN instrument i ON i.transaction_asset_id=a2.id
     JOIN asset as assetSell ON assetSell.id=i.quote_asset_id
     JOIN instrument_exchange_mapping as iem2 ON iem2.instrument_id=i.id
+    JOIN exchange AS ex ON iem2.exchange_id = ex.id AND ex.is_mappable IS TRUE
     JOIN instrument_market_data imd2 ON imd2.id=(
         SELECT id FROM instrument_market_data imdd 
         WHERE imdd.instrument_id=i.id
@@ -355,7 +357,8 @@ const getBaseAssetPrices = async function () {
       where: {
         id: {
           [Op.notIn]: _.map(existing_mappings, 'exchange_id')
-        }
+        },
+        is_mappable: true
       }
     });
     if (!_.isEmpty(missing_exchanges)) {
@@ -462,7 +465,7 @@ const getAssetGroupWithData = async function (investment_run_id) {
     JOIN asset ON asset.id=ga.asset_id
     JOIN instrument i ON i.transaction_asset_id=asset.id
     JOIN instrument_exchange_mapping iem ON instrument_id=i.id
-    JOIN exchange ON exchange.id=iem.exchange_id
+    JOIN exchange ON exchange.id=iem.exchange_id AND exchange.is_mappable IS TRUE
     LEFT JOIN LATERAL
     (
       SELECT value
