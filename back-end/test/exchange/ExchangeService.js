@@ -29,7 +29,10 @@ describe('ExchangeService testing', () => {
         app.dbPromise.then(migrations => {
             console.log("Migrations: %o", migrations);
 
-            sinon.stub(sequelize, 'transaction').callsFake(async transaction => transaction());
+            sinon.stub(sequelize, 'transaction').callsFake(async (options, callback) => {
+                if(_.isFunction(options)) callback = options;
+                return callback();
+            });
 
             done();
         })

@@ -11,6 +11,8 @@ const Instrument = require('../models').Instrument;
 const InstrumentExchangeMapping = require('../models').InstrumentExchangeMapping;
 const sequelize = require('../models').sequelize;
 
+const { ISOLATION_LEVELS } = sequelize.Transaction;
+
 const ccxtUtils = require('../utils/CCXTUtils');
 
 const createExchangeAccount = async (account_type, asset_id, exchange_id, address, is_active = true) => {
@@ -44,8 +46,7 @@ const createExchangeAccount = async (account_type, asset_id, exchange_id, addres
             where: {
                 account_type, 
                 asset_id, 
-                exchange_id, 
-                address
+                exchange_id
             }
         })
     ]));
@@ -57,13 +58,25 @@ const createExchangeAccount = async (account_type, asset_id, exchange_id, addres
     if (!found_exchange) TE(`Exchange not found with id ${exchange_id}`);
     if (!found_asset) TE(`Asset not found with id ${asset_id} or it is not available on the selected exchange`);
     if (found_account) TE(`Exchange account already exists with the specified parameters`);
- 
-    return ExchangeAccount.create({
-        account_type,
-        asset_id,
-        exchange_id,
-        address,
-        is_active
+    
+    return sequelize.transaction({
+        isolationLevel: ISOLATION_LEVELS.SERIALIZABLE
+    }, async transaction => {
+
+        const existing_account = await ExchangeAccount.findOne({
+            where: { account_type, asset_id, exchange_id },
+            transaction
+        });
+
+        if(existing_account) TE(`Exchange account already exists with the specified parameters`);
+
+        return ExchangeAccount.create({
+            account_type,
+            asset_id,
+            exchange_id,
+            address,
+            is_active
+        }, { transaction });
     });
 
 };

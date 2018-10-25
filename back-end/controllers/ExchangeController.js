@@ -6,6 +6,8 @@ const AdminViewService = require('../services/AdminViewsService');
 const Exchange = require('../models').Exchange;
 const ExchangeAccount = require('../models').ExchangeAccount;
 
+const { lock } = require('../utils/LockUtils');
+
 const getExchanges = async function (req, res) {
   //return partial list of exchanges if ignore_unmappable is present
   let seq_query = req.seq_query || { where: {} };
@@ -34,7 +36,16 @@ const createExchangeAccount = async (req, res) => {
   const { exchange_id } = req.params; 
   const { account_type, asset_id, address, is_active } = req.body;
 
-  const [ err, exchange_account ] = await to(ExchangeService.createExchangeAccount(account_type, asset_id, exchange_id, address, is_active));
+  const [ err, exchange_account ] = await to(
+    lock(ExchangeService, {
+      method: 'createExchangeAccount',
+      params: [account_type, asset_id, exchange_id, address, is_active],
+      id: 'create_exchange_account',
+      keys: { account_type, asset_id, exchange_id },
+      error_message: 'Exchange account is already being created. Please wait...',
+      max_block: 180
+    })
+  );
   if(err) return ReE(res, err.message, 422);
 
   return ReS(res, { exchange_account });
