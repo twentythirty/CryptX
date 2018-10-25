@@ -32,6 +32,8 @@ const getColdStorageTransfers = async function (req, res) {
 
   let [ err, result ] = await to(AdminViewsService.fetchColdStorageTransferViewDataWithCount(seq_query));
 
+  if(err) return ReE(res, err.message, 422);
+
   let { total: count, data: transfers } = result;
 
   transfers = transfers.map(cst => cst.toWeb());
