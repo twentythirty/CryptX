@@ -4,7 +4,13 @@ import { finalize } from 'rxjs/operators';
 
 import { DataTableCommonManagerComponent } from '../../../shared/components/data-table-common-manager/data-table-common-manager.component';
 import { TableDataSource, TableDataColumn } from '../../../shared/components/data-table/data-table.component';
-import { NumberCellDataColumn, StatusCellDataColumn, DateCellDataColumn, ActionCellDataColumn, DataCellAction } from '../../../shared/components/data-table-cells/index';
+import {
+  NumberCellDataColumn,
+  StatusCellDataColumn,
+  DateCellDataColumn,
+  ActionCellDataColumn,
+  DataCellAction
+} from '../../../shared/components/data-table-cells/index';
 import { StatusClass } from '../../../shared/models/common';
 import { ColdStorageService } from '../../../services/cold-storage/cold-storage.service';
 import { Transfer } from '../../../shared/models/transfer';

@@ -27,8 +27,8 @@ export class StatusCellComponent implements OnInit {
 
   constructor() { }
 
-  ngOnInit() {
-  }
+  ngOnInit() { }
+
 
   public getStatusClass(value: any): string {
     value = '' + value;

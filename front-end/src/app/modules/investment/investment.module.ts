@@ -12,11 +12,14 @@ import { ExecutionOrderFillDetailComponent } from './execution-order-fill-detail
 import { DepositDetailComponent } from './deposit-detail/deposit-detail.component';
 import { ExecutionOrdersComponent } from './execution-orders/execution-orders.component';
 import { OrderGroupComponent } from './order-group/order-group.component';
+import { ColdStorageTransfersDetailComponent } from './cold-storage-transfers-detail/cold-storage-transfers-detail.component';
 import { TimelineDetailComponent } from './timeline-detail/timeline-detail.component';
 
 import { AuthService } from '../../services/auth/auth.service';
 import { ModelConstantsService } from '../../services/model-constants/model-constants.service';
 import { DepositModule } from '../deposit/deposit.module';
+import { InvestmentService } from '../../services/investment/investment.service';
+import { ColdStorageService } from '../../services/cold-storage/cold-storage.service';
 
 @NgModule({
   imports: [
@@ -35,10 +38,13 @@ import { DepositModule } from '../deposit/deposit.module';
     DepositDetailComponent,
     ExecutionOrdersComponent,
     OrderGroupComponent,
+    ColdStorageTransfersDetailComponent,
     TimelineDetailComponent,
   ],
   providers: [
     AuthService,
+    ColdStorageService,
+    InvestmentService,
     ModelConstantsService,
   ]
 })

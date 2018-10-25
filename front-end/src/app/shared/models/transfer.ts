@@ -13,7 +13,7 @@ export class Transfer {
   public source_exchange: string;
   public source_account: string;
   public placed_timestamp: number;
-  public completed_timestamp: Date;
+  public completed_timestamp: number;
 
   constructor (data: Transfer) {
     Object.assign(this, data);

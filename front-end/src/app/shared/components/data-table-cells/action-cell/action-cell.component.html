@@ -8,11 +8,11 @@
         *ngIf="action.isShown(row)"
         class="action-button"
         [ngClass]="action.className"
-        [class.remove-icon]="action.loading()"
+        [class.remove-icon]="action.loading(row)"
         (click)="doAction(action, $event)"
       >
         <mat-progress-spinner
-          *ngIf="action.loading()"
+          *ngIf="action.loading(row)"
           mode="indeterminate"
           color="accent"
           strokeWidth="1"

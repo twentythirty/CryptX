@@ -66,7 +66,7 @@ export class TimelineComponent implements OnInit {
       case 'recipe_deposits':         routeParts = ['run/deposit']; break;
       case 'recipe_orders':           routeParts = ['run/order', 'run/order-group']; break;
       case 'execution_orders':        routeParts = ['run/execution-orders']; break;
-      case 'cold_storage_transfers':  routeParts = ['run/execution-orders']; break;
+      case 'cold_storage_transfers':  routeParts = ['run/cold-storage-transfers']; break;
     }
 
     return routeParts.some(part => this.router.isActive(part, false));
@@ -131,7 +131,7 @@ export class TimelineComponent implements OnInit {
         break;
 
       case 'cold_storage_transfers':
-        this.router.navigate([`/run/cold-storage-transfers/${events.investment_run.id}`]);
+        this.router.navigate([`/run/cold-storage-transfers/${events.recipe_run.id}`]);
         break;
     }
   }

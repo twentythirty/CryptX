@@ -1,7 +1,7 @@
 import { CustodiansAllResponse,
          AddAccountResponse,
          AccountsAllResponse,
-         TransfersAllResponse, 
+         TransfersAllResponse,
          AddCustodianResponse} from '../../services/cold-storage/cold-storage.service';
 import { Transfer } from '../../shared/models/transfer';
 
@@ -69,4 +69,26 @@ export const addCustodianData: AddCustodianResponse = {
   custodian: {}
 };
 
-
+export const confirmTransferData = {
+  success: true,
+  transfers: [
+    new Transfer ({
+      asset: 'BTC',
+      asset_id: 2,
+      completed_timestamp: 1532097313472,
+      custodian: 'Coinbase Custody',
+      destination_account: '1234',
+      exchange_withdrawal_fee: '0.0001',
+      gross_amount: '1.1',
+      id: 9,
+      net_amount: '1.0999',
+      placed_timestamp: 1535004629647,
+      source_account: '1GDff323q4RGghgLVTi9xeqSkyzRjRrK2',
+      source_exchange: 'Binance',
+      status: 'cold_storage_transfers.status.94',
+      strategy_type: 'investment.strategy.102'
+    })
+  ],
+  footer: [],
+  count: 1
+};

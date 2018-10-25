@@ -7,27 +7,28 @@
 </app-page-heading>
 
 <div class="left-part-dashboard">
-  <div class="top-controls">
-    <span class="headline-title">{{ singleTitle }}</span>
-    <app-btn
-      *ngIf="showGenerateOrders"
-      [extraClass]="!generateOrdersLoading && 'start'"
-      [thinner]="true"
-      (onClick)="generateOrders()"
-      [loading]="generateOrdersLoading"
-      [disabled]="generateOrdersLoading"
-    >
-      <span>{{ 'orders.generate_orders' | translate }}</span>
-    </app-btn>
-  </div>
+  <ng-container *ngIf="singleDataSource">
+    <div class="top-controls">
+      <span class="headline-title">{{ singleTitle }}</span>
+      <app-btn
+        *ngIf="showGenerateOrders"
+        [extraClass]="!generateOrdersLoading && 'start'"
+        [thinner]="true"
+        (onClick)="generateOrders()"
+        [loading]="generateOrdersLoading"
+        [disabled]="generateOrdersLoading"
+      >
+        <span>{{ 'orders.generate_orders' | translate }}</span>
+      </app-btn>
+    </div>
 
-  <app-data-table
-    *ngIf="singleDataSource"
-    [dataSource]="singleDataSource"
-    [columnsToShow]="singleColumnsToShow"
-    [emptyText]="singleTableEmptyText | translate"
-    (openRow)="openSingleRow($event)"
-  ></app-data-table>
+    <app-data-table
+      [dataSource]="singleDataSource"
+      [columnsToShow]="singleColumnsToShow"
+      [emptyText]="singleTableEmptyText | translate"
+      (openRow)="openSingleRow($event)"
+    ></app-data-table>
+  </ng-container>
 
   <div class="top-controls" *ngIf="extraTableTitle">
     <span class="headline-title">{{ extraTableTitle }}</span>

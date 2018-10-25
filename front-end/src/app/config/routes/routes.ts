@@ -47,6 +47,7 @@ import { ExchangeAccountsListComponent } from '../../modules/exchange-accounts/e
 import { ExchangeAccountsAddComponent } from '../../modules/exchange-accounts/exchange-accounts-add/exchange-accounts-add.component';
 import { ExchangeCredentialsAddComponent } from '../../modules/exchange-credentials/exchange-credentials-add/exchange-credentials-add.component';
 import { ExchangeCredentialsListComponent } from '../../modules/exchange-credentials/exchange-credentials-list/exchange-credentials-list.component';
+import { ColdStorageTransfersDetailComponent } from '../../modules/investment/cold-storage-transfers-detail/cold-storage-transfers-detail.component';
 
 export const routes: Routes = [
   { path: 'login', component: LoginComponent },
@@ -125,7 +126,8 @@ export const routes: Routes = [
       { path: 'order-group/:id', component: OrderGroupComponent },
       { path: 'execution-order/:id', component: ExecutionOrderDetailComponent },
       { path: 'execution-order-fill/:id', component: ExecutionOrderFillDetailComponent },
-      { path: 'execution-orders/:id', component: ExecutionOrdersComponent},
+      { path: 'execution-orders/:id', component: ExecutionOrdersComponent },
+      { path: 'cold-storage-transfers/:id', component: ColdStorageTransfersDetailComponent },
     ],
     canActivate: [AuthGuard, PermissionGuard],
     data: { requiredPermission: [permissions.VIEW_INVESTMENT_RUN]}
@@ -254,14 +256,14 @@ export const routes: Routes = [
     path: 'exchange_credentials/add',
     component: ExchangeCredentialsAddComponent,
     canActivate: [AuthGuard],
-    data: { requiredPermission: [permissions.ADD_EXCHANGE_CREDENTIALS]}
+    data: { requiredPermission: [permissions.ALTER_EXCHANGE_CREDENTIALS]}
   },
 
   {
     path: 'exchange_credentials/view/:id',
     component: ExchangeCredentialsAddComponent,
     canActivate: [AuthGuard],
-    data: { requiredPermission: [permissions.ADD_EXCHANGE_CREDENTIALS]}
+    data: { requiredPermission: [permissions.ALTER_EXCHANGE_CREDENTIALS]}
   },
 
   // {

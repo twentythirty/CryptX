@@ -3,7 +3,7 @@ import { extraTestingModules, fakeAsyncResponse, click } from '../../../testing/
 
 import { ColdStorageTransfersModule } from '../cold-storage-transfers.module';
 import { TransfersListComponent } from './transfers-list.component';
-import { ColdStorageService, TransfersAllResponse } from '../../../services/cold-storage/cold-storage.service';
+import { ColdStorageService } from '../../../services/cold-storage/cold-storage.service';
 import { getAllTransfersData } from '../../../testing/service-mock/coldStorage.service.mock';
 import { testHeaderLov } from '../../../testing/commonTests';
 
