@@ -50,12 +50,12 @@ module.exports.JOB_BODY = async (config, log) => {
         if(err) return log(`[ERROR.2A](${exchange_api_id}) Error occured during exchange connector fetching: ${err.message}`);
 
         let withdraws;
-        [ err, withdraws ] = await to(connector.fetchWithdraws(exchange_transfers));
+        [ err, withdraws ] = await to(connector.fetchWithdraws(exchange_transfers.map(et => et.toJSON())));
 
         if(err) return log(`[ERROR.2B](${exchange_api_id}) Error occured during withdraw fetching: ${err.message}`);
-
-        log(`3.(${exchange_api_id}) Checking ${withdraws.length} transfers for updates`);
         
+        log(`3.(${exchange_api_id}) Checking ${withdraws.length} transfers for updates`);
+
         return Promise.all(_.map(exchange_transfers, async transfer => {
 
             const matching_withdraw = withdraws.find(w => w.id === transfer.external_identifier);

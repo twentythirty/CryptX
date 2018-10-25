@@ -113,7 +113,11 @@ class Okex {
       }); 
 
     }));
+    
+    const errors = _.filter(results, result => !result.result && result.error_code);
 
+    if(errors.length) TE(`ERROR: Exchange responsed with error codes: ${_.uniq(_.map(errors, e => e.error_code)).join(', ')}`);
+     
     const withdraws = _.map(results, result => {
 
       const withdraw = result.withdraw[0];
@@ -158,11 +162,12 @@ class Okex {
 
     return request.post({
       uri: `${api_url}${method}`,
-      body: {
+      form: {
         ...body,
         sign
       },
-      json: true
+      json: true,
+      agent: ccxtUtils.proxy_agent
     });
 
   };

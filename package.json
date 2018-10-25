@@ -35,7 +35,7 @@
     "bcrypt-promise": "^2.0.0",
     "body-parser": "~1.18.2",
     "bottleneck": "^2.8.0",
-    "ccxt": "^1.16.89",
+    "ccxt": "^1.17.412",
     "chai-as-promised": "^7.1.1",
     "compression": "^1.7.3",
     "cookie-parser": "~1.4.3",

@@ -38,7 +38,10 @@ describe('Approved Cold Storage Transfer withdraw job:', () => {
         placed_timestamp: null,
         completed_timestamp: null,
         address: '2h31jk3h41jk23h41jk23h41j2',
-        tag: '212323'
+        tag: '212323',
+        toJSON() {
+            return this;
+        }
     };
 
     const TRANSFER_DATA = [
@@ -190,16 +193,23 @@ describe('Approved Cold Storage Transfer withdraw job:', () => {
         await JOB_BODY(stub_config, console.log);
 
         const callCount = ColdStorageTransfer.update.callCount;
-        expect(callCount).to.equal(TRANSFER_DATA.length);
+        expect(callCount).to.equal(TRANSFER_DATA.length * 2);
 
         for(let i = 0; i < callCount; i++) {
 
             const [ update, options ] = ColdStorageTransfer.update.args[i];
 
-            expect(update.status).to.equal(COLD_STORAGE_ORDER_STATUSES.Sent);
-            expect(TRANSFER_DATA.map(t => t.id)).include(options.where.id);
-            expect(update.placed_timestamp).to.be.a('number');
-            expect(update.completed_timestamp).to.be.undefined;
+            if(i < callCount/2) {
+                expect(update.status).to.equal(COLD_STORAGE_ORDER_STATUSES.Sent);
+                expect(TRANSFER_DATA.map(t => t.id)).include(options.where.id);
+                expect(update.placed_timestamp).to.be.a('number');
+                expect(update.completed_timestamp).to.be.undefined;
+            }
+            else {
+                expect(update.external_identifier).to.be.not.null.and.to.be.not.undefined;
+                expect(update.status).to.equal(COLD_STORAGE_ORDER_STATUSES.Sent);
+            }
+            
 
         }
 

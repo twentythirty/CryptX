@@ -44,6 +44,9 @@ describe('Cold storage transfer status updater job:', () => {
         },
         changed() {
             return true;
+        },
+        toJSON() {
+            return this;
         }
     };
 

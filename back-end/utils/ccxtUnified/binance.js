@@ -97,7 +97,7 @@ class Binance {
 
     const results = await Promise.all(_.map(requests, request => {
 
-      return this._connector.fetchWithdraws(request.asset, request.since);
+      return this._connector.fetchWithdrawals(request.asset, Date.parse(request.since));
 
     }));
 

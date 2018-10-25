@@ -97,6 +97,7 @@ EXCHANGE_KEYS = {
     },
     okex: {
         apiKey: process.env.OKEX_APIKEY,
-        secret: process.env.OKEX_SECRETKEY
+        secret: process.env.OKEX_SECRETKEY,
+        password: process.env.OKEX_TRADE_PASSWORD
     }
 }

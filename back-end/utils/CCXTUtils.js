@@ -14,6 +14,8 @@ const agent = new HttpsProxyAgent({
     }
 });
 
+module.exports.proxy_agent = agent; //Since it is technically related only to exchanges, will export from here, for now.
+
 const {
     logAction
 } = require('../utils/ActionLogUtil');

@@ -133,11 +133,13 @@ module.exports.JOB_BODY = async (config, log) => {
 
                 return;
             }
-
-            /*console.log(`
+            /*
+            console.log(`
                 TRANSFER ID: ${transfer.id},
                 WITHDRAW: ${JSON.stringify(withdraw, null, 4)}
-            `);*/
+            `);
+            */
+            log(`4.(${exchange_api_id})(CST-${transfer.id}) Withdraw request created with id ${withdraw.id}`);
 
             await logAction(actions.placed, {
                 args: {
@@ -148,17 +150,15 @@ module.exports.JOB_BODY = async (config, log) => {
                     cold_storage_transfer_id: transfer.id
                 }
             });
-            /*
-            /We will keep in Sent status
-
+            
             const fee = _.get(withdraw, 'info.fees', 0); //Attempt to exctract fee from Bitfinex response
 
-            [ err ] = await to(updateTransferStatus(transfer.id, COLD_STORAGE_ORDER_STATUSES.Completed, withdraw.id, fee));
+            [ err ] = await to(updateTransferStatus(transfer.id, COLD_STORAGE_ORDER_STATUSES.Sent, withdraw.id, fee));
 
             if(err) {
-                log(`[ERROR.3D](${exchange_api_id})(CST-${transfer.id}) Error occured during transfer status update: ${err.message}`);
+                log(`[ERROR.4A](${exchange_api_id})(CST-${transfer.id}) Error occured during transfer status update: ${err.message}`);
             }
-            */
+
             return;
 
         }));
