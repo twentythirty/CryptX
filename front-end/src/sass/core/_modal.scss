@@ -54,6 +54,14 @@
                 min-width: 135px;
             }
         }
+
+        .error-text {
+            text-align: center;
+            p {
+                margin-top: 20px;
+                margin-bottom: 30px;
+            }
+        }
     }
 
     .close-modal {
@@ -146,13 +154,5 @@
 
     .btn-cont {
         text-align: right;
-    }
-}
-
-.error {
-    text-align: center;
-    p {
-        margin-top: 20px;
-        margin-bottom: 30px;
     }
 }
