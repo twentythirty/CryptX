@@ -50,7 +50,7 @@ export class ExchangeCredentialsListComponent extends DataTableCommonManagerComp
   }
 
   openRow(exchangeCredentials): void {
-    this.router.navigate(['/exchange_credentials/view/', exchangeCredentials.id]);
+    this.router.navigate(['/exchange_credentials/view/', exchangeCredentials.exchange_id]);
   }
 
 }

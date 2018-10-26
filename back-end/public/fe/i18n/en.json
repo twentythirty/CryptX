@@ -423,7 +423,17 @@
       "exchange": "{{ exchange }} Exchanges"
     },
     "header": "Exchange credentials",
-    "add_credential": "Add credential"
+    "add_credential": "Add credential",
+    "exchange_credential_info": "Exchange credential information",
+    "select_exchange": "Select exchange",
+    "exchange": "Exchange",
+    "api_key": "API key",
+    "enter_username": "Enter username",
+    "api_secret": "API secret",
+    "enter_password": "Enter password",
+    "admin_password": "Admin password",
+    "edit_credential": "Edit credential",
+    "credential_delete_confirm_msg": "Do you really want to deactivate this account?"
   },
 
   "assets": {

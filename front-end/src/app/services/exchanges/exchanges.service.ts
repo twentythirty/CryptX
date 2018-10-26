@@ -32,6 +32,23 @@ export class ExchangesInstrumentIdentifiersResponse {
   success: boolean;
 }
 
+export class SetExchangeCredentialsRequest {
+  api_key: string;
+  api_secret: string;
+  admin_password: string;
+}
+
+export class ExchangeCredentialsResponse {
+  success: boolean;
+  exchange_credential: {
+    id: number;
+    exchange_id: number;
+    exchange: string;
+    api_key: string;
+  };
+}
+
+
 @Injectable()
 export class ExchangesService {
   private baseUrl: string = environment.baseUrl;
@@ -54,6 +71,10 @@ export class ExchangesService {
 
   getAllExchangeCredentials(requestData?: EntitiesFilter): Observable<ExchangeCredentialsAllResponse> {
     return this.http.post<ExchangeCredentialsAllResponse>(this.baseUrl + `exchanges/credentials/all`, requestData);
+  }
+
+  getExchangeCredentials(id: number): Observable<ExchangeCredentialsResponse> {
+    return this.http.get<ExchangeCredentialsResponse>(this.baseUrl + `exchanges/${id}/credentials`);
   }
 
   getHeaderLOV(column_name: string): Observable<any> {
@@ -85,4 +106,19 @@ export class ExchangesService {
   editExchangeAccountData(data: object, id: number): Observable<any> {
     return this.http.post<any>(this.baseUrl + `exchanges/accounts/${id}/edit`, data);
   }
+
+  setExchangeCredentials(exchangeId: number, data: SetExchangeCredentialsRequest): Observable<any> {
+    return this.http.post<any>(this.baseUrl + `exchanges/${exchangeId}/credentials/set`, data);
+  }
+
+  deleteExchangeCredentials(exchangeId: number): Observable<any> {
+    const data = {
+      api_key: null,
+      api_secret: null,
+      admin_password: null
+    };
+
+    return this.setExchangeCredentials(exchangeId, data);
+  }
+
 }
