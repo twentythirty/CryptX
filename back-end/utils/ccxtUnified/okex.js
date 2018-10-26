@@ -90,8 +90,7 @@ class Okex {
     `);
 
     return this._connector.withdraw(asset_symbol, amount, address, tag, { 
-      chargefee,
-      password: '???' //Currently unknown how this will be handled
+      chargefee
     });
 
   }
