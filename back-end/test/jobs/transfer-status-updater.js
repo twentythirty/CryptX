@@ -103,9 +103,9 @@ describe('Cold storage transfer status updater job:', () => {
 
     const stub_connectors = (status = 'pending') => {
 
-        sinon.stub(ccxtUnified, 'getExchange').callsFake(exchange_api_id => {
+        sinon.stub(ccxtUnified, 'getExchange').callsFake(async exchange_api_id => {
 
-            return class StubExchange {
+            class StubExchange {
 
                 constructor() {
                     this.api_id = exchange_api_id;
@@ -133,7 +133,9 @@ describe('Cold storage transfer status updater job:', () => {
 
                 }
 
-            }
+            };
+
+            return new StubExchange();
 
         });
 

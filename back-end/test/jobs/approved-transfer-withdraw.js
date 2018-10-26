@@ -91,9 +91,9 @@ describe('Approved Cold Storage Transfer withdraw job:', () => {
 
     const stub_connectors = (will_fail = false) => {
 
-        sinon.stub(ccxtUnified, 'getExchange').callsFake(exchange_api_id => {
+        sinon.stub(ccxtUnified, 'getExchange').callsFake(async exchange_api_id => {
 
-            return class StubExchange {
+            class StubExchange {
 
                 constructor() {
                     this.api_id = exchange_api_id;
@@ -118,7 +118,9 @@ describe('Approved Cold Storage Transfer withdraw job:', () => {
 
                 }
 
-            }
+            };
+
+            return new StubExchange();
 
         });
 
