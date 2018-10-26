@@ -45,7 +45,7 @@ module.exports.JOB_BODY = async (config, log) => {
     log(`2. Checking ${transfers.length} transfers from ${_.size(transfers_by_exchange)} Exchanges`);
     return Promise.all(_.map(transfers_by_exchange, async (exchange_transfers, exchange_api_id) => {
 
-        let connector = new (ccxtUnified.getExchange(exchange_api_id))();
+        let connector = await ccxtUnified.getExchange(exchange_api_id);
 
         if(err) return log(`[ERROR.2A](${exchange_api_id}) Error occured during exchange connector fetching: ${err.message}`);
 

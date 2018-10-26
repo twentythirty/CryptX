@@ -101,3 +101,38 @@ EXCHANGE_KEYS = {
         password: process.env.OKEX_TRADE_PASSWORD
     }
 }
+
+const _base_credentials = [
+    {
+        name: 'api_key',
+        type: 'string'
+    },
+    {
+        name: 'api_secret',
+        type: 'string'
+    }
+];
+
+EXCHANGE_CREDENTIALS = {
+    binance: _base_credentials,
+    bitfinex: _base_credentials,
+    bitstamp: _base_credentials.concat([
+        {
+            name: 'uid',
+            type: 'string'
+        }
+    ]),
+    huobipro: _base_credentials,
+    hitbtc2: _base_credentials,
+    kraken: _base_credentials,
+    okex: _base_credentials.concat([
+        {
+            name: 'password',
+            type: 'string'
+        },
+        {
+            name: 'passphrase',
+            type: 'string'
+        }
+    ])
+}

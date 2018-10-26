@@ -70,7 +70,7 @@ module.exports.JOB_BODY = async (config, log) => {
 
     return Promise.all(_.map(transfers_by_exchange, async (exchange_transfers, exchange_api_id) => {
 
-        const connector = new (ccxtUnified.getExchange(exchange_api_id))();
+        const connector = await ccxtUnified.getExchange(exchange_api_id);
         [ err ] = await to(connector.isReady());
 
         if(err) {

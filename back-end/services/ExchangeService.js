@@ -210,3 +210,15 @@ const getExchangeCredentials = async (exchange_id) => {
 
 };
 module.exports.getExchangeCredentials = getExchangeCredentials;
+
+const getExchangeCredentialFields = async exchange_id => {
+
+    const [ err, exchange ] = await to(Exchange.findById(exchange_id));
+
+    if(err) TE(err.message);
+    if(!exchange) return null;
+
+    return EXCHANGE_CREDENTIALS[exchange.api_id];
+
+};
+module.exports.getExchangeCredentialFields = getExchangeCredentialFields;

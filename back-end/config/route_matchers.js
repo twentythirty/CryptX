@@ -103,6 +103,7 @@ ROUTE_MATCHERS = {
     SetExchangeCredentials: /\/exchanges\/\d+$\/credentials\/set/,
     GetExchangeCredentials: /\/exchanges\/credentials\/all/,
     GetExchangeCredential: /\/exchanges\/\d+\/credentials/,
+    GetExchangeCredentialFields: /\/exchanges\/\d+\/credential_fields/,
     GetColdStorageTransfers: /\/cold_storage\/all$/,
     GetColdStorageTransfersColLOV: /\/cold_storage\/header_lov\/\w+$/,
     ApproveColdStorageTransfers: /\/cold_storage\/\d+\/approve$/,

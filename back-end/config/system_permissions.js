@@ -827,4 +827,9 @@ ROUTES = {
     permissions_matcher: ROUTE_MATCHERS.CreateExchangeAccount,
     required_permissions: [PERMISSIONS.VIEW_EXCHANGE_CREDENTIALS]
   },
+  GetExchangeCredentialFields: {
+    router_string: '/exchanges/:exchange_id/credential_fields',
+    permissions_matcher: ROUTE_MATCHERS.CreateExchangeAccount,
+    required_permissions: [PERMISSIONS.VIEW_EXCHANGE_CREDENTIALS]
+  }
 };
