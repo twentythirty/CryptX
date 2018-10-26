@@ -14,6 +14,8 @@ const ColdStorageTransfer = require('../models').ColdStorageTransfer;
 const Sequelize = require('../models').Sequelize;
 const sequelize = require('../models').sequelize;
 
+const { ISOLATION_LEVELS } = sequelize.Transaction;
+
 const { in: opIn, ne: opNe, or: opOr } = Sequelize.Op;
 
 const { logAction } = require('../utils/ActionLogUtil'); 
@@ -179,8 +181,20 @@ const generateRecipeRunDeposits = async function (recipe_run_id) {
     TE(`Could not generate deposits, because deposit accounts are missing for Exchange/Asset pairs: ${missing_pairs.join(', ')}`);
   }
 
-  [ err, deposits ] = await to(RecipeRunDeposit.bulkCreate(deposits, { returning: true }));
-  
+  [ err, deposits ] = await to(sequelize.transaction({
+    isolationLevel: ISOLATION_LEVELS.SERIALIZABLE
+  }, async transaction => {
+    
+    let exisitng_deposits = await RecipeRunDeposit.findAll({
+      where: { recipe_run_id: recipe_run.id }, transaction
+    });
+
+    if(exisitng_deposits.length) TE(`Recipe Run with id "${recipe_run.id}" already has Deposits`);
+
+    return RecipeRunDeposit.bulkCreate(deposits, { returning: true, transaction });
+
+  }));
+
   if(err) TE(err.message);
 
   await logAction('deposits.generate', { 

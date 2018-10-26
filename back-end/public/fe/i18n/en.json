@@ -551,7 +551,8 @@
         "92": "Approved",
         "93": "Sent",
         "94": "Completed",
-        "95": "Failed"
+        "95": "Failed",
+        "96": "Canceled"
       }
     },
     "account_storage_fee": {
@@ -640,7 +641,8 @@
       "92":"Approved",
       "93":"Sent",
       "94":"Completed",
-      "95":"Failed"
+      "95":"Failed",
+      "96": "Canceled"
     },
     "footer": {
       "id": "{{ id }} Items",

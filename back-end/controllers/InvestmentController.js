@@ -649,7 +649,15 @@ const calculateRecipeRunDeposits = async (req, res) => {
 
   const { recipe_id } = req.params;
 
-  let [ err, deposits ] = await to(DepositService.generateRecipeRunDeposits(recipe_id));
+  let [ err, deposits ] = await to(
+    lock(DepositService, {
+      method: 'generateRecipeRunDeposits',
+      params: [recipe_id],
+      id: 'calculate_deposits',
+      error_message: `Deposits are being calcuated for recipe run with id ${recipe_id}. Please wait...`,
+      max_block: 180
+    })
+  );
 
   if(err) return ReE(res, err.message, 422);
   if(!deposits) return ReE(res, `Recipe Run with id "${recipe_id}" was not found`);

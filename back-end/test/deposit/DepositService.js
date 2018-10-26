@@ -18,12 +18,18 @@ describe('DepositService testing', () => {
 
             //sinon.stub(ActionLogUtil, 'logAction').callsFake(() => {return;});
 
+            sinon.stub(sequelize, 'transaction').callsFake(async (options, callback) => {
+                if(_.isFunction(options)) callback = options;
+                return callback();
+            });
+
             done();
         })
     });
 
     after(done => {
         //ActionLogUtil.logAction.restore();
+        sequelize.transaction.restore();
         done();
     });
 
@@ -324,6 +330,9 @@ describe('DepositService testing', () => {
                     MOCK_RECIPE_RUNS.find(r => r.id === id) || null
                 );
             });
+            sinon.stub(RecipeRunDeposit, 'findAll').callsFake(async options => {
+                return [];
+            })
             done();
         });
 
@@ -331,6 +340,7 @@ describe('DepositService testing', () => {
             ExchangeAccount.findAll.restore();
             RecipeRunDeposit.bulkCreate.restore();
             RecipeRun.findById.restore();
+            RecipeRunDeposit.findAll.restore();
             done();
         });
 

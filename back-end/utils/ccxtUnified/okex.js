@@ -114,8 +114,7 @@ class Okex extends Exchange {
     `);
 
     return this._connector.withdraw(asset_symbol, amount, address, tag, { 
-      chargefee,
-      password: '???' //Currently unknown how this will be handled
+      chargefee
     });
 
   }
@@ -141,7 +140,7 @@ class Okex extends Exchange {
     const errors = _.filter(results, result => !result.result && result.error_code);
 
     if(errors.length) TE(`ERROR: Exchange responsed with error codes: ${_.uniq(_.map(errors, e => e.error_code)).join(', ')}`);
-     
+
     const withdraws = _.map(results, result => {
 
       const withdraw = result.withdraw[0];
