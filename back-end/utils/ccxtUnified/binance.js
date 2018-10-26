@@ -55,7 +55,7 @@ class Binance {
   }
 
   /**
-   * Creates a standart withdraw
+   * Creates a standart withdraw. Manually fetch fees from the exchange
    * @param {String} asset_symbol Asset to withdraw, example: BTC
    * @param {String|Number} amount Amount to withdraw
    * @param {Object} cold_storage_account Cold storage account object to send the funds to.
@@ -71,7 +71,13 @@ class Binance {
       Destination address: ${address}
     `);
 
-    return this._connector.withdraw(asset_symbol, amount, address, tag, {});
+    const fees = await this._connector.fetchFundingFees();
+
+    const withdraw_response = await this._connector.withdraw(asset_symbol, amount, address, tag, {});
+
+    _.set(withdraw_response, 'info.fees', fees.withdraw[asset_symbol]);
+
+    return withdraw_response;
 
   }
 
