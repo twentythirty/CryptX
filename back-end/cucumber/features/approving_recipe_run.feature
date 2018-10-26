@@ -40,6 +40,7 @@ Feature: Approving Recipe Run
     Scenario: confirm a pending recipe run
   
         Given there is a recipe run with status Pending
+        And there are Cold Storage Accounts required for the Recipe Run
         When I log onto CryptX as Investment Manager
         And navigate to Pending recipe run
         And approve recipe run with provided rationale

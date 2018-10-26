@@ -17,6 +17,7 @@ const RecipeRunDeposit = require('../models').RecipeRunDeposit;
 const InvestmentRunAssetGroup = require('../models').InvestmentRunAssetGroup;
 const GroupAsset = require('../models').GroupAsset;
 const InvestmentAssetConversion = require('../models').InvestmentAssetConversion;
+const ColdStorageAccount = require('../models').ColdStorageAccount;
 
 const { ISOLATION_LEVELS } = require('sequelize').Transaction;
 
@@ -547,7 +548,9 @@ const changeRecipeRunStatus = async function (user_id, recipe_run_id, status_con
   if (!comment) TE('Comment not provided');
 
   let err, recipe_run;
-  recipe_run = await RecipeRun.findById(recipe_run_id);
+  recipe_run = await RecipeRun.findById(recipe_run_id, {
+    include: InvestmentRun
+  });
 
   if (!recipe_run) TE("Recipe run not found");
 
@@ -626,6 +629,35 @@ const changeRecipeRunStatus = async function (user_id, recipe_run_id, status_con
       if (matching_mapping == null &&
         run_detail.transaction_asset_id!==run_detail.quote_asset_id) TE(potential_error);
     });
+
+    const assets_ids = _.uniq(run_details.map(detail => detail.transaction_asset_id));
+
+    let ct_accounts;
+    [err, ct_accounts] = await to(ColdStorageAccount.findAll({
+      where: {
+        strategy_type: recipe_run.InvestmentRun.strategy_type,
+        asset_id: assets_ids
+      },
+      raw: true
+    }));
+
+    if (err) TE(err.message);
+
+    //If the account number does not match the number of asset ids, check which ones are missing and throw an error
+    if(ct_accounts.length !== assets_ids.length) {
+      
+      let missing_assets = [];
+      const uniq_details = _.uniqBy(run_details, 'transaction_asset_id');
+      for(let detail of uniq_details) {
+        const existing_account = ct_accounts.find(acc => acc.asset_id === detail.transaction_asset_id);
+        if(existing_account) continue;
+
+        missing_assets.push(detail.transaction_asset.symbol);
+      }
+
+      TE(`Cannot approve while there are missing ${_.invert(STRATEGY_TYPES)[recipe_run.InvestmentRun.strategy_type]} Cold Storage Accounts for: ${missing_assets.join(', ')}`);
+
+    }
 
     let conversions;
     [err, conversions] = await to(depositService.generateAssetConversions(recipe_run));

@@ -192,6 +192,40 @@ Given(/there is a cold storage account for (.*), strategy (.*), address "(.*)"/,
     })
 });
 
+Given(/^there (are|are missing) Cold Storage Accounts required for the Recipe Run$/, async function(are_missing) {
+
+    const { ColdStorageAccount, RecipeRunDetail, sequelize } = require('../../../models');
+
+    const details = await RecipeRunDetail.findAll({
+        where: { recipe_run_id: this.current_recipe_run.id }
+    });
+
+    expect(details.length).to.be.greaterThan(0, 'Expected to find at least 1 recipe run detail');
+
+    const accounts = [];
+    const asset_ids = _.uniq(details.map(d => d.transaction_asset_id));
+    const max = are_missing === 'are missing' ? asset_ids.length / 2 : asset_ids.length;
+
+    for(let i = 0; i < max; i++) {
+        accounts.push({
+            address: String(_.random(10000, 99999)),
+            asset_id: asset_ids[i],
+            strategy_type: this.current_investment_run.strategy_type
+        });
+    }
+
+    return sequelize.transaction(async transaction => {
+
+        await ColdStorageAccount.destroy({
+            where: {}, transaction
+        });
+
+        return ColdStorageAccount.bulkCreate(accounts, { transaction });
+
+    });
+
+});
+
 When(/^I select a (.*) Cold Storage Transfer$/, async function(status) {
 
     const { ColdStorageTransfer } = require('../../../models');

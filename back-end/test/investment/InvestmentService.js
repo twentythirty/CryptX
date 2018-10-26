@@ -32,6 +32,7 @@ describe('InvestmentService testing:', () => {
   const InvestmentRunAssetGroup = require('./../../models').InvestmentRunAssetGroup;
   const GroupAsset = require('./../../models').GroupAsset;
   const InvestmentAssetConversion = require('./../../models').InvestmentAssetConversion;
+  const ColdStorageAccount = require('./../../models').ColdStorageAccount;
   const sequelize = require('./../../models').sequelize
 
 
@@ -70,7 +71,8 @@ describe('InvestmentService testing:', () => {
 
   let INVESTMENT_RUN = {
     id: INVESTMENT_RUN_ID,
-    investment_run_asset_group_id: 1
+    investment_run_asset_group_id: 1,
+    strategy_type: STRATEGY_TYPE
   };
 
   let ASSETS = [{
@@ -204,6 +206,8 @@ describe('InvestmentService testing:', () => {
         approval_comment: ''
       });
 
+      recipe_run.InvestmentRun = new InvestmentRun(INVESTMENT_RUN);
+
       sinon.stub(recipe_run, 'save').returns(Promise.resolve(recipe_run));
 
       return Promise.resolve(recipe_run);
@@ -276,6 +280,16 @@ describe('InvestmentService testing:', () => {
       return Promise.resolve(ASSETS);
     });
 
+    sinon.stub(ColdStorageAccount, 'findAll').callsFake(async options => {
+
+      return RECIPE_RUN_DETAILS.map(detail => {
+        return {
+          asset_id: detail.transaction_asset_id
+        };
+      });
+
+    });
+
   });
 
   afterEach(() => {
@@ -299,6 +313,7 @@ describe('InvestmentService testing:', () => {
     GroupAsset.bulkCreate.restore();
     InvestmentAssetConversion.bulkCreate.restore();
     Asset.findAll.restore();
+    ColdStorageAccount.findAll.restore();
     if(sequelize.transaction.restore) sequelize.transaction.restore();
     if(sequelize.query.restore) sequelize.query.restore();
   });
@@ -508,6 +523,21 @@ describe('InvestmentService testing:', () => {
       return chai.assert.isRejected(investmentService.changeRecipeRunStatus(
         USER_ID, RECIPE_RUN_ID, RECIPE_STATUS, RECIPE_APPROVAL_COMMENT
       ));
+    });
+
+    it('shall reject if there are missing cold storage accounts', () => {
+
+      ColdStorageAccount.findAll.restore();
+      sinon.stub(ColdStorageAccount, 'findAll').callsFake(async options => {
+
+        return [];
+  
+      });
+
+      return chai.assert.isRejected(investmentService.changeRecipeRunStatus(
+        USER_ID, RECIPE_RUN_ID, RECIPE_STATUS_CHANGE, RECIPE_APPROVAL_COMMENT
+      ));
+
     });
 
     it('shall change required values', () => {
