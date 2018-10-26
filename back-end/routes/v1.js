@@ -1018,6 +1018,13 @@ router.get(
   check_permissions,
   ExchangeController.getExchangeCredential
 );
+router.get(
+  ROUTES.GetExchangeCredentialFields.router_string,
+  stateless_auth,
+  res_new_token,
+  check_permissions,
+  ExchangeController.getExchangeCredentialFields
+);
 
 //COLD STORAGE
 router.post(

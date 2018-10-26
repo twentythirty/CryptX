@@ -716,6 +716,40 @@
         ]
       }
     },
+    "/exchanges/{exchange_id}/credential_fields": {
+      "get": {
+        "tags": [
+          "exchange"
+        ],
+        "summary": "Get a single exchange credential fields",
+        "description": "Get a single exchange credential fields",
+        "parameters": [
+          {
+            "name": "exchange_id",
+            "in": "path",
+            "description": "ID of the exchange",
+            "required": true,
+            "type": "integer"
+          }
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "$ref": "#/definitions/ExchangeCredentialFieldsResponse"
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
     "/exchanges/{exchange_id}/credentials/set": {
       "post": {
         "tags": [
@@ -5478,6 +5512,36 @@
         },
         "exchange_credential": {
           "$ref": "#/definitions/ExchangeCredential"
+        }
+      }
+    },
+    "ExchangeCredentialFieldsResponse": {
+      "description": "Exchange required credential fields",
+      "type": "object",
+      "properties": {
+        "status": {
+          "type": "boolean",
+          "example": true
+        },
+        "fields": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/CredentialField"
+          }
+        }
+      }
+    },
+    "CredentialField": {
+      "description": "Credential field object",
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "example": "api_key"
+        },
+        "type": {
+          "type": "string",
+          "example": "string"
         }
       }
     },

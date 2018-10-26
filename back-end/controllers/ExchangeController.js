@@ -167,3 +167,17 @@ const getExchangeCredential = async (req, res) => {
 
 };
 module.exports.getExchangeCredential = getExchangeCredential;
+
+const getExchangeCredentialFields = async (req, res) => {
+
+  const { exchange_id } = req.params;
+
+  const [ err, fields ] = await to(ExchangeService.getExchangeCredentialFields(exchange_id));
+
+  if(err) return ReE(res, err.message, 422);
+  if(!fields) return ReE(res, `Exchange credentials are not set for Exchange with id ${exchange_id}`, 404);
+
+  return ReS(res, { fields });
+
+};
+module.exports.getExchangeCredentialFields = getExchangeCredentialFields;
