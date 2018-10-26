@@ -117,7 +117,7 @@ class Okex {
     const errors = _.filter(results, result => !result.result && result.error_code);
 
     if(errors.length) TE(`ERROR: Exchange responsed with error codes: ${_.uniq(_.map(errors, e => e.error_code)).join(', ')}`);
-     
+
     const withdraws = _.map(results, result => {
 
       const withdraw = result.withdraw[0];
