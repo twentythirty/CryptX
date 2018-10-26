@@ -21,6 +21,7 @@ module.exports = (sequelize, DataTypes) => {
                 defaultValue: null
             },
             total_quantity: DataTypes.DECIMAL,
+            spend_amount: DataTypes.DECIMAL,
             status: {
                 type: DataTypes.SMALLINT,
                 allowNull: false

@@ -27,12 +27,20 @@ module.exports.JOB_BODY = async (config, log) => {
   /* pending_simulated_orders - execution orders of investments runs that are simulated */
   log(`1. Fetching all execution orders of simulated investment runs`);
   let [err, pending_simulated_orders] = await to(sequelize.query(`
-    SELECT eo.* 
+    SELECT eo.*, imd.ask_price
     FROM execution_order eo 
     JOIN recipe_order ro ON ro.id=eo.recipe_order_id
     JOIN recipe_order_group rog ON rog.id=ro.recipe_order_group_id
     JOIN recipe_run rr ON rr.id=rog.recipe_run_id
     JOIN investment_run ir ON ir.id=rr.investment_run_id
+    LEFT JOIN LATERAL (
+      SELECT imd.ask_price
+      FROM instrument_market_data imd
+      WHERE imd.instrument_id=eo.instrument_id
+        AND imd.exchange_id=eo.exchange_id
+      ORDER BY imd.instrument_id NULLS LAST, imd.exchange_id NULLS LAST, imd.timestamp DESC NULLS LAST
+      LIMIT 1
+    ) AS imd ON TRUE
     WHERE ir.is_simulated=:is_simulated AND eo.status=:exec_order_status
     `, {
       replacements: { // replace keys with values in query
@@ -52,8 +60,11 @@ module.exports.JOB_BODY = async (config, log) => {
 
   return Promise.all(
     _.map(pending_simulated_orders, order => {
+      let ask_price = order.dataValues.ask_price;
+      let quantity = Decimal(order.spend_amount).div(Decimal(ask_price));
 
       order.placed_timestamp = new Date();
+      order.total_quantity = quantity.toString();
       order.status = MODEL_CONST.EXECUTION_ORDER_STATUSES.InProgress;
       order.external_identifier = `SIM-${order.id}`;
 

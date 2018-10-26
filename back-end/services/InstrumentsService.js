@@ -432,10 +432,55 @@ const getInstrumentPrices = async (instrument_id, exchange_id, raw = false, tran
         instrument_prices = instrument_prices.map(price => Object.assign(price, {
             ask_price: parseFloat(price.ask_price),
             bid_price: parseFloat(price.bid_price),
-            ask_price: parseFloat(price.tick_size)
+            tick_size: parseFloat(price.tick_size)
         }));
     }
 
     return instrument_prices;
 };
 module.exports.getInstrumentPrices = getInstrumentPrices;
+
+/**
+ * Gets instrument prices for all exchanges by symbol of instrument and exchange api_id
+ * @param {*} symbol - symbol of instrument, e.g. XRP/BTC
+ * @param {*} exchange_api_id - exchange api_id, used to identify exchanges in ccxt
+ */
+const getPriceBySymbol = async (symbol, exchange_api_id) => {
+
+    if (!_.isString(symbol) || !symbol.length) TE("Symbol should be string");
+
+    let [err, price] = await to(sequelize.query(`
+        SELECT *
+        FROM exchange e 
+        JOIN instrument_exchange_mapping iem ON iem.exchange_id=e.id
+        JOIN LATERAL
+        (
+            SELECT *
+            FROM instrument_market_data
+            WHERE iem.instrument_id = instrument_id
+                AND iem.exchange_id = exchange_id
+            ORDER BY instrument_id, exchange_id, timestamp DESC NULLS LAST
+            LIMIT 1
+        ) AS price ON TRUE
+        WHERE e.api_id=:exchange_api_id
+            AND iem.external_instrument_id=:symbol
+    `, {
+        replacements: {
+            symbol,
+            exchange_api_id
+        },
+        plain: true,
+        type: sequelize.QueryTypes.SELECT
+    }));
+    if (err) TE(err.message);
+
+    //add parsed keys by default
+    Object.assign(price, {
+        ask_price: parseFloat(price.ask_price),
+        bid_price: parseFloat(price.bid_price),
+        tick_size: parseFloat(price.tick_size)
+    });
+
+    return price;
+};
+module.exports.getPriceBySymbol = getPriceBySymbol;
