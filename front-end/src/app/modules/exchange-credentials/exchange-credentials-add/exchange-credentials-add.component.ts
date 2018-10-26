@@ -24,7 +24,7 @@ export class ExchangeCredentialsAddComponent implements OnInit {
     exchange: new FormControl('', Validators.required),
     api_key: new FormControl('', Validators.required),
     api_secret: new FormControl('', Validators.required),
-    admin_password: new FormControl('', Validators.required)
+    admin_password: new FormControl('')
   });
 
   constructor(
