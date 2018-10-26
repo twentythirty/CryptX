@@ -9,6 +9,7 @@ const sinon = require("sinon");
 chai.use(chaiAsPromised);
 
 const ccxtUtils = require('../../utils/CCXTUtils');
+const ccxtUnified = require('../../utils/ccxtUnified');
 
 const execOrderGenerator = require('../../jobs/exec-order-generator');
 
@@ -104,6 +105,69 @@ describe('Execution Order generator job', () => {
             return Promise.resolve(connector);
         });
 
+        sinon.stub(ccxtUnified, "getExchange").callsFake((name) => {
+            let exchange = class Exchange {
+                
+                constructor () {
+                    this._connector = {
+                        name: 'Mock exchange',
+                        markets: {
+                            'LTC/BTC': {
+                                limits: {
+                                    amount: {
+                                        min: 0,
+                                        max: 1000000
+                                    },
+                                    price: {
+                                        min: 0, //Set to 0 to make sure tests with random price pass always.
+                                        max: 1000000
+                                    }
+                                },
+                                active: true
+                            }
+                        }
+                    };
+                    this.api_id = name;
+                }
+
+                async isReady() {
+                    return Promise.resolve();
+                }
+
+                async createMarketOrder () {
+                    return {
+                        id: '123',
+                        timestamp: 1532444115700,
+                        datetime: '2018-07-24T14:55:15.700Z',
+                        lastTradeTimestamp: undefined,
+                        symbol: 'LTC/BTC',
+                        type: 'market',
+                        side: 'buy',
+                        price: 0,
+                        amount: 1,
+                        cost: 0,
+                        filled: 1,
+                        remaining: 0,
+                        status: 'closed',
+                        fee: undefined,
+                        trades: undefined
+                    }
+                }
+
+
+                async getSymbolLimits () {
+                    return {
+                        spend: {
+                            min: 0.00001,
+                            max: 500
+                        }
+                    };
+                }
+            }
+      
+            return Promise.resolve(new exchange());
+        });
+
         done();
     });
 
@@ -115,8 +179,10 @@ describe('Execution Order generator job', () => {
 
     afterEach(done => {
         ccxtUtils.getConnector.restore();
+        ccxtUnified.getExchange.restore();
         done();
     });
+
 
     const TEST_PENDING_ORDER_BASE = {
         status: RECIPE_ORDER_STATUSES.Pending,
@@ -125,9 +191,14 @@ describe('Execution Order generator job', () => {
     const PENDING_ORDER_IDS = [488, 512, 569, 599]; //ids for testing various pending orders
     const PENDING_ORDER_QNTY = 2.0;
     const PENDING_ORDER_PRICE = 0.25;
+
+    const PRICE_PER_ASSET = 6500;
+    const SPEND_AMOUNT = 2 / 6500;
+
     const TEST_SYMBOL_PENDING_ORDER_BASE = Object.assign({}, TEST_PENDING_ORDER_BASE, {
         id: PENDING_ORDER_IDS[0],
         quantity: PENDING_ORDER_QNTY,
+        spend_amount: SPEND_AMOUNT,
         price: PENDING_ORDER_PRICE,
         Instrument: {
             symbol: 'LTC/BTC'
@@ -166,8 +237,13 @@ describe('Execution Order generator job', () => {
             stubSave(empty_order);
             return Promise.resolve([empty_order]);
         });
+        sinon.stub(sequelize, 'query').callsFake(() => {
+            console.log("Sequelize query called from: shall skip pending recipe order with invalid sale currency");
+            return [];
+        });
 
         return execOrderGenerator.JOB_BODY(stubbed_config, console.log).then(processed_recipes => {
+            sequelize.query.restore();
 
             restoreSymbols(RecipeOrder.findAll);
 
@@ -191,20 +267,11 @@ describe('Execution Order generator job', () => {
             stubSave(pending_order1, pending_order2);
             return Promise.resolve([pending_order1, pending_order2]);
         });
-        /* sinon.stub(ExecutionOrder, 'findAll').callsFake(options => {
-            switch (options.where.recipe_order_id) {
-                case PENDING_ORDER_IDS[0]:
-                    return Promise.resolve([new ExecutionOrder(TEST_PENDING_EXECUTION_ORDER)]);
-                case PENDING_ORDER_IDS[1]:
-                    return Promise.resolve([new ExecutionOrder(TEST_PARTIAL_EXECUTION_ORDER)]);
-                default:
-                    return Promise.resolve([]);
-            }
-        }); */
         sinon.stub(sequelize, 'query').callsFake((query, options) => {
             let exec_stats = {
                 status: 63,
                 execution_order_count: "1339",
+                spend_amount: 700,
                 total_quantity: "20118962",
                 filled: "20118962"
             };
@@ -312,21 +379,12 @@ describe('Execution Order generator job', () => {
             let exec_stats = {
                 status: EXECUTION_ORDER_STATUSES.FullyFilled,
                 execution_order_count: "1339",
-                total_quantity: PENDING_ORDER_QNTY,
-                filled: PENDING_ORDER_QNTY
+                spend_amount: PENDING_ORDER_QNTY / PRICE_PER_ASSET,
+                //total_quantity: PENDING_ORDER_QNTY,
+                filled: PENDING_ORDER_QNTY / PRICE_PER_ASSET
             };
 
             return Promise.resolve([exec_stats]);
-        });
-        sinon.stub(ExecutionOrderFill, 'findAll').callsFake(options => {
-            const fills_num = _.random(1, 9, false);
-            let val = _.map(Array(fills_num).fill(PENDING_ORDER_QNTY / (fills_num - 1)), (qnty, idx) => {
-                return new ExecutionOrderFill({
-                    quantity: qnty,
-                    id: idx
-                });
-            });
-            return Promise.resolve();
         });
 
         return execOrderGenerator.JOB_BODY(stubbed_config, console.log).then(orders => {
@@ -452,7 +510,7 @@ describe('Execution Order generator job', () => {
             ] = processed_recipes;
 
             chai.expect(execution_order).to.be.not.undefined;
-            chai.expect(execution_order.total_quantity).to.equal('' + not_completed_order.quantity)
+            chai.expect(execution_order.spend_amount).to.equal('' + not_completed_order.spend_amount)
         });
 
     });
@@ -501,21 +559,12 @@ describe('Execution Order generator job', () => {
             })))
         });
 
-        /* //Make sure the order is unfilled yet.
-        sinon.stub(ExecutionOrderFill, 'findAll').callsFake(options => {
-            return Promise.resolve([
-                new ExecutionOrderFill({
-                    quantity: 1,
-                    id: 1
-                })
-            ])
-        }); */
-
         sinon.stub(sequelize, 'query').callsFake((query, options) => {
             let exec_stats = {
                 status: EXECUTION_ORDER_STATUSES.FullyFilled,
                 execution_order_count: "1339",
                 total_quantity: 1,
+                spend_amount: SPEND_AMOUNT / 2,
                 filled: 1
             };
 
@@ -557,7 +606,7 @@ describe('Execution Order generator job', () => {
             ] = processed_recipes;
 
             chai.expect(execution_order).to.be.not.undefined;
-            chai.expect(execution_order.total_quantity).to.greaterThan(0.0);
+            chai.expect(execution_order.spend_amount).to.greaterThan(0.0);
         });
     });
 
@@ -580,30 +629,6 @@ describe('Execution Order generator job', () => {
             return Promise.resolve([pending_order1, pending_order2]);
         });
 
-        /* sinon.stub(ExecutionOrder, 'findAll').callsFake(options => {
-
-            switch (options.where.recipe_order_id) {
-                case PENDING_ORDER_IDS[0]:
-                    //half-fill the normal order
-                    const fills_num = _.random(1, 9, false);
-                    const half_qnty = (PENDING_ORDER_QNTY / 2);
-
-                    //check that cancelled order be ignored
-                    return Promise.resolve(
-                        _.concat(
-                            _.map(Array(fills_num).fill(half_qnty / fills_num), (qnty, idx) => {
-                                return new ExecutionOrder(Object.assign({}, TEST_FILLED_EXECUTION_ORDER, {
-                                    id: TEST_FILLED_EXECUTION_ORDER.id + (idx * 7),
-                                    total_quantity: qnty
-                                }));
-                            })
-                        )
-                    );
-                default:
-                    return Promise.resolve([]);
-            }
-        }); */
-
         sinon.stub(sequelize, 'query').callsFake((query, options) => {
 
 
@@ -613,6 +638,7 @@ describe('Execution Order generator job', () => {
                         status: EXECUTION_ORDER_STATUSES.FullyFilled,
                         execution_order_count: "1339",
                         total_quantity: PENDING_ORDER_QNTY / 2 / 2,
+                        spend_amount: SPEND_AMOUNT / 2 / 2,
                         filled: PENDING_ORDER_QNTY / 2 / 2
                     };
                     return Promise.resolve([

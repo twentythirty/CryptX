@@ -3,10 +3,10 @@
 const InstrumentService = require('../../services/InstrumentsService');
 const { Exchange } = require('./exchange');
 
-class Hitbtc extends Exchange {
+class Kraken extends Exchange {
 
   constructor (ccxt_con) {
-    super("hitbtc2", ccxt_con);
+    super("kraken", ccxt_con);
   }
 
   /** This exchange takes amount of asset we want to buy to purchase that amount. Base asset will cost
@@ -103,4 +103,4 @@ class Hitbtc extends Exchange {
 
 }
 
-module.exports = Hitbtc;
+module.exports = Kraken;
