@@ -37,6 +37,18 @@ Feature: Approving Recipe Run
         And the recipe run will have no conversions
         And the system will show a detailed error including missing mappings
 
+    @investment_run_cache_cleanup
+    Scenario: confirm a pending recipe run with missing cold storage accounts
+  
+        Given there is a recipe run with status Pending
+        But there are missing Cold Storage Accounts required for the Recipe Run
+        When I log onto CryptX as Investment Manager
+        And navigate to Pending recipe run
+        And approve recipe run with provided rationale
+        Then the recipe run status will remain unchanged
+        And the recipe run will have no conversions
+        And the system will show a detailed error including missing cold storage accounts
+
     Scenario: confirm a pending recipe run
   
         Given there is a recipe run with status Pending

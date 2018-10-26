@@ -652,7 +652,33 @@ Then('the system will show a detailed error including missing mappings', functio
     const error = this.current_recipe_run_status_change_error;
     chai.assert.include(error, mapping.instrument_symbol, `Missing mapping symbol ${mapping.instrument_symbol} not included in error!`);
     chai.assert.include(error, mapping.exchange_name, `Exchange with missing mapping ${mapping.exchange_name} not included in error!`);
-})
+});
+
+Then('the system will show a detailed error including missing cold storage accounts', async function() {
+
+    const { Asset } = require('../../../models');
+
+    const error = this.current_recipe_run_status_change_error;
+    
+    const missing = _.uniqBy(_.differenceWith(this.current_recipe_run_details, this.current_cold_storage_accounts, (detail, account) => {
+        return account.asset_id === detail.transaction_asset_id;
+    }), 'transaction_asset_id');
+
+    const missing_assets = await Asset.findAll({
+        where: { id: missing.map(m => m.transaction_asset_id) },
+        raw: true
+    });
+
+    expect(error).to.match(/^Cannot approve while there are missing (LCI|MCI) Cold Storage Accounts for: (.*)$/, 
+        'Expected the error to match the "missing cold storage accounts" regex'
+    );
+
+    //Since the list can be in random order, we will exctract it and sort it before comparing
+    const missing_asset_symbols = error.split(':')[1].split(',').map(a => a.trim()).sort();
+
+    for(let asset of missing_assets) expect(missing_asset_symbols).includes(asset.symbol, 'Expected the message to have the correct missing asset symbols');
+
+});
 
 Then('a new Recipe Run is not created', async function () {
 

@@ -202,7 +202,9 @@ Given(/^there (are|are missing) Cold Storage Accounts required for the Recipe Ru
 
     expect(details.length).to.be.greaterThan(0, 'Expected to find at least 1 recipe run detail');
 
-    const accounts = [];
+    this.current_recipe_run_details = details;
+
+    let accounts = [];
     const asset_ids = _.uniq(details.map(d => d.transaction_asset_id));
     const max = are_missing === 'are missing' ? asset_ids.length / 2 : asset_ids.length;
 
@@ -214,15 +216,17 @@ Given(/^there (are|are missing) Cold Storage Accounts required for the Recipe Ru
         });
     }
 
-    return sequelize.transaction(async transaction => {
+    accounts = await sequelize.transaction(async transaction => {
 
         await ColdStorageAccount.destroy({
             where: {}, transaction
         });
 
-        return ColdStorageAccount.bulkCreate(accounts, { transaction });
+        return ColdStorageAccount.bulkCreate(accounts, { transaction, returning: true });
 
     });
+
+    this.current_cold_storage_accounts = accounts;
 
 });
 
