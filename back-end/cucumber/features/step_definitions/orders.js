@@ -250,7 +250,7 @@ Given(/^the system has Recipe Order with status (.*) on (.*)$/g, async function 
 
     const amount_limits = _.get(connector, `markets.${mapping.external_instrument_id}.limits.amount`);
     
-    if(amount_limits.min > 100) amount_limits.min = 0.1; //Seems the job does not work well with large min limits.
+    if(amount_limits.min > 20) amount_limits.min = 0.1; //Seems the job does not work well with large min limits.
 
     return sequelize.transaction(transaction => {
 
@@ -265,7 +265,7 @@ Given(/^the system has Recipe Order with status (.*) on (.*)$/g, async function 
             return RecipeOrder.create({
                 instrument_id: mapping.Instrument.id,
                 price: _.random(0.00001, 0.001, true),
-                quantity: _.clamp(amount_limits.min * 100, amount_limits.max),
+                quantity: _.clamp(amount_limits.min * 20, amount_limits.max),
                 side: ORDER_SIDES.Buy,
                 status: RECIPE_ORDER_STATUSES[status],
                 target_exchange_id: exchange.id,
