@@ -23,7 +23,7 @@
         "NODE_ENV": "cucumber"
       },
       "args": [
-        "${workspaceFolder}/back-end/cucumber/features",
+        "${workspaceFolder}/back-end/cucumber/features/generating_execution_orders.feature:30",
         "--exit"
       ]
     },
@@ -99,6 +99,15 @@
       "program": "${workspaceFolder}/back-end/jobs/jobs-runner.js",
       "args": [
         "ASSET_LIQUIDITY_CHK"
+      ]
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Launch PLACE_EXCH_OR job",
+      "program": "${workspaceFolder}/back-end/jobs/jobs-runner.js",
+      "args": [
+        "PLACE_EXCH_OR"
       ]
     },
   ]

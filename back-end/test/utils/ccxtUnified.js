@@ -31,9 +31,8 @@ describe('CCXTUnified', () => {
     "binance",
     "bitfinex",
     "hitbtc2",
-    /* "bithumb", */ // doesn't work with BTC & ETH
-/*     "huobipro", // Huobi and okex take cost(how much we want to spend) instead of amount. We need to store cost in order to make them work.
-    "okex" */
+    "huobipro", // Huobi and okex take cost(how much we want to spend) instead of amount. We need to store cost in order to make them work.
+    "okex"
   ];
 
   let EXEC_ORDER = {
@@ -41,8 +40,9 @@ describe('CCXTUnified', () => {
     external_identifier: null,
     side: 999,
     type: 71,
-    price: '0.0001',
-    total_quantity: '0.0001',
+    price: '0',
+    spend_amount: 0.004,
+    total_quantity: '0',
     status: 61,
     placed_timestamp: null,
     completed_timestamp: null,
@@ -88,12 +88,16 @@ describe('CCXTUnified', () => {
       fetchTradingLimits: false,
       withdraw: true
     },
-    createOrder: function () {}
+    createOrder: function () {},
+    fetchTicker: function () {},
+    fetchTickers: function () {}
   };
 
   beforeEach(() => {
     sinon.stub(ccxtUtils, "getConnector").callsFake((name) => {
-      let connector = Object.assign({}, CCXT_EXCHANGE);
+      let connector = Object.assign({}, CCXT_EXCHANGE, {
+        id: name
+      });
 
       sinon.stub(connector, 'createOrder').callsFake((...args) => {
         // should help understand what properties have in them: https://github.com/ccxt/ccxt/wiki/Manual#order-structure
@@ -121,6 +125,38 @@ describe('CCXTUnified', () => {
         return Promise.resolve(exchange_response);
       });
 
+      sinon.stub(connector, 'fetchTicker').callsFake((symbol) => {
+        let response = { tierBased: false,
+          percentage: true,
+          taker: 0.001,
+          maker: -0.0001,
+          info:
+           { id: 'LTCBTC',
+             baseCurrency: 'LTC',
+             quoteCurrency: 'BTC',
+             quantityIncrement: '0.1',
+             tickSize: '0.00001',
+             takeLiquidityRate: '0.001',
+             provideLiquidityRate: '-0.0001',
+             feeCurrency: 'BTC' },
+          id: 'LTCBTC',
+          symbol: 'LTC/BTC',
+          base: 'LTC',
+          quote: 'BTC',
+          baseId: 'LTC',
+          quoteId: 'BTC',
+          active: true,
+          precision: { price: 5, amount: 1 },
+          limits:
+            {
+              amount: { min: 0.1, max: undefined },
+              price: { min: 0.00001, max: undefined },
+              cost: { min: 0.0000010000000000000002, max: undefined } }
+        };
+
+        return Promise.resolve(response);
+      });
+
       return Promise.resolve(connector);
     });
 
@@ -132,15 +168,15 @@ describe('CCXTUnified', () => {
   });
 
   it("shall return exchange methods", () => {
-    SUPPORTED_EXCHANGES.forEach(exchange => {
-      let exchange_methods = ccxtUnified.getExchange(exchange);
+    SUPPORTED_EXCHANGES.forEach(async (exchange) =>  {
+      let exchange_methods = await ccxtUnified.getExchange(exchange);
       chai.expect(exchange_methods).to.not.be.false;
     });
   });
 
   it("shall return exchange with createMarketOrder method", () => {
-    SUPPORTED_EXCHANGES.forEach(exchange => {
-      let ex = new (ccxtUnified.getExchange(exchange))();
+    SUPPORTED_EXCHANGES.forEach(async (exchange) => {
+      let ex = new (await ccxtUnified.getExchange(exchange))();
       chai.expect(ex).to.have.property('createMarketOrder');
     });
   });
@@ -148,14 +184,16 @@ describe('CCXTUnified', () => {
   it("shall place market order", () => {
     let objects = [];
     return Promise.all(
-      SUPPORTED_EXCHANGES.map(exchange => {
-        let ex = new (ccxtUnified.getExchange(exchange))();
+      SUPPORTED_EXCHANGES.map(async (exchange) =>  {
+        let ex = await ccxtUnified.getExchange(exchange);
+        await ex.isReady();
+
         let exec_order = new ExecutionOrder(EXEC_ORDER);
         objects.push(ex);
 
         sinon.stub(exec_order, "save").returns(() => Promise.resolve(exec_order));
         
-        return ex.createMarketOrder("XRP/BTC", "sell", EXEC_ORDER);
+        return ex.createMarketOrder("XRP/BTC", "sell", exec_order);
       })
     ).then(result => {
       chai.expect(objects).to.satisfy((objects) => {

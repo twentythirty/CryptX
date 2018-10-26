@@ -71,6 +71,6 @@ Feature: Generating Orders
         And I generate new Orders for the Approved Recipe Run
         Then a new Recipe Group is created with the status Pending
         And the Recipe Orders will have the folowing prices and quantities:
-        | instrument| side  | exchange  | price | quantity  |
-        | XRP/BTC   | Buy   | Binance   | 0.001     | 3600     |
-        | XRP/ETH   | Buy   | Binance   | 0.07     | 420     |
+        | instrument| side  | exchange  | price | spend_quantity  |
+        | XRP/BTC   | Buy   | Binance   | 0.001     | 3.6     |
+        | XRP/ETH   | Buy   | Binance   | 0.07     | 29.4     |

@@ -776,9 +776,12 @@ Then('the total quantity will be within exchange limits', async function () {
         InstrumentExchangeMapping
     } = require('../../../models');
     const CCXTUtils = require('../../../utils/CCXTUtils');
+    const ccxtUnified = require('../../../utils/ccxtUnified');
 
     const connector = await CCXTUtils.getConnector(this.current_execution_order.exchange_id);
-
+    let unifiedExchange = await ccxtUnified.getExchange(this.current_execution_order.exchange_id);
+    await unifiedExchange.isReady();
+    
     const instrument = await Instrument.findById(this.current_execution_order.instrument_id, {
         include: {
             model: InstrumentExchangeMapping,
@@ -789,11 +792,12 @@ Then('the total quantity will be within exchange limits', async function () {
         }
     });
 
-    const amount_limits = _.get(connector, `markets.${instrument.InstrumentExchangeMappings[0].external_instrument_id}.limits.amount`);
-    const calculated_quantity = parseFloat(this.current_execution_order.total_quantity);
+    let limits = await unifiedExchange.getSymbolLimits(instrument.InstrumentExchangeMappings[0].external_instrument_id);
 
-    expect(calculated_quantity).to.satisfy(greaterThanOrEqual(amount_limits.min), 'Expected the calculated total quantity of the execution order to be greater than the min amount limit of exchange');
-    expect(calculated_quantity).to.satisfy(lessThanOrEqual(amount_limits.max), 'Expected the calculated total quantity of the execution order to be less than the max amount limit of exchange');
+    const calculated_quantity = parseFloat(this.current_execution_order.spend_amount);
+
+    expect(calculated_quantity).to.satisfy(greaterThanOrEqual(limits.spend.min), 'Expected the calculated total quantity of the execution order to be greater than the min amount limit of exchange');
+    expect(calculated_quantity).to.satisfy(lessThanOrEqual(limits.spend.max), 'Expected the calculated total quantity of the execution order to be less than the max amount limit of exchange');
 
 });
 

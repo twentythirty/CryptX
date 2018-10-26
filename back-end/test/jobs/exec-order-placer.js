@@ -125,7 +125,9 @@ describe("Execution Order Placer job", () => {
       fetchTradingLimits: false,
       withdraw: true
     },
-    createOrder: function () {}
+    createOrder: function () {},
+    fetchTicker: function () {},
+    fetchTickers: function () {},
   };
 
   let INVESTMENT_RUN = {
@@ -217,22 +219,19 @@ describe("Execution Order Placer job", () => {
     )); */
 
     sinon.stub(ccxtUnified, "getExchange").callsFake((exch) => {
-      return class StubExchangeClass {
+      let exchange = class StubExchangeClass {
 
         constructor () {
           this.api_id = 'stub';
-          this.ready = Promise.resolve(Object.assign({}, CCXT_EXCHANGE))
-          .then(con => {
-            this._connector = con;
-          });
+          this._connector = Object.assign({}, CCXT_EXCHANGE);
         };
 
         isReady() {
-          return this.ready;
+          return Promise.resolve();
         };
 
         createMarketOrder (external_instrument_id, side, execution_order) {
-           this.isReady();
+          this.isReady();
           const order_type = "market";
           let filled = 2.5, price = execution_order.price, amount = execution_order.total_quantity;
         
@@ -257,6 +256,8 @@ describe("Execution Order Placer job", () => {
           return Promise.resolve(Object.assign({}, exchange_response));
         };
       }
+      
+      return Promise.resolve(new exchange());
     });
   })
 
@@ -296,24 +297,23 @@ describe("Execution Order Placer job", () => {
       ccxtUnified.getExchange.restore();
 
     sinon.stub(ccxtUnified, "getExchange").callsFake((exch) => {
-      return class StubExchangeClass {
+      let exchange = class StubExchangeClass {
 
         constructor () {
           this.api_id = 'stub';
-          this.ready = Promise.resolve(Object.assign({}, CCXT_EXCHANGE))
-          .then(con => {
-            this._connector = con;
-          });
+          this._connector = Object.assign({}, CCXT_EXCHANGE);
         };
 
         isReady() {
-          return this.ready;
+          return Promise.resolve();
         };
 
         async createMarketOrder (external_instrument_id, side, execution_order) {
           return Promise.reject();
         };
       }
+
+      return Promise.resolve(new exchange);
     });
 
     return execOrderPlacer.JOB_BODY(stubbed_config, console.log).then(result => {
@@ -332,14 +332,11 @@ describe("Execution Order Placer job", () => {
       ccxtUnified.getExchange.restore();
       
     sinon.stub(ccxtUnified, "getExchange").callsFake((exch) => {
-      return class StubExchangeClass {
+      let exchange = class StubExchangeClass {
 
         constructor () {
           this.api_id = 'stub';
-          this.ready = Promise.resolve(Object.assign({}, CCXT_EXCHANGE))
-          .then(con => {
-            this._connector = con;
-          });
+          this._connector = Object.assign({}, CCXT_EXCHANGE);
         };
 
         isReady() {
@@ -350,6 +347,8 @@ describe("Execution Order Placer job", () => {
           return Promise.reject();
         };
       }
+
+      return Promise.resolve(new exchange);
     });
     
     return execOrderPlacer.JOB_BODY(stubbed_config, console.log).then(result => {

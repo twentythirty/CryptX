@@ -156,7 +156,7 @@ Given('one of the orders instrument market data is older than allowed by system 
 Given('one of the orders total quantity is below the trade threshold on this exchange and instrument pair', async function() {
 
     const models = require('../../../models');
-    
+    const ccxtUnified = require('../../../utils/ccxtUnified');
     chai.assert.isArray(this.current_generated_orders, 'Generated orders array not present in World!');
 
     //surprisingly, lodash random int is range-end-inclusive
@@ -164,8 +164,9 @@ Given('one of the orders total quantity is below the trade threshold on this exc
     const new_order = this.current_generated_orders[random_idx];
     chai.assert.isObject(new_order, 'Did not find any Pending Recipe Orders to tamper with!');
 
-    const connector = await require('../../../utils/CCXTUtils').getConnector(new_order.target_exchange_id);
-    chai.assert.isFalse(connector.loading_failed, `CCXT connector for exchange id ${new_order.target_exchange_id} failed to load!`);
+    let unifiedExchange = await ccxtUnified.getExchange(new_order.target_exchange_id);
+    await unifiedExchange.isReady();
+    chai.assert.isFalse(unifiedExchange._connector.loading_failed, `CCXT connector for exchange id ${new_order.target_exchange_id} failed to load!`);
     
     const mapping = await models.InstrumentExchangeMapping.findOne({
         where: {
@@ -174,14 +175,14 @@ Given('one of the orders total quantity is below the trade threshold on this exc
         }
     })
     chai.assert.isNotNull(mapping, `recipe order ${new_order.id} lacked mapping under instrument id ${new_order.instrument_id} and exchange id ${new_order.target_exchange_id}`);
-    const connector_market = connector.markets[mapping.external_instrument_id];
-    chai.assert.isObject(connector_market, `CCXT did not have connector object for instrument ${mapping.external_instrument_id}`);
-    chai.assert.isTrue(connector_market.active, `Connector ${connector.id} for instrument ${mapping.external_instrument_id} is not active!`);
-    const connector_min = connector_market.limits.amount.min;
+    const limits = await unifiedExchange.getSymbolLimits(mapping.external_instrument_id);
+    // chai.assert.isObject(connector_market, `CCXT did not have connector object for instrument ${mapping.external_instrument_id}`);
+    // chai.assert.isTrue(connector_market.active, `Connector ${unified_con.id} for instrument ${mapping.external_instrument_id} is not active!`);
+    const connector_min = limits.spend.min;
     chai.assert.isNumber(connector_min, `Cannot tamper with min when connector amount min is ${connector_min} - not a number!`);
-    new_order.quantity = connector_min * 0.75; //about 25% less for IEEE to notice even with small values
+    new_order.spend_amount = Decimal(connector_min).mul(0.75).toString(); //about 25% less for IEEE to notice even with small values
     this.current_ccxt_lower_bound = connector_min;
-    this.current_bad_low_total = new_order.quantity;
+    this.current_bad_low_total = new_order.spend_amount;
     await new_order.save();
 });
 
@@ -215,6 +216,7 @@ Given(/^the system has Recipe Order with status (.*) on (.*)$/g, async function 
         sequelize
     } = require('../../../models');
     const CCXTUtil = require('../../../utils/CCXTUtils');
+    const ccxtUnified = require('../../../utils/ccxtUnified');
 
     const [exchange, base_assets] = await Promise.all([
         Exchange.findOne({
@@ -243,7 +245,9 @@ Given(/^the system has Recipe Order with status (.*) on (.*)$/g, async function 
     });
 
     const connector = await CCXTUtil.getConnector(exchange.api_id);
-
+    let unifiedExchange = await ccxtUnified.getExchange(exchange.api_id);
+    await unifiedExchange.isReady();
+    let limits = await unifiedExchange.getSymbolLimits(mapping.external_instrument_id);
     const amount_limits = _.get(connector, `markets.${mapping.external_instrument_id}.limits.amount`);
 
     return sequelize.transaction(transaction => {
@@ -259,7 +263,8 @@ Given(/^the system has Recipe Order with status (.*) on (.*)$/g, async function 
             return RecipeOrder.create({
                 instrument_id: mapping.Instrument.id,
                 price: _.random(0.00001, 0.001, true),
-                quantity: _.clamp(amount_limits.min * 100, amount_limits.max),
+                spend_amount: _.clamp(limits.spend.min * 100, limits.spend.max),
+                quantity: 0,//_.clamp(limits.amount.min * 100, limits.amount.max),
                 side: ORDER_SIDES.Buy,
                 status: RECIPE_ORDER_STATUSES[status],
                 target_exchange_id: exchange.id,
@@ -269,7 +274,6 @@ Given(/^the system has Recipe Order with status (.*) on (.*)$/g, async function 
             }).then(order => {
 
                 this.current_recipe_order = order;
-
             });
 
         });
@@ -286,17 +290,17 @@ Given(/^the Order is (.*) filled by a FullyFilled ExecutionOrder$/, async functi
         sequelize
     } = require('../../../models');
 
-    let total_quantity = 0;
+    let spend_amount = 0;
 
     switch (amount) {
 
         case 'partially':
-            total_quantity = parseFloat(this.current_recipe_order.quantity) / 2;
+            spend_amount = parseFloat(this.current_recipe_order.spend_amount) / 2;
             break;
 
         case 'fully':
         default:
-            total_quantity = parseFloat(this.current_recipe_order.quantity);
+            spend_amount = parseFloat(this.current_recipe_order.spend_amount);
             break;
 
     }
@@ -317,7 +321,8 @@ Given(/^the Order is (.*) filled by a FullyFilled ExecutionOrder$/, async functi
             recipe_order_id: this.current_recipe_order.id,
             side: this.current_recipe_order.side,
             status: EXECUTION_ORDER_STATUSES.FullyFilled,
-            total_quantity: total_quantity,
+            total_quantity: spend_amount / this.current_recipe_order.price,
+            spend_amount: spend_amount,
             type: EXECUTION_ORDER_TYPES.Market
         }, {
             transaction
@@ -362,8 +367,8 @@ Given('the Recipe Order has unfilled quantity above ccxt requirement', function 
      * Considering the recipe order is created with exchange max limit, it should not be below min limit
      * if we take half of it
      */
-    let total_quantity = parseFloat(this.current_recipe_order.quantity) / 2;
-
+    let spend_amount = Decimal(this.current_recipe_order.spend_amount).div(2);
+    let total_quantity = Decimal(spend_amount).div(this.current_recipe_order.price);
     const fill_count = 10;
 
     return sequelize.transaction(transaction => {
@@ -380,7 +385,8 @@ Given('the Recipe Order has unfilled quantity above ccxt requirement', function 
             recipe_order_id: this.current_recipe_order.id,
             side: this.current_recipe_order.side,
             status: EXECUTION_ORDER_STATUSES.FullyFilled,
-            total_quantity: total_quantity,
+            total_quantity: total_quantity.toString(),
+            spend_amount: spend_amount.toString(),
             type: EXECUTION_ORDER_TYPES.Market
         }, {
             transaction
@@ -389,7 +395,7 @@ Given('the Recipe Order has unfilled quantity above ccxt requirement', function 
             let fills = [];
 
             for (let i = 0; i < fill_count; i++) {
-
+                
                 const approximate_quantity = Decimal(execution_order.total_quantity).div(fill_count).toString();
                 const approximate_fee = Decimal(execution_order.fee).div(fill_count).toString();
 
@@ -539,6 +545,7 @@ Given('the Recipe Orde is two Execution Orders short, one of which will be small
 
     const { ExecutionOrder, ExecutionOrderFill, InstrumentExchangeMapping, sequelize } = require('../../../models');
     const CCXTUtils = require('../../../utils/CCXTUtils');
+    const ccxtUnified = require('../../../utils/ccxtUnified');
 
     const order = this.current_recipe_order;
 
@@ -554,6 +561,10 @@ Given('the Recipe Orde is two Execution Orders short, one of which will be small
         CCXTUtils.getConnector(order.target_exchange_id)
     ]);
 
+    let unifiedExchange = await ccxtUnified.getExchange(order.target_exchange_id);
+    await unifiedExchange.isReady();
+    const limits = await unifiedExchange.getSymbolLimits(instrument_mapping.external_instrument_id);
+
     const sold_symbol = instrument_mapping.external_instrument_id.split('/')[1];
     const base_trade_amount = SYSTEM_SETTINGS[`BASE_${sold_symbol}_TRADE`];
     const predicted_amount = Decimal(base_trade_amount).div(order.price);
@@ -564,6 +575,10 @@ Given('the Recipe Orde is two Execution Orders short, one of which will be small
 
     this.current_expected_execution_order_quantity = Decimal(order.quantity).minus(needed_fill);
 
+    let spend_amount = Decimal(order.spend_amount).minus(base_trade_amount).minus(limits.spend.min/2);
+    this.current_expected_execution_order_quantity = Decimal(order.spend_amount).minus(spend_amount);
+    
+    let quantity = Decimal(spend_amount).div(order.price);
     /*World.print(`
         ORDER QUANTITY: ${order_quantity},
         INSTRUMENT: ${instrument_mapping.external_instrument_id},
@@ -586,7 +601,8 @@ Given('the Recipe Orde is two Execution Orders short, one of which will be small
             recipe_order_id: order.id,
             side: order.side,
             status: EXECUTION_ORDER_STATUSES.FullyFilled,
-            total_quantity: needed_fill.toString(),
+            total_quantity: quantity.toString(),
+            spend_amount: spend_amount.toString(),
             type: EXECUTION_ORDER_TYPES.Market
         }, { transaction });
 
@@ -899,7 +915,9 @@ Then('the approval fails with an error message including the offending value and
     chai.assert.include(message, '' + this.current_ccxt_lower_bound, `Error did not mention ccxt lower bound ${this.current_ccxt_lower_bound}!`);
 
     chai.assert.isDefined(this.current_bad_low_total, 'No order low total quantity saved for check!');
-    chai.assert.include(message, '' + this.current_bad_low_total, `Error did not mention low order total ${this.current_bad_low_total}!`);
+
+    let matched_number = message.match(/([0-9eE\-\.]*)$/)[0];
+    chai.assert.equal(Decimal(matched_number).toString(), Decimal(this.current_bad_low_total).toString(), `Error did not mention low order total ${this.current_bad_low_total}!`);
 });
 
 Then('I see an error message including the offending instrument and the threshold requirements', async function() {
@@ -1070,7 +1088,7 @@ Then('the Recipe Orders will have the folowing prices and quantities:', async fu
         expect(matching_order, `Expected find matching order for ${data.instrument} at ${data.exchange}`).to.be.not.undefined;
 
         expect(matching_order.price).to.equal(data.price, `Expected Order[${matching_order.id}] prices to match`);
-        expect(matching_order.quantity).to.equal(data.quantity, `Expected Order[${matching_order.id}] quantities to match`);
+        expect(matching_order.spend_amount).to.equal(data.spend_quantity, `Expected Order[${matching_order.id}] quantities to match`);
         expect(matching_order.side).to.equal(ORDER_SIDES[data.side], `Expected Order[${matching_order.id}] side to be ${data.side}`);
 
     }
@@ -1091,15 +1109,15 @@ Then('the last Execution Order will fulfill the Recipe Order required quantity',
         attributes: [
             'recipe_order_id',
             'status',
-            [ sequelize.fn('sum', sequelize.col('total_quantity')), 'total_quantity' ]
+            [ sequelize.fn('sum', sequelize.col('spend_amount')), 'spend_amount' ]
         ],
         group: [ 'recipe_order_id', 'status' ]
     });
 
     expect(current_quantity, `Expected to find current FufllyFilled Execution Orders of Recipe Order[${order.id}]`).to.be.not.undefined;
 
-    const newest_quantity = this.current_execution_order.total_quantity;
+    const newest_quantity = this.current_execution_order.spend_amount;
 
-    expect(Decimal(current_quantity.total_quantity).plus(newest_quantity).toString()).to.equal(order.quantity, 'Expected the quantities to match');
+    expect(Decimal(current_quantity.spend_amount).plus(newest_quantity).toString()).to.equal(order.spend_amount, 'Expected the quantities to match');
 
 });
