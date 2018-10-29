@@ -28,12 +28,14 @@ describe('Exchange connector updater job:', () => {
         exchange_id: 1,
         Exchange: {
             id: 1,
-            name: 'Binance',
-            api_id: 'binance'
+            name: 'OKEX',
+            api_id: 'okex'
         },
         api_key_string: '2jk4h3j4h23jkh42j3h42k',
         api_secret_string: '2jk43h2j4h2j3h42jh34jkh2jk34h',
-        admin_password_string: '123354544446859999',
+        additional_params_string: {
+            password: '123354544446859999'
+        },
         async save() {
             return Object.assign({}, this);
         },
@@ -74,7 +76,7 @@ describe('Exchange connector updater job:', () => {
 
         expect(STUB_CONNECTOR.apiKey).to.equal(STUB_CREDENTIAL.api_key_string);
         expect(STUB_CONNECTOR.secret).to.equal(STUB_CREDENTIAL.api_secret_string);
-        expect(STUB_CONNECTOR.password).to.equal(STUB_CREDENTIAL.admin_password_string);
+        expect(STUB_CONNECTOR.password).to.equal(STUB_CREDENTIAL.additional_params_string.password);
 
         expect(STUB_CREDENTIAL.updated).to.be.false;
 

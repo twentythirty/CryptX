@@ -104,12 +104,12 @@ EXCHANGE_KEYS = {
 
 const _base_credentials = [
     {
-        title: 'exchange_credentails.fields.api_key',
+        title: 'exchange_credentials.fields.api_key',
         field_name: 'api_key',
         type: 'string'
     },
     {
-        title: 'exchange_credentails.fields.api_secret',
+        title: 'exchange_credentials.fields.api_secret',
         field_name: 'api_secret',
         type: 'string'
     }
@@ -120,7 +120,7 @@ EXCHANGE_CREDENTIALS = {
     bitfinex: _base_credentials,
     bitstamp: _base_credentials.concat([
         {
-            title: 'exchange_credentails.fields.uid',
+            title: 'exchange_credentials.fields.uid',
             field_name: 'uid',
             type: 'string'
         }
@@ -130,12 +130,12 @@ EXCHANGE_CREDENTIALS = {
     kraken: _base_credentials,
     okex: _base_credentials.concat([
         {
-            title: 'exchange_credentails.fields.password',
+            title: 'exchange_credentials.fields.password',
             field_name: 'password',
             type: 'string'
         },
         {
-            title: 'exchange_credentails.fields.passphrase',
+            title: 'exchange_credentials.fields.passphrase',
             field_name: 'passphrase',
             type: 'string'
         }

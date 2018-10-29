@@ -121,9 +121,8 @@ module.exports.getExchangeAccountsColumnLOV = getExchangeAccountsColumnLOV;
 const setExchangeCredentials = async (req, res) => {
 
   const { exchange_id } = req.params;
-  const { api_key, api_secret, admin_password } = req.body;
 
-  const [ err, result ] = await to(ExchangeService.setExchangeCredentials(exchange_id, api_key, api_secret, admin_password));
+  const [ err, result ] = await to(ExchangeService.setExchangeCredentials(exchange_id, req.body));
 
   if(err) return ReE(res, err.message, 422);
   if(!result) return ReE(res, `Exchange with id ${exchange_id} was not found`, 404);

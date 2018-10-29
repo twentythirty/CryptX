@@ -264,7 +264,7 @@ describe('ExchangeService testing', () => {
 
             sinon.stub(Exchange, 'findById').callsFake(async id => {
 
-                if(VALID_EXCHANGE_ID === id) return {};
+                if(VALID_EXCHANGE_ID === id) return { api_id: 'okex' };
                 
                 return null;
 
@@ -309,26 +309,25 @@ describe('ExchangeService testing', () => {
 
         it('reject if only passing one valid param', async () => {
 
-            await assert.isRejected(setExchangeCredentials(VALID_EXCHANGE_ID, null, '23113123'));
-            return assert.isRejected(setExchangeCredentials(VALID_EXCHANGE_ID, 'usernamenamename', null));
+            await assert.isRejected(setExchangeCredentials(VALID_EXCHANGE_ID, {
+                api_key: undefined,
+                api_secret: '3123131231'
+            }));
+            return assert.isRejected(setExchangeCredentials(VALID_EXCHANGE_ID, {
+                api_key: '3123131231',
+                api_secret: undefined
+            }));
 
         });
 
         it('return null if the exchange was not found', () => {
 
-            return setExchangeCredentials(-1, 'aaa', 'bbb').then(result => {
+            return setExchangeCredentials(-1, {
+                api_key: '3123131231',
+                api_secret: '3jk123j1hkjh'
+            }).then(result => {
 
                 expect(result).to.be.null;
-
-            });
-
-        });
-
-        it('call destroy if both params are not passed', () => {
-
-            return setExchangeCredentials(VALID_EXCHANGE_ID, null, null).then(result => {
-
-                expect(result).to.be.true;
 
             });
 
@@ -339,7 +338,10 @@ describe('ExchangeService testing', () => {
             const API_KEY = '3hk12j3g13g13jh1g3';
             const API_SECRET = 'kj4h2jk34h2j4h2jk4h2jh42jkh423h4jk2h4k2h4h';
 
-            return setExchangeCredentials(VALID_EXCHANGE_ID, API_KEY, API_SECRET).then(result => {
+            return setExchangeCredentials(VALID_EXCHANGE_ID, {
+                api_key: API_KEY,
+                api_secret: API_SECRET
+            }).then(result => {
 
                 expect(result).to.be.an('object');
 

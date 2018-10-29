@@ -6,7 +6,7 @@ module.exports = (sequelize, DataTypes) => {
 
     const encrypted_api_key_field = EncryptedField(DataTypes, process.env.DATABASE_FIELD_ENCRYPTION_KEY);
     const encrypted_api_secret_field = EncryptedField(DataTypes, process.env.DATABASE_FIELD_ENCRYPTION_KEY);
-    const encrypted_admin_password_field = EncryptedField(DataTypes, process.env.DATABASE_FIELD_ENCRYPTION_KEY);
+    const encrypted_additional_params_field = EncryptedField(DataTypes, process.env.DATABASE_FIELD_ENCRYPTION_KEY);
 
     const ExchangeCredential = sequelize.define(
         'ExchangeCredential',
@@ -21,10 +21,17 @@ module.exports = (sequelize, DataTypes) => {
                 type: DataTypes.STRING,
                 allowNull: false
             }),
-            admin_password: encrypted_admin_password_field.vault('admin_password'),
-            admin_password_string: encrypted_admin_password_field.field('admin_password_string', {
+            additional_params: encrypted_additional_params_field.vault('additional_params'),
+            additional_params_string: encrypted_additional_params_field.field('additional_params_string', {
                 type: DataTypes.STRING,
-                allowNull: true
+                allowNull: true,
+                defaultValue: "{}",
+                set: function(value) {
+                    if(_.isPlainObject(value)) return JSON.stringify(value);
+                },
+                get: function(value) {
+                    if(_.isString(value)) return JSON.parse(value);
+                }
             }),
             updated: {
                 type: DataTypes.BOOLEAN,

@@ -35,7 +35,8 @@ module.exports.JOB_BODY = async (config, log) => {
 
         connector.apiKey = credential.api_key_string;
         connector.secret = credential.api_secret_string;
-        connector.password = credential.admin_password_string;
+        
+        _.assign(connector, credential.additional_params_string);
 
         credential.updated = false;
 

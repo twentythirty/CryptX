@@ -53,7 +53,8 @@ const cache_init_promise = async () => {
                 const credentials = exchange.ExchangeCredentials[0];
                 connector_options.apiKey = credentials.api_key_string;
                 connector_options.secret = credentials.api_secret_string;
-                connector_options.password = credentials.admin_password_string; //admin password for OKEx
+                
+                _.assign(connector_options, credentials.additional_params_string);
 
             }
 
