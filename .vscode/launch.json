@@ -23,7 +23,7 @@
         "NODE_ENV": "cucumber"
       },
       "args": [
-        "${workspaceFolder}/back-end/cucumber/features/generating_execution_orders.feature:8",
+        "${workspaceFolder}/back-end/cucumber/features/",
         "--exit"
       ]
     },
@@ -104,10 +104,10 @@
     {
       "type": "node",
       "request": "launch",
-      "name": "Launch SIM_EXCH_OR job",
+      "name": "Launch PLACE_EXCH_OR job",
       "program": "${workspaceFolder}/back-end/jobs/jobs-runner.js",
       "args": [
-        "SIM_EXCH_OR"
+        "PLACE_EXCH_OR"
       ]
     },
   ]

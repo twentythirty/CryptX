@@ -44,7 +44,15 @@ class Binance extends Exchange {
     let [err, ticker] = await to(this._connector.fetchTicker(external_instrument_id)); // add error handling later on
     
     if (err) TE(err.message);
-    let quantity = execution_order.spend_amount / ( side == 'buy' ? ticker.ask : ticker.bid );
+
+    let quantity, adjusted_sell_quantity;
+    [err, [quantity, adjusted_sell_quantity]] = await to(this.adjustQuantity(
+      external_instrument_id,
+      execution_order.spend_amount,
+      ticker.ask,
+      execution_order.recipe_order_id
+    ));
+    if (err) TE(err.message);
 
     console.log(`Creating market order to ${this.api_id}
     Instrument - ${external_instrument_id}
@@ -67,7 +75,8 @@ class Binance extends Exchange {
     let result = {
       external_identifier: response.id,
       placed_timestamp: response.timestamp - 1000,
-      total_quantity: quantity
+      total_quantity: quantity,
+      spend_amount: adjusted_sell_quantity
     };
 
     return [result, response];

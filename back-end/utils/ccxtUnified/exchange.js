@@ -1,5 +1,6 @@
 'use strict';
 
+const sequelize = require('../../models').sequelize;
 
 const ccxtUtils = require('../CCXTUtils');
 
@@ -37,7 +38,68 @@ class Exchange {
    * should continue once it's initialized and ready for use.
    */
   init () {
-    this.waitFor([/* add some promises if there's need to wait for something */]);
+    this.waitFor(/* add some promises if there's need to wait for something */);
+  }
+
+  async adjustQuantity (symbol, sell_amount, price, recipe_order_id) {
+    let statuses = [
+      EXECUTION_ORDER_STATUSES.InProgress,
+      EXECUTION_ORDER_STATUSES.FullyFilled,
+      EXECUTION_ORDER_STATUSES.PartiallyFilled
+    ];
+
+    let amounts = await sequelize.query(`
+      SELECT 
+        spend_amount,
+        eo.spent
+      FROM recipe_order ro
+      LEFT JOIN LATERAL (
+        SELECT SUM(spend_amount) as spent
+        FROM execution_order eo
+        WHERE eo.recipe_order_id=ro.id
+          AND eo.status IN (:statuses)
+        GROUP BY eo.recipe_order_id
+      ) AS eo ON TRUE
+      WHERE ro.id=:recipe_order_id
+      `, {
+      replacements: {
+        recipe_order_id,
+        statuses
+      },
+      plain: true,
+      type: sequelize.QueryTypes.SELECT
+    });
+
+    let limits = await this.getSymbolLimits(symbol, this.api_id);
+
+    const amount_limit = Object.assign({
+      min: 0.0,
+      max: Number.MAX_VALUE
+    }, limits.amount);
+
+    let quantity = Decimal(sell_amount).div(Decimal(price));
+    //reamining quantity for reciep order after this execution order gets generated
+    const left_order_qnty = Decimal(amounts.spend_amount).minus(amounts.spent).div(price);
+    //minimize the DP to accepted levels
+    let next_total = quantity.toDP(
+      Decimal(limits.amount.min).dp(), Decimal.ROUND_HALF_DOWN
+    );
+
+    //check if the amounts are defined since the keys might exist but not have values on them
+    if (next_total.lt(amount_limit.min)) {
+      if (left_order_qnty.gte(amount_limit.min)) {
+        next_total = Decimal(amount_limit.min)
+      }
+    }
+
+    //order_total.minus(next_total.plus(realized_total))
+    if (left_order_qnty.minus(next_total).lt(amount_limit.min)) {
+      next_total = left_order_qnty;
+    }
+
+    let next_spend = next_total.mul(price);
+    
+    return [next_total.toString(), next_spend.toString()];
   }
 
 }

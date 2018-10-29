@@ -176,12 +176,14 @@ describe('CCXTUnified', () => {
 
   it("shall return exchange with createMarketOrder method", () => {
     SUPPORTED_EXCHANGES.forEach(async (exchange) => {
-      let ex = new (await ccxtUnified.getExchange(exchange))();
+      let ex = await ccxtUnified.getExchange(exchange);
       chai.expect(ex).to.have.property('createMarketOrder');
     });
   });
 
   it("shall place market order", () => {
+
+
     let objects = [];
     return Promise.all(
       SUPPORTED_EXCHANGES.map(async (exchange) =>  {
@@ -192,6 +194,14 @@ describe('CCXTUnified', () => {
         objects.push(ex);
 
         sinon.stub(exec_order, "save").returns(() => Promise.resolve(exec_order));
+
+        sinon.stub(ex, 'adjustQuantity').callsFake(
+          async (symbol, sell_amount, price, recipe_order_id) => {
+            let quantity = sell_amount / price;
+
+            return [quantity, sell_amount];
+          }
+        );
         
         return ex.createMarketOrder("XRP/BTC", "sell", exec_order);
       })
