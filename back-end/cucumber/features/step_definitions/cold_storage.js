@@ -238,6 +238,40 @@ Given('there are no Cold Storage Transfers in the system', function() {
 
 });
 
+Given(/^the (\w*) Cold Storage Transfer has a withdraw request on (\w*)$/, async function(symbol, exchange_name) {
+
+    const { Asset, Exchange } = require('../../../models');
+    const ccxtUtils = require('../../../utils/CCXTUtils');
+    
+    const [ asset, exchange ] = await Promise.all([
+        Asset.findOne({ where: { symbol } }),
+        Exchange.findOne({ where: { name: exchange_name } })
+    ]);
+
+    expect(asset, `Expected to find asset with symbol "${symbol}"`).to.be.not.null;
+    expect(exchange, `Expected to find exchange "${exchange_name}"`).to.be.not.null;
+
+    const connector = await ccxtUtils.getConnector(exchange.api_id);
+
+    const transfer = this.current_cold_storage_transfers.find(t => t.asset_id === asset.id);
+    expect(transfer, `Expected to find a current transfer with asset id ${asset.id}`).to.be.not.undefined;
+
+    const withdraw = await connector.withdraw(asset.symbol, transfer.amount, transfer.address, transfer.tag);
+    transfer.status = COLD_STORAGE_ORDER_STATUSES.Sent;
+    transfer.placed_timestamp = new Date(),
+    transfer.external_identifier = withdraw.id;
+
+    this.current_cold_storage_transfer = await transfer.save();
+    this.current_eachange_connector = connector;
+
+});
+
+Given(/^the status of the withdrawal on the exchange is (\w*)$/, async function(status) {
+
+    this.current_eachange_connector._changeTransactionStatus(this.current_cold_storage_transfer.external_identifier, status);
+
+});
+
 When(/^I select a (.*) Cold Storage Transfer$/, async function(status) {
 
     const { ColdStorageTransfer } = require('../../../models');
@@ -683,7 +717,7 @@ Then(/^(.*) Cold Storage (Transfers|Transfer) will remain unchanged$/, async fun
 
 });
 
-Then(/^(.*) Cold Storage (Transfers|Transfer) will (have status Sent|have the placed timestamp set|have the external identifier set)$/, async function(symbols, plural, scenario) {
+Then(/^(.*) Cold Storage (Transfers|Transfer) will (have status Sent|have the placed timestamp set|have the external identifier set|have the fee set)$/, async function(symbols, plural, scenario) {
 
     const { Asset, ColdStorageTransfer } = require('../../../models');
 
@@ -714,7 +748,11 @@ Then(/^(.*) Cold Storage (Transfers|Transfer) will (have status Sent|have the pl
             case 'have the external identifier set':
                 expect(transfer.external_identifier).to.be.a('string', `Expected the transfer CST-${transfer.id} to have an external identifier`);
                 break;
-            
+
+            case 'have the fee set':
+                expect(parseFloat(transfer.fee)).to.be.a('number', `Expected the transfer CST-${transfer.id} to have a fee set`).and.greaterThan(0, `Expected the transfer CST-${transfer.id} to have a fee greater than 0`);
+                break;
+
         }
 
     }

@@ -305,7 +305,7 @@ async function withdraw(symbol, amount, address, tag) {
     if(!amount || isNaN(amount)) TE('Error: ivalid withdraw amount');
 
     const withdrawal = {
-        id: this._current_transaction_id++,
+        id: String(this._current_transaction_id++),
         info: {},
         txid: String(_.random(10, 100000)),
         timestamp: Date.now(),
@@ -318,7 +318,7 @@ async function withdraw(symbol, amount, address, tag) {
         updated: null,
         fee: {
             currency: symbol,
-            fee: Decimal(amount).div(100).toString()
+            cost: Decimal(amount).div(100).toString()
         }
     };
 
@@ -327,10 +327,29 @@ async function withdraw(symbol, amount, address, tag) {
     this._withdrawals.push(withdrawal);
     this._transactions.push(transaction);
 
-    return withdrawal;
+    return {
+        id: withdrawal.id,
+        info: {}
+    };
 
 };
 module.exports.withdraw = withdraw;
+
+async function fetchWithdrawals(symbol, since) {
+
+    return this._withdrawals.filter(w => w.currency === symbol && w.timestamp >= Date.parse(since))
+
+}
+module.exports.fetchWithdrawals = fetchWithdrawals;
+module.exports.fetch_withdrawals = fetchWithdrawals;
+
+async function fetchTransactions(symbol, since) {
+
+    return this._transactions.filter(t => t.currency === symbol && t.timestamp >= Date.parse(since))
+
+}
+module.exports.fetchTransactions = fetchTransactions;
+module.exports.fetch_transactions = fetchTransactions;
 
 function _init() {
 

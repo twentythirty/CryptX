@@ -14,7 +14,8 @@ const descriptionToJobFile = {
     'update recipe order statuses': 'recipe-order-status-changer',
     'asset liquidity check': 'asset-liquidity-checker',
     'asset price age check': 'asset-price-age-checker',
-    'withdraw approved transfers': 'approved-transfer-withdraw'
+    'withdraw approved transfers': 'approved-transfer-withdraw',
+    'transfer status updater': 'transfer-status-updater'
 }
 
 /**
