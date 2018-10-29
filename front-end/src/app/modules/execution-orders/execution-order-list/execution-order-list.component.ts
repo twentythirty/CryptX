@@ -27,6 +27,7 @@ export class ExecutionOrderListComponent extends DataTableCommonManagerComponent
       { column: 'price', nameKey: 'table.header.price', filter: { type: 'number', sortable: true } },
       { column: 'total_quantity', nameKey: 'table.header.total_quantity', filter: { type: 'number', sortable: true } },
       { column: 'filled_quantity', nameKey: 'table.header.filled_quantity', filter: { type: 'number', sortable: true } },
+      { column: 'spend_amount', nameKey: 'table.header.total_spend_amount', filter: { type: 'number', sortable: true } },
       { column: 'exchange_trading_fee', nameKey: 'table.header.exchange_trading_fee', filter: { type: 'number', sortable: true } },
       { column: 'status', nameKey: 'table.header.status', filter: { type: 'text', sortable: true, inputSearch: false } },
       { column: 'submission_time', nameKey: 'table.header.submission_time', filter: { type: 'date', sortable: true } },
@@ -47,6 +48,7 @@ export class ExecutionOrderListComponent extends DataTableCommonManagerComponent
     } }),
     new NumberCellDataColumn({ column: 'total_quantity' }),
     new NumberCellDataColumn({ column: 'filled_quantity' }),
+    new NumberCellDataColumn({ column: 'spend_amount' }),
     new NumberCellDataColumn({ column: 'exchange_trading_fee' }),
     new StatusCellDataColumn({ column: 'status', inputs: { classMap: {
       'execution_orders.status.61': StatusClass.PENDING,

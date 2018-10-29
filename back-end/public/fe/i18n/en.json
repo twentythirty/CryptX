@@ -55,7 +55,7 @@
       "side": "Side",
       "price": "Price",
       "quantity": "Quantity",
-      "total_quantity": "Total quantity",
+      "total_quantity": "Total purchase quantity",
       "sum_of_exchange_trading_fee": "Sum of exchange trading fee",
       "type": "Type",
       "exchange_trading_fee": "Exchange trading fee",
@@ -110,7 +110,7 @@
       "balance_usd": "Balance USD",
       "balance_updated": "Balance updated",
       "cold_storage_account_id": "Cold storage account id",
-      "filled_quantity": "Filled quantity",
+      "filled_quantity": "Filled purchase quantity",
       "investment_usd": "Investment USD",
       "investment_eth": "Investement ETH",
       "investment_btc": "Investment BTC",
@@ -122,7 +122,9 @@
       "target_currency": "Target currency",
       "converted_amount": "Converted amount",
       "minimum_daily_avg_volume": "Minimum daily avg. volume",
-      "username": "Username"
+      "username": "Username",
+      "spend_amount": "Sold quantity",
+      "total_spend_amount": "Total sell quantity"
     },
     "filter": {
       "all": "All",

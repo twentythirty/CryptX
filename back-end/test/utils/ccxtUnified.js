@@ -182,8 +182,6 @@ describe('CCXTUnified', () => {
   });
 
   it("shall place market order", () => {
-
-
     let objects = [];
     return Promise.all(
       SUPPORTED_EXCHANGES.map(async (exchange) =>  {

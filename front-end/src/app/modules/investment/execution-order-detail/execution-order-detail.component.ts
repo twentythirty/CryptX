@@ -46,6 +46,7 @@ export class ExecutionOrderDetailComponent extends TimelineDetailComponent imple
       { column: 'exchange', nameKey: 'table.header.exchange' },
       { column: 'price', nameKey: 'table.header.price' },
       { column: 'quantity', nameKey: 'table.header.total_quantity' },
+      { column: 'spend_amount', nameKey: 'table.header.spend_amount' },
       { column: 'sum_of_exchange_trading_fee', nameKey: 'table.header.sum_of_exchange_trading_fee' },
       { column: 'status', nameKey: 'table.header.status' }
     ],
@@ -61,6 +62,7 @@ export class ExecutionOrderDetailComponent extends TimelineDetailComponent imple
     new TableDataColumn({ column: 'exchange' }),
     new NumberCellDataColumn({ column: 'price' }),
     new NumberCellDataColumn({ column: 'quantity' }),
+    new NumberCellDataColumn({ column: 'spend_amount' }),
     new NumberCellDataColumn({ column: 'sum_of_exchange_trading_fee' }),
     new StatusCellDataColumn({ column: 'status', inputs: { classMap: {
       'orders.status.51': StatusClass.PENDING,
@@ -82,6 +84,7 @@ export class ExecutionOrderDetailComponent extends TimelineDetailComponent imple
       { column: 'price', nameKey: 'table.header.price', filter: { type: 'number', sortable: true }},
       { column: 'total_quantity', nameKey: 'table.header.total_quantity', filter: { type: 'number', sortable: true }},
       { column: 'filled_quantity', nameKey: 'table.header.filled_quantity', filter: { type: 'number', sortable: true }},
+      { column: 'spend_amount', nameKey: 'table.header.total_spend_amount', filter: { type: 'number', sortable: true }},
       { column: 'exchange_trading_fee', nameKey: 'table.header.exchange_trading_fee', filter: { type: 'number', sortable: true }},
       { column: 'status', nameKey: 'table.header.status', filter: { type: 'text', sortable: true, inputSearch: false  }},
       { column: 'submission_time', nameKey: 'table.header.submission_time', filter: { type: 'date', sortable: true }},
@@ -99,6 +102,7 @@ export class ExecutionOrderDetailComponent extends TimelineDetailComponent imple
     new NumberCellDataColumn({ column: 'price' }),
     new NumberCellDataColumn({ column: 'total_quantity' }),
     new NumberCellDataColumn({ column: 'filled_quantity' }),
+    new NumberCellDataColumn({ column: 'spend_amount' }),
     new NumberCellDataColumn({ column: 'exchange_trading_fee' }),
     new StatusCellDataColumn({ column: 'status', inputs: { classMap: {
       'execution_orders.status.61': StatusClass.PENDING,

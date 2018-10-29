@@ -95,6 +95,7 @@ export class OrderGroupComponent extends TimelineDetailComponent implements OnIn
       { column: 'exchange', nameKey: 'table.header.exchange', filter: { type: 'text', sortable: true }},
       { column: 'price', nameKey: 'table.header.price', filter: { type: 'number', sortable: true }},
       { column: 'quantity', nameKey: 'table.header.total_quantity', filter: { type: 'number', sortable: true }},
+      { column: 'spend_amount', nameKey: 'table.header.spend_amount', filter: { type: 'number', sortable: true }},
       { column: 'sum_of_exchange_trading_fee', nameKey: 'table.header.sum_of_exchange_trading_fee', filter: { type: 'number', sortable: true }},
       { column: 'status', nameKey: 'table.header.status', filter: { type: 'text', sortable: true, inputSearch: false }}
     ],
@@ -110,6 +111,7 @@ export class OrderGroupComponent extends TimelineDetailComponent implements OnIn
     new TableDataColumn({ column: 'exchange' }),
     new NumberCellDataColumn({ column: 'price' }),
     new NumberCellDataColumn({ column: 'quantity' }),
+    new NumberCellDataColumn({ column: 'spend_amount'}),
     new NumberCellDataColumn({ column: 'sum_of_exchange_trading_fee' }),
     new StatusCellDataColumn({ column: 'status', inputs: { classMap: {
       'orders.status.51': StatusClass.PENDING,

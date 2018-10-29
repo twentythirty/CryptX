@@ -6859,7 +6859,12 @@
         },
         "total_quantity": {
           "type": "number",
-          "example": "6.01,"
+          "example": "6.01"
+        },
+        "spend_amount": {
+          "type": "number",
+          "example": "0.005",
+          "description": "Quantity of asset sold"
         },
         "filled_quantity": {
           "type": "number",
@@ -7252,6 +7257,11 @@
         "quantity": {
           "type": "number",
           "example": 7
+        },
+        "spend_amount": {
+          "type": "number",
+          "example": 0.005,
+          "description": "Quantity of asset sold"
         },
         "status": {
           "type": "number",
