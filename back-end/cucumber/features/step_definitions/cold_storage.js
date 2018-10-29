@@ -717,17 +717,17 @@ Then(/^(.*) Cold Storage (Transfers|Transfer) will remain unchanged$/, async fun
 
 });
 
-Then(/^(.*) Cold Storage (Transfers|Transfer) will (have status Sent|have the placed timestamp set|have the external identifier set|have the fee set)$/, async function(symbols, plural, scenario) {
+Then(/^([A-Z]*) Cold Storage (Transfers|Transfer) (will have (?:.*)|status will be (?:.*))$/, async function(symbols, plural, scenario) {
 
     const { Asset, ColdStorageTransfer } = require('../../../models');
-
+    
     const asset_symbols = symbols.split(/and|,/).map(a => a.trim());
 
     const assets = await Asset.findAll({
         where: { symbol: asset_symbols }
     });
 
-    expect(assets.length).to.equal(asset_symbols.length, `Expected to find ${asset_symbols.length} symbols : ${symbols}`);
+    expect(assets.length).to.equal(asset_symbols.length, `Expected to find ${asset_symbols.length} assets : "${symbols}"`);
 
     const transfers = await ColdStorageTransfer.findAll({
         where: { asset_id: assets.map(a => a.id) }
@@ -737,21 +737,32 @@ Then(/^(.*) Cold Storage (Transfers|Transfer) will (have status Sent|have the pl
 
         switch(scenario) {
 
-            case 'have status Sent':
-                expect(transfer.status).to.equal(COLD_STORAGE_ORDER_STATUSES.Sent, `Expected the status of the transfer CST-${transfer.id} to be Sent`);
+            case 'status will be Sent':
+            case 'status will be Canceled':
+            case 'status will be Failed':
+            case 'status will be Completed':
+                const status_name = scenario.trim().split(' ').slice(-1);
+                expect(transfer.status).to.equal(COLD_STORAGE_ORDER_STATUSES[status_name], `Expected the status of the transfer CST-${transfer.id} to be ${status_name}`);
                 break;
 
-            case 'have the placed timestamp set':
+            case 'will have the placed timestamp set':
                 expect(transfer.placed_timestamp).to.be.a('date', `Expected the transfer CLT-${transfer.id} to have a placed timestamp`);
                 break;
 
-            case 'have the external identifier set':
+            case 'will have the completed timestamp set':
+                expect(transfer.completed_timestamp).to.be.a('date', `Expected the transfer CLT-${transfer.id} to have a completed timestamp`);
+                break;
+
+            case 'will have the external identifier set':
                 expect(transfer.external_identifier).to.be.a('string', `Expected the transfer CST-${transfer.id} to have an external identifier`);
                 break;
 
-            case 'have the fee set':
+            case 'will have the fee set':
                 expect(parseFloat(transfer.fee)).to.be.a('number', `Expected the transfer CST-${transfer.id} to have a fee set`).and.greaterThan(0, `Expected the transfer CST-${transfer.id} to have a fee greater than 0`);
                 break;
+
+            default:
+                throw new Error(`Unknown validation scenario: ${scenario}`);
 
         }
 

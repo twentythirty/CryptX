@@ -20,6 +20,6 @@ Feature: Sending funds to cold storage accounts
         And the system has 1 Sent Cold Storage Transfer for ETH
         When the system finished the task "withdraw approved transfers"
         Then XRP and ETH Cold Storage Transfers will remain unchanged
-        And BTC Cold Storage Transfer will have status Sent 
+        And BTC Cold Storage Transfer status will be Sent 
         And BTC Cold Storage Transfer will have the placed timestamp set
         And BTC Cold Storage Transfer will have the external identifier set
