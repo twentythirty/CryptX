@@ -268,7 +268,14 @@ Given(/^the (\w*) Cold Storage Transfer has a withdraw request on (\w*)$/, async
 
 Given(/^the status of the withdrawal on the exchange is (\w*)$/, async function(status) {
 
-    this.current_eachange_connector._changeTransactionStatus(this.current_cold_storage_transfer.external_identifier, status);
+    const status_map = {
+        Pending: 'pending',
+        Canceled: 'canceled',
+        Failed: 'failed',
+        Completed: 'ok'
+    };
+
+    this.current_eachange_connector._changeTransactionStatus(this.current_cold_storage_transfer.external_identifier, status_map[status]);
 
 });
 
