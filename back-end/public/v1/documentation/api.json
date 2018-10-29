@@ -5535,7 +5535,11 @@
       "description": "Credential field object",
       "type": "object",
       "properties": {
-        "name": {
+        "title": {
+          "type": "string",
+          "example": "exchange_credentials.fields.api_key"
+        },
+        "field_name": {
           "type": "string",
           "example": "api_key"
         },

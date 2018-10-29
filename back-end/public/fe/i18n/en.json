@@ -433,7 +433,14 @@
     "enter_password": "Enter password",
     "admin_password": "Admin password",
     "edit_credential": "Edit credential",
-    "credential_delete_confirm_msg": "Do you really want to deactivate this account?"
+    "credential_delete_confirm_msg": "Do you really want to deactivate this account?",
+    "fields": {
+      "api_key": "API key",
+      "api_secret": "API secret",
+      "uid": "Unique ID",
+      "password": "Trade/Admin password",
+      "passphrase": "API key passphrase"
+    }
   },
 
   "assets": {
