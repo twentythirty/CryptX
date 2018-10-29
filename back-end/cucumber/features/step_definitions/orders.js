@@ -1095,8 +1095,9 @@ Then('the Recipe Orders will have the folowing prices and quantities:', async fu
 
         expect(matching_order.price).to.equal(data.price, `Expected Order[${matching_order.id}] prices to match`);
         expect(matching_order.spend_amount).to.equal(data.spend_quantity, `Expected Order[${matching_order.id}] quantities to match`);
+        expect(matching_order.quantity).to.equal(data.total_quantity);
         expect(matching_order.side).to.equal(ORDER_SIDES[data.side], `Expected Order[${matching_order.id}] side to be ${data.side}`);
-
+        
     }
 
 });
