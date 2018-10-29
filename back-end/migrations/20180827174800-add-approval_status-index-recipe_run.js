@@ -9,6 +9,6 @@ module.exports = {
   },
 
   down: (queryInterface, Sequelize) => {
-    return queryInterface.addIndex('recipe_run', 'recipe_run_approval_status'); 
+    return queryInterface.removeIndex('recipe_run', 'recipe_run_approval_status'); 
   }
 };

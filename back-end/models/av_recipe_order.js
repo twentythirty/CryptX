@@ -14,6 +14,7 @@ module.exports = (sequelize, DataTypes) => {
             exchange: DataTypes.STRING,
             price: DataTypes.FLOAT,
             quantity: DataTypes.FLOAT,
+            spend_amount: DataTypes.FLOAT,
             sum_of_exchange_trading_fee: DataTypes.FLOAT,
             status: DataTypes.SMALLINT,
             created_timestamp: DataTypes.DATE,
