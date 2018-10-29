@@ -13,7 +13,8 @@ const descriptionToJobFile = {
     'calculate market history': 'market-history-calc',
     'update recipe order statuses': 'recipe-order-status-changer',
     'asset liquidity check': 'asset-liquidity-checker',
-    'asset price age check': 'asset-price-age-checker'
+    'asset price age check': 'asset-price-age-checker',
+    'withdraw approved transfers': 'approved-transfer-withdraw'
 }
 
 /**

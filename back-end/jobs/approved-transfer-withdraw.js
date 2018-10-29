@@ -46,9 +46,9 @@ module.exports.JOB_BODY = async (config, log) => {
         FROM public.cold_storage_transfer AS cst
         JOIN public.cold_storage_account AS csa ON csa.id = cst.cold_storage_account_id
         JOIN public.asset AS a ON a.id = cst.asset_id
-        JOIn public.recipe_order AS ro ON ro.id = cst.recipe_run_order_id
+        JOIN public.recipe_order AS ro ON ro.id = cst.recipe_run_order_id
         JOIN public.exchange AS ex ON ex.id = ro.target_exchange_id
-        JOIN public.exchange_account AS exa ON exa.asset_id = cst.asset_id AND exa.exchange_id = ro.target_exchange_id
+        LEFT JOIN public.exchange_account AS exa ON exa.asset_id = cst.asset_id AND exa.exchange_id = ro.target_exchange_id
         WHERE cst.status = ${COLD_STORAGE_ORDER_STATUSES.Approved}
     `, {
         type: sequelize.QueryTypes.SELECT

@@ -230,6 +230,14 @@ Given(/^there (are|are missing) Cold Storage Accounts required for the Recipe Ru
 
 });
 
+Given('there are no Cold Storage Transfers in the system', function() {
+
+    const { ColdStorageTransfer } = require('../../../models');
+
+    return ColdStorageTransfer.destroy({ where: {} });
+
+});
+
 When(/^I select a (.*) Cold Storage Transfer$/, async function(status) {
 
     const { ColdStorageTransfer } = require('../../../models');
@@ -641,5 +649,74 @@ Then('the Cold Storage Account asset, strategy and custodian will remain unchang
     expect(original.asset_id).to.equal(updated.asset_id, `Expected the updated Cold Storage Account to have the same asset as the original`);
     expect(original.strategy_type).to.equal(updated.strategy_type, `Expected the updated Cold Storage Account to have the same strategy as the original`);
     expect(original.custodian_id).to.equal(updated.custodian_id, `Expected the updated Cold Storage Account to have the same custodian as the original`);
+
+});
+
+Then(/^(.*) Cold Storage (Transfers|Transfer) will remain unchanged$/, async function(symbols, plural){
+
+    const { Asset, ColdStorageTransfer } = require('../../../models');
+
+    const asset_symbols = symbols.split(/and|,/).map(a => a.trim());
+
+    const assets = await Asset.findAll({
+        where: { symbol: asset_symbols }
+    });
+
+    expect(assets.length).to.equal(asset_symbols.length, `Expected to find ${asset_symbols.length} symbols : ${symbols}`);
+
+    const transfers = await ColdStorageTransfer.findAll({
+        where: { asset_id: assets.map(a => a.id) }
+    });
+
+    for(let transfer of transfers) {
+
+        const matching_transfer = this.current_cold_storage_transfers.find(t => t.id === transfer.id);
+        if(!matching_transfer) continue; //In case there are unreleated transfers
+        //Deep equal won't work as some value, liek fee, is string in one version and not in the other.
+        for(let field in transfer) {
+            if(_.isUndefined(matching_transfer[field])) continue;
+
+            expect(String(transfer[field])).to.equal(String(matching_transfer[field]), `Expected fields "${field}" to match`);
+        }
+
+    }
+
+});
+
+Then(/^(.*) Cold Storage (Transfers|Transfer) will (have status Sent|have the placed timestamp set|have the external identifier set)$/, async function(symbols, plural, scenario) {
+
+    const { Asset, ColdStorageTransfer } = require('../../../models');
+
+    const asset_symbols = symbols.split(/and|,/).map(a => a.trim());
+
+    const assets = await Asset.findAll({
+        where: { symbol: asset_symbols }
+    });
+
+    expect(assets.length).to.equal(asset_symbols.length, `Expected to find ${asset_symbols.length} symbols : ${symbols}`);
+
+    const transfers = await ColdStorageTransfer.findAll({
+        where: { asset_id: assets.map(a => a.id) }
+    });
+
+    for(let transfer of transfers) {
+
+        switch(scenario) {
+
+            case 'have status Sent':
+                expect(transfer.status).to.equal(COLD_STORAGE_ORDER_STATUSES.Sent, `Expected the status of the transfer CST-${transfer.id} to be Sent`);
+                break;
+
+            case 'have the placed timestamp set':
+                expect(transfer.placed_timestamp).to.be.a('date', `Expected the transfer CLT-${transfer.id} to have a placed timestamp`);
+                break;
+
+            case 'have the external identifier set':
+                expect(transfer.external_identifier).to.be.a('string', `Expected the transfer CST-${transfer.id} to have an external identifier`);
+                break;
+            
+        }
+
+    }
 
 });

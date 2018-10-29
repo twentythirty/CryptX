@@ -295,17 +295,67 @@ async function fetchOrderBook(symbol) {
 module.exports.fetchOrderBook = fetchOrderBook;
 module.exports.fetch_order_book = fetchOrderBook;
 
+async function withdraw(symbol, amount, address, tag) {
+
+    const symbols = _.map(this.markets, (data, instrument) => {
+        return instrument.split('/')[0];
+    });
+
+    if(!symbols.includes(symbol)) TE(`Error: "${symbol}" does not exist on the exchange`);
+    if(!amount || isNaN(amount)) TE('Error: ivalid withdraw amount');
+
+    const withdrawal = {
+        id: this._current_transaction_id++,
+        info: {},
+        txid: String(_.random(10, 100000)),
+        timestamp: Date.now(),
+        datetime: new Date(),
+        address,
+        tag,
+        amount,
+        currency: symbol,
+        status: 'pending',
+        updated: null,
+        fee: {
+            currency: symbol,
+            fee: Decimal(amount).div(100).toString()
+        }
+    };
+
+    const transaction = _.assign({ type: 'withdrawal' }, withdrawal);
+
+    this._withdrawals.push(withdrawal);
+    this._transactions.push(transaction);
+
+    return withdrawal;
+
+};
+module.exports.withdraw = withdraw;
+
 function _init() {
 
     this._current_order_id = 1;
     this._current_trade_id = 1;
+    this._current_transaction_id =1;
 
     this._orders = [];
     this._trades = [];
+    this._withdrawals = [];
+    this._transactions = [];
 
 }
-
 module.exports._init = _init;
+
+function _changeTransactionStatus(id, status) {
+
+    const transaction = this._transactions.find(t => t.id === id);
+    if(transaction) transaction.status = status;
+
+    const withdrawal = this._withdrawals.find(w => w.id === id);
+    if(withdrawal) withdrawal.status = status;
+
+}
+module.exports._changeTransactionStatus = _changeTransactionStatus;
 
 const getFuzzy = number => {
 
