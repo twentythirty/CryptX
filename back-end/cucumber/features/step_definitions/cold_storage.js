@@ -327,6 +327,11 @@ When(/^I (approve|complete) (a|the) (.*) Cold Storage Transfer$/, async function
 
             this.check_log_id = transfer.id;
 
+        })
+        .catch(error => {
+
+            this.current_response = error;
+
         });
 
 });
@@ -774,5 +779,15 @@ Then(/^([A-Z]*) Cold Storage (Transfers|Transfer) (will have (?:.*)|status will 
         }
 
     }
+
+});
+
+Then('I will see an error about approving a non Pending Cold Storage Transfer', function() {
+
+    const error_message = _.get(this.current_response, 'response.body.error');
+
+    const possible_errors = ['Only Pending transfer are allowed to be approved.', 'Cannot set the same status twice.'];
+
+    expect(possible_errors).includes(error_message);
 
 });
