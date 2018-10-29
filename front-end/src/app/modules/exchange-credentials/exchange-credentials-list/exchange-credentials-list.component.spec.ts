@@ -1,9 +1,9 @@
 import { async, ComponentFixture, TestBed, tick, fakeAsync } from '@angular/core/testing';
+import { Location } from '@angular/common';
 
 import { ExchangeCredentialsListComponent } from './exchange-credentials-list.component';
 import { click, fakeAsyncResponse, extraTestingModules } from '../../../testing/utils';
 import { ExchangesService } from '../../../services/exchanges/exchanges.service';
-import { Location } from '@angular/common';
 import { getAllExchangeCredentialsData } from '../../../testing/service-mock/exchanges.service.mock';
 import { ExchangeCredentialsModule } from '../exchange-credentials.module';
 
@@ -20,9 +20,6 @@ describe('ExchangeCredentialsListComponent', () => {
       imports: [
         ExchangeCredentialsModule,
         ...extraTestingModules
-      ],
-      providers: [
-        ExchangesService,
       ]
     })
     .compileComponents();
@@ -57,7 +54,9 @@ describe('ExchangeCredentialsListComponent', () => {
       fixture.detectChanges();
       const tableRow = fixture.nativeElement.querySelector('table tbody tr');
       click(tableRow);
-      expect(navigateSpy).toHaveBeenCalledWith(['/exchange_credentials/view/', getAllExchangeCredentialsData.exchange_credentials[0].id]);
+      expect(navigateSpy).toHaveBeenCalledWith(
+        ['/exchange_credentials/view/', getAllExchangeCredentialsData.exchange_credentials[0].exchange_id]
+      );
     });
   });
 

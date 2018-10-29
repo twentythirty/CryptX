@@ -35,7 +35,9 @@ export class ExchangesInstrumentIdentifiersResponse {
 export class SetExchangeCredentialsRequest {
   api_key: string;
   api_secret: string;
-  admin_password: string;
+  uid: string;
+  password: string;
+  passphrase: string;
 }
 
 export class ExchangeCredentialsResponse {
@@ -46,6 +48,17 @@ export class ExchangeCredentialsResponse {
     exchange: string;
     api_key: string;
   };
+}
+
+export class CredentialFieldsResponse {
+  success: boolean;
+  fields: CredentialField[];
+}
+
+export class CredentialField {
+  title: string;
+  field_name: string;
+  type: string;
 }
 
 
@@ -115,10 +128,16 @@ export class ExchangesService {
     const data = {
       api_key: null,
       api_secret: null,
-      admin_password: null
+      uid: null,
+      password: null,
+      passphrase: null
     };
 
     return this.setExchangeCredentials(exchangeId, data);
+  }
+
+  getCredentialFields(exchangeId: number): Observable<CredentialFieldsResponse> {
+    return this.http.get<CredentialFieldsResponse>(this.baseUrl + `exchanges/${exchangeId}/credential_fields`);
   }
 
 }

@@ -429,11 +429,8 @@
     "exchange_credential_info": "Exchange credential information",
     "select_exchange": "Select exchange",
     "exchange": "Exchange",
-    "api_key": "API key",
     "enter_username": "Enter username",
-    "api_secret": "API secret",
     "enter_password": "Enter password",
-    "admin_password": "Admin password",
     "edit_credential": "Edit credential",
     "credential_delete_confirm_msg": "Do you really want to deactivate this account?",
     "fields": {
@@ -442,6 +439,13 @@
       "uid": "Unique ID",
       "password": "Trade/Admin password",
       "passphrase": "API key passphrase"
+    },
+    "placeholder": {
+      "api_key": "Enter API key",
+      "api_secret": "Enter API secret",
+      "uid": "Enter Unique ID",
+      "password": "Enter password",
+      "passphrase": "Enter API key passphrase"
     }
   },
 

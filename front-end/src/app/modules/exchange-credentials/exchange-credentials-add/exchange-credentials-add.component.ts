@@ -2,8 +2,11 @@ import { Component, OnInit } from '@angular/core';
 import { FormGroup, FormControl, Validators } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
 import { finalize, filter } from 'rxjs/operators';
+import * as _ from 'lodash';
 
-import { ExchangesService } from '../../../services/exchanges/exchanges.service';
+import { ExchangesService, CredentialField } from '../../../services/exchanges/exchanges.service';
+import { forkJoin } from 'rxjs';
+
 
 @Component({
   selector: 'app-exchange-credentials-add',
@@ -18,13 +21,12 @@ export class ExchangeCredentialsAddComponent implements OnInit {
   exchangesLoading: boolean = true;
   deleteLoading: boolean = false;
   loading: boolean = false;
+  fields: CredentialField[];
+  fieldsWithoutApiKey: CredentialField[];
   showDeleteConfirm: boolean = false;
 
   form: FormGroup = new FormGroup({
-    exchange: new FormControl('', Validators.required),
-    api_key: new FormControl('', Validators.required),
-    api_secret: new FormControl('', Validators.required),
-    admin_password: new FormControl('')
+    exchange: new FormControl('', Validators.required)
   });
 
   constructor(
@@ -34,7 +36,7 @@ export class ExchangeCredentialsAddComponent implements OnInit {
   ) { }
 
   ngOnInit() {
-    this.form.disable();
+    this.form.controls.exchange.disable();
 
     this.exchangeServise.getAllExchanges().pipe(
       finalize(() => this.exchangesLoading = false)
@@ -44,13 +46,7 @@ export class ExchangeCredentialsAddComponent implements OnInit {
           this.exchanges = res.exchanges;
 
           if (!this.isEdit) {
-            this.form.enable();
-          } else {
-            [
-              'api_key',
-              'api_secret',
-              'admin_password'
-            ].forEach(key => this.form.controls[key].enable());
+            this.form.controls.exchange.enable();
           }
         }
       }
@@ -65,9 +61,17 @@ export class ExchangeCredentialsAddComponent implements OnInit {
 
       this.form.controls.exchange.setValue(this.exchangeId);
 
-      this.exchangeServise.getExchangeCredentials(data.id).subscribe(
-        res => {
-          this.form.controls.api_key.setValue(res.exchange_credential.api_key);
+      forkJoin(
+        this.exchangeServise.getCredentialFields(this.exchangeId),
+        this.exchangeServise.getExchangeCredentials(this.exchangeId),
+      )
+      .subscribe(
+        results => {
+          const [ fieldsRes, credentialsRes ] = results;
+
+          this.applyFields(fieldsRes.fields);
+
+          this.form.controls.api_key.setValue(credentialsRes.exchange_credential.api_key);
         }
       );
     });
@@ -109,6 +113,30 @@ export class ExchangeCredentialsAddComponent implements OnInit {
         }
       }
     );
+  }
+
+  loadFields(): void {
+    const exchangeId = this.form.controls.exchange.value;
+
+    this.fieldsWithoutApiKey = null;
+    _.forEach(this.form.controls, (control, key) => {
+      if (key !== 'exchange') {
+        this.form.removeControl(key);
+      }
+    });
+
+    this.exchangeServise.getCredentialFields(exchangeId).subscribe(
+      res => {
+        this.applyFields(res.fields);
+      }
+    );
+  }
+
+  applyFields(fields: CredentialField[]): void {
+    if (fields) {
+      fields.forEach(field => this.form.addControl(field.field_name, new FormControl('')));
+      this.fieldsWithoutApiKey = _.filter(fields, field => field.field_name !== 'api_key');
+    }
   }
 
 

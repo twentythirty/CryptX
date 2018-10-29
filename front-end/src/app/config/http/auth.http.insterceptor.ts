@@ -1,7 +1,7 @@
-import { Injectable , Injector} from '@angular/core';
+import { Injectable, Injector} from '@angular/core';
 import { HttpInterceptor, HttpRequest, HttpHandler, HttpEvent, HttpResponse, HttpErrorResponse } from '@angular/common/http';
 import { MatSnackBar } from '@angular/material';
-import { throwError as observableThrowError,  Observable } from 'rxjs';
+import { throwError as observableThrowError, Observable } from 'rxjs';
 import { tap, catchError } from 'rxjs/operators';
 import * as _ from 'lodash';
 

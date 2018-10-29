@@ -1,14 +1,19 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { ExchangeCredentialsAddComponent } from './exchange-credentials-add.component';
+import { ExchangeCredentialsModule } from '../exchange-credentials.module';
+import { extraTestingModules } from '../../../testing/utils';
 
-describe('ExchangeCredentialsAddComponent', () => {
+fdescribe('ExchangeCredentialsAddComponent', () => {
   let component: ExchangeCredentialsAddComponent;
   let fixture: ComponentFixture<ExchangeCredentialsAddComponent>;
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ ExchangeCredentialsAddComponent ]
+      imports: [
+        ExchangeCredentialsModule,
+        ...extraTestingModules
+      ]
     })
     .compileComponents();
   }));
