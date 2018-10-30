@@ -66,9 +66,25 @@ module.exports.JOB_BODY = async (config, log) => {
 
             if(_.get(matching_withdraw, 'fee.cost')) transfer.fee = matching_withdraw.fee.cost;
 
-            if(transfer.status === COLD_STORAGE_ORDER_STATUSES.Completed) {
-                log(`4.(CST-${transfer.id}) Transfer successfully completed`);
-                transfer.completed_timestamp = new Date();
+            switch(transfer.status) {
+
+                case COLD_STORAGE_ORDER_STATUSES.Canceled:
+                    log(`4.(CST-${transfer.id}) Transfer was canceled`);
+                    break;
+
+                case COLD_STORAGE_ORDER_STATUSES.Failed:
+                    log(`4.(CST-${transfer.id}) Transfer failed on the exchange`);
+                    break;
+
+                case COLD_STORAGE_ORDER_STATUSES.Completed:
+                    log(`4.(CST-${transfer.id}) Transfer successfully completed`);
+                    transfer.completed_timestamp = new Date();
+                    break;
+
+                default:
+                    log(`4.(CST-${transfer.id}) Transfer is still being processed...`);
+                    break;
+
             }
 
             if(transfer.changed()) {

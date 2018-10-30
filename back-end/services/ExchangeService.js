@@ -219,10 +219,10 @@ const getExchangeCredentials = async (exchange_id) => {
     let footer = [
         {
             name: 'exchange',
-            value: credentials.length,
+            value: exchange_credentials.length,
             template: 'exchange_credentials.footer.exchange',
             args: {
-                exchange: credentials.length
+                exchange: exchange_credentials.length
             }
         }
     ];
