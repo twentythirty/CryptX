@@ -163,6 +163,10 @@ describe('InstrumentService testing:', () => {
                 }
             });
 
+            sinon.stub(InstrumentLiquidityRequirement, 'findOne').callsFake(async options => {
+                return null;
+            });
+
             sinon.stub(InstrumentLiquidityRequirement, 'findById').callsFake(id => {
                 let requirement = MOCK_EXISTING_REQUIREMENTS.find(r => r.id === id);
                 if(!requirement) requirement = null;
@@ -217,6 +221,7 @@ describe('InstrumentService testing:', () => {
             InstrumentExchangeMapping.destroy,
             InstrumentExchangeMapping.bulkCreate,
             InstrumentLiquidityRequirement.findAll,
+            InstrumentLiquidityRequirement.findOne,
             InstrumentLiquidityRequirement.create,
             sequelize.transaction
         ], model => {

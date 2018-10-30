@@ -18,7 +18,6 @@ const createInstrument = async function (req, res) {
   if (!transaction_asset_id || !quote_asset_id)
     return ReE(res, "Both assets must be specified to create an instrument", 422);
   
-  //const [err, instrument] = await to(instrumentService.createInstrument(transaction_asset_id, quote_asset_id));
   const [ err, instrument ] = await to(
     lock(instrumentService, {
       method: 'createInstrument',
@@ -210,7 +209,17 @@ const createLiquidityRequirement = async function (req, res) {
     !minimum_circulation)
     return ReE(res, "Please fill all values: instrument_id, periodicity, minimum_circulation", 422);
   
-  const [ err, liquidity_requirement ] = await to(instrumentService.createLiquidityRequirement(instrument_id, periodicity, minimum_circulation, exchange_id));
+  const [ err, liquidity_requirement ] = await to(
+    lock(instrumentService, {
+      method: 'createLiquidityRequirement',
+      params: [ instrument_id, periodicity, minimum_circulation, exchange_id ],
+      id: 'create_liquidity_requirement',
+      keys: { instrument_id, exchange_id },
+      error_message: 'Instrument liquidity requirement is already being created with the selected options. Please wait...',
+      max_block: 180
+    })
+  );
+  
   if(err) return ReE(res, err.message, 422);
 
   return ReS(res, {

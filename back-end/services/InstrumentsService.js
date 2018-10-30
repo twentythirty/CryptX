@@ -320,11 +320,23 @@ const createLiquidityRequirement = async (instrument_id, periodicity, minimum_ci
         if (!found_mapping) TE(`Exchange with id "${exchange_id}" is not mapped to instrument with id "${instrument_id}"`);
     }
 
-    const [err, liquidity_requirement] = await to(InstrumentLiquidityRequirement.create({
-        instrument_id,
-        minimum_volume: minimum_circulation,
-        periodicity_in_days: periodicity,
-        exchange: exchange_id
+    const [ err, liquidity_requirement ] = await to(sequelize.transaction({
+        isolationLevel: ISOLATION_LEVELS.SERIALIZABLE
+    }, async transaction => {
+
+        const exisisting_requirement = await InstrumentLiquidityRequirement.findOne({
+            where: { instrument_id, exchange: exchange_id }, transaction
+        });
+
+        if(exisisting_requirement) TE('Liquidity requirement already exists with the selected parameters');
+
+        return InstrumentLiquidityRequirement.create({
+            instrument_id,
+            minimum_volume: minimum_circulation,
+            periodicity_in_days: periodicity,
+            exchange: exchange_id
+        }, { transaction });
+
     }));
 
     if (err) TE(`error occurred while saving Liquidity Requirement : ${err.message}`);
