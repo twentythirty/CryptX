@@ -44,8 +44,8 @@ describe('LiquidityCreateComponent', () => {
   function afterConfigure() {
     TestBed.compileComponents();
     fixture = TestBed.createComponent(LiquidityCreateComponent);
-
     component = fixture.componentInstance;
+
     instrumentsService = fixture.debugElement.injector.get(InstrumentsService);
     exchangesService = fixture.debugElement.injector.get(ExchangesService);
     liquidityService = fixture.debugElement.injector.get(LiquidityService);

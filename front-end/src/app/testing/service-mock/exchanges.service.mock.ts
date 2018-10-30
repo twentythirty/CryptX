@@ -1,4 +1,4 @@
-import { ExchangesAllResponse } from '../../services/exchanges/exchanges.service';
+import { ExchangesAllResponse, CredentialFieldsResponse, ExchangeCredentialsResponse } from '../../services/exchanges/exchanges.service';
 import { ExchangeAccount } from '../../shared/models/exchangeAccount';
 
 export const getAllExchangesData: ExchangesAllResponse = {
@@ -81,4 +81,50 @@ export const createExchangeAccountData = {
     account_type: 401,
     is_active: true
   }
+};
+
+export const getCredentialFieldsData: CredentialFieldsResponse = {
+  success: true,
+  fields: [
+    {
+      title: 'exchange_credentials.fields.api_key',
+      field_name: 'api_key',
+      type: 'string'
+    },
+    {
+      title: 'exchange_credentials.fields.api_secret',
+      field_name: 'api_secret',
+      type: 'string'
+    },
+    {
+      title: 'exchange_credentials.fields.password',
+      field_name: 'password',
+      type: 'string'
+    },
+    {
+      title: 'exchange_credentials.fields.passphrase',
+      field_name: 'passphrase',
+      type: 'string'
+    }
+  ]
+};
+
+export const getExchangeCredentialsData: ExchangeCredentialsResponse = {
+  success: true,
+  exchange_credential: {
+    id: 9,
+    exchange_id: 8,
+    exchange: 'OKEx',
+    api_key: 'someApiKey'
+  }
+};
+
+export const setExchangeCredentialsData = {
+  success: true,
+  message: 'ok!'
+};
+
+export const deleteExchangeCredentialsData = {
+  success: true,
+  message: 'ok!'
 };
