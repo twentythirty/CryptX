@@ -80,7 +80,7 @@ export class ExchangeCredentialsAddComponent implements OnInit {
 
   addCredentional() {
     if (this.form.invalid) {
-      return false;
+      return;
     }
 
     this.loading = true;
@@ -134,7 +134,7 @@ export class ExchangeCredentialsAddComponent implements OnInit {
 
   applyFields(fields: CredentialField[]): void {
     if (fields) {
-      fields.forEach(field => this.form.addControl(field.field_name, new FormControl('')));
+      fields.forEach(field => this.form.addControl(field.field_name, new FormControl('', Validators.required)));
       this.fieldsWithoutApiKey = _.filter(fields, field => field.field_name !== 'api_key');
     }
   }
