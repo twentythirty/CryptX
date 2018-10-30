@@ -131,7 +131,7 @@ class Binance extends Exchange {
 
     const results = await Promise.all(_.map(requests, request => {
 
-      return this._connector.fetchWithdrawals(request.asset, Date.parse(request.since));
+      return this._connector.fetchWithdrawals(request.asset, Date.parse(request.since) - 3000);
 
     }));
 

@@ -62,7 +62,7 @@ module.exports.JOB_BODY = async (config, log) => {
 
             if(!matching_withdraw) return log(`[ERROR.3A](CST-${transfer.id}) Could not find a matching withdraw with external id "${transfer.external_identifier}"`);
 
-            transfer.status = status_map[matching_withdraw.status];
+            transfer.status = status_map[matching_withdraw.status] || COLD_STORAGE_ORDER_STATUSES.Sent; //Bitfinex does not map all status for some reason
 
             if(_.get(matching_withdraw, 'fee.cost')) transfer.fee = matching_withdraw.fee.cost;
 

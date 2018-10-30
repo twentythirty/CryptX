@@ -123,7 +123,7 @@ class Bitfinex extends Exchange {
 
     const results = await Promise.all(_.map(requests, request => {
 
-      return this._connector.fetchTransactions(request.asset, request.since);
+      return this._connector.fetchTransactions(request.asset, Date.parse(request.since) - 3000); //Minusing in case the timestamps are off by a little
 
     }));
 

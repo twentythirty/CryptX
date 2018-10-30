@@ -67,7 +67,7 @@ module.exports.JOB_BODY = async (config, log) => {
     log('2. Grouping transfers by exchange');
 
     const transfers_by_exchange = _.groupBy(transfers, 'exchange_api_id');
-
+    //console.log(JSON.stringify(transfers_by_exchange, null, 4)); return;
     return Promise.all(_.map(transfers_by_exchange, async (exchange_transfers, exchange_api_id) => {
 
         const connector = await ccxtUnified.getExchange(exchange_api_id);
@@ -112,7 +112,7 @@ module.exports.JOB_BODY = async (config, log) => {
             [ err, withdraw ] = await to(connector.withdraw(asset, amount, address, tag));
 
             if(err) {
-                //console.log(JSON.stringify(err, null, 4));
+                console.log(JSON.stringify(err, null, 4));
                 log(`[ERROR.3B](${exchange_api_id})(CST-${transfer.id}) Error occured during withdraw creation: ${err.message}`);
                 await logAction(actions.withdraw_error, {
                     args: {
@@ -133,12 +133,12 @@ module.exports.JOB_BODY = async (config, log) => {
 
                 return;
             }
-            /*
+            
             console.log(`
                 TRANSFER ID: ${transfer.id},
                 WITHDRAW: ${JSON.stringify(withdraw, null, 4)}
             `);
-            */
+            
             log(`4.(${exchange_api_id})(CST-${transfer.id}) Withdraw request created with id ${withdraw.id}`);
 
             await logAction(actions.placed, {

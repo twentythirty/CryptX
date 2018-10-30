@@ -337,7 +337,7 @@ module.exports.withdraw = withdraw;
 
 async function fetchWithdrawals(symbol, since) {
 
-    return this._withdrawals.filter(w => w.currency === symbol && w.timestamp >= Date.parse(since))
+    return this._withdrawals.filter(w => w.currency === symbol && w.timestamp >= (_.isNumber(since) ? since : Date.parse(since)))
 
 }
 module.exports.fetchWithdrawals = fetchWithdrawals;
@@ -345,7 +345,7 @@ module.exports.fetch_withdrawals = fetchWithdrawals;
 
 async function fetchTransactions(symbol, since) {
 
-    return this._transactions.filter(t => t.currency === symbol && t.timestamp >= Date.parse(since))
+    return this._transactions.filter(t => t.currency === symbol && t.timestamp >= (_.isNumber(since) ? since : Date.parse(since)))
 
 }
 module.exports.fetchTransactions = fetchTransactions;
