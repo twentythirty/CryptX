@@ -425,6 +425,7 @@ module.exports.getDepositAssets = getDepositAssets;
 const getAssetGroupWithData = async function (investment_run_id) {
 
   // query recives all whitelisted asset/instrument/exchange pairs.
+  // Flip if asset to be bought is in quote, to get sell order, calculate price_usd accordingly.
   let [err, asset_group] = await to(sequelize.query(`
     WITH base_assets_with_prices AS (
       SELECT a.id, a.symbol, a.long_name, a.is_base, a.is_deposit, AVG (prices.ask_price) as value_usd
@@ -448,7 +449,8 @@ const getAssetGroupWithData = async function (investment_run_id) {
       asset.long_name,
       asset.is_base,
       asset.is_deposit,
-      i.quote_asset_id,
+      CASE WHEN asset.id=i.quote_asset_id THEN i.quote_asset_id ELSE i.transaction_asset_id END as transaction_asset_id,
+			CASE WHEN asset.id=i.quote_asset_id THEN i.transaction_asset_id ELSE i.quote_asset_id END as quote_asset_id,
       iem.instrument_id,
       iem.exchange_id,
       exchange.name as exchange_name,
@@ -457,13 +459,18 @@ const getAssetGroupWithData = async function (investment_run_id) {
       (lh.volume * ask_price * base_price.value_usd) as volume_usd,
       ask_price,
       bid_price,
-      (ask_price * base_price.value_usd) as price_usd,
+      imd.timestamp as imd_updated,
+      (	CASE WHEN asset.id=i.transaction_asset_id
+          THEN (ask_price * base_price.value_usd)
+          ELSE ((1 / bid_price) * base_price.value_usd)
+        END
+      )as price_usd,
       CASE WHEN ga.status IS NULL THEN 400 ELSE ga.status END as status
     FROM investment_run ir
     JOIN investment_run_asset_group irag ON irag.id=ir.investment_run_asset_group_id
     JOIN group_asset ga ON ga.investment_run_asset_group_id=irag.id
     JOIN asset ON asset.id=ga.asset_id
-    JOIN instrument i ON i.transaction_asset_id=asset.id
+    JOIN instrument i ON i.transaction_asset_id=asset.id OR i.quote_asset_id=asset.id
     JOIN instrument_exchange_mapping iem ON instrument_id=i.id
     JOIN exchange ON exchange.id=iem.exchange_id AND exchange.is_mappable IS TRUE
     LEFT JOIN LATERAL
@@ -484,21 +491,23 @@ const getAssetGroupWithData = async function (investment_run_id) {
     ) AS lh ON TRUE
     LEFT JOIN LATERAL 
     (
-      SELECT ask_price, bid_price
+      SELECT ask_price, bid_price, timestamp
       FROM instrument_market_data 
       WHERE instrument_id=iem.instrument_id
         AND exchange_id=iem.exchange_id
+        AND timestamp >= NOW() - interval ':oldness_time seconds'
       ORDER BY instrument_id NULLS LAST, exchange_id NULLS LAST, timestamp DESC NULLS LAST
       LIMIT 1
     ) as imd ON TRUE
-    LEFT JOIN base_assets_with_prices as base_price ON base_price.id=i.quote_asset_id
+    LEFT JOIN base_assets_with_prices as base_price ON base_price.id=i.quote_asset_id OR base_price.id=i.transaction_asset_id
     WHERE ir.id=:investment_run_id
-      AND (ga.status=:whitelisted OR ga.status IS NULL)
-    ORDER BY nvt DESC, volume_usd DESC, price_usd DESC
+        AND (ga.status=:whitelisted OR ga.status IS NULL)
+    ORDER BY nvt DESC, volume_usd DESC, price_usd ASC
   `, {
     replacements: {
       investment_run_id,
-      whitelisted: INSTRUMENT_STATUS_CHANGES.Whitelisting
+      whitelisted: INSTRUMENT_STATUS_CHANGES.Whitelisting,
+      oldness_time: SYSTEM_SETTINGS.BASE_ASSET_PRICE_TTL_THRESHOLD
     },
     type: sequelize.QueryTypes.SELECT
   }));
