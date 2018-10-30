@@ -305,12 +305,11 @@ Given('the Pending Execution Orders Failed to be placed on the Exchanges', async
 
 Given(/^the Execution Order is (buying|selling) (\d*|\d+(?:\.\d+)?) (\w*) (using|for) (\w*)$/, async function(side, amount, first_asset, pointer, second_asset) {
 
-    side = _.capitalize(side.replace('ing', ''));
+    const order_side = 'Buy';
 
     const { ExecutionOrder, Instrument } = require('../../../models');
 
-    let symbol = `${first_asset}/${second_asset}`;
-    if(side === 'Sell') symbol = `${second_asset}/${first_asset}`;
+    let symbol = [`${first_asset}/${second_asset}`, `${second_asset}/${first_asset}`];
 
     const instrument = await Instrument.findOne({
         where: { symbol }
@@ -319,22 +318,30 @@ Given(/^the Execution Order is (buying|selling) (\d*|\d+(?:\.\d+)?) (\w*) (using
     expect(instrument, `Expected to find instrument ${symbol}`).to.be.not.null
 
     return ExecutionOrder.update({
-        side: ORDER_SIDES[side],
+        side: ORDER_SIDES[order_side],
         instrument_id: instrument.id,
-        total_quantity: amount
+        total_quantity: side === 'buying' ? amount : 0,
+        spend_amount: side === 'selling' ? amount : 0
     },{
         where: { id: this.current_execution_order.id }
     });
     
 });
 
-Given(/^the Execution Order was priced at (\d*|\d+(?:\.\d+)?) (\w*) and feed at (\d*|\d+(?:\.\d+)?) (\w*) on the Exchange$/, function(price, optional_symbol_1, fee, optional_symbol_2) {
+Given(/^the Execution Order was priced at (\d*|\d+(?:\.\d+)?) and feed at (\d*|\d+(?:\.\d+)?) on the Exchange$/, async function(price, fee) {
 
     const { ExecutionOrder } = require('../../../models');
 
-    return ExecutionOrder.update({ price, fee }, {
-        where: { id: this.current_execution_order.id }
-    });
+    const execution_order = await ExecutionOrder.findById(this.current_execution_order.id);
+
+    expect(execution_order, `Expected to find execution order with id ${this.current_execution_order.id}`).to.be.not.null;
+
+    execution_order.price = price;
+    execution_order.fee = fee;
+
+    if(parseFloat(execution_order.total_quantity) === 0) execution_order.total_quantity = Decimal(execution_order.spend_amount).div(price).toString();
+
+    this.current_execution_order = await execution_order.save();
 
 });
 
