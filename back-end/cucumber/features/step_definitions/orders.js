@@ -336,7 +336,7 @@ Given(/^the system has (\w*) Recipe Order to (sell|buy) (\d*|\d+(?:\.\d+)?) (\w*
 
 });
 
-Given(/^the Order is (.*) filled by a FullyFilled ExecutionOrder$/, async function (amount) {
+Given(/^the Order is (.*) filled by (a|[0-9]) FullyFilled (ExecutionOrder|ExecutionOrders)$/, async function (amount, quantity, plural) {
 
     const {
         ExecutionOrder,
@@ -345,67 +345,73 @@ Given(/^the Order is (.*) filled by a FullyFilled ExecutionOrder$/, async functi
     } = require('../../../models');
 
     let spend_amount = 0;
+    quantity = quantity === 'a' ? 1 : parseInt(quantity);
 
     switch (amount) {
 
         case 'partially':
-            spend_amount = parseFloat(this.current_recipe_order.spend_amount) / 2;
+        case 'half':
+            spend_amount = parseFloat(this.current_recipe_order.spend_amount) / quantity / 2;
             break;
 
         case 'fully':
         default:
-            spend_amount = parseFloat(this.current_recipe_order.spend_amount);
+            spend_amount = parseFloat(this.current_recipe_order.spend_amount) / quantity;
             break;
 
     }
 
     const fill_count = 10;
 
-    return sequelize.transaction(transaction => {
+    return Promise.all(Array.from(Array(quantity)).map(() => {
 
-        return ExecutionOrder.create({
-            placed_timestamp: new Date(),
-            completed_timestamp: new Date(),
-            exchange_id: this.current_recipe_order.target_exchange_id,
-            external_identifier: 'jk4h5kj34h5k3h5j3hk',
-            failed_attempts: 0,
-            fee: (parseFloat(this.current_recipe_order.price) / _.random(98, 100, false)),
-            instrument_id: this.current_recipe_order.instrument_id,
-            price: this.current_recipe_order.price,
-            recipe_order_id: this.current_recipe_order.id,
-            side: this.current_recipe_order.side,
-            status: EXECUTION_ORDER_STATUSES.FullyFilled,
-            total_quantity: spend_amount / this.current_recipe_order.price,
-            spend_amount: spend_amount,
-            type: EXECUTION_ORDER_TYPES.Market
-        }, {
-            transaction
-        }).then(execution_order => {
+        return sequelize.transaction(transaction => {
 
-            let fills = [];
-
-            for (let i = 0; i < fill_count; i++) {
-
-                const approximate_quantity = Decimal(execution_order.total_quantity).div(fill_count).toString();
-                const approximate_fee = Decimal(execution_order.fee).div(fill_count).toString();
-
-                fills.push({
-                    execution_order_id: execution_order.id,
-                    external_identifier: '4762387426478362',
-                    fee: approximate_fee,
-                    price: execution_order.price,
-                    quantity: approximate_quantity,
-                    timestamp: new Date()
-                });
-            }
-
-            return ExecutionOrderFill.bulkCreate(fills, {
+            return ExecutionOrder.create({
+                placed_timestamp: new Date(),
+                completed_timestamp: new Date(),
+                exchange_id: this.current_recipe_order.target_exchange_id,
+                external_identifier: 'jk4h5kj34h5k3h5j3hk',
+                failed_attempts: 0,
+                fee: (parseFloat(this.current_recipe_order.price) / 100),
+                instrument_id: this.current_recipe_order.instrument_id,
+                price: this.current_recipe_order.price,
+                recipe_order_id: this.current_recipe_order.id,
+                side: this.current_recipe_order.side,
+                status: EXECUTION_ORDER_STATUSES.FullyFilled,
+                total_quantity: spend_amount / this.current_recipe_order.price,
+                spend_amount: spend_amount,
+                type: EXECUTION_ORDER_TYPES.Market
+            }, {
                 transaction
+            }).then(execution_order => {
+    
+                let fills = [];
+    
+                for (let i = 0; i < fill_count; i++) {
+    
+                    const approximate_quantity = Decimal(execution_order.total_quantity).div(fill_count).toString();
+                    const approximate_fee = Decimal(execution_order.fee).div(fill_count).toString();
+    
+                    fills.push({
+                        execution_order_id: execution_order.id,
+                        external_identifier: '4762387426478362',
+                        fee: approximate_fee,
+                        price: execution_order.price,
+                        quantity: approximate_quantity,
+                        timestamp: new Date()
+                    });
+                }
+    
+                return ExecutionOrderFill.bulkCreate(fills, {
+                    transaction
+                });
+    
             });
-
+    
         });
 
-    });
+    }));
 
 });
 
