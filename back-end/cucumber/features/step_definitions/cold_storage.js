@@ -103,7 +103,9 @@ Given(/^the system has (\d*) (.*) Cold Storage (Transfers|Transfer) for (\w*)$/,
         where: {
             status: COLD_STORAGE_ORDER_STATUSES[status],
             cold_storage_account_id: { [Op.ne]: null },
-            asset_id: asset.id
+            asset_id: asset.id,
+            recipe_run_order_id: this.current_recipe_order ? this.current_recipe_order.id : undefined,
+            recipe_run_id: this.current_recipe_run ? this.current_recipe_run.id : undefined
         },
         include: {
             model: ColdStorageAccount,
@@ -134,6 +136,7 @@ Given(/^the system has (\d*) (.*) Cold Storage (Transfers|Transfer) for (\w*)$/,
                 cold_storage_account_id: account.id,
                 status: COLD_STORAGE_ORDER_STATUSES[status],
                 recipe_run_order_id: this.current_recipe_order ? this.current_recipe_order.id : null,
+                recipe_run_id: this.current_recipe_run ? this.current_recipe_run.id : null,
                 placed_timestamp: placed_timestamp_statuses.includes(COLD_STORAGE_ORDER_STATUSES[status]) ? Date.now() : null,
                 completed_timestamp: completed_timestamp_statuses.includes(COLD_STORAGE_ORDER_STATUSES[status]) ? Date.now() : null
             });

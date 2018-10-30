@@ -10,6 +10,10 @@ Feature: View the timeline of an investment run process
         And the system has Instrument Mappings for Binance
         And the system has Instrument Mappings for OKEx
         And the system has Instrument Mappings for Bitfinex
+        And the system has 3 Cold Storage Custodians
+        And the system has LCI Cold Storage Account for LTC
+        And the system has LCI Cold Storage Account for XRP
+        And the system has LCI Cold Storage Account for EOS
 
     Scenario: view timeline of an investment run with status "initiated"
 
@@ -173,3 +177,40 @@ Feature: View the timeline of an investment run process
         And in the Execution Orders timeline card, I will see the following information:
         |   status  |   amount  |
         |   Fully Filled   | 91  |
+
+    Scenario: view timeline of an investment run with status "orders filled" and in progress cold storage transfers
+
+        Given there is a LCI Investment Run created by an Investment Manager
+        And the Investment Run was started on Thu, 04 Oct 2018 11:55:35
+        And the status of the Investment Run is OrdersFilled
+        And the system has Approved Recipe Run with Details
+        And the Recipe Run was created on Thu, 04 Oct 2018 14:20:10
+        And the system has 10 Completed Deposits
+        And the system has Approved Recipe Order Group with 42 Orders
+        And there are 38 FullyFilled Execution Orders for Binance
+        And there are 45 FullyFilled Execution Orders for OKEx
+        And there are 8 FullyFilled Execution Orders for Bitfinex
+        And the Recipe Orders statuses were updated
+        And the system has 3 Pending Cold Storage Transfers for LTC
+        And the system has 5 Sent Cold Storage Transfers for XRP
+        And the system has 2 Completed Cold Storage Transfers for EOS
+        When I log onto CryptX as Investment Manager
+        And I fetch the timeline of the current Investment Run
+        Then in the Investment Run timeline card, I will see the following information:
+        |   status  |   time    |   strategy    |
+        |   Orders Filled   |   Thu Oct 04 2018 11:55:35    |   LCI |
+        And in the Recipe Run timeline card, I will see the following information:
+        |   status  |   time    |
+        |   Approved   |     Thu Oct 04 2018 14:20:10    |
+        And in the Recipe Deposits timeline card, I will see the following information:
+        |   status  |   amount   |
+        |   Completed   |     10    |
+        And in the Recipe Orders timeline card, I will see the following information:
+        |   status  |   amount  |
+        |   Completed   | 42      |
+        And in the Execution Orders timeline card, I will see the following information:
+        |   status  |   amount  |
+        |   Fully Filled   | 91  |
+        And in the Cold Storage Transfers timeline card, I will see the following information:
+        |   status  |   amount  |
+        |   In Progress   | 10  |
