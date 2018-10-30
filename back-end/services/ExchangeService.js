@@ -164,18 +164,50 @@ const setExchangeCredentials = async (exchange_id, credentials = {}) => {
 };
 module.exports.setExchangeCredentials = setExchangeCredentials;
 
+const deleteExchangeCredentials = async (exchange_id) => {
+
+    let [ err, result ] = await to(Promise.all([
+        ccxtUtils.getConnector(parseInt(exchange_id)),
+        ExchangeCredential.findOne({ where: { exchange_id } })
+    ]));
+    
+    if(err) TE(err.message);
+
+    const [ connector, credential ] = result;
+    if(!connector || !credential) return null;
+
+    credential.api_key_string = null;
+    credential.api_secret_string = null;
+    connector.apiKey = null;
+    connector.secret = null;
+
+    const additional_params = credential.additional_params_string || {};
+    for(let field in credential.additional_params_string) {
+
+        connector[field] = null;
+        additional_params[field] = null;
+
+    }
+    credential.additional_params_string = additional_params;
+    credential.updated = true;
+
+    return credential.save();
+
+};
+module.exports.deleteExchangeCredentials = deleteExchangeCredentials;
+
 //Not using a view as the data is encrypted and must be decrypted first.
 const getExchangeCredentials = async (exchange_id) => {
 
     const [ err, credentials ] = await to(ExchangeCredential.findAll({
-        where: exchange_id ? { exchange_id } : {},
+        where: exchange_id ? { exchange_id,  } : {},
         include: Exchange
     }));
 
     if(err) TE(err.message);
     if(exchange_id && !credentials.length) return null;
 
-    let exchange_credentials = credentials.map(c => {
+    let exchange_credentials = credentials.filter(c => c.api_key_string).map(c => {
         return {
             id: c.id,
             exchange_id: _.get(c, 'Exchange.id', null),
@@ -197,6 +229,7 @@ const getExchangeCredentials = async (exchange_id) => {
 
     if(exchange_id) {
         exchange_credentials = exchange_credentials[0];
+        if(!exchange_credentials.api_key) exchange_credentials = null; //Deleted
         footer = undefined;
     }
 

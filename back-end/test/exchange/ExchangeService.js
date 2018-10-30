@@ -361,5 +361,82 @@ describe('ExchangeService testing', () => {
 
     });
 
+    describe('and the method deleteExchangeCredentials shall', () => {
+
+        const { deleteExchangeCredentials } = ExchangeService;
+
+        const MOCK_CREDENTIAL = {
+            id: 1,
+            exchange_id: 1,
+            async save() {
+                return _.assign({}, this);
+            },
+            api_key_string: '43h24h234kj2h4k2jh',
+            api_secret_string: '432kjh42kh42j4',
+            additional_params_string: {
+                extra_1: '3h4jk2hj3h24jh23jk4h2',
+                extra_2: '34h2kj4j543k4h53jh54'
+            }
+        };
+
+        let DUMMY_CONNECTOR = {};
+
+        beforeEach(done => {
+
+            sinon.stub(ExchangeCredential, 'findOne').callsFake(async options => {
+
+                if(options.where.exchange_id === MOCK_CREDENTIAL.exchange_id) return _.assign({}, MOCK_CREDENTIAL);
+                return null;
+
+            });
+
+            sinon.stub(ccxtUtils, 'getConnector').callsFake(async api_id => {
+
+                return DUMMY_CONNECTOR;
+
+            });
+
+            done();
+        });
+
+        afterEach(done => {
+
+            ExchangeCredential.findOne.restore();
+            ccxtUtils.getConnector.restore();
+
+            done();
+        });
+
+        it('exist', () => {
+
+            expect(deleteExchangeCredentials).to.be.not.undefined;
+
+        });
+
+        it('return null if the credentials were not found', async () => {
+
+            const result = await deleteExchangeCredentials(-1);
+            expect(result).to.be.null;
+
+        });
+
+        it('set the api key and secret to null all of the additional params', async () => {
+
+            const credential = await deleteExchangeCredentials(MOCK_CREDENTIAL.id);
+
+            expect(credential.api_key_string).to.be.null;
+            expect(credential.api_secret_string).to.be.null;
+            expect(credential.additional_params_string.extra_1).to.be.null;
+            expect(credential.additional_params_string.extra_2).to.be.null;
+
+            expect(DUMMY_CONNECTOR.apiKey).to.be.null;
+            expect(DUMMY_CONNECTOR.secret).to.be.null;
+            expect(DUMMY_CONNECTOR.extra_1).to.be.null;
+            expect(DUMMY_CONNECTOR.extra_2).to.be.null;
+
+        });
+
+    });
+
 });
 

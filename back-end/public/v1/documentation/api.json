@@ -756,7 +756,7 @@
           "exchange"
         ],
         "summary": "Set credentials on an exchange",
-        "description": "Set credentials on an exchange. Passing nulls will unset the credentials",
+        "description": "Set credentials on an exchange.",
         "parameters": [
           {
             "name": "exchange_id",
@@ -773,6 +773,40 @@
             "schema": {
               "$ref": "#/definitions/SetExchangeCredentialParams"
             }
+          }
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "$ref": "#/definitions/GenericOkResponse"
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/exchanges/{exchange_id}/credentials/delete": {
+      "delete": {
+        "tags": [
+          "exchange"
+        ],
+        "summary": "Delete credentials on an exchange",
+        "description": "Delete credentials on an exchange. Sets null on all credentials",
+        "parameters": [
+          {
+            "name": "exchange_id",
+            "in": "path",
+            "description": "ID of the exchange",
+            "required": true,
+            "type": "integer"
           }
         ],
         "produces": [

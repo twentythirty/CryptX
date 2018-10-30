@@ -814,22 +814,27 @@ ROUTES = {
   },
   SetExchangeCredentials: {
     router_string: '/exchanges/:exchange_id/credentials/set',
-    permissions_matcher: ROUTE_MATCHERS.EditExchangeAccount,
+    permissions_matcher: ROUTE_MATCHERS.SetExchangeCredentials,
+    required_permissions: [PERMISSIONS.ALTER_EXCHANGE_CREDENTIALS]
+  },
+  DeleteExchangeCredentials: {
+    router_string: '/exchanges/:exchange_id/credentials/delete',
+    permissions_matcher: ROUTE_MATCHERS.DeleteExchangeCredentials,
     required_permissions: [PERMISSIONS.ALTER_EXCHANGE_CREDENTIALS]
   },
   GetExchangeCredentials: {
     router_string: '/exchanges/credentials/all',
-    permissions_matcher: ROUTE_MATCHERS.CreateExchangeAccount,
+    permissions_matcher: ROUTE_MATCHERS.GetExchangeCredentials,
     required_permissions: [PERMISSIONS.VIEW_EXCHANGE_CREDENTIALS]
   },
   GetExchangeCredential: {
     router_string: '/exchanges/:exchange_id/credentials',
-    permissions_matcher: ROUTE_MATCHERS.CreateExchangeAccount,
+    permissions_matcher: ROUTE_MATCHERS.GetExchangeCredential,
     required_permissions: [PERMISSIONS.VIEW_EXCHANGE_CREDENTIALS]
   },
   GetExchangeCredentialFields: {
     router_string: '/exchanges/:exchange_id/credential_fields',
-    permissions_matcher: ROUTE_MATCHERS.CreateExchangeAccount,
+    permissions_matcher: ROUTE_MATCHERS.GetExchangeCredentialFields,
     required_permissions: [PERMISSIONS.VIEW_EXCHANGE_CREDENTIALS]
   }
 };

@@ -14,12 +14,12 @@ module.exports = (sequelize, DataTypes) => {
             api_key: encrypted_api_key_field.vault('api_key'),
             api_key_string: encrypted_api_key_field.field('api_key_string', {
                 type: DataTypes.STRING,
-                allowNull: false
+                allowNull: true
             }),
             api_secret: encrypted_api_secret_field.vault('api_secret'),
             api_secret_string: encrypted_api_secret_field.field('api_secret_string', {
                 type: DataTypes.STRING,
-                allowNull: false
+                allowNull: true
             }),
             additional_params: encrypted_additional_params_field.vault('additional_params'),
             additional_params_string: encrypted_additional_params_field.field('additional_params_string', {

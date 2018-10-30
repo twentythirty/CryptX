@@ -132,6 +132,20 @@ const setExchangeCredentials = async (req, res) => {
 };
 module.exports.setExchangeCredentials = setExchangeCredentials;
 
+const deleteExchangeCredentials = async (req, res) => {
+
+  const { exchange_id } = req.params;
+
+  const [ err, result ] = await to(ExchangeService.deleteExchangeCredentials(exchange_id));
+
+  if(err) return ReE(res, err.message, 422);
+  if(!result) return ReE(res, `Exchange with id ${exchange_id} does not exist or has no credentials`, 404);
+
+  return ReS(res, { message: 'OK!' });
+
+};
+module.exports.deleteExchangeCredentials = deleteExchangeCredentials;
+
 const getExchangeCredentials = async (req, res) => {
 
   const { seq_query, sql_where } = req;

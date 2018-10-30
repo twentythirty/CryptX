@@ -1003,6 +1003,13 @@ router.post(
   check_permissions,
   ExchangeController.setExchangeCredentials
 );
+router.delete(
+  ROUTES.DeleteExchangeCredentials.router_string,
+  stateless_auth,
+  res_new_token,
+  check_permissions,
+  ExchangeController.deleteExchangeCredentials
+);
 router.post(
   ROUTES.GetExchangeCredentials.router_string,
   stateless_auth,

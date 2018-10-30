@@ -101,6 +101,7 @@ ROUTE_MATCHERS = {
     GetExchangeAccount: /\/exchanges\/accounts\/\d+$/,
     GetExchangeAccountsColumnLOV: /\/exchanges\/accounts\/header_lov\/w+$/,
     SetExchangeCredentials: /\/exchanges\/\d+$\/credentials\/set/,
+    DeleteExchangeCredentials: /\/exchanges\/\d+$\/credentials\/delete/,
     GetExchangeCredentials: /\/exchanges\/credentials\/all/,
     GetExchangeCredential: /\/exchanges\/\d+\/credentials/,
     GetExchangeCredentialFields: /\/exchanges\/\d+\/credential_fields/,
