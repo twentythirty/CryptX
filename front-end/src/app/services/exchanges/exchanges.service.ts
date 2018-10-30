@@ -61,6 +61,11 @@ export class CredentialField {
   type: string;
 }
 
+export class CredentialDeleteResponse {
+  success: boolean;
+  message: string;
+}
+
 
 @Injectable()
 export class ExchangesService {
@@ -124,16 +129,8 @@ export class ExchangesService {
     return this.http.post<any>(this.baseUrl + `exchanges/${exchangeId}/credentials/set`, data);
   }
 
-  deleteExchangeCredentials(exchangeId: number): Observable<any> {
-    const data = {
-      api_key: null,
-      api_secret: null,
-      uid: null,
-      password: null,
-      passphrase: null
-    };
-
-    return this.setExchangeCredentials(exchangeId, data);
+  deleteExchangeCredentials(exchangeId: number): Observable<CredentialDeleteResponse> {
+    return this.http.delete<CredentialDeleteResponse>(this.baseUrl + `exchanges/${exchangeId}/credentials/delete`);
   }
 
   getCredentialFields(exchangeId: number): Observable<CredentialFieldsResponse> {
