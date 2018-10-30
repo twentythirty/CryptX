@@ -288,6 +288,54 @@ Given(/^the system has Recipe Order with status (.*) on (.*)$/g, async function 
 
 });
 
+Given(/^the system has (\w*) Recipe Order to (sell|buy) (\d*|\d+(?:\.\d+)?) (\w*) for (\w*) at the price of (\d*|\d+(?:\.\d+)?) on (\w*)$/, async function(status, type, amount, asset_symbol_1, asset_symbol_2, price, exchange_name) {
+
+    const { Exchange, Instrument, RecipeOrder, RecipeOrderGroup, InstrumentMarketData, sequelize } = require('../../../models');
+
+    const symbols = [`${asset_symbol_1}/${asset_symbol_2}`, `${asset_symbol_2}/${asset_symbol_1}`];
+    const [ exchange, instrument ] = await Promise.all([
+        Exchange.findOne({ where: { name: exchange_name } }),
+        Instrument.findOne({ where: { symbol: symbols } })
+    ]);
+
+    expect(exchange, `Expected to find exchange named "${exchange_name}"`).to.be.not.null;
+    expect(instrument, `Expected to find an instrument ${symbols}`).to.be.not.null;
+
+    return sequelize.transaction(async transaction => {
+
+        this.current_recipe_order_group = await RecipeOrderGroup.create({
+            created_timestamp: new Date(),
+            approval_status: RECIPE_ORDER_GROUP_STATUSES.Approved,
+            approval_comment: 'it\'s all good'
+        }, {
+            transaction
+        });
+
+        this.current_recipe_order = await RecipeOrder.create({
+            instrument_id: instrument.id,
+            target_exchange_id: exchange.id,
+            side: ORDER_SIDES.Buy,
+            quantity: type === 'buy' ? amount : 0,
+            spend_amount: type === 'sell' ? amount : 0,
+            price,
+            status: RECIPE_ORDER_STATUSES[status],
+            recipe_order_group_id: this.current_recipe_order_group.id
+        }, {
+            transaction
+        });
+
+        return InstrumentMarketData.create({
+            ask_price: price,
+            bid_price: price,
+            exchange_id: exchange.id,
+            instrument_id: instrument.id,
+            timestamp: Date.now()
+        });
+
+    });
+
+});
+
 Given(/^the Order is (.*) filled by a FullyFilled ExecutionOrder$/, async function (amount) {
 
     const {
@@ -625,6 +673,18 @@ Given('the Recipe Orde is two Execution Orders short, one of which will be small
 
 });
 
+Given(/^the Recipe Order was created on (.*)$/, async function(date_string) {
+
+    const { RecipeOrderGroup } = require('../../../models');
+
+    return RecipeOrderGroup.update({
+        created_timestamp: Date.parse(date_string)
+    }, {
+        where: { id: this.current_recipe_order.recipe_order_group_id }
+    });
+
+});
+
 When('I generate new Orders for the Approved Recipe Run', {
     timeout: 15000
 }, function () {
@@ -724,6 +784,28 @@ When('the system does the task "generate execution orders" until it stops genera
 
     expect(tolerance).to.be.lessThan(50, `Job failed to fill Order with id "${this.current_recipe_order.id}" after 50 cycles`);
 
+});
+
+When('I fetch the Recipe Order details', async function() {
+
+    const [ order_response, execution_orders_response ] = await Promise.all([
+        chai
+        .request(this.app)
+        .get(`/v1/orders/${this.current_recipe_order.id}`)
+        .set('Authorization', World.current_user.token),
+        chai
+        .request(this.app)
+        .post(`/v1/execution_orders/of_order/${this.current_recipe_order.id}`)
+        .set('Authorization', World.current_user.token)
+    ]);
+
+    //World.print(order_response.body);
+    //World.print(execution_orders_response.body);
+
+    this.current_recipe_order_details = order_response.body.recipe_order;
+    this.current_execution_orders_list = execution_orders_response.body.execution_orders;
+    this.current_execution_orders_footer = execution_orders_response.body.footer;
+    
 });
 
 Then('a new Recipe Group is created with the status Pending', async function () {
