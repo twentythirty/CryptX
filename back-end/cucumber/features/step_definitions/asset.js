@@ -306,7 +306,9 @@ Given('the system has some missing Assets from CoinMarketCap, including ETH and 
 
 });
 
-Given('the system is missing some of the top 100 coins', function () {
+Given('the system is missing some of the top 100 coins', {
+    timeout: 300000
+}, function () {
 
     const {
         AssetBlockchain,
