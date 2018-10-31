@@ -95,13 +95,7 @@ class Okex extends Exchange {
   async withdraw(asset_symbol, amount, address, tag) {
     await this.isReady();
 
-    const fee_map = {
-      BTC: 0.002,
-      LTC: 0.001,
-      ETH: 0.01,
-      ETC: 0.001,
-      BCH: 0.0005
-    };
+    const fee_map = OKEX_WITHDRAW_FEES;
 
     const chargefee = fee_map[asset_symbol];
 

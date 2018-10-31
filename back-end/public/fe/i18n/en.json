@@ -652,7 +652,9 @@
     "cold_storage_transfers": {
       "connector_error": "Failed to prepare connection to <b>{{ exchange }}</b>, error: {{ error }}",
       "withdraw_error": "Failed to withdraw from <b>{{ exchange }}</b>, error: {{ error }}",
-      "placed": "Withdraw request was successfully created with id <b>{{ id }}</b>"
+      "placed": "Withdraw request was successfully created with id <b>{{ id }}</b>",
+      "missing_account": "Order is missing a matching {{ strategy_type }} cold storage account for {{ asset }}",
+      "zero_balance": "Transfer cannot be created as the balance of {{ asset }} is 0"
     }
   },
 

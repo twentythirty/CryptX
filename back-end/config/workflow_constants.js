@@ -141,3 +141,11 @@ EXCHANGE_CREDENTIALS = {
         }
     ])
 }
+//Until we start using v3
+OKEX_WITHDRAW_FEES = {
+    BTC: 0.0005,
+    LTC: 0.001,
+    ETH: 0.01,
+    ETC: 0.001,
+    BCH: 0.0005
+};
