@@ -72,7 +72,7 @@ module.exports.JOB_BODY = async (config, log) => {
 
         return Promise.resolve(`
             ERROR: No coins with enough market data to calculate NVT!
-            Earliest data was: ${_.minBy(results, 'earliest_timestamp').earliest_timestamp}
+            Earliest data was: ${_.get(_.minBy(nvt_data, 'earliest_timestamp'), 'earliest_timestamp')}
         `);
     }
 

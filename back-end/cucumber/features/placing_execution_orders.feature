@@ -22,7 +22,7 @@ Feature: execution order placement on exchanges
         And all the execution orders won't have external identifiers
 
     @execution_orders_cache_cleanup
-    Scenario: fait to place execution order on exchange last time
+    Scenario: fail to place execution order on exchange last time
 
         Given the system has execution orders with status Pending
         And the execution orders failed attempts count is just below system failure cap

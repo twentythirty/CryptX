@@ -16,7 +16,7 @@ Given('there are no Instruments in the system', {
 
     const { Instrument } = require('../../../models');
     
-    return Instrument.destroy({ where: {} });
+    return Instrument.truncate({ cascade: true });
 
 });
 
