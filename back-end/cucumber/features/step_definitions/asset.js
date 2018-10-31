@@ -1392,6 +1392,26 @@ Then(/^(Asset|Assets) (.*) will (be|remain) (Blacklisted|Whitelisted|Greylisted)
 
 });
 
+Given("Assets that could not be mapped are blacklisted", async function() {
+    const sequelize = require('../../../models').sequelize;
+    
+    return await sequelize.query(`
+    INSERT INTO asset_status_change (timestamp, user_id, asset_id, comment, type)
+    ( 
+        SELECT NOW() as timestamp, NULL as user_id, asset.id as asset_id, 'IS NOT TRADEABLE' as comment, ${INSTRUMENT_STATUS_CHANGES.Graylisting} as type
+        FROM asset
+        WHERE NOT EXISTS (
+            SELECT iem.external_instrument_id
+            FROM asset a
+            JOIN instrument i ON i.transaction_asset_id=a.id OR i.quote_asset_id=a.id
+            JOIN instrument_exchange_mapping iem ON iem.instrument_id=i.id
+            WHERE asset.id=a.id
+        )
+    )
+    `);
+
+});
+
 const queryAssetByType = (type, limit = 1, id = null) => {
     return `
         WITH newest_statuses AS (

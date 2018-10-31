@@ -147,8 +147,7 @@ const getStrategyAssets = async function (strategy_type) {
       LIMIT 1
     ) as status ON TRUE
     ORDER BY cap.capitalization_usd DESC
-      
-      LIMIT :limit_count OFFSET :offset_count`, {
+    LIMIT :limit_count OFFSET :offset_count`, {
       replacements: { 
         limit_count: per_iteration,
         offset_count: (iteration - 1) * per_iteration,
@@ -470,9 +469,9 @@ const getAssetGroupWithData = async function (investment_run_id) {
     JOIN investment_run_asset_group irag ON irag.id=ir.investment_run_asset_group_id
     JOIN group_asset ga ON ga.investment_run_asset_group_id=irag.id
     JOIN asset ON asset.id=ga.asset_id
-    JOIN instrument i ON i.transaction_asset_id=asset.id OR i.quote_asset_id=asset.id
-    JOIN instrument_exchange_mapping iem ON instrument_id=i.id
-    JOIN exchange ON exchange.id=iem.exchange_id AND exchange.is_mappable IS TRUE
+    LEFT JOIN instrument i ON i.transaction_asset_id=asset.id OR i.quote_asset_id=asset.id
+    LEFT JOIN instrument_exchange_mapping iem ON instrument_id=i.id
+    LEFT JOIN exchange ON exchange.id=iem.exchange_id AND exchange.is_mappable IS TRUE
     LEFT JOIN LATERAL
     (
       SELECT value
@@ -500,8 +499,11 @@ const getAssetGroupWithData = async function (investment_run_id) {
       LIMIT 1
     ) as imd ON TRUE
     LEFT JOIN base_assets_with_prices as base_price ON base_price.id=i.quote_asset_id OR base_price.id=i.transaction_asset_id
+    LEFT JOIN asset as tr_asset ON tr_asset.id=i.transaction_asset_id
+    LEFT JOIN asset as qt_asset ON qt_asset.id=i.quote_asset_id
     WHERE ir.id=:investment_run_id
         AND (ga.status=:whitelisted OR ga.status IS NULL)
+        --AND (qt_asset.is_base=TRUE OR tr_asset.is_base=TRUE)
     ORDER BY nvt DESC, volume_usd DESC, price_usd ASC
   `, {
     replacements: {
@@ -512,19 +514,39 @@ const getAssetGroupWithData = async function (investment_run_id) {
     type: sequelize.QueryTypes.SELECT
   }));
 
-  let properties = ['nvt', 'volume_usd', 'price_usd']; // properties that shouldn't be null
-  let groups_missing_data = _(asset_group)
-    .groupBy(asset_group, 'id')
+  let properties = [
+    { key: 'instrument_id', message: 'Instrument' },
+    { key: 'exchange_id', message: 'exchange mappings' },
+    { key: 'nvt', message: 'NVT' },
+    { key: 'volume_usd', message: 'volume' },
+    { key: 'price_usd', message: 'price' },
+    { key: 'exchange_name', message: 'usable exchange' }
+  ]; // properties that shouldn't be null
+  let groups_missing_data = _(asset_group) // find assets that are missing some of the properties defined in "properties" variable
+    .groupBy('id')
     .values()
     .filter(
       group => group.every(
-        asset => roperties.some(prop => _.isNull(asset[prop]))
+        asset => properties.some(prop => _.isNull(asset[prop.key]) || _.isUndefined(asset[prop.key]))
       )
-    );
+    ).value();
 
   if (groups_missing_data.length) {
-    let missing = _.take(groups_missing_data, 1);
-    TE(`${missing.long_name} is missing ${properties.find(p => _.isNull(missing[p]))} data`);
+    let missing = _.first(groups_missing_data);
+    let asset = _.first(missing);
+
+    if (missing.every(p => _.isNull(p.instrument_id) || _.isUndefined(p.instrument_id))) // check if instrument_id is missing
+      TE(`Asset ${asset.long_name} (${asset.symbol}) doesn't have instruments`);
+    else if (missing.every(p => _.isNull(p.exchange_id) || _.isUndefined(p.exchange_id))) // check if exchange_id is missing
+      TE(`Asset ${asset.long_name} (${asset.symbol}) is not mapped to any exchange and can't be bought because of that`);
+    else if (missing.every(p => _.isNull(asset.exchange_name)))
+      TE(`Asset ${asset.long_name} (${asset.symbol}) is not available on active exchanges`);
+    else {
+      let property_missing = properties.find(p => {
+        return missing.find(m => _.isNull(m[p.key]) || _.isUndefined(m[p.key]))
+      });
+      TE(`${asset.long_name}(${asset.symbol}) doesn't have ${property_missing.message} data`);
+    }
   }
   
   if (err) TE(err.message);

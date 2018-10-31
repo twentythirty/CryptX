@@ -79,7 +79,10 @@ Given(/^the system has Instrument Mappings for (.*)$/, async function (exchange_
 
     const connector = await ccxtUtil.getConnector(exchange.api_id);
 
-    const exchange_instruments = _.uniq(Object.keys(connector.markets));
+    const exchange_instruments = _(Object.keys(connector.markets))
+        .uniq()
+        .filter(m => !/^((?!\bBTC|ETH\b)\b\w{1,}\b)\/(USD|USDT)$/.test(m))
+        .value();
 
     const missing_instruments = _.difference(exchange_instruments, instruments.map(i => i.symbol)).map(mi => {
         const [transaction_asset_symbol, quote_asset_symbol] = mi.split('/');

@@ -12,6 +12,8 @@ Feature: Approving Recipe Run
         And the system has Instrument Mappings for Bitfinex
         And the system has Instrument Mappings for OKEx
         And the system has updated the Instrument Market Data
+        And the system has Instrument Liquidity History for the last 2 days 
+        And the system has updated the Market History Calculation
         And there is a LCI Investment Run created by an Investment Manager
 
     @investment_run_cache_cleanup

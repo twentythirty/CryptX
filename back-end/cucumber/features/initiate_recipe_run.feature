@@ -11,6 +11,7 @@ Feature: Initiate a recipe run
         And the system has Instrument Mappings for OKEx
         And the system has updated the Instrument Market Data
         And the system has Instrument Liquidity History for the last 2 days
+        And Assets that could not be mapped are blacklisted
 
     #@limit_to_MVP_exchanges    
     Scenario: Initiating a recipe run for an initiated investment run
