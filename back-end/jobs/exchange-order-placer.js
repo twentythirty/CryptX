@@ -164,7 +164,7 @@ module.exports.JOB_BODY = async (config, log) => {
             relations: { execution_order_id: order.id }
           });
 
-          increment_failed_count(order, err_message, log);
+          order = await increment_failed_count(order, err_message, log);
 
           return order_with_data;
         });
@@ -184,7 +184,6 @@ let increment_failed_count = function (execution_order, fail_message, log) {
     });
     execution_order.status = EXECUTION_ORDER_STATUSES.Failed;
   }
-  execution_order.save();
   
   return execution_order.save();
 };

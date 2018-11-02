@@ -26,6 +26,8 @@ describe('CCXTUnified', () => {
   });
 
   let ExecutionOrder = require('../../models').ExecutionOrder;
+  let InstrumentService = require('../../services/InstrumentsService');
+  let sequelize = require('../../models').sequelize;
 
   let SUPPORTED_EXCHANGES = [
     "binance",
@@ -96,8 +98,18 @@ describe('CCXTUnified', () => {
   beforeEach(() => {
     sinon.stub(ccxtUtils, "getConnector").callsFake((name) => {
       let connector = Object.assign({}, CCXT_EXCHANGE, {
-        id: name
+        id: name,
+        markets: {
+          'XRP/BTC': {
+            limits: {
+              amount: { min: 0.1, max: 1000 },
+              price: { min: 0.0001, max: 1 },
+              cost: { min: 0.1, max: 1000 }
+            }
+          }
+        }
       });
+
 
       sinon.stub(connector, 'createOrder').callsFake((...args) => {
         // should help understand what properties have in them: https://github.com/ccxt/ccxt/wiki/Manual#order-structure
@@ -165,6 +177,7 @@ describe('CCXTUnified', () => {
 
   afterEach(() => {
     ccxtUtils.getConnector.restore();
+    if (sequelize.query.restore) sequelize.query.restore();
   });
 
   it("shall return exchange methods", () => {
@@ -207,6 +220,107 @@ describe('CCXTUnified', () => {
       chai.expect(objects).to.satisfy((objects) => {
         return objects.every(object => {
           return chai.expect(object._connector.createOrder.called).to.be.true;
+        })
+      });
+    })
+  });
+
+  it("shall adjust quantity according to exchange tick size", () => {
+    let objects = [];
+    const spend = 0.005, price = 0.00013242, min_qnt = 1;
+
+    sinon.stub(sequelize, 'query').callsFake(args => {
+      
+      return Promise.resolve({
+        spend_amount: 0.02,
+        spent: 0.005
+      });
+    });
+
+    return Promise.all(
+      SUPPORTED_EXCHANGES.map(async (exchange) =>  {
+        let ex = await ccxtUnified.getExchange(exchange);
+        await ex.isReady();
+
+        let exec_order = new ExecutionOrder(EXEC_ORDER);
+        objects.push(ex);
+
+        sinon.stub(exec_order, "save").returns(() => Promise.resolve(exec_order));
+
+        sinon.stub(ex, 'getSymbolLimits').returns(Promise.resolve({
+          amount: { min: min_qnt, max: 1000},
+          spend: { min: min_qnt * price, max: this.amount * price }
+        }));
+        
+        return ex.adjustQuantity("XRP/BTC", spend, price, 1);
+      })
+    ).then(result => {
+      chai.expect(result).to.satisfy((result) => {
+        return result.every(adjustment => {
+          let [quantity, spend_amount] = adjustment;
+          
+          return parseFloat(quantity) % 1 == 0 &&
+            spend_amount == Decimal(quantity).mul(price).toString();
+        })
+      });
+    })
+  });
+
+
+  it("shall adjust order to fill next order amount if it's less than minimum trade limit", () => {
+    let objects = [];
+    const spend = 2.5, price = 1, min_qnt = 1;
+
+    sinon.stub(sequelize, 'query').callsFake(args => {
+      
+      return Promise.resolve({
+        spend_amount: spend,
+        spent: 1
+      });
+    });
+
+    return Promise.all(
+      SUPPORTED_EXCHANGES.map(async (exchange) =>  {
+        let ex = await ccxtUnified.getExchange(exchange);
+        await ex.isReady();
+
+        sinon.stub(ex, 'getSymbolLimits').returns(Promise.resolve({
+          amount: { min: min_qnt, max: 1000},
+          spend: { min: min_qnt * price, max: this.amount * price }
+        }));
+        
+        return ex.adjustQuantity("XRP/BTC", spend, price, 1);
+      })
+    ).then(result => {
+      chai.expect(result).to.satisfy((result) => {
+        return result.every(adjustment => {
+          let [quantity, spend_amount] = adjustment;
+          
+          return quantity == 1.5 && spend_amount == 1.5;
+        })
+      });
+    })
+  });
+
+  it("shall adjust order to fill next order amount if it's less than minimum trade limit", () => {
+    let objects = [];
+
+    sinon.stub(InstrumentService, 'getPriceBySymbol').callsFake(args => {
+      
+      return Promise.resolve({ask_price: 0.001});
+    });
+
+    return Promise.all(
+      SUPPORTED_EXCHANGES.map(async (exchange) =>  {
+        let ex = await ccxtUnified.getExchange(exchange);
+        await ex.isReady();
+        
+        return ex.getSymbolLimits("XRP/BTC");
+      })
+    ).then(result => {
+      chai.expect(result).to.satisfy((result) => {
+        return result.every(limit => {
+          return 'spend' in limit
         })
       });
     })

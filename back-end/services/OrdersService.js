@@ -466,11 +466,11 @@ const changeRecipeOrderGroupStatus = async (user_id, order_group_id, status, com
                 transaction
             });
 
-            /*//add relevant mappings and ccxt connectors to orders
+            //add relevant mappings and ccxt connectors to orders
             const orders_instrument_ids = _.map(recipe_orders, 'instrument_id');
             const orders_exchanges_ids = _.map(recipe_orders, 'target_exchange_id');
 
-            let result = await Promise.all([
+            let result = await  Promise.all([
                 InstrumentService.getInstrumentPrices(
                     orders_instrument_ids,
                     orders_exchanges_ids,
@@ -483,23 +483,25 @@ const changeRecipeOrderGroupStatus = async (user_id, order_group_id, status, com
                         exchange_id: _.map(recipe_orders, 'target_exchange_id')
                     },
                     transaction
-                }),
-                ccxtUtils.allConnectors()
-            ]);
+                })
+            ])
 
-            let [ newest_market_data, exchange_mappings, connectors_map ] = result; //In case the promise throws an error, it should not try to iterate
+            const [ newest_market_data, exchange_mappings] = result;
 
-            //Check each order
-            _.map(recipe_orders, recipe_order => {
+            await Promise.all(_.map(recipe_orders, async recipe_order => {
 
-                const connector = connectors_map[String(recipe_order.target_exchange_id)];
+                //let unificationOfExchange;
+                let [err, unifiedExchange] = await to(ccxtUnified.getExchange(recipe_order.target_exchange_id));
+                if (err) TE(err.message);
+                await unifiedExchange.isReady();
+
                 const exchange = recipe_order.target_exchange != null ? recipe_order.target_exchange : {
                     name: '<NONE>'
                 }
-                if (connector == null) {
+                if (unifiedExchange == null) {
                     TE(`Can't approve recipe order ${recipe_order.id}: No connector found for exchange ${exchange.name}!`)
                 }
-                if (connector.loading_failed) {
+                if (unifiedExchange._connector.loading_failed) {
                     TE(`Can't approve recipe order ${recipe_order.id}: Connector for ${exchange.name} faield to load markets!`);
                 }
 
@@ -507,20 +509,21 @@ const changeRecipeOrderGroupStatus = async (user_id, order_group_id, status, com
                 if (mapping == null) {
                     TE(`Can't approve recipe order ${recipe_order.id}: No mapping found for ${recipe_order.Instrument.symbol} on ${exchange.name}`);
                 }
+
                 //pick correct symbol to check market
                 const check_symbol = mapping.external_instrument_id;
-                const check_market = connector.markets[check_symbol];
+                const check_market = unifiedExchange._connector.markets[check_symbol];
 
                 if (check_market == null || !check_market.active) {
 
-                    TE(`Can't approve recipe order ${recipe_order.id}: No market for mapping ${check_symbol} on exchange ${connector.name}.`)
+                    TE(`Can't approve recipe order ${recipe_order.id}: No market for mapping ${check_symbol} on exchange ${unifiedExchange.name}.`)
                 }
 
                 const order_market_prices = _.find(
                     newest_market_data, 
                     datum => (datum.exchange_id == recipe_order.target_exchange_id 
                         && datum.instrument_id == recipe_order.instrument_id)
-                ); 
+                );
                 
                 //number of seconds we handicap from the TTL value
                 const handicap_seconds = SYSTEM_SETTINGS.BASE_ASSET_PRICE_TTL_THRESHOLD + SYSTEM_SETTINGS.MARKET_DATA_TTL_HANDICAP;
@@ -531,14 +534,23 @@ const changeRecipeOrderGroupStatus = async (user_id, order_group_id, status, com
                     TE(`Can't approve recipe order ${recipe_order.id}: No recent market data found for instrument ${recipe_order.Instrument.symbol} on ${recipe_order.target_exchange.name}, must be newer than ${cutoff_date.toISOString()}!`);
                 }
 
-                const lower_limit = Decimal(check_market.limits.amount.min || '0');
-                if (Decimal(recipe_order.quantity || '0').lt(lower_limit)) {
+                let limits;
+                [err, limits] = await to(unifiedExchange.getSymbolLimits(mapping.external_instrument_id));
+                if (err) TE(err.message);
+                
+                const lower_limit = Decimal(limits.spend.min || '0');
+                if (Decimal(recipe_order.spend_amount || '0').lt(lower_limit)) {
 
-                    TE(`Can't approve recipe order ${recipe_order.id}: Market ${check_market.symbol} on exchange ${connector.name} lower trade limit: ${lower_limit.toString()}, recipe order quantity was: ${recipe_order.quantity}.`);
+                    TE(`Can't approve recipe order ${recipe_order.id}: Market ${check_market.symbol} on exchange ${unifiedExchange._connector.name} lower trade limit: ${lower_limit.toString()}, order sell quantity: ${recipe_order.spend_amount}`);
                 }
-
-            });
-
+                //market exists for this order, we can approve it
+                recipe_order.status = RECIPE_ORDER_STATUSES.Executing;
+                return recipe_order.save({
+                    transaction
+                })
+            }));
+        
+            //since all recipe orders got approved OK we can now approve recipe order group
             Object.assign(recipe_order_group, {
                 approval_status: status,
                 approval_user_id: user_id,
@@ -546,7 +558,7 @@ const changeRecipeOrderGroupStatus = async (user_id, order_group_id, status, com
                 approval_comment: (comment != null) ? comment : recipe_order_group.approval_comment
             });
 
-             return Promise.all([
+            return Promise.all([
                 recipe_order_group.save({
                     transaction
                 }),
@@ -563,119 +575,8 @@ const changeRecipeOrderGroupStatus = async (user_id, order_group_id, status, com
                     },
                     transaction
                 })
-            ]); */
-/////////
-                //add relevant mappings and ccxt connectors to orders
-                const orders_instrument_ids = _.map(recipe_orders, 'instrument_id');
-                const orders_exchanges_ids = _.map(recipe_orders, 'target_exchange_id');
-
-                let result = await  Promise.all([
-                    InstrumentService.getInstrumentPrices(
-                        orders_instrument_ids,
-                        orders_exchanges_ids,
-                        true,
-                        transaction
-                    ),
-                    InstrumentExchangeMapping.findAll({
-                        where: {
-                            instrument_id: _.map(recipe_orders, 'instrument_id'),
-                            exchange_id: _.map(recipe_orders, 'target_exchange_id')
-                        },
-                        transaction
-                    })
-                ])
-
-                const [ newest_market_data, exchange_mappings] = result;
-
-                let reee = await Promise.all(_.map(recipe_orders, async recipe_order => {
-
-                    //let unificationOfExchange;
-                    let [err, unifiedExchange] = await to(ccxtUnified.getExchange(recipe_order.target_exchange_id));
-                    if (err) TE(err.message);
-                    await unifiedExchange.isReady();
-
-                    const exchange = recipe_order.target_exchange != null ? recipe_order.target_exchange : {
-                        name: '<NONE>'
-                    }
-                    if (unifiedExchange == null) {
-                        TE(`Can't approve recipe order ${recipe_order.id}: No connector found for exchange ${exchange.name}!`)
-                    }
-                    if (unifiedExchange._connector.loading_failed) {
-                        TE(`Can't approve recipe order ${recipe_order.id}: Connector for ${exchange.name} faield to load markets!`);
-                    }
-
-                    const mapping = _.find(exchange_mappings, mapping => mapping.instrument_id == recipe_order.instrument_id && recipe_order.target_exchange_id == mapping.exchange_id);
-                    if (mapping == null) {
-                        TE(`Can't approve recipe order ${recipe_order.id}: No mapping found for ${recipe_order.Instrument.symbol} on ${exchange.name}`);
-                    }
-
-                    //pick correct symbol to check market
-                    const check_symbol = mapping.external_instrument_id;
-                    const check_market = unifiedExchange._connector.markets[check_symbol];
-
-                    if (check_market == null || !check_market.active) {
-
-                        TE(`Can't approve recipe order ${recipe_order.id}: No market for mapping ${check_symbol} on exchange ${unifiedExchange.name}.`)
-                    }
-
-                    const order_market_prices = _.find(
-                        newest_market_data, 
-                        datum => (datum.exchange_id == recipe_order.target_exchange_id 
-                            && datum.instrument_id == recipe_order.instrument_id)
-                    );
-                    
-                    //number of seconds we handicap from the TTL value
-                    const handicap_seconds = SYSTEM_SETTINGS.BASE_ASSET_PRICE_TTL_THRESHOLD + SYSTEM_SETTINGS.MARKET_DATA_TTL_HANDICAP;
-                    const cutoff_date = new Date(new Date().getTime() - handicap_seconds * 1000);
-                    
-                    if (order_market_prices == null || order_market_prices.timestamp < cutoff_date) {
-
-                        TE(`Can't approve recipe order ${recipe_order.id}: No recent market data found for instrument ${recipe_order.Instrument.symbol} on ${recipe_order.target_exchange.name}, must be newer than ${cutoff_date.toISOString()}!`);
-                    }
-
-                    let limits;
-                    [err, limits] = await to(unifiedExchange.getSymbolLimits(mapping.external_instrument_id));
-                    if (err) TE(err.message);
-                    
-                    const lower_limit = Decimal(limits.spend.min || '0');
-                    if (Decimal(recipe_order.spend_amount || '0').lt(lower_limit)) {
-
-                        TE(`Can't approve recipe order ${recipe_order.id}: Market ${check_market.symbol} on exchange ${unifiedExchange.name} lower trade limit: ${lower_limit.toString()}, recipe order quantity was: ${recipe_order.spend_amount}`);
-                    }
-                    //market exists for this order, we can approve it
-                    recipe_order.status = RECIPE_ORDER_STATUSES.Executing;
-                    return recipe_order.save({
-                        transaction
-                    })
-                }));
-            
-                //since all recipe orders got approved OK we can now approve recipe order group
-                Object.assign(recipe_order_group, {
-                    approval_status: status,
-                    approval_user_id: user_id,
-                    approval_timestamp: new Date(),
-                    approval_comment: (comment != null) ? comment : recipe_order_group.approval_comment
-                });
-
-                return Promise.all([
-                    recipe_order_group.save({
-                        transaction
-                    }),
-                    InvestmentService.changeInvestmentRunStatus(
-                        { recipe_order_group_id: order_group_id }, 
-                        INVESTMENT_RUN_STATUSES.OrdersExecuting, 
-                        transaction
-                    ),
-                    RecipeOrder.update({
-                        status: RECIPE_ORDER_STATUSES.Executing
-                    }, {
-                        where: {
-                            recipe_order_group_id: recipe_order_group.id
-                        },
-                        transaction
-                    })
-                ]);
-            }), false);
+            ]);
+        }), false);
     }
 
     if (err) {

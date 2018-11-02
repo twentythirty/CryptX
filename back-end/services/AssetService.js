@@ -539,8 +539,6 @@ const getAssetGroupWithData = async function (investment_run_id) {
       TE(`Asset ${asset.long_name} (${asset.symbol}) doesn't have instruments`);
     else if (missing.every(p => _.isNull(p.exchange_id) || _.isUndefined(p.exchange_id))) // check if exchange_id is missing
       TE(`Asset ${asset.long_name} (${asset.symbol}) is not mapped to any exchange and can't be bought because of that`);
-    else if (missing.every(p => _.isNull(asset.exchange_name)))
-      TE(`Asset ${asset.long_name} (${asset.symbol}) is not available on active exchanges`);
     else {
       let property_missing = properties.find(p => {
         return missing.find(m => _.isNull(m[p.key]) || _.isUndefined(m[p.key]))

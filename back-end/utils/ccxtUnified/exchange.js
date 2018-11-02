@@ -42,22 +42,18 @@ class Exchange {
   }
 
   async adjustQuantity (symbol, sell_amount, price, recipe_order_id) {
-    let statuses = [
-      EXECUTION_ORDER_STATUSES.InProgress,
-      EXECUTION_ORDER_STATUSES.FullyFilled,
-      EXECUTION_ORDER_STATUSES.PartiallyFilled
-    ];
+    let statuses = [EXECUTION_ORDER_STATUSES.Pending];
 
-    let amounts = await sequelize.query(`
+    let [err, amounts] = await to(sequelize.query(`
       SELECT 
-        spend_amount,
-        eo.spent
+        COALESCE(spend_amount,0) as spend_amount,
+        COALESCE(eo.spent,0) as spent
       FROM recipe_order ro
       LEFT JOIN LATERAL (
         SELECT SUM(spend_amount) as spent
         FROM execution_order eo
         WHERE eo.recipe_order_id=ro.id
-          AND eo.status IN (:statuses)
+          AND eo.status NOT IN (:statuses)
         GROUP BY eo.recipe_order_id
       ) AS eo ON TRUE
       WHERE ro.id=:recipe_order_id
@@ -68,9 +64,13 @@ class Exchange {
       },
       plain: true,
       type: sequelize.QueryTypes.SELECT
-    });
+    }));
 
-    let limits = await this.getSymbolLimits(symbol, this.api_id);
+    if (err) TE(err.message);
+
+    let limits;
+    [err, limits] = await to(this.getSymbolLimits(symbol, this.api_id));
+    if (err) TE(err.message);
 
     const amount_limit = Object.assign({
       min: 0.0,
