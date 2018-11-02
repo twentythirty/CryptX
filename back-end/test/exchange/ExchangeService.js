@@ -373,7 +373,7 @@ describe('ExchangeService testing', () => {
             },
             api_key_string: '43h24h234kj2h4k2jh',
             api_secret_string: '432kjh42kh42j4',
-            additional_params_string: {
+            additional_params_object: {
                 extra_1: '3h4jk2hj3h24jh23jk4h2',
                 extra_2: '34h2kj4j543k4h53jh54'
             }
@@ -426,8 +426,8 @@ describe('ExchangeService testing', () => {
 
             expect(credential.api_key_string).to.be.null;
             expect(credential.api_secret_string).to.be.null;
-            expect(credential.additional_params_string.extra_1).to.be.null;
-            expect(credential.additional_params_string.extra_2).to.be.null;
+            expect(credential.additional_params_object.extra_1).to.be.null;
+            expect(credential.additional_params_object.extra_2).to.be.null;
 
             expect(DUMMY_CONNECTOR.apiKey).to.be.null;
             expect(DUMMY_CONNECTOR.secret).to.be.null;

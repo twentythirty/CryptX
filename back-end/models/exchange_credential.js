@@ -22,7 +22,7 @@ module.exports = (sequelize, DataTypes) => {
                 allowNull: true
             }),
             additional_params: encrypted_additional_params_field.vault('additional_params'),
-            additional_params_string: encrypted_additional_params_field.field('additional_params_string', {
+            additional_params_object: encrypted_additional_params_field.field('additional_params_object', {
                 type: DataTypes.STRING,
                 allowNull: true,
                 defaultValue: "{}",

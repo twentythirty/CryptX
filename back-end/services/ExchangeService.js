@@ -130,9 +130,9 @@ const setExchangeCredentials = async (exchange_id, credentials = {}) => {
     if(err) TE(err.message);
 
     const exchange_fields = EXCHANGE_CREDENTIALS[exchange.api_id].map(cred => cred.field_name);
-    let additional_params_string = _.pick(credentials, exchange_fields);
-    delete additional_params_string.api_key;
-    delete additional_params_string.api_secret;
+    let additional_params_object = _.pick(credentials, exchange_fields);
+    delete additional_params_object.api_key;
+    delete additional_params_object.api_secret;
 
     let credential;
     [ err, credential ] = await to(sequelize.transaction(async transaction => {
@@ -147,7 +147,7 @@ const setExchangeCredentials = async (exchange_id, credentials = {}) => {
             updated: true,
             api_key_string,
             api_secret_string,
-            additional_params_string
+            additional_params_object
         }, { transaction });
 
     }));
@@ -157,7 +157,7 @@ const setExchangeCredentials = async (exchange_id, credentials = {}) => {
     connector.apiKey = credential.api_key_string;
     connector.secret = credential.api_secret_string;
 
-    _.assign(connector, credential.additional_params_string);
+    _.assign(connector, credential.additional_params_object);
     
     return credential;
 
@@ -181,14 +181,14 @@ const deleteExchangeCredentials = async (exchange_id) => {
     connector.apiKey = null;
     connector.secret = null;
 
-    const additional_params = credential.additional_params_string || {};
-    for(let field in credential.additional_params_string) {
+    const additional_params = credential.additional_params_object || {};
+    for(let field in credential.additional_params_object) {
 
         connector[field] = null;
         additional_params[field] = null;
 
     }
-    credential.additional_params_string = additional_params;
+    credential.additional_params_object = additional_params;
     credential.updated = true;
 
     return credential.save();

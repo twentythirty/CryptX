@@ -54,7 +54,7 @@ const cache_init_promise = async () => {
                 connector_options.apiKey = credentials.api_key_string;
                 connector_options.secret = credentials.api_secret_string;
                 
-                _.assign(connector_options, credentials.additional_params_string);
+                _.assign(connector_options, credentials.additional_params_object);
 
             }
 

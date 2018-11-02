@@ -33,7 +33,7 @@ describe('Exchange connector updater job:', () => {
         },
         api_key_string: '2jk4h3j4h23jkh42j3h42k',
         api_secret_string: '2jk43h2j4h2j3h42jh34jkh2jk34h',
-        additional_params_string: {
+        additional_params_object: {
             password: '123354544446859999'
         },
         async save() {
@@ -76,7 +76,7 @@ describe('Exchange connector updater job:', () => {
 
         expect(STUB_CONNECTOR.apiKey).to.equal(STUB_CREDENTIAL.api_key_string);
         expect(STUB_CONNECTOR.secret).to.equal(STUB_CREDENTIAL.api_secret_string);
-        expect(STUB_CONNECTOR.password).to.equal(STUB_CREDENTIAL.additional_params_string.password);
+        expect(STUB_CONNECTOR.password).to.equal(STUB_CREDENTIAL.additional_params_object.password);
 
         expect(STUB_CREDENTIAL.updated).to.be.false;
 
