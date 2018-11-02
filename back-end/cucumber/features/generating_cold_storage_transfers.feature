@@ -13,6 +13,17 @@ Feature: Generating cold storage transfers
         And the system has Approved Recipe Run with Details
 
     @order_group_cache_cleanup
+    Scenario: ignore order group if at least one order is not completed
+
+        Given the system has the following Approved Recipe Order Group:
+        | instrument | price | side | exchange | quantity | spend_amount | status |
+        | XRP/BTC    | 0.005 | Buy | Bitfinex | 200    |   1   |   Completed     |
+        | LTC/BTC    | 0.015 | Buy | Binance | 50    |   0.75   |   Completed     |
+        | EOS/ETH    | 0.08 | Buy | OKEx | 9.375    |   7.5   |   Executing     |
+        When the system finished the task "generate cold storage transfers"
+        Then no Cold Storage Transfers will be generated for the Recipe Order Group
+
+    @order_group_cache_cleanup
     Scenario: fail to generate due to missing cold storage accounts
 
         Given the system has the following Approved Recipe Order Group:
