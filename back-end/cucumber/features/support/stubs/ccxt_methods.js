@@ -351,6 +351,47 @@ async function fetchTransactions(symbol, since) {
 module.exports.fetchTransactions = fetchTransactions;
 module.exports.fetch_transactions = fetchTransactions;
 
+async function fetchBalance() {
+
+    return this._balance
+
+}
+module.exports.fetchBalance = fetchBalance;
+module.exports.fetch_balane = fetchBalance;
+
+function _setBalance(balance) {
+
+    _.map(balance, (amount, symbol) => {
+
+        const free = parseFloat(amount);
+        const used = 0;
+        const total = free + used;
+
+        this._balance[symbol] = { free, used, total };
+        this._balance.free[symbol] = free;
+        this._balance.used[symbol] = used;
+
+    });
+}
+module.exports._setBalance = _setBalance;
+
+async function fetchFundingFees() {
+
+    return this._funding_fees;
+
+}
+module.exports.fetchFundingFees = fetchFundingFees;
+module.exports.fetch_funding_fees = fetchFundingFees;
+
+function _setWithdrawFees(fees, amount = undefined) {
+
+    if(_.isString(fees)) this._funding_fees.withdraw[fees] = amount;
+    
+    else this._funding_fees.withdraw = fees;
+
+}
+module.exports._setWithdrawFees = _setWithdrawFees;
+
 function _init() {
 
     this._current_order_id = 1;
@@ -361,6 +402,15 @@ function _init() {
     this._trades = [];
     this._withdrawals = [];
     this._transactions = [];
+
+    this._balance = {
+        free: {},
+        used: {}
+    };
+    this._funding_fees = {
+        withdraw: {},
+        deposits: {}
+    }
 
 }
 module.exports._init = _init;

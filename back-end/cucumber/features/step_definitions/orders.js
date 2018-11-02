@@ -691,6 +691,52 @@ Given(/^the Recipe Order was created on (.*)$/, async function(date_string) {
 
 });
 
+Given(/^the system has the following (Approved|Pending|Rejected) Recipe Order Group:$/, async function(group_status, table) {
+
+    const order_data = table.hashes();
+    const { RecipeOrderGroup, RecipeOrder, Instrument, Exchange, sequelize } = require('../../../models');
+
+    const orders = [];
+    for(let order of order_data) {
+
+        const [ instrument, exchange ] = await Promise.all([
+            Instrument.findOne({ where: { symbol: order.instrument } }),
+            Exchange.findOne({ where: { name: order.exchange } })
+        ]);
+
+        expect(instrument, `Expected to find instrument: ${order.instrument}`).to.be.not.null;
+        expect(exchange, `Expected to find exchange: ${order.exchange}`).to.be.not.null;
+
+        orders.push({
+            instrument_id: instrument.id,
+            target_exchange_id: exchange.id,
+            price: order.price,
+            quantity: order.quantity,
+            spend_amount: order.spend_amount,
+            side: ORDER_SIDES[order.side],
+            status: RECIPE_ORDER_STATUSES[order.status]
+        });
+
+    }
+
+    return sequelize.transaction(async transaction => {
+
+        this.current_recipe_order_group = await RecipeOrderGroup.create({
+            recipe_run_id: this.current_recipe_run.id,
+            created_timestamp: Date.now(),
+            approval_comment: '',
+            approval_status: RECIPE_ORDER_GROUP_STATUSES[group_status],
+            approval_timestamp: group_status !== 'Pending' ? Date.now() : 0
+        }, { transaction });
+
+        this.current_recipe_orders = await RecipeOrder.bulkCreate(orders.map(o => {
+            return _.assign(o, { recipe_order_group_id: this.current_recipe_order_group.id })
+        }), { transaction, returning: true });
+
+    });
+
+});
+
 When('I generate new Orders for the Approved Recipe Run', {
     timeout: 15000
 }, function () {

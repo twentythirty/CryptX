@@ -677,6 +677,18 @@ After('@execution_orders_cache_cleanup', async function() {
         }
 });
 
+After('@order_group_cache_cleanup', async function() {
+
+    if(this.current_recipe_order_group) {
+
+        const { RecipeOrderGroup } = require('../../../models');
+        return RecipeOrderGroup.destroy({
+            where: { id: this.current_recipe_order_group.id }
+        });
+    }
+
+});
+
 After('@restore_settings', function() {
     
     if(!_.isEmpty(World._default_settings)) SYSTEM_SETTINGS = _.clone(World._default_settings);

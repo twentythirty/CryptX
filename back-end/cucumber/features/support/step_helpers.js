@@ -15,7 +15,8 @@ const descriptionToJobFile = {
     'asset liquidity check': 'asset-liquidity-checker',
     'asset price age check': 'asset-price-age-checker',
     'withdraw approved transfers': 'approved-transfer-withdraw',
-    'transfer status updater': 'transfer-status-updater'
+    'transfer status updater': 'transfer-status-updater',
+    'generate cold storage transfers': 'cold-storage-transfers-generator'
 }
 
 /**

@@ -53,6 +53,7 @@ module.exports.JOB_BODY = async (config, log) => {
             i.transaction_asset_id,
             i.quote_asset_id,
             a.symbol AS asset,
+            cta.id AS cold_storage_account_id,
             ro.*
         FROM order_groups AS og
         JOIN completed_orders_without_transfers AS ro ON ro.recipe_order_group_id = og.id
@@ -60,7 +61,8 @@ module.exports.JOB_BODY = async (config, log) => {
         JOIn investment_run AS ir ON rr.investment_run_id = ir.id
         JOIN instrument AS i ON ro.instrument_id = i.id
         JOIN asset AS a ON i.transaction_asset_id = a.id
-        WHERE og.is_completed IS TRUE AND ro.target_exchange_id = 1
+        LEFT JOIN cold_storage_account AS cta ON ir.strategy_type = cta.strategy_type AND a.id = cta.asset_id
+        WHERE og.is_completed IS TRUE
     `, {
         type: sequelize.QueryTypes.SELECT,
         replacements: {
@@ -76,9 +78,6 @@ module.exports.JOB_BODY = async (config, log) => {
         log(`[WARN.1A] No orders were found with missing transfers, skipping..`);
         return [];
     }
-
-    let accounts;
-    [ err, accounts ] = await to(ColdStorageAccount.findAll({ raw: true }));
 
     const exchange_ids = _.uniq(orders.map(o => o.target_exchange_id));
 
@@ -107,14 +106,14 @@ module.exports.JOB_BODY = async (config, log) => {
     let transfers = await Promise.all(_.map(order_groups, async (group_orders, group_id) => {
 
         let group_transfers = [];
+        let group_errors = [];
 
         for(let order of group_orders) {
 
-            const matching_account = accounts.find(a => a.asset_id === order.transaction_asset_id && a.strategy_type === order.strategy_type);
-            if(!matching_account) {
+            if(!order.cold_storage_account_id) {
                 log(`[ERROR.2A](RO-${order.id}) Error: order does not have a matching ${_.invert(STRATEGY_TYPES)[order.strategy_type]} cold storage account for ${order.asset}`);
     
-                errors.push([actions.missing_account, {
+                group_errors.push([actions.missing_account, {
                     args: {
                         strategy_type: _.invert(STRATEGY_TYPES)[order.strategy_type],
                         asset: order.asset
@@ -126,7 +125,7 @@ module.exports.JOB_BODY = async (config, log) => {
                     log_level: ACTIONLOG_LEVELS.Error
                 }]);
     
-                return;
+                continue;
             }
     
             const asset_balance = _.get(exchange_info, `[${order.target_exchange_id}].balance[${order.asset}]`, 0);
@@ -135,7 +134,7 @@ module.exports.JOB_BODY = async (config, log) => {
             if(asset_balance === 0) {
                 log(`[ERROR.2B](RO-${order.id}) Error: transfer cannot be created as the balance of ${order.asset} is 0`);
     
-                errors.push([actions.zero_balance, {
+                group_errors.push([actions.zero_balance, {
                     args: {
                         asset: order.asset
                     },
@@ -151,8 +150,8 @@ module.exports.JOB_BODY = async (config, log) => {
     
             group_transfers.push({
                 amount: _.clamp(parseFloat(order.quantity), asset_balance) - withdraw_fee,
-                asset_id: matching_account.asset_id,
-                cold_storage_account_id: matching_account.id,
+                asset_id: order.transaction_asset_id,
+                cold_storage_account_id: order.cold_storage_account_id,
                 fee: withdraw_fee,
                 recipe_run_id: order.recipe_run_id,
                 recipe_run_order_id: order.id,
@@ -160,6 +159,11 @@ module.exports.JOB_BODY = async (config, log) => {
             });
     
         }
+
+        if(group_errors.length) {
+            errors = errors.concat(group_errors);
+            return;
+        };
 
         return group_transfers;
 

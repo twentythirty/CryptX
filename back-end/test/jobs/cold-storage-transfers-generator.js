@@ -73,7 +73,8 @@ describe('Cold storage transfer generator job:', () => {
         target_exchange_id: 1,
         side: ORDER_SIDES.Buy,
         quantity: MOCK_BALANCE + _.random(1, 10),
-        recipe_run_id: MOCK_RECIPE_RUN_ID
+        recipe_run_id: MOCK_RECIPE_RUN_ID,
+        cold_storage_account_id: 1
     };
     const MOCK_ORDERS = [];
 
@@ -138,9 +139,11 @@ describe('Cold storage transfer generator job:', () => {
 
     it('shall not create transfers if there are missing cold storage accounts', async () => {
 
-        ColdStorageAccount.findAll.restore();
-        sinon.stub(ColdStorageAccount, 'findAll').callsFake(async options => {
-            return [];
+        sequelize.query.restore();
+        sinon.stub(sequelize, 'query').callsFake(async query => {
+            return MOCK_ORDERS.map(o => {
+                return _.assign({}, o, { cold_storage_account_id: null })
+            });
         });
 
         const result = await JOB_BODY(stub_config, console.log);
@@ -179,6 +182,8 @@ describe('Cold storage transfer generator job:', () => {
     it('shall create a transfer for each order, clamping the quantity based on balance and deducting the fee', async () => {
 
         const transfers = await JOB_BODY(stub_config, console.log);
+
+        expect(transfers).length(MOCK_ORDERS.length);
         
         for(let transfer of transfers) {
 

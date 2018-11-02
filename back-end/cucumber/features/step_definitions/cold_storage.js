@@ -794,3 +794,32 @@ Then('I will see an error about approving a non Pending Cold Storage Transfer', 
     expect(possible_errors).includes(error_message);
 
 });
+
+Then('no Cold Storage Transfers will be generated for the Recipe Order Group', async function() {
+
+    const { ColdStorageTransfer } = require('../../../models');
+
+    const transfers = await ColdStorageTransfer.findAll({
+        where: {
+            recipe_run_order_id: this.current_recipe_orders.map(o => o.id)
+        }
+    });
+
+    expect(transfers).length(0, `Expected to find 0 Cold Storage Transfers`);
+
+});
+
+Then('a log is created for each missing Cold Storage Account', async function () {
+
+    const { ActionLog } = require('../../../models');
+
+    const logs = await ActionLog.findAll({
+        where: {
+            recipe_order_id: this.current_recipe_orders.map(o => o.id),
+            translation_key: 'logs.cold_storage_transfers.missing_account'
+        }
+    });
+
+    expect(logs).length(this.current_recipe_orders.length, `Expected to find ${this.current_recipe_orders.length} logs about missing cold storage accounts`);
+
+});
