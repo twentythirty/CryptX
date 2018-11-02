@@ -33,3 +33,26 @@ Given(/^the system has Exchange Account for (.*) on (.*)$/, async function(asset
     });
 
 });
+
+Given('the current balances on the exchanges are:', async function(table) {
+
+    const balances = table.hashes();
+    const { Exchange } = require('../../../models');
+    const ccxtUtils = require('../../../utils/CCXTUtils');
+
+    const exchanges = await Exchange.findAll({ raw: true });
+
+    for(let balance of balances) {
+
+        const matching_exchange = exchanges.find(e => e.name === balance.exchange);
+
+        expect(matching_exchange, `Expected to find exchange "${balance.exchange}"`).to.be.not.undefined;
+
+        const connector = await ccxtUtils.getConnector(matching_exchange.api_id);
+
+        delete balance.exchange;
+        connector._setBalance(balance);
+
+    }
+
+});

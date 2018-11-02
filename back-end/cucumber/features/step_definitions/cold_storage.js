@@ -823,3 +823,18 @@ Then('a log is created for each missing Cold Storage Account', async function ()
     expect(logs).length(this.current_recipe_orders.length, `Expected to find ${this.current_recipe_orders.length} logs about missing cold storage accounts`);
 
 });
+
+Then('a log is created for each required empty balance', async function() {
+
+    const { ActionLog } = require('../../../models');
+
+    const logs = await ActionLog.findAll({
+        where: {
+            recipe_order_id: this.current_recipe_orders.map(o => o.id),
+            translation_key: 'logs.cold_storage_transfers.zero_balance'
+        }
+    });
+
+    expect(logs.length).to.be.greaterThan(0, `Expected to find at least 1 log about an empty balance`);
+
+});

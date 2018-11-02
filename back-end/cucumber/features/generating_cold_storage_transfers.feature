@@ -35,3 +35,23 @@ Feature: Generating cold storage transfers
         When the system finished the task "generate cold storage transfers"
         Then no Cold Storage Transfers will be generated for the Recipe Order Group
         And a log is created for each missing Cold Storage Account
+
+    @order_group_cache_cleanup
+    Scenario: fail to generate if the balance on the exchange is equal to zero
+
+        Given the system has the following Approved Recipe Order Group:
+        | instrument | price | side | exchange | quantity | spend_amount | status |
+        | XRP/BTC    | 0.005 | Buy | Bitfinex | 200    |   1   |   Completed     |
+        | LTC/BTC    | 0.015 | Buy | Binance | 50    |   0.75   |   Completed     |
+        | EOS/ETH    | 0.08 | Buy | OKEx | 9.375    |   7.5   |   Completed     |
+        And the system has LCI Cold Storage Account for LTC
+        And the system has LCI Cold Storage Account for XRP
+        And the system has LCI Cold Storage Account for EOS
+        But the current balances on the exchanges are:
+        | exchange  |   XRP     |   LTC     |   EOS     |
+        | Bitfinex  |   0       |   0.54    |   0       |
+        | Binance   |   0       |   1       |   0       |
+        | OKEx      |   0.0254  |   0.1     |   0       |
+        When the system finished the task "generate cold storage transfers"
+        Then no Cold Storage Transfers will be generated for the Recipe Order Group
+        And a log is created for each required empty balance
