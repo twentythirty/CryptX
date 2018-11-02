@@ -9,7 +9,7 @@ const sinon = require("sinon");
 
 chai.use(chaiAsPromised);
 
-const ccxtUtils = require('../../utils/CCXTUtils');
+const ccxtUnified = require('../../utils/ccxtUnified');
 const { sequelize, ColdStorageTransfer, ColdStorageAccount } = require('../../models');
 const { JOB_BODY } = require('../../jobs/cold-storage-transfers-generator');
 
@@ -54,10 +54,12 @@ describe('Cold storage transfer generator job:', () => {
 
     const MOCK_EXCHANGE = {
         id: 'test-coin',
-        async fetchBalance(){
-            let free = {};
-            for(let asset of MOCK_ASSETS) free[asset.symbol] = MOCK_BALANCE;
-            return { free };
+        _connector: {
+            async fetchBalance(){
+                let free = {};
+                for(let asset of MOCK_ASSETS) free[asset.symbol] = MOCK_BALANCE;
+                return { free };
+            }
         },
         async fetchFundingFees() {
             let withdraw = {};
@@ -94,7 +96,7 @@ describe('Cold storage transfer generator job:', () => {
 
     beforeEach(done => {
 
-        sinon.stub(ccxtUtils, 'getConnector').callsFake(async id => {
+        sinon.stub(ccxtUnified, 'getExchange').callsFake(async id => {
             return MOCK_EXCHANGE;
         });
 
@@ -115,7 +117,7 @@ describe('Cold storage transfer generator job:', () => {
 
     afterEach(done => {
 
-        ccxtUtils.getConnector.restore();
+        ccxtUnified.getExchange.restore();
         sequelize.query.restore();
         ColdStorageAccount.findAll.restore();
         ColdStorageTransfer.bulkCreate.restore();
@@ -155,14 +157,15 @@ describe('Cold storage transfer generator job:', () => {
 
     it('shall not create transfers if the balance on the exchange is 0', async () => {
         
-        ccxtUtils.getConnector.restore();
-        sinon.stub(ccxtUtils, 'getConnector').callsFake(async id => {
-            return {
-                id: 'test-coin',
-                async fetchBalance(){
-                    let free = {};
-                    for(let asset of MOCK_ASSETS) free[asset.symbol] = 0;
-                    return { free };
+        ccxtUnified.getExchange.restore();
+        sinon.stub(ccxtUnified, 'getExchange').callsFake(async id => {
+            return {id: 'test-coin',
+                _connector: {
+                    async fetchBalance(){
+                        let free = {};
+                        for(let asset of MOCK_ASSETS) free[asset.symbol] = 0;
+                        return { free };
+                    }
                 },
                 async fetchFundingFees() {
                     let withdraw = {};

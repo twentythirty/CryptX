@@ -165,7 +165,17 @@ class Binance extends Exchange {
     };
 
     return limits;
+  } 
+
+  /**
+   * This methods is same as the original for this exchange
+   */
+  async fetchFundingFees () {
+    await this.isReady();
+    
+    return this._connector.fetchFundingFees();
   }
+
 }
 
 module.exports = Binance;

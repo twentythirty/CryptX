@@ -95,8 +95,7 @@ class Okex extends Exchange {
   async withdraw(asset_symbol, amount, address, tag) {
     await this.isReady();
 
-    const fee_map = OKEX_WITHDRAW_FEES;
-
+    const { withdraw: fee_map } = await this.fetchFundingFees();
     const chargefee = fee_map[asset_symbol];
 
     console.log(`
@@ -229,6 +228,56 @@ class Okex extends Exchange {
     };
 
     return limits;
+  }
+
+  /**
+   * The only way to fetch funding fees for OKEx is through the v3 API.
+   */
+  async fetchFundingFees () {
+    await this.isReady();
+
+    //Yet another workaround
+    if(process.env.NODE_ENV === 'cucumber') return this._connector.fetchFundingFees();
+    
+    const response = await this.createV3Request('get', '/api/account/v3/withdrawal/fee');
+
+    let withdraw = {};
+    for(let coin of response) {
+      withdraw[coin.currency] = coin.min_fee || 0;
+    }
+
+    return {
+      info: response,
+      deposits: {},
+      withdraw: withdraw
+    }
+  }
+
+  signv3(timestamp, method, request_path, body = {}) {
+
+    if(_.isEmpty(body)) body = '';
+
+    let message = String(timestamp) + String(method).toUpperCase() + request_path + body;
+    let hash = require('crypto').createHmac('sha256', this._connector.v3_api_secret).update(new Buffer(message)).digest('base64');
+
+    return hash;
+
+  }
+
+  async createV3Request(method = 'get', request_path, body = {}) {
+    const now = new Date().toISOString();
+
+    return require('request-promise')[method]({
+      uri: 'https://www.okex.com' + request_path,
+      headers: {
+        'OK-ACCESS-KEY': this._connector.v3_api_key,
+        'OK-ACCESS-SIGN': this.signv3(now, 'GET', request_path, body),
+        'OK-ACCESS-TIMESTAMP': now,
+        'OK-ACCESS-PASSPHRASE': this._connector.v3_api_passphrase
+      },
+      json: true,
+      //agent: require('../CCXTUtils').proxy_agent PROXY IS NOT WHITELISTED YET
+    });
   }
 
 }

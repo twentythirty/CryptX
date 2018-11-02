@@ -11,6 +11,7 @@ Feature: Generating cold storage transfers
         And the system has Instrument Mappings for OKEx
         And there is a LCI Investment Run created by an Investment Manager
         And the system has Approved Recipe Run with Details
+        And the system does not have Recipe Order Groups
 
     @order_group_cache_cleanup
     Scenario: ignore order group if at least one order is not completed

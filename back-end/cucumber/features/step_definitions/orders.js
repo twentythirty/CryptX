@@ -737,6 +737,16 @@ Given(/^the system has the following (Approved|Pending|Rejected) Recipe Order Gr
 
 });
 
+Given('the system does not have Recipe Order Groups', async function() {
+
+    const { RecipeOrderGroup } = require('../../../models');
+
+    return RecipeOrderGroup.destroy({
+        where: {}
+    });
+
+});
+
 When('I generate new Orders for the Approved Recipe Run', {
     timeout: 15000
 }, function () {

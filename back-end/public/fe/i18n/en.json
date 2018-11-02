@@ -438,14 +438,17 @@
       "api_secret": "API secret",
       "uid": "Unique ID",
       "password": "Trade/Admin password",
-      "passphrase": "API key passphrase"
+      "v3_api_key": "V3 API key",
+      "v3_api_secret": "V3 API secret",
+      "v3_api_passphrase": "V3 API key passphrase"
     },
     "placeholder": {
       "api_key": "Enter API key",
       "api_secret": "Enter API secret",
       "uid": "Enter Unique ID",
-      "password": "Enter password",
-      "passphrase": "Enter API key passphrase"
+      "v3_api_key": "Enter V3 API key",
+      "v3_api_secret": "Enter V3 API secret",
+      "v3_api_passphrase": "Enter V3 API key passphrase"
     }
   },
 

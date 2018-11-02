@@ -3,7 +3,7 @@
 const {
   logAction
 } = require('../utils/ActionLogUtil');
-const ccxtUtils = require('../utils/CCXTUtils');
+const ccxtUnified = require('../utils/ccxtUnified');
 
 const action_path = 'cold_storage_transfers';
 
@@ -83,12 +83,13 @@ module.exports.JOB_BODY = async (config, log) => {
 
     let result;
     [ err, result ] = await to(Promise.all(exchange_ids.map(async id => {
-        const connector = await ccxtUtils.getConnector(id);
+        const connector = await ccxtUnified.getExchange(id);
+
         const [ balance, fees ] = await Promise.all([
-            connector.fetchBalance(),
-            getWithDrawFees(connector)
+            connector._connector.fetchBalance(),
+            connector.fetchFundingFees()
         ]);
-        return [ id, { balance: balance.free, fee: fees }]; //Create exchange id and info pairs
+        return [ id, { balance: balance.free, fee: fees.withdraw }]; //Create exchange id and info pairs
     })));
 
     if(err) {
@@ -183,16 +184,5 @@ module.exports.JOB_BODY = async (config, log) => {
     if(err) log(`[ERROR.3A] Error occured during transfer saving: ${err.message}`);
 
     return transfers;
-
-
-    async function getWithDrawFees(connector) {
-        //OKEx is an exception
-        if(connector.id === 'okex' && !connector.fetchFundingFees) return OKEX_WITHDRAW_FEES;
-
-        const fees = await connector.fetchFundingFees();
-        
-        return fees.withdraw;
-        
-    }
 
 }

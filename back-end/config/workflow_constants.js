@@ -98,7 +98,10 @@ EXCHANGE_KEYS = {
     okex: {
         apiKey: process.env.OKEX_APIKEY,
         secret: process.env.OKEX_SECRETKEY,
-        password: process.env.OKEX_TRADE_PASSWORD
+        password: process.env.OKEX_TRADE_PASSWORD,
+        v3_api_key: process.env.OKEX_V3_APIKEY,
+        v3_api_secret: process.env.OKEX_V3_SECRETKEY,
+        v3_api_passphrase: process.env.OKEX_V3_PASSPHRASE
     }
 }
 
@@ -135,17 +138,19 @@ EXCHANGE_CREDENTIALS = {
             type: 'string'
         },
         {
-            title: 'exchange_credentials.fields.passphrase',
-            field_name: 'passphrase',
+            title: 'exchange_credentials.fields.v3_api_key',
+            field_name: 'v3_api_key',
+            type: 'string'
+        },
+        {
+            title: 'exchange_credentials.fields.v3_api_secret',
+            field_name: 'v3_api_secret',
+            type: 'string'
+        },
+        {
+            title: 'exchange_credentials.fields.v3_api_passphrase',
+            field_name: 'v3_api_passphrase',
             type: 'string'
         }
     ])
 }
-//Until we start using v3
-OKEX_WITHDRAW_FEES = {
-    BTC: 0.0005,
-    LTC: 0.001,
-    ETH: 0.01,
-    ETC: 0.001,
-    BCH: 0.0005
-};
