@@ -34,24 +34,34 @@ Given(/^the system has Exchange Account for (.*) on (.*)$/, async function(asset
 
 });
 
-Given('the current balances on the exchanges are:', async function(table) {
+Given(/^the current (balances|withdraw fees) on the exchanges are:$/, async function(type, table) {
 
-    const balances = table.hashes();
+    const exchange_data = table.hashes();
     const { Exchange } = require('../../../models');
     const ccxtUtils = require('../../../utils/CCXTUtils');
 
     const exchanges = await Exchange.findAll({ raw: true });
 
-    for(let balance of balances) {
+    for(let data of exchange_data) {
 
-        const matching_exchange = exchanges.find(e => e.name === balance.exchange);
+        const matching_exchange = exchanges.find(e => e.name === data.exchange);
 
-        expect(matching_exchange, `Expected to find exchange "${balance.exchange}"`).to.be.not.undefined;
+        expect(matching_exchange, `Expected to find exchange "${data.exchange}"`).to.be.not.undefined;
 
         const connector = await ccxtUtils.getConnector(matching_exchange.api_id);
 
-        delete balance.exchange;
-        connector._setBalance(balance);
+        delete data.exchange;
+
+        switch(type) {
+            case 'balances':
+                connector._setBalance(data);
+                break;
+            
+            case 'withdraw fees':
+                connector._setWithdrawFees(data);
+                break;
+        }
+        
 
     }
 

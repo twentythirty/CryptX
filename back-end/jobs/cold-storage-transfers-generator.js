@@ -187,7 +187,7 @@ module.exports.JOB_BODY = async (config, log) => {
 
     async function getWithDrawFees(connector) {
         //OKEx is an exception
-        if(connector.id === 'okex') return OKEX_WITHDRAW_FEES;
+        if(connector.id === 'okex' && !connector.fetchFundingFees) return OKEX_WITHDRAW_FEES;
 
         const fees = await connector.fetchFundingFees();
         

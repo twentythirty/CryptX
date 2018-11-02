@@ -55,3 +55,35 @@ Feature: Generating cold storage transfers
         When the system finished the task "generate cold storage transfers"
         Then no Cold Storage Transfers will be generated for the Recipe Order Group
         And a log is created for each required empty balance
+
+    @order_group_cache_cleanup
+    Scenario: generate a cold storage transfer for each recipe order in the group
+
+        Given the system has the following Approved Recipe Order Group:
+        | instrument | price | side | exchange | quantity | spend_amount | status |
+        | XRP/BTC    | 0.005 | Buy | Bitfinex | 200    |   1   |   Completed     |
+        | LTC/BTC    | 0.015 | Buy | Binance | 50    |   0.75   |   Completed     |
+        | EOS/ETH    | 0.08 | Buy | OKEx | 9.375    |   7.5   |   Completed     |
+        And the system has LCI Cold Storage Account for LTC
+        And the system has LCI Cold Storage Account for XRP
+        And the system has LCI Cold Storage Account for EOS
+        And the system has MCI Cold Storage Account for LTC
+        And the system has MCI Cold Storage Account for XRP
+        And the system has MCI Cold Storage Account for EOS
+        And the current balances on the exchanges are:
+        | exchange  |   XRP     |   LTC     |   EOS     |
+        | Bitfinex  |   198       |   0    |   0       |
+        | Binance   |   0       |   50       |   0       |
+        | OKEx      |   0  |   0     |   9.175       |
+        And the current withdraw fees on the exchanges are:
+        | exchange  |   XRP     |   LTC     |   EOS     |
+        | Bitfinex  |   2       |   0.5    |   0.08       |
+        | Binance   |   3       |   0.9       |   0.1       |
+        | OKEx      |   1.8  |   0.85     |   0.085       |
+        When the system finished the task "generate cold storage transfers"
+        Then the following Cold Storage Transfers will be created:
+        | asset | amount    | fee   | status    |
+        | XRP   | 196   |   2   |   Pending     |
+        | LTC   | 49.1  |   0.9 |   Pending     |
+        | EOS   | 9.09  |   0.085   | Pending   |
+        And a matching Cold Storage Account is assinged to each Transfer   

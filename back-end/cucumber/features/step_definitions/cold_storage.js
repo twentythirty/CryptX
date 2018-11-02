@@ -838,3 +838,54 @@ Then('a log is created for each required empty balance', async function() {
     expect(logs.length).to.be.greaterThan(0, `Expected to find at least 1 log about an empty balance`);
 
 });
+
+Then('the following Cold Storage Transfers will be created:', async function(table) {
+
+    const { Asset, ColdStorageTransfer } = require('../../../models');
+    const transfer_data = table.hashes();
+
+    const transfers = await ColdStorageTransfer.findAll({
+        where: { recipe_run_order_id: this.current_recipe_orders.map(o => o.id) }
+    });
+
+    expect(transfers).length(transfer_data.length, `Expected to find ${transfer_data.length} Cold Storage Transfers`);
+
+    for(let transfer of transfer_data) {
+
+        const asset = await Asset.findOne({ where: { symbol: transfer.asset } });
+
+        expect(asset, `Expected to find asset with symbol ${transfer.asset}`).to.be.not.null;
+
+        const matching_transfer = transfers.find(t => t.asset_id === asset.id);
+
+        expect(matching_transfer, `Expected to find a Cold Storage Transfer for asset ${asset.symbol}`).to.be.not.undefined;
+
+        expect(matching_transfer.amount).to.equal(transfer.amount);
+        expect(matching_transfer.fee).to.equal(transfer.fee);
+        expect(matching_transfer.status).to.equal(COLD_STORAGE_ORDER_STATUSES[transfer.status]);
+        expect(matching_transfer.recipe_run_id).to.equal(this.current_recipe_run.id);
+
+    }
+
+    this.current_cold_storage_transfers = transfers;
+
+});
+
+Then('a matching Cold Storage Account is assinged to each Transfer', async function() {
+
+    const { ColdStorageAccount } = require('../../../models');
+
+    expect(this.current_cold_storage_transfers.length).to.be.greaterThan(0, `Expected to have at least one Cold Storage Transfer for the test step`);
+
+    for(let transfer of this.current_cold_storage_transfers) {
+
+        expect(transfer.cold_storage_account_id).to.be.a('number', `(CST-${transfer.id}) Expected to have a Cold Storage Account id`);
+
+        const account = await ColdStorageAccount.findById(transfer.cold_storage_account_id);
+
+        expect(account.asset_id).to.equal(transfer.asset_id, `(CST-${transfer.id}) Expected the assets to match on the Cold Storage Transfer and Account`);
+        expect(account.strategy_type).to.equal(this.current_investment_run.strategy_type, `(CSA-${account.id}) Expected the strategy to match the Investment Run\`s`);
+
+    }
+
+});
