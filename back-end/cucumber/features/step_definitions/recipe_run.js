@@ -310,7 +310,8 @@ When('I initiate a new Recipe Run', function () {
             this.current_response = result;
 
         }).catch(error => {
-            //World.print(error.response.body.error);
+            //Print the error if it happened in a scenario where it should not
+            if(_.get(World, '_current_scenario.pickle.name') === 'Initiating a recipe run for an initiated investment run') World.print(error.response.body.error);
             this.current_response = error;
 
         });

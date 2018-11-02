@@ -14,6 +14,7 @@ Feature: Approving Recipe Run
         And the system has updated the Instrument Market Data
         And the system has Instrument Liquidity History for the last 2 days 
         And the system has updated the Market History Calculation
+        And Assets that could not be mapped are blacklisted
         And there is a LCI Investment Run created by an Investment Manager
 
     @investment_run_cache_cleanup

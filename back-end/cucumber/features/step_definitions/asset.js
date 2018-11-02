@@ -1393,7 +1393,9 @@ Then(/^(Asset|Assets) (.*) will (be|remain) (Blacklisted|Whitelisted|Greylisted)
 });
 
 Given("Assets that could not be mapped are blacklisted", async function() {
-    const sequelize = require('../../../models').sequelize;
+    const { sequelize, AssetStatusChange } = require('../../../models');
+
+    await AssetStatusChange.destroy({ where: {} }); //Whitelist everything first
     
     return await sequelize.query(`
     INSERT INTO asset_status_change (timestamp, user_id, asset_id, comment, type)
@@ -1403,10 +1405,10 @@ Given("Assets that could not be mapped are blacklisted", async function() {
         WHERE NOT EXISTS (
             SELECT iem.external_instrument_id
             FROM asset a
-            JOIN instrument i ON i.transaction_asset_id=a.id OR i.quote_asset_id=a.id
+            JOIN instrument i ON i.transaction_asset_id=a.id AND i.quote_asset_id IN (SELECT id FROM asset WHERE is_base IS TRUE or is_deposit IS TRUE)
             JOIN instrument_exchange_mapping iem ON iem.instrument_id=i.id
             WHERE asset.id=a.id
-        )
+        ) AND asset.id NOT IN (SELECT id FROM asset WHERE is_base IS TRUE or is_deposit IS TRUE)
     )
     `);
 
