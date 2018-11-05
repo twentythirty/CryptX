@@ -503,7 +503,7 @@ const getAssetGroupWithData = async function (investment_run_id) {
     LEFT JOIN asset as qt_asset ON qt_asset.id=i.quote_asset_id
     WHERE ir.id=:investment_run_id
         AND (ga.status=:whitelisted OR ga.status IS NULL)
-        --AND (qt_asset.is_base=TRUE OR tr_asset.is_base=TRUE)
+        AND (qt_asset.is_base=TRUE OR tr_asset.is_base=TRUE)
     ORDER BY nvt DESC, volume_usd DESC, price_usd ASC
   `, {
     replacements: {
