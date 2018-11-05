@@ -91,6 +91,8 @@ exchange # This table contains exchanges will be used for investing
 id PK int
 name varchar
 api_id varchar # Identification code for API
+is_active bool # Defines if exchange is used for trading
+is_mappable bool # Defines if exchange instruments can be mapped
 
 instrument_exchange_mapping # This table determines which instruments are available on which exchanges
 -
@@ -106,6 +108,15 @@ exchange_id int FK >- exchange.id # Exchange on which the account is based
 asset_id int FK >- asset.id # Asset in which acount is denominated
 account_type enum
 address varchar # Address of crypto currency wallet in exchange
+
+exchange_credential # This table contains API key, API secret, and various other values for private API connections
+-
+id PK int
+exchange_id int FK >- exchange.id
+api_key blob NULLABLE
+api_secret blob NULLABLE
+additional_params blob NULLABLE
+updated bool # Default=true
 
 cold_storage_account # This table defines accounts available for cold storage of cryptocurrencies
 -
@@ -190,8 +201,9 @@ amount decimal # Amount deposited
 fee decimal # Deposit management fees deducted
 depositor_user_id int NULLABLE FK >- user.id # Depositor who made the deposit
 completion_timestamp timestamp NULLABLE # Time when deposit was completed
-target_exchange_account_id int FK >- exchange.id # Exchange account to which deposit will be made
+target_exchange_account_id int NULLABLE FK >- exchange.id # Exchange account to which deposit will be made
 status enum # Status of the deposit. Possible values: PENDING, COMPLETED
+cold_storage_account_id int NULLABLE FK >- cold_storage_account.id # Optional cold storage account for straight base asset transfers to cold storage
 
 investment_asset_conversion
 -
@@ -250,7 +262,7 @@ instrument_id int FK >- instrument.id
 exchange_id int FK >- exchange.id
 side enum # Buy = 0 / Sell = 1
 price decimal # Market price when the recipe order was placed
-quantity decimal # Size of the order
+spend_amount decimal # Quote asset sell quantity (either in BTC or ETH)
 status enum # Possible statuses are Pending, Executing, Completed, Rejected (by the user), Cancelled (manual intervention by user), Failed (due to technical issue which does not allow to continue)
 
 execution_order
@@ -264,6 +276,7 @@ side enum # Buy = 0 / Sell = 1
 type enum # Market, Limit, Stop
 price decimal # order price
 total_quantity decimal # Order size
+spend_amount decimal # Quote asset sell quantity (either in BTC or ETH)
 fee decimal # Fee deducted on during placement
 status enum # Pending, InProgress, FullyFilled, PartiallyFilled, NotFilled, Failed
 placed_timestamp timestamp # Time the execution order has been placed
@@ -294,6 +307,8 @@ cold_storage_account_id int # ID of the cold storage account to which the transf
 asset_id int FK >- asset.id # Asset for which cold storage transfer will be made
 amount decimal # Amount that will be transfered
 fee decimal # Fees deducted when withdrawal from exchange to cold storage happened
+external_identifier varchar # Transfer ID given by exchange
+recipe_run_id int FK >- recipe_run.id # Recipe this transfer belongs to
 
 action_log
 # This table will log all actions of users and the system itself
@@ -337,4 +352,13 @@ timestamp_from date # Timestamp from which liquidity was measured
 timestamp_to date # Timestamp till which liquidity was measured
 exchange_id int FK >- exchange.id
 instrument_id int FK >- instrument.id
-volume decimal
+volume decimal # Volume in transaction asset
+quote_volume decimal # Volume in quote asset
+
+build_results
+-
+id
+status enum # Possible values: Passed, Failed
+recorded_at date # Date when build was done
+passed int # Number of tests passed
+failed int # Number of tests failed
