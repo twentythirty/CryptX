@@ -144,13 +144,16 @@ module.exports.JOB_BODY = async (config, log) => {
             placed_order.failed_attempts++; //Not marked as Failed, in case it's only a connection issue.
             return updateOrderStatus(placed_order, queries, logs);
         }
-        /*
+        
         console.log('\x1b[36m', `<<<<<<<<<<<<<<ORDER ${placed_order.id}/${placed_order.external_identifier}>>>>>>>>>>>>>>`, '\x1b[0m')
         console.log(JSON.stringify(external_order, null, 3));
         console.log('\x1b[36m', `<<<<<<<<<<<<<<ORDER ${placed_order.id}/${placed_order.external_identifier}>>>>>>>>>>>>>>`, '\x1b[0m')
-        */
+        
 
-       log(`4.(EXEC-${placed_order.id}) Checking the current status of the order.`);
+        log(`4.(EXEC-${placed_order.id}) Checking the current status of the order.`);
+        //Take the amount from the exchange
+        placed_order.total_quantity = external_order.amount;
+
         /** 
          * When succesfully placed orders somehow fail during trading on the exchanges, CCXT library always marks them as 'closed'.
          * Instead of using a specific status name (ex: 'expired'). One way to identify this situations, is to check if the order was 'closed'
