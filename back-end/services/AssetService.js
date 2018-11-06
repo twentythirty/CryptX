@@ -200,6 +200,11 @@ const getStrategyAssets = async function (strategy_type) {
     included = included.slice(0, parseInt(process.env.MAX_MCI_MIX_SIZE));
   }
 
+  if(process.env.FORCE_ASSET_MIX) {
+    let asset_symbols = process.env.FORCE_ASSET_MIX.split(',').map(a => a.trim());
+    included = included.filter(a => asset_symbols.includes(a.symbol));
+  }
+
   return [included, excluded];
 };
 module.exports.getStrategyAssets = getStrategyAssets;
