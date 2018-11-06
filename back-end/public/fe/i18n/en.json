@@ -446,6 +446,7 @@
       "api_key": "Enter API key",
       "api_secret": "Enter API secret",
       "uid": "Enter Unique ID",
+      "password": "Enter trade/admin password",
       "v3_api_key": "Enter V3 API key",
       "v3_api_secret": "Enter V3 API secret",
       "v3_api_passphrase": "Enter V3 API key passphrase"
