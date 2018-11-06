@@ -151,9 +151,6 @@ module.exports.JOB_BODY = async (config, log) => {
         
 
         log(`4.(EXEC-${placed_order.id}) Checking the current status of the order.`);
-        //Take the amount from the exchange
-        placed_order.total_quantity = external_order.amount;
-
         /** 
          * When succesfully placed orders somehow fail during trading on the exchanges, CCXT library always marks them as 'closed'.
          * Instead of using a specific status name (ex: 'expired'). One way to identify this situations, is to check if the order was 'closed'
