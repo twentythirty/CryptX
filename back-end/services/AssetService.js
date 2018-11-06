@@ -471,7 +471,7 @@ const getAssetGroupWithData = async function (investment_run_id) {
     JOIN asset ON asset.id=ga.asset_id
     LEFT JOIN instrument i ON i.transaction_asset_id=asset.id OR i.quote_asset_id=asset.id
     LEFT JOIN instrument_exchange_mapping iem ON instrument_id=i.id
-    LEFT JOIN exchange ON exchange.id=iem.exchange_id AND exchange.is_mappable IS TRUE
+    JOIN exchange ON exchange.id=iem.exchange_id AND exchange.is_mappable IS TRUE
     LEFT JOIN LATERAL
     (
       SELECT value
