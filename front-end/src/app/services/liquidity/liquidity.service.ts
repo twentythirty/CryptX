@@ -23,14 +23,30 @@ export class ExchangesResponse {
 export class LiquidityRequirementsCreateResponse {
   success: boolean;
   liquidity_requirement: any;
-  error: string;
+  error?: string;
 }
 
 export class LiquiditiesAllResponse {
   success: boolean;
   count: number;
-  footer: Array<any>
+  footer: Array<any>;
   liquidity_requirements: Array<LiquidityRequirement>;
+}
+
+export class LiquidityUpdateRequestData {
+  exchange_id: number;
+  periodicity: number;
+  minimum_circulation: number;
+}
+
+export class LiquidityUpdateResponse {
+  success: boolean;
+  liquidity_requirement: LiquidityRequirement;
+}
+
+export class LiquidityDeleteResponse {
+  success: boolean;
+  message: string;
 }
 
 
@@ -42,15 +58,23 @@ export class LiquidityService {
     private http: HttpClient,
   ) {}
 
-  getLiquidity(liquidityId: number): Observable<LiquidityResponse>{
+  getLiquidity(liquidityId: number): Observable<LiquidityResponse> {
     return this.http.get<LiquidityResponse>(this.baseUrl + `liquidity_requirements/${liquidityId}`);
   }
 
-  getExchanges(liquidityId: number): Observable<ExchangesResponse>{
+  updateLiquidity(liquidityId: number, request: LiquidityUpdateRequestData): Observable<LiquidityUpdateResponse> {
+    return this.http.post<LiquidityUpdateResponse>(this.baseUrl + `liquidity_requirements/${liquidityId}/edit`, request);
+  }
+
+  deleteLiquidity(liquidityId: number): Observable<LiquidityDeleteResponse> {
+    return this.http.delete<LiquidityDeleteResponse>(this.baseUrl + `liquidity_requirements/${liquidityId}/delete`);
+  }
+
+  getExchanges(liquidityId: number): Observable<ExchangesResponse> {
     return this.http.get<ExchangesResponse>(this.baseUrl + `liquidity_requirements/${liquidityId}/exchanges`);
   }
 
-  getAllLiquidities(request?: EntitiesFilter): Observable<LiquiditiesAllResponse>{
+  getAllLiquidities(request?: EntitiesFilter): Observable<LiquiditiesAllResponse> {
     if (request) {
       return this.http.post<LiquiditiesAllResponse>(this.baseUrl + `liquidity_requirements/all`, request);
     } else {
@@ -66,9 +90,9 @@ export class LiquidityService {
     return this.http.get<any>(this.baseUrl + `liquidity_requirements/header_lov/${column_name}`).pipe(
       map(
         res => {
-          if(res && res.lov && Array.isArray(res.lov)) {
+          if (res && res.lov && Array.isArray(res.lov)) {
             return res.lov.map(lov => {
-              return { value: lov.toString() }
+              return { value: lov.toString() };
             });
           }
           return null;

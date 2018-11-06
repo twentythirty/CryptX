@@ -1,8 +1,8 @@
 require('./config');     //instantiate configuration variables
-require('./../global_functions'); //global functions for model defs
-require("./system_permissions"); //instantiate global permissions lists
 require('./model_constants'); //instantiate model constants
 require('./workflow_constants'); //instantiate workflow constants
+require('./../global_functions'); //global functions for model defs
+require("./system_permissions"); //instantiate global permissions lists
 
 //DATABASE
 const models = require("./../models");

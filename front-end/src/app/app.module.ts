@@ -1,8 +1,8 @@
 import { BrowserModule } from '@angular/platform-browser';
 import { NgModule, APP_INITIALIZER } from '@angular/core';
-import { FormsModule }   from '@angular/forms';
-import { Router }   from '@angular/router';
-import { HttpClientModule, HttpClient }   from '@angular/common/http';
+import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
+import { HttpClientModule, HttpClient } from '@angular/common/http';
 import { HTTP_INTERCEPTORS } from '@angular/common/http';
 import { MatSnackBarModule } from '@angular/material';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
@@ -34,14 +34,18 @@ import { InvestmentService } from './services/investment/investment.service';
 import { InvestmentModule } from './modules/investment/investment.module';
 import { InstrumentsModule } from './modules/instruments/instruments.module';
 import { LiquidityModule } from './modules/liquidity/liquidity.module';
-import { DepositModule } from "./modules/deposit/deposit.module";
+import { DepositModule } from './modules/deposit/deposit.module';
 import { OrdersModule } from './modules/orders/orders.module';
-import { RecipeRunModule } from "./modules/recipe-run/recipe-run.module";
-import { ExecutionOrdersModule } from "./modules/execution-orders/execution-orders.module";
-import { ColdStorageTransfersModule } from "./modules/cold-storage-transfers/cold-storage-transfers.module";
-import { ColdStorageAccountsModule } from "./modules/cold-storage-accounts/cold-storage-accounts.module";
-import { ColdStorageCustodiansModule } from "./modules/cold-storage-custodians/cold-storage-custodians.module";
+import { RecipeRunModule } from './modules/recipe-run/recipe-run.module';
+import { ExecutionOrdersModule } from './modules/execution-orders/execution-orders.module';
+import { ColdStorageTransfersModule } from './modules/cold-storage-transfers/cold-storage-transfers.module';
+import { ColdStorageAccountsModule } from './modules/cold-storage-accounts/cold-storage-accounts.module';
+import { ColdStorageCustodiansModule } from './modules/cold-storage-custodians/cold-storage-custodians.module';
 import { ColdStorageAccountStorageFeeModule } from './modules/cold-storage-account-storage-fee/cold-storage-account-storage-fee.module';
+import { MatProgressSpinnerModule, MatDatepickerModule, MatFormFieldModule, MatNativeDateModule, MatInputModule } from '@angular/material';
+import { ExchangeAccountsModule } from './modules/exchange-accounts/exchange-accounts.module';
+import { ExchangeCredentialsModule } from './modules/exchange-credentials/exchange-credentials.module';
+
 
 export function HttpLoaderFactory(httpClient: HttpClient) {
   return new TranslateHttpLoader(
@@ -68,6 +72,7 @@ export function HttpLoaderFactory(httpClient: HttpClient) {
         deps: [HttpClient]
       }
     }),
+    MatProgressSpinnerModule, MatDatepickerModule, MatFormFieldModule, MatNativeDateModule, MatInputModule,
     AuthModule,
     DashboardModule,
     MatSnackBarModule,
@@ -87,6 +92,8 @@ export function HttpLoaderFactory(httpClient: HttpClient) {
     ColdStorageAccountsModule,
     ColdStorageCustodiansModule,
     ColdStorageAccountStorageFeeModule,
+    ExchangeAccountsModule,
+    ExchangeCredentialsModule,
   ],
   providers: [
     {

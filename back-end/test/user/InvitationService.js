@@ -23,6 +23,7 @@ describe('InvitationService testing', () => {
     const User = require("../../models").User;
     const Role = require("../../models").Role;
     const UserInvitation = require('../../models').UserInvitation;
+    const sequelize = require('../../models').sequelize;
 
     const NO_USER_MAIL = 'nouser@cryptx.io',
         USER_EMAIL = 'test@cryptx.io';
@@ -82,6 +83,11 @@ describe('InvitationService testing', () => {
             return Promise.resolve(invitation);
         });
 
+        sinon.stub(sequelize, 'transaction').callsFake(async (options, callback) => {
+            if(_.isFunction(options)) callback = options;
+            return callback();
+        });
+
         done();
     });
 
@@ -92,7 +98,8 @@ describe('InvitationService testing', () => {
             Role.findAll,
             UserInvitation.create,
             UserInvitation.findOne,
-            User.create
+            User.create,
+            sequelize.transaction
         ].forEach(model => {
             if (model.restore) {
                 model.restore();

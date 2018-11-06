@@ -1,8 +1,24 @@
-<ng-container *ngFor="let action of actions">
-  <div *ngIf="action.label">
-    <label class="rationale-status" *ngIf="action.isShown(row)" (click)="doAction(action, $event)">{{ action.label }}</label>
-  </div>
-  <div *ngIf="!action.label">
-    <label class="action-button" *ngIf="action.isShown(row)" (click)="doAction(action, $event)"><img [src]="image"></label>
-  </div>
-</ng-container>
+<div class="action-buttons">
+  <ng-container *ngFor="let action of actions">
+    <ng-container *ngIf="action.label">
+      <label *ngIf="action.isShown(row)" class="rationale-status" (click)="doAction(action, $event)">{{ action.label }}</label>
+    </ng-container>
+    <ng-container *ngIf="!action.label">
+      <label
+        *ngIf="action.isShown(row)"
+        class="action-button"
+        [ngClass]="action.className"
+        [class.remove-icon]="action.loading(row)"
+        (click)="doAction(action, $event)"
+      >
+        <mat-progress-spinner
+          *ngIf="action.loading(row)"
+          mode="indeterminate"
+          color="accent"
+          strokeWidth="1"
+          diameter="17"
+        ></mat-progress-spinner>
+      </label>
+    </ng-container>
+  </ng-container>
+</div>

@@ -1,8 +1,8 @@
 require('./config/config'); //instantiate configuration variables
-require('./global_functions'); //instantiate global functions
-require("./config/system_permissions"); //instantiate global permissions lists
 require('./config/model_constants'); //instantiate model constants
 require('./config/workflow_constants'); //instantiate workflow constants
+require('./global_functions'); //instantiate global functions
+require("./config/system_permissions"); //instantiate global permissions lists
 
 console.log("App Environment:", CONFIG.app)
 console.log("Resolved NODE_ENV: ", process.env.NODE_ENV)
@@ -11,6 +11,33 @@ const express = require('express');
 const logger = require('morgan');
 const bodyParser = require('body-parser');
 const passport = require('passport');
+
+
+//DATABASE
+const models = require("./models");
+//sync migrations
+require('./migrator');
+let dbPromise = models.sequelize.authenticate().then(() => {
+    console.log('Connected to SQL database: %s', models.url);
+    console.log('Performing startup migration...');
+    return migratorPerform();
+}, err => {
+    console.error('Unable prepare RDBMS for app: %s, %o', models.url, err);
+    process.exit(2);
+}).then((migrations) => {
+    let syncPermissions = require('./config/sync_permissions');
+    return syncPermissions();
+}, err => {
+    console.error('Unable prepare RDBMS for app: %s, %o', models.url, err);
+    process.exit(2);
+}).then(done_perm => {
+    let settingsService = require('./services/SettingService');
+    return settingsService.refreshSettingValues();
+}).catch(err => {
+    console.error('Unable prepare RDBMS for app:', models.url, err);
+    process.exit(2);
+});
+
 
 const v1 = require('./routes/v1');
 
@@ -29,28 +56,11 @@ app.use(bodyParser.urlencoded({
 //Passport
 app.use(passport.initialize());
 
-//DATABASE
-const models = require("./models");
-//sync migrations
-require('./migrator');
-let dbPromise = models.sequelize.authenticate().then(() => {
-    console.log('Connected to SQL database:', process.env.DATABASE_URL);
-    console.log('Performing startup migration...');
-    return migratorPerform();
-}, err => {
-    console.error('Unable prepare RDBMS for app:', process.env.DATABASE_URL, err);
-    process.exit(2);
-}).then((migrations) => {
-    let syncPermissions = require('./config/sync_permissions');
-    return syncPermissions();
-}).then(done_perm => {
-    let settingsService = require('./services/SettingService');
-    return settingsService.refreshSettingValues();
-}).catch(err => {
-    console.error('Unable prepare RDBMS for app:', process.env.DATABASE_URL, err);
-    process.exit(2);
-});
+app.use(async (req, res, next) => { 
+    await dbPromise; // postpone requests until promise is resolved
 
+    next();
+});
 
 // CORS
 app.use(function (req, res, next) {

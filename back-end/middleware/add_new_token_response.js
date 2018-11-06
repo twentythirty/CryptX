@@ -9,7 +9,7 @@ module.exports.response_token_refresh = (req, res, next) => {
         console.error(`Missing user object or session object on request body for ${req.path}! Not adding new token to response...`);
         //leave this promise to persiste log messsage
         logger.log(message, {
-            log_level: LOG_LEVELS.Error
+            log_level: ACTIONLOG_LEVELS.Error
         })
         next()
     }

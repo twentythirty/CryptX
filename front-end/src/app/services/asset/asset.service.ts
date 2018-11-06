@@ -3,7 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { TranslateService } from '@ngx-translate/core';
 import { Observable } from 'rxjs';
 import { map, tap } from 'rxjs/operators';
-import _ from 'lodash';
+import * as _ from 'lodash';
 
 import { Asset, AssetStatus } from '../../shared/models/asset';
 import { ActionLog } from '../../shared/models/actionLog';
@@ -41,22 +41,20 @@ export class AssetService {
   ) {}
 
   getAllAssets(requestData?: EntitiesFilter): Observable<AssetsAllResponse> {
-    if(requestData) {
+    if (requestData) {
       return this.http.post<AssetsAllResponse>(this.baseUrl + `assets/all`, requestData);
     } else {
       return this.http.get<AssetsAllResponse>(this.baseUrl + `assets/all`);
     }
   }
 
-  getAllAssetsDetailed(filter?: object, requestData?: EntitiesFilter): Observable<AssetsAllResponseDetailed> {
-    if(requestData) {
-      return this.http.post<AssetsAllResponseDetailed>(this.baseUrl + `assets/detailed/all`, requestData).pipe(
-        tap(this.addStatusCode)
-      );
-    }
+  getAllAssetsOfExchange(exchangeId: number): Observable<AssetsAllResponse> {
+    return this.http.get<AssetsAllResponse>(this.baseUrl + `/assets/of_exchange/${exchangeId}`);
+  }
 
-    if(filter) {
-      return this.http.post<AssetsAllResponseDetailed>(this.baseUrl + `assets/detailed/all`, filter).pipe(
+  getAllAssetsDetailed(requestData?: EntitiesFilter): Observable<AssetsAllResponseDetailed> {
+    if (requestData) {
+      return this.http.post<AssetsAllResponseDetailed>(this.baseUrl + `assets/detailed/all`, requestData).pipe(
         tap(this.addStatusCode)
       );
     } else {
@@ -76,15 +74,15 @@ export class AssetService {
     return this.http.post<ActionResultData>(this.baseUrl + `assets/${assetId}/change_status`, status);
   }
 
-  getHeaderLOV(column_name: string): Observable<any> {
-    return this.http.get<any>(this.baseUrl + `assets/detailed/header_lov/${column_name}`).pipe(
+  getHeaderLOV(column_name: string, requestData?: object): Observable<any> {
+    return this.http.get<any>(this.baseUrl + `assets/detailed/header_lov/${column_name}`, requestData).pipe(
       map(
         res => {
-          if(res && Array.isArray(res.lov)) {
+          if (res && res.lov && Array.isArray(res.lov)) {
             return res.lov.map(lov => {
-              return { value: lov.toString() }
+              return { value: lov.toString() };
             });
-          } else return null;
+          } return null;
         }
       )
     );
@@ -104,10 +102,10 @@ export class AssetService {
         prevStatus;
 
     data.asset.statusCode = _.toNumber( data.asset.status.replace('assets.status.', '') );
-    
+
     // default status 400, so first preStatus should be default
     this.translate.get('assets.status.400').subscribe(value => prevStatus = value);
-    
+
     data.history = data.history.reverse().map(item => {
       this.translate.get(item.type).subscribe(value => status = value);
 

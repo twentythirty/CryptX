@@ -10,7 +10,8 @@
 <ng-container *ngIf="mappingDataSource && mappingColumnsToShow">
   <div class="top-controls">
     <span class="headline-title">{{ 'exchanges.mapping' | translate }}</span>
-    <a class="btn start"
+    <a
+      class="btn start"
       [class.deactive]="!canAddNewMapping()"
       (click)="addNewMapping()"
     >
@@ -32,11 +33,3 @@
     (click)="saveMapping()"
   >{{ 'common.save_changes' | translate }}</button>
 </app-form-action-bar>
-
-
-<app-confirm
-  *ngIf="showDeleteExchangeMappingConfirm"
-  [heading]="'exchanges.exchange_delete_confirm_msg' | translate" 
-  (onReject)="closeDeleteConfirm()"
-  (onConfirm)="deleteExchangeMapping($event)"
-></app-confirm>

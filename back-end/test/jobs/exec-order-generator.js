@@ -9,6 +9,7 @@ const sinon = require("sinon");
 chai.use(chaiAsPromised);
 
 const ccxtUtils = require('../../utils/CCXTUtils');
+const ccxtUnified = require('../../utils/ccxtUnified');
 
 const execOrderGenerator = require('../../jobs/exec-order-generator');
 
@@ -18,6 +19,7 @@ const Instrument = require('../../models').Instrument;
 const ExecutionOrder = require('../../models').ExecutionOrder;
 const ExecutionOrderFill = require('../../models').ExecutionOrderFill;
 const InstrumentExchangeMapping = require('../../models').InstrumentExchangeMapping;
+const sequelize = require('../../models').sequelize;
 
 /**
  * Attempts to call the `restore` method on the provided symbols (method specified by `sinon`) 
@@ -61,7 +63,8 @@ describe('Execution Order generator job', () => {
             ExecutionOrder: ExecutionOrder,
             Instrument: Instrument,
             ExecutionOrderFill: ExecutionOrderFill,
-            InstrumentExchangeMapping: InstrumentExchangeMapping
+            InstrumentExchangeMapping: InstrumentExchangeMapping,
+            sequelize: sequelize
         }
     };
 
@@ -102,6 +105,69 @@ describe('Execution Order generator job', () => {
             return Promise.resolve(connector);
         });
 
+        sinon.stub(ccxtUnified, "getExchange").callsFake((name) => {
+            let exchange = class Exchange {
+                
+                constructor () {
+                    this._connector = {
+                        name: 'Mock exchange',
+                        markets: {
+                            'LTC/BTC': {
+                                limits: {
+                                    amount: {
+                                        min: 0,
+                                        max: 1000000
+                                    },
+                                    price: {
+                                        min: 0, //Set to 0 to make sure tests with random price pass always.
+                                        max: 1000000
+                                    }
+                                },
+                                active: true
+                            }
+                        }
+                    };
+                    this.api_id = name;
+                }
+
+                async isReady() {
+                    return Promise.resolve();
+                }
+
+                async createMarketOrder () {
+                    return {
+                        id: '123',
+                        timestamp: 1532444115700,
+                        datetime: '2018-07-24T14:55:15.700Z',
+                        lastTradeTimestamp: undefined,
+                        symbol: 'LTC/BTC',
+                        type: 'market',
+                        side: 'buy',
+                        price: 0,
+                        amount: 1,
+                        cost: 0,
+                        filled: 1,
+                        remaining: 0,
+                        status: 'closed',
+                        fee: undefined,
+                        trades: undefined
+                    }
+                }
+
+
+                async getSymbolLimits () {
+                    return {
+                        spend: {
+                            min: 0.00001,
+                            max: 500
+                        }
+                    };
+                }
+            }
+      
+            return Promise.resolve(new exchange());
+        });
+
         done();
     });
 
@@ -113,8 +179,10 @@ describe('Execution Order generator job', () => {
 
     afterEach(done => {
         ccxtUtils.getConnector.restore();
+        ccxtUnified.getExchange.restore();
         done();
     });
+
 
     const TEST_PENDING_ORDER_BASE = {
         status: RECIPE_ORDER_STATUSES.Pending,
@@ -123,9 +191,14 @@ describe('Execution Order generator job', () => {
     const PENDING_ORDER_IDS = [488, 512, 569, 599]; //ids for testing various pending orders
     const PENDING_ORDER_QNTY = 2.0;
     const PENDING_ORDER_PRICE = 0.25;
+
+    const PRICE_PER_ASSET = 6500;
+    const SPEND_AMOUNT = 2 / 6500;
+
     const TEST_SYMBOL_PENDING_ORDER_BASE = Object.assign({}, TEST_PENDING_ORDER_BASE, {
         id: PENDING_ORDER_IDS[0],
         quantity: PENDING_ORDER_QNTY,
+        spend_amount: SPEND_AMOUNT,
         price: PENDING_ORDER_PRICE,
         Instrument: {
             symbol: 'LTC/BTC'
@@ -141,15 +214,11 @@ describe('Execution Order generator job', () => {
     }
     const TEST_PARTIAL_EXECUTION_ORDER = {
         id: EXECUTION_ORDER_IDS[1],
-        status: EXECUTION_ORDER_STATUSES.Placed
+        status: EXECUTION_ORDER_STATUSES.InProgress
     }
     const TEST_FILLED_EXECUTION_ORDER = {
         id: EXECUTION_ORDER_IDS[2],
         status: EXECUTION_ORDER_STATUSES.FullyFilled
-    }
-    const TEST_CANCELLED_EXECUTION_ORDER = {
-        id: EXECUTION_ORDER_IDS[3],
-        status: EXECUTION_ORDER_STATUSES.Cancelled
     }
 
 
@@ -168,16 +237,22 @@ describe('Execution Order generator job', () => {
             stubSave(empty_order);
             return Promise.resolve([empty_order]);
         });
+        sinon.stub(sequelize, 'query').callsFake(() => {
+            console.log("Sequelize query called from: shall skip pending recipe order with invalid sale currency");
+            return [];
+        });
 
         return execOrderGenerator.JOB_BODY(stubbed_config, console.log).then(processed_recipes => {
+            sequelize.query.restore();
 
             restoreSymbols(RecipeOrder.findAll);
 
-            const [failed_recipe, execution_orders] = processed_recipes;
+            const [failed_recipe] = processed_recipes;
 
-            chai.expect(failed_recipe).to.deep.equal(empty_order, "Order should not have changed!");
+            chai.expect(failed_recipe.instance).to.deep.equal(empty_order, "Order should not have changed!");
             //should not ahve generated any new execution orders!
-            chai.expect(execution_orders).to.be.undefined;
+            chai.expect(failed_recipe.status).to.equal(JOB_RESULT_STATUSES.Error);
+            chai.expect(failed_recipe.step).to.equal('2A');
         });
     });
 
@@ -192,12 +267,28 @@ describe('Execution Order generator job', () => {
             stubSave(pending_order1, pending_order2);
             return Promise.resolve([pending_order1, pending_order2]);
         });
-        sinon.stub(ExecutionOrder, 'findAll').callsFake(options => {
-            switch (options.where.recipe_order_id) {
+        sinon.stub(sequelize, 'query').callsFake((query, options) => {
+            let exec_stats = {
+                status: 63,
+                execution_order_count: "1339",
+                spend_amount: 700,
+                total_quantity: "20118962",
+                filled: "20118962"
+            };
+
+            switch (options.replacements.recipe_order_id) {
                 case PENDING_ORDER_IDS[0]:
-                    return Promise.resolve([new ExecutionOrder(TEST_PENDING_EXECUTION_ORDER)]);
+                    return Promise.resolve([
+                        Object.assign(exec_stats, {
+                            status: EXECUTION_ORDER_STATUSES.Pending
+                        })
+                    ]);
                 case PENDING_ORDER_IDS[1]:
-                    return Promise.resolve([new ExecutionOrder(TEST_PARTIAL_EXECUTION_ORDER)]);
+                    return Promise.resolve([
+                        Object.assign(exec_stats, {
+                            status: EXECUTION_ORDER_STATUSES.InProgress
+                        })
+                    ]);
                 default:
                     return Promise.resolve([]);
             }
@@ -207,7 +298,8 @@ describe('Execution Order generator job', () => {
 
             restoreSymbols(
                 RecipeOrder.findAll,
-                ExecutionOrder.findAll
+                /* ExecutionOrder.findAll, */
+                sequelize.query
             );
 
             const [failed_order, marked_order] = orders;
@@ -218,8 +310,13 @@ describe('Execution Order generator job', () => {
             chai.expect(failed_order).is.not.a('array');
             chai.expect(marked_order).is.not.a('array');
 
-            chai.expect(failed_order.status).to.eq(TEST_SYMBOL_PENDING_ORDER_BASE.status, `Status changed for ${failed_order.id}`);
-            chai.expect(marked_order.status).to.eq(TEST_PENDING_ORDER_BASE.status, `Status changed for ${marked_order.id}`);
+            chai.expect(failed_order.instance.status).to.eq(TEST_SYMBOL_PENDING_ORDER_BASE.status, `Status changed for ${failed_order.id}`);
+            chai.expect(failed_order.status).to.equal(JOB_RESULT_STATUSES.Skipped);
+            chai.expect(failed_order.step).to.equal('3A');
+
+            chai.expect(marked_order.instance.status).to.eq(TEST_PENDING_ORDER_BASE.status, `Status changed for ${marked_order.id}`);
+            chai.expect(marked_order.status).to.equal(JOB_RESULT_STATUSES.Skipped);
+            chai.expect(marked_order.step).to.equal('3A');
         });
     });
 
@@ -233,7 +330,7 @@ describe('Execution Order generator job', () => {
             stubSave(pending_order2);
             return Promise.resolve([pending_order2]);
         });
-        sinon.stub(ExecutionOrder, 'findAll').callsFake(options => Promise.resolve([]));
+        sinon.stub(sequelize, 'query').callsFake((query, options) => Promise.resolve([]));
         sinon.stub(InstrumentExchangeMapping, 'find').callsFake(options => {
             return Promise.resolve(new InstrumentExchangeMapping(options.where))
         });
@@ -245,7 +342,8 @@ describe('Execution Order generator job', () => {
 
             restoreSymbols(
                 RecipeOrder.findAll,
-                ExecutionOrder.findAll,
+                /* ExecutionOrder.findAll, */
+                sequelize.query,
                 InstrumentExchangeMapping.find,
                 ExecutionOrderFill.findAll
             );
@@ -256,7 +354,9 @@ describe('Execution Order generator job', () => {
 
             chai.expect(recipe_order).is.not.a('array');
 
-            chai.expect(recipe_order.status).to.eq(TEST_SYMBOL_PENDING_ORDER_BASE.status, `Status changed for ${recipe_order.id}`);
+            chai.expect(recipe_order.instance.status).to.eq(TEST_SYMBOL_PENDING_ORDER_BASE.status, `Status changed for ${recipe_order.id}`);
+            chai.expect(recipe_order.status).to.equal(JOB_RESULT_STATUSES.Error);
+            chai.expect(recipe_order.step).to.equal('3A');
         });
     });
 
@@ -275,14 +375,16 @@ describe('Execution Order generator job', () => {
                 tick_size: 0.5
             })))
         });
-        sinon.stub(ExecutionOrderFill, 'findAll').callsFake(options => {
-            const fills_num = _.random(1, 9, false);
-            return Promise.resolve(_.map(Array(fills_num).fill(PENDING_ORDER_QNTY / (fills_num - 1)), (qnty, idx) => {
-                return new ExecutionOrderFill({
-                    quantity: qnty,
-                    id: idx
-                });
-            }))
+        sinon.stub(sequelize, 'query').callsFake((query, options) => {
+            let exec_stats = {
+                status: EXECUTION_ORDER_STATUSES.FullyFilled,
+                execution_order_count: "1339",
+                spend_amount: PENDING_ORDER_QNTY / PRICE_PER_ASSET,
+                //total_quantity: PENDING_ORDER_QNTY,
+                filled: PENDING_ORDER_QNTY / PRICE_PER_ASSET
+            };
+
+            return Promise.resolve([exec_stats]);
         });
 
         return execOrderGenerator.JOB_BODY(stubbed_config, console.log).then(orders => {
@@ -290,7 +392,8 @@ describe('Execution Order generator job', () => {
             restoreSymbols(
                 RecipeOrder.findAll,
                 InstrumentExchangeMapping.find,
-                ExecutionOrderFill.findAll
+                ExecutionOrderFill.findAll,
+                sequelize.query
             );
 
             chai.expect(orders.length).to.eq(1);
@@ -298,12 +401,15 @@ describe('Execution Order generator job', () => {
 
             chai.expect(finished_order).to.not.be.a('array');
 
-            chai.expect(finished_order.status).to.eq(TEST_SYMBOL_PENDING_ORDER_BASE.status, "Order status chagned!");
+            chai.expect(finished_order.instance.status).to.eq(TEST_SYMBOL_PENDING_ORDER_BASE.status, "Order status chagned!");
+            chai.expect(finished_order.status).to.equal(JOB_RESULT_STATUSES.Skipped);
+            chai.expect(finished_order.step).to.equal('3B');
         });
     });
 
-    it("shall skip a pending order if the execution total is less than the minimum limit of the market and order cant cover the remainder", () => {
+    it("shall create an extra chunky execution order if the post-order quantity is lower than the exchange trading threshold", () => {
         ccxtUtils.getConnector.restore();
+        const CONNECTOR_MIN = 400;
         sinon.stub(ccxtUtils, 'getConnector').callsFake(exhange => {
             const connector = {
                 name: 'Mock exchange',
@@ -311,11 +417,11 @@ describe('Execution Order generator job', () => {
                     'LTC/BTC': {
                         limits: {
                             amount: {
-                                min: 400,
+                                min: CONNECTOR_MIN,
                                 max: 1000000
                             },
                             price: {
-                                min: 400,
+                                min: CONNECTOR_MIN,
                                 max: 1000000
                             }
                         },
@@ -332,16 +438,35 @@ describe('Execution Order generator job', () => {
         let not_completed_order = Object.assign({
 
         }, TEST_SYMBOL_PENDING_ORDER_BASE, {
-            id: PENDING_ORDER_IDS[2]
+            id: PENDING_ORDER_IDS[2],
+            quantity: (CONNECTOR_MIN * 2 - 1)
         });
-        sinon.stub(ExecutionOrder, 'findAll').callsFake(options => {
-            switch (options.where.recipe_order_id) {
-                case PENDING_ORDER_IDS[0]:
-                    return Promise.resolve([new ExecutionOrder(TEST_PENDING_EXECUTION_ORDER)]);
-                case PENDING_ORDER_IDS[1]:
-                    return Promise.resolve([new ExecutionOrder(TEST_PARTIAL_EXECUTION_ORDER)]);
-                default:
-                    return Promise.resolve([]);
+        sinon.stub(sequelize, 'query').callsFake((query, options) => {
+            let exec_stats = {
+                status: EXECUTION_ORDER_STATUSES.FullyFilled,
+                execution_order_count: "1339",
+                total_quantity: 1,
+                filled: 1
+            };
+            if (options.replacements) {
+                switch (options.replacements.recipe_order_id) {
+                    case PENDING_ORDER_IDS[0]:
+                        return Promise.resolve([
+                            Object.assign(exec_stats, {
+                                status: EXECUTION_ORDER_STATUSES.Pending
+                            })
+                        ]);
+                    case PENDING_ORDER_IDS[1]:
+                        return Promise.resolve([
+                            Object.assign(exec_stats, {
+                                status: EXECUTION_ORDER_STATUSES.InProgress
+                            })
+                        ]);
+                    default:
+                        return Promise.resolve([]);
+                }
+            } else {
+                return Promise.resolve([]);
             }
         });
         sinon.stub(RecipeOrder, 'findAll').callsFake(options => {
@@ -364,21 +489,28 @@ describe('Execution Order generator job', () => {
                 })
             ])
         });
+        sinon.stub(ExecutionOrder, 'create').callsFake(options => {
+
+            return Promise.resolve(options);
+        });
 
         return execOrderGenerator.JOB_BODY(stubbed_config, console.log).then(processed_recipes => {
 
             restoreSymbols(
                 RecipeOrder.findAll,
                 ExecutionOrder.findAll,
+                ExecutionOrder.create,
                 ExecutionOrderFill.findAll,
-                InstrumentExchangeMapping.find
+                InstrumentExchangeMapping.find,
+                sequelize.query
             );
 
-            const [failed_recipe, execution_orders] = processed_recipes;
+            const [
+                [recipe, execution_order]
+            ] = processed_recipes;
 
-            chai.expect(failed_recipe).to.deep.equal(not_completed_order, "Order should not have changed!");
-
-            chai.expect(execution_orders).to.be.undefined;
+            chai.expect(execution_order).to.be.not.undefined;
+            chai.expect(execution_order.spend_amount).to.equal('' + not_completed_order.spend_amount)
         });
 
     });
@@ -427,14 +559,31 @@ describe('Execution Order generator job', () => {
             })))
         });
 
-        //Make sure the order is unfilled yet.
-        sinon.stub(ExecutionOrderFill, 'findAll').callsFake(options => {
-            return Promise.resolve([
-                new ExecutionOrderFill({
-                    quantity: 1,
-                    id: 1
-                })
-            ])
+        sinon.stub(sequelize, 'query').callsFake((query, options) => {
+            let exec_stats = {
+                status: EXECUTION_ORDER_STATUSES.FullyFilled,
+                execution_order_count: "1339",
+                total_quantity: 1,
+                spend_amount: SPEND_AMOUNT / 2,
+                filled: 1
+            };
+
+            switch (options.replacements.recipe_order_id) {
+                /* case PENDING_ORDER_IDS[0]:
+                    return Promise.resolve([
+                        Object.assign(exec_stats, { 
+                            status: EXECUTION_ORDER_STATUSES.Pending
+                        })
+                    ]); */
+                /* case PENDING_ORDER_IDS[1]:
+                    return Promise.resolve([
+                        Object.assign(exec_stats, { 
+                            status: EXECUTION_ORDER_STATUSES.InProgress
+                        })
+                    ]); */
+                default:
+                    return Promise.resolve([exec_stats]);
+            }
         });
 
         sinon.stub(ExecutionOrder, 'create').callsFake(options => {
@@ -448,7 +597,8 @@ describe('Execution Order generator job', () => {
                 RecipeOrder.findAll,
                 ExecutionOrderFill.findAll,
                 InstrumentExchangeMapping.find,
-                ExecutionOrder.create
+                ExecutionOrder.create,
+                sequelize.query
             );
             //console.log(processed_recipes);
             const [
@@ -456,7 +606,7 @@ describe('Execution Order generator job', () => {
             ] = processed_recipes;
 
             chai.expect(execution_order).to.be.not.undefined;
-            chai.expect(execution_order.total_quantity).to.greaterThan(0.0);
+            chai.expect(execution_order.spend_amount).to.greaterThan(0.0);
         });
     });
 
@@ -478,33 +628,35 @@ describe('Execution Order generator job', () => {
             stubSave(pending_order1, pending_order2);
             return Promise.resolve([pending_order1, pending_order2]);
         });
-        sinon.stub(ExecutionOrder, 'findAll').callsFake(options => {
 
-            switch (options.where.recipe_order_id) {
+        sinon.stub(sequelize, 'query').callsFake((query, options) => {
+
+
+            switch (options.replacements.recipe_order_id) {
                 case PENDING_ORDER_IDS[0]:
-                    //half-fill the normal order
-                    const fills_num = _.random(1, 9, false);
-                    const half_qnty = (PENDING_ORDER_QNTY / 2);
-
-                    //check that cancelled order be ignored
-                    const cancelled_order = new ExecutionOrder(Object.assign({}, TEST_CANCELLED_EXECUTION_ORDER, {
-                        total_quantity: half_qnty
-                    }));
-                    return Promise.resolve(
-                        _.concat(
-                            _.map(Array(fills_num).fill(half_qnty / fills_num), (qnty, idx) => {
-                                return new ExecutionOrder(Object.assign({}, TEST_FILLED_EXECUTION_ORDER, {
-                                    id: TEST_FILLED_EXECUTION_ORDER.id + (idx * 7),
-                                    total_quantity: qnty
-                                }));
-                            }),
-                            cancelled_order
-                        )
-                    );
+                    let exec_stats = {
+                        status: EXECUTION_ORDER_STATUSES.FullyFilled,
+                        execution_order_count: "1339",
+                        total_quantity: PENDING_ORDER_QNTY / 2 / 2,
+                        spend_amount: SPEND_AMOUNT / 2 / 2,
+                        filled: PENDING_ORDER_QNTY / 2 / 2
+                    };
+                    return Promise.resolve([
+                        Object.assign(exec_stats, {
+                            status: EXECUTION_ORDER_STATUSES.filled
+                        })
+                    ]);
+                    /* case PENDING_ORDER_IDS[1]:
+                        return Promise.resolve([
+                            Object.assign(exec_stats, { 
+                                status: EXECUTION_ORDER_STATUSES.InProgress
+                            })
+                        ]); */
                 default:
                     return Promise.resolve([]);
             }
         });
+
         sinon.stub(ExecutionOrder, 'create').callsFake(options => {
 
             return Promise.resolve(options);
@@ -525,11 +677,12 @@ describe('Execution Order generator job', () => {
                 ExecutionOrder.findAll,
                 ExecutionOrder.create,
                 ExecutionOrderFill.findAll,
-                InstrumentExchangeMapping.find
+                InstrumentExchangeMapping.find,
+                sequelize.query
             );
 
             const [parent_and_line_order, parent_and_whole_order] = orders_and_execution_orders;
-
+            console.log(parent_and_line_order, parent_and_whole_order);
             const [parent_line, line_order] = parent_and_line_order;
             const [parent_whole, whole_order] = parent_and_whole_order;
 

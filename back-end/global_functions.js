@@ -1,8 +1,35 @@
 //custom error class
 const CryptXError = require('./errors/CryptXError');
 const util = require('util');
+// Load the dash, globally.
+_ = require("lodash");
+//globally load decimals
+Decimal = require('decimal.js');
+Decimal.set({
+  precision: 25
+});
 
-const IncomingMessage = require("http").IncomingMessage;
+//redefine the console with logging levels
+((delegate) => {
+
+    const inverted_levels = _.invert(LOG_LEVEL)
+    const current_log_level = LOG_LEVEL[process.env.LOG_LEVEL] || LOG_LEVEL.DEBUG;
+    const delegate_method = delegate.log.bind(delegate);
+    const process_message = (log_level, msg, ...args) => {
+      if (current_log_level <= log_level) {
+        delegate_method.apply(delegate, [`[${inverted_levels[log_level]}]: ${msg}`].concat(args))
+      }
+    }
+    
+    delegate.trace = (msg) => process_message(LOG_LEVEL.TRACE, msg),
+    delegate.log = (msg, ...args) => process_message(LOG_LEVEL.DEBUG, msg, ...args),
+    delegate.debug = (msg, ...args) => process_message(LOG_LEVEL.DEBUG, msg, ...args),
+    delegate.info = (msg, ...args) => process_message(LOG_LEVEL.INFO, msg, ...args),
+    delegate.warn = (msg, ...args) => process_message(LOG_LEVEL.WARN, msg, ...args),
+    delegate.error = (msg, ...args) => process_message(LOG_LEVEL.ERROR, msg, ...args)
+
+})(console);
+
 
 //allow the to mechanism to not parse the error it receives assuming the error is preparsed
 to = function(promise, parse_error = true) {
@@ -79,11 +106,6 @@ modelProps = function(table_name, table_comment = "") {
     comment: table_comment
   };
 };
-
-// Load the dash, globally.
-_ = require("lodash");
-//globally load decimals
-Decimal = require('decimal.js');
 
 /**
  * Standard clamp function used to control value ranges.

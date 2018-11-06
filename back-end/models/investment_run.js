@@ -17,12 +17,13 @@ module.exports = (sequelize, DataTypes) => {
       is_simulated: DataTypes.BOOLEAN,
       status: {
         type: DataTypes.SMALLINT,
-        allowNull: false
+        allowNull: false,
+        defaultValue: INVESTMENT_RUN_STATUSES.Initiated
       },
       deposit_usd: {
         type: DataTypes.DECIMAL,
         allowNull: false
-      }
+      },
     },
     modelProps("investment_run", "Investment workflow run")
   );
@@ -33,6 +34,8 @@ module.exports = (sequelize, DataTypes) => {
       foreignKey: "user_created_id",
       as: "user_created"
     });
+    InvestmentRun.belongsTo(models.InvestmentRunAssetGroup);
+    InvestmentRun.hasMany(models.InvestmentAmount);
   };
 
   InvestmentRun.prototype.toWeb = function() {

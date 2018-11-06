@@ -91,6 +91,8 @@ exchange # This table contains exchanges will be used for investing
 id PK int
 name varchar
 api_id varchar # Identification code for API
+is_active bool # Defines if exchange is used for trading
+is_mappable bool # Defines if exchange instruments can be mapped
 
 instrument_exchange_mapping # This table determines which instruments are available on which exchanges
 -
@@ -106,6 +108,15 @@ exchange_id int FK >- exchange.id # Exchange on which the account is based
 asset_id int FK >- asset.id # Asset in which acount is denominated
 account_type enum
 address varchar # Address of crypto currency wallet in exchange
+
+exchange_credential # This table contains API key, API secret, and various other values for private API connections
+-
+id PK int
+exchange_id int FK >- exchange.id
+api_key blob NULLABLE
+api_secret blob NULLABLE
+additional_params blob NULLABLE
+updated bool # Default=true
 
 cold_storage_account # This table defines accounts available for cold storage of cryptocurrencies
 -
@@ -157,7 +168,28 @@ user_created_id int FK >- user.id # User which initiated the investment run
 strategy_type enum # Large Cap Index (LCI), Mid Cap Index (MCI)
 is_simulated bool # True if investment run is simulated, e.g. will not place real orders
 status enum # Status of the investment run: Initiated, RecipeRun, RecipeApproved, DepositsCompleted, OrdersGenerated, OrdersApproved, OrdersExecuting, OrdersFilled
-deposit_usd decimal # Total deposits invested during this investment run
+investment_run_asset_group_id int FK >- investment_run_asset_group.id # 
+
+investment_amount # Stores amounts of assets for funding investment run
+-
+id PK int
+investment_run_id int FK >- investment_run.id # Investment run
+asset_id int FK >- asset.id # Asset that will be used to provide funds for invesmtent run
+amount decimal # Amount of asset
+
+investment_run_asset_group # List of assets used in investment run.
+-
+id int PK
+created_timestamp timestamp # Timestamp when asset mix was created.
+user_id int FK >- user.id # User who created investment run asset group
+strategy_type enum # Large Cap Index (LCI), Mid Cap Index (MCI)
+
+group_asset # Asset
+-
+id int PK
+investment_run_asset_group_id int FK >- investment_run_asset_group.id # List of assets that 
+asset_id int FK >- asset.id # Asset which belongs to list
+status enum
 
 recipe_run_deposit # Funds deposited for investing during single investment run
 -
@@ -167,20 +199,23 @@ recipe_run_id int FK >- recipe_run.id
 asset_id int FK >- asset.id # Currency in which the investment was denominated
 amount decimal # Amount deposited
 fee decimal # Deposit management fees deducted
-depositor_user_id int FK >- user.id # Depositor who made the deposit
+depositor_user_id int NULLABLE FK >- user.id # Depositor who made the deposit
 completion_timestamp timestamp NULLABLE # Time when deposit was completed
-target_exchange_account_id int FK >- exchange.id # Exchange account to which deposit will be made
+target_exchange_account_id int NULLABLE FK >- exchange.id # Exchange account to which deposit will be made
 status enum # Status of the deposit. Possible values: PENDING, COMPLETED
+cold_storage_account_id int NULLABLE FK >- cold_storage_account.id # Optional cold storage account for straight base asset transfers to cold storage
 
-deposit_history # History of changes to recipe run deposit
+investment_asset_conversion
 -
 id PK int
-deposit_id int FK >- recipe_run_deposit.id 
-user_id int FK >- user.id # User which performed the action
-action enum # Possible actions ChangedAmount, ChangedFee, ChangedStatus
-value_before nvarchar # value after action
-value_after nvarchar # value before action
-timestamp timestamp # Time action was performed
+recipe_run_id int FK >- recipe_run.id # Recipe run according to which conversions should be done
+investment_asset_id int FK >- asset.id # Currency from which conversion will be performed
+target_asset_id int FK >- asset.id # Currency to which the amount should be converted
+depositor_user_id int NULLABLE FK >- user.id # User who made the conversion
+created_timestamp timestamp # Time when conversion was created
+completed_timestamp timestamp NULLABLE # Time when conversion was completed
+amount decimal NULLABLE # Amount of currency received after conversion
+status enum # Status of conversion. Possible value: PENDING, COMPLETED
 
 recipe_run
 -
@@ -202,6 +237,13 @@ quote_asset_id int FK >- asset.id
 target_exchange_id int FK >- exchange.id # The trading exchange on which trading is suggested acording the recipe run
 investment_percentage decimal # Percentage that will be invested this way
 
+recipe_run_detail_investment
+-
+id
+recipe_run_detail_id int FK >- recipe_run_detail.id # Recipe detail
+asset_id int FK >- asset.id # Asset
+amount decimal # Amount of asset to use for detail
+
 recipe_order_group
 -
 id PK int
@@ -220,7 +262,7 @@ instrument_id int FK >- instrument.id
 exchange_id int FK >- exchange.id
 side enum # Buy = 0 / Sell = 1
 price decimal # Market price when the recipe order was placed
-quantity decimal # Size of the order
+spend_amount decimal # Quote asset sell quantity (either in BTC or ETH)
 status enum # Possible statuses are Pending, Executing, Completed, Rejected (by the user), Cancelled (manual intervention by user), Failed (due to technical issue which does not allow to continue)
 
 execution_order
@@ -234,8 +276,9 @@ side enum # Buy = 0 / Sell = 1
 type enum # Market, Limit, Stop
 price decimal # order price
 total_quantity decimal # Order size
+spend_amount decimal # Quote asset sell quantity (either in BTC or ETH)
 fee decimal # Fee deducted on during placement
-status enum # Pending, Placed, FullyFilled, PartiallyFilled, Cancelled, Failed
+status enum # Pending, InProgress, FullyFilled, PartiallyFilled, NotFilled, Failed
 placed_timestamp timestamp # Time the execution order has been placed
 completed_timestamp timestamp NULLABLE # Time the execution order was fully filled or cancelled
 time_in_force timestamp NULLABLE # time till when order should be active on exchange. NULL if order is Good Till Cancelled
@@ -264,6 +307,8 @@ cold_storage_account_id int # ID of the cold storage account to which the transf
 asset_id int FK >- asset.id # Asset for which cold storage transfer will be made
 amount decimal # Amount that will be transfered
 fee decimal # Fees deducted when withdrawal from exchange to cold storage happened
+external_identifier varchar # Transfer ID given by exchange
+recipe_run_id int FK >- recipe_run.id # Recipe this transfer belongs to
 
 action_log
 # This table will log all actions of users and the system itself
@@ -277,7 +322,7 @@ permission_id int # Permission which is related to the action
 role_id int # Role which is related to the action
 asset_id int # Asset which is related to the action
 instrument_id int # Instrument which is related to the action
-exchange_id int # Exchange which is related to the action
+exchange_id int # Exchange which is relsated to the action
 exchange_account_id int # Exchange account related to the action
 investment_run_id int # Investment run related to the action
 recipe_run_id int # Recipe run related to the action
@@ -289,6 +334,7 @@ level int # Debug = 0, Info = 1, Warning = 2, Error = 3.
 translation_key nvarchar # Key of translation
 translation_args nvarchar # Arguments of translation
 cold_storage_transfer_id int # Cold storage transfer related to action
+investment_run_asset_group_id int # Investment run asset group
 
 setting
 # This table will contain system settings (controlled by admins via web interface)
@@ -306,4 +352,13 @@ timestamp_from date # Timestamp from which liquidity was measured
 timestamp_to date # Timestamp till which liquidity was measured
 exchange_id int FK >- exchange.id
 instrument_id int FK >- instrument.id
-volume decimal
+volume decimal # Volume in transaction asset
+quote_volume decimal # Volume in quote asset
+
+build_results
+-
+id
+status enum # Possible values: Passed, Failed
+recorded_at date # Date when build was done
+passed int # Number of tests passed
+failed int # Number of tests failed

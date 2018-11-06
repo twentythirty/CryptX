@@ -1,20 +1,25 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { mergeMap, finalize } from 'rxjs/operators';
-import _ from 'lodash';
+import * as _ from 'lodash';
 
 import { StatusClass } from '../../../shared/models/common';
 
-import { TimelineDetailComponent, SingleTableDataSource, TagLineItem, ITimelineDetailComponent } from '../timeline-detail/timeline-detail.component'
+import {
+  TimelineDetailComponent,
+  SingleTableDataSource,
+  TagLineItem,
+  ITimelineDetailComponent
+} from '../timeline-detail/timeline-detail.component';
 import { TableDataSource, TableDataColumn } from '../../../shared/components/data-table/data-table.component';
 import { TimelineEvent } from '../../../shared/components/timeline/timeline.component';
 import {
   ActionCellDataColumn,
   DataCellAction,
   DateCellDataColumn,
-  PercentCellDataColumn,
   StatusCellDataColumn,
-  ConfirmCellDataColumn
+  ConfirmCellDataColumn,
+  NumberCellDataColumn
 } from '../../../shared/components/data-table-cells';
 
 import { InvestmentService } from '../../../services/investment/investment.service';
@@ -32,9 +37,9 @@ export class RecipeRunDetailComponent extends TimelineDetailComponent implements
   /**
    * 1. Implement attributes to display titles
    */
-  public pageTitle: string = 'Recipe run';
-  public singleTitle: string = 'Recipe runs';
-  public listTitle: string = 'Recipe run details';
+  public pageTitle = 'Recipe run';
+  public singleTitle = 'Recipe run';
+  public listTitle = 'Recipe run details';
   public recipeStatus;
 
   /**
@@ -51,7 +56,7 @@ export class RecipeRunDetailComponent extends TimelineDetailComponent implements
       { column: 'approval_user', nameKey: 'table.header.decision_by' },
       { column: 'approval_timestamp', nameKey: 'table.header.decision_time' },
       { column: 'approval_comment', nameKey: 'table.header.rationale' },
-      //{ column: 'actions', nameKey: 'table.header.actions' }
+      // { column: 'actions', nameKey: 'table.header.actions' }
     ],
     body: null
   };
@@ -71,11 +76,12 @@ export class RecipeRunDetailComponent extends TimelineDetailComponent implements
       actions: [
         new DataCellAction({
           label: 'READ',
+          isShown: row => row.approval_status !== 'recipes.status.41',
           exec: (row: any) => {
             this.showReadModal({
               title: 'Rationale',
               content: row.approval_comment
-            })
+            });
           }
         })
       ]
@@ -89,21 +95,29 @@ export class RecipeRunDetailComponent extends TimelineDetailComponent implements
 
   public listDataSource: TableDataSource = {
     header: [
-      { column: 'id', nameKey: 'table.header.id', filter: { type: 'number', hasRange: false, inputSearch: true, sortable: true }},
       { column: 'transaction_asset', nameKey: 'table.header.transaction_asset', filter: { type: 'text', sortable: true }},
       { column: 'quote_asset', nameKey: 'table.header.quote_asset', filter: { type: 'text', sortable: true }},
       { column: 'target_exchange', nameKey: 'table.header.exchange', filter: { type: 'text', sortable: true }},
-      { column: 'investment_percentage', nameKey: 'table.header.percentage', filter: { type: 'number', sortable: true }}
+      { column: 'investment_usd', nameKey: 'table.header.investment_usd', filter: { type: 'number', sortable: true }},
+      { column: 'investment_btc', nameKey: 'table.header.investment_btc', filter: { type: 'number', sortable: true }},
+      { column: 'investment_eth', nameKey: 'table.header.investment_eth', filter: { type: 'number', sortable: true }}
     ],
     body: null
   };
 
   public listColumnsToShow: Array<TableDataColumn> = [
-    new TableDataColumn({ column: 'id' }),
     new TableDataColumn({ column: 'transaction_asset' }),
     new TableDataColumn({ column: 'quote_asset' }),
     new TableDataColumn({ column: 'target_exchange' }),
-    new PercentCellDataColumn({ column: 'investment_percentage' })
+    new NumberCellDataColumn({ column: 'investment_usd', inputs: {
+      digitsInfo: '1.2-4'
+    } }),
+    new NumberCellDataColumn({ column: 'investment_btc', inputs: {
+      digitsInfo: '1.2-4'
+    } }),
+    new NumberCellDataColumn({ column: 'investment_eth', inputs: {
+      digitsInfo: '1.2-4'
+    } }),
   ];
 
   /**
@@ -116,10 +130,8 @@ export class RecipeRunDetailComponent extends TimelineDetailComponent implements
     private investmentService: InvestmentService,
   ) {
     super(route, router);
-
-    this.getFilterLOV();
   }
-  
+
   /**
    * + If custom ngOnInit() is needed, call super.ngOnInit() to
    * perform parent component class initialization
@@ -149,15 +161,15 @@ export class RecipeRunDetailComponent extends TimelineDetailComponent implements
         this.getFilterLOV();
       },
       err => this.listDataSource.body = []
-    )
+    );
   }
 
   private getFilterLOV(): void {
     this.listDataSource.header.filter(
-      col => ['id', 'transaction_asset', 'quote_asset','target_exchange'].includes(col.column)
+      col => ['id', 'transaction_asset', 'quote_asset', 'target_exchange'].includes(col.column)
     ).map(
       col => {
-        let filter = {filter : {recipe_run_id: this.routeParamId}}
+        const filter = {filter : {recipe_run_id: this.routeParamId}};
         col.filter.rowData$ = this.investmentService.getAllRecipeDetailsHeaderLOV(col.column, filter);
       }
     );
@@ -170,25 +182,25 @@ export class RecipeRunDetailComponent extends TimelineDetailComponent implements
       )
     ).subscribe(
       res => {
-        if(res.recipe_run) {
+        if (res.recipe_run) {
           this.singleDataSource.body = [ res.recipe_run ];
           this.recipeStatus = [res.recipe_run];
           this.appendActionColumn();
         }
-        if(res.recipe_stats) {
+        if (res.recipe_stats) {
           this.setTagLine(res.recipe_stats.map(stat => {
             return new TagLineItem(`${stat.count} ${stat.name}`);
-          }))
+          }));
         }
       },
       // err => this.singleDataSource.body = []
-    )
+    );
   }
 
   private appendActionColumn() {
-    if (!_.find(this.singleDataSource.header, col => col.column == 'actions')){
+    if (!_.find(this.singleDataSource.header, col => col.column === 'actions')) {
       if (this.recipeStatus[0].approval_status === 'recipes.status.41') {
-        this.singleDataSource.header.push({ column: 'actions', nameKey: 'table.header.action' })
+        this.singleDataSource.header.push({ column: 'actions', nameKey: 'table.header.action' });
         this.singleColumnsToShow.push(
           new ConfirmCellDataColumn({ column: 'actions', inputs: {
             show: (row) => true,
@@ -200,9 +212,9 @@ export class RecipeRunDetailComponent extends TimelineDetailComponent implements
     }
   }
 
-  private removeActionColumn(){
-    this.singleDataSource.header.splice(-1,1);
-    this.singleColumnsToShow.splice(-1,1);
+  private removeActionColumn() {
+    this.singleDataSource.header.splice(-1, 1);
+    this.singleColumnsToShow.splice(-1, 1);
   }
 
   public getTimelineData(): void {
@@ -217,31 +229,31 @@ export class RecipeRunDetailComponent extends TimelineDetailComponent implements
    * Additional
    */
 
-  private confirmRun({ rationale, data }): void {
-    let run = data;
+ private confirmRun({ rationale, data }): void {
+    const run = data;
     this.investmentService.approveRecipe(run.id, { status: 43, comment: rationale }).subscribe(
       res => {
-        if (res.success){
+        if (res.success) {
           this.getSingleData();
           this.getTimelineData();
           this.removeActionColumn();
         }
         // TODO
       }
-    )
+    );
   }
 
   private declineRun({ rationale, data }): void {
-    let run = data;
+    const run = data;
     this.investmentService.approveRecipe(run.id, { status: 42, comment: rationale }).subscribe(
       res => {
-        if (res.success){
+        if (res.success) {
           this.getSingleData();
           this.getTimelineData();
           this.removeActionColumn();
         }
       }
-    )
+    );
   }
 
 }

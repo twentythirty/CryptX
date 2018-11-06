@@ -9,6 +9,7 @@ module.exports = (sequelize, DataTypes) => {
             periodicity: DataTypes.SMALLINT,
             quote_asset: DataTypes.STRING,
             minimum_circulation: DataTypes.FLOAT,
+            exchange_id: DataTypes.INTEGER,
             exchange: DataTypes.STRING,
             exchange_count: DataTypes.SMALLINT,
             exchange_pass: DataTypes.SMALLINT,

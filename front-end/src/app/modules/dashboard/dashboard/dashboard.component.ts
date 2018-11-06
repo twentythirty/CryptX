@@ -1,8 +1,8 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild } from '@angular/core';
 import { RouterModule, Router, ActivatedRoute } from '@angular/router';
 import { finalize } from 'rxjs/operators';
 
-import { TableDataSource, TableDataColumn } from '../../../shared/components/data-table/data-table.component';
+import { TableDataSource, TableDataColumn, DataTableComponent } from '../../../shared/components/data-table/data-table.component';
 
 import { InvestmentService } from '../../../services/investment/investment.service';
 import { DataTableCommonManagerComponent } from '../../../shared/components/data-table-common-manager/data-table-common-manager.component';
@@ -52,7 +52,6 @@ export class DashboardComponent extends DataTableCommonManagerComponent implemen
 
   ngOnInit() {
     super.ngOnInit();
-    this.getFilterLOV();
   }
 
 
@@ -66,6 +65,7 @@ export class DashboardComponent extends DataTableCommonManagerComponent implemen
           footer: res.footer
         });
         this.count = res.count;
+        this.getFilterLOV();
       }
     );
   }
@@ -80,7 +80,7 @@ export class DashboardComponent extends DataTableCommonManagerComponent implemen
       col => {
         col.filter.rowData$ = this.investmentService.getAllInvestmentsHeaderLOV(col.column);
       }
-    )
+    );
   }
 
   openRow(investment: any): void {

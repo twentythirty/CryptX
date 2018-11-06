@@ -27,20 +27,24 @@ module.exports = {
         "Got %s coins in response!",
         resp.metadata.num_cryptocurrencies
       );
-
+      
+      //chain all coins saving into one promise chain
+      const coins_promise_chain = data.reduce((acc, coin_data) => {
+        return acc.then(prev => {
+          return Asset.create({
+            symbol: coin_data.symbol,
+            long_name: coin_data.name,
+            is_base: (coin_data.symbol === 'BTC' || coin_data.symbol === 'ETH')
+          }).then(asset => {
+            return AssetBlockchain.create({
+              asset_id: asset.id,
+              coinmarketcap_identifier: `${coin_data.id}`
+            })
+          })
+        })
+      }, Promise.resolve());
       //individual coin insert with supporting object save
-      return Promise.all(data.map(coin_data => {
-        return Asset.create({
-          symbol: coin_data.symbol,
-          long_name: coin_data.name,
-          is_base: (coin_data.symbol === 'BTC' || coin_data.symbol === 'ETH')
-        }).then(asset => {
-          return AssetBlockchain.create({
-            asset_id: asset.id,
-            coinmarketcap_identifier: `${coin_data.id}`
-          });
-        });
-      }));
+      return Promise.resolve(coins_promise_chain);
     }).then(assets_blockchain => {
       //bring focus back to assets
       return Asset.findAll()

@@ -8,7 +8,7 @@ import { FormBuilder, Validators, FormGroup } from '@angular/forms';
 })
 export class RationaleModalComponent implements OnInit {
 
-  public screen: string = 'INPUT';
+  public screen = 'INPUT';
   public form: FormGroup;
 
   @Input() data: any;
@@ -21,11 +21,11 @@ export class RationaleModalComponent implements OnInit {
   ngOnInit() {
     this.form = this.fb.group({
       rationale: [null, Validators.required]
-    })
+    });
   }
 
   public submit(): void {
-    if(this.form.valid) {
+    if (this.form.valid && this.form.controls.rationale.value.trim().length > 0 ) {
       this.screen = 'SUCCESS';
       this.finish();
     } else {

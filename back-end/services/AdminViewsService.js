@@ -1,25 +1,32 @@
 'use strict';
 
+const {
+    sequelize,
+    AVUser,
+    AVAsset,
+    AVGroupAsset,
+    AVInstrument,
+    AVInvestmentRun,
+    AVInvestmentAmount,
+    AVRecipeRun,
+    AVRecipeRunDetail,
+    AVInstrumentExchange,
+    AVInstrumentLiquidityRequirement,
+    AVLiquidityRequirementExchange,
+    AVRecipeDeposit,
+    AVRecipeOrdersGroup,
+    AVRecipeOrder,
+    AVExecutionOrder,
+    AVExecutionOrderFill,
+    AVColdStorageTransfer,
+    AVColdStorageAccount,
+    AVColdStorageAccountStorageFee,
+    AVInvestmentAssetConversion,
+    AVExchangeAccount,
+    AVExchangeCredential
+} = require('../models');
 
-const sequelize = require('../models').sequelize;
 const builder = require('../utils/AdminViewUtils');
-const AVUser = require('../models').AVUser;
-const Role = require('../models').Role;
-const AVAsset = require('../models').AVAsset;
-const AVInstrument = require('../models').AVInstrument;
-const AVInvestmentRun = require('../models').AVInvestmentRun;
-const AVRecipeRun = require('../models').AVRecipeRun;
-const AVRecipeRunDetail = require('../models').AVRecipeRunDetail;
-const AVInstrumentExchange = require('../models').AVInstrumentExchange;
-const AVInstrumentLiquidityRequirement = require('../models').AVInstrumentLiquidityRequirement;
-const AVLiquidityRequirementExchange = require('../models').AVLiquidityRequirementExchange;
-const AVRecipeDeposit = require('../models').AVRecipeDeposit;
-const AVRecipeOrdersGroup = require('../models').AVRecipeOrdersGroup;
-const AVRecipeOrder = require('../models').AVRecipeOrder;
-const AVExecutionOrder = require('../models').AVExecutionOrder;
-const AVExecutionOrderFill = require('../models').AVExecutionOrderFill;
-const AVColdStorageTransfer = require('../models').AVColdStorageTransfer;
-const AVColdStorageAccount = require('../models').AVColdStorageAccount;
 
 const TABLE_LOV_FIELDS = {
     'av_users': [
@@ -99,6 +106,17 @@ const TABLE_LOV_FIELDS = {
         'asset',
         'strategy_type',
         'custodian'
+    ],
+    'av_cold_storage_account_storage_fees': [
+        'asset',
+        'cold_storage_account_id',
+        'custodian',
+        'strategy_type'
+    ],
+    'av_exchange_accounts': [
+        'exchange',
+        'asset',
+        'is_active'
     ]
 }
 
@@ -230,6 +248,18 @@ const fetchColdStorageAccountsViewHeaderLOV = async (header_field, query ='', wh
 }
 module.exports.fetchColdStorageAccountsViewHeaderLOV = fetchColdStorageAccountsViewHeaderLOV;
 
+const fetchColdStorageAccountStorageFeesViewHeaderLOV = async (header_field, query ='', where = '') => {
+
+    return fetchViewHeaderLOV('av_cold_storage_account_storage_fees', header_field, query, where);
+}
+module.exports.fetchColdStorageAccountStorageFeesViewHeaderLOV = fetchColdStorageAccountStorageFeesViewHeaderLOV;
+
+const fetchExchangeAccountsViewHeaderLOV = async (header_field, query ='', where = '') => {
+
+    return fetchViewHeaderLOV('av_exchange_accounts', header_field, query, where);
+}
+module.exports.fetchExchangeAccountsViewHeaderLOV = fetchExchangeAccountsViewHeaderLOV;
+
 
 
 // ************************ DATA ***************************//
@@ -245,6 +275,12 @@ const fetchAssetsViewDataWithCount = async (seq_query = {}) => {
     return fetchViewDataWithCount(AVAsset, seq_query);
 }
 module.exports.fetchAssetsViewDataWithCount = fetchAssetsViewDataWithCount;
+
+const fetchGroupAssetsViewDataWithCount = async (seq_query = {}) => {
+
+    return fetchViewDataWithCount(AVGroupAsset, seq_query);
+}
+module.exports.fetchGroupAssetsViewDataWithCount = fetchGroupAssetsViewDataWithCount;
 
 const fetchInstrumentsViewDataWithCount = async (seq_query = {}) => {
 
@@ -323,6 +359,30 @@ const fetchColdStorageAccountsViewDataWithCount = async (seq_query = {}) => {
     return fetchViewDataWithCount(AVColdStorageAccount, seq_query);
 }
 module.exports.fetchColdStorageAccountsViewDataWithCount = fetchColdStorageAccountsViewDataWithCount;
+
+const fetchColdStorageAccountStorageFeesViewDataWithCount = async (seq_query = {}) => {
+
+    return fetchViewDataWithCount(AVColdStorageAccountStorageFee, seq_query);
+}
+module.exports.fetchColdStorageAccountStorageFeesViewDataWithCount = fetchColdStorageAccountStorageFeesViewDataWithCount;
+
+const fetchInvestmentAssetConversionsViewDataWithCount = async (seq_query = {}) => {
+
+    return fetchViewDataWithCount(AVInvestmentAssetConversion, seq_query);
+}
+module.exports.fetchInvestmentAssetConversionsViewDataWithCount = fetchInvestmentAssetConversionsViewDataWithCount;
+
+const fetchExchangeAccountsViewDataWithCount = async (seq_query = {}) => {
+
+    return fetchViewDataWithCount(AVExchangeAccount, seq_query);
+}
+module.exports.fetchExchangeAccountsViewDataWithCount = fetchExchangeAccountsViewDataWithCount;
+
+const fetchExchangeCredentialsViewDataWithCount = async (seq_query = {}) => {
+
+    return fetchViewDataWithCount(AVExchangeCredential, seq_query);
+}
+module.exports.fetchExchangeCredentialsViewDataWithCount = fetchExchangeCredentialsViewDataWithCount;
 
 const fetchAssetView = async (asset_id) => {
 
@@ -425,6 +485,31 @@ const fetchColdStorageAccountView = async (account_id) => {
 }
 module.exports.fetchColdStorageAccountView = fetchColdStorageAccountView;
 
+const fetchColdStorageAccountStorageFeeView = async (fee_id) => {
+
+    return fetchSingleEntity(AVColdStorageAccountStorageFee, fee_id);
+}
+module.exports.fetchColdStorageAccountStorageFeeView = fetchColdStorageAccountStorageFeeView;
+
+const fetchInvestmentAssetConversionView = async (conversion_id) => {
+
+    return fetchSingleEntity(AVInvestmentAssetConversion, conversion_id);
+}
+module.exports.fetchInvestmentAssetConversionView = fetchInvestmentAssetConversionView;
+
+const fetchExchangeAccountView = async (account_id) => {
+
+    return fetchSingleEntity(AVExchangeAccount, account_id);
+}
+module.exports.fetchExchangeAccountView = fetchExchangeAccountView;
+
+const fetchExchangeCredentialView = async (exchange_id) => {
+
+    return AVExchangeCredential.findOne({
+        where: { exchange_id }
+    });
+}
+module.exports.fetchExchangeCredentialView = fetchExchangeCredentialView;
 
 // ************************ FOOTERS ***************************//
 
@@ -476,13 +561,13 @@ const fetchAssetsViewFooter = async (where_clause = '') => {
        SUM(is_base) AS is_base,
        SUM(is_deposit) AS is_deposit,
        SUM(status) AS status,
-       COUNT(DISTINCT symbol) AS symbol,
+       COUNT(symbol) AS symbol,
        SUM(is_cryptocurrency) AS is_cryptocurrency,
        SUM(capitalization) AS capitalization
 FROM
   (SELECT (CASE WHEN is_base = 'assets.is_base.yes' THEN 1 ELSE 0 END) AS is_base,
           (CASE WHEN is_deposit = 'assets.is_deposit.yes' THEN 1 ELSE 0 END) AS is_deposit,
-          (CASE WHEN status = 'assets.status.401' THEN 1 ELSE 0 END) AS status,
+          (CASE WHEN status = 'assets.status.${INSTRUMENT_STATUS_CHANGES.Graylisting}' THEN 1 ELSE 0 END) AS status,
           (CASE WHEN is_cryptocurrency = 'assets.is_cryptocurrency.yes' THEN 1 ELSE 0 END) AS is_cryptocurrency,
           symbol,
           capitalization
@@ -496,6 +581,25 @@ FROM
         builder.queryReturnRowToFooterObj(footer_values), 'assets');
 }
 module.exports.fetchAssetsViewFooter = fetchAssetsViewFooter;
+
+const fetchGroupAssetViewFooter = async (where_clause = '') => {
+
+    const view = 'av_group_assets';
+
+    const query = builder.joinQueryParts([
+        builder.selectCountDistinct('id', 'symbol', view, where_clause),
+        builder.selectSum('capitalization', view, where_clause)
+    ], [
+        'symbol',
+        'capitalization'
+    ]);
+
+    const footer = (await sequelize.query(query))[0];
+
+    return builder.addFooterLabels(builder.queryReturnRowToFooterObj(footer), 'assets');
+
+};
+module.exports.fetchGroupAssetViewFooter = fetchGroupAssetViewFooter;
 
 const fetchInstrumentsViewFooter = async (where_clause = '') => {
 
@@ -747,12 +851,14 @@ const fetchRecipeRunDetailsViewFooter = async (where_clause = '') => {
         builder.selectCount(view, 'id', where_clause),
         builder.selectCountDistinct('transaction_asset_id', 'transaction_asset', view, where_clause),
         builder.selectCountDistinct('quote_asset_id', 'quote_asset', view, where_clause),
-        builder.selectCountDistinct('target_exchange_id', 'target_exchange', view, where_clause)
+        builder.selectCountDistinct('target_exchange_id', 'target_exchange', view, where_clause),
+        builder.selectSumTrim('investment_percentage', view, where_clause)
     ], [
         'id',
         'transaction_asset',
         'quote_asset',
-        'target_exchange'
+        'target_exchange',
+        'investment_percentage'
     ]);
 
     const footer = (await sequelize.query(query))[0];
@@ -771,7 +877,7 @@ const fetchRecipeOrdersViewFooter = async (where_clause = '') => {
         builder.selectCountDistinct('investment_id', 'investment_id', view, where_clause),
         builder.selectCountDistinct('instrument_id', 'instrument', view, where_clause),
         builder.selectCountDistinct('target_exchange_id', 'exchange', view, where_clause),
-        builder.selectCount(view, 'status', builder.addToWhere(where_clause, `status='orders.status.${MODEL_CONST.RECIPE_ORDER_STATUSES.Pending}'`))
+        builder.selectCount(view, 'status', builder.addToWhere(where_clause, `status='orders.status.${MODEL_CONST.RECIPE_ORDER_STATUSES.Executing}'`))
     ], [
         'id',
         'investment_id',
@@ -794,11 +900,13 @@ const fetchExecutionOrdersViewFooter = async (where_clause = '') => {
 
     const query = builder.joinQueryParts([
         builder.selectCount(view, 'id', where_clause),
+        builder.selectCountDistinct('investment_run_id', 'investment_run_id', view, where_clause),
         builder.selectCountDistinct('instrument_id', 'instrument', view, where_clause),
         builder.selectCountDistinct('exchange_id', 'exchange', view, where_clause),
         builder.selectCount(view, 'status', builder.addToWhere(where_clause, `status='execution_orders.status.${MODEL_CONST.EXECUTION_ORDER_STATUSES.Pending}'`))
     ], [
         'id',
+        'investment_run_id',
         'instrument',
         'exchange',
         'status'
@@ -815,7 +923,7 @@ module.exports.fetchExecutionOrdersViewFooter = fetchExecutionOrdersViewFooter;
 const fetchExecutionOrderFillsViewsFooter = async (where_clause = '') => {
 
     const view = 'av_execution_order_fills';
-
+    /*
     const query = builder.joinQueryParts([
         builder.selectCountDistinct('id', 'id', view, where_clause),
         builder.selectSumTrim('fill_price', view, where_clause),
@@ -825,6 +933,18 @@ const fetchExecutionOrderFillsViewsFooter = async (where_clause = '') => {
         'fill_price',
         'quantity'
     ])
+    */
+    //round the fills result calculation thing to this many decimal places
+    const FILLS_VIEW_FOOTER_DECIMAL_PLACES = 8;
+    //Desperate math calls for desperate sql queries
+    const query = `
+        SELECT
+            COUNT(id) AS id,
+            CAST(to_char(SUM(quantity*fill_price)/SUM(quantity), 'FM99999999990.${_.repeat('9', FILLS_VIEW_FOOTER_DECIMAL_PLACES)}') AS NUMERIC)  AS fill_price,
+            SUM(quantity) as quantity
+        FROM av_execution_order_fills
+        ${builder.whereOrEmpty(where_clause)}
+    `;
 
     const footer = (await sequelize.query(query))[0];
 
@@ -834,23 +954,33 @@ const fetchExecutionOrderFillsViewsFooter = async (where_clause = '') => {
 }
 module.exports.fetchExecutionOrderFillsViewsFooter = fetchExecutionOrderFillsViewsFooter;
 
-const fetchRecipeDepositsViewsFooter = async (where_clause = '') => {
+const fetchRecipeDepositsViewsFooter = async (where_clause = '', fetch_footer_percentage = false) => {
 
     const view = 'av_recipe_deposits';
 
-    const query = builder.joinQueryParts([
+    let query_parts = [
         builder.selectCount(view, 'id', where_clause),
         builder.selectCountDistinct('investment_run_id', 'investment_run_id', view, where_clause),
         builder.selectCountDistinct('quote_asset_id', 'quote_asset', view, where_clause),
+        builder.selectCountDistinct('exchange_id', 'exchange', view, where_clause),
         builder.selectCountDistinct('account', 'account', view, where_clause),
         builder.selectCount(view, 'status', builder.addToWhere(where_clause, `status='deposits.status.${MODEL_CONST.RECIPE_RUN_DEPOSIT_STATUSES.Pending}'`))
-    ], [
+    ]
+    let aliases = [
         'id',
         'investment_run_id',
         'quote_asset',
+        'exchange',
         'account',
         'status'
-    ]);
+    ]
+
+    if (fetch_footer_percentage) {
+        query_parts.push(builder.selectSumTrim('investment_percentage', view, where_clause));
+        aliases.push('investment_percentage');
+    }
+
+    const query = builder.joinQueryParts(query_parts, aliases);
 
     const footer = (await sequelize.query(query))[0];
 
@@ -901,3 +1031,83 @@ const fetchColdStorageAccountsViewsFooter = async (where_clause = '') => {
     )
 }
 module.exports.fetchColdStorageAccountsViewsFooter = fetchColdStorageAccountsViewsFooter;
+
+
+const fetchInvestmentAmountFooter = async (where_clause = '') => {
+
+    const view = 'av_investment_amount';
+
+    const query = builder.joinQueryParts([
+        builder.selectCountDistinct('currency_name', 'currency_name', view, where_clause),
+        builder.selectSumTrim('value_usd', view, where_clause),
+    ], [
+        'currency_name',
+        'value_usd'
+    ]);
+
+    const footer = (await sequelize.query(query))[0];
+
+    return builder.addFooterLabels(
+        builder.queryReturnRowToFooterObj(footer), 'investment_amounts'
+    )
+}
+module.exports.fetchInvestmentAmountFooter = fetchInvestmentAmountFooter;
+
+const fetchInvestmentAssetConversionViewFooter = async (where_clause = '') => {
+
+    const view = 'av_investment_asset_conversions';
+
+    const query = builder.joinQueryParts([
+        builder.selectCountDistinct('target_currency', 'target_currency', view, where_clause),
+        builder.selectSumTrim('investment_amount', view, where_clause),
+        builder.selectCount(view, 'status', builder.addToWhere(where_clause, `status = \'asset_conversions.status.${ASSET_CONVERSION_STATUSES.Pending}\'`))
+    ], [
+        'target_currency',
+        'investment_amount',
+        'status'
+    ]);
+
+    const footer = (await sequelize.query(query))[0];
+
+    return builder.addFooterLabels(
+        builder.queryReturnRowToFooterObj(footer), 'asset_conversions'
+    )
+}
+module.exports.fetchInvestmentAssetConversionViewFooter = fetchInvestmentAssetConversionViewFooter;
+
+const fetchExchangeAccountViewFooter = async (where_clause = '') => {
+
+    const view = 'av_exchange_accounts';
+
+    const query = builder.joinQueryParts([
+        builder.selectCountDistinct('exchange_id', 'exchange', view, where_clause),
+    ], [
+        'exchange'
+    ]);
+
+    const footer = (await sequelize.query(query))[0];
+
+    return builder.addFooterLabels(
+        builder.queryReturnRowToFooterObj(footer), 'exchange_accounts'
+    )
+}
+module.exports.fetchExchangeAccountViewFooter = fetchExchangeAccountViewFooter;
+
+const fetchExchangeCredentialViewFooter = async (where_clause = '') => {
+
+    const view = 'av_exchange_credentials';
+
+    const query = builder.joinQueryParts([
+        builder.selectCountDistinct('exchange_id', 'exchange', view, where_clause),
+    ], [
+        'exchange'
+    ]);
+
+    const footer = (await sequelize.query(query))[0];
+
+    return builder.addFooterLabels(
+        builder.queryReturnRowToFooterObj(footer), 'exchange_credentials'
+    )
+}
+module.exports.fetchExchangeCredentialViewFooter = fetchExchangeCredentialViewFooter;
+

@@ -1,6 +1,7 @@
 "use strict";
 
 const ccxtUtils = require('../utils/CCXTUtils');
+const ccxtUnified = require('../utils/ccxtUnified');
 
 /**
  * Return the symbol for whichever currency is being sold in the context of this order, out of the order currency pair. 
@@ -30,6 +31,11 @@ const fills_sum_decimal = (fills) => {
         .reduce((acc, current) => acc.plus(current), Decimal(0))
 }
 
+let execution_active = [
+    EXECUTION_ORDER_STATUSES.Pending,
+    EXECUTION_ORDER_STATUSES.InProgress
+];
+
 //every day, every 5 minutes
 module.exports.SCHEDULE = "0 */5 * * * *";
 module.exports.NAME = "GEN_EXEC_OR";
@@ -42,6 +48,7 @@ module.exports.JOB_BODY = async (config, log) => {
     const ExecutionOrder = models.ExecutionOrder;
     const ExecutionOrderFill = models.ExecutionOrderFill;
     const InstrumentExchangeMapping = models.InstrumentExchangeMapping;
+    const sequelize = models.sequelize;
 
     //settings should be injected before this point in db-config, so its safe to reference
     let trade_base = {
@@ -50,18 +57,20 @@ module.exports.JOB_BODY = async (config, log) => {
     };
     const fuzzyness = SYSTEM_SETTINGS.TRADE_BASE_FUZYNESS;
 
-    const approved_groups_ids = _.map(await RecipeOrderGroup.findAll({
-        where: {
-            approval_status: RECIPE_ORDER_GROUP_STATUSES.Approved
-        }
-    }), 'id');
-
+    // fetch all recipe orders where of approved recipe order group
     return RecipeOrder.findAll({
         where: {
-            status: RECIPE_ORDER_STATUSES.Executing,
-            recipe_order_group_id: approved_groups_ids
+            status: RECIPE_ORDER_STATUSES.Executing
         },
-        include: [Instrument]
+        include: [
+            Instrument,
+            { 
+                model: RecipeOrderGroup,
+                where: {
+                    approval_status: RECIPE_ORDER_GROUP_STATUSES.Approved
+                }
+            }
+        ]
     }).then(active_orders => {
         log(`1. Analyzing ${active_orders.length} active orders...`)
         return Promise.all(
@@ -72,17 +81,35 @@ module.exports.JOB_BODY = async (config, log) => {
                 const base_trade_amount = trade_base[sold_symbol];
                 if (base_trade_amount == null) {
                     log(`[ERROR.2A]: no base trade recorded for currency symbol ${sold_symbol}! Skipping order ${pending_order.id}...`);
-                    return pending_order;
+                    return { instance: pending_order, status: JOB_RESULT_STATUSES.Error, step: '2A' };
                 }
 
                 log(`2. Fetching all execution orders of recipe order ${pending_order.id}...`)
 
                 return Promise.all([
                     Promise.resolve(pending_order),
-                    ExecutionOrder.findAll({
-                        where: {
+                    // fetch execution order quantity and filled grouped by status
+                    sequelize.query(`
+                        SELECT 
+                            eo.status,
+                            COUNT(*) execution_order_count,
+                            COALESCE(SUM(eo.spend_amount), 0) as spend_amount,
+                            COALESCE(SUM(eo.total_quantity), 0) as total_quantity,
+                            COALESCE(SUM(fills.filled), 0) as filled
+                        FROM execution_order eo
+                        LEFT JOIN LATERAL (
+                            SELECT SUM(eof.quantity) as filled
+                            FROM execution_order_fill eof
+                            WHERE eof.execution_order_id=eo.id
+                            GROUP BY execution_order_id
+                        ) as fills ON true
+                        WHERE eo.recipe_order_id = :recipe_order_id
+                        GROUP BY eo.status
+                    `, {
+                        replacements: {
                             recipe_order_id: pending_order.id
-                        }
+                        },
+                        type: sequelize.QueryTypes.SELECT
                     })
                 ]).then(orderAndExecs => {
 
@@ -90,19 +117,20 @@ module.exports.JOB_BODY = async (config, log) => {
                     const [pending_order, execution_orders] = orderAndExecs;
 
                     //inspect existing execution orders of this pending one
-                    const unfilled_execution = _.find(execution_orders, order => order.isActive());
+                    const unfilled_execution = execution_orders.find(e => execution_active.includes(e.status));
 
                     if (unfilled_execution != null) {
-                        //an active execution order was found, let system deal with it before attempting another one
-                        log(`[WARN.3A]: Found execution order ${unfilled_execution.id} with status ${unfilled_execution.status} for pending recipe order ${pending_order.id}! Skipping recipe order...`);
-                        return pending_order;
+                        //an active execution order was found, let system deal with it before attempting another one //${unfilled_execution.id}
+                        log(`[WARN.3A]: Found execution orders  with status ${unfilled_execution.status} for pending recipe order ${pending_order.id}! Skipping recipe order...`);
+                        return { instance: pending_order, status: JOB_RESULT_STATUSES.Skipped, step: '3A' };
                     }
 
-                    const inactive_execution_orders = _.filter(execution_orders, order => !order.isActive());
+                    const inactive_execution_orders = execution_orders.filter(e => !execution_active.includes(e.status));/*  _.filter(execution_orders, order => !order.isActive()); */
                     log(`3. Fetching all execution order fills for ${inactive_execution_orders.length} inactive execution orders of pending recipe order ${pending_order.id}`);
-                    const resumable_execution_orders = _.filter(execution_orders, order => order.status == EXECUTION_ORDER_STATUSES.Failed && order.failed_attempts < SYSTEM_SETTINGS.EXEC_ORD_FAIL_TOLERANCE);
+                    const resumable_execution_orders = execution_orders.filter(e => e.status==EXECUTION_ORDER_STATUSES.Failed);
 
-                    log(`3.1. Reserving quantity for ${resumable_execution_orders.length} failed but resumable execution orders...`);
+                    log(`3.1. Reserving quantity for ${resumable_execution_orders.execution_order_count ?
+                        resumable_execution_orders.execution_order_count : 0} failed but resumable execution orders...`);
 
                     return Promise.all([
                         Promise.resolve(pending_order),
@@ -114,37 +142,39 @@ module.exports.JOB_BODY = async (config, log) => {
                             }
                         }),
                         //fetch CCXT connector for this exchange with markets preloaded
-                        ccxtUtils.getConnector(pending_order.target_exchange_id),
+                        ccxtUnified.getExchange(pending_order.target_exchange_id),
                         //carry over resumable execution orders to add them to potentially covered total
                         Promise.resolve(resumable_execution_orders),
                         //fetch all finished execution order fills for all non-active execution orders
-                        ExecutionOrderFill.findAll({
-                            where: {
-                                execution_order_id: _.map(inactive_execution_orders, 'id')
-                            }
-                        })
-                    ]).then(pendingAndMappingAndOrdersAndFills => {
+                        Promise.resolve(inactive_execution_orders)
+                    ]).then(async (pendingAndMappingAndOrdersAndFills) => {
 
                         const [
                             pending_order,
                             exchange_mapping,
-                            exchange_connector,
-                            resumable_execution_orders,
+                            unifiedExchange,
+                            resumable_amount,
                             execution_fills
                         ] = pendingAndMappingAndOrdersAndFills;
 
+                        await unifiedExchange.isReady();
+                        
                         log(`4a. retrieving market data with limits for ${pending_order.Instrument.symbol} for exchange with id ${pending_order.target_exchange_id}`);
 
-                        if (!exchange_connector) {
+                        if (!unifiedExchange._connector) {
                             log(`[ERROR.4A]: Failed to retrieve exchange connector with id: ${pending_order.target_exchange_id}`);
-                            return pending_order;
+                            return { instance: pending_order, status: JOB_RESULT_STATUSES.Error, step: '4A' };
+                        }
+                        if (unifiedExchange._connector.loading_failed) {
+                            log(`[ERROR.4A]: Failed to load connector markets with id: ${pending_order.target_exchange_id}`);
+                            return { instance: pending_order, status: JOB_RESULT_STATUSES.Error, step: '4A' };
                         }
                         //Get market based on instrument symbol.
-                        const exchange_market = exchange_connector.markets[pending_order.Instrument.symbol];
+                        const exchange_market = unifiedExchange._connector.markets[pending_order.Instrument.symbol];
 
                         if (!exchange_market || !exchange_market.active) {
                             log(`[ERROR.4A]: Market for ${pending_order.Instrument.symbol} is not available or is not active`);
-                            return pending_order;
+                            return { instance: pending_order, status: JOB_RESULT_STATUSES.Error, step: '4A' };
                         }
 
                         const market_limits = exchange_market.limits;
@@ -156,88 +186,69 @@ module.exports.JOB_BODY = async (config, log) => {
                         //if there is no mapping we quit early
                         if (exchange_mapping == null || exchange_mapping.tick_size == null) {
                             log(`[ERROR.3A] Exchange ${pending_order.exchange_id} and instrument ${pending_order.instrument_id} in recipe order ${pending_order.id} have no associating exchange mapping tick size! Skipping order...`);
-                            return pending_order;
+                            return { instance: pending_order, status: JOB_RESULT_STATUSES.Error, step: '3A' };
                         }
 
+                        const failed_quantity = resumable_amount.length ? resumable_amount.spend_amount : 0;
+                        const spent_total = Decimal(
+                            execution_fills.reduce((acc, exec) => acc.add(Decimal(exec.spend_amount)), Decimal(0))
+                        ).plus(Decimal(failed_quantity));
 
-                        //sum up all quantities that could potentially be realized
-                        const potential_qnatity = _.map(resumable_execution_orders, execution_order => {
-                            const fills_sum = fills_sum_decimal(
-                                _.filter(execution_fills, fill => fill.execution_order_id == execution_order.id)
-                            )
-                            return Decimal(execution_order.total_quantity).minus(fills_sum)
-                        }).reduce((acc, current) => acc.plus(current), Decimal(0))
+                        const order_total = Decimal(pending_order.spend_amount);
+                        const remaining_sell_amount = order_total.minus(spent_total);
 
-
-                        //realized total is the sum of actual fills and potential quantity in resumable execution orders
-                        const realized_total = fills_sum_decimal(execution_fills).plus(potential_qnatity)
-                        const order_total = Decimal(pending_order.quantity)
-                        const remain_quantity = order_total.minus(realized_total);
-
-                        if (realized_total.gte(order_total)) {
-                            log(`[WARN.3B]: Current fulfilled execution order total ${realized_total.toString()} covers recipe order ${pending_order.id} quantity ${pending_order.quantity}. Skipping recipe order...`);
-                            return pending_order;
+                        if (spent_total.gte(order_total)) {
+                            log(`[WARN.3B]: Current fulfilled execution order total ${spent_total.toString()} covers recipe order ${pending_order.id} quantity ${pending_order.spend_amount}. Skipping recipe order...`);
+                            return { instance: pending_order, status: JOB_RESULT_STATUSES.Skipped, step: '3B' };
                         }
 
                         const sold_symbol = get_order_sold_symbol(pending_order);
                         const base_trade_amount = trade_base[sold_symbol];
                         let fuzzy_trade_amount =
                             Decimal(base_trade_amount)
-                            .div(pending_order.price) //divide base trading amoutn by tx asset price to know how much quantity we are actually buying
                             .mul(
                                 Decimal(1).plus(_.random(-fuzzyness, fuzzyness, true))
                             );
                         //adjust fuzzy total to not be larger than remaning order quantity
-                        if (fuzzy_trade_amount.gt(remain_quantity)) {
-                            fuzzy_trade_amount = remain_quantity;
+                        if (fuzzy_trade_amount.gt(remaining_sell_amount)) {
+                            fuzzy_trade_amount = remaining_sell_amount;
                         }
 
-                        //minimize the DP to accepted levels
-                        fuzzy_trade_amount = fuzzy_trade_amount.toDP(
-                            Decimal(exchange_mapping.tick_size).dp(), Decimal.ROUND_HALF_DOWN
-                        );
-                        log(`4b. predicting fuzzy ${sold_symbol} amount ${fuzzy_trade_amount.toString()} reduced to tick size ${exchange_mapping.tick_size} for recipe order ${pending_order.id}...`);
+                        let limits = await unifiedExchange.getSymbolLimits(pending_order.Instrument.symbol);
 
-                        //next total is either the fuzzy amount or order or market upper bound, whichever fits
                         let next_total = fuzzy_trade_amount;
-                        log(`4c. actually using clamped fuzzy total ${next_total.toString()} of ${sold_symbol} on recipe order ${pending_order.id}`);
 
-                        //Check if the next total is within the amount limit.
-
-                        //check if the amounts are defined since the keys might exist but not have values on them
-                        if (amount_limit.min) {
-                            if (next_total.lt(amount_limit.min)) {
-                                log(`[WARN.4C]: Next total of ${next_total.toString()} is less than the markets min limit of ${amount_limit.min}`);
-                                if (remain_quantity.gte(amount_limit.min)) {
-                                    log(`[REC.4C]: Bumping total of new execution order for ${pending_order.id} to minimum supported ${amount_limit.min} since unrealized quantity ${remain_quantity.toString()} allows it...`)
-                                    next_total = Decimal(amount_limit.min)
-                                } else {
-                                    log(`[WARN.4C]: Skipping order generation since total remaining quantity ${remain_quantity.toString()} is too low for required exchange minimum ${amount_limit.min}`);
-                                    return pending_order;
-                                }
+                        if (next_total.lt(limits.spend.min)) {
+                            log(`[WARN.4C]: Next total of ${next_total.toString()} is less than the markets min limit of ${amount_limit.min}`);
+                            if (remaining_sell_amount.gte(limits.spend.min)) {
+                                log(`[REC.4C]: Bumping total of new execution order for ${pending_order.id} to minimum supported ${amount_limit.min} since unrealized quantity ${remaining_sell_amount.toString()} allows it...`)
+                                next_total = Decimal(limits.spend.min)
+                            } else {
+                                log(`[WARN.4C]: Skipping order generation since total remaining quantity ${remaining_sell_amount.toString()} is too low for required exchange minimum ${amount_limit.min}`);
+                                return { instance: pending_order, status: JOB_RESULT_STATUSES.Skipped, step: '4C' };
                             }
-                        } else {
-                            log(`[INFO.4C]: Skipping lower bound check on quantity ${next_total.toString()} for recipe order ${pending_order.id} due to missing lower bound on market ${exchange_market.symbol} for exchange ${exchange_connector.name}`);
                         }
 
-                        if (amount_limit.max) {
-                            if (next_total.gt(amount_limit.max)) {
-                                log(`[WARN.4C]: Next total of ${next_total.toString()} is greater than the markets max limit of ${amount_limit.max}, setting the next total to limit\`s max ${amount_limit.max}`);
-                                next_total = Decimal(amount_limit.max);
-                            }
-                        } else {
-                            log(`[INFO.4C]: Skipping upper bound check on quantity ${next_total.toString()} for recipe order ${pending_order.id} due to missing upper bound on market ${exchange_market.symbol} for exchange ${exchange_connector.name}`);
+                        if (next_total.gt(limits.spend.max)) {
+                            log(`[WARN.4C]: Next total of ${next_total.toString()} is greater than the markets max limit of ${amount_limit.max}, setting the next total to limit\`s max ${amount_limit.max}`);
+                            next_total = Decimal(limits.spend.max);
                         }
 
-                        log(`4d. Current fulfilled recipe order total is ${realized_total.toString()}, adding another ${next_total.toString()}...`);
+                        //reamining quantity for reciep order after this execution order gets generated
+                        const next_order_spend = order_total.minus(next_total.plus(spent_total))
+                        if (next_order_spend.lt(limits.spend.min)) {
+                            log(`[WARN.4C]: Post-gen recipe order total of ${next_order_spend.toString()} is less than the markets min limit of ${limits.spend.min}. Adding remainder to current and finishing recipe order!`);
+                            next_total = next_total.plus(next_order_spend);
+                        }
 
                         //create next pending execution order and save it
-                        return Promise.all([
+                        return await Promise.all([
                             Promise.resolve(pending_order),
                             ExecutionOrder.create({
                                 side: pending_order.side,
                                 type: EXECUTION_ORDER_TYPES.Market,
-                                total_quantity: next_total.toString(),
+                                spend_amount: next_total.toString(),
+                                total_quantity: "0" || next_total.toString(),
                                 status: EXECUTION_ORDER_STATUSES.Pending,
                                 recipe_order_id: pending_order.id,
                                 instrument_id: pending_order.instrument_id,
@@ -250,5 +261,7 @@ module.exports.JOB_BODY = async (config, log) => {
                 });
             })
         );
+    }).catch(err => {
+        console.log(err);
     });
 };

@@ -1,21 +1,30 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
+import { FormGroup, FormControl, Validators } from '@angular/forms';
 import { mergeMap, finalize } from 'rxjs/operators';
+import * as _ from 'lodash';
 
 import { StatusClass } from '../../../shared/models/common';
+import { permissions } from '../../../config/permissions';
 
-import { TimelineDetailComponent, SingleTableDataSource, TagLineItem, ITimelineDetailComponent } from '../timeline-detail/timeline-detail.component';
+import {
+  TimelineDetailComponent,
+  SingleTableDataSource,
+  ITimelineDetailComponent
+} from '../timeline-detail/timeline-detail.component';
 import { TimelineEvent } from '../../../shared/components/timeline/timeline.component';
 import { TableDataSource, TableDataColumn } from '../../../shared/components/data-table/data-table.component';
 import {
-  DateCellDataColumn,
   StatusCellDataColumn,
-  PercentCellDataColumn,
   DataCellAction,
-  ActionCellDataColumn
+  ActionCellDataColumn,
+  NumberCellDataColumn
 } from '../../../shared/components/data-table-cells';
+import { DepositApproveComponent } from '../../deposit/deposit-approve/deposit-approve.component';
 
-import { InvestmentService } from '../../../services/investment/investment.service';
+import { InvestmentService, AssetConversionStatus } from '../../../services/investment/investment.service';
+import { AuthService } from '../../../services/auth/auth.service';
+
 
 @Component({
   selector: 'app-deposit-detail',
@@ -26,9 +35,21 @@ export class DepositDetailComponent extends TimelineDetailComponent implements O
   /**
    * 1. Implement attributes to display titles
    */
-  public pageTitle: string = 'Recipe run';
-  public singleTitle: string = 'Recipe run';
-  public listTitle: string = 'Deposits';
+  public pageTitle = 'Recipe run';
+  public singleTitle = 'Currency conversion';
+  public listTitle = 'Deposits';
+
+  showConversionAmountModal: boolean = false;
+  conversionAmountFormLoading: boolean = false;
+  conversionAmountModalError: string;
+  conversionAmountForm = new FormGroup({
+    amount: new FormControl('', Validators.required)
+  });
+  updateConversionAmount: Function;
+  completeConversionLoading = false;
+  calculateDepositsLoading = false;
+
+  depositApproveId: number;
 
   /**
    * 2. Implement attributes to preset data structure
@@ -37,53 +58,36 @@ export class DepositDetailComponent extends TimelineDetailComponent implements O
 
   public singleDataSource: SingleTableDataSource = {
     header: [
-      { column: 'id', nameKey: 'table.header.id' },
-      { column: 'created_timestamp', nameKey: 'table.header.creation_time' },
-      { column: 'user_created', nameKey: 'table.header.creator' },
-      { column: 'approval_status', nameKey: 'table.header.status' },
-      { column: 'approval_user', nameKey: 'table.header.decision_by' },
-      { column: 'approval_timestamp', nameKey: 'table.header.decision_time' },
-      { column: 'approval_comment', nameKey: 'table.header.rationale' },
+      { column: 'investment_currency', nameKey: 'table.header.investment_currency' },
+      { column: 'investment_amount', nameKey: 'table.header.investment_amount' },
+      { column: 'target_currency', nameKey: 'table.header.target_currency' },
+      { column: 'converted_amount', nameKey: 'table.header.converted_amount' },
+      { column: 'status', nameKey: 'table.header.status' },
     ],
     body: null
   };
 
   public singleColumnsToShow: Array<TableDataColumn> = [
-    new TableDataColumn({ column: 'id' }),
-    new DateCellDataColumn({ column: 'created_timestamp' }),
-    new TableDataColumn({ column: 'user_created' }),
-    new StatusCellDataColumn({ column: 'approval_status', inputs: { classMap: {
-      'recipes.status.41' : StatusClass.PENDING,
-      'recipes.status.42': StatusClass.REJECTED,
-      'recipes.status.43': StatusClass.APPROVED,
+    new TableDataColumn({ column: 'investment_currency' }),
+    new NumberCellDataColumn({ column: 'investment_amount' }),
+    new TableDataColumn({ column: 'target_currency' }),
+    new NumberCellDataColumn({ column: 'converted_amount' }),
+    new StatusCellDataColumn({ column: 'status', inputs: { classMap: {
+      [AssetConversionStatus.Pending]: StatusClass.PENDING,
+      [AssetConversionStatus.Completed]: StatusClass.APPROVED,
     }}}),
-    new TableDataColumn({ column: 'approval_user' }),
-    new DateCellDataColumn({ column: 'approval_timestamp' }),
-    new ActionCellDataColumn({ column: 'approval_comment', inputs: {
-      actions: [
-        new DataCellAction({
-          label: 'READ',
-          exec: (row: any) => {
-            this.showReadModal({
-              title: 'Rationale',
-              content: row.approval_comment
-            })
-          }
-        })
-      ]
-    }}),
   ];
 
 
   public listDataSource: TableDataSource = {
     header: [
       { column: 'id', nameKey: 'table.header.id', filter: { type: 'number', hasRange: false, inputSearch: true, sortable: true }},
-      { column: 'quote_asset', nameKey: 'table.header.quote_asset', filter: { type: 'text', sortable: true }},
+      { column: 'quote_asset', nameKey: 'table.header.deposit_currency', filter: { type: 'text', sortable: true }},
       { column: 'exchange', nameKey: 'table.header.exchange', filter: { type: 'text', sortable: true }},
-      { column: 'account', nameKey: 'table.header.account', filter: { type: 'text', sortable: true }, column_class: 'word-wrap' },
-      { column: 'amount', nameKey: 'table.header.amount', filter: { type: 'number', sortable: true }},
-      { column: 'investment_percentage', nameKey: 'table.header.investment_percentage', filter: { type: 'number', sortable: true }},
-      { column: 'status', nameKey: 'table.header.status', filter: { type: 'text', sortable: true } },
+      { column: 'account', nameKey: 'table.header.account', filter: { type: 'text', sortable: true }, column_class: 'column-source-account' },
+      { column: 'amount', nameKey: 'table.header.deposit_amount', filter: { type: 'number', sortable: true }},
+      { column: 'deposit_management_fee', nameKey: 'table.header.deposit_management_fee', filter: { type: 'number', sortable: true }},
+      { column: 'status', nameKey: 'table.header.status', filter: { type: 'text', sortable: true, inputSearch: false } },
     ],
     body: null
   };
@@ -94,12 +98,14 @@ export class DepositDetailComponent extends TimelineDetailComponent implements O
     new TableDataColumn({ column: 'exchange' }),
     new TableDataColumn({ column: 'account' }),
     new TableDataColumn({ column: 'amount' }),
-    new PercentCellDataColumn({ column: 'investment_percentage' }),
+    new NumberCellDataColumn({ column: 'deposit_management_fee' }),
     new StatusCellDataColumn({ column: 'status', inputs: { classMap: {
       'deposits.status.150': StatusClass.PENDING,
       'deposits.status.151': StatusClass.APPROVED,
     }}}),
   ];
+
+  @ViewChild(DepositApproveComponent) depositApproveComponent: DepositApproveComponent;
 
   /**
    * 3. Call super() with ActivatedRoute
@@ -108,11 +114,10 @@ export class DepositDetailComponent extends TimelineDetailComponent implements O
   constructor(
     public route: ActivatedRoute,
     public router: Router,
+    private authService: AuthService,
     private investmentService: InvestmentService,
   ) {
     super(route, router);
-
-    this.getFilterLOV();
   }
 
   /**
@@ -131,39 +136,43 @@ export class DepositDetailComponent extends TimelineDetailComponent implements O
   public getSingleData(): void {
     this.route.params.pipe(
       mergeMap(
-        params => this.investmentService.getSingleRecipe(params['id'])
+        params => this.investmentService.getAllConversions(params['id'])
       )
     ).subscribe(
       res => {
-        if(res.recipe_run) {
-          this.singleDataSource.body = [ res.recipe_run ];
-        }
-        if(res.recipe_stats) {
-          this.setTagLine(
-            res.recipe_stats.map(o => new TagLineItem(`${o.count} ${o.name}`))
-          );
+        Object.assign(this.singleDataSource, {
+          body: res.conversions,
+          footer: res.footer
+        });
+
+        if (this.authService.hasPermissions([permissions.ALTER_ASSET_CONVERSIONS])) {
+          this.appendActionColumnForConversions();
         }
       },
       err => this.singleDataSource.body = []
-    )
+    );
   }
 
   public getAllData(): void {
     this.route.params.pipe(
       mergeMap(
-        params => this.investmentService.getAllRecipeDeposits(params['id']).pipe(
+        params => this.investmentService.getAllRecipeDeposits(params['id'], this.requestData).pipe(
           finalize(() => this.stopTableLoading())
         )
       )
     ).subscribe(
       res => {
-        this.count = res.count;
         this.listDataSource.body = res.recipe_deposits;
         this.listDataSource.footer = res.footer;
+        this.count = res.count;
         this.getFilterLOV();
+
+        if (this.authService.hasPermissions([permissions.APPROVE_DEPOSITS])) {
+          this.appendActionColumnForDeposits();
+        }
       },
       err => this.listDataSource.body = []
-    )
+    );
   }
 
   public getTimelineData(): void {
@@ -171,15 +180,15 @@ export class DepositDetailComponent extends TimelineDetailComponent implements O
       mergeMap(
         params => this.investmentService.getAllTimelineData({ recipe_run_id: params['id'] })
       )
-    )
+    );
   }
 
   private getFilterLOV(): void {
     this.listDataSource.header.filter(
-      col => ['id',  'quote_asset', 'exchange', 'account', 'status'].includes(col.column)
+      col => ['id', 'quote_asset', 'exchange', 'status'].includes(col.column)
     ).map(
       col => {
-        let filter = {filter : {investment_run_id: this.routeParamId}}
+        const filter = { filter : { recipe_run_id: this.routeParamId }};
         col.filter.rowData$ = this.investmentService.getAllDepositDetailsHeaderLOV(col.column, filter);
       }
     );
@@ -190,8 +199,152 @@ export class DepositDetailComponent extends TimelineDetailComponent implements O
    */
 
   public openListRow(row: any): void {
-    this.router.navigate([`/deposits/view/${row.id}`]);
+    this.router.navigate(['/deposits/view', row.id]);
   }
 
+
+  private appendActionColumnForConversions(): void {
+    _.remove(this.singleDataSource.header, ['column', 'action']);
+    _.remove(this.singleColumnsToShow, ['column', 'action']);
+
+    if (this.singleDataSource.body.some(row => row.status !== AssetConversionStatus.Completed)) {
+      this.singleDataSource.header.push({ column: 'action', nameKey: 'table.header.actions' });
+      this.singleColumnsToShow.push(
+        new ActionCellDataColumn({
+          column: 'action',
+          inputs: {
+            actions: [
+              new DataCellAction({
+                label: '',
+                className: 'ico-pencil',
+                isShown: (row: any) => row.status !== AssetConversionStatus.Completed,
+                exec: (row: any) => this.openConversionAmountModal(row)
+              }),
+              new DataCellAction({
+                label: '',
+                loading: () => this.completeConversionLoading,
+                className: 'highlighted ico-check-mark',
+                isShown: (row: any) => row.status !== AssetConversionStatus.Completed && row.converted_amount !== null,
+                exec: (row: any) => this.completeConversion(row)
+              }),
+            ]
+          }
+        })
+      );
+    }
+  }
+
+  completeConversion(row: any) {
+    this.completeConversionLoading = true;
+
+    this.investmentService.completeAssetConversion(row.id, +row.converted_amount).pipe(
+      finalize(() => this.completeConversionLoading = false)
+    )
+    .subscribe(
+      res => {
+        Object.assign(row, res.conversion);
+      }
+    );
+  }
+
+  openConversionAmountModal(row: any) {
+    this.showConversionAmountModal = true;
+    this.conversionAmountForm.controls.amount.setValue(row.converted_amount);
+    this.updateConversionAmount = this.updateConversionAmount_attr.bind(this, row);
+  }
+
+  private updateConversionAmount_attr(row) {
+    if (this.conversionAmountForm.invalid) {
+      return false;
+    }
+
+    const amount = +this.conversionAmountForm.controls.amount.value;
+
+    this.conversionAmountFormLoading = true;
+
+    this.investmentService.submitAssetConversion(row.id, amount).pipe(
+      finalize(() => this.conversionAmountFormLoading = false)
+    )
+    .subscribe(
+      res => {
+        if (res.success) {
+          Object.assign(row, res.conversion);
+          this.closeConversionAmountModal();
+        } else {
+          this.conversionAmountModalError = res.error;
+        }
+      }
+    );
+  }
+
+  closeConversionAmountModal() {
+    this.showConversionAmountModal = false;
+    this.conversionAmountForm.reset();
+  }
+
+  showCalculateDeposits(): boolean {
+    // if dont have permissions
+    if (!this.authService.hasPermissions([permissions.ALTER_ASSET_CONVERSIONS])) {
+      return false;
+    }
+
+    // if already calculated
+    if (this.listDataSource.body && this.listDataSource.body.length > 0) {
+      return false;
+    }
+
+    // if all conversions are completed
+    return this.singleDataSource.body && this.singleDataSource.body.every(item => item.status === AssetConversionStatus.Completed);
+  }
+
+  calculateDeposits() {
+    this.calculateDepositsLoading = true;
+
+    this.route.params.pipe(
+      mergeMap(
+        params => this.investmentService.calculateDeposits(params.id).pipe(
+          finalize(() => this.calculateDepositsLoading = false)
+        )
+      )
+    ).subscribe(
+      res => {
+        this.getAllData();
+        this.getTimelineData();
+      }
+    );
+  }
+
+
+  private appendActionColumnForDeposits(): void {
+    _.remove(this.listDataSource.header, ['column', 'action']);
+    _.remove(this.listColumnsToShow, ['column', 'action']);
+
+    if (this.listDataSource.body.some(row => row.status !== 'deposits.status.151')) {
+      this.listDataSource.header.push({ column: 'action', nameKey: 'table.header.action' });
+      this.listColumnsToShow.push(
+        new ActionCellDataColumn({
+          column: 'action',
+          inputs: {
+            actions: [
+              new DataCellAction({
+                label: '',
+                className: 'ico-pencil',
+                isShown: (row: any) => row.status !== 'deposits.status.151',
+                exec: (row: any) => {
+                  this.depositApproveId = row.id;
+                  this.depositApproveComponent.openModal();
+                }
+              }),
+            ]
+          }
+        })
+      );
+    }
+  }
+
+  depositApproveUpdateData() {
+    this.getAllData();
+    this.getTimelineData();
+  }
 
 }

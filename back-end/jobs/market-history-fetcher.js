@@ -5,6 +5,10 @@ var request_promise = require('request-promise');
 const TOP_N = 500;
 const LIMIT = 100;
 
+//Exported for cucumber test syncing
+module.exports.TOP_N = TOP_N;
+module.exports.LIMIT = LIMIT;
+
 module.exports.SCHEDULE = '0 0 */2 * * *';
 module.exports.NAME = 'FETCH_MH';
 module.exports.JOB_BODY = async (config, log) => {
@@ -26,6 +30,7 @@ module.exports.JOB_BODY = async (config, log) => {
     log(`2. Fetching TMC and other metadata...`);
 
     const models = config.models;
+    const sequelize = models.sequelize;
     const Asset = models.Asset;
     const AssetBlockchain = models.AssetBlockchain;
     const AssetMarketCapitalization = models.AssetMarketCapitalization;
@@ -34,7 +39,7 @@ module.exports.JOB_BODY = async (config, log) => {
     return Promise.all(
         [
             //fetch metadata object
-            request_promise({
+            request_promise.get({
                 uri: "https://api.coinmarketcap.com/v2/global/",
                 headers: {
                     "User-Agent": "Request-Promise"
@@ -43,7 +48,7 @@ module.exports.JOB_BODY = async (config, log) => {
             })
         ].concat(starts.map(
             //fetch all tickers in batches with start offsets
-            start => request_promise({
+            start => request_promise.get({
                 uri: `https://api.coinmarketcap.com/v2/ticker/?start=${start}&limit=${LIMIT}`,
                 headers: {
                     "User-Agent": "Request-Promise"
@@ -133,14 +138,17 @@ module.exports.JOB_BODY = async (config, log) => {
             return Promise.all([
                 Promise.resolve(coinmarketcap_id),
                 Asset.findCreateFind({
-                    where: {
-                        symbol: ticker_data.symbol
-                    },
+                    where: sequelize.where(
+                        sequelize.fn('lower', 
+                            sequelize.fn('regexp_replace', sequelize.col('long_name'), '(\s+|\,|\.|\!)', '', 'g')
+                        ),
+                        ticker_data.name.toLowerCase().replace(/(\s+|\,|\.|\!)/g, '')
+                    ),
                     defaults: {
                         symbol: ticker_data.symbol,
                         long_name: ticker_data.name,
-                        is_base: ticker_data.symbol == 'BTC' || ticker_data.symbol == 'ETH',
-                        us_deposit: false
+                        is_base: (ticker_data.symbol === 'BTC' || ticker_data.symbol === 'ETH'),
+                        is_deposit: (ticker_data.symbol === 'BTC' || ticker_data.symbol === 'ETH')
                     }
                 })
             ]).then(id_asset => {

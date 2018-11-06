@@ -28,15 +28,21 @@ describe('AssetService testing', () => {
 
 
   describe('and method getStrategyAssets shall', function () {
-    let assets = [
-        ...Array(500)
-      ].map((value, index) => ({
-      id: index,
-      avg_share: 1
-    }));
+
+    let ASSET_MARKET_SHARE = 6;
 
     beforeEach(() => {
-      sinon.stub(sequelize, "query").returns(Promise.resolve(assets));
+      sinon.stub(sequelize, "query").callsFake((query_str, args) => {
+        let assets = [
+            ...Array(args.replacements.limit_count)
+          ].map((value, index) => ({
+          id: index + args.replacements.offset_count,
+          status: (index % 10 != 0 ? INSTRUMENT_STATUS_CHANGES.Whitelisting : INSTRUMENT_STATUS_CHANGES.Blacklisting), // every 10th asset blacklisted
+          avg_share: ASSET_MARKET_SHARE
+        }));
+
+        return Promise.resolve(assets);
+      });
     })
 
     afterEach(() => {
@@ -52,19 +58,104 @@ describe('AssetService testing', () => {
       return chai.assert.isRejected(AssetService.getStrategyAssets(incorrect_strategy));
     });
 
-    it('shall return correct number of assets different assets', () => {
+    it('shall throw it no assets would be returned', () => {
+      if (sequelize.query.restore()) sequelize.query.restore();
+
+      sinon.stub(sequelize, "query").returns(Promise.resolve([]));
+
+      return chai.assert.isRejected(AssetService.getStrategyAssets(STRATEGY_TYPES.LCI));
+    });
+
+    it('shall throw when no assets found', () => {
+      if (sequelize.query.restore()) sequelize.query.restore();
+
+      sinon.stub(sequelize, "query").returns(Promise.reject());
+
+      return chai.assert.isRejected(AssetService.getStrategyAssets(STRATEGY_TYPES.LCI));
+    });
+
+    it('shall return assets with total sum of market share less then or equal MARKETCAP_LIMIT_PERCENT value', () => {
+      return AssetService.getStrategyAssets(STRATEGY_TYPES.LCI).then(result => {
+        let [included, excluded] = result;
+
+        /* should include max amount of assets with total marketshare percentage less then MARKETCAP_LIMIT_PERCENT */
+        let possible_len = Math.floor(SYSTEM_SETTINGS.MARKETCAP_LIMIT_PERCENT / ASSET_MARKET_SHARE);
+
+        chai.assert.isArray(included);
+        chai.assert.isArray(excluded);
+        chai.expect(included.length).to.be.lte(possible_len);
+        chai.expect(_.sumBy(included, a=> a.avg_share)).to.be.lte(SYSTEM_SETTINGS.MARKETCAP_LIMIT_PERCENT);
+
+        chai.expect(included).to.satisfy((assets) => { // check if all are whitelisted
+          return assets.every(asset => asset.status === INSTRUMENT_STATUS_CHANGES.Whitelisting);
+        }, `Includes blacklisted assets`);
+        chai.expect(excluded).to.satisfy((assets) => { // check if all are not whitelisted
+          return assets.every(asset => asset.status !== INSTRUMENT_STATUS_CHANGES.Whitelisting);
+        }, `Includes whitelisted assets`);
+      })
+    });
+
+    it('shall not return more than max amount of assets for LCI portfolio', () => {
+
+      if (sequelize.query.restore) sequelize.query.restore();
+
+      sinon.stub(sequelize, "query").callsFake((query_str, args) => {
+        let assets = [
+            ...Array(args.replacements.limit_count)
+          ].map((value, index) => ({
+          id: index + args.replacements.offset_count,
+          status: (index % 10 != 0 ? INSTRUMENT_STATUS_CHANGES.Whitelisting : INSTRUMENT_STATUS_CHANGES.Blacklisting), // every 10th asset blacklisted
+          avg_share: 1
+        }));
+
+        return Promise.resolve(assets);
+      });
+
+      return AssetService.getStrategyAssets(STRATEGY_TYPES.LCI).then(result => {
+        let [included, excluded] = result;
+
+        chai.assert.isArray(included);
+        chai.assert.isArray(excluded);
+        // max amount of LCI assets
+        chai.expect(included.length).to.be.lte(SYSTEM_SETTINGS.INDEX_LCI_CAP);
+        chai.expect(_.sumBy(included, a=> a.avg_share)).to.be.lte(SYSTEM_SETTINGS.MARKETCAP_LIMIT_PERCENT);
+
+        chai.expect(included).to.satisfy((assets) => { // check if all are whitelisted
+          return assets.every(asset => asset.status === INSTRUMENT_STATUS_CHANGES.Whitelisting);
+        }, `Includes blacklisted assets`);
+        chai.expect(excluded).to.satisfy((assets) => { // check if all are not whitelisted
+          return assets.every(asset => asset.status !== INSTRUMENT_STATUS_CHANGES.Whitelisting);
+        }, `Includes whitelisted assets`);
+      })
+    });
+
+    it('shall return correct number of assets for MCI portfolio', () => {
+      return AssetService.getStrategyAssets(STRATEGY_TYPES.MCI).then(result => {
+        let [included, excluded] = result;
+
+        chai.assert.isArray(included);
+        chai.assert.isArray(excluded);
+        chai.expect(included.length).to.be.equal(SYSTEM_SETTINGS.INDEX_MCI_CAP);
+        chai.expect(included).to.satisfy((assets) => { // check if all are whitelisted
+          return assets.every(asset => asset.status === INSTRUMENT_STATUS_CHANGES.Whitelisting);
+        }, `Includes blacklisted assets`);
+        chai.expect(excluded).to.satisfy((assets) => { // check if all are not whitelisted
+          return assets.every(asset => asset.status !== INSTRUMENT_STATUS_CHANGES.Whitelisting);
+        }, `Includes whitelisted assets`);
+      })
+    }); 
+
+    it('shall not return same assets for LCI and MCI portfolios', () => {
       return Promise.all([
         AssetService.getStrategyAssets(STRATEGY_TYPES.LCI),
         AssetService.getStrategyAssets(STRATEGY_TYPES.MCI)
       ]).should.eventually.satisfy((assets) => {
-        let [lci, mci] = assets;
-
-        return lci.length == SYSTEM_SETTINGS.INDEX_LCI_CAP &&
-          mci.length == SYSTEM_SETTINGS.INDEX_MCI_CAP &&
-          !lci.some(lci_asset => { // check if they don't contain same assets
-            return mci.map(mci_asset => mci_asset.id).includes(lci_asset.id);
-          });
-      }, "Doesn't return correct number of assets");
+        let [[lci], [mci]] = assets; // destructure only first elements of array
+        
+        return lci.every(lci_asset => {
+          return !mci.map(mci_asset => mci_asset.id).includes(lci_asset.id);
+        });
+      }, "LCI and MCI returned same assets");
     });
   });
 

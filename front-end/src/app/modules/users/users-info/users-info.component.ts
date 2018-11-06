@@ -1,16 +1,13 @@
 import { Component, OnInit } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
-import { FormsModule, FormGroup, FormControl, ReactiveFormsModule } from '@angular/forms';
-import { UsersService } from '../../../services/users/users.service';
-import { NgForm, Validators, FormArray, AbstractControl } from '@angular/forms'
-import { filter } from 'rxjs/operators';
+import { FormGroup, FormControl, Validators } from '@angular/forms';
+import { filter, finalize } from 'rxjs/operators';
 import { zip } from 'rxjs/observable/zip';
 
 import { User } from '../../../shared/models/user';
-import { RolesService } from "../../../services/roles/roles.service";
-import { RolesAllRequestData } from "../../../shared/models/api/rolesAllRequestData";
-import { AuthService } from "../../../services/auth/auth.service";
-
+import { RolesAllRequestData } from '../../../shared/models/api/rolesAllRequestData';
+import { UsersService } from '../../../services/users/users.service';
+import { RolesService } from '../../../services/roles/roles.service';
 
 
 @Component({
@@ -21,35 +18,27 @@ import { AuthService } from "../../../services/auth/auth.service";
 export class UsersInfoComponent implements OnInit {
 
   userForm: FormGroup = new FormGroup({
-    Firstname: new FormControl('', [this.authService.getValidators('\\/users\\/invite', 'first_name')]),
-    Lastname: new FormControl('', [this.authService.getValidators('\\/users\\/invite', 'last_name')]),
-    Email: new FormControl('', [this.authService.getValidators('\\/users\\/invite', 'email')]),
+    firstName: new FormControl('', Validators.required),
+    lastName: new FormControl('', Validators.required),
+    email: new FormControl('', Validators.email),
+    roleId: new FormControl([], Validators.required),
   });
 
   userId: number;
   userName: String;
-  userSurname: String;
   user: User;
   userRoles = [];
   rolelist = [];
   rolesRequestData: RolesAllRequestData;
   loading = false;
-  loading2 = false;
   showDeactivateConfirm = false;
   buttonName: String;
-  show = false;
-
-  validation;
-  userValidation;
-
-  form: FormGroup;
 
   constructor(
-    private router: Router,
+    public router: Router,
     private route: ActivatedRoute,
     private usersService: UsersService,
     private rolesService: RolesService,
-    private authService: AuthService,
   ) {
     this.route.params.pipe(
       filter(params => params.userId)
@@ -65,147 +54,94 @@ export class UsersInfoComponent implements OnInit {
     ).subscribe((res) => {
       const [{ roles }, { user }] = res;
 
-      this.user = user;
-      this.userForm.controls.Firstname.setValue(this.user.first_name)
-      this.userForm.controls.Lastname.setValue(this.user.last_name)
-      this.userForm.controls.Email.setValue(this.user.email)
-      this.userName = String(this.user.first_name + ' ' + this.user.last_name);
-      if (this.user.is_active) {
-        this.buttonName = 'Deactivate'
-      } else {
-        this.buttonName = 'Activate'
-      }
       this.userRoles = Object.values(user.roles);
+      this.user = user;
+      this.userForm.controls.firstName.setValue(this.user.first_name);
+      this.userForm.controls.lastName.setValue(this.user.last_name);
+      this.userForm.controls.email.setValue(this.user.email);
 
-      roles.forEach(role => {
-        let obj = {
-          id: Number,
-          name: String,
-          is_active: false
-        };
-        obj.id = role.id;
-        obj.name = role.name;
-        this.userRoles.forEach(userrole => {
-          if (obj.id === userrole.id) {
-            obj.is_active = true;
-          }
-        })
-        this.rolelist.push(obj);
+      this.userName = String(this.user.first_name + ' ' + this.user.last_name);
+      this.buttonName = this.setButtonName();
+
+      this.checkSelectedRoles(roles);
+    });
+  }
+
+  checkSelectedRoles(roles) {
+    roles.forEach(role => {
+      const obj = {
+        id: role.id,
+        name: role.name,
+        isActive: false
+      };
+      this.userRoles.forEach(userrole => {
+        if (obj.id === userrole.id) {
+          obj.isActive = true;
+          this.userForm.controls.roleId.value.push(userrole.id);
+          this.userForm.controls.roleId.updateValueAndValidity();
+        }
       });
-      this.add();
+      this.rolelist.push(obj);
     });
   }
 
-  add() {
-    let checkboxGroup = new FormArray(this.rolelist.map(item => new FormGroup({
-      id: new FormControl(item.id),
-      text: new FormControl(item.name),
-      checkbox: new FormControl(item.is_active)
-    })));
-
-    // create a hidden reuired formControl to keep status of checkbox group
-    let hiddenControl = new FormControl(this.mapItems(checkboxGroup.value), this.authService.getValidators('\\/users\\/invite', 'role_id'));
-    // update checkbox group's value to hidden formcontrol
-    checkboxGroup.valueChanges.subscribe((v) => {
-      hiddenControl.setValue(this.mapItems(v));
-    });
-
-    this.form = new FormGroup({
-      items: checkboxGroup,
-      selectedItems: hiddenControl
-    });
+  setButtonName() {
+    if (this.user.is_active === true) {
+      return 'Deactivate';
+    } else if (this.user.is_active === false) {
+      return 'Activate';
+    }
   }
 
-  mapItems(items) {
-    let selectedItems = items.filter((item) => item.checkbox).map((item) => item.id);
-    return selectedItems.length ? selectedItems : null;
+  saveUser() {
+    if (this.userForm.invalid || this.userForm.value.roleId.length === 0) {
+      return;
+    }
+    this.loading = true;
+    this.user.first_name = this.userForm.controls.firstName.value;
+    this.user.last_name = this.userForm.controls.lastName.value;
+    this.user.roles = this.userForm.controls.roleId.value;
+    this.usersService.saveUser(this.user).pipe(
+      finalize(() => this.loading = false)
+    ).subscribe(
+      data => {
+        if (data.success) {
+          this.router.navigate(['/users']);
+        } else {
+          this.showDeactivateConfirm = false;
+        }
+      }, error => {
+          console.log(error);
+        }
+    );
   }
 
+  deactivateUser() {
+    this.user.is_active = !this.user.is_active;
+    this.saveUser();
+  }
 
-  getAllRoles() {
-    this.rolesService.getAllRoles(this.rolesRequestData).subscribe(res => {
-      res.roles.forEach(role => {
-        let obj = {
-          id: Number,
-          name: String,
-          is_active: false
-        };
-        obj.id = role.id;
-        obj.name = role.name;
-        this.userRoles.forEach(userrole => {
-          if (obj.id === userrole.id) {
-            obj.is_active = true;
-          }
-        })
-        this.rolelist.push(obj);
-      });
-    });
+  showModal() {
+    if (this.userForm.invalid || this.userForm.value.roleId.length === 0) {
+      return;
+    }
+    this.showDeactivateConfirm = true;
   }
 
   closeDeactivateConfirm() {
     this.showDeactivateConfirm = false;
   }
 
-  saveUser() {
-    if (this.form.valid && this.userForm.valid){
-        this.user.roles = this.form.controls.selectedItems.value;
-        this.usersService.saveUser(this.user).subscribe(
-          data => {
-            if (data.success == true) {
-              this.loading = false;
-              this.router.navigate(['/users']);
-            }
-          }, error => {
-            this.loading = true;
-          }, () => {
-            this.loading = false;
-          });
-    }else {
-      this.markAsTouched(this.userForm);
-      this.show = true;
-    }
-  }
-
-  markAsTouched(group) {
-    Object.keys(group.controls).map((field) => {
-      const control = group.get(field);
-      if (control instanceof FormControl) {
-        control.markAsTouched({ onlySelf: true });
-      } else if (control instanceof FormGroup) {
-        this.markAsTouched(control);
+  addRole(role) {
+    this.userForm.controls.roleId.markAsTouched();
+    role.isActive = !role.isActive;
+    const roleId = [];
+    this.rolelist.forEach( element => {
+      if (element.isActive) {
+        roleId.push(element.id);
       }
     });
-  }
-
-  deactivateUser() {
-    this.user.roles = this.form.controls.selectedItems.value;
-    this.user.is_active = !this.user.is_active;
-
-    this.usersService.saveUser(this.user).subscribe(
-      data => {
-        if (data.success == true) {
-          this.loading = false;
-          this.router.navigate(['/users']);
-        }
-      }, error => {
-        this.loading = true;
-      }, () => {
-      this.loading = false;
-    });
-  }
-
-  isValid(){
-     if (this.form.valid && this.userForm.valid){
-       this.showDeactivateConfirm = true;
-     }else{
-      this.showDeactivateConfirm = false;
-      this.markAsTouched(this.userForm);
-      this.show = true;
-     }
-  }
-
-  click(){
-    this.show = true;
+    this.userForm.controls.roleId.setValue(roleId);
   }
 
 }

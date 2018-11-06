@@ -3,10 +3,21 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { TranslateService } from '@ngx-translate/core';
 import { mergeMap, finalize } from 'rxjs/operators';
 
-import { TimelineDetailComponent, SingleTableDataSource, TagLineItem, ITimelineDetailComponent } from '../timeline-detail/timeline-detail.component'
+import {
+  TimelineDetailComponent,
+  SingleTableDataSource,
+  TagLineItem,
+  ITimelineDetailComponent
+} from '../timeline-detail/timeline-detail.component';
 import { TableDataSource, TableDataColumn } from '../../../shared/components/data-table/data-table.component';
 import { TimelineEvent } from '../../../shared/components/timeline/timeline.component';
-import { ActionCellDataColumn, DataCellAction, DateCellDataColumn, StatusCellDataColumn, NumberCellDataColumn } from '../../../shared/components/data-table-cells';
+import {
+  ActionCellDataColumn,
+  DataCellAction,
+  DateCellDataColumn,
+  StatusCellDataColumn,
+  NumberCellDataColumn
+} from '../../../shared/components/data-table-cells';
 import { InvestmentService } from '../../../services/investment/investment.service';
 import { ExecutionOrdersService } from '../../../services/execution-orders/execution-orders.service';
 
@@ -26,9 +37,9 @@ export class ExecutionOrderFillDetailComponent extends TimelineDetailComponent i
   /**
    * 1. Implement attributes to display titles
    */
-  public pageTitle: string = 'Execution order fill';
-  public singleTitle: string = 'Execution order';
-  public listTitle: string = 'Execution order fill';
+  public pageTitle = 'Execution order fill';
+  public singleTitle = 'Execution order';
+  public listTitle = 'Execution order fill';
 
   public logsTitle: string;
   public logsSource: Array<ActionLog>;
@@ -47,6 +58,8 @@ export class ExecutionOrderFillDetailComponent extends TimelineDetailComponent i
       { column: 'type', nameKey: 'table.header.type' },
       { column: 'price', nameKey: 'table.header.price' },
       { column: 'quantity', nameKey: 'table.header.total_quantity' },
+      { column: 'filled_quantity', nameKey: 'table.header.filled_quantity' },
+      { column: 'spend_amount', nameKey: 'table.header.total_spend_amount' },
       { column: 'fee', nameKey: 'table.header.exchange_trading_fee' },
       { column: 'status', nameKey: 'table.header.status' },
       { column: 'submission_time', nameKey: 'table.header.submission_time' },
@@ -54,7 +67,7 @@ export class ExecutionOrderFillDetailComponent extends TimelineDetailComponent i
       { column: 'action', nameKey: 'table.header.action' }
     ],
     body: null
-  }
+  };
 
   public listDataSource: TableDataSource = {
     header: [
@@ -78,14 +91,16 @@ export class ExecutionOrderFillDetailComponent extends TimelineDetailComponent i
     }}}),
     new NumberCellDataColumn({ column: 'price' }),
     new NumberCellDataColumn({ column: 'total_quantity' }),
+    new NumberCellDataColumn({ column: 'filled_quantity' }),
+    new NumberCellDataColumn({ column: 'spend_amount' }),
     new NumberCellDataColumn({ column: 'exchange_trading_fee' }),
     new StatusCellDataColumn({ column: 'status', inputs: { classMap: {
       'execution_orders.status.61': StatusClass.PENDING,
-      'execution_orders.status.62': StatusClass.APPROVED,
-      'execution_orders.status.63': StatusClass.APPROVED,
-      'execution_orders.status.64': StatusClass.APPROVED,
-      'execution_orders.status.65': StatusClass.REJECTED,
+      'execution_orders.status.62': StatusClass.INPROGRESS,
+      'execution_orders.status.63': StatusClass.FULLYFILLED,
+      'execution_orders.status.64': StatusClass.PARTIALLYFILLED,
       'execution_orders.status.66': StatusClass.FAILED,
+      'execution_orders.status.67': StatusClass.NOTFILLED
     }}}),
     new DateCellDataColumn({ column: 'submission_time' }),
     new DateCellDataColumn({ column: 'completion_time' }),
@@ -123,8 +138,6 @@ export class ExecutionOrderFillDetailComponent extends TimelineDetailComponent i
     private translate: TranslateService,
   ) {
     super(route, router);
-
-    this.getFilterLOV();
   }
 
   /**
@@ -149,18 +162,18 @@ export class ExecutionOrderFillDetailComponent extends TimelineDetailComponent i
       )
     ).subscribe(
       res => {
-        if(res.execution_order) {
+        if (res.execution_order) {
           this.singleDataSource.body = [ res.execution_order ];
         }
 
-        if(res.action_logs) {
+        if (res.action_logs) {
           this.logsSource = res.action_logs;
         }
 
-        if(res.execution_order_stats) {
+        if (res.execution_order_stats) {
           this.setTagLine(res.execution_order_stats.map(stat => {
-            return new TagLineItem(`${stat.count} ${stat.name}`)
-          }))
+            return new TagLineItem(`${stat.count} ${stat.name}`);
+          }));
         }
       },
       err => this.singleDataSource.body = []
@@ -192,7 +205,7 @@ export class ExecutionOrderFillDetailComponent extends TimelineDetailComponent i
       col => ['id'].includes(col.column)
     ).map(
       col => {
-        let filter = {filter : {execution_order_id: this.routeParamId}}
+        const filter = { filter : { execution_order_id: this.routeParamId }};
         col.filter.rowData$ = this.investmentService.getAllExecutionOrdersFillsHeaderLOV(col.column, filter);
       }
     );

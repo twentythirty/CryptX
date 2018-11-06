@@ -1,10 +1,10 @@
 import { Component, OnInit } from '@angular/core';
-import { Router, ActivatedRoute } from "@angular/router";
+import { Router, ActivatedRoute } from '@angular/router';
 import { finalize } from 'rxjs/operators';
 
-import { DataTableCommonManagerComponent } from "../../../shared/components/data-table-common-manager/data-table-common-manager.component";
-import { ColdStorageService } from "../../../services/cold-storage/cold-storage.service";
-import { TableDataSource, TableDataColumn } from "../../../shared/components/data-table/data-table.component";
+import { DataTableCommonManagerComponent } from '../../../shared/components/data-table-common-manager/data-table-common-manager.component';
+import { ColdStorageService } from '../../../services/cold-storage/cold-storage.service';
+import { TableDataSource, TableDataColumn } from '../../../shared/components/data-table/data-table.component';
 
 @Component({
   selector: 'app-custodians-list',
@@ -49,7 +49,11 @@ export class CustodiansListComponent extends DataTableCommonManagerComponent imp
         });
         this.count = res.count;
       }
-    )
+    );
+  }
+
+  addCustodian() {
+    this.router.navigate(['cold_storage/custodians/add']);
   }
 
 }

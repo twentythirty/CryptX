@@ -1,11 +1,16 @@
 import { Component, OnInit } from '@angular/core';
-import { Router, ActivatedRoute } from "@angular/router";
+import { Router, ActivatedRoute } from '@angular/router';
 import { finalize } from 'rxjs/operators';
 
-import { ColdStorageService } from "../../../services/cold-storage/cold-storage.service";
-import { TableDataSource, TableDataColumn } from "../../../shared/components/data-table/data-table.component";
-import { StatusCellDataColumn, NumberCellDataColumn, DateCellDataColumn, CurrencyCellDataColumn } from "../../../shared/components/data-table-cells/index";
-import { DataTableCommonManagerComponent } from "../../../shared/components/data-table-common-manager/data-table-common-manager.component";
+import { ColdStorageService } from '../../../services/cold-storage/cold-storage.service';
+import { TableDataSource, TableDataColumn } from '../../../shared/components/data-table/data-table.component';
+import {
+  StatusCellDataColumn,
+  NumberCellDataColumn,
+  DateCellDataColumn,
+  CurrencyCellDataColumn
+} from '../../../shared/components/data-table-cells/index';
+import { DataTableCommonManagerComponent } from '../../../shared/components/data-table-common-manager/data-table-common-manager.component';
 
 @Component({
   selector: 'app-accounts-list',
@@ -49,7 +54,6 @@ export class AccountsListComponent extends DataTableCommonManagerComponent imple
 
   ngOnInit() {
     super.ngOnInit();
-    this.getFilterLOV();
   }
 
   getAllData(): void {
@@ -62,8 +66,9 @@ export class AccountsListComponent extends DataTableCommonManagerComponent imple
           footer: res.footer
         });
         this.count = res.count;
+        this.getFilterLOV();
       }
-    )
+    );
   }
 
   getFilterLOV(): void {
@@ -73,10 +78,10 @@ export class AccountsListComponent extends DataTableCommonManagerComponent imple
       col => {
         col.filter.rowData$ = this.coldStorageService.getAllAccountsHeaderLOV(col.column);
       }
-    )
+    );
   }
 
-  addAccount(){
+  addAccount() {
     this.router.navigate(['/cold_storage/accounts/add']);
   }
 

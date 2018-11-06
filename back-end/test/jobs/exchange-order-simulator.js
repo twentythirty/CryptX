@@ -49,6 +49,7 @@ describe("Execution Order Simulator job", () => {
     type: 71,
     price: '0.01',
     total_quantity: '5',
+    spend_amount: 0.005,
     status: 61,
     placed_timestamp: null,
     completed_timestamp: null,
@@ -66,6 +67,8 @@ describe("Execution Order Simulator job", () => {
       let execution_orders = [...Array(10)]
         .map((value, index) => {
           let result = new ExecutionOrder(EXEC_ORDER);
+
+          result.dataValues.ask_price = 0.0001;
 
           sinon.stub(result, 'save').returns(Promise.resolve(result));
 
@@ -95,7 +98,7 @@ describe("Execution Order Simulator job", () => {
     
     return execOrderSimulator.JOB_BODY(stubbed_config, console.log).then(result => {
       chai.expect(result).to.satisfy(exec_orders => {
-        return exec_orders.every(order => order.status == MODEL_CONST.EXECUTION_ORDER_STATUSES.Placed) &&
+        return exec_orders.every(order => order.status == MODEL_CONST.EXECUTION_ORDER_STATUSES.InProgress) &&
           exec_orders.every(order => order.external_identifier == 'SIM-' + order.id);
       })
     });

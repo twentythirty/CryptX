@@ -1,6 +1,25 @@
-<button class="btn"
+<button
+  [type]="type"
+  [ngClass]="{
+    btn:      true,
+    thinner:  thinner,
+    grey:     grey,
+    loading:  loading
+  }"
+  [class]="extraClass"
+  [disabled]="disabled"
   (click)="emitClick()"
-  [class.thinner]="thinner"
-  [class.grey]="grey"
-><ng-content></ng-content>
+>
+  <div
+    *ngIf="loading"
+    class="spinner-cont"
+  >
+    <mat-progress-spinner    
+      mode="indeterminate"
+      strokeWidth="1"
+      diameter="17"
+    ></mat-progress-spinner>
+  </div>
+
+  <ng-content></ng-content>
 </button>

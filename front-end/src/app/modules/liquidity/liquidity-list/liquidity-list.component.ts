@@ -4,7 +4,12 @@ import { finalize } from 'rxjs/operators';
 
 import { TableDataSource, TableDataColumn } from '../../../shared/components/data-table/data-table.component';
 import { DataTableCommonManagerComponent } from '../../../shared/components/data-table-common-manager/data-table-common-manager.component';
-import { StatusCellDataColumn, NumberCellDataColumn } from '../../../shared/components/data-table-cells';
+import {
+  StatusCellDataColumn,
+  NumberCellDataColumn,
+  ActionCellDataColumn,
+  DataCellAction
+} from '../../../shared/components/data-table-cells';
 import { LiquidityRequirement } from '../../../shared/models/liquidityRequirement';
 
 import { LiquidityService } from '../../../services/liquidity/liquidity.service';
@@ -20,10 +25,11 @@ export class LiquidityListComponent extends DataTableCommonManagerComponent impl
       { column: 'instrument', nameKey: 'table.header.instrument', filter: { type: 'text', sortable: true } },
       { column: 'periodicity', nameKey: 'table.header.periodicity', filter: { type: 'number', sortable: true } },
       { column: 'quote_asset', nameKey: 'table.header.quote_asset', filter: { type: 'text', sortable: true } },
-      { column: 'minimum_circulation', nameKey: 'table.header.minimum_circulation', filter: { type: 'number', sortable: true } },
+      { column: 'minimum_circulation', nameKey: 'table.header.minimum_daily_avg_volume', filter: { type: 'number', sortable: true } },
       { column: 'exchange', nameKey: 'table.header.exchange', filter: { type: 'text', sortable: true } },
       { column: 'exchange_count', nameKey: 'table.header.exchange_count', filter: { type: 'number', sortable: true } },
       { column: 'exchange_not_pass', nameKey: 'table.header.exchange_not_pass', filter: { type: 'number', sortable: true } },
+      { column: 'actions', nameKey: 'table.header.actions' },
     ],
     body: null,
   };
@@ -32,10 +38,32 @@ export class LiquidityListComponent extends DataTableCommonManagerComponent impl
     new TableDataColumn({ column: 'instrument' }),
     new TableDataColumn({ column: 'periodicity' }),
     new TableDataColumn({ column: 'quote_asset' }),
-    new NumberCellDataColumn({ column: 'minimum_circulation' }),
+    new NumberCellDataColumn({ column: 'minimum_circulation', inputs: {
+      digitsInfo: '1.2-2'
+    } }),
     new StatusCellDataColumn({ column: 'exchange' }),
     new TableDataColumn({ column: 'exchange_count' }),
     new TableDataColumn({ column: 'exchange_not_pass' }),
+    new ActionCellDataColumn({ column: 'actions', inputs: {
+      actions: [
+        new DataCellAction({
+          label: 'Edit',
+          className: '',
+          isShown: row => true,
+          exec: (row: any) => {
+            this.navigateToEdit(row.id);
+          }
+        }),
+        new DataCellAction({
+          label: 'View',
+          className: '',
+          isShown: row => true,
+          exec: (row: any) => {
+            this.openRow(row);
+          }
+        }),
+      ]
+    }}),
   ];
 
   constructor(
@@ -44,8 +72,6 @@ export class LiquidityListComponent extends DataTableCommonManagerComponent impl
     private liquidityService: LiquidityService,
   ) {
     super(route, router);
-
-    this.getFilterLOV();
   }
 
   /**
@@ -58,10 +84,10 @@ export class LiquidityListComponent extends DataTableCommonManagerComponent impl
       col => {
         col.filter.rowData$ = this.liquidityService.getHeaderLOV(col.column);
       }
-    )
+    );
   }
 
-  
+
   getAllData(): void {
     this.liquidityService.getAllLiquidities(this.requestData).pipe(
       finalize(() => this.stopTableLoading())
@@ -72,12 +98,17 @@ export class LiquidityListComponent extends DataTableCommonManagerComponent impl
           footer: res.footer
         });
         this.count = res.count;
+        this.getFilterLOV();
       }
     );
   }
 
   openRow(liquidity: LiquidityRequirement): void {
     this.router.navigate(['/liquidity_requirements/preview', liquidity.id]);
+  }
+
+  navigateToEdit(id: number): void {
+    this.router.navigate(['/liquidity_requirements/edit', id]);
   }
 
 }

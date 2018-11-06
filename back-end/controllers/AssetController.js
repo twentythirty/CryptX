@@ -54,9 +54,9 @@ const getAssetDetailed = async function (req, res) {
       asset_id: history_element.asset_id,
       timestamp: history_element.timestamp,
       user: {
-        id: history_element.User.id,
-        name: history_element.User.fullName(),
-        email: history_element.User.email
+        id: history_element.User ? history_element.User.id : null,
+        name: history_element.User ? history_element.User.fullName() : 'System',
+        email: history_element.User ? history_element.User.email : 'System'
       },
       comment: history_element.comment,
       type: `assets.status.${history_element.type}`
@@ -92,6 +92,37 @@ const getAssetsDetailed = async function (req, res) {
   })
 };
 module.exports.getAssetsDetailed = getAssetsDetailed;
+
+const getAssetsDetailedOfInvestmentRunAssetGroup = async (req, res) => {
+
+  let { sql_where, seq_query } = req;
+
+  const { investment_asset_group_id } = req.params;
+
+  if(!seq_query.where) seq_query.where = {};
+  seq_query.where.investment_run_asset_group_id = investment_asset_group_id;
+
+  if(sql_where !== '') sql_where += 'AND ';
+  sql_where += `investment_run_asset_group_id = ${investment_asset_group_id}`;
+  console.log(sql_where);
+  const [ err, result ] = await to(Promise.all([
+    adminViewsService.fetchGroupAssetsViewDataWithCount(seq_query),
+    adminViewsService.fetchGroupAssetViewFooter(sql_where)
+  ]));
+
+  if(err) return ReE(res, err.message, 422);
+
+  const [ data_with_count, footer ] = result;
+  const { data: assets, total: count } = data_with_count;
+
+  return ReS(res, {
+    assets,
+    count,
+    footer
+  })
+
+};
+module.exports.getAssetsDetailedOfInvestmentRunAssetGroup = getAssetsDetailedOfInvestmentRunAssetGroup;
 
 const getAssetsColumnLOV = async (req, res) => {
 
@@ -131,3 +162,17 @@ const changeAssetStatus = async function (req, res) {
   })
 };
 module.exports.changeAssetStatus = changeAssetStatus;
+
+const getExchangeAssets = async function(req, res) {
+
+  const { exchange_id } = req.params;
+
+  const [ err, assets ] = await to(assetService.getExchangeMappedAssets(exchange_id));
+
+  if(err) return ReE(res, err.message, 422);
+  if(!assets) return ReE(res, `Exchange with id ${exchange_id} was not found`, 404);
+
+  return ReS(res, { assets, count: assets.length });
+
+}
+module.exports.getExchangeAssets = getExchangeAssets;

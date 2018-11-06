@@ -1,8 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
-import { FormGroup, FormControl, Validators } from "@angular/forms";
+import { FormGroup, FormControl, Validators } from '@angular/forms';
 import { filter } from 'rxjs/operators';
-import _ from 'lodash';
+import * as _ from 'lodash';
 
 import { RolesPermissionsResultData } from '../../../shared/models/api/rolesPermissionsResultData';
 import { RolesService } from '../../../services/roles/roles.service';
@@ -22,18 +22,19 @@ export class RolesAddComponent implements OnInit {
   roleId: number;
   loading = false;
   showDeleteConfirm = false;
-  showError = false;
 
   roleForm: FormGroup = new FormGroup({
-    name: new FormControl('', [Validators.required]),
-    permissions: new FormControl([])
+    name: new FormControl('', Validators.required),
+    permissions: new FormControl([], Validators.required)
   });
 
   constructor(
     private rolesService: RolesService,
-    private router: Router,
+    public router: Router,
     private route: ActivatedRoute,
-  ) {
+  ) { }
+
+  ngOnInit() {
     // generate maps for checkbox value storing
     this.rolesService.getPermissionsList().subscribe(result => {
       this.permissionsMap = result;
@@ -53,8 +54,6 @@ export class RolesAddComponent implements OnInit {
       });
     });
   }
-
-  ngOnInit() { }
 
   onPermissionToggle({ value, checked }) {
     this.permissionsCheckboxMap[value] = checked;
@@ -76,21 +75,20 @@ export class RolesAddComponent implements OnInit {
   generatePermissions() {
     const perm = [];
 
-    for (let key in this.permissionsCheckboxMap) {
+    for (const key in this.permissionsCheckboxMap) {
       if (this.permissionsCheckboxMap[key]) {
         perm.push(key);
       }
     }
 
     this.roleForm.controls.permissions.setValue(perm);
-    //this.role.permissions = perm;
-    this.checkPermission();
+    this.roleForm.controls.permissions.markAsTouched();
   }
 
   generatePermissionsMaps() {
     this.permissionsMap.data.map(data => {
-      data.permissions.map(data => {
-        this.permissionsCheckboxMap[data.code] = _.indexOf(this.roleForm.value.permissions, data.code) > -1;
+      data.permissions.map(perm => {
+        this.permissionsCheckboxMap[perm.code] = _.indexOf(this.roleForm.value.permissions, perm.code) > -1;
       });
     });
 
@@ -103,7 +101,7 @@ export class RolesAddComponent implements OnInit {
     _.map(this.permissionsMap.data, (data, i) => {
       isAllSelected = true;
 
-      for (let { code } of data.permissions) {
+      for (const { code } of data.permissions) {
         isAllSelected = isAllSelected && this.permissionsCheckboxMap[code];
       }
 
@@ -126,77 +124,49 @@ export class RolesAddComponent implements OnInit {
   }
 
   addRole() {
-    console.log('form', this.roleForm);
-    return;
-
-    if (this.roleForm.valid && this.roleForm.value.permissions.length > 0) {
-      this.showError = false;
-      this.loading = true;
-
-      this.rolesService.createRole(this.roleForm.value).subscribe(
-        data => {
-          this.router.navigate(['/roles']);
-        }, error => {
-          console.log('Error', error);
-          this.loading = false;
-        }, () => {
-          this.loading = false;
-        });
-    } else {
-      this.markAsTouched(this.roleForm);
-      if (this.roleForm.value.permissions.length === 0) {
-        this.showError = true;
-      } else {
-        this.showError = false;
-      }
+    if (this.roleForm.invalid || this.roleForm.value.permissions.length === 0) {
+      return;
     }
+
+    this.loading = true;
+
+    this.rolesService.createRole(this.roleForm.value).subscribe(
+      data => {
+        if (data.success) {
+          this.router.navigate(['/roles']);
+        }
+      }, error => {
+        console.log('Error', error);
+        this.loading = false;
+      }, () => {
+        this.loading = false;
+      }
+    );
   }
 
   saveRole() {
-    if (this.roleForm.valid && this.roleForm.value.permissions.length > 0) {
-      this.showError = false;
-      this.loading = true;
-
-      const roleEditRequest = Object.assign(this.roleForm.value, {
-        id: this.roleId
-      });
-
-      this.rolesService.editRole(roleEditRequest).subscribe(
-        data => {
-          this.router.navigate(['/roles']);
-        }, error => {
-          console.log('Error', error);
-          this.loading = false;
-        }, () => {
-          this.loading = false;
-        });
-    } else {
-      this.markAsTouched(this.roleForm);
-      if (this.roleForm.value.permissions.length === 0) {
-        this.showError = true;
-      } else {
-        this.showError = false;
-      }
+    if (this.roleForm.invalid || this.roleForm.value.permissions.length === 0) {
+      return;
     }
-  }
 
-  markAsTouched(group) {
-    Object.keys(group.controls).map((field) => {
-      const control = group.get(field);
-      if (control instanceof FormControl) {
-        control.markAsTouched({ onlySelf: true });
-      } else if (control instanceof FormGroup) {
-        this.markAsTouched(control);
-      }
+    this.loading = true;
+
+    const roleEditRequest = Object.assign(this.roleForm.value, {
+      id: this.roleId
     });
-  }
 
-  checkPermission(){
-    if (this.roleForm.value.permissions.length === 0){
-      this.showError = true;
-    } else {
-      this.showError = false;
-    }
+    this.rolesService.editRole(roleEditRequest).subscribe(
+      data => {
+        if (data.success) {
+          this.router.navigate(['/roles']);
+        }
+      }, error => {
+        console.log('Error', error);
+        this.loading = false;
+      }, () => {
+        this.loading = false;
+      }
+    );
   }
 
 }

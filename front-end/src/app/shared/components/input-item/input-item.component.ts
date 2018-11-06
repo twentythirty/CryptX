@@ -1,7 +1,7 @@
-import { Component, forwardRef, Input, OnInit} from '@angular/core';
+import { Component, forwardRef, Input, OnInit, Output, EventEmitter} from '@angular/core';
 import {
   NG_VALUE_ACCESSOR,
-  ControlValueAccessor, 
+  ControlValueAccessor,
   FormGroup,
   AbstractControl
 } from '@angular/forms';
@@ -25,31 +25,37 @@ export class InputItemComponent implements ControlValueAccessor, OnInit {
   }>; // select field items array
   @Input() formGroup: FormGroup; // reactive forms form group instance
   @Input() formControlName: string; // reactive forms form group control name
-  @Input() label: string; //input heading
+  @Input() label: string; // input heading
+  @Input() bindValue: string; // input items object field to bind as a option value
+  @Input() bindLabel: string; // input items object field to bind as a option label
   @Input() placeholder: string;
-  @Input() type: string;
-  @Input() readonly: boolean; //makes input readonly
-  @Input() source: Array<Object>;
-  @Input() spinnerLoading: boolean; //shows spinner while loading input selection data
-  @Input() fieldType: string; //type of input (input/select/autocomplete)
+  @Input() type: string = 'text';
+  @Input() clearable: boolean; // ability to clear selection
+  @Input() readonly: boolean; // makes input readonly
+  @Input() disabled: boolean; // makes input disabled
+  @Input() spinnerLoading: boolean; // shows spinner while loading input selection data
+  @Input() fieldType: string; // type of input (input/select/autocomplete)
 
-  //The internal data model
+  @Output() selectChange = new EventEmitter();
+  @Output() openList = new EventEmitter();
+
+  // The internal data model
   private innerValue: any = '';
 
   private fieldControl: AbstractControl;
 
-  //Placeholders for the callbacks which are later provided
-  //by the Control Value Accessor
+  // Placeholders for the callbacks which are later provided
+  // by the Control Value Accessor
   private onTouchedCallback: () => {};
   private onChangeCallback: (_: any) => {};
 
-  //get accessor
+  // get accessor
   get value(): any {
-    if(!this.innerValue) return null;
+    if (!this.innerValue) { return null; }
     return this.innerValue;
   }
 
-  //set accessor including call the onchange callback
+  // set accessor including call the onchange callback
   set value(v: any) {
     if (v !== this.innerValue) {
       this.innerValue = v;
@@ -70,25 +76,39 @@ export class InputItemComponent implements ControlValueAccessor, OnInit {
     return this.fieldControl.invalid && (this.fieldControl.dirty || this.fieldControl.touched);
   }
 
-  //Set touched on blur
+  // Set touched on blur
   onBlur() {
     this.onTouchedCallback();
   }
 
-  //From ControlValueAccessor interface
+  // From ControlValueAccessor interface
   writeValue(value: any) {
     if (value !== this.innerValue) {
       this.innerValue = value;
     }
   }
 
-  //From ControlValueAccessor interface
+  // From ControlValueAccessor interface
   registerOnChange(fn: () => any) {
     this.onChangeCallback = fn;
   }
 
-  //From ControlValueAccessor interface
+  // From ControlValueAccessor interface
   registerOnTouched(fn: () => any) {
     this.onTouchedCallback = fn;
+  }
+
+  // From ControlValueAccessor interface
+  setDisabledState(isDisabled: boolean): void {
+    this.disabled = isDisabled;
+  }
+
+
+  change(val) {
+    this.selectChange.emit(val);
+  }
+
+  listOpen(val) {
+    this.openList.emit(val);
   }
 }

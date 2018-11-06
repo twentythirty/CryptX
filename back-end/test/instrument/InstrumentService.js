@@ -28,17 +28,48 @@ describe('InstrumentService testing:', () => {
     const MOCK_EXISTING_REQUIREMENT_1 = {
         id: 1,
         instrument_id: 1,
-        minimum_volume: _.random(),
-        periodicity_in_days: _.random(7, 21, false),
-        exchange: null
+        minimum_volume: 1000,
+        periodicity_in_days: 7,
+        exchange: null,
+        _previous_values: {
+            instrument_id: 1,
+            minimum_volume: 1000,
+            periodicity_in_days: 7,
+            exchange: null
+        },
+        save: function(){
+            const update = Object.assign({}, this);
+            Object.assign(this, this._previous_values);
+            return Promise.resolve(update);
+        },
+        destroy: async () => {
+            return Promise.resolve(this);
+        }
     };
     const MOCK_EXISTING_REQUIREMENT_2 = {
         id: 2,
         instrument_id: 2,
-        minimum_circulation: _.random(),
-        periodicity: _.random(7, 21, false),
-        exchange: 1
+        minimum_volume: 2000,
+        periodicity_in_days: 5,
+        exchange: 1,
+        _previous_values: {
+            instrument_id: 2,
+            minimum_volume: 2000,
+            periodicity_in_days: 5,
+            exchange: 1
+        },
+        save: function(){
+            const update = Object.assign({}, this);
+            Object.assign(this, this._previous_values);
+            return Promise.resolve(update);
+        },
+        destroy: async () => {
+            return Promise.resolve(this);
+        }
     };
+
+    const MOCK_EXISTING_REQUIREMENTS = [ MOCK_EXISTING_REQUIREMENT_1, MOCK_EXISTING_REQUIREMENT_2 ];
+
     const MOCK_REQUIREMENT_1 = {
         instrument_id: 1,
         periodicity: _.random(7, 21, false),
@@ -61,6 +92,12 @@ describe('InstrumentService testing:', () => {
         periodicity: _.random(7, 21, false),
         minimum_circulation: _.random(),
         exchange_id: 2
+    };
+    const MOCK_REQUIREMENT_5 = {
+        instrument_id: 2,
+        periodicity: _.random(7, 21, false),
+        minimum_circulation: _.random(),
+        exchange_id: null
     };
 
     const MOCK_MAPPING_1 = {
@@ -125,6 +162,24 @@ describe('InstrumentService testing:', () => {
                         return Promise.resolve([]);
                 }
             });
+
+            sinon.stub(InstrumentLiquidityRequirement, 'findOne').callsFake(async options => {
+                return null;
+            });
+
+            sinon.stub(InstrumentLiquidityRequirement, 'findById').callsFake(id => {
+                let requirement = MOCK_EXISTING_REQUIREMENTS.find(r => r.id === id);
+                if(!requirement) requirement = null;
+                else {
+                    if(requirement.destroy.restore) requirement.destroy.restore();
+                    sinon.stub(requirement, 'destroy').callsFake(function() {
+                        return Promise.resolve(this);
+                    });
+                }
+
+                return Promise.resolve(requirement);
+            });
+
             sinon.stub(InstrumentLiquidityRequirement, 'create').callsFake(requirement => {
                 return Promise.resolve(Object.assign({ id: 4 }, requirement));
             })
@@ -143,11 +198,15 @@ describe('InstrumentService testing:', () => {
                 return Promise.resolve(mapping);
             });
 
-            sinon.stub(sequelize, 'transaction').callsFake(() => {
-                return Promise.resolve([{
-                    tick_size: MOCK_ASSET_2.id,
-                    external_instrument_id: MOCK_INSTRUMENT.symbol
-                }]);
+            sinon.stub(InstrumentExchangeMapping, 'destroy').callsFake(async () => {
+                return;
+            });
+
+            sinon.stub(InstrumentExchangeMapping, 'bulkCreate').callsFake(async records => records);
+
+            sinon.stub(sequelize, 'transaction').callsFake(async (options, transaction) => {
+                if(_.isFunction(options)) transaction = options;
+                return transaction();
             });
 
             done();
@@ -159,7 +218,10 @@ describe('InstrumentService testing:', () => {
             Asset.findAll,
             InstrumentExchangeMapping.build,
             InstrumentExchangeMapping.findOne,
+            InstrumentExchangeMapping.destroy,
+            InstrumentExchangeMapping.bulkCreate,
             InstrumentLiquidityRequirement.findAll,
+            InstrumentLiquidityRequirement.findOne,
             InstrumentLiquidityRequirement.create,
             sequelize.transaction
         ], model => {
@@ -368,6 +430,9 @@ describe('InstrumentService testing:', () => {
         it('reject saving when a requirement exists for a specific exchange', () => {
             return chai.assert.isRejected(instrumentService.createLiquidityRequirement(...Object.values(MOCK_REQUIREMENT_2)));
         });
+        it('reject saving when attempting to create a requiremnt for all exchanges while there are already ones for specific exchanges', function() {
+            return chai.assert.isRejected(instrumentService.createLiquidityRequirement(...Object.values(MOCK_REQUIREMENT_5)));
+        });
 
         it('create a requirement when it does not exist', () => {
             return chai.assert.isFulfilled(instrumentService.createLiquidityRequirement(...Object.values(MOCK_REQUIREMENT_3))
@@ -397,6 +462,116 @@ describe('InstrumentService testing:', () => {
                 return requirement;
 
             }));
+        });
+
+    });
+
+    describe(' method editLiqudityRequirement shall', () => {
+
+        const { editLiquidityRequirement } = instrumentService;
+
+        it('exist', () => {
+            return chai.expect(editLiquidityRequirement).to.be.not.undefined;
+        });
+
+        it('return null if the requirement does not exist', () => {
+
+            return editLiquidityRequirement(-1).then(result => {
+
+                chai.expect(result).to.be.null;
+
+            });
+
+        });
+        
+        it('reject if provided exchange is not mapped', () => {
+
+            return chai.assert.isRejected(editLiquidityRequirement(MOCK_EXISTING_REQUIREMENT_1.id, 7, 1000, -1));
+
+        });
+
+        it('only update the provided values', () => {
+
+            const PERIODICTY = 18;
+            const MINIMUM_CIRCULATION = 69000;
+            const SPECIFIC_EXCHANGE = MOCK_EXCHANGE_1.id;
+            const ALL_EXCHANGES = null;
+
+            return Promise.all(_.map([
+                [MOCK_EXISTING_REQUIREMENT_1.id, PERIODICTY, undefined, undefined],
+                [MOCK_EXISTING_REQUIREMENT_1.id, undefined, MINIMUM_CIRCULATION, undefined],
+                [MOCK_EXISTING_REQUIREMENT_1.id, undefined, undefined, SPECIFIC_EXCHANGE],
+                [MOCK_EXISTING_REQUIREMENT_2.id, PERIODICTY, undefined, ALL_EXCHANGES],
+                [MOCK_EXISTING_REQUIREMENT_2.id, PERIODICTY, MINIMUM_CIRCULATION, undefined],
+                [MOCK_EXISTING_REQUIREMENT_2.id, undefined, undefined, ALL_EXCHANGES]
+            ], params => {
+                return editLiquidityRequirement(...params).then(result => {
+
+                    chai.expect(result).to.be.not.undefined;
+                    let original_requirement = null;
+
+                    for(let [index, param] of params.entries()){
+                        
+                        if(index === 0) original_requirement = MOCK_EXISTING_REQUIREMENTS.find(r => r.id === param);
+
+                        switch(index) {
+                            
+                            case 0:
+                                chai.expect(result.id).to.equal(param);
+                                break;
+
+                            case 1:
+                                if(_.isUndefined(param)) chai.expect(result.periodicity_in_days).to.equal(original_requirement.periodicity_in_days);
+                                else chai.expect(result.periodicity_in_days).to.equal(param);
+                                break;
+
+                            case 2:
+                                if(_.isUndefined(param)) chai.expect(result.minimum_volume).to.equal(original_requirement.minimum_volume);
+                                else chai.expect(result.minimum_volume).to.equal(param);
+                                break;
+
+                            case 3:
+                                if(_.isUndefined(param)) chai.expect(result.exchange).to.equal(original_requirement.exchange);
+                                else chai.expect(result.exchange).to.equal(param);
+                                break;
+                        }
+
+                    }
+
+                });
+            }));
+
+        });
+
+    });
+
+    describe(' method deleteLiquidityRequirement shall', () => {
+
+        const { deleteLiquidityRequirement } = instrumentService;
+
+        it('exist', () => {
+            return chai.expect(deleteLiquidityRequirement).to.be.not.undefined;
+        });
+
+        it('shall return null if the requirement was not found', () => {
+
+            return deleteLiquidityRequirement(-1).then(result => {
+                
+                chai.expect(result).to.be.null;
+            
+            });
+
+        });
+
+        it('call destroy() if the requirement was found', () => {
+
+            return deleteLiquidityRequirement(MOCK_EXISTING_REQUIREMENT_1.id).then(result => {
+
+                chai.expect(result).to.be.an('object');
+                chai.expect(result.destroy.calledOnce).to.be.true;
+
+            });
+
         });
 
     });

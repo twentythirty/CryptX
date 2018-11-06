@@ -1,12 +1,14 @@
 import { NgModule } from '@angular/core';
+import { BrowserModule } from '@angular/platform-browser';
 import { CommonModule } from '@angular/common';
+import { RouterModule } from '@angular/router';
+import { NguiAutoCompleteModule } from '@ngui/auto-complete/dist';
+
 import { AccountsListComponent } from './accounts-list/accounts-list.component';
 import { AddAccountComponent } from './add-account/add-account.component';
-import { BrowserModule } from "@angular/platform-browser";
-import { SharedModule } from "../../shared/shared.module";
-import { RouterModule } from "@angular/router";
-import { ColdStorageService } from "../../services/cold-storage/cold-storage.service";
-import { NguiAutoCompleteModule } from "@ngui/auto-complete/dist";
+import { SharedModule } from '../../shared/shared.module';
+import { ColdStorageService } from '../../services/cold-storage/cold-storage.service';
+import { AssetService } from '../../services/asset/asset.service';
 
 @NgModule({
   imports: [
@@ -16,7 +18,13 @@ import { NguiAutoCompleteModule } from "@ngui/auto-complete/dist";
     RouterModule,
     NguiAutoCompleteModule,
   ],
-  declarations: [AccountsListComponent, AddAccountComponent],
-  providers: [ColdStorageService]
+  declarations: [
+    AccountsListComponent,
+    AddAccountComponent,
+  ],
+  providers: [
+    AssetService,
+    ColdStorageService,
+  ]
 })
 export class ColdStorageAccountsModule { }

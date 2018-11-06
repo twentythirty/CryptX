@@ -1,13 +1,13 @@
 import { Component, OnInit } from '@angular/core';
-import { Router, ActivatedRoute } from "@angular/router";
+import { Router, ActivatedRoute } from '@angular/router';
 import { finalize } from 'rxjs/operators';
 
-import { DataTableCommonManagerComponent } from "../../../shared/components/data-table-common-manager/data-table-common-manager.component";
-import { TableDataSource, TableDataColumn } from "../../../shared/components/data-table/data-table.component";
-import { DateCellDataColumn, StatusCellDataColumn, NumberCellDataColumn } from "../../../shared/components/data-table-cells";
-import { ExecutionOrdersService } from "../../../services/execution-orders/execution-orders.service";
-import { StatusClass } from "../../../shared/models/common";
-import { Order } from "../../../shared/models/order";
+import { DataTableCommonManagerComponent } from '../../../shared/components/data-table-common-manager/data-table-common-manager.component';
+import { TableDataSource, TableDataColumn } from '../../../shared/components/data-table/data-table.component';
+import { DateCellDataColumn, StatusCellDataColumn, NumberCellDataColumn } from '../../../shared/components/data-table-cells';
+import { ExecutionOrdersService } from '../../../services/execution-orders/execution-orders.service';
+import { StatusClass } from '../../../shared/models/common';
+import { Order } from '../../../shared/models/order';
 
 @Component({
   selector: 'app-execution-order-list',
@@ -19,15 +19,17 @@ export class ExecutionOrderListComponent extends DataTableCommonManagerComponent
    public orderDataSource: TableDataSource = {
     header: [
       { column: 'id', nameKey: 'table.header.id', filter: {  type: 'number', hasRange: false, inputSearch: true, sortable: true } },
-      { column: 'investment_run_id', nameKey: 'table.header.investment_run_id', filter: { type: 'text', sortable: true } },
+      { column: 'investment_run_id', nameKey: 'table.header.investment_run_id', filter: { type: 'number', hasRange: false, inputSearch: true, sortable: true } },
       { column: 'instrument', nameKey: 'table.header.instrument', filter: { type: 'text', sortable: true } },
-      { column: 'side', nameKey: 'table.header.side', filter: { type: 'text', sortable: true } },
+      { column: 'side', nameKey: 'table.header.side', filter: { type: 'text', sortable: true, inputSearch: false } },
       { column: 'exchange', nameKey: 'table.header.exchange', filter: { type: 'text', sortable: true } },
-      { column: 'type', nameKey: 'table.header.type', filter: { type: 'text', sortable: true } },
+      { column: 'type', nameKey: 'table.header.type', filter: { type: 'text', sortable: true, inputSearch: false } },
       { column: 'price', nameKey: 'table.header.price', filter: { type: 'number', sortable: true } },
       { column: 'total_quantity', nameKey: 'table.header.total_quantity', filter: { type: 'number', sortable: true } },
+      { column: 'filled_quantity', nameKey: 'table.header.filled_quantity', filter: { type: 'number', sortable: true } },
+      { column: 'spend_amount', nameKey: 'table.header.total_spend_amount', filter: { type: 'number', sortable: true } },
       { column: 'exchange_trading_fee', nameKey: 'table.header.exchange_trading_fee', filter: { type: 'number', sortable: true } },
-      { column: 'status', nameKey: 'table.header.status', filter: { type: 'text', sortable: true } },
+      { column: 'status', nameKey: 'table.header.status', filter: { type: 'text', sortable: true, inputSearch: false } },
       { column: 'submission_time', nameKey: 'table.header.submission_time', filter: { type: 'date', sortable: true } },
       { column: 'completion_time', nameKey: 'table.header.completion_time', filter: { type: 'date', sortable: true }},
     ],
@@ -41,16 +43,20 @@ export class ExecutionOrderListComponent extends DataTableCommonManagerComponent
     new StatusCellDataColumn({ column: 'side' }),
     new TableDataColumn({ column: 'exchange' }),
     new StatusCellDataColumn({ column: 'type' }),
-    new NumberCellDataColumn({ column: 'price' }),
+    new NumberCellDataColumn({ column: 'price', inputs: {
+      digitsInfo: '1.2-10'
+    } }),
     new NumberCellDataColumn({ column: 'total_quantity' }),
+    new NumberCellDataColumn({ column: 'filled_quantity' }),
+    new NumberCellDataColumn({ column: 'spend_amount' }),
     new NumberCellDataColumn({ column: 'exchange_trading_fee' }),
     new StatusCellDataColumn({ column: 'status', inputs: { classMap: {
       'execution_orders.status.61': StatusClass.PENDING,
-      'execution_orders.status.62': StatusClass.APPROVED,
-      'execution_orders.status.63': StatusClass.APPROVED,
-      'execution_orders.status.64': StatusClass.APPROVED,
-      'execution_orders.status.65': StatusClass.REJECTED,
+      'execution_orders.status.62': StatusClass.INPROGRESS,
+      'execution_orders.status.63': StatusClass.FULLYFILLED,
+      'execution_orders.status.64': StatusClass.PARTIALLYFILLED,
       'execution_orders.status.66': StatusClass.FAILED,
+      'execution_orders.status.67': StatusClass.NOTFILLED
     }}}),
     new DateCellDataColumn({ column: 'submission_time'}),
     new DateCellDataColumn({ column: 'completion_time'}),
@@ -66,15 +72,14 @@ export class ExecutionOrderListComponent extends DataTableCommonManagerComponent
 
   ngOnInit() {
     super.ngOnInit();
-    this.getFilterLOV();
   }
 
   getFilterLOV(): void {
     this.orderDataSource.header.filter(
-      col => ['id', 'investment_run_id', 'instrument', 'side', 'exchange', 'type', 'status'].includes(col.column)
+      col => ['instrument', 'side', 'exchange', 'type', 'status'].includes(col.column)
     ).map(
       col => {
-        col.filter.rowData$ = this.orderService.getHeaderLOV(col.column)
+        col.filter.rowData$ = this.orderService.getHeaderLOV(col.column);
       }
     );
   }
@@ -89,8 +94,9 @@ export class ExecutionOrderListComponent extends DataTableCommonManagerComponent
           footer: res.footer
         });
         this.count = res.count;
+        this.getFilterLOV();
       }
-    )
+    );
   }
 
   openRow(order: Order): void {

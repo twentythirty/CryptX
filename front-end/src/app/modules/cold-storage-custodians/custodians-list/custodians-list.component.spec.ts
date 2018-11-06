@@ -1,51 +1,58 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
-import { Observable } from 'rxjs/Observable';
-import { of } from 'rxjs/observable/of';
+import { extraTestingModules, fakeAsyncResponse, click } from '../../../testing/utils';
 
 import { CustodiansListComponent } from './custodians-list.component';
 import { ColdStorageCustodiansModule } from '../cold-storage-custodians.module';
-import { TranslateModule, TranslateLoader } from '../../../../../../node_modules/@ngx-translate/core';
-import { HttpClientModule } from '../../../../../../node_modules/@angular/common/http';
+import { ColdStorageService } from '../../../services/cold-storage/cold-storage.service';
+import { getAllCustodiansData } from '../../../testing/service-mock/coldStorage.service.mock';
 
-class FakeLoader implements TranslateLoader {
-  getTranslation(lang: string): Observable<any> {
-    return of({}); // empty translation json
-  }
-}
 
 describe('CustodiansListComponent', () => {
   let component: CustodiansListComponent;
   let fixture: ComponentFixture<CustodiansListComponent>;
-
-  // beforeEach(async(() => {
-  //   TestBed.configureTestingModule({
-  //     declarations: [ CustodiansListComponent ]
-  //   })
-  //   .compileComponents();
-  // }));
+  let coldStorageService: ColdStorageService;
+  let getAllCustodiansSpy;
+  let navigateSpy;
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
       imports: [
         ColdStorageCustodiansModule,
-        HttpClientModule,
-        TranslateModule.forRoot({
-          loader: { provide: TranslateLoader, useClass: FakeLoader }
-        })
+        ...extraTestingModules
+      ],
+      providers: [
+        ColdStorageService,
       ]
     }).compileComponents();
-    fixture = TestBed.createComponent(CustodiansListComponent);
-    fixture.detectChanges();
   }));
 
 
   beforeEach(() => {
     fixture = TestBed.createComponent(CustodiansListComponent);
     component = fixture.componentInstance;
+    coldStorageService = fixture.debugElement.injector.get(ColdStorageService);
+    getAllCustodiansSpy = spyOn (coldStorageService, 'getAllCustodians').and.returnValue(fakeAsyncResponse(getAllCustodiansData));
+    navigateSpy = spyOn (component.router, 'navigate');
     fixture.detectChanges();
   });
 
   it('should create', () => {
     expect(component).toBeTruthy();
+  });
+
+  it('should correctly load table data on init', () => {
+    fixture.whenStable().then(() => {
+      expect(component.custodiansDataSource.body).toEqual(getAllCustodiansData.custodians);
+      expect(component.custodiansDataSource.footer).toEqual(getAllCustodiansData.footer);
+      expect(component.count).toEqual(getAllCustodiansData.count);
+    });
+  });
+
+  it('should navigate to add cusodian route on add cusodian button press', () => {
+    fixture.whenStable().then(() => {
+      const addCustodianButton = fixture.nativeElement.querySelector('a.start');
+      click(addCustodianButton);
+      expect(navigateSpy).toHaveBeenCalledWith(['cold_storage/custodians/add']);
+    });
   });
 });

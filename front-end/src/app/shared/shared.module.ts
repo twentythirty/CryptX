@@ -1,18 +1,19 @@
 import { NgModule } from '@angular/core';
-import { FormsModule, ReactiveFormsModule } from '@angular/forms'
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
+import { HttpClientModule } from '@angular/common/http';
 import { DynamicModule } from 'ng-dynamic-component';
 
-import { BtnComponent } from './components/btn/btn.component'
-import { DataTableComponent } from './components/data-table/data-table.component'
-import { ModalComponent } from './components/modal/modal.component'
+import { BtnComponent } from './components/btn/btn.component';
+import { DataTableComponent } from './components/data-table/data-table.component';
+import { ModalComponent } from './components/modal/modal.component';
 import { PaginationComponent } from './components/pagination/pagination.component';
 import { ContentBlockComponent } from './components/content-block/content-block.component';
 import { CheckboxComponent } from './components/checkbox/checkbox.component';
 import { ButtonCheckboxComponent } from './components/button-checkbox/button-checkbox.component';
 import { FormActionBarComponent } from './components/form-action-bar/form-action-bar.component';
 import { ConfirmComponent } from './components/confirm/confirm.component';
-import { DataTableFilterComponent } from './components/data-table-filter/data-table-filter.component'
+import { DataTableFilterComponent } from './components/data-table-filter/data-table-filter.component';
 
 import { FilterPipe } from './pipes/filter.pipe';
 import { DataTableCommonManagerComponent } from './components/data-table-common-manager/data-table-common-manager.component';
@@ -37,13 +38,16 @@ import { SelectCellComponent } from './components/data-table-cells/select-cell/s
 import { TimelineComponent } from './components/timeline/timeline.component';
 import { ButtonRadioComponent } from './components/button-radio/button-radio.component';
 import { ActionLogComponent } from './components/action-log/action-log.component';
-import { NguiAutoCompleteModule } from "@ngui/auto-complete/dist";
+import { NguiAutoCompleteModule } from '@ngui/auto-complete/dist';
 import { NgSelectModule } from '@ng-select/ng-select';
+import { MarkAsTouchedDirective } from './directives/mark-as-touched.directive';
+import { AutofocusDirective } from './directives/autofocus.directive';
 
 @NgModule({
     imports: [
         CommonModule,
         FormsModule,
+        HttpClientModule,
         ReactiveFormsModule,
         RouterModule,
         MatProgressSpinnerModule,
@@ -98,7 +102,8 @@ import { NgSelectModule } from '@ng-select/ng-select';
         TimelineComponent,
         ButtonRadioComponent,
         ActionLogComponent,
-
+        MarkAsTouchedDirective,
+        AutofocusDirective,
     ],
     exports: [
         MatProgressSpinnerModule,
@@ -128,6 +133,9 @@ import { NgSelectModule } from '@ng-select/ng-select';
         TimelineComponent,
         ButtonRadioComponent,
         ActionLogComponent,
+        MarkAsTouchedDirective,
+        NgSelectModule,
+        AutofocusDirective,
     ]
 })
 export class SharedModule {}

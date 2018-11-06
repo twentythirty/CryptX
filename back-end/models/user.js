@@ -133,7 +133,7 @@ module.exports = (sequelize, DataTypes) => {
     if(!options.args) options.args = {};
     options.args.user_name = `${this.first_name} ${this.last_name}`; //Not using full_name() in case it bugs the test
 
-    ActionLogUtil.logAction(action, options);
+    return ActionLogUtil.logAction(action, options);
   }
 
   return User;

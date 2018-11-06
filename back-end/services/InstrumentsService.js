@@ -5,18 +5,28 @@ const InstrumentExchangeMapping = require('../models').InstrumentExchangeMapping
 const Asset = require('../models').Asset;
 const InstrumentLiquidityRequirement = require('../models').InstrumentLiquidityRequirement;
 const Exchange = require('../models').Exchange;
-const sequelie = require('../models').sequelize;
+const sequelize = require('../models').sequelize;
 
-const { or: opOr } = require('sequelize').Op;
+const { ISOLATION_LEVELS } = sequelize.Transaction;
+
+const {
+    or: opOr
+} = require('sequelize').Op;
 
 const ccxtUtil = require('../utils/CCXTUtils');
 
-const { logAction } = require('../utils/ActionLogUtil');
+const {
+    logAction
+} = require('../utils/ActionLogUtil');
 
 const createInstrument = async (transaction_asset_id, quote_asset_id) => {
 
     if (transaction_asset_id == null || quote_asset_id == null) {
         TE(`Provided null transaction or quote asset ids!`);
+    }
+
+    if (parseInt(transaction_asset_id) === parseInt(quote_asset_id)) {
+        TE(`Instruments can only be created using two different assets`);
     }
 
     const instrument_assets = await Asset.findAll({
@@ -29,41 +39,49 @@ const createInstrument = async (transaction_asset_id, quote_asset_id) => {
         TE(`Suppleid asset ids ${transaction_asset_id} and ${quote_asset_id} dont all correspond to actual assets!`);
     }
     const assets_by_id = _.keyBy(instrument_assets, 'id');
-    //check that an instrument with the same assets doesnt already exist
-    const old_instrument = await Instrument.findOne({
-        where: {
-            [opOr]: [
-                {
-                    transaction_asset_id: transaction_asset_id,
-                    quote_asset_id: quote_asset_id
-                },
-                {
-                    transaction_asset_id: quote_asset_id,
-                    quote_asset_id: transaction_asset_id
-                }
-            ]
-        }
-    });
-    if (old_instrument) {
-        let message = `Instrument ${old_instrument.symbol} already exists!!`
-
-        if(old_instrument.transaction_asset_id === quote_asset_id && old_instrument.quote_asset_id === transaction_asset_id) {
-            message = `Only one unique asset pair is allow. Asset pair ${assets_by_id[transaction_asset_id].symbol} and ${assets_by_id[quote_asset_id].symbol} already used in instrument ${old_instrument.symbol}`
-        }
-
-        TE(message);
-    }
 
     const instrument_symbol = `${assets_by_id[transaction_asset_id].symbol}/${assets_by_id[quote_asset_id].symbol}`;
 
-    const [err, instrument] = await to(Instrument.create({
-        transaction_asset_id: transaction_asset_id,
-        quote_asset_id: quote_asset_id,
-        symbol: instrument_symbol
+    const [ err, instrument ] = await to(sequelize.transaction({
+        isolationLevel: ISOLATION_LEVELS.SERIALIZABLE
+    }, async transaction => {
+
+        //check that an instrument with the same assets doesnt already exist
+        const old_instrument = await Instrument.findOne({
+            where: {
+                [opOr]: [{
+                        transaction_asset_id: transaction_asset_id,
+                        quote_asset_id: quote_asset_id
+                    },
+                    {
+                        transaction_asset_id: quote_asset_id,
+                        quote_asset_id: transaction_asset_id
+                    }
+                ]
+            },
+            transaction
+        });
+
+        if (old_instrument) {
+            let message = `Instrument ${old_instrument.symbol} already exists!!`
+
+            if (old_instrument.transaction_asset_id === quote_asset_id && old_instrument.quote_asset_id === transaction_asset_id) {
+                message = `Only one unique asset pair is allowed. Asset pair ${assets_by_id[transaction_asset_id].symbol} and ${assets_by_id[quote_asset_id].symbol} already used in instrument ${old_instrument.symbol}`
+            }
+
+            TE(message);
+        }
+
+        return Instrument.create({
+            transaction_asset_id: transaction_asset_id,
+            quote_asset_id: quote_asset_id,
+            symbol: instrument_symbol
+        }, { transaction });
+
     }));
 
     if (err != null) {
-        TE(`error occurred creating instrument ${instrument_symbol}!: ${err}`)
+        TE(`error occurred creating instrument ${instrument_symbol} !: ${err.message}`)
     }
 
     return instrument;
@@ -81,17 +99,19 @@ const addInstrumentExchangeMappings = async (instrument_id, exchange_mappings, u
     const duplicates = exchange_mappings.map(mapping => {
         const found = exchange_mappings.filter(map => map.exchange_id === mapping.exchange_id).length;
         //2 is used because it would always find it self.
-        if(found >= 2) return true;
+        if (found >= 2) return true;
     }).filter(mapping => mapping);
 
-    if(duplicates.length) TE(`Only 1 unique exchange mapping is allowed per instrument`);
+    if (duplicates.length) TE(`Only 1 unique exchange mapping is allowed per instrument`);
 
-    let [ err, instrument_mappings ] = await to(InstrumentExchangeMapping.findAll({
-        where: { instrument_id },
+    let [err, instrument_mappings] = await to(InstrumentExchangeMapping.findAll({
+        where: {
+            instrument_id
+        },
         raw: true
     }));
 
-    if(err) TE(err.message);
+    if (err) TE(err.message);
 
     const deleted_mappings = _.differenceBy(instrument_mappings, exchange_mappings, 'exchange_id');
     const new_mappings = _.differenceBy(exchange_mappings, instrument_mappings, 'exchange_id');
@@ -117,6 +137,10 @@ const addInstrumentExchangeMappings = async (instrument_id, exchange_mappings, u
 
     const tick_sizes = _.fromPairs(_.map(id_connector_map, (connector, exchange_id) => {
 
+        if (!connector || connector.loading_failed) {
+            TE(`connector not found for exchange ${exchange_id} or failed to load associated markets!`);
+        }
+
         const external_id = exchange_to_external[exchange_id];
 
         if (external_id == null) {
@@ -134,24 +158,28 @@ const addInstrumentExchangeMappings = async (instrument_id, exchange_mappings, u
         ]
     }));
 
-    
+
     const models = _.map(exchange_mappings, mapping => {
         return {
             instrument_id: instrument_id,
             exchange_id: mapping.exchange_id,
-            tick_size: tick_sizes[mapping.exchange_id] == null? 0 : tick_sizes[mapping.exchange_id],
-            external_instrument_id: mapping.external_instrument_id 
+            tick_size: tick_sizes[mapping.exchange_id] == null ? 0 : tick_sizes[mapping.exchange_id],
+            external_instrument_id: mapping.external_instrument_id
         };
     })
 
     let saved_models = [];
-    [ err, saved_models ] = await to(
-        sequelie.transaction(transaction => {
+    [err, saved_models] = await to(
+        sequelize.transaction(transaction => {
             return InstrumentExchangeMapping.destroy({
-                where: { instrument_id },
+                where: {
+                    instrument_id
+                },
                 transaction
             }).then(() => {
-                return InstrumentExchangeMapping.bulkCreate(models, { transaction });
+                return InstrumentExchangeMapping.bulkCreate(models, {
+                    transaction
+                });
             });
         })
     );
@@ -161,11 +189,15 @@ const addInstrumentExchangeMappings = async (instrument_id, exchange_mappings, u
     //new_mappings = _.intersectionBy(saved_models, new_mappings, 'exchange_id');
 
     const log_options = {
-        deleted_mappings, new_mappings, modified_mappings,
-        relations: { instrument_id }
+        deleted_mappings,
+        new_mappings,
+        modified_mappings,
+        relations: {
+            instrument_id
+        }
     };
-    if(user) user.logAction('instrument_exchange_mappings.add_and_remove', log_options);
-    else logAction('instrument_exchange_mappings.add_and_remove', log_options);
+    if(user) await user.logAction('instrument_exchange_mappings.add_and_remove', log_options);
+    else await logAction('instrument_exchange_mappings.add_and_remove', log_options);
 
     return saved_models;
 };
@@ -176,24 +208,41 @@ module.exports.addInstrumentExchangeMappings = addInstrumentExchangeMappings;
  * @param exchange_id id of exchange. If not set then return identifiers from all exchanges.
  */
 const getInstrumentIdentifiersFromCCXT = async function (exchange_id, query) {
-  
-    let search = exchange_id ? { where: { id: exchange_id } } : {};
+
+    let search = exchange_id ? {
+        where: {
+            id: exchange_id
+        }
+    } : {};
 
     let err, exchanges;
     [err, exchanges] = await to(Exchange.findAll(search));
     if (err) TE(err);
-    
-    let connectors = await Promise.all(_.map(exchanges, (exchange) => {
-        return ccxtUtil.getConnector(exchange.api_id)
+
+    let connectors_map = await Promise.all(_.map(exchanges, (exchange) => {
+        return Promise.all([
+            Promise.resolve(exchange.id),
+            ccxtUtil.getConnector(exchange.id)
+        ])
     }));
 
+    connectors_map = _.fromPairs(connectors_map);
+
+    const id_to_exchange = _.keyBy(exchanges, 'id');
+
     let external_ids = _.uniq(
-        _.flatten( 
-            _.map(connectors, connector => Object.keys(connector.markets))
+        _.flatten(
+            _.map(connectors_map, (connector, exchange_id) => {
+                if (!connector || connector.loading_failed) {
+
+                    TE(`Could not load connector/markets for exchange ${id_to_exchange[exchange_id].name}}!`)
+                }
+                return Object.keys(connector.markets)
+            })
         )
     ).sort();
 
-    if(query) external_ids = external_ids.filter(instrument => instrument.search(new RegExp(`(${query.toUpperCase()})`, 'g')) !== -1);
+    if (query) external_ids = external_ids.filter(instrument => instrument.search(new RegExp(`(${query.toUpperCase()})`, 'g')) !== -1);
 
     return external_ids;
 };
@@ -212,19 +261,22 @@ module.exports.checkIfCCXTMarketExist = checkIfCCXTMarketExist;
 
 const deleteExchangeMapping = async (instrument_id, exchange_id) => {
 
-    if(!_.isNumber(instrument_id) || !_.isNumber(exchange_id)) TE(`Valid instrument and exchange ids must be provided`);
-    
-    let [ err, mapping ] = await to(InstrumentExchangeMapping.findOne({
-        where: { instrument_id, exchange_id },
-        include: [ Exchange, Instrument ]
+    if (!_.isNumber(instrument_id) || !_.isNumber(exchange_id)) TE(`Valid instrument and exchange ids must be provided`);
+
+    let [err, mapping] = await to(InstrumentExchangeMapping.findOne({
+        where: {
+            instrument_id,
+            exchange_id
+        },
+        include: [Exchange, Instrument]
     }));
 
-    if(err) TE(err.message);
-    if(!mapping) return null;
+    if (err) TE(err.message);
+    if (!mapping) return null;
 
-    [ err ] = await to(mapping.destroy());
+    [err] = await to(mapping.destroy());
 
-    if(err) TE(err.message);
+    if (err) TE(err.message);
 
     return mapping;
 
@@ -233,47 +285,214 @@ module.exports.deleteExchangeMapping = deleteExchangeMapping;
 
 const createLiquidityRequirement = async (instrument_id, periodicity, minimum_circulation, exchange_id = null) => {
 
-    if(!_.isNumber(instrument_id) || 
-    (!_.isNumber(periodicity) || periodicity < 1) || 
-    (!_.isNumber(minimum_circulation) || minimum_circulation < 0)) {
+    if (!_.isNumber(instrument_id) ||
+        (!_.isNumber(periodicity) || periodicity < 1) ||
+        (!_.isNumber(minimum_circulation) || minimum_circulation < 0)) {
         TE('instrument_id, periodicity or minimum_circulation are not valid.');
     }
-    
+
     const existingRequirements = await InstrumentLiquidityRequirement.findAll({
         where: {
             instrument_id: instrument_id
         }
     });
 
-    //if exchange id is provided, it should check if the instrument is mapped for that exchange.
-    if(exchange_id) {
-
-        const [ err, found_mapping ] = await to(InstrumentExchangeMapping.findOne({
-            where: { instrument_id, exchange_id }
-        }));
-
-        if(err) TE(err.message);
-        if(!found_mapping) TE(`Exchange with id "${exchange_id}" is not mapped to instrument with id "${instrument_id}"`);
-    }
-
-    for(let requirement of existingRequirements) {
+    for (let requirement of existingRequirements) {
         const exchange = requirement.exchange;
 
-        if(!exchange) TE(`A requirement for instrument with id ${instrument_id} already exists for all exchanges`);
-    
-        if(exchange === exchange_id) TE(`A requirement for instrument with id ${instrument_id} and exchange with id ${exchange_id} already exists`);
+        if (!exchange) TE(`A requirement for instrument with id ${instrument_id} already exists for all exchanges`);
+        if (!exchange_id && exchange) TE('Cannot set "All exchanges" on a instrument which has requirements for specific exchnages.');
+
+        if (exchange === exchange_id) TE(`A requirement for instrument with id ${instrument_id} and exchange with id ${exchange_id} already exists`);
     }
 
-    const [ err, liquidity_requirement ] = await to(InstrumentLiquidityRequirement.create({
-        instrument_id,
-        minimum_volume: minimum_circulation,
-        periodicity_in_days: periodicity,
-        exchange: exchange_id
+    //if exchange id is provided, it should check if the instrument is mapped for that exchange.
+    if (exchange_id) {
+
+        const [err, found_mapping] = await to(InstrumentExchangeMapping.findOne({
+            where: {
+                instrument_id,
+                exchange_id
+            }
+        }));
+
+        if (err) TE(err.message);
+        if (!found_mapping) TE(`Exchange with id "${exchange_id}" is not mapped to instrument with id "${instrument_id}"`);
+    }
+
+    const [ err, liquidity_requirement ] = await to(sequelize.transaction({
+        isolationLevel: ISOLATION_LEVELS.SERIALIZABLE
+    }, async transaction => {
+
+        const exisisting_requirement = await InstrumentLiquidityRequirement.findOne({
+            where: { instrument_id, exchange: exchange_id }, transaction
+        });
+
+        if(exisisting_requirement) TE('Liquidity requirement already exists with the selected parameters');
+
+        return InstrumentLiquidityRequirement.create({
+            instrument_id,
+            minimum_volume: minimum_circulation,
+            periodicity_in_days: periodicity,
+            exchange: exchange_id
+        }, { transaction });
+
     }));
 
-    if(err) TE(`error occurred while saving Liquidity Requirement : ${err.message}`);
+    if (err) TE(`error occurred while saving Liquidity Requirement : ${err.message}`);
 
     return liquidity_requirement;
 
 };
 module.exports.createLiquidityRequirement = createLiquidityRequirement;
+
+const editLiquidityRequirement = async (requirement_id, periodicity_in_days, minimum_volume, exchange) => {
+
+    if ((!_.isUndefined(periodicity_in_days) && (!_.isNumber(periodicity_in_days) || periodicity_in_days < 1)) ||
+        (!_.isUndefined(minimum_volume) && (!_.isNumber(minimum_volume) || minimum_volume < 0))) {
+        TE('periodicity or minimum_circulation are not valid.');
+    }
+
+    let updated_values = { periodicity_in_days, minimum_volume, exchange };
+
+    let [ err, requirement ] = await to(InstrumentLiquidityRequirement.findById(requirement_id));
+
+    if(err) TE(err.message);
+    if(!requirement) return null;
+
+    let same_instrument_requirements;
+    [ err, same_instrument_requirements ] = await to(InstrumentLiquidityRequirement.findAll({
+        where: { instrument_id: requirement.instrument_id }
+    }));
+
+    if(err) TE(err.message);
+
+    if(same_instrument_requirements.length !== 1 && _.isNull(exchange)) {
+        TE(`Cannot set "All Exchanges" while there are multiple exchange specific requirements for the instrument`);
+    }
+
+    if(exchange) {
+
+        let found_mapping;
+        [err, found_mapping] = await to(InstrumentExchangeMapping.findOne({
+            where: {
+                instrument_id: requirement.instrument_id,
+                exchange_id: exchange
+            }
+        }));
+
+        if (err) TE(err.message);
+        if (!found_mapping) TE(`Exchange with id "${exchange}" is not mapped to instrument with id "${requirement.instrument_id}"`);
+
+    }
+
+    _.map(updated_values, (value, key) => {
+        if(!_.isUndefined(value)) requirement[key] = value;
+    });
+
+    return requirement.save();
+
+};
+module.exports.editLiquidityRequirement = editLiquidityRequirement;
+
+const deleteLiquidityRequirement = async (requirement_id) => {
+
+    if(!requirement_id) TE('Liquidity requirement id is required');
+
+    let [ err, requirement ] = await to(InstrumentLiquidityRequirement.findById(requirement_id));
+
+    if(err) TE(err.message);
+    if(!requirement) return null;
+
+    return requirement.destroy();
+
+};
+module.exports.deleteLiquidityRequirement = deleteLiquidityRequirement;
+
+const getInstrumentPrices = async (instrument_id, exchange_id, raw = false, transaction) => {
+
+    if (!_.isArray(instrument_id) || !_.isArray(exchange_id))
+        TE("Expectd array of ids");
+
+    let [err, instrument_prices] = await to(sequelize.query(`
+        SELECT *
+        FROM instrument_exchange_mapping iem
+        JOIN LATERAL
+        (
+            SELECT *
+            FROM instrument_market_data
+            WHERE iem.instrument_id = instrument_id
+                AND iem.exchange_id = exchange_id
+            ORDER BY instrument_id, exchange_id, timestamp DESC NULLS LAST
+            LIMIT 1
+        ) AS price ON TRUE
+        WHERE iem.instrument_id IN (:instrument_id)
+            AND iem.exchange_id IN (:exchange_id)
+    `, {
+        replacements: {
+            instrument_id,
+            //extract value lists from grouped association, flatten those lists and extract property from entries
+            exchange_id
+        },
+        type: sequelize.QueryTypes.SELECT,
+        transaction
+    }));
+    if (err) TE(err.message);
+
+    //add parsed keys by default
+    if (!raw) {
+        instrument_prices = instrument_prices.map(price => Object.assign(price, {
+            ask_price: parseFloat(price.ask_price),
+            bid_price: parseFloat(price.bid_price),
+            tick_size: parseFloat(price.tick_size)
+        }));
+    }
+
+    return instrument_prices;
+};
+module.exports.getInstrumentPrices = getInstrumentPrices;
+
+/**
+ * Gets instrument prices for all exchanges by symbol of instrument and exchange api_id
+ * @param {*} symbol - symbol of instrument, e.g. XRP/BTC
+ * @param {*} exchange_api_id - exchange api_id, used to identify exchanges in ccxt
+ */
+const getPriceBySymbol = async (symbol, exchange_api_id) => {
+
+    if (!_.isString(symbol) || !symbol.length) TE("Symbol should be string");
+
+    let [err, price] = await to(sequelize.query(`
+        SELECT *
+        FROM exchange e 
+        JOIN instrument_exchange_mapping iem ON iem.exchange_id=e.id
+        JOIN LATERAL
+        (
+            SELECT *
+            FROM instrument_market_data
+            WHERE iem.instrument_id = instrument_id
+                AND iem.exchange_id = exchange_id
+            ORDER BY instrument_id, exchange_id, timestamp DESC NULLS LAST
+            LIMIT 1
+        ) AS price ON TRUE
+        WHERE e.api_id=:exchange_api_id
+            AND iem.external_instrument_id=:symbol
+    `, {
+        replacements: {
+            symbol,
+            exchange_api_id
+        },
+        plain: true,
+        type: sequelize.QueryTypes.SELECT
+    }));
+    if (err) TE(err.message);
+
+    //add parsed keys by default
+    Object.assign(price, {
+        ask_price: parseFloat(price.ask_price),
+        bid_price: parseFloat(price.bid_price),
+        tick_size: parseFloat(price.tick_size)
+    });
+
+    return price;
+};
+module.exports.getPriceBySymbol = getPriceBySymbol;

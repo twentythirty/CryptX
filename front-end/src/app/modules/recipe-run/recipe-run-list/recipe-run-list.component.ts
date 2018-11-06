@@ -1,13 +1,18 @@
 import { Component, OnInit } from '@angular/core';
-import { ActivatedRoute, Router } from "@angular/router";
+import { ActivatedRoute, Router } from '@angular/router';
 import { finalize } from 'rxjs/operators';
 
-import { DataTableCommonManagerComponent } from "../../../shared/components/data-table-common-manager/data-table-common-manager.component";
-import { TableDataSource, TableDataColumn } from "../../../shared/components/data-table/data-table.component";
-import { DateCellDataColumn, StatusCellDataColumn, ActionCellDataColumn, DataCellAction } from "../../../shared/components/data-table-cells";
-import { StatusClass } from "../../../shared/models/common";
-import { RecipeRunsService } from "../../../services/recipe-runs/recipe-runs.service";
-import { Recipe } from "../../../shared/models/recipe";
+import { DataTableCommonManagerComponent } from '../../../shared/components/data-table-common-manager/data-table-common-manager.component';
+import { TableDataSource, TableDataColumn } from '../../../shared/components/data-table/data-table.component';
+import {
+  DateCellDataColumn,
+  StatusCellDataColumn,
+  ActionCellDataColumn,
+  DataCellAction
+} from '../../../shared/components/data-table-cells';
+import { StatusClass } from '../../../shared/models/common';
+import { RecipeRunsService } from '../../../services/recipe-runs/recipe-runs.service';
+import { Recipe } from '../../../shared/models/recipe';
 
 @Component({
   selector: 'app-recipe-run-list',
@@ -35,7 +40,7 @@ export class RecipeRunListComponent extends DataTableCommonManagerComponent impl
     new TableDataColumn({ column: 'investment_run_id' }),
     new DateCellDataColumn({ column: 'created_timestamp' }),
     new TableDataColumn({ column: 'user_created' }),
-    new StatusCellDataColumn({ column: 'approval_status', inputs: { classMap: { 
+    new StatusCellDataColumn({ column: 'approval_status', inputs: { classMap: {
       'recipes.status.41': StatusClass.PENDING,
       'recipes.status.42': StatusClass.REJECTED,
       'recipes.status.43': StatusClass.APPROVED,
@@ -51,14 +56,14 @@ export class RecipeRunListComponent extends DataTableCommonManagerComponent impl
             this.showReadModal({
               title: 'Rationale',
               content: row.approval_comment
-            })
+            });
           }
         })
       ]
     }}),
   ];
 
-  public readModalIsShown: boolean = false;
+  public readModalIsShown = false;
   public readData: { title: string, content: string };
 
   constructor(
@@ -66,12 +71,11 @@ export class RecipeRunListComponent extends DataTableCommonManagerComponent impl
     protected recipeService: RecipeRunsService,
     public router: Router,
   ) {
-    super (route, router)
+    super (route, router);
   }
 
   ngOnInit() {
     super.ngOnInit();
-    this.getFilterLOV();
   }
 
   getFilterLOV(): void {
@@ -94,6 +98,7 @@ export class RecipeRunListComponent extends DataTableCommonManagerComponent impl
           footer: res.footer
         });
         this.count = res.count;
+        this.getFilterLOV();
       }
     );
   }

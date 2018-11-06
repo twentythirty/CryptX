@@ -5,5 +5,10 @@ export enum StatusClass {
   PENDING = 'pending',
   APPROVED = 'approved',
   ACTIVE = 'active',
-  DEACTIVATED = 'deactivated'
+  DEACTIVATED = 'deactivated',
+  INPROGRESS = 'inprogress',
+  FULLYFILLED = 'fullyfilled',
+  PARTIALLYFILLED = 'partiallyfilled',
+  CANCELED = 'cancelled',
+  NOTFILLED = 'notfilled'
 }

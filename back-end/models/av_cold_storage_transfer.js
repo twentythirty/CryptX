@@ -16,7 +16,8 @@ module.exports = (sequelize, DataTypes) => {
             source_exchange: DataTypes.STRING,
             source_account: DataTypes.STRING,
             placed_timestamp: DataTypes.DATE,
-            completed_timestamp: DataTypes.DATE
+            completed_timestamp: DataTypes.DATE,
+            recipe_run_id: DataTypes.INTEGER
         },
         //common global model props
         modelProps('av_cold_storage_transfers', 'Cold storage transfers of the CryptX system')

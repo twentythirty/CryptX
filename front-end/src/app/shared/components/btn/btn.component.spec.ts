@@ -1,4 +1,5 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { MatProgressSpinnerModule } from '@angular/material';
 
 import { BtnComponent } from './btn.component';
 
@@ -8,7 +9,8 @@ describe('BtnComponent', () => {
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ BtnComponent ]
+      declarations: [ BtnComponent ],
+      imports: [ MatProgressSpinnerModule ]
     })
     .compileComponents();
   }));

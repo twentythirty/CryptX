@@ -1,11 +1,13 @@
 <div>
-<input class="input" id="{{ value }}"
-  type="radio"
-  name="name"
-  [value]="value"
-  (change)="handleChange()"
->
-<label for="{{ value }}">
-  {{ label }}
-</label>
+  <input
+    [id]="id"
+    class="input"
+    type="radio"
+    name="name"
+    [value]="value"
+    (change)="handleChange()"
+  >
+  <label [for]="id">
+    {{ label }}
+  </label>
 </div>

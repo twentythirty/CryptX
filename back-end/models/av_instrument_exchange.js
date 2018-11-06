@@ -24,13 +24,13 @@ module.exports = (sequelize, DataTypes) => {
     );
 
     AVInstrumentExchange.prototype.toWeb = async function() {
-        const ccxtUtils = require('../utils/CCXTUtils');
+        //const ccxtUtils = require('../utils/CCXTUtils');
 
         let json = this.toJSON();
 
         json.last_updated = json.last_updated ? json.last_updated.getTime() : json.last_updated;
 
-        let [ err, connector ] = await to(ccxtUtils.getConnector(json.exchange_id));
+        /*let [ err, connector ] = await to(ccxtUtils.getConnector(json.exchange_id));
 
         if(err) TE(err.message);
 
@@ -38,7 +38,7 @@ module.exports = (sequelize, DataTypes) => {
             _.flatten( 
                 Object.keys(connector.markets)
             )
-        );
+        );*/
 
         return json;
     }

@@ -1,19 +1,21 @@
 <app-modal
   (close)="handleReject()"
-  heading="{{heading}}"
+  [heading]="heading"
   errorIcon="true"
 >
  <div class="select-box">
     <div class="label">
       <div class="checkboxes-modal-wrap">
         <app-btn
-          class="checkboxes-modal"
+          class="checkboxes-modal reject"
           [grey]="true"
           (click)="handleReject()"
         >{{ 'common.cancel' | translate }}</app-btn>
         <app-btn
-          class="checkboxes-modal"
+          class="checkboxes-modal confirm"
           (click)="handleConfirm()"
+          [loading]="confirmLoading"
+          [disabled]="confirmLoading"
         >{{ 'common.confirm' | translate }}</app-btn>
       </div>
     </div>

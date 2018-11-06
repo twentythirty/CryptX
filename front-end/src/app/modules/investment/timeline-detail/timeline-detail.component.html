@@ -1,43 +1,62 @@
-<div *ngIf="pageTitle">
-<app-page-heading [heading]="pageTitle">
+<app-page-heading *ngIf="pageTitle" [heading]="pageTitle">
   <ul class="dashboard-item-details">
     <li *ngFor="let item of tagLine">
       <a (click)="doItemAction(item)">{{ item.title }}</a>
     </li>
   </ul>
 </app-page-heading>
-</div>
 
 <div class="left-part-dashboard">
-  <div class="top-controls">
-    <span  class="headline-title">{{ singleTitle }}</span>
-    <a
-      *ngIf="showGenerateOrders"
-      class="btn start"
-      [class.disabled]="disableGenerateOrders"
-      (click)="!disableGenerateOrders && generateOrders()"
-    >
-      <span>{{ 'orders.generate_orders' | translate }}</span>
-    </a>
-  </div>
+  <ng-container *ngIf="singleDataSource">
+    <div class="top-controls">
+      <span class="headline-title">{{ singleTitle }}</span>
+      <app-btn
+        *ngIf="showGenerateOrders"
+        [extraClass]="!generateOrdersLoading && 'start'"
+        [thinner]="true"
+        (onClick)="generateOrders()"
+        [loading]="generateOrdersLoading"
+        [disabled]="generateOrdersLoading"
+      >
+        <span>{{ 'orders.generate_orders' | translate }}</span>
+      </app-btn>
+    </div>
 
-  <div *ngIf="singleDataSource">
-  <app-data-table 
-    [dataSource]="singleDataSource"
-    [columnsToShow]="singleColumnsToShow"
-    [emptyText]="singleTableEmptyText | translate"
-    (openRow)="openSingleRow($event)"
-  ></app-data-table>
-  </div>
-  
-  <div class="top-controls" *ngIf="listTitle" >
-    <span  class="headline-title">{{ listTitle }}</span>
-    <a *ngIf="addTitle" (click)="addAction()" class="btn start">
-      <span>{{ addTitle }}</span>
-    </a>
+    <app-data-table
+      [dataSource]="singleDataSource"
+      [columnsToShow]="singleColumnsToShow"
+      [emptyText]="singleTableEmptyText | translate"
+      (openRow)="openSingleRow($event)"
+    ></app-data-table>
+  </ng-container>
+
+  <div class="top-controls" *ngIf="extraTableTitle">
+    <span class="headline-title">{{ extraTableTitle }}</span>
   </div>
 
   <app-data-table
+    *ngIf="extraTableDataSource"
+    [dataSource]="extraTableDataSource"
+    [columnsToShow]="extraTableColumnsToShow"
+  ></app-data-table>
+  
+  <div class="top-controls" *ngIf="listTitle">
+    <span class="headline-title">{{ listTitle }}</span>
+    <app-btn
+      calculate-deposits-button
+      *ngIf="showCalculateDeposits()"
+      [extraClass]="!calculateDepositsLoading && 'start'"
+      [thinner]="true"
+      (onClick)="calculateDeposits()"
+      [loading]="calculateDepositsLoading"
+      [disabled]="calculateDepositsLoading"
+    >
+      <span>{{ 'deposits.calculate_deposits' | translate }}</span>
+    </app-btn>
+  </div>
+
+  <app-data-table
+    *ngIf="listDataSource"
     [dataSource]="listDataSource"
     [columnsToShow]="listColumnsToShow"
     [emptyText]="listTableEmptyText | translate"
@@ -52,6 +71,27 @@
     [page]="page"
     [loading]="isTableLoading"
   ></app-pagination>
+
+  <div class="top-controls" *ngIf="detailTableTitle">
+    <span class="headline-title">{{ detailTableTitle }}</span>
+    <app-btn
+      *ngIf="addTitle"
+      [extraClass]="!addActionLoading && 'start'"
+      [thinner]="true"
+      (onClick)="addAction()"
+      [loading]="addActionLoading"
+      [disabled]="addActionLoading"
+    >
+      <span>{{ addTitle }}</span>
+    </app-btn>
+  </div>
+
+  <app-data-table
+    *ngIf="detailTableDataSource"
+    [dataSource]="detailTableDataSource"
+    (openRow)="openDetailRow($event)"
+    [columnsToShow]="detailTableColumnsToShow"
+  ></app-data-table>
 
   <app-action-log
     *ngIf="logsSource"
@@ -82,3 +122,42 @@
     <app-btn class="right" (onClick)="hideReadModal()">{{ 'common.done' | translate }}</app-btn>
   </div>
 </app-modal>
+
+
+<app-modal
+  *ngIf="showConversionAmountModal"
+  class="conversion-amount-modal"
+  [heading]="'conversion.converted_amount' | translate"
+  (close)="closeConversionAmountModal()"
+>
+  <form [formGroup]="conversionAmountForm">
+    <app-input-item
+      type="number"
+      class="form-item"
+      [label]="'conversion.please_specify_converted_amount' | translate"
+      [placeholder]="'conversion.enter_converted_amount' | translate"
+      [formGroup]="conversionAmountForm"
+      formControlName="amount"
+    ></app-input-item>
+
+    <p *ngIf="conversionAmountModalError" class="error">
+      {{ conversionAmountModalError }}
+    </p>
+
+    <div class="btn-cont">
+      <app-btn
+        class="right"
+        (onClick)="updateConversionAmount()"
+        [disabled]="conversionAmountFormLoading"
+        [appMarkAsTouched]="conversionAmountForm"
+      >{{ 'common.confirm' | translate }}</app-btn>
+    </div>
+  </form>
+</app-modal>
+
+
+<app-deposit-approve
+  #depositApprove
+  [depositId]="depositApproveId"
+  (updateData)="depositApproveUpdateData()"
+></app-deposit-approve>

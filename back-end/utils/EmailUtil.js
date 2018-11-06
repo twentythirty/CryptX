@@ -32,6 +32,10 @@ const BASE_URL = environment_base_url();
  */
 const INVITE_BASE_URL = `${BASE_URL}/#/invitation?token=`
 
+//Currently used by new assets, but might be used later by something else
+const DELAYED_EMAILS = {};
+const BUILD_UPS = {};
+
 module.exports.invitationMailHTML = (invitation) => {
 
     return `
@@ -75,6 +79,71 @@ module.exports.passwordChangeNotification = (details) => {
     `
 }
 
+module.exports.newAssetsNotification = assets => {
+
+    return `
+        <b>Attention!</b>
+        <p>The following assets were added to the system:</p>
+        <br>
+        <p>${
+            assets.map(asset => `${asset.symbol} (${asset.long_name})`).join(', ')
+        }</p>
+    `;
+
+}
+
+/**
+ * Because of the current nature of how assets are created, we can't get a full list of new Assets,
+ * therefore to efficiently send them, a list will be built up and sent after some time when the
+ * function stops receiving new assets. 
+ * @param {Object} new_asset New asset that was recently added.
+ */
+module.exports.prepareNewAssetNotification = async new_asset => {
+
+    const { sequelize } = require('../models');
+
+    const subject = 'New Assets';
+    const category = 'new_assets';
+    const delay = 5000;
+
+    if(!BUILD_UPS[category]) BUILD_UPS[category] = [];
+
+    BUILD_UPS[category].push(new_asset);
+
+    clearTimeout(DELAYED_EMAILS[category]);
+
+    DELAYED_EMAILS[category] = setTimeout(async () => {
+
+        const [ err, users ] = await to(sequelize.query(`
+            SELECT DISTINCT ON(u.email) u.email, p.code
+            FROM "user" AS u
+            JOIN user_role AS ur ON u.id = ur.user_id
+            JOIN "role" AS r ON ur.role_id = r.id
+            JOIN role_permission AS rp ON r.id = rp.role_id
+            JOIN permission AS p ON rp.permission_id = p.id
+            WHERE p.code = '${PERMISSIONS.RECEIVE_NOTIFICATION_ABOUT_NEW_ASSETS}'
+        `, { type: sequelize.QueryTypes.SELECT }));
+
+        if(err) {
+            console.log('Error occured when trying to fetch user email with new asset notification permission:');
+            console.error(err.message);
+            return;
+        }
+        //If there are no appropriate users, ends the execution here.
+        if(!users.length) return;
+
+        const emails = users.map(user => user.email);
+
+        const content = this.newAssetsNotification(BUILD_UPS[category]);
+
+        delete BUILD_UPS[category];
+
+        this.sendMail(emails, subject, content);
+
+    }, delay);
+
+};
+
 module.exports.sendMail = async (to, subject, content, is_html = true) => {
 
     let msg = {
@@ -88,7 +157,7 @@ module.exports.sendMail = async (to, subject, content, is_html = true) => {
         mgs.text = content;
     };
     console.log('Sending email %o', msg);
-
+    
     //use either "send" or "sendMultiple" method if sending several emails at once
     let method = Array.isArray(to)? 'sendMultiple' : 'send';
     return send_grid[method](msg).then((result) => {

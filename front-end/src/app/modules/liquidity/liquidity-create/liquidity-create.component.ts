@@ -1,9 +1,9 @@
 import { Component, OnInit } from '@angular/core';
 import { FormGroup, FormControl, Validators } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 import { TranslateService } from '@ngx-translate/core';
-import _ from 'lodash';
-import { finalize } from 'rxjs/operators';
+import * as _ from 'lodash';
+import { finalize, filter } from 'rxjs/operators';
 
 import { LiquidityService } from '../../../services/liquidity/liquidity.service';
 import { InstrumentsService } from '../../../services/instruments/instruments.service';
@@ -15,12 +15,13 @@ import { ExchangesService } from '../../../services/exchanges/exchanges.service'
   styleUrls: ['./liquidity-create.component.scss']
 })
 export class LiquidityCreateComponent implements OnInit {
+  liquidityId: number;
   instruments: Array<{ id: number, value: string }>;
   exchanges: Array<{ id: number, value: string }>;
 
-  loading: boolean = false;
-  instrumentsLoading: boolean = true;
-  exchangesLoading: boolean = true;
+  loading = false;
+  instrumentsLoading = true;
+  exchangesLoading = true;
 
   form: FormGroup = new FormGroup({
     instrument_id: new FormControl('', Validators.required),
@@ -40,6 +41,7 @@ export class LiquidityCreateComponent implements OnInit {
     private instrumentService: InstrumentsService,
     private exchangesService: ExchangesService,
     private router: Router,
+    private route: ActivatedRoute,
     private translate: TranslateService,
   ) {}
 
@@ -54,7 +56,8 @@ export class LiquidityCreateComponent implements OnInit {
       });
     });
 
-    this.exchangesService.getAllExchanges().subscribe(res => {
+    const getMVPExchanges = true;
+    this.exchangesService.getAllExchanges(getMVPExchanges).subscribe(res => {
       this.exchangesLoading = false;
       this.exchanges = res.exchanges.map(exchange => {
         return {
@@ -65,33 +68,59 @@ export class LiquidityCreateComponent implements OnInit {
 
       this.translate.get('exchanges.all_exchanges').subscribe(value => {
         this.exchanges.push({
-          /*set id value as number 0 instead of 'null' 
+          /*set id value as number 0 instead of 'null'
           to make selector input understand that option is selected */
           id: 0,
           value: value
         });
       });
+    });
 
+    this.route.params.pipe(
+      filter(params => params.id)
+    ).subscribe(params => {
+      this.liquidityId = params.id;
+
+      // disable instrument select
+      this.form.controls.instrument_id.disable();
+
+      this.liquidityService.getLiquidity(this.liquidityId)
+      .subscribe(
+        res => {
+          const record = res.liquidity_requirement;
+          const exchange_id = record.exchange_id === null ? 0 : record.exchange_id;
+
+          this.form.controls.instrument_id.setValue(record.instrument_id);
+          this.form.controls.exchange_id.setValue(exchange_id);
+          this.form.controls.periodicity.setValue(record.periodicity);
+          this.form.controls.minimum_circulation.setValue(record.minimum_circulation);
+        }
+      );
     });
   }
 
-  // reset form group control value if user dont pick anything from autocomplete
-  assetValueChanged(value, controlName) {
-    if (typeof value === 'string') {
-      this.form.controls[ controlName ].setValue('');
-    }
-  }
 
   saveLiquidityRequirement() {
+    if (this.form.invalid) {
+      return false;
+    }
+
     const request = _.mapValues(this.form.value, val => {
-      /*in case of 'All Exchanges' selection, return id value back to 
+      /*in case of 'All Exchanges' selection, return id value back to
       expression: 'null'*/
       return val === 0 ? val = null : typeof val === 'object' ? val.id : _.toNumber(val);
     });
 
     this.loading = true;
 
-    this.liquidityService.createLiquidityRequirement(request).pipe(
+    let endpoint;
+    if (this.liquidityId) {
+      endpoint = this.liquidityService.updateLiquidity(this.liquidityId, request);
+    } else {
+      endpoint = this.liquidityService.createLiquidityRequirement(request);
+    }
+
+    endpoint.pipe(
       finalize(() => this.loading = false)
     ).subscribe(
       data => {

@@ -2,6 +2,8 @@ import { Component, OnInit, Input } from '@angular/core';
 import { Router } from '@angular/router';
 
 import { StatusClass } from '../../models/common';
+import { permissions } from '../../../config/permissions';
+
 import { AuthService } from '../../../services/auth/auth.service';
 
 export class TimelineEvent {
@@ -28,7 +30,15 @@ export class TimelineEvent {
   ) {}
 }
 
-type TimelineStepKey = 'investment_run' | 'recipe_run' | 'recipe_deposits' | 'recipe_orders' | 'execution_orders';
+export class TimelineEvents {
+  investment_run: TimelineEvent;
+  recipe_run: TimelineEvent;
+  recipe_deposits: TimelineEvent;
+  recipe_orders: TimelineEvent;
+  execution_orders: TimelineEvent;
+  cold_storage_transfers: TimelineEvent;
+}
+
 
 @Component({
   selector: 'app-timeline',
@@ -37,13 +47,7 @@ type TimelineStepKey = 'investment_run' | 'recipe_run' | 'recipe_deposits' | 're
 })
 export class TimelineComponent implements OnInit {
 
-  @Input() timelineEvents: {
-    investment_run: TimelineEvent,
-    recipe_run: TimelineEvent,
-    recipe_deposits: TimelineEvent,
-    recipe_orders: TimelineEvent,
-    execution_orders: TimelineEvent
-  }
+  @Input() timelineEvents: TimelineEvents;
 
   constructor(
     private router: Router,
@@ -52,24 +56,26 @@ export class TimelineComponent implements OnInit {
 
   ngOnInit() {}
 
-  public isActive(key: TimelineStepKey): boolean {
+
+  public isActive(key: keyof TimelineEvents): boolean {
     let routeParts: Array<string>;
 
-    switch(key) {
-      case 'investment_run':   routeParts = ['run/investment']; break;
-      case 'recipe_run':       routeParts = ['run/recipe']; break;
-      case 'recipe_deposits':  routeParts = ['run/deposit']; break;
-      case 'recipe_orders':    routeParts = ['run/order', 'run/order-group']; break;
-      case 'execution_orders': routeParts = ['run/execution-orders']; break;
+    switch (key) {
+      case 'investment_run':          routeParts = ['run/investment']; break;
+      case 'recipe_run':              routeParts = ['run/recipe']; break;
+      case 'recipe_deposits':         routeParts = ['run/deposit']; break;
+      case 'recipe_orders':           routeParts = ['run/order', 'run/order-group']; break;
+      case 'execution_orders':        routeParts = ['run/execution-orders']; break;
+      case 'cold_storage_transfers':  routeParts = ['run/cold-storage-transfers']; break;
     }
 
     return routeParts.some(part => this.router.isActive(part, false));
   }
 
-  public isDisabled(key: TimelineStepKey) {
-    let events = this.timelineEvents;
-    
-    switch(key) {
+  public isDisabled(key: keyof TimelineEvents) {
+    const events = this.timelineEvents;
+
+    switch (key) {
       case 'investment_run':
         return !events.investment_run;
 
@@ -77,23 +83,29 @@ export class TimelineComponent implements OnInit {
         return !events.recipe_run;
 
       case 'recipe_deposits':
-        return !events.recipe_deposits;
+        return !events.recipe_run || events.recipe_run.approval_status !== 'recipes.status.43';
 
       case 'recipe_orders':
-        if(this.authService.hasPermissions(['VIEW_ORDERS'])) {
+        if (!events.recipe_deposits) {
+          return true;
+        }
+        if (this.authService.hasPermissions([permissions.VIEW_ORDERS])) {
           return false; // can view even empty page
         }
-        return !events.recipe_orders; 
+        return events.recipe_deposits.status === 'deposits.status.150';
 
       case 'execution_orders':
+        return !events.recipe_orders;
+
+      case 'cold_storage_transfers':
         return !events.execution_orders;
     }
   }
 
-  public openStep(key: TimelineStepKey, event: TimelineEvent): void {
-    let events = this.timelineEvents;
+  public openStep(key: keyof TimelineEvents): void {
+    const events = this.timelineEvents;
 
-    switch(key) {
+    switch (key) {
       case 'investment_run':
         this.router.navigate([`/run/investment/${events.investment_run.id}`]);
         break;
@@ -101,21 +113,25 @@ export class TimelineComponent implements OnInit {
       case 'recipe_run':
         this.router.navigate([`/run/recipe/${events.recipe_run.id}`]);
         break;
-      
+
       case 'recipe_deposits':
         this.router.navigate([`/run/deposit/${events.recipe_run.id}`]);
         break;
-      
+
       case 'recipe_orders':
-        if(this.authService.hasPermissions(['VIEW_ORDERS'])) {
+        if (this.authService.hasPermissions([permissions.VIEW_ORDERS])) {
           this.router.navigate([`/run/order-group/${events.recipe_run.id}`]);
         } else {
           this.router.navigate([`/run/order/${events.recipe_run.id}`]);
         }
         break;
-      
+
       case 'execution_orders':
         this.router.navigate([`/run/execution-orders/${events.investment_run.id}`]);
+        break;
+
+      case 'cold_storage_transfers':
+        this.router.navigate([`/run/cold-storage-transfers/${events.recipe_run.id}`]);
         break;
     }
   }

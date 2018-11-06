@@ -8,6 +8,8 @@ const ColdStorageCustodian = require('../models').ColdStorageCustodian;
 
 const { logAction } = require('../utils/ActionLogUtil');
 
+const { lock } = require('../utils/LockUtils');
+
 const approveColdStorageTransfer = async function (req, res) {
 
   const { transfer_id } = req.params;
@@ -29,6 +31,8 @@ const getColdStorageTransfers = async function (req, res) {
   const { seq_query, sql_where } = req;
 
   let [ err, result ] = await to(AdminViewsService.fetchColdStorageTransferViewDataWithCount(seq_query));
+
+  if(err) return ReE(res, err.message, 422);
 
   let { total: count, data: transfers } = result;
 
@@ -61,27 +65,7 @@ const getColdStorageTransferColumnLOV = async (req, res) => {
 };
 module.exports.getColdStorageTransferColumnLOV = getColdStorageTransferColumnLOV;
 
-const create_mock_footer = function (keys, name) {
-  // delete this function after mock data is replaced
-  let footer = [...Object.keys(keys)].map((key, index) => {
-    return {
-      "name": key,
-      "value": 999,
-      "template": name + ".footer." + key,
-      "args": {
-        [key]: 999
-      }
-    }
-  });
-  return footer;
-};
-
 const getCustodians = async function (req, res) {
-
-  /*let mock_custodians = [...Array(5)].map((cust, index) => ({
-    id: index + 1,
-    name: "Custodian " + (index + 1)
-  }))*/
 
   const { seq_query } = req;
 
@@ -90,7 +74,6 @@ const getCustodians = async function (req, res) {
 
   const { count, rows: custodians } = result;
 
-  //let footer = create_mock_footer(mock_custodians[0], 'cold_storage');
 
   return ReS(res, {
     custodians,
@@ -105,7 +88,16 @@ const addCustodian = async (req, res) => {
   const { name } = req.body;
   const { user } = req;
 
-  const [err, custodian] = await to(ColdStorageService.createCustodian(name));
+  const [ err, custodian ] = await to(
+    lock(ColdStorageService, {
+      method: 'createCustodian',
+      params: [ name ],
+      id: 'create_cold_storage_custodian',
+      keys: { name },
+      error_message: 'A cold storage custodian is currently being added with that name. Please wait...',
+      max_block: 180
+    })
+  );
 
   if (err) return ReE(res, err.message, 422);
 
@@ -127,7 +119,16 @@ const addColdstorageAccount = async function (req, res) {
   if (strategy_type == null || asset_id == null || custodian_id == null || address == null)
     return ReE(res, "strategy_type, asset_id, custodian_id and address must be supplied")
 
-  let [err, account] = await to(ColdStorageService.createColdStorageAccount(strategy_type, asset_id, custodian_id, address, tag));
+  const [ err, account ] = await to(
+    lock(ColdStorageService, {
+      method: 'createColdStorageAccount',
+      params: [ strategy_type, asset_id, custodian_id, address, tag ],
+      id: 'create_cold_storage_account',
+      keys: { strategy_type, asset_id, custodian_id },
+      error_message: 'A cold storage account is currently being added with those selections. Please wait...',
+      max_block: 180
+    })
+  );
 
   if (err) return ReE(res, err.message, 422);
 
@@ -136,6 +137,21 @@ const addColdstorageAccount = async function (req, res) {
   });
 };
 module.exports.addColdstorageAccount = addColdstorageAccount;
+
+const editColdStorageAccount = async (req, res) => {
+
+  const { address, tag } = req.body;
+  const { account_id } = req.params;
+
+  const [ err, account ] = await to(ColdStorageService.editColdStorageAccount(account_id, address, tag));
+
+  if(err) return ReE(res, err.message, 422);
+  if(!account) return ReE(res, `Account was not found with id "${account_id}"`, 404);
+
+  return ReS(res, { account });
+
+};
+module.exports.editColdStorageAccount = editColdStorageAccount;
 
 const getColdstorageAccounts = async function (req, res) {
 
@@ -166,6 +182,7 @@ module.exports.getColdstorageAccounts = getColdstorageAccounts;
 const getColdstorageAccountsFees = async (req, res) => {
 
   //MOCK DATA
+  /*
   let fees = [];
   const assets = ['ETH', 'BTC', 'DOGE', 'XRP', 'BRT', 'XPX', 'RBT', 'ARP', 'WAWE'];
   const custodian = ['Coinbase', 'Cointop', 'Little Inc', 'Big Crypto', '2030 Ltd', 'Really Long Coins and Jebs'];
@@ -182,12 +199,39 @@ const getColdstorageAccountsFees = async (req, res) => {
     });
 
   }
+  */
+
+ const { seq_query, sql_where } = req;
+
+  const [ err, result ] = await to(AdminViewsService.fetchColdStorageAccountStorageFeesViewDataWithCount(seq_query));
+
+  if(err) return ReE(res, err.message, 422);
+
+  let { data: fees, total: count } = result;
+
+  fees = fees.map(fee => fee.toWeb());
 
   return ReS(res, {
     fees,
-    count: fees.length,
+    count,
     footer: []
   });
 
 };
 module.exports.getColdstorageAccountsFees = getColdstorageAccountsFees;
+
+const getColdstorageAccountsFeeColumnLOV = async (req, res) => {
+
+  const field_name = req.params.field_name;
+  const { query } = _.isPlainObject(req.body) ? req.body : { query: '' };
+
+  const [ err, field_vals ] = await to(AdminViewsService.fetchColdStorageAccountStorageFeesViewHeaderLOV(field_name, query, req.sql_where));
+  if(err) return ReE(res, err.message, 422);
+
+  return ReS(res, {
+    query: query,
+    lov: field_vals
+  })
+
+};
+module.exports.getColdstorageAccountsFeeColumnLOV = getColdstorageAccountsFeeColumnLOV;

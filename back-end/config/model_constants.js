@@ -1,7 +1,21 @@
 //constants for data not directly associated with permissions
 
 MODEL_CONST = {
-  LOG_LEVELS: {
+
+  BUILD_RESULTS_STATUSES: {
+    PASSED: 8080,
+    FAILED: 8005
+  },
+
+  LOG_LEVEL: {
+    TRACE: 1,
+    DEBUG: 2,
+    INFO: 3,
+    WARN: 4,
+    ERROR: 5
+  },
+
+  ACTIONLOG_LEVELS: {
     Debug: 0,
     Info: 1,
     Warning: 2,
@@ -66,12 +80,12 @@ MODEL_CONST = {
   },
 
   EXECUTION_ORDER_STATUSES: {
-    Pending: 61,
-    Placed: 62,
-    FullyFilled: 63,
-    PartiallyFilled: 64,
-    Cancelled: 65,
-    Failed: 66
+    Pending: 61, // not yet sent to the exchange
+    InProgress: 62, // an order that is on the exchange already, but has not been fully filled. It might be not filled at all yet, or filled partially
+    FullyFilled: 63, // order that has been successfully filled (fully)
+    PartiallyFilled: 64, // terminal state for orders that have been ended before they could be filled fully, but part of them was filled
+    Failed: 66, // terminal state for orders that was placed on the exchange, but could not get a fill at all and was terminated/expired
+    NotFilled: 67 // order for which sending to the exchange has failed
   },
 
   EXECUTION_ORDER_TYPES: {
@@ -90,7 +104,8 @@ MODEL_CONST = {
     Approved: 92, //"order was approved by a user",
     Sent: 93, //"order wassent to exchange or blockchain (waiting confirmation)",
     Completed: 94, //"when order reaches its final successful state",
-    Failed: 95 //"system failed to execute the order"
+    Failed: 95, //"system failed to execute the order",
+    Canceled: 96 //"the withdraw was canceled by the user ???"
   },
 
   CUSTODIANS: {
@@ -103,6 +118,16 @@ MODEL_CONST = {
     String: 132,
     Boolean: 133
   },
+
+  JOB_RESULT_STATUSES: {
+    Error: 'error',
+    Skipped: 'skipped'
+  },
+
+  ASSET_CONVERSION_STATUSES: {
+    Pending: 501,
+    Completed: 502
+  }
 };
 
 

@@ -1,11 +1,11 @@
 <ng-container *ngIf="timelineEvents as TEvents">
   <a class="step-label"
     [class.active]="isActive('investment_run')"
-    (click)="openStep('investment_run', TEvents.investment_run)"
+    (click)="openStep('investment_run')"
   >
     <ng-container *ngIf="TEvents.investment_run as item">
       <span class="title">{{ 'investment.investment' | translate }}</span>
-      <label class="">{{ item.status | translate }}</label>
+      <label>{{ item.status | translate }}</label>
       <div class="data">
         <span *ngIf="item.id">{{ item.id }}, </span>
         <span *ngIf="item.strategy_type">{{ item.strategy_type | translate }}</span>
@@ -19,11 +19,11 @@
   <a class="step-label"
     [class.active]="isActive('recipe_run')"
     [class.disabled]="isDisabled('recipe_run')"
-    (click)="!isDisabled('recipe_run') && openStep('recipe_run', TEvents.recipe_run)"
+    (click)="!isDisabled('recipe_run') && openStep('recipe_run')"
   >
     <ng-container *ngIf="TEvents.recipe_run as item; else recipeRunsNotCreated">
       <span class="title">{{ 'investment.recipe_run' | translate }}</span>
-      <label class="">{{ item.approval_status | translate }}</label>
+      <label>{{ item.approval_status | translate }}</label>
       <div class="data">
         <span *ngIf="item.id">{{ item.id }}</span>
         <div>
@@ -39,11 +39,11 @@
   <a class="step-label"
     [class.active]="isActive('recipe_deposits')"
     [class.disabled]="isDisabled('recipe_deposits')"
-    (click)="!isDisabled('recipe_deposits') && openStep('recipe_deposits', TEvents.recipe_deposits)"
+    (click)="!isDisabled('recipe_deposits') && openStep('recipe_deposits')"
   >
     <span class="title">{{ 'investment.deposits' | translate }} ({{ TEvents.recipe_deposits?.count || 0 }})</span>
     <ng-container *ngIf="TEvents.recipe_deposits; else depositsNotCreated">
-      <label class="">{{ TEvents.recipe_deposits.status | translate }}</label>
+      <label>{{ TEvents.recipe_deposits.status | translate }}</label>
     </ng-container>
     <ng-template #depositsNotCreated>
       <label>{{ 'deposits.deposits_not_created' | translate }}</label>
@@ -53,11 +53,11 @@
   <a class="step-label"
     [class.active]="isActive('recipe_orders')"
     [class.disabled]="isDisabled('recipe_orders')"
-    (click)="!isDisabled('recipe_orders') && openStep('recipe_orders', TEvents.recipe_orders)"
+    (click)="!isDisabled('recipe_orders') && openStep('recipe_orders')"
   >
     <span class="title">{{ 'investment.orders' | translate }} ({{ TEvents.recipe_orders?.count || 0 }})</span>
     <ng-container *ngIf="TEvents.recipe_orders; else ordersNotCreated">
-      <label class="">{{ TEvents.recipe_orders.status | translate }}</label>
+      <label>{{ TEvents.recipe_orders.status | translate }}</label>
     </ng-container>
     <ng-template #ordersNotCreated>
       <label>{{ 'orders.orders_not_created' | translate }}</label>
@@ -67,14 +67,28 @@
   <a class="step-label"
     [class.active]="isActive('execution_orders')"
     [class.disabled]="isDisabled('execution_orders')"
-    (click)="!isDisabled('execution_orders') && openStep('execution_orders', TEvents.execution_orders)"
+    (click)="!isDisabled('execution_orders') && openStep('execution_orders')"
   >
     <span class="title">{{ 'investment.execution_orders' | translate }} ({{ TEvents.execution_orders?.count || 0 }})</span>
     <ng-container *ngIf="TEvents.execution_orders; else executionOrdersNotCreated">
-      <label class="">{{ TEvents.execution_orders.status | translate }}</label>
+      <label>{{ TEvents.execution_orders.status | translate }}</label>
     </ng-container>
     <ng-template #executionOrdersNotCreated>
       <label>{{ 'execution_orders.exe_orders_not_created' | translate }}</label>
+    </ng-template>
+  </a>
+
+  <a class="step-label"
+    [class.active]="isActive('cold_storage_transfers')"
+    [class.disabled]="isDisabled('cold_storage_transfers')"
+    (click)="!isDisabled('cold_storage_transfers') && openStep('cold_storage_transfers')"
+  >
+    <span class="title">{{ 'investment.cold_storage_transfers' | translate }} ({{ TEvents.cold_storage_transfers?.count || 0 }})</span>
+    <ng-container *ngIf="TEvents.cold_storage_transfers; else coldStorageTransfersNotCreated">
+      <label>{{ TEvents.cold_storage_transfers.status | translate }}</label>
+    </ng-container>
+    <ng-template #coldStorageTransfersNotCreated>
+      <label>{{ 'investment.no_cold_storage_transfers' | translate }}</label>
     </ng-template>
   </a>
 </ng-container>

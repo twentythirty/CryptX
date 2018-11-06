@@ -6,6 +6,7 @@ module.exports = (sequelize, DataTypes) => {
         {
             price: DataTypes.DECIMAL,
             quantity: DataTypes.DECIMAL,
+            spend_amount: DataTypes.DECIMAL,
             side: {
                 type: DataTypes.SMALLINT,
                 allowNull: false

@@ -8,6 +8,7 @@ import { Component, Output, EventEmitter, Input } from '@angular/core';
 export class ModalComponent {
   @Input() heading: string;
   @Input() errorIcon: boolean;
+  @Input() errorModal: boolean;
 
   @Output() close: EventEmitter<any> = new EventEmitter();
 

@@ -1,19 +1,21 @@
-import { Component, OnInit, Input, EventEmitter, Output, OnChanges } from '@angular/core';
-import _ from 'lodash';
+import { Component, OnInit, Input, EventEmitter, Output, OnChanges, ViewChild } from '@angular/core';
+import { MatDatepickerInputEvent } from '@angular/material';
 import { Observable } from 'rxjs';
+import * as _ from 'lodash';
+import { DataTableFilterType } from './data-table-filter-type.enum';
 
 export interface DataTableFilterData {
-  column: string
+  column: string;
   values: Array<{
     field: string
     value: any,
     expression?: string,
     type?: string
-  }>
+  }>;
   order?: {
     by: string
     order: string
-  }
+  };
 }
 
 @Component({
@@ -22,22 +24,24 @@ export interface DataTableFilterData {
   styleUrls: ['./data-table-filter.component.scss']
 })
 export class DataTableFilterComponent implements OnInit, OnChanges {
-  private _filterData = {
+  filterData = {
     values: [],
     order: ''
   };
-  public _showSearch: boolean = false;
-  public _filterSearchText: string = '';
+  showSearch = false;
+  filterSearchText = '';
 
   active = false;
-  name = 'ORDER BY';
-  rowDataLoading: boolean = false;
+  rowDataLoading = false;
+
+  picker1MaxDate: Date;
+  picker2MinDate: Date;
 
   @Input() column: string;
-  @Input() type: string = 'text';
-  @Input() sortable: boolean = true;
-  @Input() hasRange: boolean = true;
-  @Input() inputSearch: boolean = false;
+  @Input() type: DataTableFilterType = DataTableFilterType.Text;
+  @Input() sortable = true;
+  @Input() hasRange = true;
+  @Input() inputSearch;
   @Input() rowData: Array<{
     value: string | boolean | number,
     label?: string
@@ -56,97 +60,82 @@ export class DataTableFilterComponent implements OnInit, OnChanges {
   ngOnInit() {
     // setting default value
     this.hasRange = _.isUndefined(this.hasRange) ? true : this.hasRange;
-    this.inputSearch = _.isUndefined(this.inputSearch) ? false : this.inputSearch;
   }
 
   ngOnChanges(changes) {
     // Runs when filter becomes dirty
-    if(changes.dirty && !changes.dirty.previousValue && (changes.dirty.currentValue === true)) {
+    if (changes.dirty && !changes.dirty.previousValue && (changes.dirty.currentValue === true)) {
       this.rowData = [];
       this.getRowData$();
     }
   }
 
   onFilterChange() {
-    let data: DataTableFilterData = {
+    const data: DataTableFilterData = {
       column: this.column,
       values: [],
     };
 
-    switch(this.type) {
-      case 'text':
-        if (this.rowData && this.rowData.length && this._filterData.values.length) {
+    switch (this.type) {
+      case DataTableFilterType.Text:
+        if (this.rowData && this.rowData.length && this.filterData.values.length) {
           // checkbox data pick
           data.values.push({
             field: this.column,
-            value: this._filterData.values,
+            value: this.filterData.values,
             expression: 'in',
             type: 'string'
           });
-        } else if ( this._filterSearchText.length ) {
+        } else if ( this.filterSearchText.length ) {
           // search field data
           data.values.push({
             field: this.column,
-            value: `%${this._filterSearchText}%`,
+            value: `%${this.filterSearchText}%`,
             expression: 'iLike',
             type: 'string'
           });
         }
         break;
 
-      case 'boolean':
-        if (this.rowData && this.rowData.length && this._filterData.values.length === 1) {
-          // checkbox data pick only for bool values
+      case DataTableFilterType.Date:
+        if ( this.filterData.values[0] ) {
           data.values.push({
             field: this.column,
-            value: this._filterData.values[0],
-            expression: 'eq',
-            type: 'boolean'
-          });
-        }
-        break;
-
-      case 'date':
-        if ( this._filterData.values[0] ) {
-          data.values.push({
-            field: this.column,
-            value: Date.parse(this._filterData.values[0]),
+            value: Date.parse(this.filterData.values[0]),
             expression: 'gt',
             type: 'timestamp'
           });
         }
-        if ( this._filterData.values[1] ) {
+        if ( this.filterData.values[1] ) {
           data.values.push({
             field: this.column,
-            value: Date.parse(this._filterData.values[1]),
+            value: Date.parse(this.filterData.values[1]),
             expression: 'lt',
             type: 'timestamp'
           });
         }
         break;
 
-      case 'number':
-        if ( this._filterSearchText.length ) {
+      case DataTableFilterType.Number:
+        if ( this.filterSearchText.length ) {
           // search field data
           data.values.push({
             field: this.column,
-            value: this._filterSearchText,
-            // expression: 'eq',
-            // type: 'number'
+            value: this.filterSearchText,
           });
         }
-        if ( this._filterData.values[0] ) {
+        if ( _.isNumber(this.filterData.values[0]) ) {
           data.values.push({
             field: this.column,
-            value: this._filterData.values[0],
+            value: this.filterData.values[0],
             expression: 'gte',
             type: 'number'
           });
         }
-        if ( this._filterData.values[1] ) {
+        if ( _.isNumber(this.filterData.values[1]) ) {
           data.values.push({
             field: this.column,
-            value: this._filterData.values[1],
+            value: this.filterData.values[1],
             expression: 'lte',
             type: 'number'
           });
@@ -154,10 +143,10 @@ export class DataTableFilterComponent implements OnInit, OnChanges {
         break;
     }
 
-    if ( this._filterData.order ) {
+    if (this.filterData.order) {
       data.order = {
         by: this.column,
-        order: this._filterData.order
+        order: this.filterData.order
       };
     }
 
@@ -165,58 +154,66 @@ export class DataTableFilterComponent implements OnInit, OnChanges {
   }
 
   cancelSearch() {
-    this._filterSearchText = '';
-    this._showSearch = !this._showSearch;
+    this.filterSearchText = '';
+    this.showSearch = !this.showSearch;
   }
 
-  isActive(){
+  isActive() {
     this.active = !this.active;
   }
 
-  sortAsc(){
+  sortAsc() {
     this.isActive();
-    this._filterData.order = 'asc';
-    this.name = 'A - Z'
+    this.filterData.order = 'asc';
   }
 
-  sortDesc(){
+  sortDesc() {
     this.isActive();
-    this._filterData.order = 'desc';
-    this.name = 'Z - A'
+    this.filterData.order = 'desc';
   }
 
-  noSort(){
+  noSort() {
     this.isActive();
-    this._filterData.order = ''
-    this.name = 'ORDER BY'
+    this.filterData.order = '';
   }
 
   onCheckboxToggle({ value }) {
-    this._filterData.values = _.xor(this._filterData.values, [value]);
+    this.filterData.values = _.xor(this.filterData.values, [value]);
   }
 
-  onNumberRangeChange(value) {
+  onNumberRangeChange(value): void {
+    if (typeof this.filterData.values[0] !== 'number' || typeof this.filterData.values[1] !== 'number') {
+      return;
+    }
+
     if (
       value === 'min'
-      && this._filterData.values[0]
-      && this._filterData.values[0] > this._filterData.values[1]
+      && this.filterData.values[0] > this.filterData.values[1]
     ) {
-      this._filterData.values[0] = this._filterData.values[1];
-    }
-    else if (
+      this.filterData.values[1] = this.filterData.values[0];
+    } else if (
       value === 'max'
-      && this._filterData.values[1]
-      && this._filterData.values[0] > this._filterData.values[1]
+      && this.filterData.values[0] > this.filterData.values[1]
     ) {
-      this._filterData.values[1] = this._filterData.values[0];
+      this.filterData.values[0] = this.filterData.values[1];
     }
   }
 
   showInputSearch(): boolean {
-    return this.type === 'text' || this.inputSearch;
+    if (typeof this.inputSearch !== 'undefined') {
+      return this.inputSearch;
+    }
+    return this.type === DataTableFilterType.Text;
   }
 
-  public stopPropagation(e) {
+  date1Change(event: MatDatepickerInputEvent<Date>) {
+    this.picker2MinDate = event.value;
+  }
+  date2Change(event: MatDatepickerInputEvent<Date>) {
+    this.picker1MaxDate = event.value;
+  }
+
+  stopPropagation(e) {
     e.stopPropagation();
   }
 
@@ -224,25 +221,25 @@ export class DataTableFilterComponent implements OnInit, OnChanges {
    * If we have a rowData$ Observable, replace rowData items
    */
   getRowData$(): void {
-    if(this.rowData$ && (typeof this.rowData$.subscribe == 'function')) {
+    if (this.rowData$ && (typeof this.rowData$.subscribe == 'function')) {
       this.rowDataLoading = true;
 
       this.rowData$.subscribe(
         res => {
-          if(!Array.isArray(res)) {
+          if (!Array.isArray(res)) {
             return;
           }
-          if(!Array.isArray(this.rowData)) {
+          if (!Array.isArray(this.rowData)) {
             this.rowData = [];
-          }   
-          
+          }
+
           this.rowData.splice(0, this.rowData.length);
           this.rowData.push(...res);
-          this.rowData.map(String); 
+          this.rowData.map(String);
 
           this.rowDataLoading = false;
         }
-      )
+      );
     }
   }
 }

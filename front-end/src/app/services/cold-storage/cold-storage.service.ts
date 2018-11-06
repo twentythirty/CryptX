@@ -1,12 +1,13 @@
 import { Injectable } from '@angular/core';
-import { environment } from "../../../environments/environment";
-import { HttpClient } from "@angular/common/http";
-import { Observable } from "rxjs";
-import { map } from "rxjs/operators";
+import { environment } from '../../../environments/environment';
+import { HttpClient } from '@angular/common/http';
+import { Observable, of } from 'rxjs';
+import { map } from 'rxjs/operators';
 
-import { EntitiesFilter } from "../../shared/models/api/entitiesFilter";
-import { Transfer } from "../../shared/models/transfer";
-import { ColdStorageAccountRequestData } from "../../shared/models/api/coldStorageAccountRequestData";
+import { EntitiesFilter } from '../../shared/models/api/entitiesFilter';
+import { Transfer } from '../../shared/models/transfer';
+import { ColdStorageAccountRequestData } from '../../shared/models/api/coldStorageAccountRequestData';
+import { ColdStorageCustodianRequestData } from '../../shared/models/api/coldStorageCustodianRequestData';
 
 export class TransfersAllResponse {
   success: boolean;
@@ -39,8 +40,15 @@ export class StorageFeesAllResponse {
 export class AddAccountResponse {
   success: boolean;
   account: any;
-  error: string;
+  error?: string;
 }
+
+export class AddCustodianResponse {
+  success: boolean;
+  custodian: any;
+  error?: string;
+}
+
 
 @Injectable()
 export class ColdStorageService {
@@ -50,10 +58,10 @@ export class ColdStorageService {
 
   constructor(private http: HttpClient) { }
 
-  //Cold Storage Transfers
+  // Cold Storage Transfers
 
-  getAllTransfers(requestData: EntitiesFilter): Observable<TransfersAllResponse>{
-      return this.http.post<TransfersAllResponse>(this.baseUrl + `cold_storage/all`, requestData);
+  getAllTransfers(requestData: EntitiesFilter): Observable<TransfersAllResponse> {
+    return this.http.post<TransfersAllResponse>(this.baseUrl + `cold_storage/all`, requestData);
   }
 
   confirmTransfer(transfer: Transfer) {
@@ -64,19 +72,19 @@ export class ColdStorageService {
     return this.http.post<any>(this.baseUrl + `cold_storage/header_lov/${column_name}`, {}).pipe(
       map(
         res => {
-          if(res && Array.isArray(res.lov)) {
+          if (res && Array.isArray(res.lov)) {
             return res.lov.map(lov => {
-              return { value: lov.toString() }
+              return { value: lov.toString() };
             });
-          } else return null;
+          } else { return null; }
         }
       )
-    )
+    );
   }
 
-  //Cold Storage Accounts
+  // Cold Storage Accounts
 
-  getAllAccounts(requestData: EntitiesFilter): Observable<AccountsAllResponse>{
+  getAllAccounts(requestData: EntitiesFilter): Observable<AccountsAllResponse> {
       return this.http.post<AccountsAllResponse>(this.baseUrl + `cold_storage/accounts/all`, requestData);
   }
 
@@ -84,21 +92,21 @@ export class ColdStorageService {
     return this.http.post<any>(this.baseUrl + `cold_storage/accounts/header_lov/${column_name}`, {}).pipe(
       map(
         res => {
-          if(res && Array.isArray(res.lov)) {
+          if (res && Array.isArray(res.lov)) {
             return res.lov.map(lov => {
-              return { value: lov.toString() }
+              return { value: lov.toString() };
             });
-          } else return null;
+          } else { return null; }
         }
       )
-    )
+    );
   }
 
   addAccount(request: ColdStorageAccountRequestData): Observable<AddAccountResponse> {
     return this.http.post<AddAccountResponse>(this.baseUrl + `cold_storage/accounts/add`, request);
   }
 
-  //Cold Storage Account Storage Fees
+  // Cold Storage Account Storage Fees
 
   getAllStorageFees(requestData: EntitiesFilter): Observable<StorageFeesAllResponse> {
     return this.http.post<StorageFeesAllResponse>(this.baseUrl + `cold_storage/accounts/fees`, requestData);
@@ -108,20 +116,24 @@ export class ColdStorageService {
     return this.http.post<any>(this.baseUrl + `cold_storage/fees/header_lov/${column_name}`, {}).pipe(
       map(
         res => {
-          if(res && Array.isArray(res.lov)) {
+          if (res && Array.isArray(res.lov)) {
             return res.lov.map(lov => {
-              return { value: lov.toString() }
+              return { value: lov.toString() };
             });
-          } else return null;
+          } else { return null; }
         }
       )
-    )
+    );
   }
 
-  //Cold Storage Custodians
+  // Cold Storage Custodians
 
-  getAllCustodians(requestData?: EntitiesFilter): Observable<CustodiansAllResponse>{
+  getAllCustodians(requestData?: EntitiesFilter): Observable<CustodiansAllResponse> {
     return this.http.post<CustodiansAllResponse>(this.baseUrl + 'cold_storage/custodians/all', requestData);
+  }
+
+  addCustodian(request: ColdStorageCustodianRequestData): Observable<AddCustodianResponse> {
+    return this.http.post<AddCustodianResponse>(this.baseUrl + '/cold_storage/custodians/add', request);
   }
 
 }

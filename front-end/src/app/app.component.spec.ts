@@ -1,16 +1,10 @@
 import { TestBed, async, ComponentFixture } from '@angular/core/testing';
-import { TranslateModule, TranslateLoader } from '@ngx-translate/core';
-import { Observable } from 'rxjs/Observable';
-import { of } from 'rxjs/observable/of';
 
 import { AppModule } from './app.module';
 import { AppComponent } from './app.component';
+import { extraTestingModules } from './testing/utils';
 
-class FakeLoader implements TranslateLoader {
-  getTranslation(lang: string): Observable<any> {
-    return of({}); // empty translation json
-  }
-}
+jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
 
 describe('AppComponent', () => {
   let fixture: ComponentFixture<AppComponent>;
@@ -19,9 +13,7 @@ describe('AppComponent', () => {
     TestBed.configureTestingModule({
       imports: [
         AppModule,
-        TranslateModule.forRoot({
-          loader: { provide: TranslateLoader, useClass: FakeLoader }
-        })
+        ...extraTestingModules
       ]
     }).compileComponents();
     fixture = TestBed.createComponent(AppComponent);
@@ -29,7 +21,6 @@ describe('AppComponent', () => {
   }));
 
   it('should create the app', async(() => {
-    const fixture = TestBed.createComponent(AppComponent);
     const app = fixture.debugElement.componentInstance;
     expect(app).toBeTruthy();
   }));

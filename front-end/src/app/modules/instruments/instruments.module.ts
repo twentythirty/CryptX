@@ -10,6 +10,8 @@ import { InstrumentAddComponent } from './instrument-add/instrument-add.componen
 import { InstrumentListComponent } from './instrument-list/instrument-list.component';
 
 import { InstrumentsService } from '../../services/instruments/instruments.service';
+import { ExchangesService } from '../../services/exchanges/exchanges.service';
+import { AssetService } from '../../services/asset/asset.service';
 import { InstrumentInfoComponent } from './instrument-info/instrument-info.component';
 
 import { PendingChangesGuard } from '../../config/routes/route-pending-changes.guard';
@@ -30,7 +32,9 @@ import { PendingChangesGuard } from '../../config/routes/route-pending-changes.g
     NguiAutoCompleteModule,
   ],
   providers: [
+    AssetService,
     InstrumentsService,
+    ExchangesService,
     PendingChangesGuard
   ],
 })

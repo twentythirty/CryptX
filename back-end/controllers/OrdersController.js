@@ -7,6 +7,8 @@ const adminViewUtils = require('../utils/AdminViewUtils');
 const adminViewsService = require('../services/AdminViewsService');
 const ordersService = require('../services/OrdersService');
 
+const { lock } = require('../utils/LockUtils');
+
 const getOrdersGroup = async (req, res) => {
 
     let recipe_run_id = req.params.recipe_run_id;
@@ -65,7 +67,16 @@ const generateRecipeRunOrders = async (req, res) => {
         return ReE(res, `Recipe run ${recipe_run_id} in invalid state! Should be ${RECIPE_RUN_STATUSES.Approved} but was ${recipe_run.approval_status}.`, 422);
     }
 
-    let [err, result] = await to(ordersService.generateApproveRecipeOrders(recipe_run_id))
+    let [ err, result ] = await to(
+        lock(ordersService, {
+            method: 'generateApproveRecipeOrders',
+            params: [recipe_run_id],
+            id: 'generate_recipe_run_orders',
+            keys: { recipe_run_id },
+            error_message: `Recipe Orders are currently being generated for Recipe Run with id ${recipe_run_id}. Please wait...`,
+            max_block: 180
+        })
+    );
 
     if (err) {
         return ReE(res, err, 422);

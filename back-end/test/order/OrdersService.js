@@ -19,10 +19,11 @@ const ExecutionOrder = require('../../models').ExecutionOrder;
 const Instrument = require('../../models').Instrument;
 const Asset = require('../../models').Asset;
 const InstrumentExchangeMapping = require('../../models').InstrumentExchangeMapping;
+const InstrumentService = require('../../services/InstrumentsService');
 const InstrumentMarketData = require('../../models').InstrumentMarketData;
 const ccxtUtils = require('../../utils/CCXTUtils');
 const Op = require('../../models').Sequelize.Op;
-
+const ccxtUnified = require('../../utils/ccxtUnified');
 
 
 describe('OrdersService testing', () => {
@@ -161,7 +162,7 @@ describe('OrdersService testing', () => {
 
                     return Promise.resolve(TEST_EXCHNAGE_MAPPINGS);
                 });
-                sinon.stub(InstrumentMarketData, 'findAll').callsFake(options => {
+                sinon.stub(InstrumentService, 'getInstrumentPrices').callsFake(options => {
 
                     return Promise.resolve(TEST_INSTRUMENT_MARKET_DATA);
                 });
@@ -232,6 +233,68 @@ describe('OrdersService testing', () => {
 
                 done();
             });
+
+            sinon.stub(ccxtUnified, "getExchange").callsFake((name) => {
+                let exchange = class Exchange {
+                    
+                    constructor () {
+                        this._connector = {
+                            name: 'Mock exchange',
+                            markets: {
+                                'TST1/TST2': {
+                                    limits: {
+                                        amount: {
+                                            min: 0,
+                                            max: 1000000
+                                        },
+                                        price: {
+                                            min: 0, //Set to 0 to make sure tests with random price pass always.
+                                            max: 1000000
+                                        }
+                                    },
+                                    active: true
+                                }
+                            }
+                        };
+                        this.api_id = name;
+                    }
+    
+                    async isReady() {
+                        return Promise.resolve();
+                    }
+    
+                    async createMarketOrder () {
+                        return {
+                            id: '123',
+                            timestamp: 1532444115700,
+                            datetime: '2018-07-24T14:55:15.700Z',
+                            lastTradeTimestamp: undefined,
+                            symbol: 'LTC/BTC',
+                            type: 'market',
+                            side: 'buy',
+                            price: 0,
+                            amount: 1,
+                            cost: 0,
+                            filled: 1,
+                            remaining: 0,
+                            status: 'closed',
+                            fee: undefined,
+                            trades: undefined
+                        }
+                    }
+    
+                    async getSymbolLimits () {
+                        return {
+                            spend: {
+                                min: 0,
+                                max: Number.MAX_VALUE
+                            }
+                        };
+                    }
+                }
+          
+                return Promise.resolve(exchange);
+            });
         });
 
         after(done => {
@@ -247,7 +310,8 @@ describe('OrdersService testing', () => {
                 RecipeOrder.create,
                 RecipeOrder.findAll,
                 ccxtUtils.getConnector,
-                ccxtUtils.allConnectors
+                ccxtUtils.allConnectors,
+                ccxtUnified.getExchange
             ].forEach(model => {
 
                 if (model.restore) {
@@ -388,7 +452,8 @@ describe('OrdersService testing', () => {
 
                     chai.expect(recipe_order.status).to.eq(RECIPE_ORDER_STATUSES.Pending, "Order was not created with the correct status!");
                     chai.expect(recipe_order.side).to.be.oneOf(Object.values(ORDER_SIDES), "Order side is an invalid value!");
-                    chai.expect(recipe_order.quantity).to.be.greaterThan(0.0, "Order is not of tangible quantity!");
+                    //chai.expect(recipe_order.quantity).to.be.greaterThan(0.0, "Order is not of tangible quantity!");
+                    chai.expect(recipe_order.spend_amount).to.be.greaterThan(0.0, "Order is not of tangible amount to spend!");
                 });
 
                 RecipeOrderGroup.findOne.restore();
@@ -468,8 +533,71 @@ describe('OrdersService testing', () => {
             sinon.stub(RecipeOrder, 'update').callsFake(options => {
 
                 return Promise.resolve([1]);
-            });
-            done();
+			});
+			
+			sinon.stub(ccxtUnified, "getExchange").callsFake((name) => {
+                let exchange = class Exchange {
+                    
+                    constructor () {
+                        this._connector = {
+                            name: 'Mock exchange',
+                            markets: {
+                                'TST1/TST2': {
+                                    limits: {
+                                        amount: {
+                                            min: 0,
+                                            max: 1000000
+                                        },
+                                        price: {
+                                            min: 0, //Set to 0 to make sure tests with random price pass always.
+                                            max: 1000000
+                                        }
+                                    },
+                                    active: true
+                                }
+                            }
+                        };
+                        this.api_id = name;
+                    }
+    
+                    async isReady() {
+                        return Promise.resolve();
+                    }
+    
+                    async createMarketOrder () {
+                        return {
+                            id: '123',
+                            timestamp: 1532444115700,
+                            datetime: '2018-07-24T14:55:15.700Z',
+                            lastTradeTimestamp: undefined,
+                            symbol: 'LTC/BTC',
+                            type: 'market',
+                            side: 'buy',
+                            price: 0,
+                            amount: 1,
+                            cost: 0,
+                            filled: 1,
+                            remaining: 0,
+                            status: 'closed',
+                            fee: undefined,
+                            trades: undefined
+                        }
+                    }
+    
+                    async getSymbolLimits () {
+                        return {
+                            spend: {
+                                min: 0,
+                                max: Number.MAX_VALUE
+                            }
+                        };
+                    }
+                }
+          
+                return Promise.resolve(new exchange());
+			});
+			
+			done();
         });
 
         afterEach(done => {
@@ -488,7 +616,8 @@ describe('OrdersService testing', () => {
                 RecipeOrder.findAll,
                 RecipeOrder.update,
                 ccxtUtils.getConnector,
-                ccxtUtils.allConnectors
+				ccxtUtils.allConnectors,
+				ccxtUnified.getExchange
             ].forEach(model => {
 
                 if (model.restore) {
@@ -558,25 +687,65 @@ describe('OrdersService testing', () => {
                     obj_bad
                 ])
             });
-            sinon.stub(ccxtUtils, 'allConnectors').callsFake(options => {
-
-                return Promise.resolve({
-                    [String(TEST_EXCHANGE_IDS[0])]: {
-                        name: 'Test Connector',
-                        getMarket: (symbol) => {
-                            if (symbol == TEST_INSTRUMENTS[0].symbol) {
-                                return {
-                                    active: true
-                                }
-                            } else {
-                                return null
-                            }
-                        }
-                    }
-                })
-            });
 
             return chai.assert.isRejected(ordersService.changeRecipeOrderGroupStatus(TEST_USER_ID, TEST_ORDER_GROUP_ID, RECIPE_ORDER_GROUP_STATUSES.Approved, APPROVE_COMMENT));
+        });
+
+        it('shall reject if a recipe order doesnt have up to date instrument market data', (done) => {
+
+            sinon.stub(RecipeOrderGroup, 'findById').callsFake(options => {
+                let new_group = Object.assign({}, TEST_RECIPE_ORDER_GROUP);
+                new_group.save = () => {
+                    return Promise.resolve(new_group);
+                };
+                return Promise.resolve(new_group);
+            });
+
+            sinon.stub(RecipeOrder, 'findAll').callsFake(options => {
+                let obj = Object.assign({}, TEST_RECIPE_ORDER_SHOULD_PASS)
+                obj.save = async () => {
+                    return Promise.resolve(obj);
+                }
+                return Promise.resolve([
+                    obj
+                ])
+            });
+            sinon.stub(InstrumentExchangeMapping, 'findAll').callsFake(options => {
+                return Promise.resolve([
+                    {
+                        external_instrument_id: TEST_INSTRUMENTS[0].symbol,
+                        instrument_id: TEST_INSTRUMENTS[0].id,
+                        exchange_id: TEST_EXCHANGE_IDS[0]
+                    }
+                ])
+            });
+
+            if (InstrumentService.getInstrumentPrices.restore) {
+                InstrumentService.getInstrumentPrices.restore()
+            }
+            sinon.stub(InstrumentService, 'getInstrumentPrices').callsFake(options => {
+                return Promise.resolve([])
+            })
+
+            ordersService.changeRecipeOrderGroupStatus(TEST_USER_ID, TEST_ORDER_GROUP_ID, RECIPE_ORDER_GROUP_STATUSES.Approved, APPROVE_COMMENT).then(fulfill => {
+                if (InstrumentService.getInstrumentPrices.restore) {
+                    InstrumentService.getInstrumentPrices.restore()
+                }
+                sinon.stub(InstrumentService, 'getInstrumentPrices').callsFake(options => {
+
+                    return Promise.resolve(TEST_INSTRUMENT_MARKET_DATA);
+                });
+                throw(Error("should have rejected due to lack of fresh market data!"))
+            }, rejection => {
+                if (InstrumentService.getInstrumentPrices.restore) {
+                    InstrumentService.getInstrumentPrices.restore()
+                }
+                sinon.stub(InstrumentService, 'getInstrumentPrices').callsFake(options => {
+
+                    return Promise.resolve(TEST_INSTRUMENT_MARKET_DATA);
+                });
+                done();
+            });
         });
 
         it ("shall reject if a recipe order doesnt have valid market on exchange", () => {
@@ -603,23 +772,6 @@ describe('OrdersService testing', () => {
             });
             sinon.stub(InstrumentExchangeMapping, 'findAll').callsFake(options => {
                 return Promise.resolve([])
-            });
-            sinon.stub(ccxtUtils, 'allConnectors').callsFake(options => {
-
-                return Promise.resolve({
-                    [String(TEST_EXCHANGE_IDS[0])]: {
-                        name: 'Test Connector',
-                        getMarket: (symbol) => {
-                            if (symbol == TEST_INSTRUMENTS[0].symbol) {
-                                return {
-                                    active: true
-                                }
-                            } else {
-                                return null
-                            }
-                        }
-                    }
-                })
             });
 
             return chai.assert.isRejected(ordersService.changeRecipeOrderGroupStatus(TEST_USER_ID, TEST_ORDER_GROUP_ID, RECIPE_ORDER_GROUP_STATUSES.Approved, APPROVE_COMMENT));
@@ -653,25 +805,7 @@ describe('OrdersService testing', () => {
                     }
                 ])
             });
-            sinon.stub(ccxtUtils, 'allConnectors').callsFake(options => {
-
-                return Promise.resolve({
-                    [String(TEST_EXCHANGE_IDS[0])]: {
-                        name: 'Test Connector',
-                        getMarket: (symbol) => {
-                            if (symbol == TEST_INSTRUMENTS[0].symbol) {
-                                return {
-                                    market: {
-                                        active: true
-                                    }
-                                }
-                            } else {
-                                return null
-                            }
-                        }
-                    }
-                })
-            })
+            
 
             return ordersService.changeRecipeOrderGroupStatus(TEST_USER_ID, TEST_ORDER_GROUP_ID, RECIPE_ORDER_GROUP_STATUSES.Approved, APPROVE_COMMENT).then(recipe_data => {
 
@@ -681,15 +815,15 @@ describe('OrdersService testing', () => {
                 chai.expect(recipe_data).is.a('array');
                 let [recipe_order, orders] = recipe_data;
                 chai.assert.isNotNull(recipe_order, 'Should have returned recipe order!');
-                chai.expect(orders).is.a('array');
+                
                 chai.assert.equal(recipe_order.approval_status, RECIPE_ORDER_GROUP_STATUSES.Approved, 'Status was not Approved!');
                 chai.assert.equal(recipe_order.approval_user_id, TEST_USER_ID, 'Approval not provided by specified user!');
                 chai.assert.equal(recipe_order.approval_comment, APPROVE_COMMENT, 'approval comment not as specified!');
 
-                orders.map(order => {
-                    chai.assert.equal(order.recipe_order_group_id, TEST_ORDER_GROUP_ID);
-                    chai.assert.equal(order.status, RECIPE_ORDER_STATUSES.Executing, `order ${order} is not executing!`);
-                });
+                const [ update, options ] = RecipeOrder.update.args[0];
+
+                chai.assert.equal(options.where.recipe_order_group_id, TEST_ORDER_GROUP_ID);
+                chai.assert.equal(update.status, RECIPE_ORDER_STATUSES.Executing, `wrong status update!`);
 
             });
         });
@@ -721,16 +855,18 @@ describe('OrdersService testing', () => {
                 RecipeOrderGroup.findById.restore();
                 chai.assert.isNotNull(recipe_data, 'Should have returned recipe order group and orders in it!');
                 chai.expect(recipe_data).is.a('array');
-                let [recipe_order, orders] = recipe_data;
+                let [recipe_order] = recipe_data;
                 chai.assert.isNotNull(recipe_order, 'Should have returned recipe order!');
-                chai.expect(orders).is.a('array');
+
                 chai.assert.equal(recipe_order.approval_status, RECIPE_ORDER_GROUP_STATUSES.Rejected, 'Status was not Rejected!');
                 chai.assert.equal(recipe_order.approval_user_id, TEST_USER_ID, 'Approval not provided by specified user!');
                 chai.assert.equal(recipe_order.approval_comment, REJECT_COMMENT, 'approval comment not as specified!');
 
-                orders.map(order => {
-                    chai.assert.equal(order.status, RECIPE_ORDER_STATUSES.Rejected, `order ${order} was not rejected with group!`);
-                });
+                const [ update, options ] = RecipeOrder.update.args[0];
+
+                chai.assert.equal(options.where.recipe_order_group_id, TEST_ORDER_GROUP_ID);
+                chai.assert.equal(update.status, RECIPE_ORDER_STATUSES.Rejected, `wrong status update!`);
+
             });
         });
     });

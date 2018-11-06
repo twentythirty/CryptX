@@ -1,5 +1,6 @@
 'use strict';
 const ccxtUtils = require('../utils/CCXTUtils');
+const Decimal = require('decimal.js');
 
 //everyday, every 5 seconds
 module.exports.SCHEDULE = '*/5 * * * *';
@@ -7,11 +8,7 @@ module.exports.NAME = 'ORD_ST_CHANGE';
 module.exports.JOB_BODY = async (config, log) => {
 
     const models = config.models;
-    const Instrument = models.Instrument;
-    const RecipeOrder = models.RecipeOrder;
-    const ExecutionOrder = models.ExecutionOrder;
-    const ExecutionOrderFill = models.ExecutionOrderFill;
-    const Op = models.Sequelize.Op;
+    const sequelize = models.sequelize;
 
 
     const RECIPE_ORDER_TERMINAL_STATUSES = [
@@ -22,107 +19,160 @@ module.exports.JOB_BODY = async (config, log) => {
     ];
     const EXECUTION_ORDER_ACTIVE_STATUSES = [
         EXECUTION_ORDER_STATUSES.Pending,
-        EXECUTION_ORDER_STATUSES.Placed,
-        EXECUTION_ORDER_STATUSES.PartiallyFilled
+        EXECUTION_ORDER_STATUSES.InProgress
     ]
 
-    //fetch recipe orders in non-terminal statuses
-    return RecipeOrder.findAll({
-        where: {
-            status: {
-                [Op.notIn]: RECIPE_ORDER_TERMINAL_STATUSES
-            }
+    //mark-sweep begin
+    let to_change_orders = {}
+
+    //returns true if indeed this is a new mark
+    const order_status_from_to = (ord_id, from_status, to_status) => {
+        //insert possible change of recipe order record status
+        //only if not same
+        if (from_status != to_status) {
+            to_change_orders[ord_id] = to_status
+
+            return true
+        } else {
+            //otherwise try remove key from objct in case otehr step added it
+            delete to_change_orders[ord_id]
+
+            return false
+        }
+    }
+
+
+    //mark step 1 - execution orders
+    return sequelize.query(`
+
+    SELECT ro.id,
+        ro.status,
+        COALESCE(eo_stats.all_execution, 0) AS all_execution,
+        COALESCE(eo_stats.failed_execution, 0) AS failed_execution,
+        COALESCE(eo_stats.current_execution, 0) AS current_execution
+    FROM recipe_order ro
+    JOIN recipe_order_group rog ON rog.id=ro.recipe_order_group_id
+    LEFT JOIN
+    ( SELECT recipe_order_id,
+            count(id) AS all_execution,
+            sum(CASE WHEN status = :status_execution_order_failed THEN 1 ELSE 0 END) AS failed_execution,
+            sum(CASE WHEN status IN (:statuses_execution_order_active) THEN 1 ELSE 0 END) AS current_execution
+    FROM execution_order
+    GROUP BY recipe_order_id ) AS eo_stats ON ro.id = eo_stats.recipe_order_id
+    WHERE ro.status NOT IN (:statuses_recipe_order_done)
+        AND rog.approval_status <> :status_recipe_order_pending
+    `, {
+        replacements: {
+            status_execution_order_failed: EXECUTION_ORDER_STATUSES.Failed,
+            statuses_execution_order_active: EXECUTION_ORDER_ACTIVE_STATUSES,
+            statuses_recipe_order_done: RECIPE_ORDER_TERMINAL_STATUSES,
+            status_recipe_order_pending: RECIPE_ORDER_GROUP_STATUSES.Pending
         },
-        include: [Instrument]
-    }).then(recipe_orders => {
+        type: sequelize.QueryTypes.SELECT
+    }).then(exec_order_stats => {
 
-        log(`1. Processing ${recipe_orders.length} non-terminal orders...`);
+        log(`MARK.1: Analyzing ${exec_order_stats.length} recipe orders...`)
 
-        return Promise.all(_.map(recipe_orders, (recipe_order, idx) => {
-            //output formatted index for each order being processed
-            log(`1.[${recipe_order.id}]. Processing non-terminal recipe order ${recipe_order.id} with status ${recipe_order.status}...`);
-            
-            return Promise.all([
-                Promise.resolve(recipe_order),
-                ExecutionOrder.findAll({
-                    where: {
-                        recipe_order_id: recipe_order.id
-                    }
-                })
-            ]).then(order_and_execs => {
+        //stats for logging
+        let to_executing = 0, to_failed = 0;
 
-                const [recipe_order, execution_orders] = order_and_execs;
-                
-                log(`2.[${recipe_order.id}]. Checking ${execution_orders.length} execution orders for order ${recipe_order.id}...`);
+        _.forEach(exec_order_stats, record => {
 
-                if (!_.isEmpty(execution_orders) && _.every(execution_orders, ['status', EXECUTION_ORDER_STATUSES.Failed])) {
-                    log(`2.[TERM.${recipe_order.id}] All ${execution_orders.length} execution orders for ${recipe_order.id} are Failed! Setting failed order...`);
-                    recipe_order.status = RECIPE_ORDER_STATUSES.Failed;
+            const {
+                id: order_id,
+                status: order_status,
+                all_execution: exec_count,
+                failed_execution: exec_failed,
+                current_execution: exec_curr
+            } = record;
 
-                    return recipe_order.save();
+            //no execution orders made yet, or at least one is executing, set order to executing
+            if (exec_count <= 0 || exec_curr > 0) {
+                if (order_status_from_to(order_id, order_status, RECIPE_ORDER_STATUSES.Executing)) {
+                    to_executing++;
                 }
-
-                //if there are executing execution orders then the recipe order status needs to be set to executing
-                //note that this is NOT a terminal operation for this job because next we analyze execution order fills
-                //if it turns out that the fills (almost) fully cover the recipe order already, its
-                //status will need to be set to complete
-                let recipe_order_promise = recipe_order;
-                if (recipe_order.status === RECIPE_ORDER_STATUSES.Pending && _.some(execution_orders, eo => EXECUTION_ORDER_ACTIVE_STATUSES.includes(eo.status))) {
-                    log(`2.[INFO.${recipe_order.id}] Recipe order ${recipe_order.id} status was Pending, but there was at least one active execution order found! Setting to Executing...`);
-                    recipe_order.status = RECIPE_ORDER_STATUSES.Executing;
-                    recipe_order_promise = recipe_order.save()
+            }
+            //all known execution orders failed, fail the recipe order
+            if (exec_count > 0 && exec_count == exec_failed) {
+                if (order_status_from_to(order_id, order_status, RECIPE_ORDER_STATUSES.Failed)) {
+                    to_failed++;
                 }
+            }
+        })
 
-                return Promise.all([
-                    Promise.resolve(recipe_order_promise),
-                    ccxtUtils.getConnector(recipe_order.target_exchange_id),
-                    ExecutionOrderFill.findAll({
-                        where: {
-                            execution_order_id: _.map(execution_orders, 'id')
-                        }
-                    })
-                ]).then(order_and_connector_and_fills => {
+        log(`MARK.1: Marked ${to_executing} orders for execution and ${to_failed} for failure...`)
 
-                    const [recipe_order, connector, execution_order_fills] = order_and_connector_and_fills;
+        return sequelize.query(`
+            SELECT ro.id,
+                    ro.status,
+                    ro.quantity,
+                    COALESCE(fills_stats.fills_quantity, 0) AS fills_quantity
+            FROM recipe_order ro
+            LEFT JOIN
+            ( SELECT recipe_order_id,
+                        sum(filled_quantity) AS fills_quantity
+                FROM
+                    (SELECT eo.recipe_order_id,
+                            eo.id,
+                            COALESCE(sum(eof.quantity), 0) AS filled_quantity
+                    FROM execution_order eo
+                    LEFT JOIN execution_order_fill eof ON eof.execution_order_id = eo.id
+                    GROUP BY eo.id) AS fills
+                GROUP BY fills.recipe_order_id) AS fills_stats ON fills_stats.recipe_order_id = ro.id
+                WHERE ro.status NOT IN (:statuses_recipe_order_done)
 
-                    log(`3.[${recipe_order.id}]. Checking ${execution_order_fills.length} execution order fills of order ${recipe_order.id}...`);
+        `, {
+            replacements: {
+                statuses_recipe_order_done: RECIPE_ORDER_TERMINAL_STATUSES
+            },
+            type: sequelize.QueryTypes.SELECT
+        })
+    }).then(exec_fill_stats => {
 
-                    const fills_sum_decimal =
-                            _.map(execution_order_fills, 'quantity')
-                            .map(qty => Decimal(qty))
-                            .reduce((acc, current) => acc.plus(current), Decimal(0));
+        log(`MARK.2: Analyzing ${exec_fill_stats.length} recipe order fills...`)
 
-                    //fetch correct ccxt market or stub if there is no market for this pair
-                    //technically an order should not exist in that case, so lets mark it failed 
-                    const market = connector.markets[
-                        recipe_order.side == ORDER_SIDES.Buy ? 
-                        recipe_order.Instrument.symbol 
-                        : recipe_order.Instrument.reverse_symbol()
-                    ]
-                    
-                    if (market == null) {
+        let to_completed = 0;
 
-                        log(`3.[TERM.${recipe_order.id}] Recipe order ${recipe_order.id} with instrument ${recipe_order.Instrument.symbol} and side ${recipe_order.side} had no viable markets for trading. Failing...`);
-                        recipe_order.status = RECIPE_ORDER_STATUSES.Failed;
+        _.forEach(exec_fill_stats, record => {
 
-                        return recipe_order.save();
-                    }
+            const {
+                id: order_id,
+                status: order_status,
+                quantity: order_quantity,
+                fills_quantity
+            } = record;
 
-                    const balast_sum = Decimal(market.limits.amount.min || '0')
-                    const adjusted_qnty = Decimal(recipe_order.quantity).minus(balast_sum);
-                    //to consider the order fully filled we only need to cover a viable amount of quantity with fills
-                    //if the remainder is smaller than allowed trading quantity then we leave it be
-                    if (fills_sum_decimal.gte(adjusted_qnty)) {
+            if (Decimal(order_quantity).lte(Decimal(fills_quantity))) {
+                if (order_status_from_to(order_id, order_status, RECIPE_ORDER_STATUSES.Completed)) {
+                    to_completed++;
+                }
+            }
+        })  
 
-                        log(`3.[TERM.${recipe_order.id}] Sum of execution order fills for recipe order ${recipe_order.id} is ${fills_sum_decimal.toString()}, which covers total recipe order quantity(-${balast_sum.toString()})${adjusted_qnty.toString()}, setting recipe order status to Completed...`);
-                        recipe_order.status = RECIPE_ORDER_STATUSES.Completed;
+        log(`MARK.2: Marked ${to_completed} orders for completion...`);
 
-                        return recipe_order.save();
-                    }
-                    
-                    return Promise.resolve(recipe_order);
-                })
-            })  
-        }))
+        const num_changes = Object.keys(to_change_orders).length;
+
+        log(`SWEEP.1: Generating on ${num_changes} recipe orders... ${num_changes <= 0? 'NO NEED! Finishing...' : ''}`)
+
+        if (num_changes > 0) {
+
+            const change_tuples = _.join(_.map(to_change_orders, (status, ord_id) => `(${ord_id}, ${status})`), ',\n');
+
+            return sequelize.query(`
+                UPDATE recipe_order
+                SET
+                    status = changes.status
+                FROM (
+                    VALUES
+                        ${change_tuples}
+                ) AS changes (ord_id, status)
+                WHERE recipe_order.id = changes.ord_id
+            `)
+
+        } else {
+
+            return Promise.resolve('Nothing to change!');
+        }
     })
 };

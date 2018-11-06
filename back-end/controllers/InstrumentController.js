@@ -6,6 +6,8 @@ const adminViewUtils = require('../utils/AdminViewUtils');
 
 const InstrumentLiquidityRequirement = require('../models').InstrumentLiquidityRequirement;
 
+const { lock } = require('../utils/LockUtils');
+
 const createInstrument = async function (req, res) {
  
   let {
@@ -16,7 +18,16 @@ const createInstrument = async function (req, res) {
   if (!transaction_asset_id || !quote_asset_id)
     return ReE(res, "Both assets must be specified to create an instrument", 422);
   
-  const [err, instrument] = await to(instrumentService.createInstrument(transaction_asset_id, quote_asset_id));
+  const [ err, instrument ] = await to(
+    lock(instrumentService, {
+      method: 'createInstrument',
+      params: [ transaction_asset_id, quote_asset_id ],
+      id: 'create_instrument',
+      keys: [ transaction_asset_id, quote_asset_id ].sort(), //disallow any combination of those ids
+      error_message: 'Instrument is already being created with those assets. Please wait...',
+      max_block: 180
+    })
+  );
   if (err) {
     return ReE(res, err, 422);
   }
@@ -165,7 +176,7 @@ const removeInstrumentExchangeMapping = async (req, res) => {
   if(err) return ReE(res, err.message, 422);
   if(!mapping) return ReE(res, `Instrument exchange mappign with instrument id "${instrument_id}" and exchange id "${exchange_id}" was not found.`, 404);
 
-  user.logAction('instruments.mapping_removed', { 
+  await user.logAction('instruments.mapping_removed', { 
     args: {
       identifier: mapping.external_instrument_id,
       exchange: mapping.Exchange.name,
@@ -198,28 +209,53 @@ const createLiquidityRequirement = async function (req, res) {
     !minimum_circulation)
     return ReE(res, "Please fill all values: instrument_id, periodicity, minimum_circulation", 422);
   
-  const [ err, liquidity_requirement ] = await to(instrumentService.createLiquidityRequirement(instrument_id, periodicity, minimum_circulation, exchange_id));
+  const [ err, liquidity_requirement ] = await to(
+    lock(instrumentService, {
+      method: 'createLiquidityRequirement',
+      params: [ instrument_id, periodicity, minimum_circulation, exchange_id ],
+      id: 'create_liquidity_requirement',
+      keys: { instrument_id, exchange_id },
+      error_message: 'Instrument liquidity requirement is already being created with the selected options. Please wait...',
+      max_block: 180
+    })
+  );
+  
   if(err) return ReE(res, err.message, 422);
-
-  // mock data below
-
-  let liquidity_mock = {
-    id: 1,
-    instrument_id: instrument_id,
-    instrument: "BTC/ETH",
-    periodicity: 7,
-    quote_asset: "BTC",
-    minimum_circulation: 60000,
-    exchange: "All exchanges",
-    exchange_count: 2,
-    exchange_pass: 2
-  };
 
   return ReS(res, {
     liquidity_requirement
   });
 };
 module.exports.createLiquidityRequirement = createLiquidityRequirement;
+
+const editLiquidityRequirement = async (req, res) => {
+
+  const { exchange_id, periodicity, minimum_circulation } = req.body;
+  const { liquidity_requirement_id } = req.params;
+
+  const [ err, liquidity_requirement ] = await to(instrumentService.editLiquidityRequirement(liquidity_requirement_id, periodicity, minimum_circulation, exchange_id));
+
+  if(err) return ReE(res, err, 422);
+  if(!liquidity_requirement) return ReE(res, `Liquidity Requirement with id ${liquidity_requirement_id} was not found`, 404);
+
+  return ReS(res, { liquidity_requirement });
+
+};
+module.exports.editLiquidityRequirement = editLiquidityRequirement;
+
+const deleteLiquidityRequirement = async (req, res) => {
+
+  const { liquidity_requirement_id } = req.params;
+
+  const [ err, liquidity_requirement ] = await to(instrumentService.deleteLiquidityRequirement(liquidity_requirement_id));
+
+  if(err) return ReE(res, err, 422);
+  if(!liquidity_requirement) return ReE(res, `Liquidity Requirement with id ${liquidity_requirement_id} was not found`, 404);
+
+  return ReS(res, { message: 'OK!' });
+
+};
+module.exports.deleteLiquidityRequirement = deleteLiquidityRequirement;
 
 const getLiquidityRequirement = async function (req, res) {
  
@@ -273,35 +309,23 @@ const getLiquidityRequirementsColumnLOV = async function (req, res) {
 module.exports.getLiquidityRequirementsColumnLOV = getLiquidityRequirementsColumnLOV;
 
 const getLiquidityRequirementExchanges = async function (req, res) {
- 
-  const liquidity_requirement_id = req.params.liquidity_requirement_id
+  
+  const liquidity_requirement_id = req.params.liquidity_requirement_id;
+  const seq_query = Object.assign({ where: {} }, req.seq_query);
 
-  let [ err, liquidity_requirement ] = await to(InstrumentLiquidityRequirement.findById(liquidity_requirement_id));
-  if(err) return ReE(res, err.message, 422);
-  if(!liquidity_requirement) return ReE(res, `Liquidity requirement with id ${liquidity_requirement_id} was not found`, 422);
+  seq_query.where['liquidity_requirement_id'] = liquidity_requirement_id;
+  let sql_where = adminViewUtils.addToWhere(req.sql_where, `liquidity_requirement_id = ${liquidity_requirement_id}`);
 
-  const seq_query = {
-    where: { instrument_id: liquidity_requirement.instrument_id }
-  };
-
-  let sql_where = `instrument_id=${liquidity_requirement.instrument_id}`;
-
-  if(liquidity_requirement.exchange) {
-    seq_query.where.exchange_id = liquidity_requirement.exchange;
-    sql_where += ` AND exchange_id=${liquidity_requirement.exchange}`
-  }
-
-  let result;
-  [ err, result ] = await to(adminViewService.fetchLiquidityExchangesViewDataWithCount(seq_query));
+  let err, result;
+  [ err, result ] = await to(Promise.all([
+    adminViewService.fetchLiquidityExchangesViewDataWithCount(seq_query),
+    adminViewService.fetchLiquidityExchangesViewFooter(sql_where)
+  ]));
   if(err) return ReE(res, err.message, 422);
 
-  let { data: exchanges, total: count } = result;
+  let [{ data: exchanges, total: count }, footer] = result;
 
   exchanges = exchanges.map(ex => ex.toWeb());
-
-  let footer = [];
-  [ err, footer ] = await to(adminViewService.fetchLiquidityExchangesViewFooter(sql_where));
-  if(err) return ReE(res, err.message, 422);
 
   return ReS(res, {
     exchanges,

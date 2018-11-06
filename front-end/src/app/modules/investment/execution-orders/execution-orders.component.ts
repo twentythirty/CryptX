@@ -1,13 +1,13 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { mergeMap, finalize } from "rxjs/operators";
+import { mergeMap, finalize } from 'rxjs/operators';
 
-import { TimelineDetailComponent, SingleTableDataSource, TagLineItem, ITimelineDetailComponent } from "../timeline-detail/timeline-detail.component";
-import { InvestmentService } from "../../../services/investment/investment.service";
-import { TimelineEvent } from "../../../shared/components/timeline/timeline.component";
-import { TableDataSource, TableDataColumn } from "../../../shared/components/data-table/data-table.component";
-import { StatusCellDataColumn, NumberCellDataColumn, DateCellDataColumn } from "../../../shared/components/data-table-cells";
-import { StatusClass } from "../../../shared/models/common";
+import { TimelineDetailComponent, ITimelineDetailComponent } from '../timeline-detail/timeline-detail.component';
+import { InvestmentService } from '../../../services/investment/investment.service';
+import { TimelineEvent } from '../../../shared/components/timeline/timeline.component';
+import { TableDataSource, TableDataColumn } from '../../../shared/components/data-table/data-table.component';
+import { StatusCellDataColumn, NumberCellDataColumn, DateCellDataColumn } from '../../../shared/components/data-table-cells';
+import { StatusClass } from '../../../shared/models/common';
 
 @Component({
   selector: 'app-execution-orders',
@@ -19,9 +19,9 @@ export class ExecutionOrdersComponent extends TimelineDetailComponent implements
     /**
    * 1. Implement attributes to display titles
    */
-  public pageTitle: string = 'Execution orders';
-  public singleTitle: string = '';
-  public listTitle: string = '';
+  public pageTitle = 'Execution orders';
+  public singleTitle = '';
+  public listTitle = '';
 
   /**
    * 2. Implement attributes to preset data structure
@@ -36,13 +36,15 @@ export class ExecutionOrdersComponent extends TimelineDetailComponent implements
     header: [
       { column: 'id', nameKey: 'table.header.id', filter: { type: 'number', hasRange: false, inputSearch: true, sortable: true } },
       { column: 'instrument', nameKey: 'table.header.instrument', filter: { type: 'text', sortable: true } },
-      { column: 'side', nameKey: 'table.header.side', filter: { type: 'text', sortable: true } },
+      { column: 'side', nameKey: 'table.header.side', filter: { type: 'text', sortable: true, inputSearch: false } },
       { column: 'exchange', nameKey: 'table.header.exchange', filter: { type: 'text', sortable: true }},
-      { column: 'type', nameKey: 'table.header.type', filter: { type: 'text', sortable: true } },
+      { column: 'type', nameKey: 'table.header.type', filter: { type: 'text', sortable: true, inputSearch: false } },
       { column: 'price', nameKey: 'table.header.price', filter: { type: 'number', sortable: true } },
-      { column: 'quantity', nameKey: 'table.header.total_quantity', filter: { type: 'number', sortable: true } },
-      { column: 'fee', nameKey: 'table.header.exchange_trading_fee', filter: { type: 'number', sortable: true } },
-      { column: 'status', nameKey: 'table.header.status', filter: { type: 'text', sortable: true } },
+      { column: 'total_quantity', nameKey: 'table.header.total_quantity', filter: { type: 'number', sortable: true } },
+      { column: 'filled_quantity', nameKey: 'table.header.filled_quantity', filter: { type: 'number', sortable: true } },
+      { column: 'spend_amount', nameKey: 'table.header.total_spend_amount', filter: { type: 'number', sortable: true } },
+      { column: 'exchange_trading_fee', nameKey: 'table.header.exchange_trading_fee', filter: { type: 'number', sortable: true }, column_class: 'word-wrap' },
+      { column: 'status', nameKey: 'table.header.status', filter: { type: 'text', sortable: true, inputSearch: false } },
       { column: 'submission_time', nameKey: 'table.header.submission_time', filter: { type: 'date', sortable: true } },
       { column: 'completion_time', nameKey: 'table.header.completion_time', filter: { type: 'date', sortable: true } }
     ],
@@ -59,16 +61,22 @@ export class ExecutionOrdersComponent extends TimelineDetailComponent implements
     new StatusCellDataColumn({ column: 'type', inputs: { classMap: value => {
       return StatusClass.DEFAULT;
     }}}),
-    new NumberCellDataColumn({ column: 'price' }),
+    new NumberCellDataColumn({ column: 'price', inputs: {
+      digitsInfo: '1.2-5'
+    } }),
     new NumberCellDataColumn({ column: 'total_quantity' }),
-    new NumberCellDataColumn({ column: 'exchange_trading_fee' }),
+    new NumberCellDataColumn({ column: 'filled_quantity' }),
+    new NumberCellDataColumn({ column: 'spend_amount' }),
+    new NumberCellDataColumn({ column: 'exchange_trading_fee', inputs: {
+      digitsInfo: '1.2-10'
+    } }),
     new StatusCellDataColumn({ column: 'status', inputs: { classMap: {
       'execution_orders.status.61': StatusClass.PENDING,
-      'execution_orders.status.62': StatusClass.APPROVED,
-      'execution_orders.status.63': StatusClass.APPROVED,
-      'execution_orders.status.64': StatusClass.APPROVED,
-      'execution_orders.status.65': StatusClass.REJECTED,
+      'execution_orders.status.62': StatusClass.INPROGRESS,
+      'execution_orders.status.63': StatusClass.FULLYFILLED,
+      'execution_orders.status.64': StatusClass.PARTIALLYFILLED,
       'execution_orders.status.66': StatusClass.FAILED,
+      'execution_orders.status.67': StatusClass.NOTFILLED
     }}}),
     new DateCellDataColumn({ column: 'submission_time' }),
     new DateCellDataColumn({ column: 'completion_time' })
@@ -83,10 +91,8 @@ export class ExecutionOrdersComponent extends TimelineDetailComponent implements
     public route: ActivatedRoute,
     public router: Router,
     private investmentService: InvestmentService,
-  ) { 
+  ) {
     super(route, router);
-
-    this.getFilterLOV();
   }
 
   /**
@@ -117,7 +123,7 @@ export class ExecutionOrdersComponent extends TimelineDetailComponent implements
         this.getFilterLOV();
       },
       err => this.listDataSource.body = []
-    )
+    );
   }
 
   private getFilterLOV(): void {
@@ -125,7 +131,7 @@ export class ExecutionOrdersComponent extends TimelineDetailComponent implements
       col => ['id', 'instrument', 'side', 'exchange', 'type', 'status'].includes(col.column)
     ).map(
       col => {
-        let filter = {filter : {investment_run_id: this.routeParamId}};
+        const filter = {filter : {investment_run_id: this.routeParamId}};
         col.filter.rowData$ = this.investmentService.getAllExecutionOrdersHeaderLOV(col.column, filter);
       }
     );
@@ -138,7 +144,7 @@ export class ExecutionOrdersComponent extends TimelineDetailComponent implements
       mergeMap(
          params => this.investmentService.getAllTimelineData({ investment_run_id: params['id'] })
       )
-    )
+    );
   }
 
   /**

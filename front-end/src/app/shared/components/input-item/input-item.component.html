@@ -1,4 +1,4 @@
-<label class="label-name">
+<label class="label-name" *ngIf="label">
   {{ label }}
 </label>
 
@@ -10,21 +10,26 @@
     [class.error]="isInvalid()"
     (blur)="onBlur()"
     [readonly]="readonly"
+    [disabled]="disabled"
   >
 </ng-container>
 
-<ng-container *ngIf="fieldType === 'select' || fieldType === 'autocomplete'">	
+<ng-container *ngIf="fieldType === 'select' || fieldType === 'autocomplete'">
   <ng-select
     class="custom"
+    [class.disabled]="disabled"
+    [(ngModel)]="value"
     [searchable]="fieldType === 'autocomplete'"
     [loading]="spinnerLoading"
     loadingText="Loading..."
     [items]="items"
-    [(ngModel)]="value"
+    (change)="change($event)"
+    (open)="listOpen($event)"
     [markFirst]="false"
-    bindValue="id"
-    bindLabel="value"
+    bindValue="{{bindValue}}"
+    bindLabel="{{bindLabel}}"
     [placeholder]="placeholder"
+    [clearable]="!clearable"
   ></ng-select>
 </ng-container>
 

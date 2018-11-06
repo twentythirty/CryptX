@@ -3,6 +3,8 @@
 const Asset = require('../models').Asset;
 const AssetStatusChange = require('../models').AssetStatusChange;
 const AssetMarketCapitalization = require('../models').AssetMarketCapitalization;
+const GroupAsset = require('../models').GroupAsset;
+const InvestmentRunAssetGroup = require('../models').InvestmentRunAssetGroup;
 const Exchange = require('../models').Exchange;
 const InstrumentExchangeMapping = require('../models').InstrumentExchangeMapping;
 const User = require('../models').User;
@@ -16,8 +18,9 @@ const changeStatus = async function (asset_id, new_status, user) {
   if (!_.valuesIn(INSTRUMENT_STATUS_CHANGES).includes(new_status.type))
     TE("Provided bad asset status");
 
-  if(!_.isString(new_status.comment)) TE(`Must provide a vlid comment/reason`);
-  
+  if(!_.isString(new_status.comment) || /^\s*$/.test(new_status.comment)) TE(`Must provide a valid comment/reason`);
+  new_status.comment = new_status.comment.trim(); //Might as well as trim the comment;
+
   let [err, asset] = await to(Asset.findById(asset_id));
   if(err) TE(err.message);
   if (!asset) TE("Asset not found");
@@ -55,10 +58,10 @@ const changeStatus = async function (asset_id, new_status, user) {
     relations: { asset_id }
   }
   if(user) {
-    user.logAction('assets.status', log_options);
+    await user.logAction('assets.status', log_options);
   }
   else {
-    logAction('assets.status', log_options);
+    await logAction('assets.status', log_options);
   }
 
   return status;
@@ -98,76 +101,111 @@ module.exports.getWhitelisted = getWhitelisted;
  * Only checks whitelisted coins. Can exclude assets by list of ids.
  * @param strategy_type a value from the STRATEGY_TYPES enumeration described in model_constants.js 
  */
-const getStrategyAssets = async function (strategy_type, exclude_from_index = []) {  
+const getStrategyAssets = async function (strategy_type) {  
   //check for valid strategy type
   if (!Object.values(STRATEGY_TYPES).includes(parseInt(strategy_type, 10))) {
     TE(`Unknown strategy type ${strategy_type}!`);
   }
-  
-  let exclude_string = exclude_from_index.length ? 
-    `AND asset.id NOT IN (${exclude_from_index.join()})` :
-    ``;
 
   // get assets that aren't blacklisted, sorted by marketcap average of 7 days
-  let [err, assets] = await to(sequelize.query(`
+  let err, assets, excluded = [],
+    included = [],
+    iteration = 1,
+    per_iteration = 50,
+    lci_skipped = false,
+    total_market_share = 0,
+    amount_needed = strategy_type == STRATEGY_TYPES.LCI ?
+      SYSTEM_SETTINGS.INDEX_LCI_CAP :
+      SYSTEM_SETTINGS.INDEX_MCI_CAP;
+
+  asset_selection:
+  do {
+    [err, assets] = await to(sequelize.query(`
     SELECT asset.id,
-          asset.symbol,
-          asset.long_name,
-          asset.is_base,
-          asset.is_deposit,
-          avg(cap.market_share_percentage) AS avg_share
-
+      asset.symbol,
+      asset.long_name,
+      asset.is_base,
+      asset.is_deposit,
+      cap.capitalization_usd,
+      cap.market_share_percentage AS avg_share,
+        CASE WHEN status.type IS NULL THEN :whitelisted ELSE status.type END as status
     FROM asset
-    INNER JOIN
-      ( SELECT *
+    JOIN LATERAL
+    (
+      SELECT *
       FROM asset_market_capitalization AS c
-      WHERE c.timestamp >= NOW() - interval '7 days' ) AS cap ON cap.asset_id=asset.id
-    WHERE (
-            (SELECT CASE TYPE WHEN ${INSTRUMENT_STATUS_CHANGES.Whitelisting} THEN TRUE ELSE FALSE END
-              FROM asset_status_change
-              WHERE asset_id=asset.id
-              ORDER BY TIMESTAMP DESC LIMIT 1)
-          OR NOT EXISTS
-            (SELECT TRUE
-              FROM asset_status_change
-              WHERE asset_id = asset.id) )
-        ${exclude_string}
-
-    GROUP BY asset.id,
-            asset.symbol,
-            asset.long_name,
-            asset.is_base,
-            asset.is_deposit
-    ORDER BY avg_share DESC LIMIT ${SYSTEM_SETTINGS.INDEX_LCI_CAP + SYSTEM_SETTINGS.INDEX_MCI_CAP}`, {
+      WHERE c.asset_id=asset.id
+          AND c.timestamp >= NOW() - interval '1 day'
+      ORDER BY c.asset_id NULLS LAST, c.timestamp DESC NULLS LAST
+      LIMIT 1
+    ) AS cap ON cap.asset_id=asset.id
+    LEFT JOIN LATERAL (
+      SELECT type
+      FROM asset_status_change
+      WHERE asset_id=asset.id
+        ORDER BY TIMESTAMP DESC
+      LIMIT 1
+    ) as status ON TRUE
+    ORDER BY cap.capitalization_usd DESC
+    LIMIT :limit_count OFFSET :offset_count`, {
+      replacements: { 
+        limit_count: per_iteration,
+        offset_count: (iteration - 1) * per_iteration,
+        whitelisted: INSTRUMENT_STATUS_CHANGES.Whitelisting
+      },
     type: sequelize.QueryTypes.SELECT
   }));
-
-  if (err) TE(err.message);
-
-  assets.map(a => {
-    Object.assign(a, {
-      avg_share: parseFloat(a.avg_share),
+    if (err) TE(err.message);
+           
+    assets.map(a => {
+      Object.assign(a, {
+        capitalization_usd: parseFloat(a.capitalization_usd),
+        avg_share: parseFloat(a.avg_share)
+      });
     });
-  });
 
-  let totalMarketShare = 0;
-  // selects all assets before threshold MARKETCAP_LIMIT_PERCENT, total marketshare sum of assets
-  let before_marketshare_limit = assets.reduce((acc, coin, currentIndex) => {
-    totalMarketShare += coin.avg_share;
-    if(totalMarketShare <= SYSTEM_SETTINGS.MARKETCAP_LIMIT_PERCENT)
-      acc.push(coin);
-    return acc;
-  }, []);
+    for (let asset of assets) {
 
-  let lci = before_marketshare_limit.slice(0, SYSTEM_SETTINGS.INDEX_LCI_CAP);
+      // if we reached LCI amount and we didn't skip LCI assets yet
+      if (( total_market_share + asset.avg_share > SYSTEM_SETTINGS.MARKETCAP_LIMIT_PERCENT ||
+        included.length == SYSTEM_SETTINGS.INDEX_LCI_CAP ) &&
+        !lci_skipped) {
 
-  if (strategy_type == STRATEGY_TYPES.LCI) {
-    return lci;
+        // if it's not LCI strategy, the skip LCI assets.
+        if ( strategy_type != STRATEGY_TYPES.LCI ) {
+          included = [];
+          excluded = [];
+          lci_skipped = true;
+        } else // exit asset selection if it is LCI strategy
+          break asset_selection;
+
+      } else if (included.length == amount_needed) { // reached needed amount, exit asset selection
+        break asset_selection;
+      }
+     
+      if (asset.status == INSTRUMENT_STATUS_CHANGES.Whitelisting) { // include if whitelisted
+        included.push(asset);
+        total_market_share += asset.avg_share;
+      } else // exclude all not whitelisted
+        excluded.push(asset);      
+    }
+
+    iteration++; // increment this to calculate offset
+  } while (assets.length && included.length < amount_needed); // while fetching assets returns some, and we don't have needed amount yet
+
+  if (!included.length)
+    TE(`No assets found for ${_.invert(STRATEGY_TYPES)[strategy_type]} portfolio`);
+
+  if (process.env.MAX_MCI_MIX_SIZE && strategy_type === STRATEGY_TYPES.MCI) {
+    included = included.slice(0, parseInt(process.env.MAX_MCI_MIX_SIZE));
   }
 
-  let mci = assets.slice(lci.length, lci.length + SYSTEM_SETTINGS.INDEX_MCI_CAP);
+  if(process.env.FORCE_ASSET_MIX) {
+    let asset_symbols = process.env.FORCE_ASSET_MIX.split(',').map(a => a.trim());
+    included = included.filter(a => asset_symbols.includes(a.symbol));
+  }
 
-  return mci;
+  return [included, excluded];
 };
 module.exports.getStrategyAssets = getStrategyAssets;
 
@@ -258,16 +296,17 @@ module.exports.getInstrumentLiquidityRequirements = getInstrumentLiquidityRequir
 
 const getBaseAssetPrices = async function () {
   const ttl_threshold = SYSTEM_SETTINGS.BASE_ASSET_PRICE_TTL_THRESHOLD;
-
+  
   let [err, prices] = await to(sequelize.query(`
-  SELECT prices.symbol as symbol, AVG(prices.price) as price
+  SELECT id, prices.symbol as symbol, AVG(prices.price) as price
   FROM
   (
-    SELECT assetBuy.symbol as symbol, imd1.ask_price as price, imd1.timestamp as timestamp
+    SELECT assetBuy.id, assetBuy.symbol as symbol, imd1.ask_price as price, imd1.timestamp as timestamp
     FROM asset as a1
     JOIN instrument i ON i.quote_asset_id=a1.id
     JOIN asset as assetBuy ON assetBuy.id=i.transaction_asset_id
     JOIN instrument_exchange_mapping as iem1 ON iem1.instrument_id=i.id
+    JOIN exchange AS ex ON iem1.exchange_id = ex.id AND ex.is_mappable IS TRUE
     JOIN instrument_market_data imd1 ON imd1.id=(
         SELECT id FROM instrument_market_data imdd 
         WHERE imdd.instrument_id=i.id
@@ -277,15 +316,16 @@ const getBaseAssetPrices = async function () {
       )
     WHERE a1.symbol='USD'
       AND assetBuy.is_base=true
-    GROUP BY assetBuy.symbol, imd1.ask_price, imd1.timestamp
+    GROUP BY assetBuy.id, assetBuy.symbol, imd1.ask_price, imd1.timestamp
     
     UNION 
     
-    SELECT assetSell.symbol as symbol, (1 / imd2.bid_price) as price, imd2.timestamp as timestamp
+    SELECT assetSell.id, assetSell.symbol as symbol, (1 / imd2.bid_price) as price, imd2.timestamp as timestamp
     FROM asset as a2
     JOIN instrument i ON i.transaction_asset_id=a2.id
     JOIN asset as assetSell ON assetSell.id=i.quote_asset_id
     JOIN instrument_exchange_mapping as iem2 ON iem2.instrument_id=i.id
+    JOIN exchange AS ex ON iem2.exchange_id = ex.id AND ex.is_mappable IS TRUE
     JOIN instrument_market_data imd2 ON imd2.id=(
         SELECT id FROM instrument_market_data imdd 
         WHERE imdd.instrument_id=i.id
@@ -295,10 +335,10 @@ const getBaseAssetPrices = async function () {
       )
     WHERE a2.symbol='USD'
     AND assetSell.is_base=true
-    GROUP BY assetSell.symbol, imd2.bid_price, imd2.timestamp
+    GROUP BY assetSell.id, assetSell.symbol, imd2.bid_price, imd2.timestamp
   ) as prices
   WHERE prices.timestamp >= NOW() - interval '${ttl_threshold} seconds'
-  GROUP BY prices.symbol
+  GROUP BY prices.id, prices.symbol
   `, {
     type: sequelize.QueryTypes.SELECT
   }));
@@ -311,7 +351,9 @@ const getBaseAssetPrices = async function () {
     const existing_mappings = await InstrumentExchangeMapping.findAll({
       where: {
         external_instrument_id: {
-          [Op.iLike]: '%/USDT'
+          [Op.or]: [
+            { [Op.iLike]: '%/USDT' }, { [Op.iLike]: '%/USD' }
+          ]
         }
       }
     });
@@ -319,12 +361,12 @@ const getBaseAssetPrices = async function () {
       where: {
         id: {
           [Op.notIn]: _.map(existing_mappings, 'exchange_id')
-        }
+        },
+        is_mappable: true
       }
     });
     if (!_.isEmpty(missing_exchanges)) {
-      const missing_exchanges_message = `
-      Missing USDT instrument mappings for exchanges: ${_.join(_.map(missing_exchanges, 'name'), ', ')}. 
+      const missing_exchanges_message = `Missing USDT instrument mappings for exchanges: ${_.join(_.map(missing_exchanges, 'name'), ', ')}. 
       Please use/create an instrument with either 'Us Dollars' or 'Tether' as the Quote Asset and add the missing mappings`;
 
       TE(message_start + '\n' + missing_exchanges_message);
@@ -370,3 +412,221 @@ const fetchAssetStatusHistory = async (asset) => {
 }
 module.exports.fetchAssetStatusHistory = fetchAssetStatusHistory;
 
+const getDepositAssets = async () => {
+  
+  let [err, assets] = await to(Asset.findAll({
+    where: {
+      is_deposit: true
+    }
+  }));
+
+  if (err) TE(err.message);
+
+  return assets;
+};
+module.exports.getDepositAssets = getDepositAssets;
+
+const getAssetGroupWithData = async function (investment_run_id) {
+
+  // query recives all whitelisted asset/instrument/exchange pairs.
+  // Flip if asset to be bought is in quote, to get sell order, calculate price_usd accordingly.
+  let [err, asset_group] = await to(sequelize.query(`
+    WITH base_assets_with_prices AS (
+      SELECT a.id, a.symbol, a.long_name, a.is_base, a.is_deposit, AVG (prices.ask_price) as value_usd
+      FROM asset a
+      JOIN instrument i ON i.transaction_asset_id=a.id
+      LEFT JOIN instrument_exchange_mapping iem ON iem.instrument_id=i.id
+      LEFT JOIN asset quote_asset ON quote_asset.id=i.quote_asset_id
+      LEFT JOIN LATERAL (
+        SELECT imd.ask_price
+        FROM instrument_market_data imd
+        WHERE imd.instrument_id=iem.instrument_id
+        ORDER BY instrument_id NULLS LAST, exchange_id NULLS LAST, timestamp DESC NULLS LAST
+        LIMIT 1
+      ) as prices ON TRUE
+      WHERE a.is_base = TRUE
+        AND ( quote_asset.symbol='USD' OR quote_asset.symbol='USDT')
+      GROUP BY a.id
+    )
+    SELECT asset.id,
+      asset.symbol,
+      asset.long_name,
+      asset.is_base,
+      asset.is_deposit,
+      CASE WHEN asset.id=i.quote_asset_id THEN i.quote_asset_id ELSE i.transaction_asset_id END as transaction_asset_id,
+			CASE WHEN asset.id=i.quote_asset_id THEN i.transaction_asset_id ELSE i.quote_asset_id END as quote_asset_id,
+      iem.instrument_id,
+      iem.exchange_id,
+      exchange.name as exchange_name,
+      nvt_calc.value as nvt,
+      lh.volume,
+      (lh.volume * ask_price * base_price.value_usd) as volume_usd,
+      ask_price,
+      bid_price,
+      imd.timestamp as imd_updated,
+      (	CASE WHEN asset.id=i.transaction_asset_id
+          THEN (ask_price * base_price.value_usd)
+          ELSE ((1 / bid_price) * base_price.value_usd)
+        END
+      )as price_usd,
+      CASE WHEN ga.status IS NULL THEN 400 ELSE ga.status END as status
+    FROM investment_run ir
+    JOIN investment_run_asset_group irag ON irag.id=ir.investment_run_asset_group_id
+    JOIN group_asset ga ON ga.investment_run_asset_group_id=irag.id
+    JOIN asset ON asset.id=ga.asset_id
+    LEFT JOIN instrument i ON i.transaction_asset_id=asset.id OR i.quote_asset_id=asset.id
+    LEFT JOIN instrument_exchange_mapping iem ON instrument_id=i.id
+    JOIN exchange ON exchange.id=iem.exchange_id AND exchange.is_mappable IS TRUE
+    LEFT JOIN LATERAL
+    (
+      SELECT value
+      FROM market_history_calculation
+      WHERE asset_id=asset.id AND type=0
+      ORDER BY asset_id NULLS LAST, timestamp DESC NULLS LAST
+      LIMIT 1
+    ) AS nvt_calc ON TRUE
+    LEFT JOIN LATERAL
+    (
+      SELECT instrument_id, exchange_id, volume, timestamp_from
+      FROM instrument_liquidity_history ilh
+      WHERE ilh.instrument_id=iem.instrument_id AND ilh.exchange_id=iem.exchange_id
+      ORDER BY ilh.instrument_id NULLS LAST, ilh.exchange_id NULLS LAST, ilh.timestamp_from DESC NULLS LAST
+      LIMIT 1
+    ) AS lh ON TRUE
+    LEFT JOIN LATERAL 
+    (
+      SELECT ask_price, bid_price, timestamp
+      FROM instrument_market_data 
+      WHERE instrument_id=iem.instrument_id
+        AND exchange_id=iem.exchange_id
+        AND timestamp >= NOW() - interval ':oldness_time seconds'
+      ORDER BY instrument_id NULLS LAST, exchange_id NULLS LAST, timestamp DESC NULLS LAST
+      LIMIT 1
+    ) as imd ON TRUE
+    LEFT JOIN base_assets_with_prices as base_price ON base_price.id=i.quote_asset_id OR base_price.id=i.transaction_asset_id
+    LEFT JOIN asset as tr_asset ON tr_asset.id=i.transaction_asset_id
+    LEFT JOIN asset as qt_asset ON qt_asset.id=i.quote_asset_id
+    WHERE ir.id=:investment_run_id
+        AND (ga.status=:whitelisted OR ga.status IS NULL)
+        AND (qt_asset.is_base=TRUE OR tr_asset.is_base=TRUE)
+    ORDER BY nvt DESC, volume_usd DESC, price_usd ASC
+  `, {
+    replacements: {
+      investment_run_id,
+      whitelisted: INSTRUMENT_STATUS_CHANGES.Whitelisting,
+      oldness_time: SYSTEM_SETTINGS.BASE_ASSET_PRICE_TTL_THRESHOLD
+    },
+    type: sequelize.QueryTypes.SELECT
+  }));
+
+  let properties = [
+    { key: 'instrument_id', message: 'Instrument' },
+    { key: 'exchange_id', message: 'exchange mappings' },
+    { key: 'nvt', message: 'NVT' },
+    { key: 'volume_usd', message: 'volume' },
+    { key: 'price_usd', message: 'price' },
+    { key: 'exchange_name', message: 'usable exchange' }
+  ]; // properties that shouldn't be null
+  let groups_missing_data = _(asset_group) // find assets that are missing some of the properties defined in "properties" variable
+    .groupBy('id')
+    .values()
+    .filter(
+      group => group.every(
+        asset => properties.some(prop => _.isNull(asset[prop.key]) || _.isUndefined(asset[prop.key]))
+      )
+    ).value();
+
+  if (groups_missing_data.length) {
+    let missing = _.first(groups_missing_data);
+    let asset = _.first(missing);
+
+    if (missing.every(p => _.isNull(p.instrument_id) || _.isUndefined(p.instrument_id))) // check if instrument_id is missing
+      TE(`Asset ${asset.long_name} (${asset.symbol}) doesn't have instruments`);
+    else if (missing.every(p => _.isNull(p.exchange_id) || _.isUndefined(p.exchange_id))) // check if exchange_id is missing
+      TE(`Asset ${asset.long_name} (${asset.symbol}) is not mapped to any exchange and can't be bought because of that`);
+    else {
+      let property_missing = properties.find(p => {
+        return missing.find(m => _.isNull(m[p.key]) || _.isUndefined(m[p.key]))
+      });
+      TE(`${asset.long_name}(${asset.symbol}) doesn't have ${property_missing.message} data`);
+    }
+  }
+  
+  if (err) TE(err.message);
+
+  return asset_group;
+};
+module.exports.getAssetGroupWithData = getAssetGroupWithData;
+
+/** Liquidity levels are defined in CryptX according to the following table, whereby
+ * the USD amount denotes the trading volume over the last 24 hours on a connected exchange. 
+ * @param {*} volume_usd Volume of traded asset represented in USD 
+ */
+const getLiquidityLevel = (volume_usd) => {
+
+  let level = LIQUIDITY_LEVELS.find(l => 
+    (l.from <= volume_usd && l.to > volume_usd) || 
+    (l.from <= volume_usd && !l.to)
+  );
+
+  return level;
+};
+module.exports.getLiquidityLevel = getLiquidityLevel;
+
+const getAssetFilteringBasedOnInvestmentAssetGroup = async (id, seq_query = {}, sql_where = '') => {
+
+  let [ err, asset_group ] = await to(InvestmentRunAssetGroup.findById(id, {
+    include: {
+      model: GroupAsset
+    }
+  }));
+
+  if(err) TE(err.message);
+  if(!asset_group) return null;
+
+  const asset_ids = _.map(asset_group.GroupAssets, group_asset => group_asset.asset_id).filter(id => id);
+
+  seq_query.where = { 
+    [Op.and]: [
+      { id: asset_ids },
+      seq_query.where
+    ] 
+  };
+
+  if(asset_ids.length) sql_where = `id IN(${asset_ids.join(', ')}) ${ sql_where !== '' ? `AND ${sql_where}` : '' }`;
+
+  return [ seq_query, sql_where, asset_group.GroupAssets ];  
+
+};
+module.exports.getAssetFilteringBasedOnInvestmentAssetGroup = getAssetFilteringBasedOnInvestmentAssetGroup;
+
+const getExchangeMappedAssets = async (exchange_id) => {
+
+  const [ err, exchange ] = await to(Exchange.findById(exchange_id));
+
+  if(err) TE(err.message);
+  if(!exchange) return null;
+
+  return sequelize.query(`
+    WITH exchange_instruments AS (
+        SELECT
+            DISTINCT ON(ins.id)
+            *
+        FROM instrument AS ins
+        JOIn instrument_exchange_mapping AS iem ON iem.exchange_id = :exchange_id AND iem.instrument_id = ins.id
+    )
+
+    SELECT
+        DISTINCT ON(asset.symbol, asset.id)
+        asset.id,
+        asset.symbol
+    FROM asset
+    JOIN exchange_instruments AS ei ON ei.transaction_asset_id = asset.id OR ei.quote_asset_id = asset.id
+    ORDER BY asset.symbol, asset.id ASC
+  `, {
+    type: sequelize.QueryTypes.SELECT,
+    replacements: { exchange_id }
+  });
+
+};
+module.exports.getExchangeMappedAssets = getExchangeMappedAssets;

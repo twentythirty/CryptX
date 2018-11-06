@@ -13,9 +13,13 @@ const Instrument = require('../models').Instrument;
 const Asset = require('../models').Asset;
 const InstrumentExchangeMapping = require('../models').InstrumentExchangeMapping;
 const InstrumentMarketData = require('../models').InstrumentMarketData;
+const InstrumentService = require('./InstrumentsService');
 const sequelize = require('../models').sequelize;
 const Op = require('../models').Sequelize.Op;
 const ccxtUtils = require('../utils/CCXTUtils');
+const ccxtUnified = require('../utils/ccxtUnified');
+
+const { ISOLATION_LEVELS } = sequelize.Transaction;
 
 /**
  * Check if 2 Instrument objects are using the same assets (by id)
@@ -143,7 +147,7 @@ const marketDataKeyForRunDetail = (market_data_keys, instruments_by_id, recipe_r
 const generateApproveRecipeOrders = async (recipe_run_id) => {
 
     //check if there already is a non-rejected recipe order group for this recipe
-    const existing_group = await RecipeOrderGroup.findOne({
+    let existing_group = await RecipeOrderGroup.findOne({
         where: {
             recipe_run_id: recipe_run_id,
             approval_status: {
@@ -175,7 +179,7 @@ const generateApproveRecipeOrders = async (recipe_run_id) => {
     }
 
     //fetch all individual recipe run details
-    const recipe_run_details = await RecipeRunDetail.findAll({
+    let recipe_run_details = await RecipeRunDetail.findAll({
         where: {
             recipe_run_id: recipe_run_id
         }
@@ -185,12 +189,16 @@ const generateApproveRecipeOrders = async (recipe_run_id) => {
         TE(`Can't generate orders for recipe run ${recipe_run_id} due to missing recipe run details!`)
     }
 
+    // whenever transaction and quote assets is the same, it's base asset that's transfered
+    // directly to cold storage. filter out those assets to not create recipe orders for them
+    recipe_run_details = recipe_run_details.filter(rrd => rrd.transaction_asset_id!==rrd.quote_asset_id);
+
     //fetch all asset ids involved in this venture
     // (to more concisely fetch involved instruments)
     const asset_ids = _.uniq(_.flatMap(recipe_run_details, recipe_run_detail => {
         return [recipe_run_detail.transaction_asset_id, recipe_run_detail.quote_asset_id]
     }));
-
+    
     //fetch all instruments corresponding to detail assets
     //map them by instrument id
     const instruments_by_id = _.keyBy(await Instrument.findAll({
@@ -217,24 +225,13 @@ const generateApproveRecipeOrders = async (recipe_run_id) => {
     //}
     //while having instrument objects in the keys would be more
     // convenient, JS doesnt support that
-
-    const grouped_market_data = _.groupBy(await InstrumentMarketData.findAll({
-        where: {
-            instrument_id: Object.keys(grouped_exchanges),
-            //extract value lists from grouped association, flatten those lists and extract property from entries
-            exchange_id: _.map(flat_exchange_mappings_list, 'exchange_id')
-            /* 
------------------------------------------------------------------------------------------------------------------
-            applied fix. Need to assure if this is fix works as intended.
-            before exchange_id was: _.flatMap(_.map(grouped_exchanges, 'exchange_id'));
-            map didn't find exchange_id as it was nested inside array element. */
-        },
-        order: [
-            ['timestamp', 'DESC']
-        ]
-    }), market_data => {
-        return [market_data.instrument_id, market_data.exchange_id]
-    });
+    const grouped_market_data = _.groupBy(
+        await InstrumentService.getInstrumentPrices(
+            Object.keys(grouped_exchanges),
+            _.map(flat_exchange_mappings_list, 'exchange_id')
+        ),
+        market_data => [market_data.instrument_id, market_data.exchange_id]
+    );
     const recipe_detail_exchange_ids = _.map(recipe_run_details, 'target_exchange_id');
     //fetch balance info from exchanges
     const exchange_deposits = await fetch_exchange_deposits(recipe_run_id, recipe_detail_exchange_ids);
@@ -262,7 +259,7 @@ const generateApproveRecipeOrders = async (recipe_run_id) => {
         if (market_data && deposit_valid) {
             return true;
         } else {
-            TE(` Can't generate recipe order for detail: 
+            TE(`Can't generate recipe order for detail: 
             WARN: Skipping recipe run detail due to missing info/no deposit/bad deposit sum! 
             Recipe run detail id: ${recipe_run_detail.id}
             Detail exchange id: ${recipe_run_detail.target_exchange_id}
@@ -276,10 +273,27 @@ const generateApproveRecipeOrders = async (recipe_run_id) => {
     if (valid_recipe_run_details.length == 0) TE(`no valid recipe run details! Check WARN messages...`);
 
     //save orders group and orders in single transaction to roll them all back if need be
-    let [err, results] = await to(sequelize.transaction(transaction => {
+    let [ err, results ] = await to(sequelize.transaction({
+        isolationLevel: ISOLATION_LEVELS.SERIALIZABLE
+    }, async transaction => {
+
+        //Check again inside the transaction
+        existing_group = await RecipeOrderGroup.findOne({
+            where: {
+                recipe_run_id: recipe_run_id,
+                approval_status: {
+                    [Op.ne]: RECIPE_ORDER_GROUP_STATUSES.Rejected
+                }
+            },
+            transaction
+        });
+
+        if (existing_group) {
+            TE(`Recipe run ${recipe_run_id} already has a non-rejected orders group ${existing_group.id} with status ${existing_group.approval_status}, wont generate more!`);
+        }
 
         //run details filtered, generating orders group for orders
-        return RecipeOrderGroup.create({
+        const orders_group = await RecipeOrderGroup.create({
             created_timestamp: new Date(),
             approval_status: RECIPE_ORDER_GROUP_STATUSES.Pending,
             approval_timestamp: null,
@@ -288,82 +302,83 @@ const generateApproveRecipeOrders = async (recipe_run_id) => {
             recipe_run_id: recipe_run_id
         }, {
             transaction
-        }).then(orders_group => {
-            //create saving futures for orders from recipe run details
-            return Promise.all(_.map(valid_recipe_run_details, recipe_run_detail => {
+        });
 
-                const market_data_key = marketDataKeyForRunDetail(market_data_keys, instruments_by_id, recipe_run_detail);
-                //if the market data and recipe run detail use the same base currency
-                //then we use the bid price and make a buy order
-                const market_data = grouped_market_data[market_data_key][0];
-                const instrument = instruments_by_id[market_data.instrument_id];
-                const buy_order = recipe_run_detail.transaction_asset_id == instrument.transaction_asset_id;
+        const orders = await Promise.all(_.map(valid_recipe_run_details, recipe_run_detail => {
 
-                //get correct price/order side, use precise division if possible
-                const price = (buy_order ? market_data.bid_price : Decimal(1).div(Decimal(market_data.bid_price)).toString());
-                const side = buy_order ? ORDER_SIDES.Buy : ORDER_SIDES.Sell;
-                //get deposit object in base currency (includes amount and investemnt percentage)
-                const relevant_deposit = exchange_deposits[recipe_run_detail.target_exchange_id][buy_order ? recipe_run_detail.quote_asset_id : recipe_run_detail.transaction_asset_id];
+            const market_data_key = marketDataKeyForRunDetail(market_data_keys, instruments_by_id, recipe_run_detail);
+            //if the market data and recipe run detail use the same base currency
+            //then we use the bid price and make a buy order
+            const market_data = grouped_market_data[market_data_key][0];
+            const instrument = instruments_by_id[market_data.instrument_id];
+            const buy_order = recipe_run_detail.transaction_asset_id == instrument.transaction_asset_id;
 
-                const decimal_100 = Decimal('100');
-                //create adjustment coeficient to know how to scale detail percentages
-                const investment_prc_adjustment = decimal_100.div(relevant_deposit.investment_prc)
-                //reciep order quantity, scaled but not adjusted by order type and tick size (happens later)
-                const order_qnty_unadjusted =
-                    //multiply known deposited amount
-                    Decimal(relevant_deposit.amount).mul(
-                        //by how many percent go into this detail, scaled by how much of total deposit this asset takes up
-                        investment_prc_adjustment.mul(Decimal(recipe_run_detail.investment_percentage)).div(decimal_100)
-                    )
+            //get correct price/order side, use precise division if possible
+            const price = (buy_order ? market_data.bid_price : Decimal(1).div(Decimal(market_data.bid_price)).toString());
+            const side = buy_order ? ORDER_SIDES.Buy : ORDER_SIDES.Sell;
+            //get deposit object in base currency (includes amount and investemnt percentage)
+            const relevant_deposit = exchange_deposits[recipe_run_detail.target_exchange_id][buy_order ? recipe_run_detail.quote_asset_id : recipe_run_detail.transaction_asset_id];
 
-                //get mapping tick size as decimal
-                const correct_mapping = _.find(
-                    flat_exchange_mappings_list, {
-                        instrument_id: market_data.instrument_id,
-                        exchange_id: recipe_run_detail.target_exchange_id
-                    }
-                );
-                const tick_size_decimal = correct_mapping == null ? null : Decimal(correct_mapping.tick_size);
-                //round qnty to same dp as tick size, rounding down (only perform rounding if tick size was defined)
-                //divide by price if this is a buy order
-                const qnty_decimal = order_qnty_unadjusted.div(buy_order ? Decimal(price) : Decimal(1))
-                const qnty_decimal_adjusted = tick_size_decimal != null ? qnty_decimal.toDP(tick_size_decimal.dp(), Decimal.ROUND_HALF_DOWN) : qnty_decimal
+            const decimal_100 = Decimal('100');
+            //create adjustment coeficient to know how to scale detail percentages
+            const investment_prc_adjustment = decimal_100.div(relevant_deposit.investment_prc)
+            //reciep order quantity, scaled but not adjusted by order type and tick size (happens later)
+            const order_qnty_unadjusted =
+                //multiply known deposited amount
+                Decimal(relevant_deposit.amount).mul(
+                    //by how many percent go into this detail, scaled by how much of total deposit this asset takes up
+                    investment_prc_adjustment.mul(Decimal(recipe_run_detail.investment_percentage)).div(decimal_100)
+                )
 
-                console.log(`
-                Recipe ordering recipe run detail: ${recipe_run_detail.id}
-                use market price: ${price}
-                instrument: ${instrument.symbol}
-                exchange: ${recipe_run_detail.target_exchange_id}
-                buy order?: ${buy_order}
-                relevant deposit: ${JSON.stringify(relevant_deposit)}
-                initial investment prc: ${recipe_run_detail.investment_percentage}
-                investment prc adjust: ${investment_prc_adjustment.toString()}
-                initial order qnty: ${order_qnty_unadjusted.toString()}
-                tick size: ${tick_size_decimal != null? tick_size_decimal.toString() : 'N\\A'}
-                qnty: ${qnty_decimal_adjusted.toString()}
-                `)
-
-                return RecipeOrder.create({
-                    recipe_order_group_id: orders_group.id,
+            //get mapping tick size as decimal
+            const correct_mapping = _.find(
+                flat_exchange_mappings_list, {
                     instrument_id: market_data.instrument_id,
-                    target_exchange_id: recipe_run_detail.target_exchange_id,
-                    price: price,
-                    quantity: qnty_decimal_adjusted.toString(),
-                    side: side,
-                    status: RECIPE_ORDER_STATUSES.Pending
-                }, {
-                    transaction
-                });
-            }))
-        })
+                    exchange_id: recipe_run_detail.target_exchange_id
+                }
+            );
+            const tick_size_decimal = correct_mapping == null ? null : Decimal(correct_mapping.tick_size);
+            //round qnty to same dp as tick size, rounding down (only perform rounding if tick size was defined)
+            //divide by price if this is a buy order
+            const qnty_decimal = order_qnty_unadjusted.div(buy_order ? Decimal(price) : Decimal(1))
+            const qnty_decimal_adjusted = tick_size_decimal != null ? qnty_decimal.toDP(tick_size_decimal.dp(), Decimal.ROUND_HALF_DOWN) : qnty_decimal
+
+            console.log(`
+            Recipe ordering recipe run detail: ${recipe_run_detail.id}
+            use market price: ${price}
+            instrument: ${instrument.symbol}
+            exchange: ${recipe_run_detail.target_exchange_id}
+            buy order?: ${buy_order}
+            relevant deposit: ${JSON.stringify(relevant_deposit)}
+            initial investment prc: ${recipe_run_detail.investment_percentage}
+            investment prc adjust: ${investment_prc_adjustment.toString()}
+            initial order qnty: ${order_qnty_unadjusted.toString()}
+            tick size: ${tick_size_decimal != null? tick_size_decimal.toString() : 'N\\A'}
+            qnty: ${qnty_decimal_adjusted.toString()}
+            `)
+
+            return RecipeOrder.create({
+                recipe_order_group_id: orders_group.id,
+                instrument_id: market_data.instrument_id,
+                target_exchange_id: recipe_run_detail.target_exchange_id,
+                price: price,
+                spend_amount: order_qnty_unadjusted.toString(),
+                quantity: 0, // not used
+                side: side,
+                status: RECIPE_ORDER_STATUSES.Pending
+            }, {
+                transaction
+            });
+        }));
+
+        await InvestmentService.changeInvestmentRunStatus({
+            recipe_run_id: recipe_run_id
+        }, INVESTMENT_RUN_STATUSES.OrdersGenerated, transaction);
+
+        return orders;
+
     }));
 
-    if (err) TE(err);
-
-    let investment_run;
-    [err, investment_run] = await to(InvestmentService.changeInvestmentRunStatus({
-        recipe_run_id: recipe_run_id
-    }, INVESTMENT_RUN_STATUSES.OrdersGenerated));
     if (err) TE(err.message);
 
     //filter out non-generated null reicpe orders (skipped due to low quantity)
@@ -404,39 +419,26 @@ const changeRecipeOrderGroupStatus = async (user_id, order_group_id, status, com
     //if the group is being rejected, have to reject all the orders as well
     if (status == RECIPE_ORDER_GROUP_STATUSES.Rejected) {
 
-        [err, results] = await to(sequelize.transaction(transaction => {
+        [err, results] = await to(sequelize.transaction(async transaction => {
 
-            return Promise.resolve(recipe_order_group).then(recipe_order_group => {
+            Object.assign(recipe_order_group, {
+                approval_status: status,
+                approval_user_id: user_id,
+                approval_timestamp: new Date(),
+                approval_comment: (comment != null) ? comment : recipe_order_group.approval_comment
+            });
 
-                //change recipe order group properties due to approval
-                Object.assign(recipe_order_group, {
-                    approval_status: status,
-                    approval_user_id: user_id,
-                    approval_timestamp: new Date(),
-                    approval_comment: (comment != null) ? comment : recipe_order_group.approval_comment
-                });
-
-                return Promise.all([
-                    recipe_order_group.save({
-                        transaction
-                    }),
-                    recipe_order_group.getRecipeOrders({
-                        transaction
-                    })
-                ]);
-            }).then(orders_data => {
-                let [recipe_order_group, recipe_orders] = orders_data;
-                //broadcast approval to all recipe orders in group
-                return Promise.all([
-                    Promise.resolve(recipe_order_group),
-                    Promise.all(recipe_orders.map(recipe_order => {
-                        recipe_order.status = RECIPE_ORDER_STATUSES.Rejected;
-                        return recipe_order.save({
-                            transaction
-                        });
-                    }))
-                ]);
-            })
+            return Promise.all([
+                recipe_order_group.save({
+                    transaction
+                }),
+                RecipeOrder.update({
+                    status: RECIPE_ORDER_STATUSES.Rejected
+                }, {
+                    where: { recipe_order_group_id: recipe_order_group.id },
+                    transaction
+                })
+            ]);
         }));
     }
 
@@ -444,10 +446,10 @@ const changeRecipeOrderGroupStatus = async (user_id, order_group_id, status, com
     //first we check the validity of their instrument pairs against ccxt
     if (status == RECIPE_ORDER_GROUP_STATUSES.Approved) {
 
-        [err, results] = await to(sequelize.transaction(transaction => {
+        [err, results] = await to(sequelize.transaction(async transaction => {
 
             //start with fetching relevant orders
-            return RecipeOrder.findAll({
+            let recipe_orders = await RecipeOrder.findAll({
                 where: {
                     recipe_order_group_id: recipe_order_group.id
                 },
@@ -462,80 +464,118 @@ const changeRecipeOrderGroupStatus = async (user_id, order_group_id, status, com
                     }
                 ],
                 transaction
-            }).then(recipe_orders => {
-                //add relevant mappings and ccxt connectors to orders
+            });
 
-                return Promise.all([
-                    Promise.resolve(recipe_orders),
-                    InstrumentExchangeMapping.findAll({
-                        where: {
-                            instrument_id: _.map(recipe_orders, 'instrument_id'),
-                            exchange_id: _.map(recipe_orders, 'target_exchange_id')
-                        },
-                        transaction
-                    }),
-                    ccxtUtils.allConnectors()
-                ])
-            }).then(order_data => {
+            //add relevant mappings and ccxt connectors to orders
+            const orders_instrument_ids = _.map(recipe_orders, 'instrument_id');
+            const orders_exchanges_ids = _.map(recipe_orders, 'target_exchange_id');
 
-                const [recipe_orders, exchange_mappings, connectors_map] = order_data;
+            let result = await  Promise.all([
+                InstrumentService.getInstrumentPrices(
+                    orders_instrument_ids,
+                    orders_exchanges_ids,
+                    true,
+                    transaction
+                ),
+                InstrumentExchangeMapping.findAll({
+                    where: {
+                        instrument_id: _.map(recipe_orders, 'instrument_id'),
+                        exchange_id: _.map(recipe_orders, 'target_exchange_id')
+                    },
+                    transaction
+                })
+            ])
 
-                return Promise.all(_.map(recipe_orders, recipe_order => {
+            const [ newest_market_data, exchange_mappings] = result;
 
-                    const connector = connectors_map[String(recipe_order.target_exchange_id)];
-                    const exchange = recipe_order.target_exchange != null ? recipe_order.target_exchange : {
-                        name: '<NONE>'
-                    }
-                    if (connector == null) {
-                        TE(`Can't approve recipe order ${recipe_order.id}: No connector found for exchange ${exchange.name}!`)
-                    }
+            await Promise.all(_.map(recipe_orders, async recipe_order => {
 
-                    const mapping = _.find(exchange_mappings, mapping => mapping.instrument_id == recipe_order.instrument_id && recipe_order.target_exchange_id == mapping.exchange_id);
-                    if (mapping == null) {
-                        TE(`Can't approve recipe order ${recipe_order.id}: No mapping found for ${recipe_order.Instrument.symbol} on ${exchange.name}`);
-                    }
-                    //pick correct symbol to check market
-                    const check_symbol = mapping.external_instrument_id;
-                    const check_market = connector.getMarket(check_symbol);
+                //let unificationOfExchange;
+                let [err, unifiedExchange] = await to(ccxtUnified.getExchange(recipe_order.target_exchange_id));
+                if (err) TE(err.message);
+                await unifiedExchange.isReady();
 
-                    if (check_market == null || check_market.market == null || !check_market.market.active) {
+                const exchange = recipe_order.target_exchange != null ? recipe_order.target_exchange : {
+                    name: '<NONE>'
+                }
+                if (unifiedExchange == null) {
+                    TE(`Can't approve recipe order ${recipe_order.id}: No connector found for exchange ${exchange.name}!`)
+                }
+                if (unifiedExchange._connector.loading_failed) {
+                    TE(`Can't approve recipe order ${recipe_order.id}: Connector for ${exchange.name} faield to load markets!`);
+                }
 
-                        TE(`Can't approve recipe order ${recipe_order.id}: No market for mapping ${check_symbol} on exchange ${connector.name}.`)
-                    }
+                const mapping = _.find(exchange_mappings, mapping => mapping.instrument_id == recipe_order.instrument_id && recipe_order.target_exchange_id == mapping.exchange_id);
+                if (mapping == null) {
+                    TE(`Can't approve recipe order ${recipe_order.id}: No mapping found for ${recipe_order.Instrument.symbol} on ${exchange.name}`);
+                }
 
-                    //market exists for this order, we can approve it
-                    recipe_order.status = RECIPE_ORDER_STATUSES.Executing;
-                    return recipe_order.save({
-                        transaction
-                    })
-                }))
-            }).then(recipe_orders => {
-                //since all recipe orders got approved OK we can now approve recipe order group
-                Object.assign(recipe_order_group, {
-                    approval_status: status,
-                    approval_user_id: user_id,
-                    approval_timestamp: new Date(),
-                    approval_comment: (comment != null) ? comment : recipe_order_group.approval_comment
-                });
+                //pick correct symbol to check market
+                const check_symbol = mapping.external_instrument_id;
+                const check_market = unifiedExchange._connector.markets[check_symbol];
 
-                return Promise.all([
-                    recipe_order_group.save({
-                        transaction
-                    }),
-                    Promise.resolve(recipe_orders)
-                ])
-            }).then(recipe_data => {
-                //handle investmetn run status change
-                const [recipe_order_group, recipe_orders] = recipe_data
-                //put investment run status change result as 3rd array parameter not ot mess up intended method returns
-                return Promise.all([
-                    Promise.resolve(recipe_order_group),
-                    Promise.resolve(recipe_orders),
-                    InvestmentService.changeInvestmentRunStatus(
-                        { recipe_order_group_id: order_group_id }, INVESTMENT_RUN_STATUSES.OrdersExecuting
-                    )
-                ])
-            })
+                if (check_market == null || !check_market.active) {
+
+                    TE(`Can't approve recipe order ${recipe_order.id}: No market for mapping ${check_symbol} on exchange ${unifiedExchange.name}.`)
+                }
+
+                const order_market_prices = _.find(
+                    newest_market_data, 
+                    datum => (datum.exchange_id == recipe_order.target_exchange_id 
+                        && datum.instrument_id == recipe_order.instrument_id)
+                );
+                
+                //number of seconds we handicap from the TTL value
+                const handicap_seconds = SYSTEM_SETTINGS.BASE_ASSET_PRICE_TTL_THRESHOLD + SYSTEM_SETTINGS.MARKET_DATA_TTL_HANDICAP;
+                const cutoff_date = new Date(new Date().getTime() - handicap_seconds * 1000);
+                
+                if (order_market_prices == null || order_market_prices.timestamp < cutoff_date) {
+
+                    TE(`Can't approve recipe order ${recipe_order.id}: No recent market data found for instrument ${recipe_order.Instrument.symbol} on ${recipe_order.target_exchange.name}, must be newer than ${cutoff_date.toISOString()}!`);
+                }
+
+                let limits;
+                [err, limits] = await to(unifiedExchange.getSymbolLimits(mapping.external_instrument_id));
+                if (err) TE(err.message);
+                
+                const lower_limit = Decimal(limits.spend.min || '0');
+                if (Decimal(recipe_order.spend_amount || '0').lt(lower_limit)) {
+
+                    TE(`Can't approve recipe order ${recipe_order.id}: Market ${check_market.symbol} on exchange ${unifiedExchange._connector.name} lower trade limit: ${lower_limit.toString()}, order sell quantity: ${recipe_order.spend_amount}`);
+                }
+                //market exists for this order, we can approve it
+                recipe_order.status = RECIPE_ORDER_STATUSES.Executing;
+                return recipe_order.save({
+                    transaction
+                })
+            }));
+        
+            //since all recipe orders got approved OK we can now approve recipe order group
+            Object.assign(recipe_order_group, {
+                approval_status: status,
+                approval_user_id: user_id,
+                approval_timestamp: new Date(),
+                approval_comment: (comment != null) ? comment : recipe_order_group.approval_comment
+            });
+
+            return Promise.all([
+                recipe_order_group.save({
+                    transaction
+                }),
+                InvestmentService.changeInvestmentRunStatus(
+                    { recipe_order_group_id: order_group_id }, 
+                    INVESTMENT_RUN_STATUSES.OrdersExecuting, 
+                    transaction
+                ),
+                RecipeOrder.update({
+                    status: RECIPE_ORDER_STATUSES.Executing
+                }, {
+                    where: {
+                        recipe_order_group_id: recipe_order_group.id
+                    },
+                    transaction
+                })
+            ]);
         }), false);
     }
 

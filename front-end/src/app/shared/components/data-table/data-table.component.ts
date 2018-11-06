@@ -1,46 +1,50 @@
 import { Component, OnInit, Input, EventEmitter, Output } from '@angular/core';
-import { ActivatedRoute, Router, NavigationStart } from "@angular/router";
+import { ActivatedRoute } from '@angular/router';
 import { trigger, state, style, transition, animate } from '@angular/animations';
-import { Observable } from 'rxjs';
-import _ from 'lodash';
 import { TranslateService } from '@ngx-translate/core';
+import { Observable } from 'rxjs';
+import * as _ from 'lodash';
 
 import { DataTableFilterData } from '../data-table-filter/data-table-filter.component';
 
 export interface TableDataSource {
-  header: Array<{
-    column: string
-    nameKey: string
-    column_class?: string
-    filter?: {
-      type: 'text' | 'boolean' | 'date' | 'number'
-      sortable?: boolean
-      /**
-       * @param hasRange - False if you no need number range filter for number type filter
-       */
-      hasRange?: boolean
-      /**
-       * @param inputSearch - If True search will be show independent on filter type
-       */
-      inputSearch?: boolean
-      rowData?: Array<{
-        value: string | boolean,
-        label?: string
-      }>,
-      rowData$?: Observable<Array<{
-        value: string | boolean,
-        label?: string
-      }>>
-    },
-    _dirty?: boolean;
-  }>;
-  body: Array<object>;
-  footer?: Array<{
-    name: string
-    value: string
-    template: string
-    args?: object
-  }>;
+  header: Array<TableDataSourceHeader>;
+  body: Array<any>;
+  footer?: Array<TableDataSourceFooter>;
+}
+
+export interface TableDataSourceHeader {
+  column: string;
+  nameKey: string;
+  column_class?: string;
+  filter?: {
+    type: 'text' | 'date' | 'number';
+    sortable?: boolean;
+    /**
+     * @param hasRange - False if you no need number range filter for number type filter
+     */
+    hasRange?: boolean;
+    /**
+     * @param inputSearch - Show/hide text search independent on filter type
+     */
+    inputSearch?: boolean;
+    rowData?: Array<{
+      value: string | boolean;
+      label?: string;
+    }>,
+    rowData$?: Observable<Array<{
+      value: string | boolean,
+      label?: string
+    }>>
+  };
+  _dirty?: boolean;
+}
+
+export interface TableDataSourceFooter {
+  name: string;
+  value: string;
+  template: string;
+  args?: object;
 }
 
 /**
@@ -81,25 +85,24 @@ export class DataTableComponent implements OnInit {
   private filterAppliedMap: Object = {}; // Flag map is filter applied to column or not
 
   @Input() dataSource: TableDataSource;
-  @Input() columnsToShow: Array<string | TableDataColumn>;
-  @Input() customRows: boolean = false;
+  @Input() columnsToShow: Array<TableDataColumn>;
+  @Input() customRows = false; // deprecated ???
   @Input() emptyText: string;
-  @Input() loading: boolean = false;
+  @Input() loading = false;
 
-  @Input() rowClass: (row: any) => string = (row) => null;
+  @Input() rowClass: (row: any) => string = (row) => '';
 
   @Output() setFilter = new EventEmitter<object>();
   @Output() openRow = new EventEmitter<any>();
 
   constructor(
     private translate: TranslateService,
-    private router: Router,
     private route: ActivatedRoute
   ) {}
 
   ngOnInit() {
     // use default empty table disclaimer text if no custom is given
-    if(!this.emptyText) {
+    if (!this.emptyText) {
       this.translate.get('common.list_empty').subscribe(data => {
         this.emptyText = data;
       });
@@ -107,20 +110,19 @@ export class DataTableComponent implements OnInit {
 
     // generate filter flag objects
     this.filterMap = _.zipObject(
-      this.columnsToShow.map(el => (typeof el == 'string') ? el : el.column ),
+      this.columnsToShow.map(el => el.column),
       _.fill( Array(this.columnsToShow.length), false )
     );
     // clone object
     Object.apply(this.filterAppliedMap, this.filterMap);
 
     // remove all _dirty properties on url param change
-
     this.route.params.subscribe(params => {
       this.dataSource.header.map(item => {
-          delete item._dirty;
-          return item;
-        });
-    })
+        delete item._dirty;
+        return item;
+      });
+    });
 
   }
 
@@ -131,8 +133,8 @@ export class DataTableComponent implements OnInit {
   }
 
   /**
-   * 
-   * @param filter 
+   *
+   * @param filter
    * @returns True if column filter are set and table body isint null or empty
    */
   showFilter(filter: any) {
@@ -142,7 +144,7 @@ export class DataTableComponent implements OnInit {
   onSetFilter(filterData: DataTableFilterData): void {
     // mark filter as applied
     this.markFilterAppliedMap(filterData);
-    
+
     this.setFilter.emit(filterData);
   }
 
@@ -157,7 +159,7 @@ export class DataTableComponent implements OnInit {
 
   getFooterData(): Array<object> {
     return this.columnsToShow.map((col: TableDataColumn) => {
-      return _.filter(this.dataSource.footer, ['name', (typeof col == 'string') ? col : col.column])[0] || { name: col.column };
+      return _.filter(this.dataSource.footer, ['name', col.column])[0] || { name: col.column };
     });
   }
 
@@ -165,8 +167,8 @@ export class DataTableComponent implements OnInit {
    * Dynamic columns
    */
 
-  columnIsBasic(column: string | TableDataColumn): boolean {
-    return typeof column == 'string' || !column.component;
+  columnIsBasic(column: TableDataColumn): boolean {
+    return !column.component;
   }
 
   public dynamicInputs(column: TableDataColumn, value: any, row: any): any {
@@ -174,13 +176,13 @@ export class DataTableComponent implements OnInit {
       ...(column.inputs || {}),
       row,
       value
-    }
+    };
   }
 
   public dynamicOutputs(column: TableDataColumn): any {
     return {
       ...(column.outputs || {})
-    }
+    };
   }
 
   /**
@@ -193,8 +195,7 @@ export class DataTableComponent implements OnInit {
 
   public getColumnClass(column: any): string {
     const header = this.dataSource.header.find(h => h.column === column );
-    if(header) return header.column_class || '';
-    else return '';
+    if (header) { return header.column_class || ''; } else { return ''; }
   }
-  
+
 }

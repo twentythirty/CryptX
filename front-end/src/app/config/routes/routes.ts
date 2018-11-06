@@ -3,7 +3,8 @@ import { RouterModule, Routes, CanActivate } from '@angular/router';
 
 import { AuthGuard } from './route-auth.guard';
 import { PermissionGuard } from './route-permission.guard';
-import { PendingChangesGuard } from './route-pending-changes.guard'
+import { PendingChangesGuard } from './route-pending-changes.guard';
+import { permissions } from '../permissions';
 
 import { LoginComponent } from '../../modules/auth/login/login.component';
 import { PasswordResetComponent } from '../../modules/auth/password-reset/password-reset.component';
@@ -30,19 +31,25 @@ import { InstrumentInfoComponent } from '../../modules/instruments/instrument-in
 import { LiquidityListComponent } from '../../modules/liquidity/liquidity-list/liquidity-list.component';
 import { LiquidityCreateComponent } from '../../modules/liquidity/liquidity-create/liquidity-create.component';
 import { LiquidityInfoComponent } from '../../modules/liquidity/liquidity-info/liquidity-info.component';
-import { DepositListComponent } from "../../modules/deposit/deposit-list/deposit-list.component";
-import { DepositInfoComponent } from "../../modules/deposit/deposit-info/deposit-info.component";
+import { DepositListComponent } from '../../modules/deposit/deposit-list/deposit-list.component';
+import { DepositInfoComponent } from '../../modules/deposit/deposit-info/deposit-info.component';
 import { OrdersListComponent } from '../../modules/orders/orders-list/orders-list.component';
-import { ExecutionOrdersComponent } from "../../modules/investment/execution-orders/execution-orders.component";
-import { RecipeRunListComponent } from "../../modules/recipe-run/recipe-run-list/recipe-run-list.component";
-import { ExecutionOrderListComponent } from "../../modules/execution-orders/execution-order-list/execution-order-list.component";
-import { TransfersListComponent } from "../../modules/cold-storage-transfers/transfers-list/transfers-list.component";
-import { AddAccountComponent } from "../../modules/cold-storage-accounts/add-account/add-account.component";
-import { AccountsListComponent } from "../../modules/cold-storage-accounts/accounts-list/accounts-list.component";
+import { ExecutionOrdersComponent } from '../../modules/investment/execution-orders/execution-orders.component';
+import { RecipeRunListComponent } from '../../modules/recipe-run/recipe-run-list/recipe-run-list.component';
+import { ExecutionOrderListComponent } from '../../modules/execution-orders/execution-order-list/execution-order-list.component';
+import { TransfersListComponent } from '../../modules/cold-storage-transfers/transfers-list/transfers-list.component';
+import { AddAccountComponent } from '../../modules/cold-storage-accounts/add-account/add-account.component';
+import { AccountsListComponent } from '../../modules/cold-storage-accounts/accounts-list/accounts-list.component';
 import { CustodiansListComponent } from '../../modules/cold-storage-custodians/custodians-list/custodians-list.component';
 import { ColdStorageAccountStorageFeeListComponent } from '../../modules/cold-storage-account-storage-fee/cold-storage-account-storage-fee-list/cold-storage-account-storage-fee-list.component';
+import { CustodiansAddComponent } from '../../modules/cold-storage-custodians/custodians-add/custodians-add.component';
+import { ExchangeAccountsListComponent } from '../../modules/exchange-accounts/exchange-accounts-list/exchange-accounts-list.component';
+import { ExchangeAccountsAddComponent } from '../../modules/exchange-accounts/exchange-accounts-add/exchange-accounts-add.component';
+import { ExchangeCredentialsAddComponent } from '../../modules/exchange-credentials/exchange-credentials-add/exchange-credentials-add.component';
+import { ExchangeCredentialsListComponent } from '../../modules/exchange-credentials/exchange-credentials-list/exchange-credentials-list.component';
+import { ColdStorageTransfersDetailComponent } from '../../modules/investment/cold-storage-transfers-detail/cold-storage-transfers-detail.component';
 
-const routes: Routes = [
+export const routes: Routes = [
   { path: 'login', component: LoginComponent },
   { path: 'password_reset', component: PasswordResetComponent },
   { path: 'invitation', component: AcceptInviteComponent },
@@ -94,13 +101,13 @@ const routes: Routes = [
     path: 'assets',
     component: AssetListComponent,
     canActivate: [AuthGuard, PermissionGuard],
-    data: { requiredPermission: ['VIEW_ASSETS']}
+    data: { requiredPermission: [permissions.VIEW_ASSETS]}
   },
   {
     path: 'assets/view/:assetId',
     component: AssetViewComponent,
     canActivate: [AuthGuard, PermissionGuard],
-    data: { requiredPermission: ['VIEW_ASSETS']}
+    data: { requiredPermission: [permissions.VIEW_ASSETS]}
   },
 
   {
@@ -119,10 +126,11 @@ const routes: Routes = [
       { path: 'order-group/:id', component: OrderGroupComponent },
       { path: 'execution-order/:id', component: ExecutionOrderDetailComponent },
       { path: 'execution-order-fill/:id', component: ExecutionOrderFillDetailComponent },
-      { path: 'execution-orders/:id', component: ExecutionOrdersComponent},
+      { path: 'execution-orders/:id', component: ExecutionOrdersComponent },
+      { path: 'cold-storage-transfers/:id', component: ColdStorageTransfersDetailComponent },
     ],
     canActivate: [AuthGuard, PermissionGuard],
-    data: { requiredPermission: ['VIEW_INVESTMENT_RUN']}
+    data: { requiredPermission: [permissions.VIEW_INVESTMENT_RUN]}
   },
 
   {
@@ -149,6 +157,11 @@ const routes: Routes = [
   },
   {
     path: 'liquidity_requirements/create',
+    component: LiquidityCreateComponent,
+    canActivate: [AuthGuard]
+  },
+  {
+    path: 'liquidity_requirements/edit/:id',
     component: LiquidityCreateComponent,
     canActivate: [AuthGuard]
   },
@@ -186,7 +199,7 @@ const routes: Routes = [
     component: TransfersListComponent,
     canActivate: [AuthGuard],
   },
-  
+
   {
     path: 'cold_storage/accounts',
     component: AccountsListComponent,
@@ -206,10 +219,58 @@ const routes: Routes = [
   },
 
   {
-    path: 'cold_storage/account_storage_fee',
-    component: ColdStorageAccountStorageFeeListComponent,
+    path: 'cold_storage/custodians/add',
+    component: CustodiansAddComponent,
     canActivate: [AuthGuard]
   },
+
+  {
+    path: 'exchange_accounts',
+    component: ExchangeAccountsListComponent,
+    canActivate: [AuthGuard],
+    data: { requiredPermission: [permissions.VIEW_EXCHANGE_ACCOUNTS]}
+  },
+
+  {
+    path: 'exchange_accounts/add',
+    component: ExchangeAccountsAddComponent,
+    canActivate: [AuthGuard],
+    data: { requiredPermission: [permissions.ADD_EXCHANGE_ACCOUNTS]}
+  },
+
+  {
+    path: 'exchange_accounts/view/:id',
+    component: ExchangeAccountsAddComponent,
+    canActivate: [AuthGuard],
+    data: { requiredPermission: [permissions.ADD_EXCHANGE_ACCOUNTS]}
+  },
+
+  {
+    path: 'exchange_credentials',
+    component: ExchangeCredentialsListComponent,
+    canActivate: [AuthGuard],
+    data: { requiredPermission: [permissions.VIEW_EXCHANGE_CREDENTIALS]}
+  },
+
+  {
+    path: 'exchange_credentials/add',
+    component: ExchangeCredentialsAddComponent,
+    canActivate: [AuthGuard],
+    data: { requiredPermission: [permissions.ALTER_EXCHANGE_CREDENTIALS]}
+  },
+
+  {
+    path: 'exchange_credentials/view/:id',
+    component: ExchangeCredentialsAddComponent,
+    canActivate: [AuthGuard],
+    data: { requiredPermission: [permissions.ALTER_EXCHANGE_CREDENTIALS]}
+  },
+
+  // {
+  //   path: 'cold_storage/account_storage_fee',
+  //   component: ColdStorageAccountStorageFeeListComponent,
+  //   canActivate: [AuthGuard]
+  // },
 
 
   /**

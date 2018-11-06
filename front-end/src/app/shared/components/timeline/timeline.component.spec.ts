@@ -1,6 +1,16 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { TimelineComponent } from './timeline.component';
+import { extraTestingModules } from '../../../testing/utils';
+import { AuthService } from '../../../services/auth/auth.service';
+
+
+const AuthServiceStub = {
+  hasPermissions: () => {
+    return true;
+  }
+};
+
 
 describe('TimelineComponent', () => {
   let component: TimelineComponent;
@@ -8,7 +18,13 @@ describe('TimelineComponent', () => {
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ TimelineComponent ]
+      declarations: [ TimelineComponent ],
+      imports: [
+        ...extraTestingModules
+      ],
+      providers: [
+        { provide: AuthService, useValue: AuthServiceStub }
+      ]
     })
     .compileComponents();
   }));

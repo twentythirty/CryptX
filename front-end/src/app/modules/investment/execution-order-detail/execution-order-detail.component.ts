@@ -4,7 +4,12 @@ import { mergeMap, finalize } from 'rxjs/operators';
 
 import { StatusClass } from '../../../shared/models/common';
 
-import { TimelineDetailComponent, SingleTableDataSource, TagLineItem, ITimelineDetailComponent } from '../timeline-detail/timeline-detail.component'
+import {
+  TimelineDetailComponent,
+  SingleTableDataSource,
+  TagLineItem,
+  ITimelineDetailComponent
+} from '../timeline-detail/timeline-detail.component';
 import { TableDataSource, TableDataColumn } from '../../../shared/components/data-table/data-table.component';
 import { TimelineEvent } from '../../../shared/components/timeline/timeline.component';
 import { DateCellDataColumn, StatusCellDataColumn, NumberCellDataColumn } from '../../../shared/components/data-table-cells';
@@ -24,9 +29,9 @@ export class ExecutionOrderDetailComponent extends TimelineDetailComponent imple
   /**
    * 1. Implement attributes to display titles
    */
-  public pageTitle: string = 'Execution orders';
-  public singleTitle: string = 'Order';
-  public listTitle: string = 'Execution orders';
+  public pageTitle = 'Execution orders';
+  public singleTitle = 'Order';
+  public listTitle = 'Execution orders';
 
   /**
    * 2. Implement attributes to preset data structure
@@ -41,6 +46,7 @@ export class ExecutionOrderDetailComponent extends TimelineDetailComponent imple
       { column: 'exchange', nameKey: 'table.header.exchange' },
       { column: 'price', nameKey: 'table.header.price' },
       { column: 'quantity', nameKey: 'table.header.total_quantity' },
+      { column: 'spend_amount', nameKey: 'table.header.spend_amount' },
       { column: 'sum_of_exchange_trading_fee', nameKey: 'table.header.sum_of_exchange_trading_fee' },
       { column: 'status', nameKey: 'table.header.status' }
     ],
@@ -56,6 +62,7 @@ export class ExecutionOrderDetailComponent extends TimelineDetailComponent imple
     new TableDataColumn({ column: 'exchange' }),
     new NumberCellDataColumn({ column: 'price' }),
     new NumberCellDataColumn({ column: 'quantity' }),
+    new NumberCellDataColumn({ column: 'spend_amount' }),
     new NumberCellDataColumn({ column: 'sum_of_exchange_trading_fee' }),
     new StatusCellDataColumn({ column: 'status', inputs: { classMap: {
       'orders.status.51': StatusClass.PENDING,
@@ -71,13 +78,15 @@ export class ExecutionOrderDetailComponent extends TimelineDetailComponent imple
     header: [
       { column: 'id', nameKey: 'table.header.id', filter: { type: 'number', hasRange: false, inputSearch: true, sortable: true }},
       { column: 'instrument', nameKey: 'table.header.instrument', filter: { type: 'text', sortable: true }},
-      { column: 'side', nameKey: 'table.header.side', filter: { type: 'text', sortable: true }},
+      { column: 'side', nameKey: 'table.header.side', filter: { type: 'text', sortable: true, inputSearch: false }},
       { column: 'exchange', nameKey: 'table.header.exchange', filter: { type: 'text', sortable: true }},
-      { column: 'type', nameKey: 'table.header.type', filter: { type: 'text', sortable: true }},
+      { column: 'type', nameKey: 'table.header.type', filter: { type: 'text', sortable: true, inputSearch: false }},
       { column: 'price', nameKey: 'table.header.price', filter: { type: 'number', sortable: true }},
       { column: 'total_quantity', nameKey: 'table.header.total_quantity', filter: { type: 'number', sortable: true }},
+      { column: 'filled_quantity', nameKey: 'table.header.filled_quantity', filter: { type: 'number', sortable: true }},
+      { column: 'spend_amount', nameKey: 'table.header.total_spend_amount', filter: { type: 'number', sortable: true }},
       { column: 'exchange_trading_fee', nameKey: 'table.header.exchange_trading_fee', filter: { type: 'number', sortable: true }},
-      { column: 'status', nameKey: 'table.header.status', filter: { type: 'text', sortable: true }},
+      { column: 'status', nameKey: 'table.header.status', filter: { type: 'text', sortable: true, inputSearch: false  }},
       { column: 'submission_time', nameKey: 'table.header.submission_time', filter: { type: 'date', sortable: true }},
       { column: 'completion_time', nameKey: 'table.header.completion_time', filter: { type: 'date', sortable: true }}
     ],
@@ -92,14 +101,16 @@ export class ExecutionOrderDetailComponent extends TimelineDetailComponent imple
     new StatusCellDataColumn({ column: 'type' }),
     new NumberCellDataColumn({ column: 'price' }),
     new NumberCellDataColumn({ column: 'total_quantity' }),
+    new NumberCellDataColumn({ column: 'filled_quantity' }),
+    new NumberCellDataColumn({ column: 'spend_amount' }),
     new NumberCellDataColumn({ column: 'exchange_trading_fee' }),
     new StatusCellDataColumn({ column: 'status', inputs: { classMap: {
       'execution_orders.status.61': StatusClass.PENDING,
-      'execution_orders.status.62': StatusClass.APPROVED,
-      'execution_orders.status.63': StatusClass.APPROVED,
-      'execution_orders.status.64': StatusClass.APPROVED,
-      'execution_orders.status.65': StatusClass.REJECTED,
+      'execution_orders.status.62': StatusClass.INPROGRESS,
+      'execution_orders.status.63': StatusClass.FULLYFILLED,
+      'execution_orders.status.64': StatusClass.PARTIALLYFILLED,
       'execution_orders.status.66': StatusClass.FAILED,
+      'execution_orders.status.67': StatusClass.NOTFILLED
     }}}),
     new DateCellDataColumn({ column: 'submission_time' }),
     new DateCellDataColumn({ column: 'completion_time' })
@@ -112,11 +123,9 @@ export class ExecutionOrderDetailComponent extends TimelineDetailComponent imple
   constructor(
     public route: ActivatedRoute,
     public router: Router,
-    private investmentService: InvestmentService
+    private investmentService: InvestmentService,
   ) {
     super(route, router);
-
-    this.getFilterLOV();
   }
 
   /**
@@ -136,7 +145,7 @@ export class ExecutionOrderDetailComponent extends TimelineDetailComponent imple
       col => ['id', 'instrument', 'side', 'exchange', 'type', 'status'].includes(col.column)
     ).map(
       col => {
-        let filter = {filter : {recipe_order_id: this.routeParamId}}
+        const filter = { filter : { recipe_order_id: this.routeParamId }};
         col.filter.rowData$ = this.investmentService.getAllExecutionOrdersHeaderLOV(col.column, filter);
       }
     );
@@ -162,7 +171,7 @@ export class ExecutionOrderDetailComponent extends TimelineDetailComponent imple
         this.getFilterLOV();
       },
       err => this.listDataSource.body = []
-    )
+    );
   }
 
   public getSingleData(): void {
@@ -172,17 +181,17 @@ export class ExecutionOrderDetailComponent extends TimelineDetailComponent imple
       )
     ).subscribe(
       res => {
-        if(res.recipe_order) {
+        if (res.recipe_order) {
           this.singleDataSource.body = [ res.recipe_order ];
         }
-        if(res.recipe_order_stats) {
+        if (res.recipe_order_stats) {
           this.setTagLine(res.recipe_order_stats.map(stat => {
-            return new TagLineItem(`${stat.count} ${stat.name}`)
-          }))
+            return new TagLineItem(`${stat.count} ${stat.name}`);
+          }));
         }
       },
       err => this.singleDataSource.body = []
-    )
+    );
   }
 
   public getTimelineData(): void {
@@ -190,7 +199,7 @@ export class ExecutionOrderDetailComponent extends TimelineDetailComponent imple
       mergeMap(
         params => this.investmentService.getAllTimelineData({ recipe_order_id: params['id'] })
       )
-    )
+    );
   }
   /**
    * 5. Implement methods to handle user actions

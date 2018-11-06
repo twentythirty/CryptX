@@ -6,13 +6,17 @@ import { Component, OnInit, Input, Output, EventEmitter } from '@angular/core';
   styleUrls: ['./button-radio.component.scss']
 })
 export class ButtonRadioComponent implements OnInit {
+  id: String;
+
   @Input() name: string;
   @Input() value: string;
   @Input() label: string;
 
   @Output() onChange = new EventEmitter<object>();
 
-  constructor() { }
+  constructor() {
+    this.id = 'id' + Math.random() * Math.pow(10, 16);
+  }
 
   ngOnInit() {
   }

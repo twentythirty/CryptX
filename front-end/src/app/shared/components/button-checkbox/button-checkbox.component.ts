@@ -6,6 +6,8 @@ import { Component, OnInit, Input, Output, EventEmitter } from '@angular/core';
   styleUrls: ['./button-checkbox.component.scss']
 })
 export class ButtonCheckboxComponent implements OnInit {
+  id: String;
+
   @Input() value: string; // checkbox value
   @Input() labelTrue: string; // checkbox label text when checkbox is checked
   @Input() labelFalse: string; // checkbox label text when checkbox is unchecked
@@ -13,7 +15,9 @@ export class ButtonCheckboxComponent implements OnInit {
 
   @Output() onToggle: EventEmitter<any> = new EventEmitter();
 
-  constructor() { }
+  constructor() {
+    this.id = 'id' + Math.random() * Math.pow(10, 16);
+  }
 
   ngOnInit() {
   }

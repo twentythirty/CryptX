@@ -11,7 +11,7 @@ module.exports = (sequelize, DataTypes) => {
       },
       level: {
         type: DataTypes.SMALLINT,
-        defaultValue: LOG_LEVELS.Info
+        defaultValue: ACTIONLOG_LEVELS.Info
       },
       translation_key: {
         type: DataTypes.STRING,
@@ -62,7 +62,7 @@ module.exports = (sequelize, DataTypes) => {
       json.translationArgs = json.translation_args;
       delete json.translation_args;
 
-      delete json.details;
+      if(process.env.NODE_ENV !== 'cucumber') delete json.details;
     }
     else {
       delete json.translation_key;

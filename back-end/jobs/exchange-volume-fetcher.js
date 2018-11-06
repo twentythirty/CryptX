@@ -8,7 +8,7 @@ const actions = {
 };
 
 //run once per day at midnight
-module.exports.SCHEDULE = '0 0 * * *';
+module.exports.SCHEDULE = '0 17 0 * * *';
 module.exports.NAME = 'EXCH_VOL24';
 module.exports.JOB_BODY = async (config, log) => {
 
@@ -26,9 +26,9 @@ module.exports.JOB_BODY = async (config, log) => {
 
         if(err) {
             log(`[ERROR.2A]: ${err.message}`);
-            logAction(actions.error, {
+            await logAction(actions.error, {
                 args: { error: err.message },
-                log_level: LOG_LEVELS.Error
+                log_level: ACTIONLOG_LEVELS.Error
             });
 
             return;
@@ -44,7 +44,13 @@ module.exports.JOB_BODY = async (config, log) => {
             const mappings = associatedMappings[exchange.id];
             log(`Building volume fetcher for ${exchange.name} with ${mappings.length} mappings...`);
 
-            const fetcher = await ccxtUtils.getConnector(exchange.api_id);
+            const fetcher = await ccxtUtils.getConnector(exchange.id);
+
+            if (!fetcher || fetcher.loading_failed) {
+                //throw error to break enclosing promise
+                TE(`Failed to find connector for exchange ${exchange.name} or failed to load exchange markets!`);
+            }
+
             const throttle = await ccxtUtils.getThrottle(exchange.api_id);
 
             //promise pairs made of arrays where [exchange, [mapping, fetched-data]]
@@ -65,9 +71,9 @@ module.exports.JOB_BODY = async (config, log) => {
 
         if(err) {
             log(`[ERROR.3A]: ${err.message}`);
-            logAction(actions.error, {
+            await logAction(actions.error, {
                 args: { error: err.message },
-                log_level: LOG_LEVELS.Error
+                log_level: ACTIONLOG_LEVELS.Error
             });
 
             return;
@@ -89,7 +95,8 @@ module.exports.JOB_BODY = async (config, log) => {
                     instrument_id: symbol_mapping.instrument_id,
                     timestamp_to: data_timestamp_to,
                     timestamp_from: new Date(data_timestamp_to.getTime() - 1000 * 60 * 60 * 24),
-                    volume: market_data.baseVolume
+                    volume: market_data.baseVolume,
+                    quote_volume: market_data.quoteVolume ? market_data.quoteVolume : Decimal(market_data.baseVolume).mul(Decimal(market_data.ask).plus(market_data.bid).div(2)).toString()
                 }
             });
         });
@@ -98,9 +105,9 @@ module.exports.JOB_BODY = async (config, log) => {
         
         if(!records.length) {
             log(`[WARN.4A]: Job received 0 records.`);
-            logAction(actions.warning, {
+            await logAction(actions.warning, {
                 args: { warning: 'Job received 0 records' },
-                log_level: LOG_LEVELS.Warning
+                log_level: ACTIONLOG_LEVELS.Warning
             });
 
             return;
@@ -110,9 +117,9 @@ module.exports.JOB_BODY = async (config, log) => {
 
         if(err) {
             log(`[ERROR.4A]: ${err.message}`);
-            logAction(actions.error, {
+            await logAction(actions.error, {
                 args: { error: err.message },
-                log_level: LOG_LEVELS.Error
+                log_level: ACTIONLOG_LEVELS.Error
             });
 
             return;

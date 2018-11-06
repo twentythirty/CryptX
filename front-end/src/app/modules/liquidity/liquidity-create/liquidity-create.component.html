@@ -16,7 +16,9 @@
         formControlName="instrument_id"
         [items]="instruments"
         [spinnerLoading]="instrumentsLoading"
-        placeholder="{{'instruments.enter_instrument' | translate}}"
+        [placeholder]="'instruments.enter_instrument' | translate"
+        bindValue="id"
+        bindLabel="value"
       ></app-input-item>
 
       <app-input-item
@@ -27,7 +29,9 @@
         formControlName="exchange_id"
         [items]="exchanges"
         [spinnerLoading]="exchangesLoading"
-        placeholder="{{'exchanges.select_exchange' | translate}}"
+        [placeholder]="'exchanges.select_exchange' | translate"
+        bindValue="id"
+        bindLabel="value"
       ></app-input-item>
 
       <app-input-item
@@ -55,7 +59,11 @@
 <app-form-action-bar>
   <button
     class="btn submit"
-    [disabled]="loading || !form.valid"
+    [disabled]="loading"
     (click)="saveLiquidityRequirement()"
-  >{{ 'liquidity.add_requirement' | translate }}</button>
+    [appMarkAsTouched]="form"
+  >
+    <ng-container *ngIf="liquidityId">{{ 'common.save_changes' | translate }}</ng-container>
+    <ng-container *ngIf="!liquidityId">{{ 'liquidity.add_requirement' | translate }}</ng-container>
+  </button>
 </app-form-action-bar>

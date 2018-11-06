@@ -1,12 +1,13 @@
 import { Component, OnInit } from '@angular/core';
-import { FormGroup, FormControl, Validators } from "@angular/forms";
-import { Router } from "@angular/router";
+import { FormGroup, FormControl, Validators } from '@angular/forms';
+import { Router } from '@angular/router';
 import { finalize } from 'rxjs/operators';
-import _ from 'lodash';
+import * as _ from 'lodash';
 
-import { ModelConstantsService } from "../../../services/model-constants/model-constants.service";
-import { AssetService } from "../../../services/asset/asset.service";
-import { ColdStorageService } from "../../../services/cold-storage/cold-storage.service";
+import { ModelConstantsService } from '../../../services/model-constants/model-constants.service';
+import { AssetService } from '../../../services/asset/asset.service';
+import { ColdStorageService } from '../../../services/cold-storage/cold-storage.service';
+import { EntitiesFilter } from '../../../shared/models/api/entitiesFilter';
 
 @Component({
   selector: 'app-add-account',
@@ -16,12 +17,11 @@ import { ColdStorageService } from "../../../services/cold-storage/cold-storage.
 export class AddAccountComponent implements OnInit {
 
   strategies: Array<Object> = [];
-  assets: Array<Object> = []
-  custodians:Array<Object> = [];
+  assets: Array<Object> = [];
+  custodians: Array<Object> = [];
 
   buttonLoading: boolean = false;
 
-  strategiesLoading: boolean = true;
   assetsLoading: boolean = true;
   custodiansLoading: boolean = true;
 
@@ -37,33 +37,32 @@ export class AddAccountComponent implements OnInit {
     private modelConstantService: ModelConstantsService,
     private assetService: AssetService,
     private coldStorageService: ColdStorageService,
-    private router: Router,
+    public router: Router,
   ) {}
 
   ngOnInit() {
-    this.getStrategies();
     this.getAssets();
     this.getCustodians();
+    this.getStrategies();
   }
 
-  getStrategies(){
-    let group_name = 'STRATEGY_TYPES';
-
-    Object.entries(this.modelConstantService.getGroup(group_name)).map((item, index) => {
-      this.strategies[index]= {
+  getStrategies() {
+    const groupName = 'STRATEGY_TYPES';
+    Object.entries(this.modelConstantService.getGroup(groupName)).map((item, index) => {
+      this.strategies[index] = {
         id: item[1],
         value: item[0]
-      }
-      this.strategiesLoading = false;
+      };
     });
   }
 
-  getAssets(){
-    let filter = {filter : {is_cryptocurrency: "assets.is_cryptocurrency.yes"}};
 
-    this.assetService.getAllAssetsDetailed(filter).subscribe(res => {
+  getAssets() {
+    const requestData = new EntitiesFilter;
+    requestData.filter = {is_cryptocurrency: 'assets.is_cryptocurrency.yes'};
+
+    this.assetService.getAllAssetsDetailed(requestData).subscribe(res => {
       this.assetsLoading = false;
-
       this.assets = res.assets.map(asset => {
         return {
           id: asset.id,
@@ -73,7 +72,7 @@ export class AddAccountComponent implements OnInit {
     });
   }
 
-  getCustodians(){
+  getCustodians() {
     this.coldStorageService.getAllCustodians().subscribe(res => {
       this.custodiansLoading = false;
 
@@ -86,9 +85,13 @@ export class AddAccountComponent implements OnInit {
     });
   }
 
-  add(){
+  add() {
+    if (this.form.invalid) {
+      return;
+    }
+
     const request = _.mapValues(this.form.value, val => {
-      if (val === null){
+      if (val === null) {
         return val;
       } else {
         return typeof val === 'object' ? val.id : val;

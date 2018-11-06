@@ -1,7 +1,7 @@
 import { NgModule, Component, OnInit } from '@angular/core';
 
 import { RouterModule } from '@angular/router';
-import { FormsModule, ReactiveFormsModule }   from '@angular/forms';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common'; 
 import { BrowserModule } from '@angular/platform-browser';
 
@@ -13,25 +13,29 @@ import { PasswordResetComponent } from './password-reset/password-reset.componen
 import { EditInfoComponent } from './edit-info/edit-info.component';
 import { AcceptInviteComponent } from './accept-invite/accept-invite.component';
 import { InviteService } from './accept-invite/invite.service';
+import { ModelConstantsService } from '../../services/model-constants/model-constants.service';
+import { MatSnackBarModule } from '@angular/material';
 
 @NgModule({
   declarations: [
+    AcceptInviteComponent,
     LoginComponent,
     PasswordResetComponent,
     EditInfoComponent,
-    AcceptInviteComponent
   ],
   imports: [
-    FormsModule,
-    ReactiveFormsModule,
     CommonModule,
+    FormsModule,
     BrowserModule,
+    MatSnackBarModule,
+    ReactiveFormsModule,
     RouterModule,
     SharedModule,
   ],
   providers: [
     AuthService,
-    InviteService
+    InviteService,
+    ModelConstantsService,
   ]
 })
 export class AuthModule { }

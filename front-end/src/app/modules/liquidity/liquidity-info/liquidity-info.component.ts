@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { mergeMap } from 'rxjs/operators';
+import { mergeMap, finalize } from 'rxjs/operators';
 
 import { DataTableCommonManagerComponent } from '../../../shared/components/data-table-common-manager/data-table-common-manager.component';
 import { TableDataColumn, TableDataSource } from '../../../shared/components/data-table/data-table.component';
@@ -15,13 +15,15 @@ import { LiquidityService } from '../../../services/liquidity/liquidity.service'
 })
 export class LiquidityInfoComponent extends DataTableCommonManagerComponent implements OnInit {
   private cryptoSuffix: string;
+  showDeleteConfirm: boolean = false;
+  deleteLoading: boolean = false;
 
   public liquidityDataSource: TableDataSource = {
     header: [
       { column: 'instrument', nameKey: 'table.header.instrument' },
       { column: 'periodicity', nameKey: 'table.header.periodicity' },
       { column: 'quote_asset', nameKey: 'table.header.quote_asset' },
-      { column: 'minimum_circulation', nameKey: 'table.header.minimum_circulation' },
+      { column: 'minimum_circulation', nameKey: 'table.header.minimum_daily_avg_volume' },
       { column: 'exchange', nameKey: 'table.header.exchange' },
       { column: 'exchange_count', nameKey: 'table.header.exchange_count' },
       { column: 'exchange_not_pass', nameKey: 'table.header.exchange_not_pass' },
@@ -32,13 +34,18 @@ export class LiquidityInfoComponent extends DataTableCommonManagerComponent impl
     new TableDataColumn({ column: 'instrument' }),
     new TableDataColumn({ column: 'periodicity' }),
     new TableDataColumn({ column: 'quote_asset' }),
-    new NumberCellDataColumn({ column: 'minimum_circulation' }),
+    new NumberCellDataColumn({ column: 'minimum_circulation',  inputs: {
+      digitsInfo: '1.2-2'
+    } }),
     new StatusCellDataColumn({ column: 'exchange' }),
     new TableDataColumn({ column: 'exchange_count' }),
     new TableDataColumn({ column: 'exchange_not_pass' }),
   ];
 
-  public exchangesDataSource: TableDataSource;
+  public exchangesDataSource: TableDataSource = {
+    header: null,
+    body: null
+  };
   public exchangesColumnsToShow: Array<TableDataColumn>;
 
   constructor(
@@ -57,7 +64,7 @@ export class LiquidityInfoComponent extends DataTableCommonManagerComponent impl
 
 
   private declareExchangesTable() {
-    this.exchangesDataSource = {
+    Object.assign(this.exchangesDataSource, {
       header: [
         { column: 'exchange', nameKey: 'table.header.exchange' },
         { column: 'instrument_identifier', nameKey: 'table.header.identifier' },
@@ -66,9 +73,8 @@ export class LiquidityInfoComponent extends DataTableCommonManagerComponent impl
         { column: 'last_week_vol', nameKey: 'table.header.last_7days_vol' },
         { column: 'last_updated', nameKey: 'table.header.last_updated' },
         { column: 'passes', nameKey: 'table.header.liquidity_status' },
-      ],
-      body: null,
-    };
+      ]
+    });
 
     this.exchangesColumnsToShow = [
       new TableDataColumn({ column: 'exchange' }),
@@ -84,14 +90,14 @@ export class LiquidityInfoComponent extends DataTableCommonManagerComponent impl
         column: 'last_day_vol',
         inputs: {
           suffix: this.cryptoSuffix,
-          digitsInfo: '1.0-2',
+          digitsInfo: '1.2-2',
         }
       }),
       new NumberCellDataColumn({
         column: 'last_week_vol',
         inputs: {
           suffix: this.cryptoSuffix,
-          digitsInfo: '1.0-2',
+          digitsInfo: '1.2-2',
         }
       }),
       new DateCellDataColumn({ column: 'last_updated' }),
@@ -115,7 +121,7 @@ export class LiquidityInfoComponent extends DataTableCommonManagerComponent impl
     );
   }
 
-  public getAllData(): void {
+  getAllData(): void {
     this.route.params.pipe(
       mergeMap(
         params => this.liquidityService.getExchanges(params['id'])
@@ -128,6 +134,34 @@ export class LiquidityInfoComponent extends DataTableCommonManagerComponent impl
         });
       },
       err => this.exchangesDataSource.body = []
+    );
+  }
+
+
+  openDeleteConfirm(): void {
+    this.showDeleteConfirm = true;
+  }
+
+  closeDeleteConfirm(): void {
+    this.showDeleteConfirm = false;
+  }
+
+  deleteLiquidity(): void {
+    this.closeDeleteConfirm();
+    this.deleteLoading = true;
+
+    this.route.params.pipe(
+      mergeMap(
+        params => this.liquidityService.deleteLiquidity(params.id).pipe(
+          finalize(() => this.deleteLoading = false)
+        )
+      )
+    ).subscribe(
+      res => {
+        if (res.success) {
+          this.router.navigate(['/liquidity_requirements']);
+        }
+      }
     );
   }
 

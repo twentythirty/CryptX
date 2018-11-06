@@ -1,6 +1,6 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { ActivatedRoute, Router, Params } from '@angular/router';
-import _ from 'lodash';
+import * as _ from 'lodash';
 import { filter } from 'rxjs/operators';
 
 import { RolesAllRequestData } from '../../models/api/rolesAllRequestData';
@@ -11,23 +11,23 @@ import { RolesAllRequestData } from '../../models/api/rolesAllRequestData';
 })
 export class DataTableCommonManagerComponent implements OnInit, OnDestroy {
   private prevQueryParams: { page?: number } = {};
-  private orderingCleared: boolean = false;
+  private orderingCleared = false;
   private queryParamsSubscription;
-  
+
   public routeParamId: number;
 
-  public count: number = 0;
-  public pageSize: number = 10;
-  public page: number = 1;
+  public count = 0;
+  public pageSize = 10;
+  public page = 1;
   /**
    * @param isTableLoading - When true table will get loading state and lock until get false
    */
-  public isTableLoading: boolean = false;
+  public isTableLoading = false;
 
   public requestData: RolesAllRequestData = {
     filter: {},
     order: [],
-    limit: this.pageSize,
+    limit: 0,
     offset: 0
   };
 
@@ -39,12 +39,12 @@ export class DataTableCommonManagerComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
+    this.requestData.limit = this.pageSize;
     this.queryParamsSubscription = this.route.queryParams.pipe(
       filter(params => !params.page || params.page != this.prevQueryParams.page )
     ).subscribe(params => {
       this.startTableLoading();
 
-      this.routeParamId = params.id
       this.page = params.page || 1;
       this.requestData.offset = (this.page - 1) * this.pageSize;
       this.getAllData();
@@ -56,13 +56,15 @@ export class DataTableCommonManagerComponent implements OnInit, OnDestroy {
       filter((params: Params) => params.id)
     ).subscribe(
       (params: Params) => {
-        this.routeParamId= params.id;
+        this.routeParamId = params.id;
       }
     );
   }
 
   ngOnDestroy() {
-    this.queryParamsSubscription && this.queryParamsSubscription.unsubscribe();
+    if (this.queryParamsSubscription) {
+      this.queryParamsSubscription.unsubscribe();
+    }
   }
 
   onSetFilter(filterData): void {
@@ -82,7 +84,7 @@ export class DataTableCommonManagerComponent implements OnInit, OnDestroy {
       item => filterData.column !== item.by
     );
     if (filterData.order) {
-      if(!this.orderingCleared) {
+      if (!this.orderingCleared) {
         this.requestData.order = []; // clear default ID ordering if user pick any other ordering
         this.orderingCleared = true;
       }
@@ -90,7 +92,7 @@ export class DataTableCommonManagerComponent implements OnInit, OnDestroy {
     }
 
     // order by id if no ordering exists
-    if(_.isEmpty(this.requestData.order)) {
+    if (_.isEmpty(this.requestData.order)) {
       this.setOrderById();
     }
 
@@ -99,7 +101,7 @@ export class DataTableCommonManagerComponent implements OnInit, OnDestroy {
     this.requestData.offset = 0;
 
     // update table data
-    if(_.isEmpty(this.prevQueryParams) || this.prevQueryParams.page == 1) {
+    if (_.isEmpty(this.prevQueryParams) || this.prevQueryParams.page == 1) {
       this.getAllData();
     }
 

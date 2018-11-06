@@ -9,6 +9,6 @@ module.exports = {
   },
 
   down: (queryInterface, Sequelize) => {
-    return queryInterface.addIndex('execution_order', 'execution_order_status'); 
+    return queryInterface.removeIndex('execution_order', 'execution_order_status'); 
   }
 };

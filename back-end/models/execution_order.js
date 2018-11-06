@@ -21,6 +21,7 @@ module.exports = (sequelize, DataTypes) => {
                 defaultValue: null
             },
             total_quantity: DataTypes.DECIMAL,
+            spend_amount: DataTypes.DECIMAL,
             status: {
                 type: DataTypes.SMALLINT,
                 allowNull: false
@@ -67,35 +68,11 @@ module.exports = (sequelize, DataTypes) => {
 
         const is_active = _.reduce([
             EXECUTION_ORDER_STATUSES.Pending,
-            EXECUTION_ORDER_STATUSES.Placed,
-            EXECUTION_ORDER_STATUSES.PartiallyFilled
+            EXECUTION_ORDER_STATUSES.InProgress
         ], (accum, val) => accum || this.status == val, false)
 
         return is_active;
     }
-
-    ExecutionOrder.beforeSave(async (exec_order, options) => {
-        const ExecutionOrderFill = require('./index').ExecutionOrderFill;
-        const sequelize = exec_order.sequelize;
-
-        if(exec_order.type === EXECUTION_ORDER_TYPES.Market) {
-
-            const [ err, result ] = await to(ExecutionOrderFill.findAll({
-                where: { execution_order_id: exec_order.id },
-                attributes: [ [sequelize.fn('AVG', sequelize.col('price')), 'average_price'] ],
-                group: ['execution_order_id']
-            }));
-
-            if(err) TE(err.message);
-
-            let average_price;
-            if(result[0]) average_price = result[0].get('average_price');
-    
-            if(average_price) exec_order.price = average_price
-        }
-
-    });
-
 
     return ExecutionOrder;
 };

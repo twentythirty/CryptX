@@ -1,11 +1,15 @@
 import { TestBed, inject } from '@angular/core/testing';
+import { HttpClientModule } from '@angular/common/http';
 
 import { ColdStorageService } from './cold-storage.service';
 
 describe('ColdStorageService', () => {
   beforeEach(() => {
     TestBed.configureTestingModule({
-      providers: [ColdStorageService]
+      providers: [ColdStorageService],
+      imports: [
+        HttpClientModule
+      ]
     });
   });
 

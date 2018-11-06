@@ -7,7 +7,11 @@ import { SharedModule } from '../../shared/shared.module';
 import { DepositListComponent } from './deposit-list/deposit-list.component';
 import { DepositInfoComponent } from './deposit-info/deposit-info.component';
 
-import { DepositService } from "../../services/deposit/deposit.service";
+import { DepositService } from '../../services/deposit/deposit.service';
+import { AuthService } from '../../services/auth/auth.service';
+import { InvestmentService } from '../../services/investment/investment.service';
+import { ModelConstantsService } from '../../services/model-constants/model-constants.service';
+import { DepositApproveComponent } from './deposit-approve/deposit-approve.component';
 
 @NgModule({
   imports: [
@@ -19,9 +23,16 @@ import { DepositService } from "../../services/deposit/deposit.service";
   declarations: [
     DepositListComponent,
     DepositInfoComponent,
+    DepositApproveComponent,
   ],
   providers: [
+    AuthService,
     DepositService,
+    InvestmentService,
+    ModelConstantsService,
+  ],
+  exports: [
+    DepositApproveComponent,
   ]
 })
-export class DepositModule { } 
+export class DepositModule { }

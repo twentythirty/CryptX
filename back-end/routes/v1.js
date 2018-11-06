@@ -255,6 +255,14 @@ router.post(
   filter_reducer,
   AssetController.getAssetsDetailed
 );
+router.post(
+  ROUTES.GetAssetsDetailedOfInvestmentRunAssetGroup.router_string,
+  stateless_auth,
+  res_new_token,
+  check_permissions,
+  filter_reducer,
+  AssetController.getAssetsDetailedOfInvestmentRunAssetGroup
+);
 router.get(
   ROUTES.GetAssetsDetailedColLOV.router_string,
   stateless_auth,
@@ -307,6 +315,13 @@ router.post(
   post_body_validator,
   AssetController.changeAssetStatus
 );
+router.get(
+  ROUTES.GetExchangeAssets.router_string,
+  stateless_auth,
+  res_new_token,
+  check_permissions,
+  AssetController.getExchangeAssets
+);
 
 
 // INVESTMENT
@@ -317,6 +332,13 @@ router.post(
   check_permissions,
   post_body_validator,
   InvestmentController.createInvestmentRun
+);
+router.post(
+  ROUTES.SelectInvestmentAssets.router_string,
+  stateless_auth,
+  res_new_token,
+  check_permissions,
+  InvestmentController.generateInvestmentAssetGroup
 );
 //get filtered investments
 router.post(
@@ -358,11 +380,27 @@ router.get(
   InvestmentController.getInvestmentRun
 );
 router.post(
+  ROUTES.GetInvestmentAmounts.router_string,
+  stateless_auth,
+  res_new_token,
+  check_permissions,
+  filter_reducer,
+  InvestmentController.getInvestmentAmounts
+);
+router.post(
   ROUTES.GetInvestmentStats.router_string,
   stateless_auth,
   res_new_token,
   check_permissions,
   InvestmentController.getInvestmentStats
+);
+router.post(
+  ROUTES.GetInvestment.router_string,
+  stateless_auth,
+  res_new_token,
+  check_permissions,
+  filter_reducer,
+  InvestmentController.getInvestmentRunWithAssetMix
 );
 
 
@@ -422,6 +460,14 @@ router.get(
   check_permissions,
   filter_reducer,
   InvestmentController.getRecipeRun
+);
+router.post(
+  ROUTES.CalculateRecipeRunDeposits.router_string,
+  stateless_auth,
+  res_new_token,
+  check_permissions,
+  filter_reducer,
+  InvestmentController.calculateRecipeRunDeposits
 );
 
 
@@ -779,12 +825,28 @@ router.delete(
 
 // Liquidity requirements
 router.post(
-  ROUTES.LiquidityReqCreate.router_string,
+  ROUTES.CreateLiquidityRequirement.router_string,
   stateless_auth,
   res_new_token,
   check_permissions,
   post_body_validator,
   InstrumentController.createLiquidityRequirement
+);
+router.post(
+  ROUTES.EditLiquidityRequirement.router_string,
+  stateless_auth,
+  res_new_token,
+  check_permissions,
+  post_body_validator,
+  InstrumentController.editLiquidityRequirement
+);
+router.delete(
+  ROUTES.DeleteLiquidityRequirement.router_string,
+  stateless_auth,
+  res_new_token,
+  check_permissions,
+  post_body_validator,
+  InstrumentController.deleteLiquidityRequirement
 );
 router.get(
   ROUTES.GetLiquidityRequirements.router_string,
@@ -904,6 +966,72 @@ router.post(
   check_permissions,
   ExchangeController.createExchangeAccount
 );
+router.post(
+  ROUTES.EditExchangeAccount.router_string,
+  stateless_auth,
+  res_new_token,
+  check_permissions,
+  ExchangeController.editExchangeAccount
+);
+router.post(
+  ROUTES.GetExchangeAccounts.router_string,
+  stateless_auth,
+  res_new_token,
+  check_permissions,
+  filter_reducer,
+  ExchangeController.getExchangeAccounts
+);
+router.get(
+  ROUTES.GetExchangeAccount.router_string,
+  stateless_auth,
+  res_new_token,
+  check_permissions,
+  ExchangeController.getExchangeAccount
+);
+router.post(
+  ROUTES.GetExchangeAccountsColumnLOV.router_string,
+  stateless_auth,
+  res_new_token,
+  check_permissions,
+  filter_reducer,
+  ExchangeController.getExchangeAccountsColumnLOV
+);
+router.post(
+  ROUTES.SetExchangeCredentials.router_string,
+  stateless_auth,
+  res_new_token,
+  check_permissions,
+  ExchangeController.setExchangeCredentials
+);
+router.delete(
+  ROUTES.DeleteExchangeCredentials.router_string,
+  stateless_auth,
+  res_new_token,
+  check_permissions,
+  ExchangeController.deleteExchangeCredentials
+);
+router.post(
+  ROUTES.GetExchangeCredentials.router_string,
+  stateless_auth,
+  res_new_token,
+  check_permissions,
+  filter_reducer,
+  ExchangeController.getExchangeCredentials
+);
+router.get(
+  ROUTES.GetExchangeCredential.router_string,
+  stateless_auth,
+  res_new_token,
+  check_permissions,
+  ExchangeController.getExchangeCredential
+);
+router.get(
+  ROUTES.GetExchangeCredentialFields.router_string,
+  stateless_auth,
+  res_new_token,
+  check_permissions,
+  ExchangeController.getExchangeCredentialFields
+);
 
 //COLD STORAGE
 router.post(
@@ -957,7 +1085,14 @@ router.post(
   res_new_token,
   check_permissions,
   ColdstorageController.addColdstorageAccount
-);
+);/* Removed for now, may be added later
+router.post(
+  ROUTES.EditColdStorageAccount.router_string,
+  stateless_auth,
+  res_new_token,
+  check_permissions,
+  ColdstorageController.editColdStorageAccount
+);*/
 router.post(
   ROUTES.GetColdstorageAccounts.router_string,
   stateless_auth,
@@ -980,6 +1115,42 @@ router.post(
   check_permissions,
   ColdstorageController.getColdstorageAccountsFees
 );
+router.post(
+  ROUTES.GetColdstorageAccountsFeesColLOV.router_string,
+  stateless_auth,
+  res_new_token,
+  check_permissions,
+  ColdstorageController.getColdstorageAccountsFeeColumnLOV
+);
+
+//ASSET CONVERSION
+
+router.post(
+  ROUTES.GetRecipeRunAssetConversions.router_string,
+  stateless_auth,
+  res_new_token,
+  check_permissions,
+  filter_reducer,
+  DepositController.getRecipeRunAssetConversions
+);
+router.post(
+  ROUTES.SubmitAssetConversion.router_string,
+  stateless_auth,
+  res_new_token,
+  check_permissions,
+  filter_reducer,
+  DepositController.submitAssetConversion
+);
+router.post(
+  ROUTES.CompleteAssetConversion.router_string,
+  stateless_auth,
+  res_new_token,
+  check_permissions,
+  filter_reducer,
+  DepositController.completeAssetConversion
+);
+
+
 //********* API DOCUMENTATION **********
 router.use(
   "/docs/api.json",

@@ -11,7 +11,7 @@ import { OrderGroup } from '../../shared/models/orderGroup';
 export class OrdersAllResponse {
   success: boolean;
   count: number;
-  recipe_orders: Order;
+  recipe_orders: Array<Order>;
   footer: Array<any>;
 }
 
@@ -44,7 +44,7 @@ export class OrdersService {
   }
 
   getAllOrdersByGroupId(groupId: number, request?: EntitiesFilter): Observable<OrdersAllResponse> {
-    if(request) {
+    if (request) {
       return this.http.post<OrdersAllResponse>(this.baseUrl + `orders/of_group/${groupId}`, request);
     } else {
       return this.http.get<OrdersAllResponse>(this.baseUrl + `orders/of_group/${groupId}`);
@@ -56,8 +56,8 @@ export class OrdersService {
   }
 
   /**
-   * 
-   * @param recipeId 
+   *
+   * @param recipeId
    * @param no404Error True if no need that server gives 404 if group not found
    */
   getOrderGroupOfRecipe(recipeId: number, no404Error?: boolean): Observable<OrderGroupOfRecipeResponse> {
@@ -65,7 +65,7 @@ export class OrdersService {
       params: {}
     };
 
-    if(no404Error) {
+    if (no404Error) {
       options.params = {
         check: 'true'
       };
@@ -88,9 +88,9 @@ export class OrdersService {
     return this.http.get<any>(this.baseUrl + `orders/header_lov/${column_name}`).pipe(
       map(
         res => {
-          if(res && res.lov && Array.isArray(res.lov)) {
+          if (res && res.lov && Array.isArray(res.lov)) {
             return res.lov.map(lov => {
-              return { value: lov.toString() }
+              return { value: lov.toString() };
             });
           }
           return null;

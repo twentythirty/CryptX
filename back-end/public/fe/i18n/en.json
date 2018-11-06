@@ -19,7 +19,14 @@
     "activity_log": "Activity log",
     "rationale": "Rationale",
     "add_new_user": "Add new user",
-    "all": "All"
+    "add_new_account": "Add new account",
+    "all": "All",
+    "add_custodian": "Add custodian",
+    "discard": "Discard",
+    "row_number": "Row Nr.",
+    "save": "Save",
+    "deactivate": "Deactivate",
+    "ok": "Ok"
   },
   "table": {
     "header": {
@@ -48,7 +55,7 @@
       "side": "Side",
       "price": "Price",
       "quantity": "Quantity",
-      "total_quantity": "Total quantity",
+      "total_quantity": "Total purchase quantity",
       "sum_of_exchange_trading_fee": "Sum of exchange trading fee",
       "type": "Type",
       "exchange_trading_fee": "Exchange trading fee",
@@ -76,8 +83,8 @@
       "exchanges_failed": "Exchanges Failed",
       "identifier": "Identifier",
       "current_price": "Current price",
-      "last_day_vol": "Last day Volume",
-      "last_7days_vol": "Last 7 days Volume",
+      "last_day_vol": "Daily volume (last)",
+      "last_7days_vol": "Daily volume (7 days avg)",
       "last_updated": "Last Updated",
       "periodicity": "Periodicity",
       "minimum_circulation": "Minimum Circulation",
@@ -97,12 +104,27 @@
       "custodian": "Custodian",
       "source_exchange": "Source exchange",
       "source_account": "Source account",
-      "placed_time": "Placed time",
+      "placed_time": "InProgress time",
       "address": "Address",
       "balance": "Balance",
       "balance_usd": "Balance USD",
       "balance_updated": "Balance updated",
-      "cold_storage_account_id": "Cold storage account id"
+      "cold_storage_account_id": "Cold storage account id",
+      "filled_quantity": "Filled purchase quantity",
+      "investment_usd": "Investment USD",
+      "investment_eth": "Investement ETH",
+      "investment_btc": "Investment BTC",
+      "investment_currency": "Investment currency",
+      "equivalent_in_usd": "Equivalent in usd",
+      "deposit_currency": "Deposit currency",
+      "deposit_amount": "Deposit amount",
+      "investment_amount": "Investment amount",
+      "target_currency": "Target currency",
+      "converted_amount": "Converted amount",
+      "minimum_daily_avg_volume": "Minimum daily avg. volume",
+      "username": "Username",
+      "spend_amount": "Sold quantity",
+      "total_spend_amount": "Total sell quantity"
     },
     "filter": {
       "all": "All",
@@ -113,7 +135,8 @@
     },
     "footer": {
       "exchange_id": "{{ exchange_id }} Exchanges",
-      "external_instrument": "{{ external_instrument }} Identifiers"
+      "external_instrument": "{{ external_instrument }} Identifiers",
+      "row_number": "{{ row_number }} Items"
     }
   },
 
@@ -125,12 +148,14 @@
     "deposits": "Deposits",
     "orders": "Orders",
     "execution_orders": "Execution orders",
+    "cold_storage_transfers": "Cold storage transfers",
     "no_investment": "There is no investment run",
     "no_recipe_run": "There is no recipe run",
     "no_deposits": "Deposits aren't made yet",
     "no_orders": "Orders are not created yet",
     "no_recipe_runs": "No recipe runs have been created yet",
     "no_execution_orders": "Execution orders are not created yet",
+    "no_cold_storage_transfers": "Cold storage transfers are not created yet",
     "enter_usd": "Enter amount, USD",
     "enter_btc": "Enter amount, BTC",
     "enter_eth": "Enter amount, ETH",
@@ -156,6 +181,10 @@
       "306": "Orders Approved",
       "307": "Orders Executing",
       "308": "Orders Filled"
+    },
+    "footer": {
+      "symbol": "{{symbol}} items",
+      "capitalization": "{{ capitalization }} Total"
     }
   },
   "investment_runs": {
@@ -174,7 +203,8 @@
       "id": "{{ id }} Items",
       "transaction_asset": "{{ transaction_asset }} Assets",
       "quote_asset": "{{ quote_asset }} Assets",
-      "target_exchange": "{{ target_exchange }} Exchanges"
+      "target_exchange": "{{ target_exchange }} Exchanges",
+      "investment_percentage": "{{ investment_percentage }}%"
     }
   },
 
@@ -262,14 +292,15 @@
     },
     "status": {
       "61": "Pending",
-      "62": "Placed",
+      "62": "InProgress",
       "63": "FullyFilled",
       "64": "PartiallyFilled",
-      "65": "Cancelled",
-      "66": "Failed"
+      "66": "Failed",
+      "67": "NotFilled"
     },
     "footer": {
       "id": "{{ id }} Items",
+      "investment_run_id": "{{ investment_run_id }} Investment runs",
       "instrument": "{{ instrument }} Instruments",
       "exchange": "{{ exchange }} Exchanges",
       "status":"{{ status }} Pending"
@@ -278,19 +309,19 @@
   "execution_orders_timeline": {
     "status": {
       "61": "Pending",
-      "62": "Placed",
-      "63": "FullyFilled",
-      "64": "PartiallyFilled",
-      "65": "Cancelled",
-      "66": "Failed"
+      "62": "In Progress",
+      "63": "Fully Filled",
+      "64": "Partially Filled",
+      "66": "Failed",
+      "67": "Not Filled"
     }
   },
 
   "execution_order_fills": {
     "footer": {
-      "id": "{{id}} items",
-      "fill_price": "{{fill_price}} total",
-      "quantity": "{{quantity}} total"
+      "id": "{{ id }} items",
+      "fill_price": "{{ fill_price }} average",
+      "quantity": "{{ quantity }} total"
     }
   },
 
@@ -315,7 +346,8 @@
     "enter_periodicity": "Enter periodicity",
     "minimum_circulation": "Minimum circulation",
     "enter_minimum_circulation": "Enter minimum circulation",
-    "enter_liquidity_information": "Enter liquidity information"
+    "enter_liquidity_information": "Enter liquidity information",
+    "liquidity_delete_confirm_msg": "Do you really want to delete this liquidity requirement?"
   },
   "instrument_liquidity_requirements": {
     "footer": {
@@ -364,6 +396,62 @@
     "select_exchange": "Select exchange"
   },
 
+  "exchange_accounts": {
+    "exchange": "Exchange",
+    "asset": "Asset",
+    "select_exchange": "Select exchange",
+    "enter_asset": "Enter asset",
+    "address": "Address",
+    "enter_address_of_cryptocurrency_wallet": "Enter address of a cryptocurrency wallet",
+    "enter_exchange_account_information": "Enter exchange account information",
+    "add_new_exchange_account": "Add new exchange account",
+    "add_account": "Add account",
+    "header": "Exchange accounts",
+    "exchange_account_deactivate_confirm_msg": "Are you sure you want {{buttonName}} this exchange account?",
+    "exchange_cant_deactivate": "Can't deactivate this account",
+    "exchange_account_cant_deactivate": "Can't {{buttonName}} this account",
+    "cant_deactivate_msg": "There is some active investment runs linked with this account",
+    "is_active": {
+      "active": "Active",
+      "inactive": "Inactive"
+    },
+    "footer": {
+      "exchange": "{{ exchange }} Exchanges"
+    }
+  },
+
+  "exchange_credentials": {
+    "footer": {
+      "exchange": "{{ exchange }} Exchanges"
+    },
+    "header": "Exchange credentials",
+    "add_credential": "Add credential",
+    "exchange_credential_info": "Exchange credential information",
+    "select_exchange": "Select exchange",
+    "exchange": "Exchange",
+    "enter_username": "Enter username",
+    "enter_password": "Enter password",
+    "edit_credential": "Edit credential",
+    "credential_delete_confirm_msg": "Do you really want to deactivate this account?",
+    "fields": {
+      "api_key": "API key",
+      "api_secret": "API secret",
+      "uid": "Unique ID",
+      "password": "Trade/Admin password",
+      "v3_api_key": "V3 API key",
+      "v3_api_secret": "V3 API secret",
+      "v3_api_passphrase": "V3 API key passphrase"
+    },
+    "placeholder": {
+      "api_key": "Enter API key",
+      "api_secret": "Enter API secret",
+      "uid": "Enter Unique ID",
+      "v3_api_key": "Enter V3 API key",
+      "v3_api_secret": "Enter V3 API secret",
+      "v3_api_passphrase": "Enter V3 API key passphrase"
+    }
+  },
+
   "assets": {
     "assets": "Assets",
     "headline": "{{ count }} Cryptocurrencies",
@@ -388,7 +476,7 @@
     },
     "footer": {
       "capitalization": "{{ capitalization }} total",
-      "status": "{{ status }} Blacklisted",
+      "status": "{{ status }} Graylisted",
       "is_deposit": "{{ is_deposit }} Deposit",
       "is_base": "{{ is_base }} Base",
       "symbol": "{{ symbol }} Items",
@@ -462,19 +550,26 @@
     "deposit": "Deposit",
     "deposit_management_activity_log": "Deposit management activity log",
     "deposits_not_created": "Deposits are not created yet",
+    "calculate_deposits" : "Calculate deposits",
     "footer": {
       "id": "{{ id }} items",
-      "investment_run_id": "{{ investment_run_id }} ids",
+      "investment_run_id": "{{ investment_run_id }} items",
       "exchange_id": "{{ assets }} assets",
       "quote_asset": "{{ quote_asset }} assets",
+      "exchange": "{{ exchange }} exchanges",
       "account": "{{ account }} accounts",
+      "investment_percentage": "{{ investment_percentage }}%",
       "status": "{{ status }} pending"
     }
   },
 
   "cold_storage": {
     "custodians": {
-      "header": "Custodians"
+      "header": "Custodians",
+      "add_new_custodian": "Add new custodian",
+      "parameters": "Parameters",
+      "custodian_name": "Custodian name",
+      "enter_name": "Enter name"
     },
     "transfers": {
       "status": {
@@ -482,7 +577,8 @@
         "92": "Approved",
         "93": "Sent",
         "94": "Completed",
-        "95": "Failed"
+        "95": "Failed",
+        "96": "Canceled"
       }
     },
     "account_storage_fee": {
@@ -508,8 +604,6 @@
       "error": "Error: {{error}}",
       "error_user": "{{user_name}} has encountered an Error: {{error}}", 
       "warning": "Warning: {{warning}}"
-
-
     },
     
     "instruments": {
@@ -530,10 +624,15 @@
       "instrument_error": "Ask & Bid Fetcher: Error while fetching price for {{instrument}} from {{exchange}}: {{error}}"
     },
 
+    "asset_status_changer": {
+      "graylisted": "System graylisted {{ asset_name }}({{ asset_symbol }}) due to: {{ reason }}",
+      "whitelisted": "System whitelisted {{ asset_name }}({{ asset_symbol }}) due to: {{ reason }}"
+    },
+
     "execution_orders": {
       "placed": "Order was placed to {{exchange}}",
       "error": "Error: {{error}}",
-      "failed_attempts": "Execution order Failed after {{attempts}} attempts`}",
+      "failed_attempts": "Execution order Failed after {{attempts}} attempts",
       "failed": "Execution order Failed due to: {{reason}}",
       "generate_fill": "Retrieved a new fill with amount of {{amount}}",
       "fully_filled": "Execution order Fully Filled"
@@ -547,6 +646,18 @@
     "deposits": {
       "generate": "System generated {{amount}} Deposits for Recipe Run RR-{{recipe_id}}",
       "completed": "Deposit Completed"
+    },
+
+    "recipe_run": {
+      "failed_action": "No way found to invest into {{ asset }}"
+    },
+
+    "cold_storage_transfers": {
+      "connector_error": "Failed to prepare connection to <b>{{ exchange }}</b>, error: {{ error }}",
+      "withdraw_error": "Failed to withdraw from <b>{{ exchange }}</b>, error: {{ error }}",
+      "placed": "Withdraw request was successfully created with id <b>{{ id }}</b>",
+      "missing_account": "Order is missing a matching {{ strategy_type }} cold storage account for {{ asset }}",
+      "zero_balance": "Transfer cannot be created as the balance of {{ asset }} is 0"
     }
   },
 
@@ -558,15 +669,32 @@
       "92":"Approved",
       "93":"Sent",
       "94":"Completed",
-      "95":"Failed"
+      "95":"Failed",
+      "96": "Canceled"
     },
     "footer": {
-      "id": "{{id}} Items",
-      "asset": "{{asset}} Assets",
+      "id": "{{ id }} Items",
+      "asset": "{{ asset }} Assets",
       "status": "{{ status }} Pending",
-      "source_exchange": "{{source_exchange}} Exchanges",
-      "balance_usd": "{{balance_usd}} Total"
+      "source_exchange": "{{ source_exchange }} Exchanges",
+      "balance_usd": "{{ balance_usd }} Total"
     }
+  },
+
+  "cold_storage_transfers_timeline": {
+    "status": {
+      "91":"Pending",
+      "92":"Approved",
+      "93":"In Progress",
+      "94":"Completed",
+      "95":"Failed"
+    }
+  },
+
+  "conversion": {
+    "converted_amount": "Converted amount",
+    "enter_converted_amount": "Enter converted amount",
+    "please_specify_converted_amount": "Please specify converted amount"
   },
 
   "cold_storage_accounts": {
@@ -584,5 +712,34 @@
     "select_portfolio": "Select portfolio",
     "enter_asset": "Enter asset",
     "select_custodian": "Select custodian"
+  },
+
+  "investment_amounts": {
+    "footer": {
+      "currency_name": "{{currency_name}} Items",
+      "value_usd": "{{value_usd}}"
+    }
+  },
+
+  "asset_conversions": {
+    "status": {
+      "501": "Pending",
+      "502": "Completed"
+    },
+    "footer": {
+      "target_currency": "{{ target_currency }} Currencies",
+      "investment_amount": "{{ investment_amount }} Total",
+      "status": "{{ status }} Pending"
+    }
+  },
+
+  "asset_status_changes": {
+    "whitelisting": {
+      "liqudity": "meeting the liquidity requirements"
+    },
+    "graylisting": {
+      "liquidity": "not meeting the liquidity requirements",
+      "price_age": "not having old enough pricing information"
+    }
   }
 }

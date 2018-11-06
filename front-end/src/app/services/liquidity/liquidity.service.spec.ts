@@ -1,11 +1,15 @@
 import { TestBed, inject } from '@angular/core/testing';
+import { HttpClientModule } from '@angular/common/http';
 
 import { LiquidityService } from './liquidity.service';
 
 describe('LiquidityRequirementsService', () => {
   beforeEach(() => {
     TestBed.configureTestingModule({
-      providers: [LiquidityService]
+      providers: [LiquidityService],
+      imports: [
+        HttpClientModule
+      ]
     });
   });
 

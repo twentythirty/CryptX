@@ -1,5 +1,11 @@
 <div class="top-controls">
   <span class="headline-title">{{count}} {{'cold_storage.custodians.header' | translate}}</span>
+  <a
+    class="btn start"
+    (click)="addCustodian()"
+  >
+    <span>{{ 'common.add_custodian' | translate }}</span>
+  </a>
 </div>
 
 <app-data-table

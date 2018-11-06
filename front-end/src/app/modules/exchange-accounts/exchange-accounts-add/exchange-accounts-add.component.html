@@ -1,0 +1,92 @@
+<app-page-heading *ngIf="!exchangeAccountId"
+  [heading]="'exchange_accounts.add_new_exchange_account' | translate"
+></app-page-heading>
+
+<app-page-heading *ngIf="exchangeAccountId"
+  [heading]="'exchange_accounts.add_new_exchange_account' | translate"
+></app-page-heading>
+
+<div class="split-content horizontal">
+  <app-content-block
+    [heading]="'exchange_accounts.enter_exchange_account_information' | translate"
+  >
+    
+    <form [formGroup]="form">
+      <app-input-item
+        class="form-item"
+        fieldType="select"
+        [label]="'exchange_accounts.exchange' | translate"
+        [formGroup]="form"
+        formControlName="exchangeId"
+        [items]="exchanges"
+        [spinnerLoading]="exchangesLoading"
+        placeholder="{{'exchange_accounts.select_exchange' | translate}}"
+        bindValue="id"
+        bindLabel="value"
+        (selectChange)="exchangeIdChanged($event.id)"
+        clearable="false"
+      ></app-input-item>
+
+      <app-input-item
+        class="form-item"
+        fieldType="autocomplete"
+        [label]="'exchange_accounts.asset' | translate"
+        [formGroup]="form"
+        formControlName="assetId"
+        [items]="assets"
+        [spinnerLoading]="assetsLoading"
+        placeholder="{{'exchange_accounts.enter_asset' | translate}}"
+        bindValue="id"
+        bindLabel="value"
+      ></app-input-item>
+
+      <app-input-item
+        class="form-item"
+        [label]="'exchange_accounts.address' | translate"
+        [placeholder]="'exchange_accounts.enter_address_of_cryptocurrency_wallet' | translate"
+        [formGroup]="form"
+        formControlName="address"
+      ></app-input-item>
+    </form>
+
+  </app-content-block>
+</div>
+
+<app-form-action-bar>
+  <button
+  *ngIf="exchangeAccountId"
+  class="btn deactive" 
+  [disabled]="loading" 
+  (click)="showDeactivateConfirm = true"
+  >{{buttonName}}</button>
+  <button
+  *ngIf="!exchangeAccountId"
+  class="btn submit" 
+  [disabled]="loading" 
+  (click)="addExchangeAccount()"
+  [appMarkAsTouched]="form"
+  >{{ 'common.save' | translate }}</button>
+</app-form-action-bar>
+
+<app-confirm
+  *ngIf="showDeactivateConfirm" 
+  [heading]="'exchange_accounts.exchange_account_deactivate_confirm_msg' | translate: {buttonName: buttonName}" 
+  (onReject)="this.showDeactivateConfirm = false;"
+  (onConfirm)="editExchangeAccount()"
+></app-confirm>
+
+<app-modal
+  *ngIf="showErrorModal"
+  [heading]="'exchange_accounts.exchange_account_cant_deactivate' | translate: {buttonName: buttonName}"
+  (close)="showErrorModal=false"
+  errorIcon="true"
+  errorModal="true">
+  <div >
+    <p>{{'exchange_accounts.cant_deactivate_msg' | translate}}</p>
+    <button
+    class="btn submit"
+    [disabled]="loading"
+    (click)="showErrorModal=false"
+    >{{ 'common.ok' | translate }}</button>
+  </div>
+</app-modal>

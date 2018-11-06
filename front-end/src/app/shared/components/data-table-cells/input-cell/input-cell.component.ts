@@ -4,15 +4,15 @@ import { fromEvent } from 'rxjs';
 import { map, debounceTime } from 'rxjs/operators';
 
 export class InputCellDataColumn extends TableDataColumn {
-  component? = InputCellComponent;
+  component ? = InputCellComponent;
   inputs?: {
     value?: any;
     data?: any;
-  }
+  };
   outputs?: {
     data?: any;
     dataDelayed?: any;
-  }
+  };
 
   constructor(val: InputCellDataColumn) {
     super(val);
@@ -35,7 +35,7 @@ export class InputCellComponent implements OnInit {
   constructor() {}
 
   ngOnInit() {
-    let input$ = fromEvent(this.input.nativeElement, 'keyup').pipe(
+    const input$ = fromEvent(this.input.nativeElement, 'keyup').pipe(
       map((x: any) => x.target.value),
       debounceTime(1000)
     );

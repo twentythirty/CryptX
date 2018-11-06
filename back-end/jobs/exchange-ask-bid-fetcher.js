@@ -22,7 +22,6 @@ module.exports.JOB_BODY = async (config, log) => {
     return config.models.Exchange.findAll().then(exchanges => {
 
         log(`2. Fetch associated exchange mappings for ${exchanges.length} exchanges...`);
-
         return Promise.all([
             Promise.resolve(exchanges),
             config.models.InstrumentExchangeMapping.findAll({
@@ -30,96 +29,146 @@ module.exports.JOB_BODY = async (config, log) => {
                     exchange_id: _.map(exchanges, 'id')
                 }
             })
-        ]).then(data => {
+        ]);
+    }).then(data => {
 
-            log(`3. Build CCXT connectors and fetch associated symbols info`);
+        log(`3. Get CCXT connectors and fetch associated symbols info`);
+        let [exchanges, mappings] = data;
 
-            const [exchanges, mappings] = data;
+        const associatedMappings = _.groupBy(mappings, 'exchange_id');
+        const exchanges_with_mappings = _.filter(exchanges, exchange => associatedMappings[exchange.id]);
 
-            const associatedMappings = _.groupBy(mappings, 'exchange_id');
-            const exchanges_with_mappings = _.filter(exchanges, exchange => associatedMappings[exchange.id]);
+        return Promise.all(
+            _.map(exchanges_with_mappings, async (exchange) => {
 
-            return Promise.all(_.map(exchanges_with_mappings, async (exchange) => {
-                const mappings = associatedMappings[exchange.id];
-                log(`Building price fetcher for ${exchange.name} with ${mappings.length} mappings...`);
+                let failed_instruments, fetched_market_data;
 
-                const fetcher = await ccxtUtils.getConnector(exchange.api_id);
-                const throttle = await ccxtUtils.getThrottle(exchange.api_id);
-
-                //promise pairs made of arrays where [exchange, [mapping, fetched-data]]
-                return Promise.all([
-                    Promise.resolve(exchange),
-                    Promise.all(_.map(mappings, mapping => {
-                        log(`Fetching data for ${exchange.name} on symbol ${mapping.external_instrument_id}...`);
-
-                        //promise pairs made of arrays where [symbol mapping, fetched-data]
-                        return Promise.all([
-                            Promise.resolve(mapping),
-                            //wrap exchange promise into a promise that returns empty array if broken
-                            throttle.throttled(Promise.resolve([]), fetcher.fetch_order_book, mapping.external_instrument_id)
-                        ]);
-                    }))
-                ])
-            })).then(data => {
-
-                const records = _.flatMap(data, ([exchange, markets_data]) => {
-
-                    /* Sometimes for some reason market_data is empty and set to array.
-                    Filtering out results that don't have needed properties
-                    to avoid errors when assigning asks and bids values. */
-                    let [successfully_fetched, failed_to_fetch] = _.partition(markets_data, ([symbol_mapping, market_data]) =>
-                        !_.isArray(market_data) &&
-                        market_data.hasOwnProperty('asks') && market_data.asks.length &&
-                        market_data.hasOwnProperty('bids') && market_data.bids.length
-                    );
-
-                   /*  failed_to_fetch = failed_to_fetch.map(([symbol_mapping, failed_data]) => {
-                        return symbol_mapping.external_instrument_id
-                    }); */
-
-                    if(failed_to_fetch.length) {
-                        failed_to_fetch.map(([symbol_mapping, failed_data]) => {
-                            if(!_.isArray(failed_data)) {
-                                // determine which price (ask or bid) is not received
-                                let price_types = [];
-                                if (!_.get(failed_data, 'asks[0][0]', false)) price_types.push('ask');
-                                if (!_.get(failed_data, 'bids[0][0]', false)) price_types.push('bid');
-
-                                logAction(actions.instrument_without_data, {
-                                    args: {
-                                        types: price_types,
-                                        instrument: symbol_mapping.external_instrument_id,
-                                        exchange: exchange.name,
-                                    },
-                                    relations: { exchange_id: exchange.id }
-                                });
-
-                            }
-                        })
+                try {
+                    
+                    let [err, con_result] = await to(Promise.all([
+                        ccxtUtils.getConnector(exchange.id),
+                        ccxtUtils.getThrottle(exchange.api_id)
+                    ]));
+                    if (err) {
+                        log(`Failed to get exchange connector for ${exchange.api_id}. Error: ${err.message}`);
+                        return [];
+                    }
+                    let [fetcher, throttle] = con_result;
+                    if (!fetcher || fetcher.loading_failed) {
+                        
+                        log(`[ERROR.3A]: Failed to find connector for exchange ${exchange.name} or failed to load exchange markets!`);
+                        return [];
                     }
 
-                    return _.map(successfully_fetched, ([symbol_mapping, market_data]) => {
+                    let mappings = associatedMappings[exchange.id];
+                    let needed_ticker_data = [];
+                    
+                    if (fetcher.has.fetchTickers) { 
+                        // fetch instrument market data all at once
+                        log(`Fetching all market data from ${exchange.name}.`);
+                        
+                        let [err, all_ticker_data] = await to(fetcher.fetchTickers()); // fetch all instrument data
+                        log(`Finished fetching all tickers from ${exchange.name}`);
+                        
+                        if (err || _.isUndefined(all_ticker_data)) {
+                            if (err) log(`Failed to fetch market data from ${exchange.name}, error: `, err.message);
+                            else log(`Market data fetching request completed but response was empty for ${exchange.name}`);
 
-                        return {
-                            exchange_id: symbol_mapping.exchange_id,
-                            instrument_id: symbol_mapping.instrument_id,
-                            timestamp: market_data.timestamp? new Date(market_data.timestamp) : new Date(),
-                            ask_price: market_data.asks[0][0],
-                            bid_price: market_data.bids[0][0]
+                            return [];
                         }
+                        
+                        needed_ticker_data = _.map(mappings, mapping => { // check if received all data and return it
+                            if (!all_ticker_data.hasOwnProperty(mapping.external_instrument_id)) { // no instrument found in data
+                                log(`Market data from ${exchange.name} didn't include data for ${mapping.external_instrument_id}`);
+                                
+                                return [null, mapping];
+                            }
+                            
+                            return [ all_ticker_data[mapping.external_instrument_id], mapping ];
+                        });
+                    } else {
+                        // fetch instrument market data one by one because exchange doesn't support fetching all at once
+                        needed_ticker_data = await Promise.all(
+                            _.map(mappings, async (mapping) => {
+                                log(`Fetching data from ${exchange.name} for symbol ${mapping.external_instrument_id}...`);
+
+                                let [err, ticker] = await to(throttle.throttled( // fetch single instrument (slowed down)
+                                    Promise.resolve([]), fetcher.fetchTicker, mapping.external_instrument_id
+                                ));
+
+                                if (err) { // couldn't get single instrument
+                                    log(`Failed to fetch ${mapping.external_instrument_id} instrument market data from ${exchange.name}`);
+
+                                    return [null, mapping];
+                                }   
+
+                                return [ ticker, mapping ];
+                            })
+                        )
+                    }
+
+                    // partition failed and successfully received data
+                    [failed_instruments, fetched_market_data] = _.partition(needed_ticker_data, (market_data) => {
+                        let [ticker, mapping] = market_data;
+                        return !ticker || !_.isNumber(ticker.ask) || !_.isNumber(ticker.bid);
                     });
-                });
 
-                log(`4. Saving ${records.length} fetched results...`);
+                    if (failed_instruments.length) {
+                        await Promise.all(_.map(failed_instruments, (failed_instrument) => {
+                            let [ticker, mapping] = failed_instrument;
 
-                if (records.length > 0)
-                    return config.models.sequelize.queryInterface.bulkInsert('instrument_market_data', records);
-                else
-                    return "No records inserted!";
-            });
-        });
-    }).catch(err => {
-        logAction(actions.job_error, {
+                            let failed_prices = [];
+                            if (!ticker) failed_prices.push('ask', 'bid'); 
+                            else {
+                                if (!_.isNumber(ticker.ask)) failed_prices.push('ask');
+                                if (!_.isNumber(ticker.bid)) failed_prices.push('bid');
+                            }
+
+                            return logAction(actions.instrument_without_data, { 
+                                args: {
+                                    types: failed_prices,
+                                    instruments: mapping.external_instrument_id,
+                                    exchange: exchange.name,
+                                },
+                                relations: { exchange_id: exchange.id }
+                            });
+                        }));
+                    } // check if the are failed to fetch instruments
+
+                } catch (error) {
+                    console.log(`Fetching and processing data from ${exchange.name} failed with error: ${error}`);
+                }
+                
+                return fetched_market_data;
+            })
+        );
+    }).then(ticker_data => {
+        log(`4. Preparing ${ticker_data.length} entries`);
+
+        let market_data = _(ticker_data)
+        .flatten(ticker_data)
+        .map(td => { // form an array
+            let [ticker, mapping] = td;
+            
+            return {
+                exchange_id: mapping.exchange_id,
+                instrument_id: mapping.instrument_id,
+                timestamp: ticker.timestamp? new Date(ticker.timestamp) : new Date(),
+                ask_price: ticker.ask,
+                bid_price: ticker.bid
+            };
+        })
+        .value();
+
+        log(`5. Saving ${market_data.length} fetched results...`);
+
+        if (market_data.length > 0)
+            return config.models.sequelize.queryInterface.bulkInsert('instrument_market_data', market_data);
+        else
+            return "No records inserted!";
+    }).catch(async err => {
+        log(`Job failed with error: ${err.message}`);
+        await logAction(actions.job_error, {
             args: {
                 error: err.message
             },

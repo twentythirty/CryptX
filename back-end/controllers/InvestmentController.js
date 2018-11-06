@@ -1,25 +1,35 @@
 'use strict';
 
-const InvestmentRun = require('../models').InvestmentRun;
-const RecipeRun = require('../models').RecipeRun;
-const RecipeRunDetail = require('../models').RecipeRunDetail;
-const User = require('../models').User;
-const ActionLog = require('../models').ActionLog;
+const { 
+  User,
+  ActionLog,
+  AVInvestmentAmount
+} = require('../models');
 const adminViewsService = require('../services/AdminViewsService');
 const adminViewUtils = require('../utils/AdminViewUtils');
 const investmentService = require('../services/InvestmentService');
 const OrdersService = require('../services/OrdersService');
+const DepositService = require('../services/DepositService');
+
+const { lock } = require('../utils/LockUtils');
 
 const createInvestmentRun = async function (req, res) {
-  let err, investment_run = {}, recipe_run;
+  let err, investment_run = {};
 
   let { strategy_type,
     is_simulated,
-    deposit_usd
+    deposit_amounts,
+    investment_group_asset_id
   } = req.body;
 
   [err, investment_run] = await to(
-    investmentService.createInvestmentRun(req.user.id, strategy_type, is_simulated, deposit_usd)
+    lock(investmentService, {
+      method: 'createInvestmentRun',
+      params: [req.user.id, strategy_type, is_simulated, deposit_amounts, investment_group_asset_id],
+      id: 'create_investment_run',
+      error_message: 'An investment run is currently being created.',
+      max_block: 180
+    })
   );
   if (err) return ReE(res, err, 422);
 
@@ -34,7 +44,13 @@ const createRecipeRun = async function (req, res) {
   let investment_run_id = req.params.investment_id,
 
     [err, recipe_run] = await to(
-      investmentService.createRecipeRun(req.user.id, investment_run_id), false
+      lock(investmentService, {
+        method: 'createRecipeRun',
+        params: [req.user.id, investment_run_id],
+        id: 'create_recipe_run', keys: { investment_run_id },
+        error_message: `Recipe Run is currently being generated for Investment Run with id ${investment_run_id}, please wait...`,
+        max_block: 180
+      }), false
     );
   if (err) return ReE(res, err, 422);
 
@@ -52,13 +68,66 @@ const getInvestmentRun = async function (req, res) {
   if (err) return ReE(res, err.message, 422);
   if (!investment_run) return ReE(res, `Investment run not found with id: ${investment_run_id}`, 422);
 
-  investment_run = investment_run.toWeb();  
+  investment_run = investment_run.toWeb();
 
   return ReS(res, {
     investment_run
   });
 };
 module.exports.getInvestmentRun = getInvestmentRun;
+
+const getInvestmentAmounts = async function (req, res) {
+
+  let { seq_query, sql_where } = req;
+  const investment_id = req.params.investment_id;
+  
+  if(investment_id && _.isPlainObject(seq_query)) {
+    if(!_.isPlainObject(seq_query)) seq_query = { where: {} };
+    if (!_.isPlainObject(seq_query.where)) seq_query.where = {};
+    seq_query.where.investment_run_id = investment_id;
+    sql_where = adminViewUtils.addToWhere(sql_where, `investment_run_id=${investment_id}`);
+  }
+
+  let err, deposit_amounts, footer;
+
+  [err, deposit_amounts] = await to(AVInvestmentAmount.findAll(seq_query));
+  if (err) return ReE(res, err.message, 422);
+
+  [err, footer] = await to(adminViewsService.fetchInvestmentAmountFooter(sql_where));
+  if (err) return ReE(res, err.message, 422);
+
+  return ReS(res, {
+    deposit_amounts,
+    footer
+  });
+};
+module.exports.getInvestmentAmounts = getInvestmentAmounts;
+
+const getInvestmentRunWithAssetMix = async function (req, res) {
+
+  const { seq_query, sql_where } = req;
+
+  let investment_run_id = req.params.investment_id;
+  let [ err, result ] = await to(investmentService.getInvestmentRunWithAssetMix(investment_run_id, seq_query, sql_where));
+
+  if (err) return ReE(res, err.message, 422);
+  if (!result) return ReE(res, `Investment run not found with id: ${investment_run_id}`, 422);
+
+  let [ investment_run, asset_mix_data, footer ] = result;
+
+  const { data: asset_mix, total: count } = asset_mix_data;
+
+  investment_run = investment_run.toWeb();
+
+  return ReS(res, {
+    investment_run,
+    asset_mix,
+    footer,
+    count
+  });
+  
+};
+module.exports.getInvestmentRunWithAssetMix = getInvestmentRunWithAssetMix;
 
 const getInvestmentStats = async function(req, res) {
 
@@ -421,7 +490,7 @@ const changeExecutionOrderStatus = async (req, res) => {
 
   const { original_execution_order, updated_execution_order } = execution_order_data;
 
-  user.logAction('modified', {
+  await user.logAction('modified', {
     previous_instance: original_execution_order,
     updated_instance: updated_execution_order,
     replace: {
@@ -534,3 +603,68 @@ const GetInvestmentPortfolioStats = async function (req, res) {
   })
 }
 module.exports.GetInvestmentPortfolioStats = GetInvestmentPortfolioStats;
+
+const generateInvestmentAssetGroup = async function (req, res) {
+
+  let strategy_type = req.body.strategy_type,
+    user_id = req.user.id;
+
+  let [err, result] = await to(investmentService.generateInvestmentAssetGroup(user_id, strategy_type));
+
+  if(err) return ReE(res, err.message, 422);
+
+  let [ list, group_assets ] = result;
+  list = list.toJSON();
+
+  const seq_query = {
+    where: { investment_run_asset_group_id: list.id, status: 'assets.status.400' },
+    order: [ [ 'capitalization', 'DESC' ] ],
+    raw: true
+  };
+
+  const sql_where = `investment_run_asset_group_id = ${list.id} AND status = 'assets.status.400'`;
+
+  [ err, result ] = await to(Promise.all([
+    adminViewsService.fetchGroupAssetsViewDataWithCount(seq_query),
+    adminViewsService.fetchGroupAssetViewFooter(sql_where)
+  ]));
+  
+  if(err) return ReE(res, err.messgae, 422);
+
+  const [ data_with_count, footer ] = result;
+  const { data: assets, total: count } = data_with_count;
+
+  list.group_assets = assets;
+
+  return ReS(res, {
+    list,
+    count,
+    footer
+  });
+
+};
+module.exports.generateInvestmentAssetGroup = generateInvestmentAssetGroup;
+
+const calculateRecipeRunDeposits = async (req, res) => {
+
+  const { recipe_id } = req.params;
+
+  let [ err, deposits ] = await to(
+    lock(DepositService, {
+      method: 'generateRecipeRunDeposits',
+      params: [recipe_id],
+      id: 'calculate_deposits',
+      error_message: `Deposits are being calcuated for recipe run with id ${recipe_id}. Please wait...`,
+      max_block: 180
+    })
+  );
+
+  if(err) return ReE(res, err.message, 422);
+  if(!deposits) return ReE(res, `Recipe Run with id "${recipe_id}" was not found`);
+
+  return ReS(res, {
+    deposits
+  });
+
+};
+module.exports.calculateRecipeRunDeposits = calculateRecipeRunDeposits;

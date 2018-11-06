@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CurrencyPipe } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { finalize } from 'rxjs/operators';
-import _ from 'lodash';
+import * as _ from 'lodash';
 
 import { AssetService, AssetsAllResponseDetailed } from '../../../services/asset/asset.service';
 import { TableDataSource, TableDataColumn } from '../../../shared/components/data-table/data-table.component';
@@ -20,8 +20,8 @@ import { AuthService } from '../../../services/auth/auth.service';
 import { ModelConstantsService } from '../../../services/model-constants/model-constants.service';
 import { Asset, AssetStatus } from '../../../shared/models/asset';
 import { StatusClass } from '../../../shared/models/common';
+import { permissions } from '../../../config/permissions';
 
-const INSTRUMENT_STATUS_CHANGES = 'INSTRUMENT_STATUS_CHANGES';
 
 @Component({
   selector: 'app-asset-list',
@@ -33,15 +33,15 @@ export class AssetListComponent extends DataTableCommonManagerComponent implemen
   public assetsDataSource: TableDataSource = {
     header: [
       { column: 'symbol', nameKey: 'table.header.symbol', filter: { type: 'text', sortable: true } },
-      { column: 'is_cryptocurrency', nameKey: 'table.header.crypto', filter: { type: 'text', sortable: true } },
+      { column: 'is_cryptocurrency', nameKey: 'table.header.crypto', filter: { type: 'text', sortable: true, inputSearch: false } },
       { column: 'long_name', nameKey: 'table.header.long_name', filter: { type: 'text', sortable: true } },
-      { column: 'is_base', nameKey: 'table.header.base', filter: { type: 'text', sortable: true } },
-      { column: 'is_deposit', nameKey: 'table.header.deposit', filter: { type: 'text', sortable: true } },
+      { column: 'is_base', nameKey: 'table.header.base', filter: { type: 'text', sortable: true, inputSearch: false } },
+      { column: 'is_deposit', nameKey: 'table.header.deposit', filter: { type: 'text', sortable: true, inputSearch: false } },
       { column: 'capitalization', nameKey: 'table.header.capitalisation', filter: { type: 'number', sortable: true } },
       { column: 'nvt_ratio', nameKey: 'table.header.nvt_ratio', filter: { type: 'number', sortable: true } },
       { column: 'market_share', nameKey: 'table.header.market_share', filter: { type: 'number', sortable: true } },
       { column: 'capitalization_updated', nameKey: 'table.header.capitalisation_updated', filter: { type: 'date', sortable: true } },
-      { column: 'status', nameKey: 'table.header.status', filter: { type: 'text', sortable: true } },
+      { column: 'status', nameKey: 'table.header.status', filter: { type: 'text', sortable: true, inputSearch: false } },
       { column: '', nameKey: 'table.header.actions' }
     ],
     body: null
@@ -73,23 +73,28 @@ export class AssetListComponent extends DataTableCommonManagerComponent implemen
         actions: [
           new DataCellAction({
             label: 'De-greylist',
-            isShown: (row: any) => this.checkPerm(['CHANGE_ASSET_STATUS']) && row.statusCode === 402,
-            exec: (row: any) => { this.deGreylist(<Asset>row) }
+            isShown: (row: any) => this.checkPerm([permissions.CHANGE_ASSET_STATUS]) && row.statusCode === 402,
+            exec: (row: any) => this.deGreylist(<Asset>row)
           }),
           new DataCellAction({
             label: 'Blacklist',
-            isShown: (row: any) => this.checkPerm(['CHANGE_ASSET_STATUS']) && row.statusCode === 400,
-            exec: (row: any) => { this.blacklist(<Asset>row) }
+            isShown: (row: any) => this.checkPerm([permissions.CHANGE_ASSET_STATUS]) && row.statusCode === 400,
+            exec: (row: any) => this.blacklist(<Asset>row)
           }),
           new DataCellAction({
             label: 'Whitelist',
-            isShown: (row: any) => this.checkPerm(['CHANGE_ASSET_STATUS']) && row.statusCode === 401,
-            exec: (row: any) => { this.whitelist(<Asset>row) }
+            isShown: (row: any) => this.checkPerm([permissions.CHANGE_ASSET_STATUS]) && row.statusCode === 401,
+            exec: (row: any) => this.whitelist(<Asset>row)
           })
         ]
       }
     })
   ];
+
+  public rationaleModelIsShown: boolean = false;
+  public rationaleData: any;
+  public rationaleDone: (data: any) => void;
+
 
   constructor(
     public route: ActivatedRoute,
@@ -104,7 +109,6 @@ export class AssetListComponent extends DataTableCommonManagerComponent implemen
 
   ngOnInit() {
     super.ngOnInit();
-    this.getFilterLOV();
   }
 
   checkPerm (perm_code) {
@@ -119,13 +123,14 @@ export class AssetListComponent extends DataTableCommonManagerComponent implemen
         Object.assign(this.assetsDataSource, {
           body: res.assets,
           footer: res.footer.map(item => {
-            if( item.name === 'capitalization' ) {
+            if ( item.name === 'capitalization' ) {
               item.args = _.mapValues(item.args, val => this.currencyPipe.transform(val, 'USD', 'symbol', '1.0-0'));
             }
             return item;
           })
         });
         this.count = res.count || res.assets.length;
+        this.getFilterLOV();
       }
     );
   }
@@ -135,10 +140,10 @@ export class AssetListComponent extends DataTableCommonManagerComponent implemen
    */
   getFilterLOV(): void {
     this.assetsDataSource.header.filter(
-      col => ['is_base', 'is_deposit', 'status'].includes(col.column)
+      col => ['is_cryptocurrency', 'is_base', 'is_deposit', 'status'].includes(col.column)
     ).map(
       col => {
-        col.filter.rowData$ = this.assetService.getHeaderLOV(col.column)
+        col.filter.rowData$ = this.assetService.getHeaderLOV(col.column);
       }
     );
   }
@@ -152,64 +157,32 @@ export class AssetListComponent extends DataTableCommonManagerComponent implemen
    */
 
   public deGreylist(asset: Asset): void {
-    this.showRationaleModal(asset, data => data && this.doDeGreylist(data));
+    this.showRationaleModal(asset, data => data && this.changeAssetStatus(data, 400));
   }
 
   public blacklist(asset: Asset): void {
-    this.showRationaleModal(asset, data => data && this.doBlacklist(data));
+    this.showRationaleModal(asset, data => data && this.changeAssetStatus(data, 401));
   }
 
   public whitelist(asset: Asset): void {
-    this.showRationaleModal(asset, data => data && this.doWhitelist(data));
+    this.showRationaleModal(asset, data => data && this.changeAssetStatus(data, 400));
   }
 
 
   /**
    * Actions
    */
-  
-  public doDeGreylist({ rationale, data }): void {
-    let asset: Asset = data;
+
+  public changeAssetStatus({ rationale, data }, status): void {
+    const asset: Asset = data;
 
     this.assetService.changeAssetStatus(
       asset.id,
-      new AssetStatus(this.modelConstantsService.getGroup(INSTRUMENT_STATUS_CHANGES)['Whitelisting'], rationale)
+      new AssetStatus(status, rationale)
     ).subscribe(
       res => {
-        asset.status = 'assets.status.400';
-        asset.statusCode = 400;
-
-        this.getAsset();
-      }
-    );
-  }
-
-  public doBlacklist({ rationale, data }): void {
-    let asset: Asset = data;
-
-    this.assetService.changeAssetStatus(
-      asset.id,
-      new AssetStatus(this.modelConstantsService.getGroup(INSTRUMENT_STATUS_CHANGES)['Blacklisting'], rationale)
-    ).subscribe(
-      res => {
-        asset.status = 'assets.status.401';
-        asset.statusCode = 401;
-
-        this.getAsset();
-      }
-    );
-  }
-
-  public doWhitelist({ rationale, data }): void {
-    let asset: Asset = data;
-
-    this.assetService.changeAssetStatus(
-      asset.id,
-      new AssetStatus(this.modelConstantsService.getGroup(INSTRUMENT_STATUS_CHANGES)['Whitelisting'], rationale)
-    ).subscribe(
-      res => {
-        asset.status = 'assets.status.400';
-        asset.statusCode = 400;
+        asset.status = `assets.status.${status}`;
+        asset.statusCode = status;
 
         this.getAsset();
       }
@@ -221,19 +194,14 @@ export class AssetListComponent extends DataTableCommonManagerComponent implemen
    */
 
   public rowClass(row: Asset): string {
-    if(row.statusCode == 401) return 'color-black';
-    if(row.statusCode == 402) return 'color-gray';
+    if (row.statusCode == 401) { return 'color-black'; }
+    if (row.statusCode == 402) { return 'color-gray'; }
     return '';
   }
 
   /**
    * Rationale
    */
-
-  public rationaleModelIsShown: boolean = false;
-  public rationaleData: any;
-  public rationaleDone: (data: any) => void;
-
   public showRationaleModal(data: any, done?: (data: any) => void): void {
     this.rationaleModelIsShown = true;
     this.rationaleData = data;
@@ -247,13 +215,13 @@ export class AssetListComponent extends DataTableCommonManagerComponent implemen
   }
 
   public submitRationale(data): void {
-    if(typeof this.rationaleDone == 'function') {
+    if (typeof this.rationaleDone == 'function') {
       this.rationaleDone(data);
     }
     this.hideRationaleModal();
   }
 
-  //Virtual method to call inside the View to update the activity log.
-  public getAsset(): void {};
+  // Virtual method to call inside the View to update the activity log.
+  public getAsset(): void {}
 
 }

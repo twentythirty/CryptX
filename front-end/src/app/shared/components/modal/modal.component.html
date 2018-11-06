@@ -1,7 +1,8 @@
 <div class="modal display-block" (click)="closeModal()">
 	<div class="modal-content" (click)="stopPropagation($event)">
 		<div *ngIf="errorIcon" class="error-icon"></div>
-		<div class="step-box step1">
+		<div class="step-box step1"
+			[ngClass]="{ 'error-text': errorModal }">
 			<a (click)="closeModal()" class="close-modal"></a>
 			<span class="modal-title" *ngIf="heading">{{ heading }}</span>
 			<ng-content></ng-content>

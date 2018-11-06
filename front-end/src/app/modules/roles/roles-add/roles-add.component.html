@@ -27,7 +27,7 @@
   <app-content-block [heading]="'roles.permissions' | translate">
     <div class="no-padding-top-bottom">
       <app-input-item-error-message
-        *ngIf="showError"
+        *ngIf="roleForm.controls.permissions.invalid && (roleForm.controls.permissions.dirty || roleForm.controls.permissions.touched)"
         [errorMessage]="'Permission must be selected'"
       ></app-input-item-error-message>
 
@@ -61,31 +61,33 @@
 </div>
 
 <app-form-action-bar>
-  <div *ngIf="roleId">
+  <ng-container *ngIf="roleId">
     <button
-      class="btn deactive" 
-      [disabled]="loading" 
+      class="btn deactive"
+      [disabled]="loading"
       (click)="showDeleteConfirm = true"
     >{{ 'common.delete' | translate }}</button>
     <button
-      class="btn submit" 
-      [disabled]="loading" 
+      class="btn submit"
+      [disabled]="loading"
       (click)="saveRole()"
+      [appMarkAsTouched]="roleForm"
     >{{ 'common.submit' | translate }}</button>
-  </div>
+  </ng-container>
 
-  <div *ngIf="!roleId">
+  <ng-container *ngIf="!roleId">
     <button
       class="btn submit"
       [disabled]="loading"
       (click)="addRole()"
+      [appMarkAsTouched]="roleForm"
     >{{ 'common.submit' | translate }}</button>
-  </div>
+  </ng-container>
 </app-form-action-bar>
 
 <app-confirm
   *ngIf="showDeleteConfirm"
-  [heading]="'roles.role_delete_confirm_msg' | translate" 
+  [heading]="'roles.role_delete_confirm_msg' | translate"
   (onReject)="closeDeleteConfirm()"
   (onConfirm)="deleteRole()"
 ></app-confirm>

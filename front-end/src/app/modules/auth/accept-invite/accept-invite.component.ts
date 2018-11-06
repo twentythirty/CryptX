@@ -9,27 +9,27 @@ import { InviteService } from './invite.service';
 import { AuthService } from '../../../services/auth/auth.service';
 
 class UserFulfillInvitationInfo {
-  new_password: string
-  repeat_password: string
+  new_password: string;
+  repeat_password: string;
 }
 class QueryParamsToken {
-  token: string
+  token: string;
 }
 class InvitationInfo {
-  id: number
-  was_used: boolean
-  token: string
-  token_expiry_timestamp: Date
-  email: string
-  first_name: string
-  last_name: string
-  role_id: number
-  creator_id: number
+  id: number;
+  was_used: boolean;
+  token: string;
+  token_expiry_timestamp: Date;
+  email: string;
+  first_name: string;
+  last_name: string;
+  role_id: number;
+  creator_id: number;
 }
 
 class InvitationCheckSuccessResponse {
-  success: true
-  invitation: InvitationInfo
+  success: true;
+  invitation: InvitationInfo;
 }
 
 @Component({
@@ -45,27 +45,25 @@ export class AcceptInviteComponent implements OnInit {
     new_password: '',
     repeat_password: ''
   };
-  userInfoForm: FormGroup;
+  userInfoForm: FormGroup = new FormGroup({
+    password: new FormControl('', [
+      Validators.required
+    ]),
+    password_repeat: new FormControl('', [
+      Validators.required
+    ])
+  });
 
   imageLogo = require('Images/Logo.png');
 
   constructor(
-    private route: ActivatedRoute,
-    private router: Router,
-    private inviteService: InviteService,
-    private authService: AuthService,
+    public route: ActivatedRoute,
+    public router: Router,
+    public inviteService: InviteService,
+    public authService: AuthService,
   ) { }
 
   ngOnInit() {
-    this.userInfoForm = new FormGroup({
-      password: new FormControl('', [
-        Validators.required
-      ]),
-      password_repeat: new FormControl('', [
-        Validators.required
-      ])
-    });
-
     this.route.queryParams.subscribe((params: QueryParamsToken) => {
       this.token.value = params.token;
       this.checkTokenValidity();
@@ -90,25 +88,25 @@ export class AcceptInviteComponent implements OnInit {
   }
 
   fulfillInvitation() {
-    if (this.userInfoForm.value.password != this.userInfoForm.value.password_repeat) {
-      this.message = "New password was not repeated correctly";
+    if (this.userInfoForm.value.password !== this.userInfoForm.value.password_repeat) {
+      this.message = 'New password was not repeated correctly';
       return;
     }
     if (this.userInfoForm.valid) {
-      let data = {
+      const data = {
         invitation_id: this.invitationInfo.id,
         password: this.userInfoForm.value.password
-      }
+      };
 
-      this.inviteService.fulfillInvitation(data).subscribe(data => {
-        this.autoLogin(data);
+      this.inviteService.fulfillInvitation(data).subscribe(res => {
+        this.autoLogin(res);
       }, error => {
         if (error.error) {
           this.message = error.error.error;
         }
       });
     } else {
-      this.markAsTouched(this.userInfoForm)
+      this.markAsTouched(this.userInfoForm);
     }
   }
 
@@ -125,7 +123,7 @@ export class AcceptInviteComponent implements OnInit {
 
   private autoLogin(userLoginData): void {
     this.authService.setAuthData(userLoginData);
-    this.router.navigate(['dashboard']);
-  };
+    this.router.navigate(['/dashboard']);
+  }
 
 }

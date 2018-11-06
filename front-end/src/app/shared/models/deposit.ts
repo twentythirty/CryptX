@@ -1,12 +1,17 @@
 export class Deposit {
-     public id: string
-     public transaction_asset_id: string
-     public transaction_asset: string
-     public exchange: string
-     public account: number
-     public amount: number
-     public investment_percentage: number
-     public status: number
+  public id: number;
+  public recipe_run_id: number;
+  public investment_run_id: number;
+  public quote_asset_id: number;
+  public quote_asset: string;
+  public exchange_id: number;
+  public exchange: string;
+  public account: string;
+  public amount: string;
+  public investment_percentage: string;
+  public deposit_management_fee: string;
+  public depositor_user: string;
+  public status: string;
 }
 
 export class DepositStatus {

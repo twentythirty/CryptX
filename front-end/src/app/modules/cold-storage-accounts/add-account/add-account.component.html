@@ -9,13 +9,14 @@
   >
 
    <app-input-item class="form-item"
-      fieldType = "select"
-      [label] = "'cold_storage_accounts.portfolio' | translate"
-      [formGroup] = "form"
+      fieldType="select"
+      [label]="'cold_storage_accounts.portfolio' | translate"
+      [formGroup]="form"
       formControlName="strategy_type"
       [items]="strategies"
-      [spinnerLoading] = "strategiesLoading"
       placeholder="{{'cold_storage_accounts.select_portfolio' | translate}}"
+      bindValue="id"
+      bindLabel="value"
     > 
     </app-input-item>
 
@@ -27,6 +28,8 @@
       [items]="assets"
       [spinnerLoading]="assetsLoading"
       placeholder="{{'cold_storage_accounts.enter_asset' | translate}}"
+      bindValue="id"
+      bindLabel="value"
     > 
     </app-input-item>
 
@@ -38,6 +41,8 @@
       [items]="custodians"
       [spinnerLoading]="custodiansLoading"
       placeholder="{{'cold_storage_accounts.select_custodian' | translate}}"
+      bindValue="id"
+      bindLabel="value"
     > 
     </app-input-item>
 
@@ -63,8 +68,9 @@
   <div>
     <button
       class="btn submit"
-      [disabled]="buttonLoading || !form.valid"
+      [disabled]="buttonLoading"
       (click)="add()"
-    >{{ 'common.add_new_user' | translate }}</button>
+      [appMarkAsTouched]="form"
+    >{{ 'common.add_new_account' | translate }}</button>
   </div>
 </app-form-action-bar>

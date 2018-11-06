@@ -36,7 +36,6 @@ export class InstrumentListComponent extends DataTableCommonManagerComponent {
     public router: Router,
   ) {
     super(route, router);
-    this.getFilterLOV();
   }
 
   /**
@@ -49,7 +48,7 @@ export class InstrumentListComponent extends DataTableCommonManagerComponent {
       col => {
         col.filter.rowData$ = this.instrumentsService.getHeaderLOV(col.column);
       }
-    )
+    );
   }
 
   public openRow(instrument: Instrument): void {
@@ -66,6 +65,7 @@ export class InstrumentListComponent extends DataTableCommonManagerComponent {
           footer: data.footer
         });
         this.count = data.count;
+        this.getFilterLOV();
       },
       err => {
         console.log(err);

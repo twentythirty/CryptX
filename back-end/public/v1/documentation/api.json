@@ -46,6 +46,13 @@
       "description": "ID of recipe run",
       "required": true,
       "type": "integer"
+    },
+    "conversion_id": {
+      "name": "conversion_id",
+      "in": "path",
+      "description": "ID of asset conversion",
+      "required": true,
+      "type": "integer"
     }
   },
   "paths": {
@@ -289,15 +296,67 @@
         ]
       }
     },
+    "/cold_storage/accounts/{account_id}/edit": {
+      "post": {
+        "tags": [
+          "cold storage"
+        ],
+        "summary": "Edit a cold storage accounts",
+        "description": "Edit cold storage account address or tag, or both",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "account_id",
+            "in": "path",
+            "description": "Cold Storage Account id",
+            "required": true,
+            "type": "integer"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "description": "Data needed to edit a cold storage account",
+            "required": false,
+            "schema": {
+              "$ref": "#/definitions/EditColdStorageAccountParams"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "$ref": "#/definitions/ColdStorageAccountResponse"
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
     "/exchanges/all": {
       "get": {
         "tags": [
           "exchange"
         ],
         "summary": "Get list of exchanges",
-        "description": "Fetches list of exchanges.",
+        "description": "Fetch list of exchanges, optionally filtering down to only those allowed to be mapped.",
         "produces": [
           "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "ignore_unmappable",
+            "in": "query",
+            "description": "Only return exchanges the system considers 'mappable' (MVP)",
+            "required": false,
+            "type": "boolean"
+          }
         ],
         "responses": {
           "200": {
@@ -372,6 +431,392 @@
             "description": "success",
             "schema": {
               "$ref": "#/definitions/ExchangeInstrumentIDsResponse"
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/exchanges/{exchange_id}/accounts/create": {
+      "post": {
+        "tags": [
+          "exchange"
+        ],
+        "summary": "Create a new exchange account",
+        "description": "Creates a new exchange account.",
+        "parameters": [
+          {
+            "name": "exchange_id",
+            "in": "path",
+            "description": "Exchange id",
+            "required": true,
+            "type": "integer"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "description": "Information needed for creating an exchange account",
+            "required": false,
+            "schema": {
+              "$ref": "#/definitions/createExchangeAccountParams"
+            }
+          }
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "$ref": "#/definitions/createExchangeAccountResponse"
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/exchanges/accounts/all": {
+      "post": {
+        "tags": [
+          "exchange"
+        ],
+        "summary": "Get a list of exchange accounts",
+        "description": "Get a list of exchange accounts",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "description": "Filter object used to filter out data",
+            "required": false,
+            "schema": {
+              "$ref": "#/definitions/EntitiesFilter"
+            }
+          }
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "$ref": "#/definitions/ExchangeAccountListResponse"
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/exchanges/accounts/{exchange_account_id}": {
+      "get": {
+        "tags": [
+          "exchange"
+        ],
+        "summary": "Get a single exchange account",
+        "description": "Get a single exchange account",
+        "parameters": [
+          {
+            "name": "exchange_account_id",
+            "in": "path",
+            "description": "ID of the exchange account",
+            "required": true,
+            "type": "integer"
+          }
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "$ref": "#/definitions/ExchangeAccountResponse"
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/exchanges/accounts/{exchange_account_id}/edit": {
+      "post": {
+        "tags": [
+          "exchange"
+        ],
+        "summary": "Edit a single exchange account",
+        "description": "Edit a single exchange account. Editing is only allowed while there are no active investment runs",
+        "parameters": [
+          {
+            "name": "exchange_account_id",
+            "in": "path",
+            "description": "ID of the exchange account",
+            "required": true,
+            "type": "integer"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "description": "What can be edited",
+            "required": false,
+            "schema": {
+              "$ref": "#/definitions/EditExchangeAccountParams"
+            }
+          }
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "$ref": "#/definitions/GenericOkResponse"
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/exchanges/accounts/header_lov/{field_name}": {
+      "post": {
+        "tags": [
+          "exchange"
+        ],
+        "summary": "Get a list of all values for this field in the users view table",
+        "description": "Optionally filtered list of all values for a speicfic field in the exchange account admin view table. Used as the set of options in LOV-type headers. The POST version can be used in conjunction with header search. For users table, this `field_name` can be: `first_name`, `last_name`, `email`, `is_active`",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "field_name",
+            "in": "path",
+            "description": "name of column field to fetch LOV for. corresponds to value used to fill column by entity.",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "filter query",
+            "in": "body",
+            "description": "the query used to additionally filter the LOV",
+            "required": false,
+            "schema": {
+              "$ref": "#/definitions/LOVFilter"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "schema": {
+              "$ref": "#/definitions/HeaderColListResponse"
+            }
+          },
+          "401": {
+            "description": "unauthorized - no session",
+            "schema": {
+              "$ref": "#/definitions/ApiUnauthorizezdResponse"
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/exchanges/credentials/all": {
+      "post": {
+        "tags": [
+          "exchange"
+        ],
+        "summary": "Get a list of exchange credentials",
+        "description": "Get a list of exchange credentials",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "description": "Filter object used to filter out data",
+            "required": false,
+            "schema": {
+              "$ref": "#/definitions/EntitiesFilter"
+            }
+          }
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "$ref": "#/definitions/ExchangeCredentialListResponse"
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/exchanges/{exchange_id}/credentials": {
+      "get": {
+        "tags": [
+          "exchange"
+        ],
+        "summary": "Get a single exchange credentials",
+        "description": "Get a single exchange credentials",
+        "parameters": [
+          {
+            "name": "exchange_id",
+            "in": "path",
+            "description": "ID of the exchange",
+            "required": true,
+            "type": "integer"
+          }
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "$ref": "#/definitions/ExchangeCredentialResponse"
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/exchanges/{exchange_id}/credential_fields": {
+      "get": {
+        "tags": [
+          "exchange"
+        ],
+        "summary": "Get a single exchange credential fields",
+        "description": "Get a single exchange credential fields",
+        "parameters": [
+          {
+            "name": "exchange_id",
+            "in": "path",
+            "description": "ID of the exchange",
+            "required": true,
+            "type": "integer"
+          }
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "$ref": "#/definitions/ExchangeCredentialFieldsResponse"
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/exchanges/{exchange_id}/credentials/set": {
+      "post": {
+        "tags": [
+          "exchange"
+        ],
+        "summary": "Set credentials on an exchange",
+        "description": "Set credentials on an exchange.",
+        "parameters": [
+          {
+            "name": "exchange_id",
+            "in": "path",
+            "description": "ID of the exchange",
+            "required": true,
+            "type": "integer"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "description": "Exchange credentials. admin_password is optional.",
+            "required": false,
+            "schema": {
+              "$ref": "#/definitions/SetExchangeCredentialParams"
+            }
+          }
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "$ref": "#/definitions/GenericOkResponse"
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/exchanges/{exchange_id}/credentials/delete": {
+      "delete": {
+        "tags": [
+          "exchange"
+        ],
+        "summary": "Delete credentials on an exchange",
+        "description": "Delete credentials on an exchange. Sets null on all credentials",
+        "parameters": [
+          {
+            "name": "exchange_id",
+            "in": "path",
+            "description": "ID of the exchange",
+            "required": true,
+            "type": "integer"
+          }
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "$ref": "#/definitions/GenericOkResponse"
             }
           }
         },
@@ -475,7 +920,84 @@
           "200": {
             "description": "success",
             "schema": {
-              "$ref": "#/definitions/LiquidityRequirementResponse"
+              "$ref": "#/definitions/CreateOrEditLiqudityRequirementResponse"
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/liquidity_requirements/{liquidity_requirement_id}/edit": {
+      "post": {
+        "tags": [
+          "liquidity"
+        ],
+        "summary": "Edit existing liqudiity requirement",
+        "description": "Edit existing liqudiity requirement. Specific exchnages can be updated to \"All Exchanges\" as long as there no other requirements for the same instrument",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "liquidity_requirement_id",
+            "in": "path",
+            "description": "ID of liquidity requirement",
+            "required": true,
+            "type": "integer"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "description": "Information needed to update the requirement",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/LiquidityRequirementEdit"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "$ref": "#/definitions/CreateOrEditLiqudityRequirementResponse"
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/liquidity_requirements/{liquidity_requirement_id}/delete": {
+      "delete": {
+        "tags": [
+          "liquidity"
+        ],
+        "summary": "Delete existing liqudiity requirement",
+        "description": "Delete existing liqudiity requirement. It will be removed. Forever",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "liquidity_requirement_id",
+            "in": "path",
+            "description": "ID of liquidity requirement",
+            "required": true,
+            "type": "integer"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "$ref": "#/definitions/GenericOkResponse"
             }
           }
         },
@@ -957,7 +1479,7 @@
           "investment"
         ],
         "summary": "Start new investment run",
-        "description": "Start new investment run",
+        "description": "Start new investment run. Deposits are accepted in 3 currencies: USD, BTC, ETH. Investment run can be deposit of atleast one of those currencies or all three of them. All deposit amounts will be used during investment run.",
         "produces": [
           "application/json"
         ],
@@ -987,6 +1509,42 @@
         ]
       }
     },
+    "/investment/select_assets": {
+      "post": {
+        "tags": [
+          "investment"
+        ],
+        "summary": "Create list(mix) of assets to invest into",
+        "description": "Before starting invesment run list of assets should be generated and its ID given as an argument to investmnet run creation API method.",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "description": "Info to start investment run",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/CreateInvestmentAssetGroup"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "$ref": "#/definitions/AssetGroupResponse"
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
     "/investments/{investment_id}": {
       "get": {
         "tags": [
@@ -1006,6 +1564,72 @@
             "description": "success",
             "schema": {
               "$ref": "#/definitions/InvestmentRunViewResponse"
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      },
+      "post": {
+        "tags": [
+          "investment"
+        ],
+        "summary": "Get insvestment run togheter with the asset mix",
+        "description": "Get insvestment run togheter with the asset mix. Asset mix can be filtered out",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/parameters/investment_id"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "description": "The filter definition to perform on the data set. If absent will assume empty filter and return all data",
+            "required": false,
+            "schema": {
+              "$ref": "#/definitions/EntitiesFilter"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "$ref": "#/definitions/InvestmentRunAssetMixResponse"
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/investments/{investment_id}/deposit_amounts": {
+      "get": {
+        "tags": [
+          "investment"
+        ],
+        "description": "Get deposit amounts of investment run in different currencies.",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/parameters/investment_id"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "$ref": "#/definitions/InvestmentAmountsListResponse"
             }
           }
         },
@@ -1370,6 +1994,36 @@
             "description": "success",
             "schema": {
               "$ref": "#/definitions/RecipeOrderGenerationResponse"
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/recipes/{recipe_id}/calculate_deposits": {
+      "post": {
+        "tags": [
+          "recipes", "deposits"
+        ],
+        "summary": "Calculate deposists",
+        "description": "Calculates how much of eachbase asset needs to be depositet to the Exchanges base on the recipe run detail investment and converted assets.",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/parameters/recipe_id"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "$ref": "#/definitions/RecipeDepositCalculationResponse"
             }
           }
         },
@@ -2498,6 +3152,81 @@
             "description": "success",
             "schema": {
               "$ref": "#/definitions/AssetDetailedListResponse"
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/assets/detailed/of_investment_asset_group/{investment_asset_group_id}": {
+      "post": {
+        "tags": [
+          "assets"
+        ],
+        "description": "Get detailed list of assets from a specific investment run asset group.",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "investment_asset_group_id",
+            "in": "path",
+            "description": "ID of investment run asset group",
+            "required": true,
+            "type": "integer"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "description": "The filter definition to perform on the data set. If absent will assume empty filter and return all data",
+            "required": false,
+            "schema": {
+              "$ref": "#/definitions/EntitiesFilter"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "$ref": "#/definitions/GroupAssetDetailedListResponse"
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/assets/of_exchange/{exchange_id}": {
+      "get": {
+        "tags": [
+          "assets"
+        ],
+        "description": "Get a list of assets that have related instrument mappings for the exchange",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "exchange_id",
+            "in": "path",
+            "description": "ID of the exchange",
+            "required": true,
+            "type": "integer"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "$ref": "#/definitions/ExchangeAssetListResponse"
             }
           }
         },
@@ -4487,6 +5216,141 @@
           }
         ]
       }
+    },
+    "/conversions/of_recipe/{recipe_id}": {
+      "post": {
+        "tags": [
+          "conversions", "recipes"
+        ],
+        "summary": "Get a list of asset conversions related to the Recipe Run",
+        "description": "Get a list of asset conversions related to the Recipe Run",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/parameters/recipe_id"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "description": "The filter definition to perform on the data set. If absent will assume empty filter and return all data",
+            "required": false,
+            "schema": {
+              "$ref": "#/definitions/EntitiesFilter"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "$ref": "#/definitions/InvestmentAssetConverionListResponse"
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/conversions/{conversion_id}/submit": {
+      "post": {
+        "tags": [
+          "conversions"
+        ],
+        "summary": "Submits an Asset conversion amount",
+        "description": "Sets the converted amount, returns an updated conversion",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/parameters/conversion_id"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "description": "Specify the amount that was converted",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/AssetConversionComplete"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "success": {
+                  "type": "boolean",
+                  "example": true
+                },
+                "conversion": {
+                  "$ref": "#/definitions/InvestmentAssetConversionView"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/conversions/{conversion_id}/complete": {
+      "post": {
+        "tags": [
+          "conversions"
+        ],
+        "summary": "Completes an Asset conversion",
+        "description": "Sets the converted amount and marks the conversion as completed, returns an updated conversion. If the amount was submited before, it can be omitted in the body",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/parameters/conversion_id"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "description": "Specify the amount that was converted",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/AssetConversionComplete"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "success": {
+                  "type": "boolean",
+                  "example": true
+                },
+                "conversion": {
+                  "$ref": "#/definitions/InvestmentAssetConversionView"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
     }
   },
   "securityDefinitions": {
@@ -4515,9 +5379,62 @@
         }
       }
     },
+    "createExchangeAccountParams": {
+      "description": "Exchange account informartion",
+      "type": "object",
+      "required": ["account_type", "asset_id", "is_active", "address"],
+      "properties": {
+        "account_type": {
+          "type": "number",
+          "example": 401
+        },
+        "asset_id": {
+          "type": "number",
+          "example": 21
+        },
+        "address": {
+          "type": "string",
+          "example": "1F1tAaz5x1HUXrCNLbtMDqcw6o5GNn4xqX"
+        },
+        "is_active": {
+          "type": "boolean",
+          "example": true
+        }
+      }
+    },
+    "EditExchangeAccountParams": {
+      "description": "Exchange account editing fields",
+      "type": "object",
+      "required": ["is_active"],
+      "properties": {
+        "is_active": {
+          "type": "boolean",
+          "example": true
+        }
+      }
+    },
+    "SetExchangeCredentialParams": {
+      "description": "Set exchange credentials fields",
+      "type": "object",
+      "properties": {
+        "api_key": {
+          "type": "string",
+          "example": "23jkh423jkh42kj34h2j3h42kj3h4kj"
+        },
+        "api_secret": {
+          "type": "string",
+          "example": "h5jh34jk5h3k45h3jk45h34jkh534kjh53jkh53kjh5"
+        },
+        "admin_password": {
+          "type": "string",
+          "example": "6h4jk654y68596y468y5986y4568y"
+        }
+      }
+    },
     "AddColdStorageAccountParams": {
       "description": "Cold storage transfer information",
       "type": "object",
+      "required": ["strategy_type", "asset_id", "custodian_id", "address"],
       "properties": {
         "strategy_type": {
           "type": "number",
@@ -4534,6 +5451,135 @@
         "address": {
           "type": "string",
           "example": "1F1tAaz5x1HUXrCNLbtMDqcw6o5GNn4xqX"
+        },
+        "tag": {
+          "type": "string",
+          "example": "BTC-213"
+        }
+      }
+    },
+    "EditColdStorageAccountParams": {
+      "description": "Cold storage transfer information",
+      "type": "object",
+      "properties": {
+        "address": {
+          "type": "string",
+          "example": "1F1tAaz5x1HUXrCNLbtMDqcw6o5GNn4xqX"
+        },
+        "tag": {
+          "type": "string",
+          "example": "BTC-213"
+        }
+      }
+    },
+    "createExchangeAccountResponse":  {
+      "description": "Response you when crating a new exchange account",
+      "type": "object",
+      "properties": {
+        "status": {
+          "type": "boolean",
+          "example": true
+        },
+        "exchange_account": {
+          "$ref": "#/definitions/RawExchangeAccount"
+        }
+      }
+    },
+    "ExchangeAccountListResponse": {
+      "description": "A list response for exchange accounts",
+      "type": "object",
+      "allOf": [
+        {
+          "$ref": "#/definitions/ListResponse"
+        },
+        {
+          "properties": {
+            "exchange_accounts": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/ExchangeAccount"
+              }
+            }
+          }
+        }
+      ]
+    },
+    "ExchangeAccountResponse": {
+      "description": "Single exchange account response",
+      "type": "object",
+      "properties": {
+        "status": {
+          "type": "boolean",
+          "example": true
+        },
+        "exchange_account": {
+          "$ref": "#/definitions/ExchangeAccount"
+        }
+      }
+    },
+    "ExchangeCredentialListResponse": {
+      "description": "A list response for exchange credentials",
+      "type": "object",
+      "allOf": [
+        {
+          "$ref": "#/definitions/ListResponse"
+        },
+        {
+          "properties": {
+            "exchange_credentials": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/ExchangeCredential"
+              }
+            }
+          }
+        }
+      ]
+    },
+    "ExchangeCredentialResponse": {
+      "description": "Single exchange credentials response",
+      "type": "object",
+      "properties": {
+        "status": {
+          "type": "boolean",
+          "example": true
+        },
+        "exchange_credential": {
+          "$ref": "#/definitions/ExchangeCredential"
+        }
+      }
+    },
+    "ExchangeCredentialFieldsResponse": {
+      "description": "Exchange required credential fields",
+      "type": "object",
+      "properties": {
+        "status": {
+          "type": "boolean",
+          "example": true
+        },
+        "fields": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/CredentialField"
+          }
+        }
+      }
+    },
+    "CredentialField": {
+      "description": "Credential field object",
+      "type": "object",
+      "properties": {
+        "title": {
+          "type": "string",
+          "example": "exchange_credentials.fields.api_key"
+        },
+        "field_name": {
+          "type": "string",
+          "example": "api_key"
+        },
+        "type": {
+          "type": "string",
+          "example": "string"
         }
       }
     },
@@ -4585,6 +5631,84 @@
         },
         "account": {
           "$ref": "#/definitions/ColdStorageAccount"
+        }
+      }
+    },
+    "RawExchangeAccount": {
+      "description": "Raw exchange account data",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "number",
+          "example": 18
+        },
+        "asset_id": {
+          "type": "number",
+          "example": 2
+        },
+        "account_type": {
+          "type": "number",
+          "example": 401
+        },
+        "is_active": {
+          "type": "boolean",
+          "example": true
+        }
+      }
+    },
+    "ExchangeAccount": {
+      "description": "Detailed exchange account",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "number",
+          "example": 18
+        },
+        "asset_id": {
+          "type": "number",
+          "example": 2
+        },
+        "asset": {
+          "type": "string",
+          "example": "BTC"
+        },
+        "exchange_id": {
+          "type": "number",
+          "example": 354
+        },
+        "exchange": {
+          "type": "string",
+          "example": "Binance"
+        },
+        "address": {
+          "type": "string",
+          "example": "1F1tAaz5x1HUXrCNLbtMDqcw6o5GNn4xqX"
+        },
+        "is_active": {
+          "type": "string",
+          "example": "exchange_accounts.is_active.active"
+        }
+      }
+    },
+    "ExchangeCredential": {
+      "description": "Detailed exchange credentials",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "number",
+          "example": 18
+        },
+        "exchange_id": {
+          "type": "number",
+          "example": 354
+        },
+        "exchange": {
+          "type": "string",
+          "example": "Binance"
+        },
+        "api_key": {
+          "type": "string",
+          "example": "SuperBinanceUser64"
         }
       }
     },
@@ -4650,7 +5774,7 @@
           "type": "string",
           "example": "DOGE"
         },
-        "cold_storage_account_id":{
+        "cold_storage_account_id": {
           "type": "number",
           "example": 45
         },
@@ -4865,6 +5989,10 @@
         "execution_order_id": {
           "type": "number",
           "example": 2
+        },
+        "cold_storage_transfer_id": {
+          "type": "number",
+          "example": 2
         }
       }
     },
@@ -4986,9 +6114,22 @@
                   "type": "number",
                   "example": 4
                 },
-                "execution_order_status": {
+                "status": {
                   "type": "string",
                   "example": "execution_orders_timeline.status.307"
+                }
+              }
+            },
+            "cold_storage_transfers": {
+              "type": "object",
+              "properties": {
+                "count": {
+                  "type": "number",
+                  "example": 4
+                },
+                "status": {
+                  "type": "string",
+                  "example": "cold_storage_transfers_timeline.status.93"
                 }
               }
             }
@@ -5017,7 +6158,7 @@
       }
     },
     "ExchangeList": {
-      "description": "Fetches distinct values of table column. Should help implement filtering.",
+      "description": "List of exchagnes fetched in this response.",
       "type": "object",
       "properties": {
         "exchanges": {
@@ -5037,7 +6178,7 @@
       }
     },
     "Exchange": {
-      "description": "Fetches distinct values of table column. Should help implement filtering.",
+      "description": "Exchange for selection in lists. Can be filtered by mappability",
       "type": "object",
       "properties": {
         "id": {
@@ -5047,6 +6188,10 @@
         "name": {
           "type": "string",
           "example": "Bitstamp"
+        },
+        "is_mappable": {
+          "type": "boolean",
+          "example": "false"
         }
       }
     },
@@ -5223,6 +6368,45 @@
         }
       }
     },
+    "CreateOrEditLiqudityRequirementResponse": {
+      "description": "Response when a new liquidity requirement is created or updated",
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean",
+          "example": true
+        },
+        "liquidity_requirement": {
+          "$ref": "#/definitions/RawLiquidityRequirement"
+        }
+      }
+    },
+    "RawLiquidityRequirement": {
+      "description": "Raw liquidity requirement object",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "number",
+          "example": 5
+        },
+        "instrument_id": {
+          "type": "number",
+          "example": 2
+        },
+        "exchnage_id": {
+          "type": "number",
+          "example": 1
+        },
+        "periodicity_in_days": {
+          "type": "number",
+          "example": 7
+        },
+        "minimum_volume": {
+          "type": "number",
+          "example": 15000
+        }
+      }
+    },
     "LiquidityRequirement": {
       "description": "Liquidity requirement view data",
       "type": "object",
@@ -5269,6 +6453,24 @@
           "type": "number",
           "example": 10
         },
+        "exchange_id": {
+          "type": "number",
+          "example": 20
+        },
+        "periodicity": {
+          "type": "number",
+          "example": 7
+        },
+        "minimum_circulation": {
+          "type": "number",
+          "example": 25000
+        }
+      }
+    },
+    "LiquidityRequirementEdit": {
+      "description": "Update the liqudity requirement exchanges, periodicity or minimum circulation",
+      "type": "object",
+      "properties": {
         "exchange_id": {
           "type": "number",
           "example": 20
@@ -5519,6 +6721,20 @@
         }
       }
     },
+    "GenericOkResponse": {
+      "description": "Sends a generic 'OK!' message response",
+      "type": "object",
+      "properties": {
+        "message": {
+          "type": "string",
+          "example": "OK!"
+        },
+        "success": {
+          "type": "boolean",
+          "example": true
+        }
+      }
+    },
     "Instrument": {
       "description": "The most basic instrument information.",
       "type": "object",
@@ -5552,6 +6768,16 @@
         "quote_asset_id": {
           "type": "number",
           "example": 2
+        }
+      }
+    },
+    "AssetConversionComplete": {
+      "description": "Information needed to complete a conversion",
+      "type": "object",
+      "properties": {
+        "amount": {
+          "type": "number",
+          "example": 198154
         }
       }
     },
@@ -5667,15 +6893,24 @@
         },
         "total_quantity": {
           "type": "number",
-          "example": "6.01,"
+          "example": "6.01"
+        },
+        "spend_amount": {
+          "type": "number",
+          "example": "0.005",
+          "description": "Quantity of asset sold"
+        },
+        "filled_quantity": {
+          "type": "number",
+          "example": "3.69"
         },
         "exchange_trading_fee": {
           "type": "number",
-          "example": "1.01,"
+          "example": "1.01"
         },
         "status": {
           "type": "number",
-          "example": "61,"
+          "example": "61"
         },
         "submission_time": {
           "type": "number",
@@ -5927,6 +7162,19 @@
         }
       }
     },
+    "RecipeDepositCalculationResponse": {
+      "description": "Recipe run deposit calculation reponse",
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean",
+          "example": true
+        },
+        "deposits": {
+          "$ref": "#/definitions/RecipeDeposit"
+        }
+      }
+    },
     "RecipeOrderGenerationResponse": {
       "description": "Response of recipe orders list",
       "type": "array",
@@ -6044,6 +7292,11 @@
           "type": "number",
           "example": 7
         },
+        "spend_amount": {
+          "type": "number",
+          "example": 0.005,
+          "description": "Quantity of asset sold"
+        },
         "status": {
           "type": "number",
           "example": 51
@@ -6149,6 +7402,18 @@
         "target_exchange": {
           "type": "string",
           "example": "bitstamp"
+        },
+        "investment_usd": {
+          "type": "number",
+          "example": 125462
+        },
+        "investment_btc": {
+          "type": "number",
+          "example": 2.6
+        },
+        "investment_eth": {
+          "type": "number",
+          "example": 36.78
         }
       }
     },
@@ -6223,6 +7488,25 @@
               "type": "array",
               "items": {
                 "$ref": "#/definitions/RecipeRunView"
+              }
+            }
+          }
+        }
+      ]
+    },
+    "InvestmentAssetConverionListResponse": {
+      "description": "Recipe run Asset conversion response",
+      "type": "object",
+      "allOf": [
+        {
+          "$ref": "#/definitions/ListResponse"
+        },
+        {
+          "properties": {
+            "conversions": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/InvestmentAssetConversionView"
               }
             }
           }
@@ -6313,6 +7597,39 @@
         }
       ]
     },
+    "InvestmentAssetConversionView" :{
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "number",
+          "example": 6
+        },
+        "recipe_run_id": {
+          "type": "number",
+          "example": 9
+        },
+        "investment_currency": {
+          "type": "string",
+          "example": "USD"
+        },
+        "investment_amount": {
+          "type": "number",
+          "example": 19988989.655
+        },
+        "target_currency": {
+          "type": "string",
+          "example": "BTC"
+        },
+        "converted_amount": {
+          "type": "number",
+          "example": 69
+        },
+        "status": {
+          "type": "string",
+          "example": "asset_conversions.status.501"
+        }
+      }
+    },
     "RecipeRun": {
       "description": "Recipe run",
       "type": "object",
@@ -6388,6 +7705,29 @@
         }
       ]
     },
+    "GroupAssetDetailedListResponse": {
+      "description": "Server response with array of detailed asset information",
+      "type": "object",
+      "allOf": [
+        {
+          "$ref": "#/definitions/ListResponse"
+        },
+        {
+          "properties": {
+            "success": {
+              "type": "boolean",
+              "example": true
+            },
+            "assets": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/GroupAsset"
+              }
+            }
+          }
+        }
+      ]
+    },
     "AssetDetailedResponse": {
       "description": "Server response with detailed asset information",
       "type": "object",
@@ -6447,10 +7787,52 @@
             "status": {
               "type": "string",
               "example": "assets.status.400"
+            },
+            "comment": {
+              "type": "string",
+              "example": "I request the return of this fine asset"
             }
           }
         }
       ]
+    },
+    "GroupAsset": {
+      "description": "Asset object belonging to the Asset mix.",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "number",
+          "example": 22
+        },
+        "symbol": {
+          "type": "string",
+          "example": "ETH"
+        },
+        "long_name": {
+          "type": "string",
+          "example": "Ethereum"
+        },
+        "capitalization": {
+          "type": "number",
+          "example": 130000000
+        },
+        "nvt_ratio": {
+          "type": "number",
+          "example": 22
+        },
+        "market_share": {
+          "type": "number",
+          "example": 37
+        },
+        "status": {
+          "type": "string",
+          "example": "assets.status.400"
+        },
+        "comment": {
+          "type": "string",
+          "example": "I request the return of this fine asset"
+        }
+      }
     },
     "AssetListResponse": {
       "description": "Example of a response where list of assets are returned",
@@ -6468,6 +7850,26 @@
           "type": "array",
           "items": {
             "$ref": "#/definitions/Asset"
+          }
+        }
+      }
+    },
+    "ExchangeAssetListResponse": {
+      "description": "Example of a response where list of exchange assets are returned",
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean",
+          "example": true
+        },
+        "count": {
+          "type": "number",
+          "example": 20
+        },
+        "assets": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/AssetSimple"
           }
         }
       }
@@ -6508,6 +7910,20 @@
         "is_deposit": {
           "type": "boolean",
           "example": false
+        }
+      }
+    },
+    "AssetSimple": {
+      "description": "Simpliefied version of the asset, sporting only the id and symbol",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "number",
+          "example": 22
+        },
+        "symbol": {
+          "type": "string",
+          "example": "ETH"
         }
       }
     },
@@ -6562,11 +7978,75 @@
           "type": "boolean",
           "example": true
         },
-        "deposit_usd": {
+        "deposit_amounts": {
+          "type": "array",
+          "items": {
+            "type": "object"
+          },
+          "example": [
+            {
+              "symbol": "USD",
+              "amount": 10000.5
+            },
+            {
+              "symbol": "BTC",
+              "amount": 2
+            },
+            {
+              "symbol": "ETH",
+              "amount": 22.43
+            }
+          ]
+        },
+        "investment_group_asset_id": {
           "type": "number",
-          "example": 11000
+          "example": 5
         }
       }
+    },
+    "CreateInvestmentAssetGroup": {
+      "type": "object",
+      "properties": {
+        "strategy_type": {
+          "type": "number",
+          "example": 102
+        }
+      }
+    },
+    "AssetGroupResponse": {
+      "type": "object",
+      "allOf": [
+        {
+          "$ref": "#/definitions/ListResponse"
+        },
+        {
+          "properties": {
+            "list": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "number",
+                  "example": 10
+                },
+                "created_timestamp": {
+                  "type": "number",
+                  "example": 1532097313472
+                },
+                "user_id": {
+                  "type": "number",
+                  "example": 10
+                },
+                "group_assets": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/definitions/GroupAsset"
+                  }
+                }
+              }
+            }
+          }
+        }
+      ]
     },
     "InvestmentRunViewListResponse": {
       "description": "Single investment run information",
@@ -6597,6 +8077,12 @@
         },
         "investment_run": {
           "$ref": "#/definitions/InvestmentRunView"
+        },
+        "asset_mix": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/AssetMixItem"
+          }
         }
       }
     },
@@ -6612,6 +8098,76 @@
           "$ref": "#/definitions/InvestmentRun"
         }
       }
+    },
+    "InvestmentAmountsListResponse": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean",
+          "example": true
+        },
+        "deposit_amounts": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/InvestmentAmount"
+          }
+        }
+      }
+    },
+    "InvestmentAmount": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "number",
+          "example": 46
+        },
+        "investment_run_id": {
+          "type": "number",
+          "example": 52
+        },
+        "currency_name": {
+          "type": "string",
+          "example": "Bitcoin"
+        },
+        "currency_symbol": {
+          "type": "string",
+          "example": "BTC"
+        },
+        "amount": {
+          "type": "number",
+          "example": 100
+        },
+        "value_usd": {
+          "type": "number",
+          "example": 649712
+        }
+      }
+    },
+    "InvestmentRunAssetMixResponse": {
+      "description": "Single investment run information with asset mix",
+      "type": "object",
+      "allOf": [
+        {
+          "$ref": "#/definitions/ListResponse"
+        },
+        {
+          "properties": {
+            "success": {
+              "type": "boolean",
+              "example": true
+            },
+            "investment_run": {
+              "$ref": "#/definitions/InvestmentRun"
+            },
+            "asset_mix": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/AssetMixItem"
+              }
+            }
+          }
+        }
+      ]
     },
     "InvestmentRunView": {
       "type": "object",
@@ -6679,6 +8235,36 @@
         "deposit_usd": {
           "type": "number",
           "example": 11000
+        }
+      }
+    },
+    "AssetMixItem": {
+      "description": "Asset mix object which accompanies the investment run",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "number",
+          "example": 1
+        },
+        "symbol": {
+          "type": "string",
+          "example": "LTC"
+        },
+        "long_name": {
+          "type": "string",
+          "example": "Litecoin"
+        },
+        "capitalization": {
+          "type": "number",
+          "example": 578943737543349
+        },
+        "nvt_ratio": {
+          "type": "number",
+          "example": 69.69
+        },
+        "market_share": {
+          "type": "number",
+          "example": 54.65
         }
       }
     },

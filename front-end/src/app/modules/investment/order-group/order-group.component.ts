@@ -1,12 +1,11 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { mergeMap, finalize } from 'rxjs/operators';
-
-import _ from 'lodash';
+import * as _ from 'lodash';
 
 import { StatusClass } from '../../../shared/models/common';
 
-import { TimelineDetailComponent, SingleTableDataSource, ITimelineDetailComponent } from '../timeline-detail/timeline-detail.component'
+import { TimelineDetailComponent, SingleTableDataSource, ITimelineDetailComponent } from '../timeline-detail/timeline-detail.component';
 import { TableDataSource, TableDataColumn } from '../../../shared/components/data-table/data-table.component';
 import { TimelineEvent } from '../../../shared/components/timeline/timeline.component';
 import {
@@ -34,12 +33,12 @@ export class OrderGroupComponent extends TimelineDetailComponent implements OnIn
   /**
    * 1. Implement attributes to display titles
    */
-  public pageTitle: string = 'Recipe orders';
-  public singleTitle: string = 'Orders';
-  public listTitle: string = '';
-  public singleTableEmptyText: string = 'orders.orders_not_generated';
-  public listTableEmptyText: string = 'orders.orders_not_generated';
-  public showGenerateOrders = true;
+  public pageTitle = 'Recipe orders';
+  public singleTitle = 'Orders';
+  public listTitle = '';
+  public singleTableEmptyText = 'orders.orders_not_generated';
+  public listTableEmptyText = 'orders.orders_not_generated';
+  public showGenerateOrders = false;
 
   /**
    * 2. Implement attributes to preset data structure
@@ -75,14 +74,14 @@ export class OrderGroupComponent extends TimelineDetailComponent implements OnIn
               this.showReadModal({
                 title: 'Rationale',
                 content: row.approval_comment
-              })
+              });
             }
           })
         ]
       }
     }),
     new ConfirmCellDataColumn({ column: 'actions', inputs: {
-      show: (row) => row.status == 'orders_group.status.81',
+      show: (row) => row.status === 'orders_group.status.81',
       execConfirm: (row) => this.showRationaleModal(row, data => data && this.alterGroup(data, 83)),
       execDecline: (row) => this.showRationaleModal(row, data => data && this.alterGroup(data, 82)),
     }}),
@@ -92,12 +91,13 @@ export class OrderGroupComponent extends TimelineDetailComponent implements OnIn
     header: [
       { column: 'id', nameKey: 'table.header.id', filter: { type: 'number', hasRange: false, inputSearch: true, sortable: true }},
       { column: 'instrument', nameKey: 'table.header.instrument', filter: { type: 'text', sortable: true }},
-      { column: 'side', nameKey: 'table.header.side', filter: { type: 'text', sortable: true }},
+      { column: 'side', nameKey: 'table.header.side', filter: { type: 'text', sortable: true, inputSearch: false }},
       { column: 'exchange', nameKey: 'table.header.exchange', filter: { type: 'text', sortable: true }},
       { column: 'price', nameKey: 'table.header.price', filter: { type: 'number', sortable: true }},
       { column: 'quantity', nameKey: 'table.header.total_quantity', filter: { type: 'number', sortable: true }},
+      { column: 'spend_amount', nameKey: 'table.header.spend_amount', filter: { type: 'number', sortable: true }},
       { column: 'sum_of_exchange_trading_fee', nameKey: 'table.header.sum_of_exchange_trading_fee', filter: { type: 'number', sortable: true }},
-      { column: 'status', nameKey: 'table.header.status', filter: { type: 'text', sortable: true }}
+      { column: 'status', nameKey: 'table.header.status', filter: { type: 'text', sortable: true, inputSearch: false }}
     ],
     body: null
   };
@@ -111,6 +111,7 @@ export class OrderGroupComponent extends TimelineDetailComponent implements OnIn
     new TableDataColumn({ column: 'exchange' }),
     new NumberCellDataColumn({ column: 'price' }),
     new NumberCellDataColumn({ column: 'quantity' }),
+    new NumberCellDataColumn({ column: 'spend_amount'}),
     new NumberCellDataColumn({ column: 'sum_of_exchange_trading_fee' }),
     new StatusCellDataColumn({ column: 'status', inputs: { classMap: {
       'orders.status.51': StatusClass.PENDING,
@@ -133,8 +134,6 @@ export class OrderGroupComponent extends TimelineDetailComponent implements OnIn
     private ordersService: OrdersService,
   ) {
     super(route, router);
-
-    this.getFilterLOV();
   }
 
   /**
@@ -155,24 +154,27 @@ export class OrderGroupComponent extends TimelineDetailComponent implements OnIn
           finalize(() => {
             this.getAllData_call = this.getAllDataReal;
             this.getAllData();
-            
+
             // stop loading and show empty
-            if(!this.singleDataSource.body)
+            if (!this.singleDataSource.body) {
               this.singleDataSource.body = [];
+            }
           })
         )
       )
     ).subscribe(
       res => {
-        if(res.recipe_order_group) {
+        if (res.recipe_order_group) {
           this.singleDataSource.body = [res.recipe_order_group];
 
-          if(res.recipe_order_group.status == 'orders_group.status.82') { // if rejected
+          if (res.recipe_order_group.status === 'orders_group.status.82') { // if rejected
             this.showGenerateOrders = true;
           } else {
             this.showGenerateOrders = false;
           }
-          this.disableGenerateOrders = false;
+          this.generateOrdersLoading = false;
+        } else {
+          this.showGenerateOrders = true;
         }
       },
       err => this.singleDataSource.body = []
@@ -186,7 +188,7 @@ export class OrderGroupComponent extends TimelineDetailComponent implements OnIn
   }
 
   public getAllDataReal(): void {
-    let orderGroupId = _.isEmpty(this.singleDataSource.body) ? 0 : this.singleDataSource.body[0]['id'];
+    const orderGroupId = _.isEmpty(this.singleDataSource.body) ? 0 : this.singleDataSource.body[0]['id'];
 
     this.ordersService.getAllOrdersByGroupId(orderGroupId, this.requestData).pipe(
       finalize(() => this.stopTableLoading())
@@ -200,7 +202,7 @@ export class OrderGroupComponent extends TimelineDetailComponent implements OnIn
         this.getFilterLOV();
       },
       err => this.listDataSource.body = []
-    )
+    );
   }
 
   private getFilterLOV(): void {
@@ -208,7 +210,7 @@ export class OrderGroupComponent extends TimelineDetailComponent implements OnIn
       col => ['id', 'instrument', 'side', 'exchange', 'status'].includes(col.column)
     ).map(
       col => {
-        let filter = { filter : { recipe_order_group_id: this.routeParamId }};
+        const filter = { filter : { recipe_run_id: this.routeParamId }};
         col.filter.rowData$ = this.investmentService.getAllOrdersHeaderLOV(col.column, filter);
       }
     );
@@ -231,7 +233,7 @@ export class OrderGroupComponent extends TimelineDetailComponent implements OnIn
   }
 
   public generateOrders() {
-    this.disableGenerateOrders = true;
+    this.generateOrdersLoading = true;
 
     this.route.params.pipe(
       mergeMap(

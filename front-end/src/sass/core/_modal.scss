@@ -54,6 +54,14 @@
                 min-width: 135px;
             }
         }
+
+        .error-text {
+            text-align: center;
+            p {
+                margin-top: 20px;
+                margin-bottom: 30px;
+            }
+        }
     }
 
     .close-modal {
@@ -116,13 +124,35 @@
 }
 
 .user-dropdown {
-  text-align: left;
-  background-color: white!important;
+    text-align: left;
+    background-color: white !important;
+
     .row{
-      border-bottom: 1px solid #DFE4E6;
-      padding-top: 15px;
-      padding-bottom: 15px;
-      color: #78909C;
-      font-size: small;
-  }
+        border-bottom: 1px solid #DFE4E6;
+        padding-top: 15px;
+        padding-bottom: 15px;
+        color: #78909C;
+        font-size: small;
+    }
+}
+
+.modal-table {
+    .modal {
+        .modal-content {
+            max-width: 700px;
+            padding-bottom: 10px;
+            width: 100%;
+        }
+    }
+}
+
+
+.conversion-amount-modal {
+    .modal-title {
+        margin-bottom: 30px;
+    }
+
+    .btn-cont {
+        text-align: right;
+    }
 }

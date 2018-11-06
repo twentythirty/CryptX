@@ -2,10 +2,14 @@
 
 const User = require("../models").User;
 const Role = require("../models").Role;
+const UserRole = require('../models').UserRole;
 const UserInvitation = require('../models').UserInvitation;
 const Op = require('../models').Sequelize.Op;
 const uuidv4 = require('uuid/v4');
 const validator = require('validator');
+
+const sequelize = require('../models').sequelize;
+const { ISOLATION_LEVELS } = sequelize.Transaction;
 
 const createUserAndInvitation = async function (creator, role_ids, first_name, last_name, email) {
     
@@ -26,26 +30,40 @@ const createUserAndInvitation = async function (creator, role_ids, first_name, l
     if (_.isEmpty(roles)) TE(`No roles with ids ${role_ids} found!`);
 
     let err, role_associations, invitation;
-    [err, user] = await to(User.create({
-        first_name: first_name,
-        last_name: last_name,
-        email: email,
-        created_timestamp: new Date(),
-        is_active: true
-    }));
+    [ err ] = await to(sequelize.transaction({
+        isolationLevel: ISOLATION_LEVELS.SERIALIZABLE
+    }, async transaction => {
 
-    [err, role_associations] = await to(user.setRoles(roles));
-    if (err) TE(err.message);
+        let exisitng_user = await User.findOne({
+            where: { email }, transaction
+        });
 
-    const one_week_later = new Date();
-    one_week_later.setDate(new Date().getDate() + 7);
-    [err, invitation] = await to(UserInvitation.create({
-        was_used: false,
-        token: uuidv4(),
-        token_expiry_timestamp: one_week_later,
-        creator_id: creator.id,
-        email: email,
-        user_id: user.id
+        if (exisitng_user) TE(`User with email ${email} already registered in system!`);
+
+        user = await User.create({
+            first_name: first_name,
+            last_name: last_name,
+            email: email,
+            created_timestamp: new Date(),
+            is_active: true,
+        }, {
+            transaction
+        });
+
+        role_associations = await user.setRoles(roles, { transaction });
+
+        const one_week_later = new Date();
+        one_week_later.setDate(new Date().getDate() + 7);
+
+        invitation = await UserInvitation.create({
+            was_used: false,
+            token: uuidv4(),
+            token_expiry_timestamp: one_week_later,
+            creator_id: creator.id,
+            email: email,
+            user_id: user.id
+        }, { transaction });
+
     }));
         
     if (err) TE(err.message);
