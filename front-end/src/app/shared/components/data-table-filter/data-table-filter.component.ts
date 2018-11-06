@@ -52,6 +52,7 @@ export class DataTableFilterComponent implements OnInit, OnChanges {
     label?: string
   }>>;
   @Input() dirty: boolean;
+  @Input() columnPosition: number;
 
   @Output() onFilter = new EventEmitter<object>();
 
