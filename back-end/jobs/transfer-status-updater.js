@@ -9,7 +9,7 @@ const status_map = {
 };
 
 //everyday, every 3 minutes
-module.exports.SCHEDULE = '* */3 * * *';
+module.exports.SCHEDULE = '0 */3 * * * *"';
 module.exports.NAME = 'TRANSFER_STATUS_UPDATER';
 module.exports.JOB_BODY = async (config, log) => {
 

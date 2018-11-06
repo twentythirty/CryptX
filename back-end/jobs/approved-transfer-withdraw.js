@@ -9,7 +9,7 @@ const actions = {
 };
 
 //Every 7 minutes for now
-module.exports.SCHEDULE = "* */7 * * * *";
+module.exports.SCHEDULE = "0 */7 * * * *";
 module.exports.NAME = "TRANSFER_WITHDRAW";
 module.exports.JOB_BODY = async (config, log) => {
 
