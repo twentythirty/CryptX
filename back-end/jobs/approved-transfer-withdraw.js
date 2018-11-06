@@ -8,8 +8,8 @@ const actions = {
     placed: `${action_path}.placed`
 };
 
-//Every 20 minutes for now
-module.exports.SCHEDULE = "* */20 * * * *";
+//Every 7 minutes for now
+module.exports.SCHEDULE = "* */7 * * * *";
 module.exports.NAME = "TRANSFER_WITHDRAW";
 module.exports.JOB_BODY = async (config, log) => {
 

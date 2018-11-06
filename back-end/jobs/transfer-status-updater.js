@@ -8,8 +8,8 @@ const status_map = {
     'canceled': COLD_STORAGE_ORDER_STATUSES.Canceled
 };
 
-//everyday, every 30 minutes
-module.exports.SCHEDULE = '* */30 * * *';
+//everyday, every 3 minutes
+module.exports.SCHEDULE = '* */3 * * *';
 module.exports.NAME = 'TRANSFER_STATUS_UPDATER';
 module.exports.JOB_BODY = async (config, log) => {
 

@@ -163,6 +163,11 @@ export class DataTableComponent implements OnInit {
     });
   }
 
+  columnPosition (column): number {
+    const columns = this.dataSource.header;
+    return column === columns[0] ? -1 : column === columns[columns.length - 1] ? 1 : 0;
+  }
+
   /**
    * Dynamic columns
    */

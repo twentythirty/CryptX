@@ -1,15 +1,12 @@
-.filter-sort-box {
+
+.filter-box-container {
     position: absolute;
     width: 190px;
     top: 40px;
     left: 50%;
     text-align: left;
     @include translate(-50%, 0);
-    background: #F7F7F7;
-    box-shadow: 0 12px 35px 0 rgba(121,137,154,0.70);
-    border-radius: 3px;
     z-index: 2;
-    cursor: default;
 
     &::before {
         content: "";
@@ -21,6 +18,23 @@
         top: -6px;
         left: 50%;
         @include translate(-50%, 0);
+    }
+}
+
+.filter-sort-box {
+    
+    background: #F7F7F7;
+    box-shadow: 0 12px 35px 0 rgba(121,137,154,0.70);
+    border-radius: 3px;
+    
+    cursor: default;
+
+    &.shift-right {
+        @include translate(70px, 0);
+    }
+
+    &.shift-left {
+        @include translate(-70px, 0);
     }
 
     .top-part {

@@ -25,6 +25,7 @@
             [inputSearch]="item.filter.inputSearch"
             [rowData]="item.filter.rowData"
             [rowData$]="item.filter.rowData$"
+            [columnPosition]="columnPosition(item)"
             (onFilter)="onSetFilter($event); toggleFilter(item)"
           ></app-data-table-filter>
         </th>

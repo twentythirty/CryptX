@@ -40,8 +40,8 @@ export class OrdersListComponent extends DataTableCommonManagerComponent impleme
     new TableDataColumn({ column: 'instrument' }),
     new StatusCellDataColumn({ column: 'side' }),
     new TableDataColumn({ column: 'exchange' }),
-    new TableDataColumn({ column: 'price' }),
-    new TableDataColumn({ column: 'quantity' }),
+    new NumberCellDataColumn({ column: 'price' }),
+    new NumberCellDataColumn({ column: 'quantity' }),
     new NumberCellDataColumn({ column: 'spend_amount'}),
     new NumberCellDataColumn({ column: 'sum_of_exchange_trading_fee' }),
     new StatusCellDataColumn({ column: 'status', inputs: { classMap: {
