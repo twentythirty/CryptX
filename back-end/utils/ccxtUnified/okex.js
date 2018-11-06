@@ -276,7 +276,7 @@ class Okex extends Exchange {
         'OK-ACCESS-PASSPHRASE': this._connector.v3_api_passphrase
       },
       json: true,
-      //agent: require('../CCXTUtils').proxy_agent PROXY IS NOT WHITELISTED YET
+      agent: require('../CCXTUtils').proxy_agent
     });
   }
 
