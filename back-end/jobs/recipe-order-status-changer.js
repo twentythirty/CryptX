@@ -106,15 +106,19 @@ module.exports.JOB_BODY = async (config, log) => {
             SELECT ro.id,
                     ro.status,
                     ro.quantity,
-                    COALESCE(fills_stats.fills_quantity, 0) AS fills_quantity
+                    ro.spend_amount,
+                    COALESCE(fills_stats.fills_quantity, 0) AS fills_quantity,
+                    COALESCE(fills_stats.sold_quantity, 0) AS sold_quantity
             FROM recipe_order ro
             LEFT JOIN
             ( SELECT recipe_order_id,
-                        sum(filled_quantity) AS fills_quantity
+                        sum(filled_quantity) AS fills_quantity,
+                        sum(sold_quantity) AS sold_quantity
                 FROM
                     (SELECT eo.recipe_order_id,
                             eo.id,
-                            COALESCE(sum(eof.quantity), 0) AS filled_quantity
+                            COALESCE(sum(eof.quantity), 0) AS filled_quantity,
+                            COALESCE(sum(eof.quantity * eof.price), 0) AS sold_quantity     
                     FROM execution_order eo
                     LEFT JOIN execution_order_fill eof ON eof.execution_order_id = eo.id
                     GROUP BY eo.id) AS fills
@@ -139,10 +143,12 @@ module.exports.JOB_BODY = async (config, log) => {
                 id: order_id,
                 status: order_status,
                 quantity: order_quantity,
-                fills_quantity
+                spend_amount: spend_amount,
+                fills_quantity,
+                sold_quantity
             } = record;
 
-            if (Decimal(order_quantity).lte(Decimal(fills_quantity))) {
+            if (Decimal(spend_amount).lte(Decimal(sold_quantity))) {
                 if (order_status_from_to(order_id, order_status, RECIPE_ORDER_STATUSES.Completed)) {
                     to_completed++;
                 }

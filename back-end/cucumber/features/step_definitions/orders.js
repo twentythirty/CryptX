@@ -56,6 +56,7 @@ Given(/^the system has (Pending|Rejected|Approved) Recipe Order Group with (\d*)
                 instrument_id: instruments[_.random(0, instruments.length - 1, false)].id,
                 price: _.random(0.01, 2, true),
                 quantity: _.random(0.1, 20, true),
+                spend_amount: _.random(0.001, 0.2, true),
                 recipe_order_group_id: group.id,
                 side: _.random(0, 1, false) ? ORDER_SIDES.Buy : ORDER_SIDES.Sell,
                 status: group_status === 'Approved' ? RECIPE_ORDER_STATUSES.Executing : RECIPE_ORDER_STATUSES[group_status],
