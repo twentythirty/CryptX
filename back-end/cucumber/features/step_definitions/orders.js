@@ -267,11 +267,12 @@ Given(/^the system has Recipe Order with status (.*) on (.*)$/g, async function 
             transaction
         }).then(group => {
 
+            const price = _.random(0.00001, 0.001, true);
             return RecipeOrder.create({
                 instrument_id: mapping.Instrument.id,
-                price: _.random(0.00001, 0.001, true),
-                quantity: 0,//_.clamp(amount_limits.min * 20, amount_limits.max),
-                spend_amount: _.clamp(limits.spend.min * 20, limits.spend.max),
+                price: price,
+                quantity: 0,//_.clamp(amount_limits.min * 20, amount_limits.max) / price,
+                spend_amount: _.clamp(limits.spend.min * 7, limits.spend.max),
                 side: ORDER_SIDES.Buy,
                 status: RECIPE_ORDER_STATUSES[status],
                 target_exchange_id: exchange.id,
@@ -832,13 +833,14 @@ When('the system does the task "generate execution orders" until it stops genera
             });
 
             new_execution_order.status = EXECUTION_ORDER_STATUSES.FullyFilled;
+            new_execution_order.price = this.current_recipe_order.price;
 
             await new_execution_order.save({ transaction });
 
             await ExecutionOrderFill.create({
                 execution_order_id: new_execution_order.id,
                 price: _.random(0.01, 1, true),
-                quantity: new_execution_order.total_quantity,
+                quantity: parseFloat(new_execution_order.spend_amount) / parseFloat(new_execution_order.price),
                 timestamp: Date.now()
             }, { transaction });
 
