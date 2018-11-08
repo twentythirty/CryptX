@@ -243,7 +243,9 @@ describe('Recipe Order status changer job', () => {
                         id: 3,
                         status: RECIPE_ORDER_STATUSES.Pending, 
                         quantity: 5, 
-                        fills_quantity: 5
+                        spend_amount: 0.2,
+                        fills_quantity: 5,
+                        sold_quantity: 0.2
                     }
                 ])
             } else if (call_counter == 2) {
