@@ -150,7 +150,7 @@ module.exports.JOB_BODY = async (config, log) => {
             }
     
             group_transfers.push({
-                amount: _.clamp(parseFloat(order.quantity), asset_balance) - withdraw_fee,
+                amount: _.clamp(parseFloat(order.quantity), asset_balance),
                 asset_id: order.transaction_asset_id,
                 cold_storage_account_id: order.cold_storage_account_id,
                 fee: withdraw_fee,

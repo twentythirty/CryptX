@@ -84,7 +84,7 @@ Feature: Generating cold storage transfers
         When the system finished the task "generate cold storage transfers"
         Then the following Cold Storage Transfers will be created:
         | asset | amount    | fee   | status    |
-        | XRP   | 196   |   2   |   Pending     |
-        | LTC   | 49.1  |   0.9 |   Pending     |
-        | EOS   | 9.09  |   0.085   | Pending   |
+        | XRP   | 198   |   2   |   Pending     |
+        | LTC   | 50  |   0.9 |   Pending     |
+        | EOS   | 9.175  |   0.085   | Pending   |
         And a matching Cold Storage Account is assinged to each Transfer   
