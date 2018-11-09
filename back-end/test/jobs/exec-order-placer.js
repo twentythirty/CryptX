@@ -67,6 +67,7 @@ describe("Execution Order Placer job", () => {
     type: 71,
     price: '0.01',
     total_quantity: '5',
+    spend_amount: 0.01,
     status: 61,
     placed_timestamp: null,
     completed_timestamp: null,
@@ -309,7 +310,9 @@ describe("Execution Order Placer job", () => {
         };
 
         async createMarketOrder (external_instrument_id, side, execution_order) {
-          return Promise.reject();
+          return Promise.reject({
+            message: "Placing order failed stub"
+          });
         };
       }
 
@@ -344,7 +347,9 @@ describe("Execution Order Placer job", () => {
         };
 
         async createMarketOrder (external_instrument_id, side, execution_order) {
-          return Promise.reject();
+          return Promise.reject({
+            message: "Place order fail stub"
+          });
         };
       }
 
