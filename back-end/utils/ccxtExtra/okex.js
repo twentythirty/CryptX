@@ -1,4 +1,10 @@
 const querystring = require('querystring');
+const Bottleneck = require('bottleneck');
+const bottleneck = new Bottleneck({
+    id: `OKEXv3`,
+    minTime: 180, //Around 6 requests per second
+    maxConcurrent: 1
+});
 
 module.exports = {
     has: {
@@ -51,16 +57,19 @@ module.exports = {
     async createV3Request(method = 'get', request_path, body = {}) {
         const now = new Date().toISOString();
 
-        return require('request-promise')[method]({
-            uri: 'https://www.okex.com' + request_path + (_.isEmpty(body) ? '' : `?${querystring.stringify(body)}`),
-            headers: {
-                'OK-ACCESS-KEY': this.v3_api_key,
-                'OK-ACCESS-SIGN': this.signv3(now, method, request_path, body),
-                'OK-ACCESS-TIMESTAMP': now,
-                'OK-ACCESS-PASSPHRASE': this.v3_api_passphrase
-            },
-            json: true,
-            agent: this.agent
+        return bottleneck.schedule(() => {
+            return require('request-promise')[method]({
+                uri: 'https://www.okex.com' + request_path + (_.isEmpty(body) ? '' : `?${querystring.stringify(body)}`),
+                headers: {
+                    'OK-ACCESS-KEY': this.v3_api_key,
+                    'OK-ACCESS-SIGN': this.signv3(now, method, request_path, body),
+                    'OK-ACCESS-TIMESTAMP': now,
+                    'OK-ACCESS-PASSPHRASE': this.v3_api_passphrase
+                },
+                json: true,
+                agent: this.agent
+            });
         });
+        
     }
 };

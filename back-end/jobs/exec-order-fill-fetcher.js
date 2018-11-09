@@ -184,6 +184,8 @@ module.exports.JOB_BODY = async (config, log) => {
             //The execution will continue, as the job might be missing the last fill/fills.
         }
 
+        if(external_order.amount && external_order.amount !== 0) placed_order.total_quantity = external_order.amount;
+
         //Flag that determines how to create new fills (using trades or calculating using the filled field of the order)
         const has_trades = exchange.has['fetchMyTrades'];
 
