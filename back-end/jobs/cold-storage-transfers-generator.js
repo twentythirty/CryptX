@@ -16,7 +16,7 @@ const actions = {
  * Job will fetch order groups with completed orders, which also are missing cold storage transfers.
  * It will create a cold storage transfer for each completed order.
  */
-module.exports.SCHEDULE = "* */45 * * * *";
+module.exports.SCHEDULE = "0 */1 * * * *";
 module.exports.NAME = "TRANSFER_GENERATOR";
 module.exports.JOB_BODY = async (config, log) => {
 
@@ -150,7 +150,7 @@ module.exports.JOB_BODY = async (config, log) => {
             }
     
             group_transfers.push({
-                amount: _.clamp(parseFloat(order.quantity), asset_balance),
+                amount: asset_balance,
                 asset_id: order.transaction_asset_id,
                 cold_storage_account_id: order.cold_storage_account_id,
                 fee: withdraw_fee,
