@@ -21,6 +21,8 @@ module.exports = {
 
         const trades = await this.createV3Request('get', '/api/spot/v3/fills', request);
 
+        if(!_.isArray(trades)) return [];
+
         return trades.map(trade => {
             return {
                 info: trade,
