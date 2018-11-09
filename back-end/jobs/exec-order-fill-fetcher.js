@@ -342,7 +342,7 @@ module.exports.JOB_BODY = async (config, log) => {
             return [[], []];
         };
 
-        placed_order.filled_amount.plus(external_order.filled).minus(current_sums.fill);
+        placed_order.filled_amount = placed_order.filled_amount.plus(external_order.filled).minus(current_sums.fill);
 
         return [[
             {

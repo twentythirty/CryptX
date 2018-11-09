@@ -92,6 +92,7 @@ async function generateExecutionOrders(amount, order_status, for_exchange, order
             status: order_status,
             type: EXECUTION_ORDER_TYPES.Market,
             total_quantity: _.random(limits.min, limits.max, true),
+            sold_amount:  _.random(limits.min, limits.max, true),
             failed_attempts: 0
         });
 
@@ -107,7 +108,7 @@ async function generateExecutionOrders(amount, order_status, for_exchange, order
 Given(/^there (are|is) (.*) (.*) (Execution Orders|Execution Order) for (.*)$/, async function (plural_1, amount, status, plural_2, exchange_name) {
 
     amount = parseInt(amount);
-    const Exchange = require('../../../models').Exchange;
+    const { Exchange, ExecutionOrder } = require('../../../models');
     const exchange = await Exchange.findOne({
         where: {
             name: exchange_name
@@ -117,7 +118,7 @@ Given(/^there (are|is) (.*) (.*) (Execution Orders|Execution Order) for (.*)$/, 
 
     let order_id;
     if(this.current_recipe_orders) order_id = this.current_recipe_orders[_.random(0, this.current_recipe_orders.length - 1, false)].id;
-    else if(this.current_recipe_order) order_id = this.current_recipe_order.id
+    else if(this.current_recipe_order) order_id = this.current_recipe_order.id;
 
     this.current_execution_orders = await generateExecutionOrders(amount, EXECUTION_ORDER_STATUSES[status], exchange, order_id);
 

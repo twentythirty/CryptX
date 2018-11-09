@@ -5,8 +5,9 @@ Feature: Retrieving updated execution order information from exchanges
 
     Background:
 
-        Given the system has Instrument Mappings for Bitfinex
-        Given the system has updated the Instrument Market Data
+        Given there are no Execution Orders in the system
+        And the system has Instrument Mappings for Bitfinex
+        And the system has updated the Instrument Market Data
         And there are 3 Pending Execution Orders for Bitfinex
 
     Scenario: fetching execution order information until it is fully filled
