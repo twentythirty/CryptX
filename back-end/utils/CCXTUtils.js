@@ -1,6 +1,7 @@
 'use strict';
 
 const ccxt = require('ccxt');
+const ccxtExtra = require('./ccxtExtra');
 const Bottleneck = require('bottleneck');
 const Exchange = require('../models').Exchange;
 const ExchangeCredential = require('../models').ExchangeCredential;
@@ -58,7 +59,11 @@ const cache_init_promise = async () => {
 
             }
 
-            const connector = new ccxt[exchange.api_id](connector_options);
+            let connector = new ccxt[exchange.api_id](connector_options);
+            //Assign extra custom methods
+            if(ccxtExtra[exchange.api_id]) {
+                connector = _.merge(connector, ccxtExtra[exchange.api_id]);
+            }
             const throttle = {
                 id: `LIM-${exchange.api_id}`,
                 bottleneck: new Bottleneck({

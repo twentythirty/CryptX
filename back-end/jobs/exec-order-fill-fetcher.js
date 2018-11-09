@@ -185,7 +185,7 @@ module.exports.JOB_BODY = async (config, log) => {
         }
 
         //Flag that determines how to create new fills (using trades or calculating using the filled field of the order)
-        const has_trades = exchange.has['fetchTrades'];
+        const has_trades = exchange.has['fetchMyTrades'];
 
         log(`5.(EXEC-${placed_order.id}) Checking for new fills.`);
         let result = [];
@@ -227,10 +227,12 @@ module.exports.JOB_BODY = async (config, log) => {
         //or if there are no fills, then take the placement timestamp.
         const since = fills[0] ? fills[0].timestamp : placed_order.placed_timestamp;
 
-        let [ err, trades ] = await to(exchange.fetchMyTrades(placed_order.get('external_instrument'), since));
+        let [ err, trades ] = await to(exchange.fetchMyTrades(placed_order.get('external_instrument'), since, {
+            order_id: external_order.id
+        }));
     
         if(err) TE(err.message);
-    
+
         if(!trades.length) {
             log(`[WARN.5C](EXEC-${placed_order.id}) No trades fetched, skipping...`);
             return [[], []];
@@ -247,7 +249,10 @@ module.exports.JOB_BODY = async (config, log) => {
         }
 
         //Get trades that are only associated with the current palce order.
-        const order_trades = _.filter(trades, trade => trade.order === placed_order.external_identifier);
+        let order_trades = _.filter(trades, trade => trade.order === placed_order.external_identifier);
+        if(order_trades.some(t => t.side)) {
+            order_trades = order_trades.filter(t => t.side === _.invert(ORDER_SIDES)[placed_order.side].toLowerCase());
+        }
 
         //Safety filter to filter out trades that are already in the database.
         const new_trades = _.filter(order_trades, trade => _.findIndex(fills, { external_identifier: String(trade.id) }) === -1);

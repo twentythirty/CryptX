@@ -263,7 +263,7 @@ Given('the Exchange does not support Trade fetching', async function() {
 
         const connector = await CCXTUtils.getConnector(exchange.api_id);
 
-        connector.has['fetchTrades'] = false;
+        connector.has['fetchMyTrades'] = false;
 
     }
 
