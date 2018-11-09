@@ -40,26 +40,22 @@ class Binance extends Exchange {
     await this.isReady();
     const order_type = "market";
 
+
     // get latest price
     let [err, ticker] = await to(this._connector.fetchTicker(external_instrument_id)); // add error handling later on
-    
     if (err) TE(err.message);
+    let price = side == 'buy' ? ticker.ask : ticker.bid;
 
     let quantity, adjusted_sell_quantity;
     [err, [quantity, adjusted_sell_quantity]] = await to(this.adjustQuantity(
       external_instrument_id,
       execution_order.spend_amount,
-      ticker.ask,
+      price,
       execution_order.recipe_order_id
     ));
     if (err) TE(err.message);
 
-    console.log(`Creating market order to ${this.api_id}
-    Instrument - ${external_instrument_id}
-    Order type - ${order_type}
-    Order side - ${side}
-    Total quantity - ${quantity}
-    Price - ${execution_order.price}`);
+    logOrder (this.api_id, external_instrument_id, order_type, side, quantity, price, adjusted_sell_quantity, execution_order.spend_amount, true)
 
     let response;
     [err, response] = await to(this._connector.createOrder(

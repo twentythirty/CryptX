@@ -152,15 +152,15 @@ module.exports.JOB_BODY = async (config, log) => {
           await order.save();
 
           await logAction(actions.placed, {
-            args: { exchange: unifiedExchange.name },
+            args: { exchange: unifiedExchange.api_id },
             relations: { execution_order_id: order.id }
           });
           
           return order_with_data;
         }).catch(async (err) => { // order placing failed. Perform actions below.
-          log(err_message = `[WARN.5b]. Order placement to exchange failed. Error message: ${err}`);
+          log(err_message = `[WARN.5b]. Order placement to exchange failed. Error message: ${err.message}`);
           await logAction(actions.error, {
-            args: { error: err },
+            args: { error: err.message },
             relations: { execution_order_id: order.id }
           });
 
