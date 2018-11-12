@@ -8,24 +8,27 @@ const actions = {
     placed: `${action_path}.placed`
 };
 
-//Every 7 minutes for now
-module.exports.SCHEDULE = "0 */2 * * * *";
+//Every 3 minutes for now
+module.exports.SCHEDULE = "0 */3 * * * *";
 module.exports.NAME = "TRANSFER_WITHDRAW";
 module.exports.JOB_BODY = async (config, log) => {
 
     const { ColdStorageTransfer, sequelize } = config.models;
 
     const updateTransferStatus = (id, status, external_identifier, fee) => {
-        return ColdStorageTransfer.update({
+        const update = {
             status,
             placed_timestamp: status === COLD_STORAGE_ORDER_STATUSES.Sent ? Date.now() : null,
             completed_timestamp: status === COLD_STORAGE_ORDER_STATUSES.Completed ? Date.now() : undefined,
-            external_identifier,
-            fee
-        }, {
+        };
+
+        if(external_identifier) update.external_identifier = external_identifier;
+        if(fee) update.fee = fee;
+        
+        return ColdStorageTransfer.update(update, {
             where: { id },
             limit: 1
-        })
+        });
     };
 
     log('1 Fetching approved Cold Storage Transfers');
