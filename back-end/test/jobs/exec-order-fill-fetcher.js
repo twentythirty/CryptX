@@ -248,7 +248,7 @@ describe('Execution Order Fills fetcher job', () => {
                         connector = {
                             name: 'Exchange with fetchMyTrades',
                             has: {
-                                fetchTrades: true,
+                                fetchMyTrades: true,
                                 fetchOrder: true
                             },
                             fetchMyTrades: fetchMyTrades('1', '2', '3', '4', '5'),
@@ -298,7 +298,7 @@ describe('Execution Order Fills fetcher job', () => {
                             name: 'Exchange has trade fetching, but does not point to wich order they belong to',
                             has: {
                                 fetchOrder: true,
-                                fetchTrades: true
+                                fetchMyTrades: true
                             },
                             fetchMyTrades: fetchMyTrades('4'),
                             fetchOrder: fetchOrder

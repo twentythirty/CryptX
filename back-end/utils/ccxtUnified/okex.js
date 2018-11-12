@@ -54,14 +54,11 @@ class Okex extends Exchange {
     let [err, ticker] = await to(this._connector.fetchTicker(external_instrument_id)); // add error handling later on
     
     if (err) TE(err.message);
-    let quantity = execution_order.spend_amount / ( side == 'buy' ? ticker.ask : ticker.bid );
+    let price = side == 'buy' ? ticker.ask : ticker.bid;
 
-    console.log(`Creating market order to ${this.api_id}
-    Instrument - ${external_instrument_id}
-    Order type - ${order_type}
-    Order side - ${side}
-    Total quantity - ${quantity}
-    Price - ${execution_order.price}`);
+    let quantity = Decimal(execution_order.spend_amount).div(Decimal(price));
+
+    this.logOrder (this.api_id, external_instrument_id, order_type, side, quantity, price, execution_order.spend_amount, execution_order.spend_amount, false)
 
     let response;
     [err, response] = await to(this._connector.createOrder(
@@ -276,7 +273,7 @@ class Okex extends Exchange {
         'OK-ACCESS-PASSPHRASE': this._connector.v3_api_passphrase
       },
       json: true,
-      //agent: require('../CCXTUtils').proxy_agent PROXY IS NOT WHITELISTED YET
+      agent: require('../CCXTUtils').proxy_agent
     });
   }
 

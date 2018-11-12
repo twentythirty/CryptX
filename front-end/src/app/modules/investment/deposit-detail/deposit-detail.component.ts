@@ -69,7 +69,9 @@ export class DepositDetailComponent extends TimelineDetailComponent implements O
 
   public singleColumnsToShow: Array<TableDataColumn> = [
     new TableDataColumn({ column: 'investment_currency' }),
-    new NumberCellDataColumn({ column: 'investment_amount' }),
+    new NumberCellDataColumn({ column: 'investment_amount', inputs: {
+      digitsInfo: '1.2-2'
+    } }),
     new TableDataColumn({ column: 'target_currency' }),
     new NumberCellDataColumn({ column: 'converted_amount' }),
     new StatusCellDataColumn({ column: 'status', inputs: { classMap: {
@@ -97,7 +99,7 @@ export class DepositDetailComponent extends TimelineDetailComponent implements O
     new TableDataColumn({ column: 'quote_asset' }),
     new TableDataColumn({ column: 'exchange' }),
     new TableDataColumn({ column: 'account' }),
-    new TableDataColumn({ column: 'amount' }),
+    new NumberCellDataColumn({ column: 'amount' }),
     new NumberCellDataColumn({ column: 'deposit_management_fee' }),
     new StatusCellDataColumn({ column: 'status', inputs: { classMap: {
       'deposits.status.150': StatusClass.PENDING,

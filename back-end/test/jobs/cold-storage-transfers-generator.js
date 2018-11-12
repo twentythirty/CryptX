@@ -194,7 +194,7 @@ describe('Cold storage transfer generator job:', () => {
 
             expect(matching_order).to.be.not.undefined;
             expect(transfer.recipe_run_id).to.equal(MOCK_RECIPE_RUN_ID);
-            expect(transfer.amount).to.equal(MOCK_BALANCE - MOCK_FEE);
+            expect(transfer.amount).to.equal(MOCK_BALANCE);
             expect(transfer.fee).to.equal(MOCK_FEE);
             expect(transfer.asset_id).to.equal(matching_order.transaction_asset_id);
             expect(transfer.status).to.equal(COLD_STORAGE_ORDER_STATUSES.Pending);

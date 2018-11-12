@@ -32,8 +32,8 @@ describe('CCXTUnified', () => {
   let SUPPORTED_EXCHANGES = [
     "binance",
     "bitfinex",
-    "hitbtc2",
-    "huobipro", // Huobi and okex take cost(how much we want to spend) instead of amount. We need to store cost in order to make them work.
+    /* "hitbtc2",
+    "huobipro", */ // Huobi and okex take cost(how much we want to spend) instead of amount. We need to store cost in order to make them work.
     "okex"
   ];
 
@@ -138,33 +138,14 @@ describe('CCXTUnified', () => {
       });
 
       sinon.stub(connector, 'fetchTicker').callsFake((symbol) => {
-        let response = { tierBased: false,
-          percentage: true,
-          taker: 0.001,
-          maker: -0.0001,
-          info:
-           { id: 'LTCBTC',
-             baseCurrency: 'LTC',
-             quoteCurrency: 'BTC',
-             quantityIncrement: '0.1',
-             tickSize: '0.00001',
-             takeLiquidityRate: '0.001',
-             provideLiquidityRate: '-0.0001',
-             feeCurrency: 'BTC' },
-          id: 'LTCBTC',
+        let response = {
           symbol: 'LTC/BTC',
-          base: 'LTC',
-          quote: 'BTC',
-          baseId: 'LTC',
-          quoteId: 'BTC',
-          active: true,
-          precision: { price: 5, amount: 1 },
-          limits:
-            {
-              amount: { min: 0.1, max: undefined },
-              price: { min: 0.00001, max: undefined },
-              cost: { min: 0.0000010000000000000002, max: undefined } }
-        };
+          timestamp: 1541763133393,
+          bid: 0.008159,
+          bidVolume: 57,
+          ask: 0.008161,
+          askVolume: 0.12
+        };  
 
         return Promise.resolve(response);
       });

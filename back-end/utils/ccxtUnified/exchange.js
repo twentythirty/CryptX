@@ -42,7 +42,7 @@ class Exchange {
   }
 
   async adjustQuantity (symbol, sell_amount, price, recipe_order_id) {
-    let statuses = [EXECUTION_ORDER_STATUSES.Pending];
+    let statuses = [EXECUTION_ORDER_STATUSES.Pending], log = console.log;
 
     let [err, amounts] = await to(sequelize.query(`
       SELECT 
@@ -77,13 +77,19 @@ class Exchange {
       max: Number.MAX_VALUE
     }, limits.amount);
 
+    log(`${symbol} in ${this.api_id} limits detected: `, amount_limit);
+
     let quantity = Decimal(sell_amount).div(Decimal(price));
+    log(`${symbol} ${quantity} could be bought with ${sell_amount}`);
+
     //reamining quantity for reciep order after this execution order gets generated
     const left_order_qnty = Decimal(amounts.spend_amount).minus(amounts.spent).div(price);
     //minimize the DP to accepted levels
     let next_total = quantity.toDP(
       Decimal(limits.amount.min).dp(), Decimal.ROUND_HALF_DOWN
     );
+
+    log(`${symbol} order rounded to ${next_total} so it would fit exchange precision`);
 
     //check if the amounts are defined since the keys might exist but not have values on them
     if (next_total.lt(amount_limit.min)) {
@@ -100,6 +106,28 @@ class Exchange {
     let next_spend = next_total.mul(price);
     
     return [next_total.toString(), next_spend.toString()];
+  }
+
+  /**
+   * Method to output order being sent to exchange
+   * @param {*} api_id 
+   * @param {*} external_instrument_id 
+   * @param {*} order_type 
+   * @param {*} side 
+   * @param {*} quantity 
+   * @param {*} price 
+   * @param {*} sold_quantity 
+   */
+  logOrder (api_id, external_instrument_id, order_type, side, quantity, price, sold_quantity, sell_qnt_unajusted, accepts_transaction_quantity) {
+    console.log(`Creating market order to ${api_id}
+    Instrument - ${external_instrument_id}
+    Order type - ${order_type}
+    Order side - ${side}
+    Total quantity - ${quantity}
+    Price - ${price}
+    Sold quantity after adjustments - ${sold_quantity}
+    Sold quantity before adjustment - ${sell_qnt_unajusted}
+    ${accepts_transaction_quantity ? 'Quote' : 'Transaction'} asset quantity is used for order in tihs exchange`);
   }
 
 }

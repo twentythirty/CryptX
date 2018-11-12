@@ -56,6 +56,7 @@ Given(/^the system has (Pending|Rejected|Approved) Recipe Order Group with (\d*)
                 instrument_id: instruments[_.random(0, instruments.length - 1, false)].id,
                 price: _.random(0.01, 2, true),
                 quantity: _.random(0.1, 20, true),
+                spend_amount: _.random(0.001, 0.2, true),
                 recipe_order_group_id: group.id,
                 side: _.random(0, 1, false) ? ORDER_SIDES.Buy : ORDER_SIDES.Sell,
                 status: group_status === 'Approved' ? RECIPE_ORDER_STATUSES.Executing : RECIPE_ORDER_STATUSES[group_status],
@@ -266,11 +267,12 @@ Given(/^the system has Recipe Order with status (.*) on (.*)$/g, async function 
             transaction
         }).then(group => {
 
+            const price = _.random(0.00001, 0.001, true);
             return RecipeOrder.create({
                 instrument_id: mapping.Instrument.id,
-                price: _.random(0.00001, 0.001, true),
-                quantity: 0,//_.clamp(amount_limits.min * 20, amount_limits.max),
-                spend_amount: _.clamp(limits.spend.min * 20, limits.spend.max),
+                price: price,
+                quantity: 0,//_.clamp(amount_limits.min * 20, amount_limits.max) / price,
+                spend_amount: _.clamp(limits.spend.min * 7, limits.spend.max),
                 side: ORDER_SIDES.Buy,
                 status: RECIPE_ORDER_STATUSES[status],
                 target_exchange_id: exchange.id,
@@ -601,7 +603,7 @@ Given('the Recipe Orders statuses were updated', async function() {
 
 });
 
-Given('the Recipe Orde is two Execution Orders short, one of which will be smaller than the minimum allowed by the Exchange', async function() {
+Given('the Recipe Order is two Execution Orders short, one of which will be smaller than the minimum allowed by the Exchange', async function() {
 
     const { ExecutionOrder, ExecutionOrderFill, InstrumentExchangeMapping, sequelize } = require('../../../models');
     const CCXTUtils = require('../../../utils/CCXTUtils');
@@ -694,7 +696,7 @@ Given(/^the Recipe Order was created on (.*)$/, async function(date_string) {
 Given(/^the system has the following (Approved|Pending|Rejected) Recipe Order Group:$/, async function(group_status, table) {
 
     const order_data = table.hashes();
-    const { RecipeOrderGroup, RecipeOrder, Instrument, Exchange, sequelize } = require('../../../models');
+    const { RecipeOrderGroup, RecipeOrder, ExecutionOrder, ExecutionOrderFill, Instrument, Exchange, sequelize } = require('../../../models');
 
     const orders = [];
     for(let order of order_data) {
@@ -732,6 +734,34 @@ Given(/^the system has the following (Approved|Pending|Rejected) Recipe Order Gr
         this.current_recipe_orders = await RecipeOrder.bulkCreate(orders.map(o => {
             return _.assign(o, { recipe_order_group_id: this.current_recipe_order_group.id })
         }), { transaction, returning: true });
+
+        return Promise.all(this.current_recipe_orders.map(async order => {
+            const matching_order_data = order_data.find(o => String(o.quantity) === order.quantity);
+
+            const execution_order = await ExecutionOrder.create({
+                exchange_id: order.target_exchange_id,
+                instrument_id: order.instrument_id,
+                completed_timestamp: Date.now(),
+                placed_timestamp: Date.now(),
+                failed_attempts: 0,
+                total_quantity: order.quantity,
+                spend_amount: order.spend_amount,
+                fee: matching_order_data.fees,
+                price: order.price,
+                side: order.side,
+                type: EXECUTION_ORDER_TYPES.Market,
+                recipe_order_id: order.id,
+                status: EXECUTION_ORDER_STATUSES.FullyFilled
+            }, { transaction });
+
+            return ExecutionOrderFill.create({
+                execution_order_id: execution_order.id,
+                quantity: execution_order.total_quantity,
+                fee: execution_order.fee,
+                price: execution_order.price,
+                timestamp: Date.now()
+            }, { transaction });
+        }));
 
     });
 
@@ -831,13 +861,14 @@ When('the system does the task "generate execution orders" until it stops genera
             });
 
             new_execution_order.status = EXECUTION_ORDER_STATUSES.FullyFilled;
+            new_execution_order.price = this.current_recipe_order.price;
 
             await new_execution_order.save({ transaction });
 
             await ExecutionOrderFill.create({
                 execution_order_id: new_execution_order.id,
                 price: _.random(0.01, 1, true),
-                quantity: new_execution_order.total_quantity,
+                quantity: parseFloat(new_execution_order.spend_amount) / parseFloat(new_execution_order.price),
                 timestamp: Date.now()
             }, { transaction });
 
@@ -1269,6 +1300,6 @@ Then('the last Execution Order will fulfill the Recipe Order required quantity',
 
     const newest_quantity = this.current_execution_order.spend_amount;
 
-    expect(Decimal(current_quantity.spend_amount).plus(newest_quantity).toString()).to.equal(order.spend_amount, 'Expected the quantities to match');
+    expect(Decimal(current_quantity.spend_amount).plus(newest_quantity).toDP(6).toString()).to.equal(Decimal(order.spend_amount).toDP(6).toString(), 'Expected the quantities to match');
 
 });

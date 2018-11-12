@@ -16,7 +16,7 @@ const actions = {
  * Job will fetch order groups with completed orders, which also are missing cold storage transfers.
  * It will create a cold storage transfer for each completed order.
  */
-module.exports.SCHEDULE = "* */45 * * * *";
+module.exports.SCHEDULE = "0 */1 * * * *";
 module.exports.NAME = "TRANSFER_GENERATOR";
 module.exports.JOB_BODY = async (config, log) => {
 
@@ -27,9 +27,19 @@ module.exports.JOB_BODY = async (config, log) => {
 
     let [ err, orders ] = await to(sequelize.query(`
         WITH completed_orders_without_transfers AS (
-            SELECT * FROM recipe_order AS ro WHERE ro.status = :completed_status AND NOT EXISTS (
+            SELECT 
+                ro.id,
+                ro.instrument_id,
+                ro.recipe_order_group_id,
+                ro.target_exchange_id,
+                SUM(eof.quantity) AS quantity
+            FROM recipe_order AS ro
+            JOIN execution_order AS eo ON eo.recipe_order_id = ro.id
+            JOIN execution_order_fill AS eof ON eof.execution_order_id = eo.id
+            WHERE ro.status = :completed_status AND NOT EXISTS (
                 SELECT * FROM cold_storage_transfer AS cst WHERE cst.recipe_run_order_id = ro.id
             )
+            GROUP BY ro.id, ro.instrument_id, ro.recipe_order_group_id
         ),
         order_groups AS (
             SELECT  
@@ -80,7 +90,7 @@ module.exports.JOB_BODY = async (config, log) => {
     }
 
     const exchange_ids = _.uniq(orders.map(o => o.target_exchange_id));
-
+ 
     let result;
     [ err, result ] = await to(Promise.all(exchange_ids.map(async id => {
         const connector = await ccxtUnified.getExchange(id);
@@ -150,7 +160,7 @@ module.exports.JOB_BODY = async (config, log) => {
             }
     
             group_transfers.push({
-                amount: _.clamp(parseFloat(order.quantity), asset_balance) - withdraw_fee,
+                amount: _.clamp(parseFloat(order.quantity), asset_balance),
                 asset_id: order.transaction_asset_id,
                 cold_storage_account_id: order.cold_storage_account_id,
                 fee: withdraw_fee,

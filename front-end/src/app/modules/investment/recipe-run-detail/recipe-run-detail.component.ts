@@ -110,7 +110,7 @@ export class RecipeRunDetailComponent extends TimelineDetailComponent implements
     new TableDataColumn({ column: 'quote_asset' }),
     new TableDataColumn({ column: 'target_exchange' }),
     new NumberCellDataColumn({ column: 'investment_usd', inputs: {
-      digitsInfo: '1.2-4'
+      digitsInfo: '1.2-2'
     } }),
     new NumberCellDataColumn({ column: 'investment_btc', inputs: {
       digitsInfo: '1.2-4'

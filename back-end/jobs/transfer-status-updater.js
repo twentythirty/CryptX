@@ -8,8 +8,8 @@ const status_map = {
     'canceled': COLD_STORAGE_ORDER_STATUSES.Canceled
 };
 
-//everyday, every 3 minutes
-module.exports.SCHEDULE = '* */3 * * *';
+//everyday, every 10 minutes
+module.exports.SCHEDULE = '0 */10 * * * *';
 module.exports.NAME = 'TRANSFER_STATUS_UPDATER';
 module.exports.JOB_BODY = async (config, log) => {
 
@@ -41,7 +41,7 @@ module.exports.JOB_BODY = async (config, log) => {
     if(!transfers.length) return log('[WARN.1A] No sent transfers, ending here...');
 
     const transfers_by_exchange = _.groupBy(transfers, 'dataValues.exchange_api_id');
-
+    //console.log(JSON.stringify(transfers_by_exchange, null, 4)); return;
     log(`2. Checking ${transfers.length} transfers from ${_.size(transfers_by_exchange)} Exchanges`);
     return Promise.all(_.map(transfers_by_exchange, async (exchange_transfers, exchange_api_id) => {
 
@@ -86,7 +86,7 @@ module.exports.JOB_BODY = async (config, log) => {
                     break;
 
             }
-
+        
             if(transfer.changed()) {
 
                 [ err ] = await to(transfer.save());
