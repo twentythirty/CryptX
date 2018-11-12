@@ -45,12 +45,33 @@ module.exports = {
 
     },
 
+    async withdraw(currency, amount, address, tag = undefined, options = {}) {
+
+        const request = {
+            currency,
+            amount: parseFloat(amount),
+            destination: 4,
+            to_address: address,
+            trade_pwd: this.password,
+            fee: options.chargefee
+        };
+
+        const withdraw_result = await this.createV3Request('post', '/api/account/v3/withdrawal', request);
+
+        return {
+            info: _.assign(withdraw_result, { fees: options.chargefee }),
+            id: withdraw_result.withdrawal_id
+        };
+
+    },
+
     signv3(timestamp, method, request_path, body = {}) {
 
         if(_.isEmpty(body)) body = '';
-        else body = querystring.stringify(body);
+        else if(method.toLowerCase() === 'get') body = '?' + querystring.stringify(body);
+        else body = JSON.stringify(body);
 
-        let message = String(timestamp) + String(method).toUpperCase() + request_path + (body === '' ? body : `?${body}`);
+        let message = String(timestamp) + String(method).toUpperCase() + request_path + body;
         let hash = require('crypto').createHmac('sha256', this.v3_api_secret).update(new Buffer(message)).digest('base64');
         return hash;
 
@@ -61,7 +82,7 @@ module.exports = {
 
         return bottleneck.schedule(() => {
             return require('request-promise')[method]({
-                uri: 'https://www.okex.com' + request_path + (_.isEmpty(body) ? '' : `?${querystring.stringify(body)}`),
+                uri: 'https://www.okex.com' + request_path + (!_.isEmpty(body) && method === 'get' ? `?${querystring.stringify(body)}` : ''),
                 headers: {
                     'OK-ACCESS-KEY': this.v3_api_key,
                     'OK-ACCESS-SIGN': this.signv3(now, method, request_path, body),
@@ -69,7 +90,8 @@ module.exports = {
                     'OK-ACCESS-PASSPHRASE': this.v3_api_passphrase
                 },
                 json: true,
-                agent: this.agent
+                agent: this.agent,
+                body: !_.isEmpty(body) && method.toLowerCase() !== 'get' ? body : undefined
             });
         });
         
