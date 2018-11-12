@@ -83,8 +83,10 @@ class Bitfinex extends Exchange {
    * @param {Object} cold_storage_account Cold storage account object to send the funds to.
    * @returns {Promise}
    */
-  async withdraw(asset_symbol, amount, address, tag) {
+  async withdraw(asset_symbol, amount, address, tag, fee) {
     await this.isReady();
+
+    amount = Decimal(amount).minus(fee).toString(); //Deduct the fee 
 
     console.log(`
       Creating withdraw to ${this.api_id},

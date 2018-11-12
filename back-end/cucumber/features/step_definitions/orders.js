@@ -696,7 +696,7 @@ Given(/^the Recipe Order was created on (.*)$/, async function(date_string) {
 Given(/^the system has the following (Approved|Pending|Rejected) Recipe Order Group:$/, async function(group_status, table) {
 
     const order_data = table.hashes();
-    const { RecipeOrderGroup, RecipeOrder, Instrument, Exchange, sequelize } = require('../../../models');
+    const { RecipeOrderGroup, RecipeOrder, ExecutionOrder, ExecutionOrderFill, Instrument, Exchange, sequelize } = require('../../../models');
 
     const orders = [];
     for(let order of order_data) {
@@ -734,6 +734,34 @@ Given(/^the system has the following (Approved|Pending|Rejected) Recipe Order Gr
         this.current_recipe_orders = await RecipeOrder.bulkCreate(orders.map(o => {
             return _.assign(o, { recipe_order_group_id: this.current_recipe_order_group.id })
         }), { transaction, returning: true });
+
+        return Promise.all(this.current_recipe_orders.map(async order => {
+            const matching_order_data = order_data.find(o => String(o.quantity) === order.quantity);
+
+            const execution_order = await ExecutionOrder.create({
+                exchange_id: order.target_exchange_id,
+                instrument_id: order.instrument_id,
+                completed_timestamp: Date.now(),
+                placed_timestamp: Date.now(),
+                failed_attempts: 0,
+                total_quantity: order.quantity,
+                spend_amount: order.spend_amount,
+                fee: matching_order_data.fees,
+                price: order.price,
+                side: order.side,
+                type: EXECUTION_ORDER_TYPES.Market,
+                recipe_order_id: order.id,
+                status: EXECUTION_ORDER_STATUSES.FullyFilled
+            }, { transaction });
+
+            return ExecutionOrderFill.create({
+                execution_order_id: execution_order.id,
+                quantity: execution_order.total_quantity,
+                fee: execution_order.fee,
+                price: execution_order.price,
+                timestamp: Date.now()
+            }, { transaction });
+        }));
 
     });
 
@@ -1272,6 +1300,6 @@ Then('the last Execution Order will fulfill the Recipe Order required quantity',
 
     const newest_quantity = this.current_execution_order.spend_amount;
 
-    expect(Decimal(current_quantity.spend_amount).plus(newest_quantity).toString()).to.equal(order.spend_amount, 'Expected the quantities to match');
+    expect(Decimal(current_quantity.spend_amount).plus(newest_quantity).toDP(6).toString()).to.equal(Decimal(order.spend_amount).toDP(6).toString(), 'Expected the quantities to match');
 
 });

@@ -38,6 +38,7 @@ module.exports.JOB_BODY = async (config, log) => {
             cst.id,
             cst.status,
             cst.amount,
+            cst.fee,
             cst.placed_timestamp,
             cst.completed_timestamp,
             csa.address,
@@ -111,8 +112,8 @@ module.exports.JOB_BODY = async (config, log) => {
             }
 
             let withdraw;
-            const { asset, amount, address, tag } = transfer;
-            [ err, withdraw ] = await to(connector.withdraw(asset, amount, address, tag));
+            const { asset, amount, address, tag, fee } = transfer;
+            [ err, withdraw ] = await to(connector.withdraw(asset, amount, address, tag, fee));
 
             if(err) {
                 console.log(JSON.stringify(err, null, 4));
@@ -154,9 +155,9 @@ module.exports.JOB_BODY = async (config, log) => {
                 }
             });
             
-            const fee = _.get(withdraw, 'info.fees', 0); //Attempt to exctract fee from Bitfinex and Binance response
+            const withdraw_fee = _.get(withdraw, 'info.fees', 0); //Attempt to exctract fee from Bitfinex and Binance response
 
-            [ err ] = await to(updateTransferStatus(transfer.id, COLD_STORAGE_ORDER_STATUSES.Sent, withdraw.id, fee));
+            [ err ] = await to(updateTransferStatus(transfer.id, COLD_STORAGE_ORDER_STATUSES.Sent, withdraw.id, withdraw_fee));
 
             if(err) {
                 log(`[ERROR.4A](${exchange_api_id})(CST-${transfer.id}) Error occured during transfer status update: ${err.message}`);

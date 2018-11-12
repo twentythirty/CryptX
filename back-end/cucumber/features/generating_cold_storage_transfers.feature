@@ -17,10 +17,10 @@ Feature: Generating cold storage transfers
     Scenario: ignore order group if at least one order is not completed
 
         Given the system has the following Approved Recipe Order Group:
-        | instrument | price | side | exchange | quantity | spend_amount | status |
-        | XRP/BTC    | 0.005 | Buy | Bitfinex | 200    |   1   |   Completed     |
-        | LTC/BTC    | 0.015 | Buy | Binance | 50    |   0.75   |   Completed     |
-        | EOS/ETH    | 0.08 | Buy | OKEx | 9.375    |   7.5   |   Executing     |
+        | instrument | price | side | exchange | quantity | spend_amount | status | fees    |
+        | XRP/BTC    | 0.005 | Buy | Bitfinex | 200    |   1   |   Completed     |  5   |
+        | LTC/BTC    | 0.015 | Buy | Binance | 50    |   0.75   |   Completed     | 1.5 |
+        | EOS/ETH    | 0.08 | Buy | OKEx | 9.375    |   7.5   |   Executing     | 0.075 |
         When the system finished the task "generate cold storage transfers"
         Then no Cold Storage Transfers will be generated for the Recipe Order Group
 
@@ -28,10 +28,10 @@ Feature: Generating cold storage transfers
     Scenario: fail to generate due to missing cold storage accounts
 
         Given the system has the following Approved Recipe Order Group:
-        | instrument | price | side | exchange | quantity | spend_amount | status |
-        | XRP/BTC    | 0.005 | Buy | Bitfinex | 200    |   1   |   Completed     |
-        | LTC/BTC    | 0.015 | Buy | Binance | 50    |   0.75   |   Completed     |
-        | EOS/ETH    | 0.08 | Buy | OKEx | 9.375    |   7.5   |   Completed     |
+        | instrument | price | side | exchange | quantity | spend_amount | status | fees    |
+        | XRP/BTC    | 0.005 | Buy | Bitfinex | 200    |   1   |   Completed     |  5   |
+        | LTC/BTC    | 0.015 | Buy | Binance | 50    |   0.75   |   Completed     | 1.5 |
+        | EOS/ETH    | 0.08 | Buy | OKEx | 9.375    |   7.5   |   Completed     | 0.075 |
         But there are no Cold Storage Accounts in the system
         When the system finished the task "generate cold storage transfers"
         Then no Cold Storage Transfers will be generated for the Recipe Order Group
@@ -41,10 +41,10 @@ Feature: Generating cold storage transfers
     Scenario: fail to generate if the balance on the exchange is equal to zero
 
         Given the system has the following Approved Recipe Order Group:
-        | instrument | price | side | exchange | quantity | spend_amount | status |
-        | XRP/BTC    | 0.005 | Buy | Bitfinex | 200    |   1   |   Completed     |
-        | LTC/BTC    | 0.015 | Buy | Binance | 50    |   0.75   |   Completed     |
-        | EOS/ETH    | 0.08 | Buy | OKEx | 9.375    |   7.5   |   Completed     |
+        | instrument | price | side | exchange | quantity | spend_amount | status | fees    |
+        | XRP/BTC    | 0.005 | Buy | Bitfinex | 200    |   1   |   Completed     |  5   |
+        | LTC/BTC    | 0.015 | Buy | Binance | 50    |   0.75   |   Completed     | 1.5 |
+        | EOS/ETH    | 0.08 | Buy | OKEx | 9.375    |   7.5   |   Completed     | 0.075 |
         And the system has LCI Cold Storage Account for LTC
         And the system has LCI Cold Storage Account for XRP
         And the system has LCI Cold Storage Account for EOS
@@ -57,14 +57,14 @@ Feature: Generating cold storage transfers
         Then no Cold Storage Transfers will be generated for the Recipe Order Group
         And a log is created for each required empty balance
 
-    @order_group_cache_cleanup
+    #@order_group_cache_cleanup
     Scenario: generate a cold storage transfer for each recipe order in the group
 
         Given the system has the following Approved Recipe Order Group:
-        | instrument | price | side | exchange | quantity | spend_amount | status |
-        | XRP/BTC    | 0.005 | Buy | Bitfinex | 200    |   1   |   Completed     |
-        | LTC/BTC    | 0.015 | Buy | Binance | 50    |   0.75   |   Completed     |
-        | EOS/ETH    | 0.08 | Buy | OKEx | 9.375    |   7.5   |   Completed     |
+        | instrument | price | side | exchange | quantity | spend_amount | status | fees    |
+        | XRP/BTC    | 0.005 | Buy | Bitfinex | 200    |   1   |   Completed     |  5   |
+        | LTC/BTC    | 0.015 | Buy | Binance | 50    |   0.75   |   Completed     | 1.5 |
+        | EOS/ETH    | 0.08 | Buy | OKEx | 9.375    |   7.5   |   Completed     | 0.075 |
         And the system has LCI Cold Storage Account for LTC
         And the system has LCI Cold Storage Account for XRP
         And the system has LCI Cold Storage Account for EOS
@@ -74,7 +74,7 @@ Feature: Generating cold storage transfers
         And the current balances on the exchanges are:
         | exchange  |   XRP     |   LTC     |   EOS     |
         | Bitfinex  |   198       |   0    |   0       |
-        | Binance   |   0       |   50       |   0       |
+        | Binance   |   0       |   52       |   0       |
         | OKEx      |   0  |   0     |   9.175       |
         And the current withdraw fees on the exchanges are:
         | exchange  |   XRP     |   LTC     |   EOS     |
