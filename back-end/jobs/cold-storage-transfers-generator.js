@@ -35,7 +35,16 @@ module.exports.JOB_BODY = async (config, log) => {
                 SUM(eof.quantity) AS quantity
             FROM recipe_order AS ro
             JOIN execution_order AS eo ON eo.recipe_order_id = ro.id
-            JOIN execution_order_fill AS eof ON eof.execution_order_id = eo.id
+            JOIN instrument AS i on eo.instrument_id = i.id
+            JOIN LATERAL (
+                SELECT
+                    (CASE WHEN (i.quote_asset_id = eof.fee_asset_id)
+                    THEN eof.quantity
+                    ELSE eof.quantity - eof.fee
+                    END) AS quantity,
+                    eof.execution_order_id
+                FROM execution_order_fill AS eof
+            ) AS eof ON eof.execution_order_id = eo.id
             WHERE ro.status = :completed_status AND NOT EXISTS (
                 SELECT * FROM cold_storage_transfer AS cst WHERE cst.recipe_run_order_id = ro.id
             )
@@ -89,26 +98,6 @@ module.exports.JOB_BODY = async (config, log) => {
         return [];
     }
 
-    const exchange_ids = _.uniq(orders.map(o => o.target_exchange_id));
- 
-    let result;
-    [ err, result ] = await to(Promise.all(exchange_ids.map(async id => {
-        const connector = await ccxtUnified.getExchange(id);
-
-        const [ balance, fees ] = await Promise.all([
-            connector._connector.fetchBalance(),
-            connector.fetchFundingFees()
-        ]);
-        return [ id, { balance: balance.free, fee: fees.withdraw }]; //Create exchange id and info pairs
-    })));
-
-    if(err) {
-        log(`[ERROR.1B] Error occured when fetching exchange balances: ${err.message}`);
-        return [];
-    }
-
-    let exchange_info = _.fromPairs(result);
-    
     const order_groups = _.groupBy(orders, 'recipe_order_group_id');
     
     log(`2. Creating transfers for ${orders.length} completed orders`);
@@ -138,32 +127,12 @@ module.exports.JOB_BODY = async (config, log) => {
     
                 continue;
             }
-    
-            const asset_balance = _.get(exchange_info, `[${order.target_exchange_id}].balance[${order.asset}]`, 0);
-            const withdraw_fee = _.get(exchange_info, `[${order.target_exchange_id}].fee[${order.asset}]`, 0);
-    
-            if(asset_balance === 0) {
-                log(`[ERROR.2B](RO-${order.id}) Error: transfer cannot be created as the balance of ${order.asset} is 0`);
-    
-                group_errors.push([actions.zero_balance, {
-                    args: {
-                        asset: order.asset
-                    },
-                    relations: {
-                        recipe_order_id: order.id,
-                        exchange_id: order.target_exchange_id
-                    },
-                    log_level: ACTIONLOG_LEVELS.Error
-                }]);
-    
-                continue;
-            }
-    
+            
             group_transfers.push({
-                amount: _.clamp(parseFloat(order.quantity), asset_balance),
+                amount: order.quantity,
                 asset_id: order.transaction_asset_id,
                 cold_storage_account_id: order.cold_storage_account_id,
-                fee: withdraw_fee,
+                fee: null,
                 recipe_run_id: order.recipe_run_id,
                 recipe_run_order_id: order.id,
                 status: COLD_STORAGE_ORDER_STATUSES.Pending

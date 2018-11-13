@@ -83,8 +83,10 @@ class Bitfinex extends Exchange {
    * @param {Object} cold_storage_account Cold storage account object to send the funds to.
    * @returns {Promise}
    */
-  async withdraw(asset_symbol, amount, address, tag, fee) {
+  async withdraw(transfer) {
     await this.isReady();
+
+    let { asset_symbol, amount, address, tag, fee } = transfer.getWithdrawParams();
 
     amount = Decimal(amount).minus(fee).toString(); //Deduct the fee 
 
@@ -149,14 +151,6 @@ class Bitfinex extends Exchange {
     return limits;
   }
 
-  /**
-   * This methods is same as the original for this exchange
-   */
-  async fetchFundingFees () {
-    await this.isReady();
-    
-    return this._connector.fetchFundingFees();
-  }
 }
 
 module.exports = Bitfinex;

@@ -191,9 +191,9 @@ Feature: View the timeline of an investment run process
         And there are 45 FullyFilled Execution Orders for OKEx
         And there are 8 FullyFilled Execution Orders for Bitfinex
         And the Recipe Orders statuses were updated
-        And the system has 3 Pending Cold Storage Transfers for LTC
-        And the system has 5 Sent Cold Storage Transfers for XRP
-        And the system has 2 Completed Cold Storage Transfers for EOS
+        And the system has 3 Pending Cold Storage Transfers for 52 LTC
+        And the system has 5 Sent Cold Storage Transfers for 32 XRP
+        And the system has 2 Completed Cold Storage Transfers for 45 EOS
         When I log onto CryptX as Investment Manager
         And I fetch the timeline of the current Investment Run
         Then in the Investment Run timeline card, I will see the following information:
@@ -228,9 +228,9 @@ Feature: View the timeline of an investment run process
         And there are 45 FullyFilled Execution Orders for OKEx
         And there are 8 FullyFilled Execution Orders for Bitfinex
         And the Recipe Orders statuses were updated
-        And the system has 3 Completed Cold Storage Transfers for LTC
-        And the system has 5 Completed Cold Storage Transfers for XRP
-        And the system has 2 Completed Cold Storage Transfers for EOS
+        And the system has 3 Completed Cold Storage Transfers for 50 LTC
+        And the system has 5 Completed Cold Storage Transfers for 10 XRP
+        And the system has 2 Completed Cold Storage Transfers for 35 EOS
         When I log onto CryptX as Investment Manager
         And I fetch the timeline of the current Investment Run
         Then in the Investment Run timeline card, I will see the following information:

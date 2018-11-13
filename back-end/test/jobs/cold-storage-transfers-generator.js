@@ -154,7 +154,7 @@ describe('Cold storage transfer generator job:', () => {
         expect(result).length(0);
 
     });
-
+    /*
     it('shall not create transfers if the balance on the exchange is 0', async () => {
         
         ccxtUnified.getExchange.restore();
@@ -181,8 +181,8 @@ describe('Cold storage transfer generator job:', () => {
         expect(result).length(0);
 
     });
-
-    it('shall create a transfer for each order, clamping the quantity based on balance and deducting the fee', async () => {
+    */
+    it('shall create a transfer for each order', async () => {
 
         const transfers = await JOB_BODY(stub_config, console.log);
 
@@ -194,8 +194,8 @@ describe('Cold storage transfer generator job:', () => {
 
             expect(matching_order).to.be.not.undefined;
             expect(transfer.recipe_run_id).to.equal(MOCK_RECIPE_RUN_ID);
-            expect(transfer.amount).to.equal(MOCK_BALANCE);
-            expect(transfer.fee).to.equal(MOCK_FEE);
+            expect(transfer.amount).to.equal(BASE_ORDER.quantity);
+            expect(transfer.fee).to.be.null;
             expect(transfer.asset_id).to.equal(matching_order.transaction_asset_id);
             expect(transfer.status).to.equal(COLD_STORAGE_ORDER_STATUSES.Pending);
 

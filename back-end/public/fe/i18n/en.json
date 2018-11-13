@@ -658,7 +658,11 @@
       "withdraw_error": "Failed to withdraw from <b>{{ exchange }}</b>, error: {{ error }}",
       "placed": "Withdraw request was successfully created with id <b>{{ id }}</b>",
       "missing_account": "Order is missing a matching {{ strategy_type }} cold storage account for {{ asset }}",
-      "zero_balance": "Transfer cannot be created as the balance of {{ asset }} is 0"
+      "zero_balance": "Transfer cannot be created as the balance of {{ asset }} is 0",
+      "new_amount": {
+        "balance": "The system changed the transfer amount from <b>{{ old_amount }}</b> to <b>{{ new_amount }}</b> due to the balance being only <b>{{ info_value }}</b>",
+        "multiple_of": "The system changed the transfer amount from <b>{{ old_amount }}</b> to <b>{{ new_amount }}</b> because the amount needs to multiple of <b>{{ info_value }}</b>"
+      }
     }
   },
 

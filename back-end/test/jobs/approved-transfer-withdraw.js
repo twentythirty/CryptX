@@ -31,17 +31,26 @@ describe('Approved Cold Storage Transfer withdraw job:', () => {
     });
 
     const EXTERNAL_IDENTIFIER = _.random(1, 200);
+    const MOCK_BALANCE = _.random(100, 1000);
+    const MOCK_FEE = _.random(1, 10);
 
     const TRANSFER_BASE = {
         status: COLD_STORAGE_ORDER_STATUSES.Approved,
-        amount: _.random(100, 1000),
+        amount: MOCK_BALANCE + _.random(1, 5),
         placed_timestamp: null,
         completed_timestamp: null,
         address: '2h31jk3h41jk23h41jk23h41j2',
         tag: '212323',
         toJSON() {
             return this;
-        }
+        },
+        getDataValue(field){
+            return this[field];
+        },
+        async save() {
+            return this;
+        },
+        setAmount: ColdStorageTransfer.prototype.setAmount
     };
 
     const TRANSFER_DATA = [
@@ -89,7 +98,7 @@ describe('Approved Cold Storage Transfer withdraw job:', () => {
         }, TRANSFER_BASE)
     ];
 
-    const stub_connectors = (will_fail = false) => {
+    const stub_connectors = (will_fail = false, zero_balance = false) => {
 
         sinon.stub(ccxtUnified, 'getExchange').callsFake(async exchange_api_id => {
 
@@ -97,25 +106,41 @@ describe('Approved Cold Storage Transfer withdraw job:', () => {
 
                 constructor() {
                     this.api_id = exchange_api_id;
+
+                    this._connector = {
+                        
+                        async fetchBalance() {
+                            let free = {};
+                            for(let transfer of TRANSFER_DATA) free[transfer.asset] = zero_balance ? 0 : MOCK_BALANCE;
+                            return { free };
+                        },
+
+                        async fetchFundingFees() {
+                            let withdraw = {};
+                            for(let transfer of TRANSFER_DATA) withdraw[transfer.asset] = MOCK_FEE;
+                            return { withdraw };
+                        }
+
+                    }
                 }
 
                 async isReady() {
                     return true;
                 }
 
-                async withdraw(symbol, amount, address, tag = null) {
+                async withdraw(transfer) {
 
                     if(will_fail) throw new Error('Generic error about withdraw not working');
-
-                    if(
-                        !symbol || !amount || !address
-                    ) throw new Error('Required params were not passed');
 
                     return {
                         info: {},
                         id: EXTERNAL_IDENTIFIER
                     }
 
+                }
+
+                async transferFunds() {
+                    return true;
                 }
 
             };
@@ -154,64 +179,68 @@ describe('Approved Cold Storage Transfer withdraw job:', () => {
 
     });
 
-    it('shall mark the transfers as failed if the withdraw fails', async () => {
+    it('shall mark the transfers as failed if the balance will be 0', async () => {
 
-        stub_connectors(true);
+        stub_connectors(false, true);
 
-        await JOB_BODY(stub_config, console.log);
+        let result = await JOB_BODY(stub_config, console.log);
 
-        const callCount = ColdStorageTransfer.update.callCount;
-        expect(callCount).to.equal(TRANSFER_DATA.length * 2);
+        result = _.flatten(result).filter(r => r);
+        
+        expect(result).length(TRANSFER_DATA.length);
 
-        for(let i = 0; i < callCount; i++) {
+        for(let transfer of result) {
 
-            const [ update, options ] = ColdStorageTransfer.update.args[i];
-
-            if(i < callCount / 2) {
-
-                expect(update.status).to.equal(COLD_STORAGE_ORDER_STATUSES.Sent);
-                expect(TRANSFER_DATA.map(t => t.id)).include(options.where.id);
-
-            }
-
-            else {
-
-                expect(update.status).to.equal(COLD_STORAGE_ORDER_STATUSES.Failed);
-                expect(update.placed_timestamp).to.be.null;
-                expect(update.completed_timestamp).to.be.undefined;
-                expect(update.external_identifier).to.be.undefined;
-                expect(TRANSFER_DATA.map(t => t.id)).include(options.where.id);
-
-            }
+            expect(transfer.status).to.equal(COLD_STORAGE_ORDER_STATUSES.Failed);
+            expect(transfer.placed_timestamp).to.be.null;
+            expect(transfer.fee).to.be.null;
+            expect(transfer.completed_timestamp).to.be.null;
+            expect(transfer.external_identifier).to.be.undefined;
 
         }
 
     });
 
-    it('shall call the correnct amount of methods and params on successful withdraws', async () => {
+    it('shall mark the transfers as failed if the withdraw fails', async () => {
+
+        stub_connectors(true);
+
+        let result = await JOB_BODY(stub_config, console.log);
+
+        result = _.flatten(result).filter(r => r);
+        
+        expect(result).length(TRANSFER_DATA.length);
+
+        for(let transfer of result) {
+
+            expect(transfer.status).to.equal(COLD_STORAGE_ORDER_STATUSES.Failed);
+            expect(transfer.placed_timestamp).to.be.null;
+            expect(transfer.fee).to.be.null;
+            expect(transfer.completed_timestamp).to.be.null;
+            expect(transfer.external_identifier).to.be.undefined;
+
+        }
+
+    });
+
+    it('shall clamp the amount, fetch the fee and update the status and amounts correctly', async () => {
 
         stub_connectors(false);
 
-        await JOB_BODY(stub_config, console.log);
+        let result = await JOB_BODY(stub_config, console.log);
 
-        const callCount = ColdStorageTransfer.update.callCount;
-        expect(callCount).to.equal(TRANSFER_DATA.length * 2);
+        result = _.flatten(result).filter(r => r);
+        
+        expect(result).length(TRANSFER_DATA.length);
 
-        for(let i = 0; i < callCount; i++) {
+        for(let transfer of result) {
 
-            const [ update, options ] = ColdStorageTransfer.update.args[i];
-
-            if(i < callCount/2) {
-                expect(update.status).to.equal(COLD_STORAGE_ORDER_STATUSES.Sent);
-                expect(TRANSFER_DATA.map(t => t.id)).include(options.where.id);
-                expect(update.placed_timestamp).to.be.a('number');
-                expect(update.completed_timestamp).to.be.undefined;
-            }
-            else {
-                expect(update.external_identifier).to.be.not.null.and.to.be.not.undefined;
-                expect(update.status).to.equal(COLD_STORAGE_ORDER_STATUSES.Sent);
-            }
-            
+            expect(transfer.status).to.equal(COLD_STORAGE_ORDER_STATUSES.Sent);
+            expect(transfer.placed_timestamp).to.be.a('number');
+            expect(transfer.fee).to.equal(MOCK_FEE);
+            expect(transfer.amount).to.equal(MOCK_BALANCE);
+            expect(transfer.completed_timestamp).to.be.null;
+            expect(transfer.external_identifier).to.be.not.undefined;
 
         }
 

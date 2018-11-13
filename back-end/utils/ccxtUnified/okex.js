@@ -89,11 +89,19 @@ class Okex extends Exchange {
    * @param {Object} cold_storage_account Cold storage account object to send the funds to.
    * @returns {Promise}
    */
-  async withdraw(asset_symbol, amount, address, tag) {
+  async withdraw(transfer) {
     await this.isReady();
 
-    const { withdraw: fee_map } = await this.fetchFundingFees();
-    const chargefee = fee_map[asset_symbol];
+    let { asset_symbol, amount, address, tag, fee } = transfer.getWithdrawParams();
+
+    let chargefee = fee;
+    if(!chargefee || parseFloat(chargefee) === 0) {
+      const { withdraw } = await this._connector.fetchFundingFees();
+      chargefee = withdraw[asset_symbol] || 0;
+      transfer.fee = chargefee;
+    }
+
+    amount = Decimal(amount).minus(chargefee).toString(); //Deduct the fee 
 
     console.log(`
       Creating withdraw to ${this.api_id},
@@ -228,26 +236,32 @@ class Okex extends Exchange {
   }
 
   /**
-   * The only way to fetch funding fees for OKEx is through the v3 API.
+   * For now, it will simply ensure that the destination account has the required amount
+   * @param {*} transfer 
+   * @param {*} params 
    */
-  async fetchFundingFees () {
-    await this.isReady();
+  async transferFunds(transfer, params = {}) {
 
-    //Yet another workaround
-    if(process.env.NODE_ENV === 'cucumber') return this._connector.fetchFundingFees();
-    
-    const response = await this.createV3Request('get', '/api/account/v3/withdrawal/fee');
+    const [ from_balance, to_balance ] = await Promise.all([
+      this._connector.fetchBalance({ type: transfer.from }),
+      this._connector.fetchBalance({ type: transfer.to })
+    ]);
 
-    let withdraw = {};
-    for(let coin of response) {
-      withdraw[coin.currency] = coin.min_fee || 0;
-    }
+    return Promise.all(transfer.currencies.map(currency => {
 
-    return {
-      info: response,
-      deposits: {},
-      withdraw: withdraw
-    }
+      const from_amount = from_balance.free[currency.currency] || 0;
+      const to_amount =  to_balance.free[currency.currency] || 0;
+
+      const required_amount = parseFloat(currency.amount);
+
+      if(to_amount >= required_amount) return;
+      
+      const funds_to_send = _.clamp(required_amount - to_amount, from_amount); //In case the source account is smaller
+
+      return this._connector.transferFunds(currency.currency, transfer.from, transfer.to, funds_to_send);
+
+    }));
+
   }
 
   signv3(timestamp, method, request_path, body = {}) {

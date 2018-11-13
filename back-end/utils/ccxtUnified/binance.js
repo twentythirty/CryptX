@@ -85,8 +85,10 @@ class Binance extends Exchange {
    * @param {Object} cold_storage_account Cold storage account object to send the funds to.
    * @returns {Promise}
    */
-  async withdraw(asset_symbol, amount, address, tag) {
+  async withdraw(transfer, seccond_attempt = false) {
     await this.isReady();
+
+    let { asset_symbol, amount, address, tag } = transfer.getWithdrawParams();
 
     console.log(`
       Creating withdraw to ${this.api_id},
@@ -95,11 +97,32 @@ class Binance extends Exchange {
       Destination address: ${address}
     `);
 
-    const fees = await this._connector.fetchFundingFees();
+    const [ err, withdraw_response ] = await to(this._connector.withdraw(asset_symbol, amount, address, tag, {}));
 
-    const withdraw_response = await this._connector.withdraw(asset_symbol, amount, address, tag, {});
+    if(err) {
 
-    _.set(withdraw_response, 'info.fees', fees.withdraw[asset_symbol]);
+      if(!err.message) throw err;
+      let error_object = err.message.replace('binance ', '');
+
+      try{
+        error_object = JSON.parse(error_object);
+      }
+      catch (e) {
+        throw err;
+      }
+
+      const multi_of_err = /^The (?:.*) amount must be an integer multiple of (.*)$/g;
+      const match = multi_of_err.exec(error_object.msg);
+      if(match && !seccond_attempt) {
+        
+        const multi_of = match[1];
+        await transfer.setAmountMultipleOf(multi_of);
+        return this.withdraw(transfer, true);
+
+      }
+
+      throw err;
+    }
 
     return withdraw_response;
 
@@ -162,15 +185,6 @@ class Binance extends Exchange {
 
     return limits;
   } 
-
-  /**
-   * This methods is same as the original for this exchange
-   */
-  async fetchFundingFees () {
-    await this.isReady();
-    
-    return this._connector.fetchFundingFees();
-  }
 
 }
 
