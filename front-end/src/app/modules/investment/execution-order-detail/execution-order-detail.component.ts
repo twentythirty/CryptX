@@ -46,6 +46,7 @@ export class ExecutionOrderDetailComponent extends TimelineDetailComponent imple
       { column: 'exchange', nameKey: 'table.header.exchange' },
       { column: 'price', nameKey: 'table.header.price' },
       { column: 'quantity', nameKey: 'table.header.total_quantity' },
+      { column: 'filled_quantity', nameKey: 'table.header.filled_order_quantity' },
       { column: 'spend_amount', nameKey: 'table.header.spend_amount' },
       { column: 'sum_of_exchange_trading_fee', nameKey: 'table.header.sum_of_exchange_trading_fee' },
       { column: 'status', nameKey: 'table.header.status' }
@@ -62,6 +63,7 @@ export class ExecutionOrderDetailComponent extends TimelineDetailComponent imple
     new TableDataColumn({ column: 'exchange' }),
     new NumberCellDataColumn({ column: 'price' }),
     new NumberCellDataColumn({ column: 'quantity' }),
+    new NumberCellDataColumn({ column: 'filled_quantity' }),
     new NumberCellDataColumn({ column: 'spend_amount' }),
     new NumberCellDataColumn({ column: 'sum_of_exchange_trading_fee' }),
     new StatusCellDataColumn({ column: 'status', inputs: { classMap: {
