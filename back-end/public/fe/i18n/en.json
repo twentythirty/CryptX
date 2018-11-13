@@ -124,7 +124,8 @@
       "minimum_daily_avg_volume": "Minimum daily avg. volume",
       "username": "Username",
       "spend_amount": "Sold quantity",
-      "total_spend_amount": "Total sell quantity"
+      "total_spend_amount": "Total sell quantity",
+      "filled_order_quantity": "Sum filled purchase quantity"
     },
     "filter": {
       "all": "All",

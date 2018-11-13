@@ -1,6 +1,5 @@
 "use strict";
 
-const ccxtUtils = require('../utils/CCXTUtils');
 const ccxtUnified = require('../utils/ccxtUnified');
 
 /**
@@ -25,12 +24,6 @@ const get_order_sold_symbol = (order) => {
     }
 };
 
-const fills_sum_decimal = (fills) => {
-    return _.map(fills, 'quantity')
-        .map(qty => Decimal(qty))
-        .reduce((acc, current) => acc.plus(current), Decimal(0))
-}
-
 let execution_active = [
     EXECUTION_ORDER_STATUSES.Pending,
     EXECUTION_ORDER_STATUSES.InProgress
@@ -46,7 +39,6 @@ module.exports.JOB_BODY = async (config, log) => {
     const RecipeOrderGroup = models.RecipeOrderGroup;
     const Instrument = models.Instrument;
     const ExecutionOrder = models.ExecutionOrder;
-    const ExecutionOrderFill = models.ExecutionOrderFill;
     const InstrumentExchangeMapping = models.InstrumentExchangeMapping;
     const sequelize = models.sequelize;
 
@@ -225,6 +217,10 @@ module.exports.JOB_BODY = async (config, log) => {
                                 next_total = Decimal(limits.spend.min)
                             } else {
                                 log(`[WARN.4C]: Skipping order generation since total remaining quantity ${remaining_sell_amount.toString()} is too low for required exchange minimum ${amount_limit.min}`);
+
+                                pending_order.stop_gen = true;
+                                await pending_order.save();
+                    
                                 return { instance: pending_order, status: JOB_RESULT_STATUSES.Skipped, step: '4C' };
                             }
                         }
@@ -240,6 +236,7 @@ module.exports.JOB_BODY = async (config, log) => {
                             log(`[WARN.4C]: Post-gen recipe order total of ${next_order_spend.toString()} is less than the markets min limit of ${limits.spend.min}. Adding remainder to current and finishing recipe order!`);
                             next_total = next_total.plus(next_order_spend);
                         }
+
 
                         //create next pending execution order and save it
                         return await Promise.all([

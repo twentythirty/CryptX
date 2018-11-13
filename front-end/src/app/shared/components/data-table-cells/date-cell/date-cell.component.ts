@@ -2,16 +2,16 @@ import { Component, OnInit, Input } from '@angular/core';
 import { TableDataColumn } from '../../data-table/data-table.component';
 
 export class DateCellDataColumn extends TableDataColumn {
-  component? = DateCellComponent;
+  component ? = DateCellComponent;
   inputs?: {
     value?: boolean;
     format?: string;
     timezone?: string;
     locale?: string;
-  }
+  };
   outputs?: {
 
-  }
+  };
   constructor(val: DateCellDataColumn) {
     super(val);
   }
@@ -30,7 +30,7 @@ export class DateCellComponent implements OnInit {
    * Inputs specific to Angular DatePipe
    * Read more https://angular.io/api/common/DatePipe
    */
-  @Input() format: string = 'dd MMMM, yyyy hh:mm';
+  @Input() format: string = 'dd MMMM, yyyy HH:mm';
   @Input() timezone: string;
   @Input() locale: string;
 
