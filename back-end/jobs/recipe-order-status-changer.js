@@ -104,6 +104,7 @@ module.exports.JOB_BODY = async (config, log) => {
 
         return sequelize.query(`
             SELECT ro.id,
+                    ro.stop_gen,
                     ro.status,
                     ro.quantity,
                     ro.spend_amount,
@@ -145,10 +146,15 @@ module.exports.JOB_BODY = async (config, log) => {
                 quantity: order_quantity,
                 spend_amount: spend_amount,
                 fills_quantity,
-                sold_quantity
+                sold_quantity,
+                stop_gen
             } = record;
 
-            if (Decimal(spend_amount).lte(Decimal(sold_quantity))) {
+            if (stop_gen) {
+                if (order_status_from_to(order_id, order_status, RECIPE_ORDER_STATUSES.Completed)) {
+                    to_completed++;
+                }
+            } else if (Decimal(spend_amount).lte(Decimal(sold_quantity))) {
                 if (order_status_from_to(order_id, order_status, RECIPE_ORDER_STATUSES.Completed)) {
                     to_completed++;
                 }

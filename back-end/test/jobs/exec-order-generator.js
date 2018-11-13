@@ -178,8 +178,8 @@ describe('Execution Order generator job', () => {
     });
 
     afterEach(done => {
-        ccxtUtils.getConnector.restore();
-        ccxtUnified.getExchange.restore();
+        if (ccxtUtils.getConnector.restore) ccxtUtils.getConnector.restore();
+        if (ccxtUnified.getExchange.restore) ccxtUnified.getExchange.restore();
         done();
     });
 
@@ -714,4 +714,119 @@ describe('Execution Order generator job', () => {
         });
     });
 
+    it("shall create an extra chunky execution order if the post-order quantity is lower than the exchange trading threshold", () => {
+        ccxtUtils.getConnector.restore();
+        if (ccxtUnified.getExchange.restore) ccxtUnified.getExchange.restore();
+
+        const limits = { 
+            amount: {
+                min: 0,
+                max: 1000000
+            },
+            price: {
+                min: 0, //Set to 0 to make sure tests with random price pass always.
+                max: 1000000
+            },
+            spend: {
+                min: 1,
+                max: 500
+            } 
+        };
+
+        sinon.stub(ccxtUnified, "getExchange").callsFake((name) => {
+            let exchange = class Exchange {
+                
+                constructor () {
+                    this._connector = {
+                        name: 'Mock exchange',
+                        markets: {
+                            'LTC/BTC': {
+                                limits,
+                                active: true
+                            }
+                        }
+                    };
+                    this.api_id = name;
+                }
+
+                async isReady() {
+                    return Promise.resolve();
+                }
+
+                async getSymbolLimits () {
+                    return limits;
+                }
+            }
+      
+            return Promise.resolve(new exchange());
+        });
+
+        let not_completed_order = Object.assign({
+
+        }, TEST_SYMBOL_PENDING_ORDER_BASE, {
+            id: PENDING_ORDER_IDS[2],
+            spend_amount: 0.1
+        });
+        sinon.stub(sequelize, 'query').callsFake((query, options) => {
+            let exec_stats = {
+                status: EXECUTION_ORDER_STATUSES.FullyFilled,
+                execution_order_count: "1339",
+                total_quantity: 1,
+                spend_amount: 0.1,
+                filled: 1
+            };
+            if (options.replacements) {
+                switch (options.replacements.recipe_order_id) {
+                    case PENDING_ORDER_IDS[0]:
+                        return Promise.resolve([
+                            Object.assign(exec_stats, {
+                                status: EXECUTION_ORDER_STATUSES.Pending
+                            })
+                        ]);
+                    case PENDING_ORDER_IDS[1]:
+                        return Promise.resolve([
+                            Object.assign(exec_stats, {
+                                status: EXECUTION_ORDER_STATUSES.InProgress
+                            })
+                        ]);
+                    default:
+                        return Promise.resolve([]);
+                }
+            } else {
+                return Promise.resolve([]);
+            }
+        });
+        sinon.stub(RecipeOrder, 'findAll').callsFake(options => {
+
+            stubSave(not_completed_order);
+            return Promise.resolve([not_completed_order]);
+        });
+        sinon.stub(InstrumentExchangeMapping, 'find').callsFake(options => {
+            return Promise.resolve(new InstrumentExchangeMapping(Object.assign(options.where, {
+                tick_size: 0.5
+            })))
+        });
+
+        sinon.stub(ExecutionOrder, 'create').callsFake(options => {
+
+            return Promise.resolve(options);
+        });
+
+        return execOrderGenerator.JOB_BODY(stubbed_config, console.log).then(processed_recipes => {
+
+            restoreSymbols(
+                RecipeOrder.findAll,
+                ExecutionOrder.findAll,
+                ExecutionOrder.create,
+                ExecutionOrderFill.findAll,
+                InstrumentExchangeMapping.find,
+                sequelize.query
+            );
+
+            const recipe = processed_recipes[0].instance;
+
+            chai.expect(recipe.stop_gen).to.be.equal(true);
+        });
+
+    });
 });
