@@ -124,8 +124,8 @@ module.exports.JOB_BODY = async (config, log) => {
             }
 
             const asset = transfer.getDataValue('asset');
-            const balance = exchange_info[exchange_api_id].balance[asset] || 0;
-            const fee = exchange_info[exchange_api_id].fee[asset] || 0;
+            const balance = _.get(exchange_info, `${exchange_api_id}.balance.${asset}`, 0);
+            const fee = _.get(exchange_info, `${exchange_api_id}.fee.${asset}`, 0);
 
             transfer.fee = fee;
 
@@ -143,7 +143,7 @@ module.exports.JOB_BODY = async (config, log) => {
                 });
 
                 transfer.status = COLD_STORAGE_ORDER_STATUSES.Failed;
-                transfer.fee = null;
+
                 return transfer.save();
             }
             //adjust amount
@@ -170,7 +170,7 @@ module.exports.JOB_BODY = async (config, log) => {
                 });
 
                 transfer.status = COLD_STORAGE_ORDER_STATUSES.Failed;
-                transfer.fee = null;
+
                 return transfer.save();
             }
             

@@ -72,10 +72,15 @@ Feature: Generating cold storage transfers
         And the system has MCI Cold Storage Account for LTC
         And the system has MCI Cold Storage Account for XRP
         And the system has MCI Cold Storage Account for EOS
+        And the current withdraw fees on the exchanges are:
+        | exchange  |   XRP     |   LTC     |   EOS     |
+        | Bitfinex  |   0.025       |   0.54    |   0.03       |
+        | Binance   |   0.002       |   1       |   0.01       |
+        | OKEx      |   0.0254  |   0.1     |   0.02       |
         When the system finished the task "generate cold storage transfers"
         Then the following Cold Storage Transfers will be created:
         | asset | amount    | fee   | status    |
-        | XRP   | 195   |   -   |   Pending     |
-        | LTC   | 48.5  |   - |   Pending     |
-        | EOS   | 9.3  |   -   | Pending   |
+        | XRP   | 195   |   0.025   |   Pending     |
+        | LTC   | 48.5  |   1 |   Pending     |
+        | EOS   | 9.3  |   0.02   | Pending   |
         And a matching Cold Storage Account is assinged to each Transfer   

@@ -193,7 +193,7 @@ describe('Approved Cold Storage Transfer withdraw job:', () => {
 
             expect(transfer.status).to.equal(COLD_STORAGE_ORDER_STATUSES.Failed);
             expect(transfer.placed_timestamp).to.be.null;
-            expect(transfer.fee).to.be.null;
+            expect(transfer.fee).to.equal(MOCK_FEE);
             expect(transfer.completed_timestamp).to.be.null;
             expect(transfer.external_identifier).to.be.undefined;
 
@@ -215,7 +215,7 @@ describe('Approved Cold Storage Transfer withdraw job:', () => {
 
             expect(transfer.status).to.equal(COLD_STORAGE_ORDER_STATUSES.Failed);
             expect(transfer.placed_timestamp).to.be.null;
-            expect(transfer.fee).to.be.null;
+            expect(transfer.fee).to.equal(MOCK_FEE);
             expect(transfer.completed_timestamp).to.be.null;
             expect(transfer.external_identifier).to.be.undefined;
 

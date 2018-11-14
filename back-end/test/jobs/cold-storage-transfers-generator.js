@@ -9,7 +9,7 @@ const sinon = require("sinon");
 
 chai.use(chaiAsPromised);
 
-const ccxtUnified = require('../../utils/ccxtUnified');
+const ccxtUtils = require('../../utils/CCXTUtils');
 const { sequelize, ColdStorageTransfer, ColdStorageAccount } = require('../../models');
 const { JOB_BODY } = require('../../jobs/cold-storage-transfers-generator');
 
@@ -54,13 +54,6 @@ describe('Cold storage transfer generator job:', () => {
 
     const MOCK_EXCHANGE = {
         id: 'test-coin',
-        _connector: {
-            async fetchBalance(){
-                let free = {};
-                for(let asset of MOCK_ASSETS) free[asset.symbol] = MOCK_BALANCE;
-                return { free };
-            }
-        },
         async fetchFundingFees() {
             let withdraw = {};
             for(let asset of MOCK_ASSETS) withdraw[asset.symbol] = MOCK_FEE;
@@ -96,7 +89,7 @@ describe('Cold storage transfer generator job:', () => {
 
     beforeEach(done => {
 
-        sinon.stub(ccxtUnified, 'getExchange').callsFake(async id => {
+        sinon.stub(ccxtUtils, 'getConnector').callsFake(async id => {
             return MOCK_EXCHANGE;
         });
 
@@ -117,7 +110,7 @@ describe('Cold storage transfer generator job:', () => {
 
     afterEach(done => {
 
-        ccxtUnified.getExchange.restore();
+        ccxtUtils.getConnector.restore();
         sequelize.query.restore();
         ColdStorageAccount.findAll.restore();
         ColdStorageTransfer.bulkCreate.restore();
@@ -195,7 +188,7 @@ describe('Cold storage transfer generator job:', () => {
             expect(matching_order).to.be.not.undefined;
             expect(transfer.recipe_run_id).to.equal(MOCK_RECIPE_RUN_ID);
             expect(transfer.amount).to.equal(BASE_ORDER.quantity);
-            expect(transfer.fee).to.be.null;
+            expect(transfer.fee).to.equal(MOCK_FEE);
             expect(transfer.asset_id).to.equal(matching_order.transaction_asset_id);
             expect(transfer.status).to.equal(COLD_STORAGE_ORDER_STATUSES.Pending);
 

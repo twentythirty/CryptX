@@ -3,7 +3,7 @@
 const {
   logAction
 } = require('../utils/ActionLogUtil');
-const ccxtUnified = require('../utils/ccxtUnified');
+const ccxtUtils = require('../utils/CCXTUtils');
 
 const action_path = 'cold_storage_transfers';
 
@@ -99,6 +99,25 @@ module.exports.JOB_BODY = async (config, log) => {
     }
 
     const order_groups = _.groupBy(orders, 'recipe_order_group_id');
+
+    const exchange_ids = _.uniq(orders.map(o => o.target_exchange_id));
+    let result;
+    [ err, result ] = await to(Promise.all(exchange_ids.map(async id => {
+
+        const connector = await ccxtUtils.getConnector(id);
+
+        const fees = await connector.fetchFundingFees();
+
+        return [ id, fees.withdraw ];
+
+    })));
+
+    if(err) {
+        log(`[ERROR.2A] Error occured doing fee fetching: ${err.message}`);
+        return;
+    }
+
+    const exchanges_fees = _.fromPairs(result);
     
     log(`2. Creating transfers for ${orders.length} completed orders`);
 
@@ -127,12 +146,12 @@ module.exports.JOB_BODY = async (config, log) => {
     
                 continue;
             }
-            
+
             group_transfers.push({
                 amount: order.quantity,
                 asset_id: order.transaction_asset_id,
                 cold_storage_account_id: order.cold_storage_account_id,
-                fee: null,
+                fee: _.get(exchanges_fees, `${order.target_exchange_id}.${order.asset}`, 0),
                 recipe_run_id: order.recipe_run_id,
                 recipe_run_order_id: order.id,
                 status: COLD_STORAGE_ORDER_STATUSES.Pending

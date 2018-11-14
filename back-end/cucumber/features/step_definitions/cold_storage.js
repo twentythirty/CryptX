@@ -866,7 +866,7 @@ Then('the following Cold Storage Transfers will be created:', async function(tab
         expect(matching_transfer, `Expected to find a Cold Storage Transfer for asset ${asset.symbol}`).to.be.not.undefined;
 
         expect(parseFloat(matching_transfer.amount)).to.equal(parseFloat(transfer.amount));
-        expect(matching_transfer.fee).to.be.null;
+        expect(parseFloat(matching_transfer.fee)).to.equal(parseFloat(transfer.fee));
         expect(matching_transfer.status).to.equal(COLD_STORAGE_ORDER_STATUSES[transfer.status]);
         expect(matching_transfer.recipe_run_id).to.equal(this.current_recipe_run.id);
 
