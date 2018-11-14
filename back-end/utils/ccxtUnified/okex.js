@@ -58,7 +58,7 @@ class Okex extends Exchange {
 
     let quantity = Decimal(execution_order.spend_amount).div(Decimal(price));
 
-    this.logOrder (this.api_id, external_instrument_id, order_type, side, quantity, price, execution_order.spend_amount, execution_order.spend_amount, false)
+    await this.logOrder (execution_order.id, this.api_id, external_instrument_id, order_type, side, quantity, price, execution_order.spend_amount, execution_order.spend_amount, false)
 
     let response;
     [err, response] = await to(this._connector.createOrder(

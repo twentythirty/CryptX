@@ -81,17 +81,32 @@ module.exports.JOB_BODY = async (config, log) => {
                 return Promise.all([
                     Promise.resolve(pending_order),
                     // fetch execution order quantity and filled grouped by status
+                    // if execution order was fully filled then 
                     sequelize.query(`
                         SELECT 
                             eo.status,
                             COUNT(*) execution_order_count,
-                            COALESCE(SUM(eo.spend_amount), 0) as spend_amount,
+                            COALESCE(SUM(eo.spend_amount), 0) as eo_spent,
+                            COALESCE(SUM(
+                                CASE WHEN eo.status=${EXECUTION_ORDER_STATUSES.FullyFilled} OR fills.fills_cost IS NULL
+                                    THEN fills.fills_cost
+                                    ELSE eo.spend_amount
+                                END
+                            ), 0) as spend_amount,
                             COALESCE(SUM(eo.total_quantity), 0) as total_quantity,
                             COALESCE(SUM(fills.filled), 0) as filled
                         FROM execution_order eo
                         LEFT JOIN LATERAL (
-                            SELECT SUM(eof.quantity) as filled
+                            SELECT
+                                SUM(eof.quantity) as filled,
+                                SUM(
+                                    CASE WHEN fee_asset.is_base=true
+                                        THEN (eof.quantity * eof.price) + eof.fee -- add raw fee if it's in base asset
+                                        ELSE (eof.quantity * eof.price) + (eof.fee * price) -- calculate cost with price
+                                    END
+                                ) as fills_cost
                             FROM execution_order_fill eof
+                            LEFT JOIN asset fee_asset ON fee_asset.id=eof.fee_asset_id
                             WHERE eof.execution_order_id=eo.id
                             GROUP BY execution_order_id
                         ) as fills ON true

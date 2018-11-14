@@ -49,11 +49,11 @@ class Bitfinex extends Exchange {
       external_instrument_id,
       execution_order.spend_amount,
       price,
-      execution_order.recipe_order_id
+      execution_order
     ));
     if (err) TE(err.message);
 
-    this.logOrder (this.api_id, external_instrument_id, order_type, side, quantity, price, adjusted_sell_quantity, execution_order.spend_amount, true)
+    await this.logOrder (execution_order.id, this.api_id, external_instrument_id, order_type, side, quantity, price, adjusted_sell_quantity, execution_order.spend_amount, true)
 
     let response;
     [err, response] = await to(this._connector.createOrder(

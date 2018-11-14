@@ -547,7 +547,7 @@ Given('the Order remaining amount is not within exchange minimum amount limits',
             for (let i = 0; i < fill_count; i++) {
 
                 const approximate_quantity = Decimal(execution_order.spend_amount)
-                    .mul(execution_order.price)
+                    .div(execution_order.price)
                     .div(fill_count).toString();
                 const approximate_fee = Decimal(execution_order.fee).div(fill_count).toString();
 

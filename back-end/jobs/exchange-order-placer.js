@@ -152,7 +152,11 @@ module.exports.JOB_BODY = async (config, log) => {
           await order.save();
 
           await logAction(actions.placed, {
-            args: { exchange: unifiedExchange.api_id },
+            args: { 
+              exchange: unifiedExchange.api_id,
+              spend_amount: order.spend_amount,
+              quantity: order.quantity
+            },
             relations: { execution_order_id: order.id }
           });
           
