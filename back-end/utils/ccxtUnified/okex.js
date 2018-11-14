@@ -249,14 +249,18 @@ class Okex extends Exchange {
 
     return Promise.all(transfer.currencies.map(currency => {
 
-      const from_amount = from_balance.free[currency.currency] || 0;
-      const to_amount =  to_balance.free[currency.currency] || 0;
+      const from_amount = _.get(from_balance, `free.${currency.currency}`, 0);
+      const to_amount =  _.get(to_balance, `free.${currency.currency}`, 0);
 
       const required_amount = parseFloat(currency.amount);
 
       if(to_amount >= required_amount) return;
       
       const funds_to_send = _.clamp(required_amount - to_amount, from_amount); //In case the source account is smaller
+      if(funds_to_send === 0) {
+        console.warn(`\x1b[1m\x1b[31mWARNING:\x1b[0m Source balance "${transfer.from}" has 0 ${currency.currency}!!!`);
+        return;
+      }
 
       return this._connector.transferFunds(currency.currency, transfer.from, transfer.to, funds_to_send);
 
