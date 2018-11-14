@@ -5,6 +5,7 @@ Feature: Retrying a failed execution order
     Background:
 
         Given the system has Instrument Mappings for Bitfinex
+        And the system has Recipe Order with status Executing on Bitfinex
         And there are 2 InProgress Execution Orders for Bitfinex
         And there are 3 PartiallyFilled Execution Orders for Bitfinex
         And there are 2 Pending Execution Orders for Bitfinex
@@ -19,4 +20,5 @@ Feature: Retrying a failed execution order
         And I retry the Execution Order
         Then the Execution Order status will be Pending
         And the number of failed attempts on the Executon Order will reset back to 0
+        And the Recipe Order will have status Executing
         But the system won't allow me to retry Execution Orders with status other than Failed
