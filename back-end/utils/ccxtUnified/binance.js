@@ -58,7 +58,8 @@ class Binance extends Exchange {
     await this.logOrder (this.api_id, external_instrument_id, order_type, side, quantity, price, adjusted_sell_quantity, execution_order.spend_amount, true)
 
     let response;
-    [err, response] = await to(this._connector.createOrder(
+    [err, response] = await to(this.throttle(
+      this._connector.createOrder,
       external_instrument_id,
       order_type,
       side,

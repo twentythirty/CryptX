@@ -113,8 +113,11 @@ module.exports.JOB_BODY = async (config, log) => {
         }
 
         log(`3.(EXEC-${placed_order.id}) Fetching exchange connector and external order from it.`);
-        let exchange = null;
-        [ err, exchange ] = await to(ccxtUtils.getConnector(placed_order.exchange_id));
+        let exchange = null, throttle = null;
+        [ err, [exchange, throttle] ] = await to(Promise.all([
+            ccxtUtils.getConnector(placed_order.exchange_id),
+            ccxtUtils.getThrottle(placed_order.exchange_id)
+        ]));
         if(err) {
             await logError(log, placed_order, `[ERROR.3A](EXEC-${placed_order.id})`, 'exchange connection fetching', err);
             placed_order.failed_attempts++;
@@ -131,7 +134,7 @@ module.exports.JOB_BODY = async (config, log) => {
         //Fetch the order object from the exchange.
         let external_order = null;
         
-        [ err, external_order ] = await to(fetchOrderFromExchange(placed_order, exchange, log));
+        [ err, external_order ] = await to(fetchOrderFromExchange(placed_order, [exchange, throttle], log));
         
         if(err){
             await logError(log, placed_order, `[ERROR.3C](EXEC-${placed_order.id})`, `order fetching from exchange ${exchange.name}`, err);
@@ -194,7 +197,7 @@ module.exports.JOB_BODY = async (config, log) => {
         if(has_trades) {
             log(`[WARN.5A](EXEC-${placed_order.id}) Fetching trades is supported from exchange ${exchange.name} for order ${placed_order.id}`);
             
-            [ err, result ] = await to(handleFillsWithTrades(placed_order, external_order, exchange, placed_order_fills));
+            [ err, result ] = await to(handleFillsWithTrades(placed_order, external_order, [exchange, throttle], placed_order_fills));
   
             if(err) {
                 await logError(log, placed_order, `[ERROR.5A](EXEC-${placed_order.id})`, 'fetching trades from exchange', err);
@@ -223,15 +226,18 @@ module.exports.JOB_BODY = async (config, log) => {
 
     }));
 
-    const handleFillsWithTrades = async (placed_order, external_order, exchange, fills = []) => {
+    const handleFillsWithTrades = async (placed_order, external_order, [exchange, throttle], fills = []) => {
         
         //To minimize the amount of retrieved trade entries, we will only take the ones since the last fill
         //or if there are no fills, then take the placement timestamp.
         const since = fills[0] ? fills[0].timestamp : placed_order.placed_timestamp;
 
-        let [ err, trades ] = await to(exchange.fetchMyTrades(placed_order.get('external_instrument'), since, {
-            order_id: external_order.id
-        }));
+        let [ err, trades ] = await to(throttle.throttledUnhandled( // fetch single instrument (slowed down)
+            exchange.fetchMyTrades,
+            placed_order.get('external_instrument'),
+            since,
+            { order_id: external_order.id }
+        ));
     
         if(err) TE(err.message);
 
@@ -502,7 +508,7 @@ module.exports.JOB_BODY = async (config, log) => {
  * @param {Object} placed_order 
  * @param {Object} exchange 
  */
-const fetchOrderFromExchange = async (placed_order, exchange, log) => {
+const fetchOrderFromExchange = async (placed_order, [exchange, throttle], log) => {
         let external_order = null;
         let err = null;
   
@@ -520,7 +526,11 @@ const fetchOrderFromExchange = async (placed_order, exchange, log) => {
 
         //Best case scenario, will attempt to retrieve the order by id.
         if(can_fetch_by_id && !external_order) {
-            [ err, external_order ] = await to(exchange.fetchOrder(placed_order.external_identifier, symbol));
+            [ err, external_order ] = await to(throttle.throttledUnhandled( // fetch single instrument (slowed down)
+                exchange.fetchOrder,
+                placed_order.external_identifier,
+                symbol
+            ));
             if(err) TE(err);
         }
 
@@ -535,7 +545,11 @@ const fetchOrderFromExchange = async (placed_order, exchange, log) => {
 
         //Worst case scenario will take all orders and filter out the correct one.
         if(can_fetch_open_orders && !external_orders.length && !external_order) {
-            [ err, external_orders ] = await to(exchange.fetchOrders(symbol, since));
+            [ err, external_orders ] = await to(throttle.throttledUnhandled( // fetch single instrument (slowed down)
+                exchange.fetchOrders,
+                symbol,
+                since
+            ));
             if(err) TE(err);
         }
 

@@ -21,6 +21,7 @@ class Exchange {
   constructor (api_id, ccxtInstance) {
     this.api_id = api_id;
     this._connector = ccxtInstance;
+    this._throttle = null;
     
     if (this.api_id != this._connector.id) TE("Wrong ccxt instance supplied to exchange unification");
 
@@ -50,7 +51,15 @@ class Exchange {
    * should continue once it's initialized and ready for use.
    */
   init () {
-    this.waitFor(/* add some promises if there's need to wait for something */);
+    this.waitFor(/* add some promises if there's need to wait for something */
+      ccxtUtils.getThrottle(this.api_id).then(throttle => {
+        this._throttle = throttle;
+      })
+    );
+  }
+
+  async throttle (fn, ...args) {
+    return this._throttle.throttledUnhandled(fn, ...args);
   }
 
   async adjustQuantity (symbol, sell_amount, price, execution_order) {

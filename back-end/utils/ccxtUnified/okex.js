@@ -61,7 +61,8 @@ class Okex extends Exchange {
     await this.logOrder (execution_order.id, this.api_id, external_instrument_id, order_type, side, quantity, price, execution_order.spend_amount, execution_order.spend_amount, false)
 
     let response;
-    [err, response] = await to(this._connector.createOrder(
+    [err, response] = await to(this.throttle(
+      this._connector.createOrder,
       external_instrument_id,
       order_type,
       side,

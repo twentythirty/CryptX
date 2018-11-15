@@ -97,7 +97,27 @@ describe('CCXTUnified', () => {
     withdraw: function() {}
   };
 
-  beforeEach(() => {
+
+  before((done) => {
+    sinon.stub(ccxtUtils, 'getThrottle').callsFake(id => {
+      const throttle = {
+        throttled: (d, fn, ...args) => Promise.resolve(fn(...args)),
+        throttledUnhandled: (fn, ...args) => Promise.resolve(fn(...args))
+      }
+
+      return Promise.resolve(throttle);
+    });
+
+    done();
+  })
+
+  after((done) => {
+    if (ccxtUtils.getThrottle.restore) ccxtUtils.getThrottle.restore();
+    done();
+  })
+
+
+  beforeEach((done) => {
     sinon.stub(ccxtUtils, "getConnector").callsFake((name) => {
       let connector = Object.assign({}, CCXT_EXCHANGE, {
         id: name,
@@ -111,7 +131,6 @@ describe('CCXTUnified', () => {
           }
         }
       });
-
 
       sinon.stub(connector, 'createOrder').callsFake((...args) => {
         // should help understand what properties have in them: https://github.com/ccxt/ccxt/wiki/Manual#order-structure
@@ -155,12 +174,14 @@ describe('CCXTUnified', () => {
       return Promise.resolve(connector);
     });
 
-    
+    done();
   });
 
-  afterEach(() => {
-    if(ccxtUtils.getConnector.restore) ccxtUtils.getConnector.restore();
+  afterEach((done) => {
+    if (ccxtUtils.getConnector.restore) ccxtUtils.getConnector.restore();
     if (sequelize.query.restore) sequelize.query.restore();
+
+    done();
   });
 
   it("shall return exchange methods", () => {

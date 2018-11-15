@@ -328,11 +328,31 @@ describe('Execution Order Fills fetcher job', () => {
             sequelize.query,
             sequelize.transaction
         );
+        
         done();
     });
 
     after(done => {
         ccxtUtils.getConnector.restore();
+        done();
+    });
+
+    beforeEach(done => {
+        sinon.stub(ccxtUtils, 'getThrottle').callsFake(id => {
+            const throttle = {
+                throttled: (d, fn, ...args) => Promise.resolve(fn(...args)),
+                throttledUnhandled: (fn, ...args) => Promise.resolve(fn(...args))
+            }
+
+            return Promise.resolve(throttle);
+        });
+
+        done();
+    });
+
+    afterEach((done) => {
+        if (ccxtUtils.getThrottle.restore) ccxtUtils.getThrottle.restore();
+
         done();
     });
 
