@@ -94,7 +94,8 @@ class Bitfinex extends Exchange {
     console.log(`
       Creating withdraw to ${this.api_id},
       Asset: ${asset_symbol},
-      Amount: ${amount},
+      Final amount: ${amount},
+      Fee: ${transfer.fee},
       Destination address: ${address}
     `);
 

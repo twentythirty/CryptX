@@ -10,6 +10,7 @@ const sinon = require("sinon");
 chai.use(chaiAsPromised);
 
 const ccxtUnified = require('../../utils/ccxtUnified');
+const ccxtUtils = require('../../utils/CCXTUtils');
 const { sequelize, ColdStorageTransfer } = require('../../models');
 const { JOB_BODY } = require('../../jobs/approved-transfer-withdraw');
 
@@ -165,6 +166,15 @@ describe('Approved Cold Storage Transfer withdraw job:', () => {
     
         });
 
+        sinon.stub(ccxtUtils, 'getThrottle').callsFake(id => {
+            const throttle = {
+                throttled: (d, fn, ...args) => Promise.resolve(fn(...args)),
+                throttledUnhandled: (fn, ...args) => Promise.resolve(fn(...args))
+            }
+
+            return Promise.resolve(throttle);
+        });
+
         done();
 
     });
@@ -173,6 +183,7 @@ describe('Approved Cold Storage Transfer withdraw job:', () => {
 
         sequelize.query.restore();
         ColdStorageTransfer.update.restore();
+        ccxtUtils.getThrottle.restore();
         if(ccxtUnified.getExchange.restore) ccxtUnified.getExchange.restore();
 
         done();

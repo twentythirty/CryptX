@@ -1,4 +1,5 @@
 const ccxtUnified = require('../utils/ccxtUnified');
+const ccxtUtils = require('../utils/CCXTUtils');
 const { logAction } = require('../utils/ActionLogUtil');
 
 const action_path = 'cold_storage_transfers';
@@ -64,6 +65,7 @@ module.exports.JOB_BODY = async (config, log) => {
     [ err, result ] = await to(Promise.all(exchange_ids.map(async id => {
         const connector = await ccxtUnified.getExchange(id);
         await connector.isReady();
+        const throttle = await ccxtUtils.getThrottle(id);
 
         //In case this is one of those exchanges that require funds to be transfered, then it will attempt to do so.
         if(require_fund_transfer.includes(connector.api_id)) {
@@ -82,10 +84,11 @@ module.exports.JOB_BODY = async (config, log) => {
         }
 
         const [ balance, fees ] = await Promise.all([
-            connector._connector.fetchBalance(),
-            connector._connector.fetchFundingFees()
+            throttle.throttledUnhandled(connector._connector.fetchBalance),
+            throttle.throttledUnhandled(connector._connector.fetchFundingFees)
         ]);
-        return [ id, { balance: balance.free, fee: fees.withdraw, connector }]; //Create exchange id and info pairs
+
+        return [ id, { balance: balance.free, fee: fees.withdraw, connector, throttle }]; //Create exchange id and info pairs
     })));
 
     if(err) {
@@ -101,7 +104,8 @@ module.exports.JOB_BODY = async (config, log) => {
 
     return Promise.all(_.map(transfers_by_exchange, async (exchange_transfers, exchange_api_id) => {
 
-        const connector = exchange_info[exchange_api_id].connector;
+        const { connector } = exchange_info[exchange_api_id];
+  
         
         log(`4. Creating ${exchange_transfers.length} withdraw requests from ${exchange_transfers[0].exchange_name}`);
         return Promise.all(_.map(exchange_transfers, async transfer => {
