@@ -46,3 +46,11 @@ Feature: Generating execution orders
         And the system finished the task "update recipe order statuses"
         Then the Recipe Order will have status Completed
         And the sum of Execution Order total quantities will equal the Recipe Order quantity
+
+    Scenario: Completing recipe order when left amount to spend if is too small for exchange 
+
+        Given the system has Recipe Order with status Executing on Bitfinex
+        And the Order remaining amount is not within exchange minimum amount limits
+        When the system finished the task "generate execution orders"
+        And the system finished the task "update recipe order statuses"
+        Then the Recipe Order will have status Completed

@@ -492,8 +492,10 @@ Given('the Order remaining amount is not within exchange minimum amount limits',
         sequelize
     } = require('../../../models');
     const CCXTUtil = require('../../../utils/CCXTUtils');
+    const cccxtUnified = require('../../../utils/ccxtUnified');
 
     const exchange = await Exchange.findById(this.current_recipe_order.target_exchange_id);
+    let unifiedExchange = await cccxtUnified.getExchange(this.current_recipe_order.target_exchange_id);
 
     const mapping = await InstrumentExchangeMapping.findOne({
         where: {
@@ -514,6 +516,9 @@ Given('the Order remaining amount is not within exchange minimum amount limits',
 
     const total_quantity = Decimal(this.current_recipe_order.quantity).minus(Decimal(amount_limits.min).div(2)).toString();
 
+    const limits = await unifiedExchange.getSymbolLimits(mapping.external_instrument_id);
+    const spend_amount = Decimal(this.current_recipe_order.spend_amount).minus(Decimal(limits.spend.min).div(2)).toString();
+
     const fill_count = 1;
 
     return sequelize.transaction(transaction => {
@@ -524,13 +529,14 @@ Given('the Order remaining amount is not within exchange minimum amount limits',
             exchange_id: this.current_recipe_order.target_exchange_id,
             external_identifier: 'jk4h5kj34h5k3h5j3hk',
             failed_attempts: 0,
-            fee: (parseFloat(this.current_recipe_order.price) / _.random(98, 100, false)),
+            fee: (parseFloat(spend_amount / this.current_recipe_order.price) / _.random(98, 100, false)),
             instrument_id: this.current_recipe_order.instrument_id,
             price: this.current_recipe_order.price,
             recipe_order_id: this.current_recipe_order.id,
             side: this.current_recipe_order.side,
             status: EXECUTION_ORDER_STATUSES.FullyFilled,
             total_quantity: total_quantity,
+            spend_amount: spend_amount,
             type: EXECUTION_ORDER_TYPES.Market
         }, {
             transaction
@@ -540,7 +546,9 @@ Given('the Order remaining amount is not within exchange minimum amount limits',
 
             for (let i = 0; i < fill_count; i++) {
 
-                const approximate_quantity = Decimal(execution_order.total_quantity).div(fill_count).toString();
+                const approximate_quantity = Decimal(execution_order.spend_amount)
+                    .div(execution_order.price)
+                    .div(fill_count).toString();
                 const approximate_fee = Decimal(execution_order.fee).div(fill_count).toString();
 
                 fills.push({

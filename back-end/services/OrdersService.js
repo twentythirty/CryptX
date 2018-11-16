@@ -597,10 +597,18 @@ const changeExecutionOrderStatus = async (execution_order_id, status) => {
     if (isNaN(execution_order_id)) TE(`Provided execution order id: "${execution_order_id}" is not valid`);
     if (!Object.values(EXECUTION_ORDER_STATUSES).includes(status)) TE(`Status "${status}" is not valid`);
 
-    let [err, execution_order] = await to(ExecutionOrder.findById(execution_order_id));
+    let [err, execution_order] = await to(ExecutionOrder.findOne({
+        where: {
+            id: execution_order_id
+        },
+        include: RecipeOrder
+    }));
+
 
     if (err) TE(err);
-    if (!execution_order) return null;
+    if (!execution_order) TE("Execution order not found");
+
+    let recipe_order = execution_order.RecipeOrder;
 
     //Switch case for different situations
     switch (status) {
@@ -618,8 +626,15 @@ const changeExecutionOrderStatus = async (execution_order_id, status) => {
     const previous_values = execution_order.toJSON();
 
     execution_order.status = status;
+    recipe_order.status = RECIPE_ORDER_STATUSES.Executing;
 
-    [err, execution_order] = await to(execution_order.save());
+    [err, [execution_order, recipe_order]] = await to(sequelize.transaction(async transaction => {
+        return Promise.all([
+            execution_order.save({ transaction }),
+            recipe_order.save({ transaction })
+        ])
+    }));
+    
 
     if (err) TE(err);
 

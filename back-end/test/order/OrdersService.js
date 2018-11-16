@@ -874,23 +874,38 @@ describe('OrdersService testing', () => {
     describe('and the method changeExecutionOrderStatus shall:', () => {
 
         before(done => {
-            sinon.stub(ExecutionOrder, 'findById').callsFake(execution_id => {
+            sinon.stub(ExecutionOrder, 'findOne').callsFake(opt => {
+                let execution_id = opt.where.id;
+                let result;
                 switch(execution_id) {
                     case 1:
-                        return Promise.resolve(TEST_EXECUTION_ORDER);
+                        TEST_EXECUTION_ORDER;
+                        break;
                     case 2:
-                        return Promise.resolve(Object.assign({}, TEST_EXECUTION_ORDER, {
+                        result = Object.assign({}, TEST_EXECUTION_ORDER, {
                             status: EXECUTION_ORDER_STATUSES.Failed
-                        }));
+                        });
+                        break;
                     default:
-                        return Promise.resolve(null);
+                        result = null;
                 }
+
+                if (!result) return Promise.resolve(null);
+                
+                result.RecipeOrder = new RecipeOrder({
+                    id: 1,
+                    status: 56
+                });
+
+                sinon.stub(result.RecipeOrder, 'save').returns(Promise.resolve(result.RecipeOrder));
+
+                return Promise.resolve(result);
             });
             done();
         });
 
         after(done => {
-            ExecutionOrder.findById.restore();
+            ExecutionOrder.findOne.restore();
             done();
         });
 

@@ -67,7 +67,9 @@ module.exports.JOB_BODY = async (config, log) => {
                         // fetch instrument market data all at once
                         log(`Fetching all market data from ${exchange.name}.`);
                         
-                        let [err, all_ticker_data] = await to(fetcher.fetchTickers()); // fetch all instrument data
+                        let [err, all_ticker_data] = await to(throttle.throttledUnhandled(
+                            fetcher.fetchTickers
+                        )); // fetch all instrument data
                         log(`Finished fetching all tickers from ${exchange.name}`);
                         
                         if (err || _.isUndefined(all_ticker_data)) {

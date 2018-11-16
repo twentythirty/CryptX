@@ -107,6 +107,14 @@ BeforeAll({ timeout: 15000000 }, async function(){
             return bound_fn(...args);
 
         };
+
+        exchange.throttledUnhandled = async function(fn, ...args) {
+
+            const bound_fn = fn.bind(exchange);
+
+            return bound_fn(...args);
+
+        };
  
         return Promise.resolve(exchange);
     });

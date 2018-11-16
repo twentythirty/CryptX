@@ -242,10 +242,70 @@ describe('Recipe Order status changer job', () => {
                     {
                         id: 3,
                         status: RECIPE_ORDER_STATUSES.Pending, 
-                        quantity: 5, 
                         spend_amount: 0.2,
-                        fills_quantity: 5,
                         sold_quantity: 0.2
+                    }
+                ])
+            } else if (call_counter == 2) {
+
+                return Promise.resolve(query);
+            }
+        });
+
+        return recipeOrderStatusChanger.JOB_BODY(config, console.log).then(results => {
+
+            chai.expect(results).is.a('string');
+            chai.assert(query_stub.calledThrice, 'query was supposed to be called 3 times with save!');
+            
+            chai.assert(results.includes(`(${exec_stats[0].id}, ${RECIPE_ORDER_STATUSES.Executing})`), `Recipe order ${exec_stats[0].id} should be updated to ${RECIPE_ORDER_STATUSES.Executing}`)
+            chai.assert(!results.includes(`(${exec_stats[1].id}, ${RECIPE_ORDER_STATUSES.Executing})`), `Recipe order ${exec_stats[1].id} should not be updated!`);
+            chai.assert(results.includes(`(${exec_stats[2].id}, ${RECIPE_ORDER_STATUSES.Completed})`), `Recipe order ${exec_stats[2].id} should be updated to ${RECIPE_ORDER_STATUSES.Completed}`)
+        })
+    });
+
+    it("shall set recipe order to complete if property stop_gen is set to true", () => {
+
+
+        let call_counter = 0;
+        const exec_stats = [
+            {
+                id: 1,
+                status: RECIPE_ORDER_STATUSES.Pending, 
+                all_execution: 1, 
+                failed_execution: 0,
+                current_execution: 1
+            },
+            {
+                id: 2,
+                status: RECIPE_ORDER_STATUSES.Executing, 
+                all_execution: 4, 
+                failed_execution: 1,
+                current_execution: 3
+            },
+            {
+                id: 3,
+                status: RECIPE_ORDER_STATUSES.Pending, 
+                all_execution: 5, 
+                failed_execution: 2,
+                current_execution: 3
+            }
+        ];
+        const query_stub = sinon.stub(sequelize, 'query').callsFake(query => {
+            //first query
+            if (call_counter == 0) {
+                call_counter++;
+                //fail-ready recipe orders
+                return Promise.resolve(exec_stats)
+            } else if (call_counter == 1) {
+                call_counter++;
+                //no fills
+                return Promise.resolve([
+                    {
+                        id: 3,
+                        status: RECIPE_ORDER_STATUSES.Pending, 
+                        spend_amount: 0.2,
+                        sold_quantity: 0.195,
+                        stop_gen: true
                     }
                 ])
             } else if (call_counter == 2) {

@@ -49,14 +49,15 @@ class Bitfinex extends Exchange {
       external_instrument_id,
       execution_order.spend_amount,
       price,
-      execution_order.recipe_order_id
+      execution_order
     ));
     if (err) TE(err.message);
 
-    this.logOrder (this.api_id, external_instrument_id, order_type, side, quantity, price, adjusted_sell_quantity, execution_order.spend_amount, true)
+    await this.logOrder (execution_order.id, this.api_id, external_instrument_id, order_type, side, quantity, price, adjusted_sell_quantity, execution_order.spend_amount, true)
 
     let response;
-    [err, response] = await to(this._connector.createOrder(
+    [err, response] = await to(this.throttle(
+      this._connector.createOrder,
       external_instrument_id,
       order_type,
       side,
@@ -83,15 +84,18 @@ class Bitfinex extends Exchange {
    * @param {Object} cold_storage_account Cold storage account object to send the funds to.
    * @returns {Promise}
    */
-  async withdraw(asset_symbol, amount, address, tag, fee) {
+  async withdraw(transfer) {
     await this.isReady();
+
+    let { asset_symbol, amount, address, tag, fee } = transfer.getWithdrawParams();
 
     amount = Decimal(amount).minus(fee).toString(); //Deduct the fee 
 
     console.log(`
       Creating withdraw to ${this.api_id},
       Asset: ${asset_symbol},
-      Amount: ${amount},
+      Final amount: ${amount},
+      Fee: ${transfer.fee},
       Destination address: ${address}
     `);
 
@@ -149,14 +153,6 @@ class Bitfinex extends Exchange {
     return limits;
   }
 
-  /**
-   * This methods is same as the original for this exchange
-   */
-  async fetchFundingFees () {
-    await this.isReady();
-    
-    return this._connector.fetchFundingFees();
-  }
 }
 
 module.exports = Bitfinex;

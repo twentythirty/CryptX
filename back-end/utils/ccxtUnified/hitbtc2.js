@@ -48,7 +48,7 @@ class Hitbtc extends Exchange {
       external_instrument_id,
       execution_order.spend_amount,
       ticker.ask,
-      execution_order.recipe_order_id
+      execution_order
     ));
     if (err) TE(err.message);
 

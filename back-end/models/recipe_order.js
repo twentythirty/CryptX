@@ -14,6 +14,10 @@ module.exports = (sequelize, DataTypes) => {
             status: {
                 type: DataTypes.SMALLINT,
                 allowNull: false
+            },
+            stop_gen: {
+                type: DataTypes.BOOLEAN,
+                allowNull: true
             }
         },
         modelProps(

@@ -4,11 +4,24 @@ const sequelize = require('../../models').sequelize;
 
 const ccxtUtils = require('../CCXTUtils');
 
+const { logAction } = require('../ActionLogUtil');
+
+const action_path = 'execution_orders';
+
+const actions = {
+  sent: `${action_path}.adjusted`,
+  sent_quantity: `${action_path}.sent_quantity`,
+  sold_quantity: `${action_path}.sold_quantity`,
+  adjusted_spend: `${action_path}.adjusted_spend`
+};
+
+
 class Exchange {
 
   constructor (api_id, ccxtInstance) {
     this.api_id = api_id;
     this._connector = ccxtInstance;
+    this._throttle = null;
     
     if (this.api_id != this._connector.id) TE("Wrong ccxt instance supplied to exchange unification");
 
@@ -38,11 +51,21 @@ class Exchange {
    * should continue once it's initialized and ready for use.
    */
   init () {
-    this.waitFor(/* add some promises if there's need to wait for something */);
+    this.waitFor(/* add some promises if there's need to wait for something */
+      ccxtUtils.getThrottle(this.api_id).then(throttle => {
+        this._throttle = throttle;
+      })
+    );
   }
 
-  async adjustQuantity (symbol, sell_amount, price, recipe_order_id) {
-    let statuses = [EXECUTION_ORDER_STATUSES.Pending], log = console.log;
+  async throttle (fn, ...args) {
+    return this._throttle.throttledUnhandled(fn, ...args);
+  }
+
+  async adjustQuantity (symbol, sell_amount, price, execution_order) {
+    let statuses = [EXECUTION_ORDER_STATUSES.Pending],
+      log = console.log;
+    let { id: execution_order_id, recipe_order_id } = execution_order;
 
     let [err, amounts] = await to(sequelize.query(`
       SELECT 
@@ -104,6 +127,15 @@ class Exchange {
     }
 
     let next_spend = next_total.mul(price);
+
+    if (sell_amount != next_spend.toString())
+      await logAction(actions.adjusted_spend, {
+        args: {
+          orig_spend: sell_amount,
+          spend_amount: next_spend.toString(),
+        },
+        relations: { execution_order_id }
+      });
     
     return [next_total.toString(), next_spend.toString()];
   }
@@ -118,7 +150,18 @@ class Exchange {
    * @param {*} price 
    * @param {*} sold_quantity 
    */
-  logOrder (api_id, external_instrument_id, order_type, side, quantity, price, sold_quantity, sell_qnt_unajusted, accepts_transaction_quantity) {
+  async logOrder (
+    execution_order_id,
+    api_id,
+    external_instrument_id,
+    order_type,
+    side,
+    quantity,
+    price,
+    sold_quantity,
+    sell_qnt_unajusted,
+    accepts_transaction_quantity
+  ) {
     console.log(`Creating market order to ${api_id}
     Instrument - ${external_instrument_id}
     Order type - ${order_type}
@@ -127,7 +170,25 @@ class Exchange {
     Price - ${price}
     Sold quantity after adjustments - ${sold_quantity}
     Sold quantity before adjustment - ${sell_qnt_unajusted}
-    ${accepts_transaction_quantity ? 'Quote' : 'Transaction'} asset quantity is used for order in tihs exchange`);
+    ${accepts_transaction_quantity ? 'Quote' : 'Transaction'} asset quantity is used for order in this exchange`);
+
+    if ( accepts_transaction_quantity )
+      await logAction(actions.sent_quantity, {
+        args: {
+          exchange: api_id,
+          quantity: quantity,
+         },
+        relations: { execution_order_id }
+      });
+    else
+    await logAction(actions.sold_quantity, {
+      args: {
+        exchange: api_id,
+        quantity: sold_quantity,
+       },
+      relations: { execution_order_id }
+    });
+
   }
 
 }

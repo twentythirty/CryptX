@@ -26,6 +26,7 @@ describe('CCXTUnified', () => {
   });
 
   let ExecutionOrder = require('../../models').ExecutionOrder;
+  let ColdStorageTransfer = require('../../models').ColdStorageTransfer;
   let InstrumentService = require('../../services/InstrumentsService');
   let sequelize = require('../../models').sequelize;
 
@@ -92,10 +93,31 @@ describe('CCXTUnified', () => {
     },
     createOrder: function () {},
     fetchTicker: function () {},
-    fetchTickers: function () {}
+    fetchTickers: function () {},
+    withdraw: function() {}
   };
 
-  beforeEach(() => {
+
+  before((done) => {
+    sinon.stub(ccxtUtils, 'getThrottle').callsFake(id => {
+      const throttle = {
+        throttled: (d, fn, ...args) => Promise.resolve(fn(...args)),
+        throttledUnhandled: (fn, ...args) => Promise.resolve(fn(...args))
+      }
+
+      return Promise.resolve(throttle);
+    });
+
+    done();
+  })
+
+  after((done) => {
+    if (ccxtUtils.getThrottle.restore) ccxtUtils.getThrottle.restore();
+    done();
+  })
+
+
+  beforeEach((done) => {
     sinon.stub(ccxtUtils, "getConnector").callsFake((name) => {
       let connector = Object.assign({}, CCXT_EXCHANGE, {
         id: name,
@@ -109,7 +131,6 @@ describe('CCXTUnified', () => {
           }
         }
       });
-
 
       sinon.stub(connector, 'createOrder').callsFake((...args) => {
         // should help understand what properties have in them: https://github.com/ccxt/ccxt/wiki/Manual#order-structure
@@ -153,12 +174,14 @@ describe('CCXTUnified', () => {
       return Promise.resolve(connector);
     });
 
-    
+    done();
   });
 
-  afterEach(() => {
-    ccxtUtils.getConnector.restore();
+  afterEach((done) => {
+    if (ccxtUtils.getConnector.restore) ccxtUtils.getConnector.restore();
     if (sequelize.query.restore) sequelize.query.restore();
+
+    done();
   });
 
   it("shall return exchange methods", () => {
@@ -306,4 +329,143 @@ describe('CCXTUnified', () => {
       });
     })
   });
+
+  it('shall adjust the amount to the correct multiple if it receives error from Binance', async () => {
+
+    const error = new Error('binance {"msg":"The STEEM amount must be an integer multiple of 0.001","success":false,"objs":["STEEM",0.001]}');
+    const amount = 72.18516518;
+
+    ccxtUtils.getConnector.restore();
+    sinon.stub(ccxtUtils, 'getConnector').callsFake(async id => {
+      return {
+        id: 'binance',
+        async withdraw(symbol, size) {
+          if(parseFloat(size) === amount) throw error;
+          else return {};
+        }
+      }
+    });
+
+    const transfer = new ColdStorageTransfer({
+      amount: amount
+    });
+
+    transfer.setDataValue('asset', 'BTC');
+    transfer.setDataValue('address', 'BT1231313sfsdfs123123C');
+
+    const exchange = await ccxtUnified.getExchange('binance');
+
+    await exchange.withdraw(transfer);
+
+    chai.expect(transfer.amount).to.equal(72.185);
+
+  });
+
+  describe('and the method transferFunds shall', () => {
+
+    afterEach(done => {
+
+      if(ccxtUtils.getConnector.restore) ccxtUtils.getConnector.restore();
+
+      done();
+    });
+
+    it('shall do nothing if the receiving balance has more than needed', async () => {
+
+      const transfer = {
+        from: 'wallet',
+        to: 'spot',
+        currencies: [{
+          currency: 'BTC',
+          amount: 10
+        }, {
+          currency: 'ETH',
+          amount: 100
+        }]
+      }
+
+      if(ccxtUtils.getConnector.restore) ccxtUtils.getConnector.restore();
+      sinon.stub(ccxtUtils, 'getConnector').callsFake(async id => {
+
+        return {
+          id: 'okex',
+          async fetchBalance() {
+            let balance = { free: {} };
+            transfer.currencies.map(c => {
+              balance.free[c.currency] = c.amount + _.random(0, 1)
+            });
+            return balance;
+          }
+        }
+
+      });
+
+      const exchange = await ccxtUnified.getExchange('okex');
+      await exchange.isReady();
+
+      const results = await exchange.transferFunds(transfer);
+
+      for(let result of results) chai.expect(result).to.be.undefined;
+
+    });
+
+    it('shall request the correct amount to be transfered', async () => {
+
+      const transfer = {
+        from: 'wallet',
+        to: 'spot',
+        currencies: [{
+          currency: 'BTC',
+          amount: 10
+        }, {
+          currency: 'ETH',
+          amount: 100
+        }]
+      }
+
+      if(ccxtUtils.getConnector.restore) ccxtUtils.getConnector.restore();
+      sinon.stub(ccxtUtils, 'getConnector').callsFake(async id => {
+
+        return {
+          id: 'okex',
+          async fetchBalance(options = {}) {
+            let balance = { free: {} };
+            if(options.type === transfer.to) {
+              transfer.currencies.map(c => {
+                balance.free[c.currency] = c.amount / 2;
+              });
+            }
+            else {
+              transfer.currencies.map(c => {
+                balance.free[c.currency] = c.amount;
+              });
+            }
+            return balance;
+          },
+          async transferFunds(currency, from, to, amount) {
+            return { currency, from, to, amount }
+          }
+        }
+
+      });
+
+      const exchange = await ccxtUnified.getExchange('okex');
+      await exchange.isReady();
+
+      const results = await exchange.transferFunds(transfer);
+
+      for(let result of results) {
+        
+        const matching_transfer = transfer.currencies.find(c => c.currency === result.currency);
+
+        chai.expect(result.from).to.equal(transfer.from);
+        chai.expect(result.to).to.equal(transfer.to);
+        chai.expect(result.amount).to.equal(matching_transfer.amount / 2);
+
+      }
+
+    });
+
+  });
+
 });

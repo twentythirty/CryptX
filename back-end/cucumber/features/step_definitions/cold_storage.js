@@ -78,7 +78,7 @@ Given(/^the system has (.*) Cold Storage Account for (.*)$/, async function(stra
 
 });
 
-Given(/^the system has (\d*) (.*) Cold Storage (Transfers|Transfer) for (\w*)$/, async function(amount, status, plural, asset_symbol) {
+Given(/^the system has (\d*) (.*) Cold Storage (Transfers|Transfer) for (\d*|\d+(?:\.\d+)?) (\w*)$/, async function(amount, status, plural, transfer_amount, asset_symbol) {
 
     amount = parseInt(amount);
 
@@ -130,8 +130,8 @@ Given(/^the system has (\d*) (.*) Cold Storage (Transfers|Transfer) for (\w*)$/,
             const account = accounts[_.random(0, accounts.length - 1)];
  
             new_transfers.push({
-                amount: _.random(1, 100, true),
-                fee: completed_timestamp_statuses.includes(COLD_STORAGE_ORDER_STATUSES[status]) ? _.random(0.01, 1, true) : 0,
+                amount: transfer_amount,
+                fee: completed_timestamp_statuses.includes(COLD_STORAGE_ORDER_STATUSES[status]) ? _.random(0.01, 1, true) : null,
                 asset_id: account.asset_id,
                 cold_storage_account_id: account.id,
                 status: COLD_STORAGE_ORDER_STATUSES[status],
@@ -576,7 +576,7 @@ Then(/^(.*) Transfers (won't|will) have timestamps and fee$/, function(statuses,
 
             expect(transfer.placed_timestamp, 'Expected the Cold Storage Transfer placed timestamp to be not set').to.be.null;
             expect(transfer.completed_timestamp, 'Expected the Cold Storage Transfer completed timestamp to be not set').to.be.null;
-            expect(parseFloat(transfer.exchange_withdrawal_fee)).to.equal(0, 'Expected the Cold Storage Transfer fee to be not set');
+            expect(transfer.exchange_withdrawal_fee, 'Expected the Cold Storage Transfer fee to be not set').to.be.null;
     
         }
     }
@@ -587,8 +587,10 @@ Then('the net amount will be calculated by subtracting the fee from the gross am
 
     for(let transfer of this.current_cold_storage_transfer_list) {
 
-        expect(Decimal(transfer.net_amount).eq(Decimal(transfer.gross_amount).minus(transfer.exchange_withdrawal_fee)), 
-        'Expected the Transfet net amount to equal = gross amount - fee').to.be.true
+        if(transfer.net_amount && transfer.exchange_withdrawal_fee) {
+            expect(Decimal(transfer.net_amount).eq(Decimal(transfer.gross_amount).minus(transfer.exchange_withdrawal_fee)), 
+            'Expected the Transfet net amount to equal = gross amount - fee').to.be.true
+        }
 
     }
 
@@ -748,32 +750,34 @@ Then(/^([A-Z]*) Cold Storage (Transfers|Transfer) (will have (?:.*)|status will 
         where: { asset_id: assets.map(a => a.id) }
     });
 
+    this.current_cold_storage_transfers = transfers;
+
     for(let transfer of transfers) {
+        let reg, field, value;
+        switch(true) {
 
-        switch(scenario) {
-
-            case 'status will be Sent':
-            case 'status will be Canceled':
-            case 'status will be Failed':
-            case 'status will be Completed':
+            case /status will be (.*)/.test(scenario):
                 const status_name = scenario.trim().split(' ').slice(-1);
                 expect(transfer.status).to.equal(COLD_STORAGE_ORDER_STATUSES[status_name], `Expected the status of the transfer CST-${transfer.id} to be ${status_name}`);
                 break;
 
-            case 'will have the placed timestamp set':
-                expect(transfer.placed_timestamp).to.be.a('date', `Expected the transfer CLT-${transfer.id} to have a placed timestamp`);
+            case /will have the (placed|completed) timestamp set/.test(scenario):
+                const type = /will have the (placed|completed) timestamp set/.exec(scenario)[1];
+                expect(transfer[`${type}_timestamp`]).to.be.a('date', `Expected the transfer CLT-${transfer.id} to ${type} a placed timestamp`);
                 break;
 
-            case 'will have the completed timestamp set':
-                expect(transfer.completed_timestamp).to.be.a('date', `Expected the transfer CLT-${transfer.id} to have a completed timestamp`);
-                break;
-
-            case 'will have the external identifier set':
+            case /will have the external identifier set/.test(scenario):
                 expect(transfer.external_identifier).to.be.a('string', `Expected the transfer CST-${transfer.id} to have an external identifier`);
                 break;
 
-            case 'will have the fee set':
-                expect(parseFloat(transfer.fee)).to.be.a('number', `Expected the transfer CST-${transfer.id} to have a fee set`).and.greaterThan(0, `Expected the transfer CST-${transfer.id} to have a fee greater than 0`);
+            case /will have the (fee|amount) set/.test(scenario):
+                [ reg, field ] = /will have the (fee|amount) set/.exec(scenario);
+                expect(parseFloat(transfer[field])).to.be.a('number', `Expected the transfer CST-${transfer.id} the ${field} set`);
+                break;
+
+            case /will have the (fee|amount) set to (.*)/.test(scenario):
+                [ reg, field, value ] = /will have the (fee|amount) set to (.*)/.exec(scenario);
+                expect(parseFloat(transfer[field])).to.equal(parseFloat(value));
                 break;
 
             default:
@@ -824,15 +828,16 @@ Then('a log is created for each missing Cold Storage Account', async function ()
 
 });
 
-Then('a log is created for each required empty balance', async function() {
+Then('an error log entry about empty balance is saved', async function() {
 
     const { ActionLog } = require('../../../models');
 
     const logs = await ActionLog.findAll({
         where: {
-            recipe_order_id: this.current_recipe_orders.map(o => o.id),
+            cold_storage_transfer_id: this.current_cold_storage_transfers.map(t => t.id),
             translation_key: 'logs.cold_storage_transfers.zero_balance'
-        }
+        },
+        raw: true
     });
 
     expect(logs.length).to.be.greaterThan(0, `Expected to find at least 1 log about an empty balance`);
@@ -860,8 +865,8 @@ Then('the following Cold Storage Transfers will be created:', async function(tab
 
         expect(matching_transfer, `Expected to find a Cold Storage Transfer for asset ${asset.symbol}`).to.be.not.undefined;
 
-        expect(matching_transfer.amount).to.equal(transfer.amount);
-        expect(matching_transfer.fee).to.equal(transfer.fee);
+        expect(parseFloat(matching_transfer.amount)).to.equal(parseFloat(transfer.amount));
+        expect(parseFloat(matching_transfer.fee)).to.equal(parseFloat(transfer.fee));
         expect(matching_transfer.status).to.equal(COLD_STORAGE_ORDER_STATUSES[transfer.status]);
         expect(matching_transfer.recipe_run_id).to.equal(this.current_recipe_run.id);
 
@@ -885,6 +890,36 @@ Then('a matching Cold Storage Account is assinged to each Transfer', async funct
 
         expect(account.asset_id).to.equal(transfer.asset_id, `(CST-${transfer.id}) Expected the assets to match on the Cold Storage Transfer and Account`);
         expect(account.strategy_type).to.equal(this.current_investment_run.strategy_type, `(CSA-${account.id}) Expected the strategy to match the Investment Run\`s`);
+
+    }
+
+});
+
+Then(/^a log entry about amount adjustemt due to (account balance) will be saved$/, async function(reason) {
+
+    const { ActionLog } = require('../../../models');
+
+    const log_reason_map = {
+        'account balance': 'balance'
+    };
+
+    const logs = await ActionLog.findAll({
+        where: {
+            cold_storage_transfer_id: this.current_cold_storage_transfers.map(t => t.id),
+            translation_key: `logs.cold_storage_transfers.new_amount.${log_reason_map[reason]}`
+        },
+        raw: true
+    });
+
+    expect(logs.length).to.be.greaterThan(0);
+
+    for(let log of logs) {
+
+        const args = JSON.parse(log.translation_args);
+
+        expect(parseFloat(args.new_amount)).to.be.not.NaN
+        expect(parseFloat(args.old_amount)).to.be.not.NaN
+        expect(parseFloat(args.info_value)).to.be.not.NaN
 
     }
 

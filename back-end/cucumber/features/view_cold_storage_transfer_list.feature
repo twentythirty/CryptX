@@ -5,16 +5,17 @@ Feature: View cold storage transfer list
     Background:
 
         Given the system has an Investment Manager
+        And there are no Cold Storage Transfers in the system
         And the system has 5 Cold Storage Custodians
         And the system has Instrument Mappings for Bitfinex
         And the system has Exchange Account for XRP on Bitfinex
         And the system has Recipe Order with status Completed on Bitfinex
         And the system has LCI Cold Storage Account for XRP
-        And the system has 3 Pending Cold Storage Transfer for XRP
-        And the system has 1 Approved Cold Storage Transfer for XRP
-        And the system has 2 Sent Cold Storage Transfer for XRP
-        And the system has 4 Completed Cold Storage Transfer for XRP
-        And the system has 1 Failed Cold Storage Transfer for XRP
+        And the system has 3 Pending Cold Storage Transfer for 10 XRP
+        And the system has 1 Approved Cold Storage Transfer for 10 XRP
+        And the system has 2 Sent Cold Storage Transfer for 10 XRP
+        And the system has 4 Completed Cold Storage Transfer for 10 XRP
+        And the system has 1 Failed Cold Storage Transfer for 10 XRP
 
     Scenario: view a list of cold storage transfers with different statuses
 

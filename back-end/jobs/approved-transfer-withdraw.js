@@ -1,12 +1,16 @@
 const ccxtUnified = require('../utils/ccxtUnified');
+const ccxtUtils = require('../utils/CCXTUtils');
 const { logAction } = require('../utils/ActionLogUtil');
 
 const action_path = 'cold_storage_transfers';
 const actions = {
     connector_error: `${action_path}.connector_error`,
     withdraw_error: `${action_path}.withdraw_error`,
-    placed: `${action_path}.placed`
+    placed: `${action_path}.placed`,
+    zero_balance: `${action_path}.zero_balance`
 };
+
+const require_fund_transfer = ['okex'];
 
 //Every 3 minutes for now
 module.exports.SCHEDULE = "0 */3 * * * *";
@@ -14,22 +18,6 @@ module.exports.NAME = "TRANSFER_WITHDRAW";
 module.exports.JOB_BODY = async (config, log) => {
 
     const { ColdStorageTransfer, sequelize } = config.models;
-
-    const updateTransferStatus = (id, status, external_identifier, fee) => {
-        const update = {
-            status,
-            placed_timestamp: status === COLD_STORAGE_ORDER_STATUSES.Sent ? Date.now() : null,
-            completed_timestamp: status === COLD_STORAGE_ORDER_STATUSES.Completed ? Date.now() : undefined,
-        };
-
-        if(external_identifier) update.external_identifier = external_identifier;
-        if(fee) update.fee = fee;
-        
-        return ColdStorageTransfer.update(update, {
-            where: { id },
-            limit: 1
-        });
-    };
 
     log('1 Fetching approved Cold Storage Transfers');
 
@@ -55,7 +43,8 @@ module.exports.JOB_BODY = async (config, log) => {
         LEFT JOIN public.exchange_account AS exa ON exa.asset_id = cst.asset_id AND exa.exchange_id = ro.target_exchange_id
         WHERE cst.status = ${COLD_STORAGE_ORDER_STATUSES.Approved}
     `, {
-        type: sequelize.QueryTypes.SELECT
+        type: sequelize.QueryTypes.SELECT,
+        model: ColdStorageTransfer
     }));
 
     if(err) {
@@ -68,31 +57,57 @@ module.exports.JOB_BODY = async (config, log) => {
         return;
     }
 
-    log('2. Grouping transfers by exchange');
+    log('2. Fetching exchange balance and fees');
 
-    const transfers_by_exchange = _.groupBy(transfers, 'exchange_api_id');
-    //console.log(JSON.stringify(transfers_by_exchange, null, 4)); return;
+    const exchange_ids = _.uniq(transfers.map(o => o.getDataValue('exchange_api_id')));
+    
+    let result;
+    [ err, result ] = await to(Promise.all(exchange_ids.map(async id => {
+        const connector = await ccxtUnified.getExchange(id);
+        await connector.isReady();
+        const throttle = await ccxtUtils.getThrottle(id);
+
+        //In case this is one of those exchanges that require funds to be transfered, then it will attempt to do so.
+        if(require_fund_transfer.includes(connector.api_id)) {
+            let fund_transfer = {
+                from: 'trading',
+                to: 'wallet',
+                currencies: transfers.map(t => {
+                    return {
+                        currency: t.getDataValue('asset'),
+                        amount: t.amount
+                    };
+                })
+            };
+
+            await connector.transferFunds(fund_transfer);
+        }
+
+        const [ balance, fees ] = await Promise.all([
+            throttle.throttledUnhandled(connector._connector.fetchBalance),
+            throttle.throttledUnhandled(connector._connector.fetchFundingFees)
+        ]);
+
+        return [ id, { balance: balance.free, fee: fees.withdraw, connector, throttle }]; //Create exchange id and info pairs
+    })));
+
+    if(err) {
+        log(`[ERROR.2A] Error occured doing balance handling: ${err.message}`);
+        return;
+    }
+
+    let exchange_info = _.fromPairs(result);
+
+    log('3. Grouping transfers by exchange');
+
+    const transfers_by_exchange = _.groupBy(transfers, t => t.getDataValue('exchange_api_id'));
+
     return Promise.all(_.map(transfers_by_exchange, async (exchange_transfers, exchange_api_id) => {
 
-        const connector = await ccxtUnified.getExchange(exchange_api_id);
-        [ err ] = await to(connector.isReady());
-
-        if(err) {
-            log(`[ERROR.2A] Failed to preprare ccxt connection for ${exchange_api_id}: ${err.message}`);
-            await logAction(actions.connector_error, {
-                args: {
-                    error: err.message,
-                    exchange: exchange_transfers[0].exchange_name
-                },
-                relations: {
-                    exchange_id: exchange_transfers[0].exchange_id
-                },
-                log_level: ACTIONLOG_LEVELS.Error
-            })
-            return;
-        }
+        const { connector } = exchange_info[exchange_api_id];
+  
         
-        log(`3. Creating ${exchange_transfers.length} withdraw requests from ${exchange_transfers[0].exchange_name}`);
+        log(`4. Creating ${exchange_transfers.length} withdraw requests from ${exchange_transfers[0].exchange_name}`);
         return Promise.all(_.map(exchange_transfers, async transfer => {
 
             /**
@@ -105,37 +120,62 @@ module.exports.JOB_BODY = async (config, log) => {
              * Having a failed transfer with status sent, is better than have a successful withdraw and a transfer with status approved.
              * Perhaps a better solution will be found later.
              */
-            [ err ] = await to(updateTransferStatus(transfer.id, COLD_STORAGE_ORDER_STATUSES.Sent));
+            transfer.status = COLD_STORAGE_ORDER_STATUSES.Sent;
+            [ err ] = await to(transfer.save());
             if(err) {
-                log(`[ERROR.3A](${exchange_api_id})(CST-${transfer.id}) Error occured during transfer status update: ${err.message}`);
+                log(`[ERROR.4A](${exchange_api_id})(CST-${transfer.id}) Error occured during transfer status update: ${err.message}`);
                 return;
             }
 
+            const asset = transfer.getDataValue('asset');
+            const balance = _.get(exchange_info, `${exchange_api_id}.balance.${asset}`, 0);
+            const fee = _.get(exchange_info, `${exchange_api_id}.fee.${asset}`, 0);
+
+            transfer.fee = fee;
+
+            if(balance === 0) {
+                log(`[ERROR.4B](CST-${transfer.id}) Error: transfer cannot be created as the balance of ${transfer.getDataValue('asset')} is 0`);
+                await logAction(actions.zero_balance, {
+                    args: {
+                        asset: transfer.getDataValue('asset')
+                    },
+                    relations: {
+                        cold_storage_transfer_id: transfer.id,
+                        exchange_id: transfer.getDataValue('exchange_id')
+                    },
+                    log_level: ACTIONLOG_LEVELS.Error
+                });
+
+                transfer.status = COLD_STORAGE_ORDER_STATUSES.Failed;
+
+                return transfer.save();
+            }
+            //adjust amount
+            if(Decimal(transfer.amount).gt(balance)) {
+                transfer.setAmount(balance, 'balance', balance);
+            }
+
             let withdraw;
-            const { asset, amount, address, tag, fee } = transfer;
-            [ err, withdraw ] = await to(connector.withdraw(asset, amount, address, tag, fee));
+            [ err, withdraw ] = await to(connector.withdraw(transfer));
 
             if(err) {
                 console.log(JSON.stringify(err, null, 4));
-                log(`[ERROR.3B](${exchange_api_id})(CST-${transfer.id}) Error occured during withdraw creation: ${err.message}`);
+                log(`[ERROR.4C](${exchange_api_id})(CST-${transfer.id}) Error occured during withdraw creation: ${err.message}`);
                 await logAction(actions.withdraw_error, {
                     args: {
                         error: err.message,
                         exchange: transfer.exchange_name
                     },
                     relations: {
-                        exchange_id: transfer.exchange_id,
+                        exchange_id: transfer.getDataValue('exchange_id'),
                         cold_storage_transfer_id: transfer.id
                     },
                     log_level: ACTIONLOG_LEVELS.Error
                 });
-                [ err ] = await to(updateTransferStatus(transfer.id, COLD_STORAGE_ORDER_STATUSES.Failed));
 
-                if(err) {
-                    log(`[ERROR.3C](${exchange_api_id})(CST-${transfer.id}) Error occured during transfer status update: ${err.message}`);
-                }
+                transfer.status = COLD_STORAGE_ORDER_STATUSES.Failed;
 
-                return;
+                return transfer.save();
             }
             
             console.log(`
@@ -143,27 +183,23 @@ module.exports.JOB_BODY = async (config, log) => {
                 WITHDRAW: ${JSON.stringify(withdraw, null, 4)}
             `);
             
-            log(`4.(${exchange_api_id})(CST-${transfer.id}) Withdraw request created with id ${withdraw.id}`);
+            log(`5.(${exchange_api_id})(CST-${transfer.id}) Withdraw request created with id ${withdraw.id}`);
 
             await logAction(actions.placed, {
                 args: {
                     id: withdraw.id
                 },
                 relations: {
-                    exchange_id: transfer.exchange_id,
+                    exchange_id: transfer.getDataValue('exchange_id'),
                     cold_storage_transfer_id: transfer.id
                 }
             });
-            
-            const withdraw_fee = _.get(withdraw, 'info.fees', 0); //Attempt to exctract fee from Bitfinex and Binance response
 
-            [ err ] = await to(updateTransferStatus(transfer.id, COLD_STORAGE_ORDER_STATUSES.Sent, withdraw.id, withdraw_fee));
+            transfer.external_identifier = withdraw.id;
+            transfer.status = COLD_STORAGE_ORDER_STATUSES.Sent;
+            transfer.placed_timestamp = Date.now();
 
-            if(err) {
-                log(`[ERROR.4A](${exchange_api_id})(CST-${transfer.id}) Error occured during transfer status update: ${err.message}`);
-            }
-
-            return;
+            return transfer.save();
 
         }));
 

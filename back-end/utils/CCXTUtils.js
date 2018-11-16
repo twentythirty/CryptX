@@ -96,6 +96,18 @@ const cache_init_promise = async () => {
                         });
                         return default_return;
                     })
+                },
+                throttledUnhandled: async (fn, ...args) => {
+                    const throttler = lim_by_api[exchange.api_id];
+                    //bind passed fn back to connector since CCXT uses `this.X` internally
+                    const bound_fn = fn.bind(connector);
+
+                    return throttler.bottleneck.schedule(() => {
+                        if (process.env.NODE_ENV == 'dev') {
+                            console.log(`Scheduling call to ${fn.name} on ${connector.name} for ${args}`)
+                        }
+                        return bound_fn(...args)
+                    });
                 }
             }
             registerEvents(throttle.bottleneck);
