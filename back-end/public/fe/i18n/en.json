@@ -634,8 +634,8 @@
     "execution_orders": {
       "adjusted_spend": "Order sell amount was changed from {{orig_spend}} to {{spend_amount}}",
       "placed": "Order was successfully placed to {{exchange}}",
-      "sent_quantity": "Order was placed to {{ exchange }} for {{ quantity }} quantity",
-      "sold_quantity": "Order was placed to {{ exchange }} with {{ quantity }} sell quantity",
+      "sent_quantity": "Sending order for {{ quantity }} quantity to {{ exchange }}",
+      "sold_quantity": "Selling {{ quantity }} quote quantity to {{ exchange }}",
       "error": "Error: {{error}}",
       "failed_attempts": "Execution order Failed after {{attempts}} attempts",
       "failed": "Execution order Failed due to: {{reason}}",
