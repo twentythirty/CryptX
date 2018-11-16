@@ -40,7 +40,7 @@ to = function(promise, parse_error = true) {
       return [null, data];
     })
     .catch(err => [
-      parse_error? pe(err) : err
+      parse_error? pe(err) : err, []
     ]);
 };
 
