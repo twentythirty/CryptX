@@ -108,22 +108,24 @@ class Exchange {
     //reamining quantity for reciep order after this execution order gets generated
     const left_order_qnty = Decimal(amounts.spend_amount).minus(amounts.spent).div(price);
     //minimize the DP to accepted levels
-    let next_total = quantity.toDP(
-      Decimal(limits.amount.min).dp(), Decimal.ROUND_HALF_DOWN
-    );
-
-    log(`${symbol} order rounded to ${next_total} so it would fit exchange precision`);
-
-    //check if the amounts are defined since the keys might exist but not have values on them
-    if (next_total.lt(amount_limit.min)) {
-      if (left_order_qnty.gte(amount_limit.min)) {
-        next_total = Decimal(amount_limit.min)
-      }
-    }
+    let next_total = quantity;
 
     //order_total.minus(next_total.plus(realized_total))
     if (left_order_qnty.minus(next_total).lt(amount_limit.min)) {
       next_total = left_order_qnty;
+    }
+
+    next_total = next_total.toDP(
+      Decimal(limits.amount.min).dp(), Decimal.ROUND_FLOOR
+    );
+
+    log(`${symbol} order rounded to ${next_total} so it would fit exchange precision`);
+
+    // check if quantity to be bought is above exchange minimum trade limit
+    if (next_total.lt(amount_limit.min)) {
+      if (left_order_qnty.gte(amount_limit.min)) {
+        next_total = Decimal(amount_limit.min)
+      }
     }
 
     let next_spend = next_total.mul(price);

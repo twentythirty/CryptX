@@ -273,12 +273,12 @@ describe('CCXTUnified', () => {
 
   it("shall adjust order to fill next order amount if it's less than minimum trade limit", () => {
     let objects = [];
-    const spend = 2.5, price = 1, min_qnt = 1;
+    const spend = 1, price = 1, min_qnt = 0.8;
 
     sinon.stub(sequelize, 'query').callsFake(args => {
       
       return Promise.resolve({
-        spend_amount: spend,
+        spend_amount: 2.5,
         spent: 1
       });
     });
@@ -289,7 +289,7 @@ describe('CCXTUnified', () => {
         await ex.isReady();
 
         sinon.stub(ex, 'getSymbolLimits').returns(Promise.resolve({
-          amount: { min: min_qnt, max: 1000},
+          amount: { min: min_qnt, max: 1000 },
           spend: { min: min_qnt * price, max: this.amount * price }
         }));
         
