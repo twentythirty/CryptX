@@ -25,11 +25,7 @@ module.exports.JOB_BODY = async (config, log) => {
   //reference shortcuts
   const models = config.models;
   const sequelize = models.sequelize;
-  const RecipeOrder = models.RecipeOrder;
-  const RecipeOrderGroup = models.RecipeOrderGroup;
   const ExecutionOrder = models.ExecutionOrder;
-  const InvestmentRun = models.InvestmentRun;
-  const Instrument = models.Instrument;
   const InstrumentExchangeMapping = models.InstrumentExchangeMapping;
   const Exchange = models.Exchange;
 
@@ -40,35 +36,43 @@ module.exports.JOB_BODY = async (config, log) => {
     exchanges will be grouped and execution in iterations and we'll use one
     exchange once every iteration.
   */
- log(`1. Fetching all execution orders of real investment runs`);
- let [err, pending_real_orders] = await to(sequelize.query(`
-    SELECT eo.* 
-    FROM execution_order eo 
-    JOIN recipe_order ro ON ro.id=eo.recipe_order_id
-    JOIN recipe_order_group rog ON rog.id=ro.recipe_order_group_id
-    JOIN recipe_run rr ON rr.id=rog.recipe_run_id
-    JOIN investment_run ir ON ir.id=rr.investment_run_id
-    WHERE ir.is_simulated=:is_simulated AND eo.status=:exec_order_status
-    `, {
-    replacements: { // replace keys with values in query
-      is_simulated: false,
-      exec_order_status: MODEL_CONST.EXECUTION_ORDER_STATUSES.Pending
-    },
-    model: ExecutionOrder, // parse results as InvestmenRun model
-    type: sequelize.QueryTypes.SELECT
-  }));
-  if (err) {
-    log(`[ERROR.1a]. Failed to fetch execution orders of real investment runs`);
-    TE(err.message);
-  }
+  let err, pending_real_orders, pending_orders;
 
-  log(`1. Processing ${pending_real_orders.length} pending real investment run orders.`);
-  /* pending_orders - orders from different exchanges that are going to be sent to exchanges.
-  Number of orders shouldn't exceed number of exchanges. */
-  let pending_orders = _.map(
-    _.groupBy(pending_real_orders, 'exchange_id'),
-    (exchange_orders) => { return exchange_orders[0]; } // return only first order for exchange
-  );
+  // config.execution_orders is given when we want to perform actions only on certain execution orders (for testing) 
+  if (config.execution_orders && config.execution_orders.length) {
+    pending_orders = pending_real_orders = config.execution_orders;
+  } else {
+    log(`1. Fetching all execution orders of real investment runs`);
+    [err, pending_real_orders] = await to(sequelize.query(`
+      SELECT eo.* 
+      FROM execution_order eo 
+      JOIN recipe_order ro ON ro.id=eo.recipe_order_id
+      JOIN recipe_order_group rog ON rog.id=ro.recipe_order_group_id
+      JOIN recipe_run rr ON rr.id=rog.recipe_run_id
+      JOIN investment_run ir ON ir.id=rr.investment_run_id
+      WHERE ir.is_simulated=:is_simulated AND eo.status=:exec_order_status
+      `, {
+      replacements: { // replace keys with values in query
+        is_simulated: false,
+        exec_order_status: MODEL_CONST.EXECUTION_ORDER_STATUSES.Pending
+      },
+      model: ExecutionOrder, // parse results as InvestmenRun model
+      type: sequelize.QueryTypes.SELECT
+    }));
+
+    if (err) {
+      log(`[ERROR.1a]. Failed to fetch execution orders of real investment runs`);
+      TE(err.message);
+    }
+
+    log(`1. Processing ${pending_real_orders.length} pending real investment run orders.`);
+    /* pending_orders - orders from different exchanges that are going to be sent to exchanges.
+    Number of orders shouldn't exceed number of exchanges. */
+    pending_orders = _.map(
+      _.groupBy(pending_real_orders, 'exchange_id'),
+      (exchange_orders) => { return exchange_orders[0]; } // return only first order for exchange
+    );
+  }
 
   /* Get instrument exchange mapping and exchange info. Going to use external_instrument_id from it. */
   return Promise.all(

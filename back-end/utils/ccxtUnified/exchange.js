@@ -143,52 +143,52 @@ class Exchange {
   }
 
   /**
-   * Method to output order being sent to exchange
-   * @param {*} api_id 
-   * @param {*} external_instrument_id 
-   * @param {*} order_type 
-   * @param {*} side 
-   * @param {*} quantity 
-   * @param {*} price 
-   * @param {*} sold_quantity 
+   * Method to output order being sent to exchange. Tests should ensure that every
+   * exchange class supplies all values needed to log.
+   * @param {Object} Object with log values 
    */
-  async logOrder (
-    execution_order_id,
-    api_id,
-    external_instrument_id,
-    order_type,
-    side,
-    quantity,
-    price,
-    sold_quantity,
-    sell_qnt_unajusted,
-    accepts_transaction_quantity
-  ) {
-    console.log(`Creating market order to ${api_id}
-    Instrument - ${external_instrument_id}
-    Order type - ${order_type}
-    Order side - ${side}
-    Total quantity - ${quantity}
-    Price - ${price}
-    Sold quantity after adjustments - ${sold_quantity}
-    Sold quantity before adjustment - ${sell_qnt_unajusted}
-    ${accepts_transaction_quantity ? 'Quote' : 'Transaction'} asset quantity is used for order in this exchange`);
+  async logOrder (values) {
+    const props = [
+      'execution_order_id',
+      'api_id',
+      'external_instrument_id',
+      'order_type',
+      'side',
+      'quantity',
+      'price',
+      'sold_quantity',
+      'sell_qnt_unajusted',
+      'accepts_transaction_quantity'
+    ];
 
-    if ( accepts_transaction_quantity )
+    if (props.some(key => !Object.keys(values).includes(key)))
+      TE(`Unified function for logging order didn't receive all needed values to log order correctly`);
+
+    console.log(`Creating market order to ${values.api_id}
+    Instrument - ${values.external_instrument_id}
+    Order type - ${values.order_type}
+    Order side - ${values.side}
+    Total quantity - ${values.quantity}
+    Price - ${values.price}
+    Sold quantity after adjustments - ${values.sold_quantity}
+    Sold quantity before adjustment - ${values.sell_qnt_unajusted}
+    ${values.accepts_transaction_quantity ? 'Quote' : 'Transaction'} asset quantity is used for order in this exchange`);
+
+    if ( values.accepts_transaction_quantity )
       await logAction(actions.sent_quantity, {
         args: {
-          exchange: api_id,
-          quantity: quantity,
+          exchange: values.api_id,
+          quantity: values.quantity,
          },
-        relations: { execution_order_id }
+        relations: { execution_order_id: values.execution_order_id }
       });
     else
     await logAction(actions.sold_quantity, {
       args: {
-        exchange: api_id,
-        quantity: sold_quantity,
+        exchange: values.api_id,
+        quantity: values.sold_quantity,
        },
-      relations: { execution_order_id }
+      relations: { execution_order_id: values.execution_order_id }
     });
 
   }

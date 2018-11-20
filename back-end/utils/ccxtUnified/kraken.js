@@ -42,6 +42,7 @@ class Kraken extends Exchange {
     let [err, ticker] = await to(this._connector.fetchTicker(external_instrument_id)); // add error handling later on
     
     if (err) TE(err.message);
+    let price = side == 'buy' ? ticker.ask : ticker.bid;
 
     let quantity, adjusted_sell_quantity;
     [err, [quantity, adjusted_sell_quantity]] = await to(this.adjustQuantity(
@@ -52,12 +53,18 @@ class Kraken extends Exchange {
     ));
     if (err) TE(err.message);
 
-    console.log(`Creating market order to ${this.api_id}
-    Instrument - ${external_instrument_id}
-    Order type - ${order_type}
-    Order side - ${side}
-    Total quantity - ${quantity}
-    Price - ${execution_order.price}`);
+    await this.logOrder ({
+      execution_order_id: execution_order.id,
+      api_id: this.api_id,
+      external_instrument_id: external_instrument_id,
+      order_type: order_type,
+      side: side,
+      quantity: quantity,
+      price: price,
+      sold_quantity: adjusted_sell_quantity,
+      sell_qnt_unajusted: execution_order.spend_amount,
+      accepts_transaction_quantity: true
+    });
 
     let response;
     [err, response] = await to(this._connector.createOrder(

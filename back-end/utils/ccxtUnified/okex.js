@@ -58,18 +58,18 @@ class Okex extends Exchange {
 
     let quantity = Decimal(execution_order.spend_amount).div(Decimal(price)).toString();
 
-    await this.logOrder (
-      execution_order.id,
-      this.api_id,
-      external_instrument_id,
-      order_type,
-      side,
-      quantity,
-      price,
-      execution_order.spend_amount,
-      execution_order.spend_amount,
-      false
-    );
+    await this.logOrder ({
+      execution_order_id: execution_order.id,
+      api_id: this.api_id,
+      external_instrument_id: external_instrument_id,
+      order_type: order_type,
+      side: side,
+      quantity: quantity,
+      price: price,
+      sold_quantity: execution_order.spend_amount,
+      sell_qnt_unajusted: execution_order.spend_amount,
+      accepts_transaction_quantity: false
+    });
 
     let response;
     [err, response] = await to(this.throttle(

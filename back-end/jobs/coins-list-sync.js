@@ -1,6 +1,15 @@
 'use strict';
 var request_promise = require('request-promise');
 
+const { logAction } = require('../utils/ActionLogUtil');
+
+const action_path = 'assets';
+
+const actions = {
+  name_changed: `${action_path}.name_changed`,
+  symbol_changed: `${action_path}.symbol_changed`,
+};
+
 
 //3 times a day, 5 min passed the hour
 module.exports.SCHEDULE = '0 5 */8 * * *';
@@ -16,7 +25,9 @@ module.exports.JOB_BODY = async (config, log) => {
     (`1. Fetching CoinMarketCap coins and existing blockchain assets... `);
 
     return Promise.all([
-        config.models.AssetBlockchain.findAll(),
+        config.models.AssetBlockchain.findAll({
+            include: Asset
+        }),
         request_promise.get({
             uri: "https://api.coinmarketcap.com/v2/listings/",
             headers: {
@@ -24,7 +35,7 @@ module.exports.JOB_BODY = async (config, log) => {
             },
             json: true
         })
-    ]).then(assetsAndResp => {
+    ]).then(async assetsAndResp => {
 
         const [assets, resp] = assetsAndResp;
 
@@ -32,6 +43,45 @@ module.exports.JOB_BODY = async (config, log) => {
         log(`2a. Got ${resp.metadata.num_cryptocurrencies} coins in HTTP response!`);
         log(`2b. Got ${assets.length} coins from assets table!`);
 
+        await Promise.all(_.map(data, async coin => {
+            let found_asset = assets.find(a => a.coinmarketcap_identifier==coin.id);
+
+            if (found_asset) {
+                let asset = found_asset.Asset;
+
+                if (asset.long_name != coin.name || asset.symbol != coin.symbol) {
+                    console.log(asset.long_name + ' was found not having correct data');
+
+                    if (asset.long_name != coin.name) {
+                        let prev = asset.long_name;
+                        asset.long_name = coin.name;
+
+                        await logAction(actions.name_changed, {
+                            args: { 
+                              from: prev,
+                              to: asset.long_name
+                            },
+                            relations: { asset_id: asset.id }
+                        });
+                    }
+                    if (asset.symbol != coin.symbol) {
+                        let prev = asset.symbol;
+                        asset.symbol = coin.symbol;
+
+                        await logAction(actions.symbol_changed, {
+                            args: { 
+                                from: prev,
+                                to: asset.symbol
+                            },
+                            relations: { asset_id: asset.id }
+                        });
+                    }
+
+                    return asset.save();
+                } 
+            } else return true;
+        }));
+        
         //get the difference ids
         const missing_ids = _.difference(
             _.map(data, 'id'),
