@@ -88,7 +88,7 @@ module.exports.JOB_BODY = async (config, log) => {
                             COUNT(*) execution_order_count,
                             COALESCE(SUM(eo.spend_amount), 0) as eo_spent,
                             COALESCE(SUM(
-                                CASE WHEN eo.status=${EXECUTION_ORDER_STATUSES.FullyFilled} OR fills.fills_cost IS NULL
+                                CASE WHEN eo.status IN (:done_statuses) AND fills.fills_cost IS NOT NULL
                                     THEN fills.fills_cost
                                     ELSE eo.spend_amount
                                 END
@@ -114,7 +114,11 @@ module.exports.JOB_BODY = async (config, log) => {
                         GROUP BY eo.status
                     `, {
                         replacements: {
-                            recipe_order_id: pending_order.id
+                            recipe_order_id: pending_order.id,
+                            done_statuses: [
+                                EXECUTION_ORDER_STATUSES.FullyFilled,
+                                EXECUTION_ORDER_STATUSES.PartiallyFilled
+                            ]
                         },
                         type: sequelize.QueryTypes.SELECT
                     })

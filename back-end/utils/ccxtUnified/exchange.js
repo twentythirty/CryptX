@@ -73,8 +73,28 @@ class Exchange {
         COALESCE(eo.spent,0) as spent
       FROM recipe_order ro
       LEFT JOIN LATERAL (
-        SELECT SUM(spend_amount) as spent
+        SELECT 
+          COALESCE(SUM(
+            CASE WHEN eo.status IN (:done_statuses) AND fills.fills_cost IS NOT NULL
+                THEN fills.fills_cost
+                ELSE eo.spend_amount
+            END
+          ), 0) as spent
         FROM execution_order eo
+        LEFT JOIN LATERAL (
+          SELECT
+            SUM(eof.quantity) as filled,
+            SUM(
+              CASE WHEN fee_asset.is_base=true
+                THEN (eof.quantity * eof.price) + eof.fee
+                ELSE (eof.quantity * eof.price) + (eof.fee * price)
+              END
+            ) as fills_cost
+          FROM execution_order_fill eof
+          LEFT JOIN asset fee_asset ON fee_asset.id=eof.fee_asset_id
+          WHERE eof.execution_order_id=eo.id
+          GROUP BY execution_order_id
+        ) as fills ON true
         WHERE eo.recipe_order_id=ro.id
           AND eo.status NOT IN (:statuses)
         GROUP BY eo.recipe_order_id
@@ -83,10 +103,15 @@ class Exchange {
       `, {
       replacements: {
         recipe_order_id,
-        statuses
+        statuses,
+        done_statuses: [
+          EXECUTION_ORDER_STATUSES.FullyFilled,
+          EXECUTION_ORDER_STATUSES.PartiallyFilled
+        ]
       },
       plain: true,
-      type: sequelize.QueryTypes.SELECT
+      type: sequelize.QueryTypes.SELECT,
+      logging: log
     }));
 
     if (err) TE(err.message);
