@@ -829,4 +829,115 @@ describe('Execution Order generator job', () => {
         });
 
     });
+
+    it("shall create an extra chunky execution order if the post-order quantity is lower than the minimum cost amount", () => {
+        ccxtUtils.getConnector.restore();
+        if (ccxtUnified.getExchange.restore) ccxtUnified.getExchange.restore();
+
+        const limits = { 
+            amount: {
+                min: 0,
+                max: 1000000
+            },
+            price: {
+                min: 0, //Set to 0 to make sure tests with random price pass always.
+                max: 1000000
+            },
+            spend: {
+                min: 1,
+                max: 500
+            },
+            cost: {
+                min: 2 //Should be the dominant check
+            }
+        };
+
+        const ORIGINAL_FUZZINESS = SYSTEM_SETTINGS.TRADE_BASE_FUZYNESS;
+        SYSTEM_SETTINGS.TRADE_BASE_FUZYNESS = 0;
+
+        const ORIGINAL_BASE_BTC_TRADE = SYSTEM_SETTINGS.BASE_BTC_TRADE;
+        SYSTEM_SETTINGS.BASE_BTC_TRADE = 2;
+
+        sinon.stub(ccxtUnified, "getExchange").callsFake((name) => {
+            let exchange = class Exchange {
+                
+                constructor () {
+                    this._connector = {
+                        name: 'Mock exchange',
+                        markets: {
+                            'LTC/BTC': {
+                                limits,
+                                active: true
+                            }
+                        }
+                    };
+                    this.api_id = name;
+                }
+
+                async isReady() {
+                    return Promise.resolve();
+                }
+
+                async getSymbolLimits () {
+                    return limits;
+                }
+            }
+      
+            return Promise.resolve(new exchange());
+        });
+
+        let not_completed_order = Object.assign({
+
+        }, TEST_SYMBOL_PENDING_ORDER_BASE, {
+            id: PENDING_ORDER_IDS[2],
+            spend_amount: 3,
+            quantity: 50,
+            price: 10
+        });
+        sinon.stub(sequelize, 'query').callsFake((query, options) => {
+            let exec_stats = {
+                status: EXECUTION_ORDER_STATUSES.FullyFilled,
+                execution_order_count: "1339",
+                total_quantity: 5,
+                spend_amount: 0.5,
+                filled: 5
+            };
+            return Promise.resolve([exec_stats]);
+        });
+        sinon.stub(RecipeOrder, 'findAll').callsFake(options => {
+
+            stubSave(not_completed_order);
+            return Promise.resolve([not_completed_order]);
+        });
+        sinon.stub(InstrumentExchangeMapping, 'find').callsFake(options => {
+            return Promise.resolve(new InstrumentExchangeMapping(Object.assign(options.where, {
+                tick_size: 0.5
+            })))
+        });
+
+        sinon.stub(ExecutionOrder, 'create').callsFake(options => {
+
+            return Promise.resolve(options);
+        });
+
+        return execOrderGenerator.JOB_BODY(stubbed_config, console.log).then(processed_recipes => {
+
+            SYSTEM_SETTINGS.TRADE_BASE_FUZYNESS = ORIGINAL_FUZZINESS;
+            SYSTEM_SETTINGS.BASE_BTC_TRADE = ORIGINAL_BASE_BTC_TRADE;
+
+            restoreSymbols(
+                RecipeOrder.findAll,
+                ExecutionOrder.findAll,
+                ExecutionOrder.create,
+                ExecutionOrderFill.findAll,
+                InstrumentExchangeMapping.find,
+                sequelize.query
+            );
+
+            const execution_order = processed_recipes[0][1];
+
+            chai.expect(parseFloat(execution_order.spend_amount)).to.equal(2.5);
+        });
+
+    });
 });
