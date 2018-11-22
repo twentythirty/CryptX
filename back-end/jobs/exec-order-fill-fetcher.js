@@ -15,7 +15,7 @@ const actions = {
     modified: 'modified'
 };
 
-module.exports.SCHEDULE = '0 */5 * * * *';
+module.exports.SCHEDULE = '0 */1 * * * *';
 module.exports.NAME = 'FETCH_EXEC_OR_FILLS';
 module.exports.JOB_BODY = async (config, log) => {
 
