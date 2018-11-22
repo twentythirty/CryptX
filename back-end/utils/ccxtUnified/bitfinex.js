@@ -158,7 +158,7 @@ class Bitfinex extends Exchange {
     
     limits.spend = {
       min: limits.cost.min,
-      max: !_.isUndefined(limits.cost.max) ? limits.cost.max : Infinity
+      max: !_.isUndefined(limits.cost.max) ? limits.cost.max : Number.MAX_VALUE
     };
 
     return limits;

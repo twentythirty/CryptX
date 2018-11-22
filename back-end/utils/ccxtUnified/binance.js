@@ -190,9 +190,11 @@ class Binance extends Exchange {
     if (err) TE (err.message);
     if (!price) TE(`Couldn't find price for ${symbol}`);
 
+    let max_amount = limits.amount.max || Number.MAX_VALUE;
+
     limits.spend = { 
       min: limits.amount.min * price.ask_price,
-      max: limits.amount.max * price.ask_price
+      max: max_amount * price.ask_price
     };
 
     return limits;

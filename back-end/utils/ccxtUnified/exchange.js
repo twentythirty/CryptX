@@ -76,8 +76,8 @@ class Exchange {
         SELECT 
           COALESCE(SUM(
             CASE WHEN eo.status IN (:done_statuses) AND fills.fills_cost IS NOT NULL
-                THEN fills.fills_cost
-                ELSE eo.spend_amount
+              THEN fills.fills_cost
+              ELSE eo.spend_amount
             END
           ), 0) as spent
         FROM execution_order eo
@@ -110,8 +110,7 @@ class Exchange {
         ]
       },
       plain: true,
-      type: sequelize.QueryTypes.SELECT,
-      logging: log
+      type: sequelize.QueryTypes.SELECT
     }));
 
     if (err) TE(err.message);
@@ -204,7 +203,7 @@ class Exchange {
         args: {
           exchange: values.api_id,
           quantity: values.quantity,
-         },
+        },
         relations: { execution_order_id: values.execution_order_id }
       });
     else
@@ -212,7 +211,7 @@ class Exchange {
       args: {
         exchange: values.api_id,
         quantity: values.sold_quantity,
-       },
+      },
       relations: { execution_order_id: values.execution_order_id }
     });
 
