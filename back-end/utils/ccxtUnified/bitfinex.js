@@ -151,14 +151,22 @@ class Bitfinex extends Exchange {
    */
   async getSymbolLimits (symbol) {
     await this.isReady();
+
     let market = this._connector.markets[symbol];
 
     if (!market) TE(`Symbol ${symbol} not found in ${this.api_id}`);
+
     let limits = market.limits;
     
-    limits.spend = {
-      min: limits.cost.min,
-      max: !_.isUndefined(limits.cost.max) ? limits.cost.max : Number.MAX_VALUE
+    let [err, price] = await to(InstrumentService.getPriceBySymbol(symbol, this.api_id));
+    if (err) TE (err.message);
+    if (!price) TE(`Couldn't find price for ${symbol}`);
+
+    let max_amount = limits.amount.max || Number.MAX_VALUE;
+
+    limits.spend = { 
+      min: limits.amount.min * price.ask_price,
+      max: max_amount * price.ask_price
     };
 
     return limits;
