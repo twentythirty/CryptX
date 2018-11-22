@@ -236,7 +236,8 @@ module.exports.JOB_BODY = async (config, log) => {
             exchange.fetchMyTrades,
             placed_order.get('external_instrument'),
             since,
-            { order_id: external_order.id }
+            undefined,
+            exchange.id === 'okex' ? { order_id: external_order.id }: {}
         ));
     
         if(err) TE(err.message);
@@ -528,7 +529,7 @@ const fetchOrderFromExchange = async (placed_order, [exchange, throttle], log) =
         if(can_fetch_by_id && !external_order) {
             [ err, external_order ] = await to(throttle.throttledUnhandled( // fetch single instrument (slowed down)
                 exchange.fetchOrder,
-                placed_order.external_identifier,
+                placed_order.get('external_identifier'),
                 symbol
             ));
             if(err) TE(err);

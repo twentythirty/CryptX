@@ -33,7 +33,6 @@ module.exports.JOB_BODY = async (config, log) => {
   const InstrumentExchangeMapping = config.models.InstrumentExchangeMapping;
   const Exchange = config.models.Exchange;
 
-
   log(`1. Processing ${pending_real_orders.length} pending real investment run orders.`);
 
   /* Get instrument exchange mapping and exchange info. Going to use external_instrument_id from it. */

@@ -174,12 +174,22 @@ describe('CCXTUnified', () => {
       return Promise.resolve(connector);
     });
 
+    sinon.stub(InstrumentService, 'getPriceBySymbol').callsFake((symbol, api_id) => {
+      return Promise.resolve({
+        ask_price: 0.001,
+        bid_price: 0.001,
+        tick_size: 0.1
+      });
+    });
+    
     done();
   });
 
   afterEach((done) => {
     if (ccxtUtils.getConnector.restore) ccxtUtils.getConnector.restore();
     if (sequelize.query.restore) sequelize.query.restore();
+
+    InstrumentService.getPriceBySymbol.restore();
 
     done();
   });
@@ -273,12 +283,12 @@ describe('CCXTUnified', () => {
 
   it("shall adjust order to fill next order amount if it's less than minimum trade limit", () => {
     let objects = [];
-    const spend = 2.5, price = 1, min_qnt = 1;
+    const spend = 1, price = 1, min_qnt = 0.8;
 
     sinon.stub(sequelize, 'query').callsFake(args => {
       
       return Promise.resolve({
-        spend_amount: spend,
+        spend_amount: 2.5,
         spent: 1
       });
     });
@@ -289,7 +299,7 @@ describe('CCXTUnified', () => {
         await ex.isReady();
 
         sinon.stub(ex, 'getSymbolLimits').returns(Promise.resolve({
-          amount: { min: min_qnt, max: 1000},
+          amount: { min: min_qnt, max: 1000 },
           spend: { min: min_qnt * price, max: this.amount * price }
         }));
         
@@ -308,11 +318,6 @@ describe('CCXTUnified', () => {
 
   it("shall adjust order to fill next order amount if it's less than minimum trade limit", () => {
     let objects = [];
-
-    sinon.stub(InstrumentService, 'getPriceBySymbol').callsFake(args => {
-      
-      return Promise.resolve({ask_price: 0.001});
-    });
 
     return Promise.all(
       SUPPORTED_EXCHANGES.map(async (exchange) =>  {
@@ -468,4 +473,78 @@ describe('CCXTUnified', () => {
 
   });
 
+  describe('Method logOrder', () => {
+    it('logOrder shall throw error if it is missing values to create a log correctly', async () => {
+
+      return chai.assert.isRejected(Promise.all(
+        SUPPORTED_EXCHANGES.map(async (exchange) =>  {
+          let ex = await ccxtUnified.getExchange(exchange);
+          await ex.isReady();
+          
+          return ex.logOrder({ "nothing": 1 });
+        })
+      ));
+    });
+
+
+    it('logOrder shall log if all needed values are provided', async () => {
+
+      return chai.assert.isFulfilled(Promise.all(
+        SUPPORTED_EXCHANGES.map(async (exchange) =>  {
+          let ex = await ccxtUnified.getExchange(exchange);
+          await ex.isReady();
+          
+          return ex.logOrder({
+            'execution_order_id': 1,
+            'api_id': 1,
+            'external_instrument_id': 1,
+            'order_type': 1,
+            'side': 1,
+            'quantity': 1,
+            'price': 1,
+            'sold_quantity': 1,
+            'sell_qnt_unajusted': 1,
+            'accepts_transaction_quantity': 1
+          });
+        })
+      ));
+    });
+
+  });
+
+  describe('Method getSymbolLimits', () => {    
+
+    it(`shall throw if it can't get symbol`, () => {
+      
+      return chai.assert.isRejected(Promise.all(
+        SUPPORTED_EXCHANGES.map(async (exchange) =>  {
+          let ex = await ccxtUnified.getExchange(exchange);
+          await ex.isReady();
+          
+          return ex.getSymbolLimits('LTC/BTC', exchange);
+        })
+      ));
+    });
+
+    it(`shall get limits if everything is good`, () => {
+      
+      return Promise.all(
+        SUPPORTED_EXCHANGES.map(async (exchange) =>  {
+          let ex = await ccxtUnified.getExchange(exchange);
+          await ex.isReady();
+          
+          return ex.getSymbolLimits('XRP/BTC', exchange);
+        })
+      ).then(result => {
+        chai.expect(result).to.satisfy(result => {
+          return result.map(res => {
+            chai.assert.isTrue(Object.keys(res).includes('spend'));
+            chai.assert.isTrue(Object.keys(res).includes('amount'));
+            /* chai.assert.isTrue(Object.keys(res).includes('price'));
+            chai.assert.isTrue(Object.keys(res).includes('cost')); */
+          })
+        }, `Expect returned limits to include spend and amount limits.`);
+      });
+    })
+  });
 });

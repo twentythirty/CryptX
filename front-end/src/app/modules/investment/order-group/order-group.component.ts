@@ -112,8 +112,8 @@ export class OrderGroupComponent extends TimelineDetailComponent implements OnIn
     new TableDataColumn({ column: 'exchange' }),
     new NumberCellDataColumn({ column: 'price' }),
     new NumberCellDataColumn({ column: 'quantity' }),
-    new NumberCellDataColumn({ column: 'quantity' }),
     new NumberCellDataColumn({ column: 'filled_quantity'}),
+    new NumberCellDataColumn({ column: 'spend_amount' }),
     new NumberCellDataColumn({ column: 'sum_of_exchange_trading_fee' }),
     new StatusCellDataColumn({ column: 'status', inputs: { classMap: {
       'orders.status.51': StatusClass.PENDING,

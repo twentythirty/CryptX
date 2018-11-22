@@ -88,7 +88,7 @@ module.exports.JOB_BODY = async (config, log) => {
                             COUNT(*) execution_order_count,
                             COALESCE(SUM(eo.spend_amount), 0) as eo_spent,
                             COALESCE(SUM(
-                                CASE WHEN eo.status=${EXECUTION_ORDER_STATUSES.FullyFilled} OR fills.fills_cost IS NULL
+                                CASE WHEN eo.status IN (:done_statuses) AND fills.fills_cost IS NOT NULL
                                     THEN fills.fills_cost
                                     ELSE eo.spend_amount
                                 END
@@ -114,7 +114,11 @@ module.exports.JOB_BODY = async (config, log) => {
                         GROUP BY eo.status
                     `, {
                         replacements: {
-                            recipe_order_id: pending_order.id
+                            recipe_order_id: pending_order.id,
+                            done_statuses: [
+                                EXECUTION_ORDER_STATUSES.FullyFilled,
+                                EXECUTION_ORDER_STATUSES.PartiallyFilled
+                            ]
                         },
                         type: sequelize.QueryTypes.SELECT
                     })
@@ -225,13 +229,15 @@ module.exports.JOB_BODY = async (config, log) => {
 
                         let next_total = fuzzy_trade_amount;
 
-                        if (next_total.lt(limits.spend.min)) {
-                            log(`[WARN.4C]: Next total of ${next_total.toString()} is less than the markets min limit of ${amount_limit.min}`);
-                            if (remaining_sell_amount.gte(limits.spend.min)) {
-                                log(`[REC.4C]: Bumping total of new execution order for ${pending_order.id} to minimum supported ${amount_limit.min} since unrealized quantity ${remaining_sell_amount.toString()} allows it...`)
-                                next_total = Decimal(limits.spend.min)
+                        const min_spend = _.max([limits.spend.min, _.get(limits, 'cost.min', 0)]);
+                        if (next_total.lt(min_spend)) {
+                            
+                            log(`[WARN.4C]: Next total of ${next_total.toString()} is less than the markets min limit of ${min_spend}`);
+                            if (remaining_sell_amount.gte(min_spend)) {
+                                log(`[REC.4C]: Bumping total of new execution order for ${pending_order.id} to minimum supported ${min_spend} since unrealized quantity ${remaining_sell_amount.toString()} allows it...`)
+                                next_total = Decimal(min_spend)
                             } else {
-                                log(`[WARN.4C]: Skipping order generation since total remaining quantity ${remaining_sell_amount.toString()} is too low for required exchange minimum ${amount_limit.min}`);
+                                log(`[WARN.4C]: Skipping order generation since total remaining quantity ${remaining_sell_amount.toString()} is too low for required exchange minimum ${min_spend}`);
 
                                 pending_order.stop_gen = true;
                                 await pending_order.save();
@@ -247,8 +253,8 @@ module.exports.JOB_BODY = async (config, log) => {
 
                         //reamining quantity for reciep order after this execution order gets generated
                         const next_order_spend = order_total.minus(next_total.plus(spent_total))
-                        if (next_order_spend.lt(limits.spend.min)) {
-                            log(`[WARN.4C]: Post-gen recipe order total of ${next_order_spend.toString()} is less than the markets min limit of ${limits.spend.min}. Adding remainder to current and finishing recipe order!`);
+                        if (next_order_spend.lt(min_spend)) {
+                            log(`[WARN.4C]: Post-gen recipe order total of ${next_order_spend.toString()} is less than the markets min limit of ${min_spend}. Adding remainder to current and finishing recipe order!`);
                             next_total = next_total.plus(next_order_spend);
                         }
 

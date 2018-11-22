@@ -56,9 +56,20 @@ class Okex extends Exchange {
     if (err) TE(err.message);
     let price = side == 'buy' ? ticker.ask : ticker.bid;
 
-    let quantity = Decimal(execution_order.spend_amount).div(Decimal(price));
+    let quantity = Decimal(execution_order.spend_amount).div(Decimal(price)).toString();
 
-    await this.logOrder (execution_order.id, this.api_id, external_instrument_id, order_type, side, quantity, price, execution_order.spend_amount, execution_order.spend_amount, false)
+    await this.logOrder ({
+      execution_order_id: execution_order.id,
+      api_id: this.api_id,
+      external_instrument_id: external_instrument_id,
+      order_type: order_type,
+      side: side,
+      quantity: quantity,
+      price: price,
+      sold_quantity: execution_order.spend_amount,
+      sell_qnt_unajusted: execution_order.spend_amount,
+      accepts_transaction_quantity: false
+    });
 
     let response;
     [err, response] = await to(this.throttle(
@@ -226,7 +237,7 @@ class Okex extends Exchange {
     if (err) TE (err.message);
     if (!price) TE(`Couldn't find price for ${symbol}`);
 
-    let max_amount = limits.amount.max || Infinity;
+    let max_amount = limits.amount.max || Number.MAX_VALUE;
 
     limits.spend = { 
       min: limits.amount.min * price.ask_price,

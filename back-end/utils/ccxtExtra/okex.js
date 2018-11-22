@@ -12,12 +12,12 @@ module.exports = {
         fetchFundingFees: true
     },
 
-    async fetchMyTrades(symbol, since, params = {}) {
+    async fetchMyTrades(symbol, since, limit = undefined, params = {}) {
 
         const request = {
             order_id: params.order_id,
             instrument_id: symbol.replace('/', '-'),
-            limit: params.limit || 100
+            limit: limit || 100
         };
 
         const trades = await this.createV3Request('get', '/api/spot/v3/fills', request);

@@ -645,7 +645,9 @@
 
     "assets": {
       "status": "System changed Status from {{prev_status}} to {{new_status}} due to {{reason}}",
-      "status_user": "{{user_name}} changed Status from {{prev_status}} to {{new_status}}, reason: {{reason}}"
+      "status_user": "{{user_name}} changed Status from {{prev_status}} to {{new_status}}, reason: {{reason}}",
+      "name_changed": "Asset name changed from {{from}} to {{to}}",
+      "symbol_changed": "Asset symbol changed from {{from}} to {{to}}"
     },
 
     "deposits": {
