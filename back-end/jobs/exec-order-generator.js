@@ -210,6 +210,8 @@ module.exports.JOB_BODY = async (config, log) => {
 
                         if (spent_total.gte(order_total)) {
                             log(`[WARN.3B]: Current fulfilled execution order total ${spent_total.toString()} covers recipe order ${pending_order.id} quantity ${pending_order.spend_amount}. Skipping recipe order...`);
+                            pending_order.stop_gen = true;
+                            await pending_order.save();
                             return { instance: pending_order, status: JOB_RESULT_STATUSES.Skipped, step: '3B' };
                         }
 
