@@ -975,7 +975,10 @@ const getInvestmentRunTimeline = async function (investment_run_id) {
   else if(transfer_statuses.every(t => t.status === COLD_STORAGE_ORDER_STATUSES.Completed)) {
     transfer_status = COLD_STORAGE_ORDER_STATUSES.Completed;
   }
-  else transfer_status = COLD_STORAGE_ORDER_STATUSES.Failed;
+  else if(transfer_statuses.some(t => t.status === COLD_STORAGE_ORDER_STATUSES.Failed)) {
+    transfer_status = COLD_STORAGE_ORDER_STATUSES.Failed;
+  }
+  else transfer_status = COLD_STORAGE_ORDER_STATUSES.Pending;
 
   let transfer_data = {
     count: transfer_count,
