@@ -677,6 +677,11 @@ ROUTES = {
     permissions_matcher: ROUTE_MATCHERS.GetColdStorageTransfers,
     required_permissions: [PERMISSIONS.VIEW_COLD_STORAGE_TRANSFERS]
   },
+  GetColdStorageTransfer: {
+    router_string: "/cold_storage/:transfer_id",
+    permissions_matcher: ROUTE_MATCHERS.GetColdStorageTransfers,
+    required_permissions: [PERMISSIONS.VIEW_COLD_STORAGE_TRANSFERS]
+  },
   GetColdStorageTransfersColLOV: {
     router_string: "/cold_storage/header_lov/:field_name",
     permissions_matcher: ROUTE_MATCHERS.GetColdStorageTransfersColLOV,

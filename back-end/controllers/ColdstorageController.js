@@ -3,6 +3,7 @@
 
 const AdminViewsService = require('../services/AdminViewsService');
 const ColdStorageService = require('../services/ColdStorageService');
+const ActionLog = require('../models').ActionLog;
 
 const ColdStorageCustodian = require('../models').ColdStorageCustodian;
 
@@ -48,6 +49,32 @@ const getColdStorageTransfers = async function (req, res) {
   })
 }
 module.exports.getColdStorageTransfers = getColdStorageTransfers;
+
+
+const getColdStorageTransfer = async (req, res) => {
+
+  const { transfer_id } = req.params;
+
+  const [ err, [ transfer, action_logs ] ] = await to(Promise.all([
+    AdminViewsService.fetchColdStorageTransferView(transfer_id),
+    ActionLog.findAll({
+      where: {
+        cold_storage_transfer_id: transfer_id
+      },
+      order: [ [ 'timestamp', 'DESC' ] ]
+    })
+  ]));
+
+  if(err) return ReE(res, err.message, 422);
+  if(!transfer) return ReE(res, `Transfer with id ${transfer_id} was not found`, 404);
+
+  return ReS(res, {
+    transfer,
+    action_logs: action_logs.map(log => log.toWeb())
+  });
+
+};
+module.exports.getColdStorageTransfer = getColdStorageTransfer;
 
 const getColdStorageTransferColumnLOV = async (req, res) => {
 

@@ -152,6 +152,40 @@
         ]
       }
     },
+    "/cold_storage/{cold_storage_transfer_id}": {
+      "get": {
+        "tags": [
+          "cold storage"
+        ],
+        "summary": "Get cold storage transfer information",
+        "description": "Get cold storage transfers information and a list of action logs",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "cold_storage_transfer_id",
+            "in": "path",
+            "description": "ID of cold storage transfer",
+            "required": true,
+            "type": "integer"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "$ref": "#/definitions/ColdStorageTransferResponse"
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
     "/cold_storage/custodians/all": {
       "post": {
         "tags": [
@@ -5376,6 +5410,19 @@
         "details": {
           "type": "string",
           "example": "Jane Morren changed status to Completed"
+        },
+        "translationKey": {
+          "type": "string",
+          "example": "logs.examples.swagger_example"
+        },
+        "translationArgs": {
+          "type": "object",
+          "properties": {
+            "arg": {
+              "type": "string",
+              "example": "swagger"
+            }
+          }
         }
       }
     },
@@ -5839,6 +5886,22 @@
           }
         }
       ]
+    },
+    "ColdStorageTransferResponse": {
+      "description": "Single cold storage transfer response",
+      "type": "object",
+      "properties": {
+        "transfer": {
+          "type": "object",
+          "$ref": "#/definitions/ColdStorageTransfer"
+        },
+        "action_logs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/ActionLog"
+          }
+        }
+      }
     },
     "ColdStorageTransfer": {
       "description": "Cold storage transfer information",

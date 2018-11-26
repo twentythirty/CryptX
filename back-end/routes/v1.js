@@ -1042,6 +1042,12 @@ router.post(
   filter_reducer,
   ColdstorageController.getColdStorageTransfers
 );
+router.get(
+  ROUTES.GetColdStorageTransfer.router_string,
+  stateless_auth,
+  res_new_token,
+  ColdstorageController.getColdStorageTransfer
+);
 router.post(
   ROUTES.GetColdStorageTransfersColLOV.router_string,
   stateless_auth,

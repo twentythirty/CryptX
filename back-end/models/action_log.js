@@ -69,6 +69,10 @@ module.exports = (sequelize, DataTypes) => {
       delete json.translation_args;
     }
 
+    for(let field in json) {
+      if(json[field] === null) delete json[field]
+    }
+
     return json;
   }
 
