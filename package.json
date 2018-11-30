@@ -45,6 +45,7 @@
     "dotenv": "^4.0.0",
     "eslint": "^4.19.1",
     "express": "~4.16.4",
+    "express-sslify": "^1.2.0",
     "flatpickr": "^4.5.1",
     "https-proxy-agent": "^2.2.1",
     "jade": "~1.11.0",
