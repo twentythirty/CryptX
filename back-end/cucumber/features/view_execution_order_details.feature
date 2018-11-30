@@ -6,6 +6,7 @@ Feature: View execution order details
 
         Given the system has a Trader
         And the system has Instrument Mappings for Binance
+        #And the system has Recipe Order with status Executing on Binance
 
     @execution_orders_cache_cleanup
     Scenario: view pending execution order details

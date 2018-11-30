@@ -1,4 +1,4 @@
-const { ExecutionOrder, ExecutionOrderFill, Instrument, InstrumentMarketData } = require('../../../../models');
+const { ExecutionOrder, ExecutionOrderFill, Instrument, InstrumentMarketData, sequelize} = require('../../../../models');
 
 async function fetchOrder(external_id, symbol, params = {}) {
 
@@ -64,7 +64,7 @@ module.exports.fetch_my_trades = fetchMyTrades;
  * As well as that, some things (like presents of fees) will be randomized, in order to test
  * the adaptability of the system
  */
-async function createMarketOrder(instrument, side, order) {
+async function createMarketOrder(instrument, side, amount, params) {
 
     if(!['buy', 'sell'].includes(side)) TE(`Error: "${side}" is not a valid order side!`);
 
@@ -73,12 +73,33 @@ async function createMarketOrder(instrument, side, order) {
     if(!exchange_instrument) TE(`Error: instrument "${instrument}" is not available on ${this.name}`);
 
     const amount_limits = _.get(exchange_instrument, 'limits.amount')
-    if(!_.isEmpty(amount_limits) && !_.inRange(order.total_quantity, amount_limits.min, amount_limits.max)) TE(`Error: the order quantity is not within the limits: ${amount_limits.min} - ${amount_limits.max}`);
+    if(!_.isEmpty(amount_limits) && !_.inRange(amount, amount_limits.min, amount_limits.max)) TE(`Error: the order quantity is not within the limits: ${amount_limits.min} - ${amount_limits.max}`);
 
-    const instrument_prices = await InstrumentMarketData.findOne({
+    const instrument_prices = await sequelize.query(`
+        SELECT imd.ask_price, imd.bid_price
+        FROM instrument_exchange_mapping iem
+        JOIN exchange e ON e.id=iem.exchange_id
+        JOIN LATERAL (
+            SELECT ask_price, bid_price
+            FROM instrument_market_data imd
+            WHERE instrument_id=iem.instrument_id
+                AND exchange_id=e.id
+            ORDER BY instrument_id NULLS LAST, exchange_id NULLS LAST, timestamp DESC NULLS LAST
+            LIMIT 1
+        ) as imd ON TRUE
+        WHERE iem.external_instrument_id=:instrument
+            AND e.api_id=:exchange
+    `, {
+        replacements: {
+            instrument,
+            exchange: this.id
+        },
+        plain: true,
+        type: sequelize.QueryTypes.SELECT
+    });/* InstrumentMarketData.findOne({
         where: { instrument_id: order.instrument_id, exchange_id: order.exchange_id },
         order: [ [ 'timestamp', 'DESC' ] ]
-    });
+    }); */
 
     const new_order = {
         id: String(this._current_order_id++),
@@ -90,9 +111,9 @@ async function createMarketOrder(instrument, side, order) {
         type: 'market',
         side: side,
         price: side === 'buy' ? parseFloat(instrument_prices.ask_price) : parseFloat(instrument_prices.bid_price),
-        amount: parseFloat(order.total_quantity),
+        amount: parseFloat(amount),
         filled: 0,
-        remaining: parseFloat(order.total_quantity),
+        remaining: parseFloat(amount),
         cost: 0,
         fee: {
             cost: 0,
@@ -109,6 +130,14 @@ async function createMarketOrder(instrument, side, order) {
 
 module.exports.createMarketOrder = createMarketOrder;
 module.exports.create_market_order = createMarketOrder;
+
+async function createOrder(instrument, order_type, side, amount, price, params) {
+    
+    if (order_type != 'market') TE('Order placement for other than market orders is not supported yet!');
+
+    return await this.createMarketOrder(instrument, side, amount, params);
+}
+module.exports.createOrder = createOrder;
 
 /**
  * Clears orders from memory if the scenario desires so.
@@ -139,8 +168,7 @@ module.exports.purgeOrders = purgeOrders;
  * @param {Number} [options.minimum_amount_of_trades=1] Minimum amount of trades to generate.
  * @param {Boolean} [options.force_to_close=false] Set to `true` to force close the orders that were not filled.
  */
-function simulateTrades(options = {}) {
-
+function simulateTrades(options = {}) {            
     const rate = options.rate || 0;
     const chance_of_new_trade = options.chance_of_new_trade || 100;
     const multiple_trade_chance = _.clamp(options.multiple_trade_chance || 0, 0, 100);
@@ -225,7 +253,12 @@ const _calculateNextFill = (current_fill_amount, amount_to_reach, market_price, 
 
 async function fetchTicker(symbol) {
 
-    if(!this._tickers) this._createTickers();
+    await this._tickersCreated;
+
+    if(!this._tickers)
+        this._tickersCreated = this._createTickers();
+
+    await this._tickersCreated;
 
     return this._tickers[symbol] || null;
 }
@@ -234,14 +267,19 @@ module.exports.fetch_ticker = fetchTicker;
 
 async function fetchTickers(limit) {
 
-    if(!this._tickers) this._createTickers();
+    await this._tickersCreated;
+
+    if(!this._tickers)
+        this._tickersCreated = this._createTickers();
     
+    await this._tickersCreated;
+
     return this._tickers;
 };
 module.exports.fetchTickers = fetchTickers;
 module.exports.fetch_tickers = fetchTickers;
 
-const _createTickers = function() {
+const _createTickers = async function() {
 
     const instruments = _.uniq(Object.keys(this.markets));
     const base_chance = 95;
@@ -249,20 +287,49 @@ const _createTickers = function() {
     this._tickers = {};
     this._order_book = {};
 
+
+    let instrument_prices = await sequelize.query(`
+        SELECT iem.external_instrument_id as symbol, imd.ask_price, imd.bid_price
+        FROM instrument_exchange_mapping iem
+        JOIN exchange e ON e.id=iem.exchange_id
+        JOIN LATERAL (
+            SELECT ask_price, bid_price
+            FROM instrument_market_data imd
+            WHERE instrument_id=iem.instrument_id
+                AND exchange_id=e.id
+            ORDER BY instrument_id NULLS LAST, exchange_id NULLS LAST, timestamp DESC NULLS LAST
+            LIMIT 1
+        ) as imd ON TRUE
+        WHERE e.api_id=:exchange
+            AND iem.external_instrument_id IN (:instruments)
+    `, {
+        replacements: {
+            instruments: instruments,
+            exchange: this.id
+        },
+        type: sequelize.QueryTypes.SELECT
+    });
+
     for(let instrument of instruments) {
 
-        const is_missing_values = _.random(0, 100, false) > base_chance ? true : false;
-        const price = _.random(1, 1000, true);
+        let found = instrument_prices.find(i => i.symbol == instrument);
+        const is_missing_values = false;// _.random(0, 100, false) > base_chance ? true : false;
+        const price = found ?
+            found.ask_price :
+            ( /^(BTC|ETH)\//.test(instrument) ?
+            _.random(300, 3000, true) : // price in hundreds/thousands if it's BTC/XXX or ETH/XXX asset.
+            _.random(0.00001, 0.01, true) );
         const volume = _.random(0, 100000000);
 
+        
 
         this._tickers[instrument] = {
             symbol: instrument,
             timestamp: Date.now(),
             datetime: new Date(),
             baseVolume: is_missing_values ? null : volume,
-            ask: is_missing_values ? null : getFuzzy(price),
-            bid: is_missing_values ? null : getFuzzy(price)
+            ask: found ? found.ask_price : is_missing_values ? null : getFuzzy(price),
+            bid: found ? found.bid_price : is_missing_values ? null : getFuzzy(price)
         };
 
         const asks = [];
@@ -282,6 +349,7 @@ const _createTickers = function() {
 
     }
 
+    return true;
 };
 module.exports._createTickers = _createTickers;
 

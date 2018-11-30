@@ -39,6 +39,8 @@ When(/^the system finished the task "(.*)"$/, async function(task_description) {
         task_description,
         //supply custom extra configuration if present
         _.isObject(this.job_config)? this.job_config : {});
+    
+    return this.current_job_result;
 });
 
 const constModelMapping = {

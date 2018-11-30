@@ -145,7 +145,8 @@ module.exports.JOB_BODY = async (config, log) => {
 
         log(`5. Placing order to ${unifiedExchange.api_id}. Instrument symbol: ${instrument_exchange_map.external_instrument_id}, type: ${order_type}, side: ${order_execution_side}, amount: ${order.total_quantity}`);
         /*  later on when we'll introduce other order types this can be changed to just function for placing orders */
-        return unifiedExchange.createMarketOrder(instrument_exchange_map.external_instrument_id, order_execution_side, order)
+        let conf = config.fail_ids.includes(order.id);
+        return unifiedExchange.createMarketOrder(instrument_exchange_map.external_instrument_id, order_execution_side, order, conf)
         .then(async result => {
           let [data, order_response] = result
           log(`5a. Successfully received order placement response from exchange`);

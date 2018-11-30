@@ -39,11 +39,14 @@ async function generateExecutionOrders(amount, order_status, for_exchange, order
 
     const {
         ExecutionOrder,
+        RecipeOrder,
         Instrument,
         InstrumentExchangeMapping,
-        ActionLog
+        ActionLog,
+        sequelize
     } = require('../../../models');
     const ccxtUtil = require('../../../utils/CCXTUtils');
+    const ccxtUnified = require('../../../utils/ccxtUnified');
 
     let where = {
         exchange_id: for_exchange.id,
@@ -52,6 +55,7 @@ async function generateExecutionOrders(amount, order_status, for_exchange, order
     if(order_id) where.recipe_order_id = order_id;
 
     const exisitng_orders = await ExecutionOrder.findAll({ where });
+    const recipe_order = await RecipeOrder.findById(order_id);
 
     if (exisitng_orders.length >= amount) {
         return exisitng_orders;
@@ -76,27 +80,62 @@ async function generateExecutionOrders(amount, order_status, for_exchange, order
         }
     });
 
-    let new_execution_orders = [];
+    let new_execution_orders = [...Array(amount)];
     
-    for (let i = 0; i < amount; i++) {
+    new_execution_orders = await Promise.all(new_execution_orders.map(async (val, i) => {
 
         const instrument = instruments[i];
 
-        const limits = _.get(connector, `markets.${instrument.symbol}.limits.amount`);
+        let unifiedExchange = await ccxtUnified.getExchange(for_exchange.api_id);
+        let [err, lims] = await to(unifiedExchange.getSymbolLimits(instrument.symbol));
+        if(err) TE(err.message);
+        const limits = _.get(connector, `markets.${instrument.symbol}.limits`);
 
-        new_execution_orders.push({
+        let base = /\w+\/BTC$/.test(instrument.symbol) ? SYSTEM_SETTINGS.BASE_BTC_TRADE :
+                    /\w+\/ETH$/.test(instrument.symbol) ? SYSTEM_SETTINGS.BASE_ETH_TRADE : 0.05;
+
+        let spend = _.clamp(
+            base * (Math.random() * SYSTEM_SETTINGS.TRADE_BASE_FUZYNESS),
+            lims.spend.min,
+            lims.spend.max
+        );
+
+        let prices = await sequelize.query(`
+            SELECT imd.ask_price, imd.bid_price
+            FROM instrument_exchange_mapping iem
+            JOIN exchange e ON e.id=iem.exchange_id
+            JOIN LATERAL (
+                SELECT ask_price, bid_price
+                FROM instrument_market_data imd
+                WHERE instrument_id=iem.instrument_id
+                    AND exchange_id=e.id
+                ORDER BY instrument_id NULLS LAST, exchange_id NULLS LAST, timestamp DESC NULLS LAST
+                LIMIT 1
+            ) as imd ON TRUE
+            WHERE iem.instrument_id=:instrument_id
+                AND iem.exchange_id=:exchange_id
+        `, {
+            replacements: {
+                instrument_id: instrument.id,
+                exchange_id: for_exchange.id
+            },
+            plain: true,
+            type: sequelize.QueryTypes.SELECT
+        });
+
+        return {
             exchange_id: for_exchange.id,
             instrument_id: instrument.id,
             recipe_order_id: order_id,
             side: ORDER_SIDES.Buy,
             status: order_status,
+            //price: prices.ask_price,
             type: EXECUTION_ORDER_TYPES.Market,
-            total_quantity: _.random(limits.min, limits.max, true),
-            sold_amount:  _.random(limits.min, limits.max, true),
+            total_quantity: spend / prices.ask_price,
+            spend_amount: spend,
             failed_attempts: 0
-        });
-
-    }
+        };
+    }));
 
     new_execution_orders = await ExecutionOrder.bulkCreate(new_execution_orders, {
         returning: true
@@ -122,6 +161,8 @@ Given(/^there (are|is) (.*) (.*) (Execution Orders|Execution Order) for (.*)$/, 
 
     this.current_execution_orders = await generateExecutionOrders(amount, EXECUTION_ORDER_STATUSES[status], exchange, order_id);
 
+    CURRENT_EXEC_ORDS = this.current_execution_orders;
+
     if(amount === 1 && this.current_execution_orders) this.current_execution_order = this.current_execution_orders[0];
 
     return;
@@ -144,7 +185,8 @@ Given('the system has execution orders with status Pending', async function () {
     this.current_execution_orders = await generateExecutionOrders(
         _.random(MIN_ORDERS, MAX_ORDERS + 1, false),
         EXECUTION_ORDER_STATUSES.Pending,
-        exchanges[0]
+        exchanges[0],
+        this.current_recipe_order.id
     );
     this.check_log_id = _.map(this.current_execution_orders, 'id');
     //create extra job config for following step
@@ -162,6 +204,7 @@ Given('the Pending Execution Orders are placed on the exchanges', async function
         Instrument
     } = require('../../../models');
     const ccxtUtil = require('../../../utils/CCXTUtils');
+    const ccxtUnified = require('../../../utils/ccxtUnified');
 
     const pending_orders = await ExecutionOrder.findAll({
         where: {
@@ -178,15 +221,20 @@ Given('the Pending Execution Orders are placed on the exchanges', async function
         exchange_id = parseInt(exchange_id);
 
         const connector = await ccxtUtil.getConnector(exchange_id);
+        const unifiedExchange = await ccxtUnified.getExchange(exchange_id);
+        await unifiedExchange.isReady();
 
         return Promise.all(_.map(execution_orders, async execution_order => {
 
-            const created_order = await connector.createMarketOrder(execution_order.Instrument.symbol, 'buy', execution_order);
+            const created_order = await unifiedExchange.createMarketOrder(execution_order.Instrument.symbol, 'buy', execution_order);
 
-            execution_order.external_identifier = created_order.id;
+            let [modified_info, order_info] = created_order;
+
+            execution_order = Object.assign(execution_order, modified_info, { status: EXECUTION_ORDER_STATUSES.InProgress});
+            /* .external_identifier = created_order.id;
             execution_order.price = created_order.price;
             execution_order.placed_timestamp = created_order.datetime;
-            execution_order.status = EXECUTION_ORDER_STATUSES.InProgress;
+            execution_order.; */
 
             return execution_order.save();
 
@@ -318,7 +366,7 @@ Given(/^the Execution Order is (buying|selling) (\d*|\d+(?:\.\d+)?) (\w*) (using
 
     expect(instrument, `Expected to find instrument ${symbol}`).to.be.not.null
 
-    return ExecutionOrder.update({
+    let exec_ord = await ExecutionOrder.update({
         side: ORDER_SIDES[order_side],
         instrument_id: instrument.id,
         total_quantity: side === 'buying' ? amount : 0,
@@ -326,7 +374,10 @@ Given(/^the Execution Order is (buying|selling) (\d*|\d+(?:\.\d+)?) (\w*) (using
     },{
         where: { id: this.current_execution_order.id }
     });
+
+    console.log(exec_ord);
     
+    return exec_ord;
 });
 
 Given(/^the Execution Order was priced at (\d*|\d+(?:\.\d+)?) and feed at (\d*|\d+(?:\.\d+)?) on the Exchange$/, async function(price, fee) {
@@ -411,7 +462,7 @@ When('the system does the task "fetch execution order information" until the Exe
     const job = require('../../../jobs/exec-order-fill-fetcher');
     const ccxtUtil = require('../../../utils/CCXTUtils');
 
-    const { ExecutionOrder } = models;
+    const { ExecutionOrder, ExecutionOrderFill } = models;
 
     const config = { models };
 
@@ -451,10 +502,18 @@ When('the system does the task "fetch execution order information" until the Exe
 
         if (unfinished_order_count === 0) break;
 
+        console.log('Getting execution orders');
+        let cons = await ExecutionOrder.findAll({
+            where: {
+                id: CURRENT_EXEC_ORDS.map(ord => ord.id)
+            },
+            include: ExecutionOrderFill
+        })
+
+        console.log('Execution orders found', cons ? cons.map(val => val.dataValues) : cons);
     }
 
     expect(tolerance).to.be.lessThan(50, 'Execution orders failed to fill up after 50 job cucles');
-
     for(let connector of connectors) connector.has['fetchTrades'] = true;
 
 });

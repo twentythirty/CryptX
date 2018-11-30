@@ -36,10 +36,11 @@ class Binance extends Exchange {
  *   trades: undefined
  * }
  */
-  async createMarketOrder (external_instrument_id, side, execution_order) {
+  async createMarketOrder (external_instrument_id, side, execution_order, fail) {
     await this.isReady();
     const order_type = "market";
 
+    if (fail) TE("Simulated fail");
 
     // get latest price
     let [err, ticker] = await to(this._connector.fetchTicker(external_instrument_id)); // add error handling later on

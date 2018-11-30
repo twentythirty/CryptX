@@ -10,6 +10,7 @@ Feature: View the timeline of an investment run process
         And the system has Instrument Mappings for Binance
         And the system has Instrument Mappings for OKEx
         And the system has Instrument Mappings for Bitfinex
+        And the system has updated the Instrument Market Data
         And the system has 3 Cold Storage Custodians
         And the system has LCI Cold Storage Account for LTC
         And the system has LCI Cold Storage Account for XRP
