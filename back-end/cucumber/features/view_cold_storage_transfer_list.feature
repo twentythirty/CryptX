@@ -8,6 +8,7 @@ Feature: View cold storage transfer list
         And there are no Cold Storage Transfers in the system
         And the system has 5 Cold Storage Custodians
         And the system has Instrument Mappings for Bitfinex
+        And the system has updated the Instrument Market Data
         And the system has Exchange Account for XRP on Bitfinex
         And the system has Recipe Order with status Completed on Bitfinex
         And the system has LCI Cold Storage Account for XRP
