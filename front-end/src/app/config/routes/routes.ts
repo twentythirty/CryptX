@@ -38,6 +38,7 @@ import { ExecutionOrdersComponent } from '../../modules/investment/execution-ord
 import { RecipeRunListComponent } from '../../modules/recipe-run/recipe-run-list/recipe-run-list.component';
 import { ExecutionOrderListComponent } from '../../modules/execution-orders/execution-order-list/execution-order-list.component';
 import { TransfersListComponent } from '../../modules/cold-storage-transfers/transfers-list/transfers-list.component';
+import { TransferInfoComponent } from '../../modules/cold-storage-transfers/transfer-info/transfer-info.component';
 import { AddAccountComponent } from '../../modules/cold-storage-accounts/add-account/add-account.component';
 import { AccountsListComponent } from '../../modules/cold-storage-accounts/accounts-list/accounts-list.component';
 import { CustodiansListComponent } from '../../modules/cold-storage-custodians/custodians-list/custodians-list.component';
@@ -197,6 +198,12 @@ export const routes: Routes = [
   {
     path: 'cold_storage/transfers',
     component: TransfersListComponent,
+    canActivate: [AuthGuard],
+  },
+
+  {
+    path: 'cold_storage/transfers/:transferId',
+    component: TransferInfoComponent,
     canActivate: [AuthGuard],
   },
 

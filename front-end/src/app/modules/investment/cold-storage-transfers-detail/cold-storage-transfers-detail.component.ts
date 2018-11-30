@@ -55,11 +55,9 @@ export class ColdStorageTransfersDetailComponent extends TimelineDetailComponent
       { column: 'net_amount', nameKey: 'table.header.net_amount', filter: { type: 'number', sortable: true } },
       { column: 'exchange_withdrawal_fee', nameKey: 'table.header.exchange_withdrawal_fee', filter: { type: 'number', sortable: true } },
       { column: 'status', nameKey: 'table.header.status', filter: { type: 'text', sortable: true } },
-      { column: 'destination_account', nameKey: 'table.header.destination_account', filter: { type: 'text', sortable: true } },
       { column: 'custodian', nameKey: 'table.header.custodian', filter: { type: 'text', sortable: true } },
       { column: 'strategy_type', nameKey: 'table.header.portfolio', filter: { type: 'text', sortable: true } },
       { column: 'source_exchange', nameKey: 'table.header.source_exchange', filter: { type: 'text', sortable: true } },
-      { column: 'source_account', nameKey: 'table.header.source_account', filter: { type: 'text', sortable: true }, column_class: 'column-source-account' },
       { column: 'placed_timestamp', nameKey: 'table.header.placed_time', filter: { type: 'date', sortable: true } },
       { column: 'completed_timestamp', nameKey: 'table.header.completion_time', filter: { type: 'date', sortable: true } },
     ],
@@ -85,11 +83,9 @@ export class ColdStorageTransfersDetailComponent extends TimelineDetailComponent
       'cold_storage_transfers.status.94': StatusClass.APPROVED,
       'cold_storage_transfers.status.95': StatusClass.FAILED,
     }} }),
-    new TableDataColumn({ column: 'destination_account' }),
     new TableDataColumn({ column: 'custodian' }),
     new StatusCellDataColumn({ column: 'strategy_type' }),
     new TableDataColumn({ column: 'source_exchange' }),
-    new TableDataColumn({ column: 'source_account' }),
     new DateCellDataColumn({ column: 'placed_timestamp' }),
     new DateCellDataColumn({ column: 'completed_timestamp' }),
   ];
@@ -203,6 +199,15 @@ export class ColdStorageTransfersDetailComponent extends TimelineDetailComponent
       }})
     );
   }
+
+  /**
+   * 5. Implement methods to handle user actions
+   */
+
+  public openListRow(row: any): void {
+    this.router.navigate(['/cold_storage/transfers/', row.id]);
+  }
+
 
   public getTimelineData(): void {
     this.timeline$ = this.route.params.pipe(

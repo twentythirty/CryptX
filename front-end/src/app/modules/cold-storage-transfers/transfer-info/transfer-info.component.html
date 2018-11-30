@@ -1,0 +1,23 @@
+<app-page-heading
+  [heading]="'investment.cold_storage_transfer' | translate"
+></app-page-heading>
+
+<app-data-table class="table"
+  [dataSource]="transferDataSource"
+  [columnsToShow]="transfersColumnsToShow"
+  [loading]="isTableLoading"
+  (setFilter)="onSetFilter($event)"
+  (openRow)="openRow($event)"
+></app-data-table>
+
+<app-action-log
+  [title]="'common.activity_log' | translate"
+  [source]="logsSource"
+></app-action-log>
+
+<app-confirm
+  *ngIf="modalShow"
+  [heading]="'cold_storage_transfers.are_you_sure_want_to_approve' | translate"
+  (onReject)="hideConfirm()"
+  (onConfirm)="confirm()"
+></app-confirm>

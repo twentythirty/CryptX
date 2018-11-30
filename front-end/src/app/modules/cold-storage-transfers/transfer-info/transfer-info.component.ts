@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
-import { finalize } from 'rxjs/operators';
+import { ActivatedRoute, Params, Router } from '@angular/router';
+import { finalize, filter, tap } from 'rxjs/operators';
 
 import { DataTableCommonManagerComponent } from '../../../shared/components/data-table-common-manager/data-table-common-manager.component';
 import { TableDataSource, TableDataColumn } from '../../../shared/components/data-table/data-table.component';
@@ -14,30 +14,35 @@ import {
 import { StatusClass } from '../../../shared/models/common';
 import { ColdStorageService } from '../../../services/cold-storage/cold-storage.service';
 import { Transfer } from '../../../shared/models/transfer';
+import { ActionLog } from '../../../shared/models/actionLog';
 
 @Component({
-  selector: 'app-transfers-list',
-  templateUrl: './transfers-list.component.html',
-  styleUrls: ['./transfers-list.component.scss']
+  selector: 'app-transfer-info',
+  templateUrl: './transfer-info.component.html',
+  styleUrls: ['./transfer-info.component.scss']
 })
-export class TransfersListComponent extends DataTableCommonManagerComponent implements OnInit {
+export class TransferInfoComponent extends DataTableCommonManagerComponent implements OnInit {
 
   modalShow = false;
   selectedTransfer: Transfer;
 
-  public transfersDataSource: TableDataSource = {
+  public logsSource: Array<ActionLog>;
+
+  public transferDataSource: TableDataSource = {
     header: [
-      { column: 'id', nameKey: 'table.header.id', filter: { type: 'number', hasRange: false, inputSearch: true, sortable: true } },
-      { column: 'asset', nameKey: 'table.header.asset', filter: { type: 'text', sortable: true } },
-      { column: 'gross_amount', nameKey: 'table.header.gross_amount', filter: { type: 'number', sortable: true } },
-      { column: 'net_amount', nameKey: 'table.header.net_amount', filter: { type: 'number', sortable: true } },
-      { column: 'exchange_withdrawal_fee', nameKey: 'table.header.exchange_withdrawal_fee', filter: { type: 'number', sortable: true } },
-      { column: 'status', nameKey: 'table.header.status', filter: { type: 'text', sortable: true } },
-      { column: 'custodian', nameKey: 'table.header.custodian', filter: { type: 'text', sortable: true } },
-      { column: 'strategy_type', nameKey: 'table.header.portfolio', filter: { type: 'text', sortable: true } },
-      { column: 'source_exchange', nameKey: 'table.header.source_exchange', filter: { type: 'text', sortable: true } },
-      { column: 'placed_timestamp', nameKey: 'table.header.placed_time', filter: { type: 'date', sortable: true } },
-      { column: 'completed_timestamp', nameKey: 'table.header.completion_time', filter: { type: 'date', sortable: true } },
+      { column: 'id', nameKey: 'table.header.id' },
+      { column: 'asset', nameKey: 'table.header.asset' },
+      { column: 'gross_amount', nameKey: 'table.header.gross_amount' },
+      { column: 'net_amount', nameKey: 'table.header.net_amount' },
+      { column: 'exchange_withdrawal_fee', nameKey: 'table.header.exchange_withdrawal_fee' },
+      { column: 'status', nameKey: 'table.header.status' },
+      { column: 'destination_account', nameKey: 'table.header.destination_account' },
+      { column: 'custodian', nameKey: 'table.header.custodian' },
+      { column: 'strategy_type', nameKey: 'table.header.portfolio' },
+      { column: 'source_exchange', nameKey: 'table.header.source_exchange' },
+      { column: 'source_account', nameKey: 'table.header.source_account'},
+      { column: 'placed_timestamp', nameKey: 'table.header.placed_time' },
+      { column: 'completed_timestamp', nameKey: 'table.header.completion_time' },
       { column: 'actions', nameKey: 'table.header.actions' },
     ],
     body: null
@@ -62,9 +67,11 @@ export class TransfersListComponent extends DataTableCommonManagerComponent impl
       'cold_storage_transfers.status.94': StatusClass.APPROVED,
       'cold_storage_transfers.status.95': StatusClass.FAILED,
     }} }),
+    new TableDataColumn({ column: 'destination_account' }),
     new TableDataColumn({ column: 'custodian' }),
     new StatusCellDataColumn({ column: 'strategy_type' }),
     new TableDataColumn({ column: 'source_exchange' }),
+    new TableDataColumn({ column: 'source_account' }),
     new DateCellDataColumn({ column: 'placed_timestamp' }),
     new DateCellDataColumn({ column: 'completed_timestamp' }),
     new ActionCellDataColumn({ column: 'actions', inputs: {
@@ -83,52 +90,49 @@ export class TransfersListComponent extends DataTableCommonManagerComponent impl
   ];
 
   constructor(
-    private coldStorageService: ColdStorageService,
     public route: ActivatedRoute,
     public router: Router,
+    private coldStorageService: ColdStorageService,
   ) {
     super(route, router);
   }
 
   ngOnInit() {
-    super.ngOnInit();
+    this.getTransfer();
   }
 
-  getAllData(): void {
-    this.coldStorageService.getAllTransfers(this.requestData).pipe(
-      finalize(() => this.stopTableLoading())
+  getTransfer(): void {
+    this.route.params.pipe(
+      filter((params: Params) => params.transferId)
     ).subscribe(
-      res => {
-        Object.assign(this.transfersDataSource, {
-          body: res.transfers,
-          footer: res.footer
-        });
-        this.count = res.count;
-        this.getFilterLOV();
+      (params: Params) => {
+        this.startTableLoading();
+
+        this.coldStorageService.getTransfer(params.transferId).pipe(
+          finalize(() => this.stopTableLoading())
+        ).subscribe(
+          res => {
+            this.transferDataSource.body = [res.transfer];
+            this.logsSource = res.action_logs;
+          }
+        );
       }
     );
   }
 
-  getFilterLOV(): void {
-    this.transfersDataSource.header.filter(
-      col => ['asset', 'status', 'source_account', 'source_exchange', 'strategy_type', 'custodian', 'cold_storage_account_id'].includes(col.column)
-    ).map(
-      col => {
-        col.filter.rowData$ = this.coldStorageService.getAllTransfersHeaderLOV(col.column);
-      }
-    );
-  }
+  getFilterLOV(): void { }
 
   confirm() {
-    this.isTableLoading = true;
+    this.startTableLoading();
     this.coldStorageService.confirmTransfer(this.selectedTransfer).subscribe(
       res => {
         if (res.success) {
-          this.getAllData();
+          this.selectedTransfer.status = res.status;
+          this.stopTableLoading();
         }
       }, error => {
-          console.log('Error', error);
-        }
+        console.log('Error', error);
+      }
     );
     this.modalShow = false;
   }
@@ -137,7 +141,4 @@ export class TransfersListComponent extends DataTableCommonManagerComponent impl
     this.modalShow = false;
   }
 
-  openRow(transfer: Transfer): void {
-    this.router.navigate(['/cold_storage/transfers/', transfer.id]);
-  }
 }

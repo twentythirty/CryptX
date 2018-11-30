@@ -63,7 +63,7 @@ describe('TransfersListComponent', () => {
       fixture.detectChanges();
       const tableRow = fixture.nativeElement.querySelector('table tbody tr');
       click(tableRow);
-      expect(navigateSpy).toHaveBeenCalledWith(['/assets/view/', getAllTransfersData.transfers[0].asset_id]);
+      expect(navigateSpy).toHaveBeenCalledWith(['/cold_storage/transfers/', getAllTransfersData.transfers[0].id]);
     });
   });
 

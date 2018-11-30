@@ -151,7 +151,6 @@ const changeTransferStatus = async (transfer_id, status, user = null) => {
     }
 
     const original_transfer = transfer.toJSON();
-
     transfer.status = status;
 
     [ err, transfer ] = await to(transfer.save());
@@ -161,11 +160,11 @@ const changeTransferStatus = async (transfer_id, status, user = null) => {
         updated_instance: transfer,
         replace: {
             status: {
-                [COLD_STORAGE_ORDER_STATUSES.Pending]: `{cold_storage.transfers.status.${COLD_STORAGE_ORDER_STATUSES.Pending}}`,
-                [COLD_STORAGE_ORDER_STATUSES.Approved]: `{cold_storage.transfers.status.${COLD_STORAGE_ORDER_STATUSES.Approved}}`,
-                [COLD_STORAGE_ORDER_STATUSES.Sent]: `{cold_storage.transfers.status.${COLD_STORAGE_ORDER_STATUSES.Sent}}`,
-                [COLD_STORAGE_ORDER_STATUSES.Completed]: `{cold_storage.transfers.status.${COLD_STORAGE_ORDER_STATUSES.Completed}}`,
-                [COLD_STORAGE_ORDER_STATUSES.Failed]: `{cold_storage.transfers.status.${COLD_STORAGE_ORDER_STATUSES.Failed}}`,
+                [COLD_STORAGE_ORDER_STATUSES.Pending]: `cold_storage.transfers.status.${COLD_STORAGE_ORDER_STATUSES.Pending}`,
+                [COLD_STORAGE_ORDER_STATUSES.Approved]: `cold_storage.transfers.status.${COLD_STORAGE_ORDER_STATUSES.Approved}`,
+                [COLD_STORAGE_ORDER_STATUSES.Sent]: `cold_storage.transfers.status.${COLD_STORAGE_ORDER_STATUSES.Sent}`,
+                [COLD_STORAGE_ORDER_STATUSES.Completed]: `cold_storage.transfers.status.${COLD_STORAGE_ORDER_STATUSES.Completed}`,
+                [COLD_STORAGE_ORDER_STATUSES.Failed]: `cold_storage.transfers.status.${COLD_STORAGE_ORDER_STATUSES.Failed}`,
             }
         }
     };

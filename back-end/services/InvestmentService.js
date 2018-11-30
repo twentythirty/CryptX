@@ -727,7 +727,7 @@ const findInvestmentRunFromAssociations = async function (entities, transaction)
     LEFT JOIN recipe_order_group ON recipe_order_group.recipe_run_id=recipe_run.id
     LEFT JOIN recipe_order ON recipe_order.recipe_order_group_id=recipe_order_group.id
     LEFT JOIN execution_order ON execution_order.recipe_order_id=recipe_order.id
-    LEFT JOIN cold_storage_transfer ON cold_storage_transfer.id = recipe_order.id OR cold_storage_transfer.recipe_run_id = recipe_run.id
+    LEFT JOIN cold_storage_transfer ON cold_storage_transfer.recipe_run_order_id = recipe_order.id OR cold_storage_transfer.recipe_run_id = recipe_run.id
     WHERE ${allowed_entities[foundClosestEntity]}.id=:entity_id
     LIMIT 1
   `, {

@@ -150,6 +150,7 @@
     "orders": "Orders",
     "execution_orders": "Execution orders",
     "cold_storage_transfers": "Cold storage transfers",
+    "cold_storage_transfer": "Cold storage transfer",
     "no_investment": "There is no investment run",
     "no_recipe_run": "There is no recipe run",
     "no_deposits": "Deposits aren't made yet",

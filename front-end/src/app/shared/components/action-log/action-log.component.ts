@@ -15,8 +15,7 @@ export class ActionLogComponent implements OnInit {
 
   constructor() { }
 
-  ngOnInit() {
-  }
+  ngOnInit() { }
 
   public hideRationaleModal() {
     this.showRationaleModal = false;
