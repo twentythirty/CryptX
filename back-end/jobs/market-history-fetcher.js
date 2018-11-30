@@ -1,5 +1,6 @@
 'use strict';
 var request_promise = require('request-promise');
+const CoinMarketCap = require('../utils/CoinMarketCap');
 
 //fetch the top N coins info
 const TOP_N = 500;
@@ -37,7 +38,7 @@ module.exports.JOB_BODY = async (config, log) => {
 
     //transmute starts to urls and make async requests
     return Promise.all(
-        [
+        /*[
             //fetch metadata object
             request_promise.get({
                 uri: "https://api.coinmarketcap.com/v2/global/",
@@ -46,6 +47,7 @@ module.exports.JOB_BODY = async (config, log) => {
                 },
                 json: true
             })
+            
         ].concat(starts.map(
             //fetch all tickers in batches with start offsets
             start => request_promise.get({
@@ -55,41 +57,40 @@ module.exports.JOB_BODY = async (config, log) => {
                 },
                 json: true
             })
-        ))
+        ))*/
+        [
+            CoinMarketCap.get('/global-metrics/quotes/latest'),
+            CoinMarketCap.get('/cryptocurrency/listings/latest', {
+                qs: { limit: TOP_N }
+            })
+        ]
     ).then(resp => {
 
-        const [metadata, ...tickers] = resp;
+        const [metadata, tickers] = resp;
         const data = metadata.data;
 
-        const tmc = data.quotes.USD.total_market_cap;
+        const tmc = data.quote.USD.total_market_cap;
 
         log(`
                 Active currencies: ${data.active_cryptocurrencies},
-                BTC dominance: ${data.bitcoin_percentage_of_market_cap}%,
+                BTC dominance: ${data.btc_dominance}%,
                 Total Market Cap: ${tmc}
 
-                Last updated: ${new Date(data.last_updated * 1000)}
+                Last updated: ${data.quote.USD.last_updated}
             `);
 
         log(`3. Flatteninig tickers and fetching reuqired DB coin ids...`)
 
-        //smooth out tickers data
-        const tickers_flat = (tickers[0] && tickers[0].data) ? tickers[0] : {
-            data: {}
-        };
-        for (var i = 1; i < tickers.length; i++) {
-            tickers_flat.data = Object.assign(tickers_flat.data, tickers[i].data);
-        }
-        log(`discovered tickers with ${Object.keys(tickers_flat.data).length} data points`);
+        log(`discovered tickers with ${tickers.data.length} data points`);
 
         //fetch instrument ids
         return Promise.all([
             Promise.resolve(tmc),
-            Promise.resolve(tickers_flat),
+            Promise.resolve(tickers),
             AssetBlockchain.findAll({
                 attributes: ['asset_id', 'coinmarketcap_identifier'],
                 where: {
-                    coinmarketcap_identifier: Object.keys(tickers_flat.data)
+                    coinmarketcap_identifier: tickers.data.map(d => String(d.id))
                 }
             })
         ])
@@ -99,21 +100,23 @@ module.exports.JOB_BODY = async (config, log) => {
 
         const [tmc, tickers, coin_asset_ids] = data;
 
-        const timestamp = new Date(tickers.metadata.timestamp * 1000);
-
         const key_assets = _.keyBy(coin_asset_ids, 'coinmarketcap_identifier');
 
         let missing_tickers_data = {}
 
-        const filtered_tickers_data = _.pickBy(tickers.data, (ticker_data, id) => {
+        const filtered_tickers_data = {};
+
+        _.map(tickers.data, (ticker_data) => {
+
+            const id = String(ticker_data.id);
 
             const pair = key_assets[id];
             if (!pair) {
                 log(`${JSON.stringify(ticker_data)} with id ${id} has no associated blockchain instrument, handling in post...!`);
                 missing_tickers_data[id] = ticker_data
-                return false;
+                return;
             }
-            return true;
+            filtered_tickers_data[id] = ticker_data;
         });
 
         log(`4.5 Immediately persisting ${Object.keys(filtered_tickers_data).length} market data points. Additionally creating ${Object.keys(missing_tickers_data).length} coins with market data...`)
@@ -122,11 +125,11 @@ module.exports.JOB_BODY = async (config, log) => {
 
             //safe since filtered
             const pair = key_assets[id];
-            const usd_details = ticker_data.quotes.USD;
+            const usd_details = ticker_data.quote.USD;
 
             return {
                 asset_id: pair.asset_id,
-                timestamp: timestamp,
+                timestamp: ticker_data.last_updated,
                 capitalization_usd: usd_details.market_cap,
                 daily_volume_usd: usd_details.volume_24h,
                 market_share_percentage: (usd_details.market_cap / tmc) * 100
@@ -172,10 +175,7 @@ module.exports.JOB_BODY = async (config, log) => {
             //transfer reuqired tickers data
             Promise.resolve(missing_tickers_data),
             //transfer timestamp and market cap constants
-            Promise.all([
-                Promise.resolve(timestamp),
-                Promise.resolve(tmc)
-            ])
+            Promise.resolve(tmc)
         ])
     }).then(data_objects => {
 
@@ -183,7 +183,7 @@ module.exports.JOB_BODY = async (config, log) => {
             preloaded_market_cap, //market cap data already configured (ripe for saving)
             asset_blockchains, //newly created asset blockchains
             new_tickers_data, //tickers data for new blockchains
-            [timestamp, tmc] //constants to create market cap with new tickers
+            tmc //constants to create market cap with new tickers
         ] = data_objects;
 
         log(`5. Persisting ${Object.keys(asset_blockchains).length} new market caps...`)
@@ -194,11 +194,11 @@ module.exports.JOB_BODY = async (config, log) => {
         const new_market_cap = _.map(new_tickers_data, (ticker_data, id) => {
 
             const asset_blockchain = asset_lookup[id];
-            const usd_details = ticker_data.quotes.USD;
+            const usd_details = ticker_data.quote.USD;
 
             return {
                 asset_id: asset_blockchain.asset_id,
-                timestamp: timestamp,
+                timestamp: ticker_data.last_updated,
                 capitalization_usd: usd_details.market_cap,
                 daily_volume_usd: usd_details.volume_24h,
                 market_share_percentage: (usd_details.market_cap / tmc) * 100

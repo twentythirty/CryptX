@@ -1,5 +1,6 @@
 'use strict';
 var request_promise = require('request-promise');
+const CoinMarketCap = require('../utils/CoinMarketCap');
 
 const { logAction } = require('../utils/ActionLogUtil');
 
@@ -28,19 +29,21 @@ module.exports.JOB_BODY = async (config, log) => {
         config.models.AssetBlockchain.findAll({
             include: Asset
         }),
-        request_promise.get({
+        /*request_promise.get({
             uri: "https://api.coinmarketcap.com/v2/listings/",
             headers: {
                 "User-Agent": "Request-Promise"
             },
             json: true
-        })
+        })*/
+        CoinMarketCap.get('/cryptocurrency/map')
+
     ]).then(async assetsAndResp => {
 
         const [assets, resp] = assetsAndResp;
 
         const data = resp.data;
-        log(`2a. Got ${resp.metadata.num_cryptocurrencies} coins in HTTP response!`);
+        log(`2a. Got ${data.length} coins in HTTP response!`);
         log(`2b. Got ${assets.length} coins from assets table!`);
 
         await Promise.all(_.map(data, async coin => {

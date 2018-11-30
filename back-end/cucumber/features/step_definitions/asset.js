@@ -18,6 +18,8 @@ const chaiHttp = require("chai-http");
 chai.use(chaiHttp);
 const request_promise = require('request-promise');
 
+const CoinMarketCap = require('../../../utils/CoinMarketCap');
+
 const World = require('../support/global_world');
 const utils = require('../support/step_helpers');
 
@@ -853,30 +855,25 @@ When('the system completes the task "synchronize coins list"', {
     timeout: 750000
 }, function () {
 
-    return chai
-        .request(coin_market_cap_url)
-        .get(`/listings`)
+    return CoinMarketCap.get('/cryptocurrency/map')
         .then(async result => {
 
-            expect(result).to.have.status(200);
-            expect(result.body.data.length).to.be.greaterThan(0);
+            expect(result.data.length).to.be.greaterThan(0);
 
-            this.current_coin_market_cap_response = result.body;
+            this.current_coin_market_cap_response = result;
 
             /**
              * The idea here is to "cache" the response so that when the job runs, it will receive the exact same response, as the test step.
              * While the chance of the job having a different response is very small (like REALLY small), better be safe than have the test fail for no good reason.
              */
-            sinon.stub(request_promise, 'get').callsFake(options => {
-                return Promise.resolve(result.body);
+            sinon.stub(CoinMarketCap, 'get').callsFake(options => {
+                return Promise.resolve(result);
             });
 
             await utils.finishJobByDescription('synchronize coins list');
 
-            request_promise.get.restore();
-
+            CoinMarketCap.get.restore();
         });
-
 
 });
 
@@ -890,42 +887,33 @@ When('the system completes the task "fetch asset market capitalization"', {
         models
     };
 
-    // Same retrieve and stub trick here
-    const request_results = {
-        '/global/': {}
-    };
+    const [ global_data, tickers ] = await Promise.all([
+        CoinMarketCap.get('/global-metrics/quotes/latest'),
+        CoinMarketCap.get('/cryptocurrency/listings/latest', {
+            qs: { limit: 100 }
+        })
+    ]);
 
-    const chunks = Math.floor(job.TOP_N / job.LIMIT);
-    if (job.TOP_N % job.LIMIT) chunks++
+    this.current_coin_market_cap_responses = [ global_data, tickers ];
 
-    for (let i = 0; i < chunks; i++) request_results[`/ticker/?start=${1 + i * job.LIMIT}&limit=${job.LIMIT}`] = {};
+    sinon.stub(CoinMarketCap, 'get').callsFake(endpoint => {
 
-    await Promise.all(_.map(request_results, (emptiness, endpoint) => {
+        switch(endpoint) {
+            case '/global-metrics/quotes/latest':
+                return Promise.resolve(global_data);
 
-        return chai
-            .request(coin_market_cap_url)
-            .get(endpoint)
-            .then(result => {
+            case '/cryptocurrency/listings/latest':
+                return Promise.resolve(tickers);
 
-                expect(result).to.have.status(200);
-
-                request_results[endpoint] = result.body;
-
-            });
-
-    }));
-
-    this.current_coin_market_cap_responses = request_results;
-
-    sinon.stub(request_promise, 'get').callsFake(options => {
-
-        const response = request_results[options.uri.split('v2')[1]];
-
-        return Promise.resolve(response);
+            default:
+                throw new Error('Unknown endpoint');
+        }
 
     });
 
     await job.JOB_BODY(config, console.log);
+
+    CoinMarketCap.get.restore();
 
 });
 
@@ -1179,20 +1167,7 @@ Then('Asset market history is saved to the database', async function () {
     } = require('../../../models');
     const job = require('../../../jobs/market-history-fetcher');
 
-    const joined_tickers = _.reduce(this.current_coin_market_cap_responses, (result, response, url) => {
-
-        if (url.startsWith('/ticker')) {
-            _.assign(result.data, response.data);
-            if (_.isEmpty(result.metadata)) _.assign(result.metadata, response.metadata);
-        }
-        return result;
-
-    }, {
-        data: {},
-        metadata: {}
-    });
-
-    const global_data = this.current_coin_market_cap_responses['/global/'];
+    const [global_data, tickers] = this.current_coin_market_cap_responses;
 
     const [market_history] = await sequelize.query(`
         SELECT DISTINCT ON(ab.coinmarketcap_identifier) amc.*, ab.coinmarketcap_identifier 
@@ -1200,20 +1175,19 @@ Then('Asset market history is saved to the database', async function () {
         JOIN asset_blockchain AS ab ON ab.asset_id = amc.asset_id
     `);
 
-    expect(market_history.length).to.equal(_.size(joined_tickers.data));
+    expect(market_history.length).to.equal(tickers.data.length);
 
-    for (let coin_id in joined_tickers.data) {
+    for (let ticker of tickers.data) {
 
-        const ticker = joined_tickers.data[coin_id];
-        const matching_history = market_history.find(mh => mh.coinmarketcap_identifier === coin_id);
+        const matching_history = market_history.find(mh => mh.coinmarketcap_identifier === String(ticker.id));
 
-        const usd_details = _.get(ticker, 'quotes.USD');
-        const usd_total = _.get(global_data, 'data.quotes.USD');
+        const usd_details = _.get(ticker, 'quote.USD');
+        const usd_total = _.get(global_data, 'data.quote.USD');
 
-        expect(parseInt(matching_history.capitalization_usd)).to.equal(usd_details.market_cap, 'Expected the history capitalization to match');
+        expect(parseInt(matching_history.capitalization_usd)).to.equal(parseInt(usd_details.market_cap), 'Expected the history capitalization to match');
         expect(_.round(parseFloat(matching_history.market_share_percentage), 6)).to.equal(_.round((usd_details.market_cap / usd_total.total_market_cap) * 100, 6), 'Expected the history market share to match');
         expect(parseFloat(matching_history.daily_volume_usd)).to.equal(usd_details.volume_24h, 'Expected the history daily volume to match');
-        expect(new Date(matching_history.timestamp).getTime()).to.equal(joined_tickers.metadata.timestamp * 1000, 'Expected the history timestamp to match the metada timestamp');
+        expect(matching_history.timestamp).to.be.a('date');
 
     }
 
