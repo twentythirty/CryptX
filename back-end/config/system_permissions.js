@@ -483,7 +483,7 @@ ROUTES = {
   GetRecipeOrdersColLOV: {
     router_string: "/orders/header_lov/:field_name",
     permissions_matcher: ROUTE_MATCHERS.GetRecipeOrdersColLOV,
-    required_permissions: [PERMISSIONS.VIEW_ASSETS]
+    required_permissions: [PERMISSIONS.VIEW_ORDERS]
   },
   GetRecipeOrder: {
     router_string: "/orders/:order_id",
@@ -542,49 +542,49 @@ ROUTES = {
   GetExecutionOrdersOfRecipeOrder: {
     router_string: "/execution_orders/of_order/:order_detail_id",
     permissions_matcher: ROUTE_MATCHERS.GetExecutionOrdersOfRecipeOrder,
-    required_permissions: [PERMISSIONS.VIEW_INVESTMENT_RUN]
+    required_permissions: [PERMISSIONS.VIEW_ORDERS]
   },
   GetExecutionOrdersOfInvestmentRun: {
     router_string: "/execution_orders/of_investment_run/:investment_run_id",
     permissions_matcher: ROUTE_MATCHERS.GetExecutionOrdersOfInvestmentRun,
-    required_permissions: [PERMISSIONS.VIEW_INVESTMENT_RUN]
+    required_permissions: [PERMISSIONS.VIEW_ORDERS]
   },
   GetExecutionOrders: {
     router_string: "/execution_orders/all",
     permissions_matcher: ROUTE_MATCHERS.GetExecutionOrders,
-    required_permissions: [PERMISSIONS.VIEW_INVESTMENT_RUN]
+    required_permissions: [PERMISSIONS.VIEW_ORDERS]
   },
   ExecutionOrdersColLOV: {
     router_string: "/execution_orders/header_lov/:field_name",
     permissions_matcher: ROUTE_MATCHERS.ExecutionOrdersColLOV,
-    required_permissions: [PERMISSIONS.VIEW_ASSETS]
+    required_permissions: [PERMISSIONS.VIEW_ORDERS]
   },
   GetExecutionOrder: {
     router_string: "/execution_orders/:order_detail_id",
     permissions_matcher: ROUTE_MATCHERS.GetExecutionOrder,
-    required_permissions: [PERMISSIONS.VIEW_INVESTMENT_RUN]
+    required_permissions: [PERMISSIONS.VIEW_ORDERS]
   },
   ChangeExecutionOrderStatus: {
     router_string: "/execution_orders/:execution_order_id/change_status",
     permissions_matcher: ROUTE_MATCHERS.ChangeExecutionOrderStatus,
-    required_permissions: []
+    required_permissions: [PERMISSIONS.ALTER_ORDERS]
   },
 
   // Execution order fill
   GetExecutionOrdersFillsOf: {
     router_string: "/exec_orders_fills/of_execution_order/:execution_order_id",
     permissions_matcher: ROUTE_MATCHERS.GetExecutionOrdersFillsOf,
-    required_permissions: [PERMISSIONS.VIEW_INVESTMENT_RUN]
+    required_permissions: [PERMISSIONS.VIEW_ORDERS]
   },
   ExecutionOrdersFillColLOV: {
     router_string: "/exec_orders_fills/header_lov/:field_name",
     permissions_matcher: ROUTE_MATCHERS.ExecutionOrdersFillColLOV,
-    required_permissions: [PERMISSIONS.VIEW_ASSETS]
+    required_permissions: [PERMISSIONS.VIEW_ORDERS]
   },
   GetExecutionOrdersFill: {
     router_string: "/exec_orders_fills/:exec_order_fill_id",
     permissions_matcher: ROUTE_MATCHERS.GetExecutionOrdersFill,
-    required_permissions: [PERMISSIONS.VIEW_INVESTMENT_RUN]
+    required_permissions: [PERMISSIONS.VIEW_ORDERS]
   },
 
   // Instruments
@@ -748,7 +748,7 @@ ROUTES = {
   SubmitAssetConversion: {
     router_string: "/conversions/:conversion_id/submit",
     permissions_matcher: ROUTE_MATCHERS.SubmitAssetConversion,
-    required_permissions: [PERMISSIONS.VIEW_INVESTMENT_RUN]
+    required_permissions: [PERMISSIONS.ALTER_ASSET_CONVERSIONS]
   },
   CompleteAssetConversion: {
     router_string: "/conversions/:conversion_id/complete",
