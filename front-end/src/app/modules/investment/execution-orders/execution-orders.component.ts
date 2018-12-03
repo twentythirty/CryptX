@@ -45,8 +45,8 @@ export class ExecutionOrdersComponent extends TimelineDetailComponent implements
       { column: 'spend_amount', nameKey: 'table.header.total_spend_amount', filter: { type: 'number', sortable: true } },
       { column: 'exchange_trading_fee', nameKey: 'table.header.exchange_trading_fee', filter: { type: 'number', sortable: true }, column_class: 'word-wrap' },
       { column: 'status', nameKey: 'table.header.status', filter: { type: 'text', sortable: true, inputSearch: false } },
-      { column: 'submission_time', nameKey: 'table.header.submission_time', filter: { type: 'date', sortable: true } },
-      { column: 'completion_time', nameKey: 'table.header.completion_time', filter: { type: 'date', sortable: true } }
+      // { column: 'submission_time', nameKey: 'table.header.submission_time', filter: { type: 'date', sortable: true } },
+      // { column: 'completion_time', nameKey: 'table.header.completion_time', filter: { type: 'date', sortable: true } }
     ],
     body: null
   };
@@ -78,8 +78,8 @@ export class ExecutionOrdersComponent extends TimelineDetailComponent implements
       'execution_orders.status.66': StatusClass.FAILED,
       'execution_orders.status.67': StatusClass.NOTFILLED
     }}}),
-    new DateCellDataColumn({ column: 'submission_time' }),
-    new DateCellDataColumn({ column: 'completion_time' })
+    // new DateCellDataColumn({ column: 'submission_time' }),
+    // new DateCellDataColumn({ column: 'completion_time' })
   ];
 
   /**

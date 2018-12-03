@@ -62,8 +62,8 @@ export class ExecutionOrderFillDetailComponent extends TimelineDetailComponent i
       { column: 'spend_amount', nameKey: 'table.header.total_spend_amount' },
       { column: 'fee', nameKey: 'table.header.exchange_trading_fee' },
       { column: 'status', nameKey: 'table.header.status' },
-      { column: 'submission_time', nameKey: 'table.header.submission_time' },
-      { column: 'completion_time', nameKey: 'table.header.completion_time' },
+      // { column: 'submission_time', nameKey: 'table.header.submission_time' },
+      // { column: 'completion_time', nameKey: 'table.header.completion_time' },
       { column: 'action', nameKey: 'table.header.action' }
     ],
     body: null
@@ -102,8 +102,8 @@ export class ExecutionOrderFillDetailComponent extends TimelineDetailComponent i
       'execution_orders.status.66': StatusClass.FAILED,
       'execution_orders.status.67': StatusClass.NOTFILLED
     }}}),
-    new DateCellDataColumn({ column: 'submission_time' }),
-    new DateCellDataColumn({ column: 'completion_time' }),
+    // new DateCellDataColumn({ column: 'submission_time' }),
+    // new DateCellDataColumn({ column: 'completion_time' }),
     new ActionCellDataColumn({ column: 'action', inputs: {
       actions: [
         new DataCellAction({
