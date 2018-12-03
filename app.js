@@ -5,10 +5,12 @@ const enforce = require('express-sslify');
 
 const app = express();
 //Must be the first middleware
-app.use(enforce.HTTPS({
-    trustXForwardedHostHeader: true,
-    trustProtoHeader: true
-}));
+if(process.env.NODE_ENV !== 'dev') {
+    app.use(enforce.HTTPS({
+        trustXForwardedHostHeader: true,
+        trustProtoHeader: true
+    }));
+}
 
 app.use(compression()); // enables gzip to compress files
 
