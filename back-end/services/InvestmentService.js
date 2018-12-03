@@ -72,6 +72,8 @@ const createInvestmentRun = async function (user_id, strategy_type, is_simulated
     TE(`Unknown strategy type ${strategy_type}!`);
   }
 
+  if (is_simulated) TE("Creating simulated investment runs is no longer allowed");
+
   if (!deposit_amounts.length) TE('No investment amounts given!');
 
   let [err, deposit_assets] = await to(AssetService.getDepositAssets());

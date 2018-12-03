@@ -25,7 +25,6 @@ export class InvestmentNewComponent extends DataTableCommonManagerComponent impl
   @Output() close: EventEmitter<any> = new EventEmitter();
   @Output() onComplete: EventEmitter<any> = new EventEmitter();
 
-
   loading = false; // Is submit button loading
   tableLoading = false; // Is table loading
 
@@ -42,7 +41,7 @@ export class InvestmentNewComponent extends DataTableCommonManagerComponent impl
   group_name = 'STRATEGY_TYPES';
   strategies = {}; // Strategy type list
   strategyType = null; // Selected strategy type
-  isSimulated = null; // Selected mode
+  isSimulated = false; // Selected mode
   assetGroup; // Created asset group id
 
 

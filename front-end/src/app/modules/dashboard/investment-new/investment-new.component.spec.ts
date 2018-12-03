@@ -10,7 +10,7 @@ import { createInvestmentRunData, createAssetMixData, getAssetMixData } from '..
 import { Router } from '@angular/router';
 
 
-describe('InvestmentNewComponent', () => {
+fdescribe('InvestmentNewComponent', () => {
   let component: InvestmentNewComponent;
   let fixture: ComponentFixture<InvestmentNewComponent>;
   let modelConstantsService: ModelConstantsService;
@@ -24,15 +24,15 @@ describe('InvestmentNewComponent', () => {
   let onCompleteSpy;
   let navigateSpy;
 
-  const strategyTypeForm: () => HTMLElement = () => {
+  // const strategyTypeForm: () => HTMLElement = () => {
+  //   return fixture.nativeElement.querySelectorAll('form.select-box')[0];
+  // };
+  const portfolioForm: () => HTMLElement = () => {
     return fixture.nativeElement.querySelectorAll('form.select-box')[0];
   };
-  const portfolioForm: () => HTMLElement = () => {
-    return fixture.nativeElement.querySelectorAll('form.select-box')[1];
-  };
-  const strategyButton: (number) => HTMLElement = (index) => {
-    return strategyTypeForm().querySelector(`app-button-radio:nth-child(${++index}) label`);
-  };
+  // const strategyButton: (number) => HTMLElement = (index) => {
+  //   return strategyTypeForm().querySelector(`app-button-radio:nth-child(${++index}) label`);
+  // };
   const portfolioButton: (number) => HTMLElement = (index) => {
     return portfolioForm().querySelector(`app-button-radio:nth-child(${++index}) label`);
   };
@@ -90,12 +90,12 @@ describe('InvestmentNewComponent', () => {
   });
 
   it('should show first form step if investment mode or portfolio not selected', () => {
-    const form1 = strategyTypeForm();
+    // const form1 = strategyTypeForm();
     const form2 = portfolioForm();
 
     expect(component.strategyType).toBeNull();
-    expect(component.isSimulated).toBeNull();
-    expect(form1).toBeTruthy();
+   // expect(component.isSimulated).toBeNull();
+   // expect(form1).toBeTruthy();
     expect(form2).toBeTruthy();
   });
 
@@ -259,15 +259,15 @@ describe('InvestmentNewComponent', () => {
 
 
   function completeFirstStep() {
-    const btn1 = strategyButton(0);
+    // const btn1 = strategyButton(0);
     const btn2 = portfolioButton(0);
 
-    click(btn1);
-    btn1.dispatchEvent(newEvent('change'));
-    fixture.detectChanges();
+    // click(btn1);
+    // btn1.dispatchEvent(newEvent('change'));
+    // fixture.detectChanges();
 
     click(btn2);
-    btn1.dispatchEvent(newEvent('change'));
+    btn2.dispatchEvent(newEvent('change'));
     fixture.detectChanges();
   }
 

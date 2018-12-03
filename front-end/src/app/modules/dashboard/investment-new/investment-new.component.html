@@ -4,7 +4,7 @@
   (close)="onClose()"
 >
   <div *ngIf="!next_step">
-    <form class="select-box">
+    <!-- <form class="select-box">
       <label class="label">{{ 'investment.please_select_investment_mode' | translate }}</label>
       <div class="checkboxes-modal-wrap">
         <app-button-radio
@@ -22,7 +22,7 @@
           (change)="onChangeMode(true)"
         ></app-button-radio>
       </div>
-    </form>
+    </form> -->
     
     <form class="select-box" *ngIf="strategies">
       <label class="label">{{ 'investment.please_select_investment_run_portfolio' | translate }}</label>
