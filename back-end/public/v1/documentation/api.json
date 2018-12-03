@@ -105,7 +105,7 @@
           "200": {
             "description": "success",
             "schema": {
-              "$ref": "#/definitions/ColdStorageTranferListResponse"
+              "$ref": "#/definitions/ColdStorageApproveResponse"
             }
           }
         },
@@ -5900,6 +5900,20 @@
           "items": {
             "$ref": "#/definitions/ActionLog"
           }
+        }
+      }
+    },
+    "ColdStorageApproveResponse": {
+      "description": "Single cold storage transfer response",
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean",
+          "example": "true"
+        },
+        "status": {
+          "type": "string",
+          "example": "cold_storage.transfers.status.92"
         }
       }
     },

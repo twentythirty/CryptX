@@ -119,6 +119,8 @@ export class ColdStorageTransfersDetailComponent extends TimelineDetailComponent
   getSingleData(): void {}
 
   public getAllData(): void {
+    this.startTableLoading();
+
     this.route.params.pipe(
       mergeMap(
         params => {
@@ -151,7 +153,6 @@ export class ColdStorageTransfersDetailComponent extends TimelineDetailComponent
       col => [
         'asset',
         'status',
-        'source_account',
         'source_exchange',
         'strategy_type',
         'custodian',
@@ -188,9 +189,7 @@ export class ColdStorageTransfersDetailComponent extends TimelineDetailComponent
                 finalize(() => row.loading = false)
               ).subscribe(
                 res => {
-                  this.listDataSource.body = res.transfers;
-                  this.listDataSource.footer = res.footer;
-                  this.count = res.count;
+                  row.status = res.status;
                 }
               );
             }
