@@ -36,8 +36,8 @@ export class TransfersListComponent extends DataTableCommonManagerComponent impl
       { column: 'custodian', nameKey: 'table.header.custodian', filter: { type: 'text', sortable: true } },
       { column: 'strategy_type', nameKey: 'table.header.portfolio', filter: { type: 'text', sortable: true } },
       { column: 'source_exchange', nameKey: 'table.header.source_exchange', filter: { type: 'text', sortable: true } },
-      { column: 'placed_timestamp', nameKey: 'table.header.placed_time', filter: { type: 'date', sortable: true } },
-      { column: 'completed_timestamp', nameKey: 'table.header.completion_time', filter: { type: 'date', sortable: true } },
+      // { column: 'placed_timestamp', nameKey: 'table.header.placed_time', filter: { type: 'date', sortable: true } },
+      // { column: 'completed_timestamp', nameKey: 'table.header.completion_time', filter: { type: 'date', sortable: true } },
       { column: 'actions', nameKey: 'table.header.actions' },
     ],
     body: null
@@ -65,8 +65,8 @@ export class TransfersListComponent extends DataTableCommonManagerComponent impl
     new TableDataColumn({ column: 'custodian' }),
     new StatusCellDataColumn({ column: 'strategy_type' }),
     new TableDataColumn({ column: 'source_exchange' }),
-    new DateCellDataColumn({ column: 'placed_timestamp' }),
-    new DateCellDataColumn({ column: 'completed_timestamp' }),
+    // new DateCellDataColumn({ column: 'placed_timestamp' }),
+    // new DateCellDataColumn({ column: 'completed_timestamp' }),
     new ActionCellDataColumn({ column: 'actions', inputs: {
       actions: [
         new DataCellAction({
