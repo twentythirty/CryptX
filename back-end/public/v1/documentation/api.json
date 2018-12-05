@@ -4163,37 +4163,6 @@
         }
       }
     },
-    "/users/create": {
-      "post": {
-        "tags": [
-          "user"
-        ],
-        "summary": "Create a new user",
-        "description": "Create a user from provided data. Does not auto-login created user.",
-        "produces": [
-          "application/json"
-        ],
-        "parameters": [
-          {
-            "in": "body",
-            "name": "body",
-            "description": "Create User",
-            "required": true,
-            "schema": {
-              "$ref": "#/definitions/CreateUser"
-            }
-          }
-        ],
-        "responses": {
-          "201": {
-            "description": "success",
-            "schema": {
-              "$ref": "#/definitions/ReturnUserResponse"
-            }
-          }
-        }
-      }
-    },
     "/users/rm/{user_id}": {
       "delete": {
         "tags": [

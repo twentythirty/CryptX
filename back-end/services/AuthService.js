@@ -8,35 +8,6 @@ const validator = require("validator");
 const Op = require('../models').Sequelize.Op;
 const uuidv4 = require('uuid/v4');
 
-const createUser = async function (userInfo) {
-  let email = userInfo.email;
-
-  if ([
-      userInfo.email,
-      userInfo.first_name,
-      userInfo.last_name,
-      userInfo.password
-    ].some(prop => prop == null)) {
-    TE("Some of the required properties were null!");
-  }
-
-  const defaults = {
-    created_timestamp: new Date(),
-    is_active: true
-  };
-
-  if (validator.isEmail(email)) {
-
-    let [err, user] = await to(User.create(Object.assign(defaults, userInfo)));
-    if (err) TE(err.message)
-
-    return user;
-  } else {
-    TE("A valid email was not entered.");
-  }
-};
-module.exports.createUser = createUser;
-
 const authUser = async function (credentials, clientIP) {
   //returns token
   if (!credentials.username) TE("Please enter a username to login");

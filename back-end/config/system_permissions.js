@@ -193,11 +193,6 @@ all_permissions[PERMISSIONS.RECEIVE_NOTIFICATION_ABOUT_NEW_ASSETS] =
 all_roles = Object.values(ROLES);
 
 ROUTES = {
-  CreateUser: {
-    router_string: "/users/create",
-    permissions_matcher: ROUTE_MATCHERS.CreateUser,
-    required_permissions: [PERMISSIONS.CREATE_USER]
-  },
   InviteUser: {
     router_string: "/users/invite",
     permissions_matcher: ROUTE_MATCHERS.InviteUser,
@@ -229,7 +224,7 @@ ROUTES = {
   GetMyPermissions: {
     router_string: "/users/me/permissions",
     permissions_matcher: ROUTE_MATCHERS.GetMyPermissions,
-    required_permissions: [PERMISSIONS.VIEW_USERS]
+    required_permissions: []
   },
   GetUserInfo: {
     router_string: "/users/:user_id",
@@ -255,11 +250,6 @@ ROUTES = {
     router_string: "/users/:user_id/change_role",
     permissions_matcher: ROUTE_MATCHERS.ChangeUserRole,
     required_permissions: [PERMISSIONS.VIEW_USERS, PERMISSIONS.ALTER_ROLES]
-  },
-  CreateUser: {
-    router_string: "/users/create",
-    permissions_matcher: ROUTE_MATCHERS.CreateUser,
-    required_permissions: [PERMISSIONS.CREATE_USER]
   },
   ChangePassword: {
     router_string: "/users/:user_id/change_password",
@@ -392,11 +382,6 @@ ROUTES = {
     router_string: "/investments/timeline",
     permissions_matcher: ROUTE_MATCHERS.GetInvestmentStats,
     required_permissions: [PERMISSIONS.VIEW_INVESTMENT_RUN]
-  },
-  CreateDeposit: {
-    router_string: "/investments/:investment_id/deposit",
-    permissions_matcher: ROUTE_MATCHERS.CreateDeposit,
-    required_permissions: [PERMISSIONS.CREATE_INVESTMENT_RUN]
   },
 
   // Recipe

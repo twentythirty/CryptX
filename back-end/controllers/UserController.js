@@ -10,23 +10,6 @@ const mailUtil = require('./../utils/EmailUtil');
 const model_constants = require('../config/model_constants');
 require('../config/validators');
 
-const create = async function (req, res) {
-  const body = req.body;
-
-  let err, user;
-  [err, user] = await to(authService.createUser(body));
-  if (err) return ReE(res, err, 422);
-  return ReS(
-    res, {
-      message: "Successfully created new user.",
-      user: user.toWeb(),
-      token: user.getJWT()
-    },
-    201
-  );
-};
-module.exports.create = create;
-
 const issueInvitation = async function (req, res) {
 
   const {

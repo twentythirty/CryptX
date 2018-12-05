@@ -12,7 +12,6 @@ const DepositController = require('./../controllers/DepositController');
 const ColdstorageController = require('./../controllers/ColdstorageController');
 const ExchangeController = require('./../controllers/ExchangeController');
 const ActionLogControler = require('./../controllers/ActionLogController');
-const MockController = require('./../controllers/MockController');
 
 // const custom 	        = require('./../middleware/custom');
 
@@ -128,11 +127,6 @@ router.post(
   ROUTES.CreateUserByInvite.router_string,
   post_body_validator,
   UserController.createByInvite
-);
-router.post(
-  ROUTES.CreateUser.router_string, 
-  post_body_validator,
-  UserController.create
 );
 //----------------------------------------------
 
@@ -945,20 +939,6 @@ router.post(
   filter_reducer,
   ExchangeController.getExchanges
 );
-router.get(
-  ROUTES.InstrumentMapExchanges.router_string,
-  stateless_auth,
-  res_new_token,
-  check_permissions,
-  MockController.getExchanges
-);
-router.post(
-  ROUTES.InstrumentMapExchanges.router_string,
-  stateless_auth,
-  res_new_token,
-  check_permissions,
-  MockController.getExchanges
-);
 router.post(
   ROUTES.CreateExchangeAccount.router_string,
   stateless_auth,
@@ -1079,13 +1059,6 @@ router.post(
   ColdstorageController.addCustodian
 );
 router.post(
-  ROUTES.GetColdStorageCustodiansColLOV.router_string,
-  stateless_auth,
-  res_new_token,
-  check_permissions,
-  MockController.fetchColLOV
-);
-router.post(
   ROUTES.AddColdstorageAccount.router_string,
   stateless_auth,
   res_new_token,
@@ -1106,13 +1079,6 @@ router.post(
   check_permissions,
   filter_reducer,
   ColdstorageController.getColdstorageAccounts
-);
-router.post(
-  ROUTES.GetColdstorageAccountsColLOV.router_string,
-  stateless_auth,
-  res_new_token,
-  check_permissions,
-  MockController.fetchColLOV
 );
 router.post(
   ROUTES.GetColdstorageAccountsFees.router_string,

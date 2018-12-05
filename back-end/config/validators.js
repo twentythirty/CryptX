@@ -11,12 +11,6 @@ RULE_NAMES = {
 
 
 VALIDATORS = {
-    [ROUTE_STRINGS.CreateUser]: {
-        first_name: RULE_NAMES.STRING_NOT_BLANK,
-        last_name: RULE_NAMES.STRING_NOT_BLANK,
-        email: RULE_NAMES.STRING_IS_EMAIL,
-        password: RULE_NAMES.STRING_NOT_BLANK
-    },
     [ROUTE_STRINGS.InviteUser]: {
         first_name: RULE_NAMES.STRING_NOT_BLANK,
         last_name: RULE_NAMES.STRING_NOT_BLANK,

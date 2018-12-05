@@ -1,5 +1,4 @@
 ROUTE_MATCHERS = {
-    CreateUser: /\/users\/create$/,
     InviteUser: /\/users\/invite/,
     DeleteUserInfo: /\users\/rm\/(\d+|me)$/,
     InvitationByToken: /\/users\/invitation/,
