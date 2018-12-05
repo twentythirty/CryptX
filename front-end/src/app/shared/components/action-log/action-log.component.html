@@ -8,7 +8,7 @@
   </p>
   
   <p class="log-item" *ngFor="let log of source">
-    <span>{{ log.timestamp | date:'dd MMM yyyy hh:mm' }}</span>
+    <span>{{ log.timestamp | date:'dd MMM yyyy HH:mm' }}</span>
     <span> - </span>
     
     <span *ngIf="log.details">{{ log.details }}</span>
