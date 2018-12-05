@@ -42,7 +42,7 @@ module.exports.JOB_BODY = async (config, log) => {
         JOIN asset AS quote_asset ON ins.quote_asset_id = quote_asset.id
         JOIN asset AS transaction_asset ON ins.transaction_asset_id = transaction_asset.id
         WHERE exo.placed_timestamp IS NOT NULL AND exo.external_identifier IS NOT NULL AND exo.status = ${InProgress}
-    `, { model: ExecutionOrder }))
+    `, { model: ExecutionOrder, logging: console.log}))
 
     if(err) {
         await logError(log, null, '[ERROR.1A]', 'placed orders retrieval from database', err);

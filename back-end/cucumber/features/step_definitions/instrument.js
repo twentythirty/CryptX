@@ -229,22 +229,23 @@ Given(/the instrument has exchange mappings on (.*)/, async function(csv_exchang
 Given('the system has updated the Instrument Market Data', async function(){
 
     const { InstrumentMarketData, InstrumentExchangeMapping } = require('../../../models');
+    const ccxtUtil = require('../../../utils/CCXTUtils');
 
     const mappings = await InstrumentExchangeMapping.findAll({
         raw: true
     });
 
     return InstrumentMarketData.bulkCreate(mappings.map(m => {
-        const bid_price = _.random(0.00001, 0.1, true);
+        let bid_price = _.random(0.00001, 0.01, true);
+        
         return {
             bid_price: bid_price,
-            ask_price: bid_price * 0.0001,
+            ask_price: bid_price * (1 + (0.0001 * ( Math.round(Math.random) ? 1 : -1))),
             exchange_id: m.exchange_id,
             instrument_id: m.instrument_id,
             timestamp: new Date()
         };
     }));
-
 });
 
 Given(/^the system has Instrument Liquidity History for the last (.*) days$/, async function(days) {

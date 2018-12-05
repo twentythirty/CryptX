@@ -86,8 +86,8 @@ class Exchange {
             SUM(eof.quantity) as filled,
             SUM(
               CASE WHEN fee_asset.is_base=true
-                THEN (eof.quantity * eof.price) + eof.fee
-                ELSE (eof.quantity * eof.price) + (eof.fee * price)
+                THEN (eof.quantity * eof.price) + COALESCE(eof.fee, 0)
+                ELSE (eof.quantity * eof.price) + COALESCE(eof.fee * price, 0)
               END
             ) as fills_cost
           FROM execution_order_fill eof

@@ -2,6 +2,12 @@ Feature: execution order placement on exchanges
 
     The system will periodically attempt to automatically place pending execution orders on exchanges
 
+    Background: 
+
+        Given the system has Instrument Mappings for Binance
+        And the system has updated the Instrument Market Data
+        And the system has Recipe Order with status Executing on Binance
+
     @execution_orders_cache_cleanup
     Scenario: place execution orders on exchange
 

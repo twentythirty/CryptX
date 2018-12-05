@@ -7,7 +7,7 @@ const ccxtUnified = require('../../../utils/ccxtUnified');
 const fake_ccxt_methods = require('./stubs/ccxt_methods');
 
 const exchanges = require('./stubs/exchanges');
-setDefaultTimeout(20000);
+setDefaultTimeout(180000);
 
 const { setWorldConstructor } = require('cucumber');
 

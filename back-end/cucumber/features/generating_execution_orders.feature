@@ -3,7 +3,6 @@ Feature: Generating execution orders
     Background: 
 
         Given the system has Instrument Mappings for Bitfinex
-        And the system has Instrument Mappings for Binance
         And the system has updated the Instrument Market Data
 
     Scenario: Execution order generation for a partially filled order
@@ -30,7 +29,7 @@ Feature: Generating execution orders
     @restore_settings
     Scenario: Last Execution Order quantity is not within limits
 
-        Given the system has Recipe Order with status Executing on Binance
+        Given the system has Recipe Order with status Executing on Bitfinex
         And the setting "base trade fuzzyness" is set to 0
         And the Recipe Order is two Execution Orders short, one of which will be smaller than the minimum allowed by the Exchange
         When the system finished the task "generate execution orders"
