@@ -273,10 +273,9 @@ Given(/^the system has Recipe Order with status (.*) on (.*)$/g, async function 
             transaction
         }).then(group => {
 
-            let max_spend = limits.spend.min;
             let base = /\w+\/BTC$/.test(mapping.external_instrument_id) ? SYSTEM_SETTINGS.BASE_BTC_TRADE :
                 /\w+\/ETH$/.test(mapping.external_instrument_id) ? SYSTEM_SETTINGS.BASE_ETH_TRADE : 0.05;
-            let spend = _.random(base * 3, base * 30);//_.random(limits.spend.min * 3, max_spend > limits.spend.max ? limit.spend.max : max_spend);
+            let spend = _.clamp(_.random(base * 5, base * 50), limits.spend.min * 3, limits.spend.max);
 
             const price = limits.spend.min / limits.amount.min;
 
@@ -295,7 +294,6 @@ Given(/^the system has Recipe Order with status (.*) on (.*)$/g, async function 
 
                 this.current_recipe_order = order;
 
-                CRR_ORD_ID = order.id;
             });
 
         });
@@ -593,6 +591,7 @@ Given('the Order is not filled by Execuion Orders at all', function() {
         where: { recipe_order_id: this.current_recipe_order.id }
     });
 
+    CRR_ORD_ID = this.current_recipe_order.id;
 });
 
 Given('the Recipe Orders statuses were updated', async function() {
@@ -692,8 +691,15 @@ Given('the Recipe Order is two Execution Orders short, one of which will be smal
         NEEDED FILL: ${needed_fill.toString()},
         EXCHANGE LIMIT: ${min_amount}
     `);*/
-    console.log("Total spend amount ", order.spend_amount, "\n Spend amount of first order ", spend_amount.toString(),
-        "\n Left Spend Amount ", order.spend_amount - spend_amount.toNumber(), "\n Minimum spend amount ", limits.spend.min);
+    let left_spend = order.spend_amount - spend_amount.toNumber();
+    console.log("Total spend amount ", order.spend_amount, " 100%",
+        "\n Spend amount of first order ", spend_amount.toString(), " ", spend_amount.toNumber() / order.spend_amount * 100, "%",
+        "\n Left Spend Amount ", left_spend, " ", left_spend / order.spend_amount * 100, "%",
+        "\n Minimum spend amount ", limits.spend.min,
+        "\n Base trade is ", base_trade_amount, "\n Order spend is 3x base spend ", order.spend_amount * 3 > base_trade_amount,
+        "\n Left spend is bigger than base trade ", left_spend > base_trade_amount,
+        "\n Left spend is bigger than base + half min spend ", left_spend >= (base_trade_amount + limits.spend.min / 2)
+    );
 
     return sequelize.transaction(async transaction => {
 
@@ -885,7 +891,7 @@ When('the system does the task "generate execution orders" until it stops genera
     const { ExecutionOrder, ExecutionOrderFill, sequelize } = models;
 
     let tolerance = 0;
-    while(tolerance < 50) {
+    while(tolerance < 100) {
         tolerance++;
 
         const job_result = await job.JOB_BODY(config, console.log);
@@ -921,7 +927,7 @@ When('the system does the task "generate execution orders" until it stops genera
         });
     }
 
-    expect(tolerance).to.be.lessThan(50, `Job failed to fill Order with id "${this.current_recipe_order.id}" after 50 cycles`);
+    expect(tolerance).to.be.lessThan(100, `Job failed to fill Order with id "${this.current_recipe_order.id}" after 100 cycles`);
 
 });
 

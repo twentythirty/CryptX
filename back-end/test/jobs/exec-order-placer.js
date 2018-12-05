@@ -36,7 +36,8 @@ describe("Execution Order Placer job", () => {
       InvestmentRun,
       sequelize
     },
-    ccxtUnified
+    ccxtUnified,
+    fail_ids: []
   };
 
   before(done => {

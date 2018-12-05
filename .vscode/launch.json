@@ -23,7 +23,7 @@
         "NODE_ENV": "cucumber"
       },
       "args": [
-        "${workspaceFolder}/back-end/cucumber/features/generating_execution_orders.feature:31",
+        "${workspaceFolder}/back-end/cucumber/features/",
         "--exit"
       ]
     },

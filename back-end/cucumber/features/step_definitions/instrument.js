@@ -235,38 +235,9 @@ Given('the system has updated the Instrument Market Data', async function(){
         raw: true
     });
 
-    let maps_per_exchange = _.groupBy(mappings, 'exchange_id');
-
-    let prices = _.flatten(await Promise.all(
-        _.map(maps_per_exchange, async exchange_mappings => {
-
-            let con = await ccxtUtil.getConnector(_.first(exchange_mappings).exchange_id);
-            
-            let prc = _.map(exchange_mappings, mapping => {
-                if (_.isUndefined(_.get(con, `markets.${mapping.external_instrument_id}`)))
-                    return [mapping, undefined];
-
-                let base = /\w+\/BTC$/.test(mapping.external_instrument_id) ? SYSTEM_SETTINGS.BASE_BTC_TRADE :
-                    /\w+\/ETH$/.test(mapping.external_instrument_id) ? SYSTEM_SETTINGS.BASE_ETH_TRADE : 0.05;
-
-                let limits = _.get(con, `markets.${mapping.external_instrument_id}.limits`);
-                let price = ((limits.price.min + limits.price.max) / 2) * _.random(0.5, 1.5);
-                let qnt = price / base;
-                if (qnt < limits.amount.min || qnt > limits.amount.max)
-                    price = base / _.random(limits.amount.min, limits.amount.min * 1000);
-
-                if (/^(BTC|ETH)\//.test(mapping.external_instrument_id))
-                    price = _.random(200, 5000);
-
-                return [mapping, price];
-            });
-
-            return prc.filter(a => a[1] != undefined);
-        })
-    ));
-
-    return InstrumentMarketData.bulkCreate(mappings.map(m => /* prices.map(([m, price]) => */{
-        const bid_price = _.random(0.00001, 0.1, true);
+    return InstrumentMarketData.bulkCreate(mappings.map(m => {
+        let bid_price = _.random(0.00001, 0.01, true);
+        
         return {
             bid_price: bid_price,
             ask_price: bid_price * (1 + (0.0001 * ( Math.round(Math.random) ? 1 : -1))),
@@ -275,7 +246,6 @@ Given('the system has updated the Instrument Market Data', async function(){
             timestamp: new Date()
         };
     }));
-
 });
 
 Given(/^the system has Instrument Liquidity History for the last (.*) days$/, async function(days) {

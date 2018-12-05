@@ -3,7 +3,6 @@ Feature: Generating execution orders
     Background: 
 
         Given the system has Instrument Mappings for Bitfinex
-        And the system has Instrument Mappings for Bitfinex
         And the system has updated the Instrument Market Data
 
     Scenario: Execution order generation for a partially filled order
